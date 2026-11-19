@@ -949,6 +949,23 @@ pub struct kmipkit_server_request_item_view_v1_t {
     pub unique_batch_item_id_length: u64,
 }
 
+/// Versioned capabilities provided by a C application for Server-to-Client Query responses.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_s2c_capabilities_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub operations: *const u32,
+    pub operations_count: u32,
+    pub object_types: *const u32,
+    pub object_types_count: u32,
+    pub vendor_identification_data: *const u8,
+    pub vendor_identification_length: u64,
+    pub extension_tags: *const u32,
+    pub extension_tags_count: u32,
+    pub reserved: u32,
+}
+
 /// C callback dispatch table for Server-to-Client operations.
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -973,16 +990,23 @@ pub struct kmipkit_server_request_handler_v1_t {
             item_view: *const kmipkit_server_request_item_view_v1_t,
             unique_identifier_data: *const u8,
             unique_identifier_length: u64,
+            attributes_ttlv_data: *const u8,
+            attributes_ttlv_length: u64,
         ) -> u32,
     >,
     pub handle_put: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
             item_view: *const kmipkit_server_request_item_view_v1_t,
+            put_function: u32,
             unique_identifier_data: *const u8,
             unique_identifier_length: u64,
-            payload_ttlv_data: *const u8,
-            payload_ttlv_length: u64,
+            replaced_unique_identifier_data: *const u8,
+            replaced_unique_identifier_length: u64,
+            object_ttlv_data: *const u8,
+            object_ttlv_length: u64,
+            attributes_ttlv_data: *const u8,
+            attributes_ttlv_length: u64,
         ) -> u32,
     >,
     pub handle_query: Option<
@@ -990,6 +1014,7 @@ pub struct kmipkit_server_request_handler_v1_t {
             user_data: *mut core::ffi::c_void,
             item_view: *const kmipkit_server_request_item_view_v1_t,
             query_function_flags: u32,
+            out_capabilities: *mut kmipkit_s2c_capabilities_v1_t,
         ) -> u32,
     >,
     pub handle_set_endpoint_role: Option<

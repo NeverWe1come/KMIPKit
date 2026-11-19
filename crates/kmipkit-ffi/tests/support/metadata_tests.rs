@@ -1,5 +1,4 @@
 // Requires repository assets intentionally absent from the code-only review branch.
-#![cfg(any())]
 use super::*;
 use std::collections::BTreeSet;
 

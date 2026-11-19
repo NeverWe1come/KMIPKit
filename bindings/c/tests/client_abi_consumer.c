@@ -7865,6 +7865,34 @@ static int s2c_abi_is_callable_from_c(void) {
     }
     kmipkit_ttlv_structure_release(query_ttlv);
 
+    /* Test kmipkit_s2c_query_respond_with_capabilities_v1 with custom capabilities */
+    uint32_t custom_ops[] = { 0x0000001EU, 0x0000001BU, 0x0000001CU };
+    uint32_t custom_ots[] = { 1U, 2U, 7U };
+    const uint8_t custom_vendor[] = "Custom-C-Client";
+    kmipkit_s2c_capabilities_v1_t custom_caps;
+    memset(&custom_caps, 0, sizeof(custom_caps));
+    custom_caps.struct_size = (uint32_t)sizeof(custom_caps);
+    custom_caps.abi_version = 1;
+    custom_caps.operations = custom_ops;
+    custom_caps.operations_count = 3;
+    custom_caps.object_types = custom_ots;
+    custom_caps.object_types_count = 3;
+    custom_caps.vendor_identification_data = custom_vendor;
+    custom_caps.vendor_identification_length = sizeof(custom_vendor) - 1U;
+
+    query_ttlv = NULL;
+    if (kmipkit_s2c_query_respond_with_capabilities_v1(0x01 | 0x02 | 0x04, &custom_caps, &query_ttlv) != 0 || query_ttlv == NULL) {
+        return 0;
+    }
+    kmipkit_ttlv_structure_release(query_ttlv);
+
+    /* Test kmipkit_incoming_server_batch_item_put_v2 null/safety path */
+    uint32_t put_fn = 0;
+    uint64_t uid_len = 0;
+    if (kmipkit_incoming_server_batch_item_put_v2(NULL, 0, &put_fn, NULL, 0, &uid_len, NULL, 0, NULL, NULL, NULL) == 0) {
+        return 0;
+    }
+
     kmipkit_server_request_dispatcher_t *dispatcher = NULL;
     if (kmipkit_server_request_dispatcher_create(&dispatcher) != 0 || dispatcher == NULL) {
         return 0;

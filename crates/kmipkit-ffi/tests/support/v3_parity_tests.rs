@@ -1,6 +1,6 @@
 use super::*;
 use std::ptr;
-use crate::{KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING};
+use crate::{KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING, kmipkit_s2c_capabilities_v1_t};
 
 #[test]
 fn test_unique_identifier_v1_identifier_roundtrip() {
@@ -346,4 +346,209 @@ fn test_s2c_listener_dispatcher_and_helpers_ffi() {
     );
     assert!(!dispatcher.is_null());
     client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+}
+
+fn ttlv_test_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
+    let mut encoded = Vec::with_capacity(8 + value.len().div_ceil(8) * 8);
+    encoded.extend_from_slice(&tag.to_be_bytes()[1..]);
+    encoded.push(item_type);
+    encoded.extend_from_slice(
+        &u32::try_from(value.len())
+            .expect("test TTLV item length fits")
+            .to_be_bytes(),
+    );
+    encoded.extend_from_slice(value);
+    encoded.resize(8 + value.len().div_ceil(8) * 8, 0);
+    encoded
+}
+
+static PUT_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static QUERY_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+unsafe extern "C" fn test_put_callback(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    put_function: u32,
+    unique_identifier_data: *const u8,
+    unique_identifier_length: u64,
+    replaced_unique_identifier_data: *const u8,
+    replaced_unique_identifier_length: u64,
+    object_ttlv_data: *const u8,
+    object_ttlv_length: u64,
+    attributes_ttlv_data: *const u8,
+    attributes_ttlv_length: u64,
+) -> u32 {
+    assert_eq!(put_function, 2); // Replace
+    let uid = unsafe { std::slice::from_raw_parts(unique_identifier_data, unique_identifier_length as usize) };
+    assert_eq!(uid, b"sym-key-uid");
+    let rep_uid = unsafe { std::slice::from_raw_parts(replaced_unique_identifier_data, replaced_unique_identifier_length as usize) };
+    assert_eq!(rep_uid, b"replaced-sym-uid");
+    assert!(!object_ttlv_data.is_null());
+    assert!(object_ttlv_length > 0);
+    assert!(!attributes_ttlv_data.is_null());
+    assert!(attributes_ttlv_length > 0);
+
+    PUT_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
+
+static CUSTOM_QUERY_OPS: [u32; 3] = [0x0000_001E, 0x0000_001B, 0x0000_001C];
+static CUSTOM_QUERY_OTS: [u32; 2] = [1, 2];
+static CUSTOM_QUERY_VENDOR: &[u8] = b"CustomVendorFromC";
+
+unsafe extern "C" fn test_query_callback(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    query_function_flags: u32,
+    out_capabilities: *mut kmipkit_s2c_capabilities_v1_t,
+) -> u32 {
+    assert!(query_function_flags & 0x01 != 0); // Operations
+    assert!(query_function_flags & 0x04 != 0); // ServerInformation
+    assert!(!out_capabilities.is_null());
+    let caps = unsafe { &mut *out_capabilities };
+    caps.operations = CUSTOM_QUERY_OPS.as_ptr();
+    caps.operations_count = CUSTOM_QUERY_OPS.len() as u32;
+    caps.object_types = CUSTOM_QUERY_OTS.as_ptr();
+    caps.object_types_count = CUSTOM_QUERY_OTS.len() as u32;
+    caps.vendor_identification_data = CUSTOM_QUERY_VENDOR.as_ptr();
+    caps.vendor_identification_length = CUSTOM_QUERY_VENDOR.len() as u64;
+
+    QUERY_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
+
+#[test]
+fn test_s2c_put_and_query_callbacks_with_real_payloads() {
+    // 1. Build Put request payload
+    let mut put_payload = Vec::new();
+    put_payload.extend_from_slice(&ttlv_test_item(0x0042_0070, 0x05, &2u32.to_be_bytes())); // PutFunction Replace
+    put_payload.extend_from_slice(&ttlv_test_item(0x0042_0094, 0x07, b"sym-key-uid"));
+    put_payload.extend_from_slice(&ttlv_test_item(0x0042_0076, 0x07, b"replaced-sym-uid"));
+    // Managed Object: SymmetricKey (0x0042_008F)
+    let sym_obj = ttlv_test_item(0x0042_0057, 0x05, &2u32.to_be_bytes()); // ObjectType: SymmetricKey
+    put_payload.extend_from_slice(&ttlv_test_item(0x0042_008F, 0x01, &sym_obj));
+    // Attributes (0x0042_0125)
+    let attr_inner = ttlv_test_item(0x0042_0030, 0x07, b"TestKey");
+    put_payload.extend_from_slice(&ttlv_test_item(0x0042_0125, 0x01, &attr_inner));
+
+    let mut item1 = Vec::new();
+    item1.extend_from_slice(&ttlv_test_item(0x0042_005C, 0x05, &0x0000_001Cu32.to_be_bytes())); // Put
+    item1.extend_from_slice(&ttlv_test_item(0x0042_0093, 0x08, b"item-1"));
+    item1.extend_from_slice(&ttlv_test_item(0x0042_0079, 0x01, &put_payload));
+    let batch_item1 = ttlv_test_item(0x0042_000F, 0x01, &item1);
+
+    // 2. Build Query request payload
+    let mut query_payload = Vec::new();
+    query_payload.extend_from_slice(&ttlv_test_item(0x0042_0074, 0x05, &1u32.to_be_bytes())); // Operations
+    query_payload.extend_from_slice(&ttlv_test_item(0x0042_0074, 0x05, &3u32.to_be_bytes())); // ServerInformation
+
+    let mut item2 = Vec::new();
+    item2.extend_from_slice(&ttlv_test_item(0x0042_005C, 0x05, &0x0000_0018u32.to_be_bytes())); // Query
+    item2.extend_from_slice(&ttlv_test_item(0x0042_0093, 0x08, b"item-2"));
+    item2.extend_from_slice(&ttlv_test_item(0x0042_0079, 0x01, &query_payload));
+    let batch_item2 = ttlv_test_item(0x0042_000F, 0x01, &item2);
+
+    // 3. Header & Root
+    let mut pv = Vec::new();
+    pv.extend_from_slice(&ttlv_test_item(0x0042_006A, 0x02, &2i32.to_be_bytes()));
+    pv.extend_from_slice(&ttlv_test_item(0x0042_006B, 0x02, &1i32.to_be_bytes()));
+    let mut header = Vec::new();
+    header.extend_from_slice(&ttlv_test_item(0x0042_0069, 0x01, &pv));
+    header.extend_from_slice(&ttlv_test_item(0x0042_000D, 0x02, &2i32.to_be_bytes()));
+    let request_header = ttlv_test_item(0x0042_0077, 0x01, &header);
+
+    let mut root = Vec::new();
+    root.extend_from_slice(&request_header);
+    root.extend_from_slice(&batch_item1);
+    root.extend_from_slice(&batch_item2);
+    let request_message_bytes = ttlv_test_item(0x0042_0078, 0x01, &root);
+
+    // Decode batch
+    let mut limits = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&mut limits), SUCCESS);
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_decode_ttlv(
+            request_message_bytes.as_ptr(),
+            request_message_bytes.len() as u64,
+            limits,
+            &mut batch,
+        ),
+        SUCCESS
+    );
+    assert!(!batch.is_null());
+
+    // Test item_put_v2 getters directly
+    let mut put_fn = 0u32;
+    let mut uid_buf = [0u8; 32];
+    let mut uid_len = 0u64;
+    let mut rep_buf = [0u8; 32];
+    let mut rep_len = 0u64;
+    let mut obj_item = ptr::null_mut();
+    let mut attr_st = ptr::null_mut();
+
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_put_v2(
+            batch,
+            0,
+            &mut put_fn,
+            uid_buf.as_mut_ptr(),
+            uid_buf.len() as u64,
+            &mut uid_len,
+            rep_buf.as_mut_ptr(),
+            rep_buf.len() as u64,
+            &mut rep_len,
+            &mut obj_item,
+            &mut attr_st,
+        ),
+        SUCCESS
+    );
+    assert_eq!(put_fn, 2);
+    assert_eq!(&uid_buf[..uid_len as usize], b"sym-key-uid");
+    assert_eq!(&rep_buf[..rep_len as usize], b"replaced-sym-uid");
+    assert!(!obj_item.is_null());
+    assert!(!attr_st.is_null());
+    kmipkit_ttlv_item_release(obj_item);
+    kmipkit_ttlv_structure_release(attr_st);
+
+    // Setup handler with callbacks
+    let handler = kmipkit_server_request_handler_v1_t {
+        struct_size: std::mem::size_of::<kmipkit_server_request_handler_v1_t>() as u32,
+        abi_version: 1,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: Some(test_put_callback),
+        handle_query: Some(test_query_callback),
+        handle_set_endpoint_role: None,
+    };
+
+    let mut dispatcher = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_create(&mut dispatcher),
+        SUCCESS
+    );
+
+    let mut response = ptr::null_mut();
+    PUT_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+    QUERY_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            batch,
+            &handler,
+            &mut response,
+        ),
+        SUCCESS
+    );
+
+    assert!(PUT_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(QUERY_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(!response.is_null());
+
+    kmipkit_response_message_release(response);
+    client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+    client_abi::kmipkit_incoming_server_batch_release(batch);
+    kmipkit_codec_limits_release(limits);
 }

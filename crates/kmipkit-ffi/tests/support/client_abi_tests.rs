@@ -1,5 +1,4 @@
 // Requires repository assets intentionally absent from the code-only review branch.
-#![cfg(any())]
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};
 use std::net::TcpListener;
@@ -542,32 +541,30 @@ fn failed_cryptographic_response(operation: u32, unique_id: &[u8]) -> Vec<u8> {
     } else {
         (2, 1)
     };
+    let mut header_children = vec![
+        ttlv_structure(
+            0x0042_0069,
+            [
+                ttlv_integer(0x0042_006a, major),
+                ttlv_integer(0x0042_006b, minor),
+            ],
+        ),
+        ttlv_datetime(0x0042_0092, 1),
+    ];
+    if major != 3 {
+        header_children.push(ttlv_integer(0x0042_000d, 1));
+    }
+    let mut item_children = vec![ttlv_enumeration(0x0042_005c, operation)];
+    if major != 3 {
+        item_children.push(ttlv_item(0x0042_0093, 0x08, unique_id));
+    }
+    item_children.push(ttlv_enumeration(0x0042_007f, 1));
+    item_children.push(ttlv_enumeration(0x0042_007e, 6));
     ttlv_structure(
         0x0042_007b,
         [
-            ttlv_structure(
-                0x0042_007a,
-                [
-                    ttlv_structure(
-                        0x0042_0069,
-                        [
-                            ttlv_integer(0x0042_006a, major),
-                            ttlv_integer(0x0042_006b, minor),
-                        ],
-                    ),
-                    ttlv_datetime(0x0042_0092, 1),
-                    ttlv_integer(0x0042_000d, 1),
-                ],
-            ),
-            ttlv_structure(
-                0x0042_000f,
-                [
-                    ttlv_enumeration(0x0042_005c, operation),
-                    ttlv_item(0x0042_0093, 0x08, unique_id),
-                    ttlv_enumeration(0x0042_007f, 1),
-                    ttlv_enumeration(0x0042_007e, 6),
-                ],
-            ),
+            ttlv_structure_vec(0x0042_007a, header_children),
+            ttlv_structure_vec(0x0042_000f, item_children),
         ],
     )
 }
@@ -824,27 +821,25 @@ fn successful_cryptographic_response(
             ttlv_integer(0x0042_006b, minor),
         ],
     );
-    let header = ttlv_structure(
-        0x0042_007a,
-        [
-            protocol_version,
-            ttlv_datetime(0x0042_0092, 1),
-            ttlv_integer(0x0042_000d, 1),
-        ],
-    );
+    let mut header_children = vec![
+        protocol_version,
+        ttlv_datetime(0x0042_0092, 1),
+    ];
+    if major != 3 {
+        header_children.push(ttlv_integer(0x0042_000d, 1));
+    }
+    let header = ttlv_structure_vec(0x0042_007a, header_children);
     let response_payload = {
         let children = response_fields.into_iter().flatten().collect::<Vec<_>>();
         ttlv_item(0x0042_007c, 0x01, &children)
     };
-    let response_item = ttlv_structure(
-        0x0042_000f,
-        [
-            ttlv_enumeration(0x0042_005c, operation),
-            ttlv_item(0x0042_0093, 0x08, unique_id),
-            ttlv_enumeration(0x0042_007f, 0),
-            response_payload,
-        ],
-    );
+    let mut response_item_children = vec![ttlv_enumeration(0x0042_005c, operation)];
+    if major != 3 {
+        response_item_children.push(ttlv_item(0x0042_0093, 0x08, unique_id));
+    }
+    response_item_children.push(ttlv_enumeration(0x0042_007f, 0));
+    response_item_children.push(response_payload);
+    let response_item = ttlv_structure_vec(0x0042_000f, response_item_children);
     ttlv_structure(0x0042_007b, [header, response_item])
 }
 
@@ -3665,6 +3660,14 @@ fn ttlv_structure<const N: usize>(tag: u32, children: [Vec<u8>; N]) -> Vec<u8> {
     )
 }
 
+fn ttlv_structure_vec(tag: u32, children: Vec<Vec<u8>>) -> Vec<u8> {
+    ttlv_item(
+        tag,
+        0x01,
+        &children.into_iter().flatten().collect::<Vec<_>>(),
+    )
+}
+
 fn ttlv_integer(tag: u32, value: i32) -> Vec<u8> {
     ttlv_item(tag, 0x02, &value.to_be_bytes())
 }
@@ -4208,10 +4211,13 @@ fn execute_single_abi_response_with_async(
         .expect("the empty approved extension registry is valid");
     let configuration = client_extension::ClientConfiguration::new(registry);
     let mut client = Client::new(configuration, transport).expect("client construction succeeds");
-    let mut batch = ClientBatch::from_items([
-        ClientBatchItem::new(request).with_unique_batch_item_id(batch_item_id.to_vec())
-    ]);
-    if (0x3C..=0x42).contains(&batch.items()[0].operation()) {
+    let mut item = ClientBatchItem::new(request);
+    let is_v3 = (0x3C..=0x42).contains(&item.operation());
+    if !is_v3 {
+        item = item.with_unique_batch_item_id(batch_item_id.to_vec());
+    }
+    let mut batch = ClientBatch::from_items([item]);
+    if is_v3 {
         batch = batch.with_protocol_version(kmipkit_protocol::ProtocolVersion::V3_0);
     }
     if let Some(indicator) = asynchronous_indicator {
@@ -7937,8 +7943,6 @@ fn ffi_usage_allocation_context_survives_source_item_release_in_c() {
 // Keep fixture parsing, mTLS setup, the FFI call, and handle cleanup together
 // so the shared test inputs and native resource lifetimes stay explicit.
 #[allow(clippy::too_many_lines)]
-// Requires repository assets absent from this review branch.
-#[cfg(any())]
 fn ffi_c_consumer_executes_guarded_encrypt_over_mtls_and_reserves_cost() {
     let fixture: serde_json::Value = serde_json::from_str(include_str!(
         "../../../../tests/fixtures/api/shared-capability-parity.json"

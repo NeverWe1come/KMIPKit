@@ -1444,6 +1444,7 @@ typedef struct kmipkit_incoming_server_batch_t kmipkit_incoming_server_batch_t;
 typedef struct kmipkit_server_request_dispatcher_t kmipkit_server_request_dispatcher_t;
 typedef struct kmipkit_listener_transport_config_v1_t kmipkit_listener_transport_config_v1_t;
 typedef struct kmipkit_server_request_item_view_v1_t kmipkit_server_request_item_view_v1_t;
+typedef struct kmipkit_s2c_capabilities_v1_t kmipkit_s2c_capabilities_v1_t;
 typedef struct kmipkit_server_request_handler_v1_t kmipkit_server_request_handler_v1_t;
 typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
@@ -2019,14 +2020,28 @@ struct kmipkit_server_request_item_view_v1_t {
     uint64_t unique_batch_item_id_length;
 };
 
+struct kmipkit_s2c_capabilities_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    const uint32_t * operations;
+    uint32_t operations_count;
+    const uint32_t * object_types;
+    uint32_t object_types_count;
+    const uint8_t * vendor_identification_data;
+    uint64_t vendor_identification_length;
+    const uint32_t * extension_tags;
+    uint32_t extension_tags_count;
+    uint32_t reserved;
+};
+
 struct kmipkit_server_request_handler_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
     void * user_data;
     uint32_t (*handle_discover_versions)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t protocol_version_major, uint32_t protocol_version_minor, uint32_t * supported_versions_out, uint32_t supported_versions_capacity, uint32_t * supported_versions_count_out);
-    uint32_t (*handle_notify)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length);
-    uint32_t (*handle_put)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * payload_ttlv_data, uint64_t payload_ttlv_length);
-    uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags);
+    uint32_t (*handle_notify)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * attributes_ttlv_data, uint64_t attributes_ttlv_length);
+    uint32_t (*handle_put)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t put_function, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length, const uint8_t * object_ttlv_data, uint64_t object_ttlv_length, const uint8_t * attributes_ttlv_data, uint64_t attributes_ttlv_length);
+    uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags, kmipkit_s2c_capabilities_v1_t * out_capabilities);
     uint32_t (*handle_set_endpoint_role)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t target_role);
 };
 
@@ -4539,6 +4554,7 @@ int32_t kmipkit_incoming_server_batch_item_unique_batch_item_id(kmipkit_incoming
 int32_t kmipkit_incoming_server_batch_item_discover_versions(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_versions, uint32_t versions_capacity, uint32_t * out_versions_count);
 int32_t kmipkit_incoming_server_batch_item_notify(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint8_t * out_uid_buffer, uint64_t uid_capacity, uint64_t * out_uid_len);
 int32_t kmipkit_incoming_server_batch_item_put(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint8_t * out_uid_buffer, uint64_t uid_capacity, uint64_t * out_uid_len, uint32_t * out_put_function);
+int32_t kmipkit_incoming_server_batch_item_put_v2(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_put_function, uint8_t * out_uid_buffer, uint64_t uid_capacity, uint64_t * out_uid_len, uint8_t * out_replaced_uid_buffer, uint64_t replaced_uid_capacity, uint64_t * out_replaced_uid_len, kmipkit_ttlv_item_t ** out_object_item, kmipkit_ttlv_structure_t ** out_attributes);
 int32_t kmipkit_incoming_server_batch_item_query(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_query_function_flags);
 int32_t kmipkit_incoming_server_batch_item_set_endpoint_role(kmipkit_incoming_server_batch_t * batch, uint32_t item_index, uint32_t * out_endpoint_role);
 void kmipkit_incoming_server_batch_release(kmipkit_incoming_server_batch_t * batch);
@@ -4552,6 +4568,7 @@ void kmipkit_server_request_dispatcher_release(kmipkit_server_request_dispatcher
 int32_t kmipkit_s2c_discover_versions_negotiate(uint32_t requested_major, uint32_t requested_minor, const uint32_t * supported_versions, uint32_t supported_count, uint32_t * out_negotiated_major, uint32_t * out_negotiated_minor);
 int32_t kmipkit_s2c_put_effective_function(uint32_t requested_put_function, uint8_t replaced_object_exists_locally, uint32_t * out_effective_put_function);
 int32_t kmipkit_s2c_query_respond_ttlv(uint32_t query_function_flags, const uint8_t * vendor_id_data, uint64_t vendor_id_len, kmipkit_ttlv_structure_t ** out_structure);
+int32_t kmipkit_s2c_query_respond_with_capabilities_v1(uint32_t query_function_flags, const kmipkit_s2c_capabilities_v1_t * capabilities, kmipkit_ttlv_structure_t ** out_structure);
 
 /* Client SetEndpointRole execution */
 int32_t kmipkit_client_set_endpoint_role(kmipkit_client_t * client, uint32_t endpoint_role, const uint8_t * vendor_identification, uint64_t vendor_identification_length, kmipkit_codec_limits_t * limits, kmipkit_client_batch_item_response_t ** out_response);

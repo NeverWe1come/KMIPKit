@@ -2,6 +2,7 @@
 #![allow(clippy::wildcard_imports)] // Shares the parent module's private FFI handle invariants.
 
 use super::*;
+use crate::kmipkit_s2c_capabilities_v1_t;
 use zeroize::{Zeroize, Zeroizing};
 
 #[path = "client_abi/fluent.rs"]
@@ -9658,7 +9659,9 @@ pub extern "C" fn kmipkit_incoming_server_batch_decode_ttlv(
     limits: *mut kmipkit_codec_limits_t,
     out_batch: *mut *mut kmipkit_incoming_server_batch_t,
 ) -> i32 {
-    kmipkit_incoming_server_batch_decode(data, length, 0, limits, out_batch)
+    ffi_entrypoint(|| {
+        kmipkit_incoming_server_batch_decode(data, length, 0, limits, out_batch)
+    })
 }
 
 #[unsafe(no_mangle)]
@@ -9841,18 +9844,124 @@ pub extern "C" fn kmipkit_incoming_server_batch_item_notify(
     })
 }
 
+fn write_ttlv_header(out: &mut Vec<u8>, tag_bytes: [u8; 3], item_type: u8, len: usize) {
+    out.extend_from_slice(&tag_bytes);
+    out.push(item_type);
+    out.extend_from_slice(&u32::try_from(len).unwrap_or(0).to_be_bytes());
+}
+
+fn write_ttlv_padding(out: &mut Vec<u8>, len: usize) {
+    let rem = len % 8;
+    if rem > 0 {
+        let pad = 8 - rem;
+        out.extend(std::iter::repeat_n(0u8, pad));
+    }
+}
+
+fn encode_structure_view_bytes(view: &kmipkit_ttlv::StructureView<'_>, out: &mut Vec<u8>) {
+    for child in view.children() {
+        encode_ttlv_item_bytes(child, out);
+    }
+}
+
+fn encode_ttlv_item_bytes(item: &kmipkit_ttlv::Item, out: &mut Vec<u8>) {
+    let raw_tag = item.tag().raw().to_be_bytes();
+    let tag_bytes = [raw_tag[1], raw_tag[2], raw_tag[3]];
+
+    item.with_value(|view| match view {
+        kmipkit_ttlv::ValueView::Structure(structure) => {
+            let mut children_bytes = Vec::new();
+            for child in structure.children() {
+                encode_ttlv_item_bytes(child, &mut children_bytes);
+            }
+            write_ttlv_header(out, tag_bytes, 0x01, children_bytes.len());
+            out.extend_from_slice(&children_bytes);
+        }
+        kmipkit_ttlv::ValueView::Integer(val) => {
+            write_ttlv_header(out, tag_bytes, 0x02, 4);
+            out.extend_from_slice(&val.to_be_bytes());
+            out.extend_from_slice(&[0u8; 4]);
+        }
+        kmipkit_ttlv::ValueView::LongInteger(val) => {
+            write_ttlv_header(out, tag_bytes, 0x03, 8);
+            out.extend_from_slice(&val.to_be_bytes());
+        }
+        kmipkit_ttlv::ValueView::BigInteger(bytes) => {
+            write_ttlv_header(out, tag_bytes, 0x04, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::Enumeration(val) => {
+            write_ttlv_header(out, tag_bytes, 0x05, 4);
+            out.extend_from_slice(&val.to_be_bytes());
+            out.extend_from_slice(&[0u8; 4]);
+        }
+        kmipkit_ttlv::ValueView::Boolean(val) => {
+            write_ttlv_header(out, tag_bytes, 0x06, 8);
+            let byte_val = u8::from(*val);
+            out.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, byte_val]);
+        }
+        kmipkit_ttlv::ValueView::TextString(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x07, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::ByteString(bytes) => {
+            write_ttlv_header(out, tag_bytes, 0x08, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::DateTime(dt) => {
+            write_ttlv_header(out, tag_bytes, 0x09, 8);
+            out.extend_from_slice(&dt.to_be_bytes());
+        }
+        kmipkit_ttlv::ValueView::Interval(val) => {
+            write_ttlv_header(out, tag_bytes, 0x0A, 4);
+            out.extend_from_slice(&val.to_be_bytes());
+            out.extend_from_slice(&[0u8; 4]);
+        }
+        kmipkit_ttlv::ValueView::DateTimeExtended(dt) => {
+            write_ttlv_header(out, tag_bytes, 0x0B, 8);
+            out.extend_from_slice(&dt.to_be_bytes());
+        }
+        kmipkit_ttlv::ValueView::Identifier(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0C, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::Reference(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0D, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        kmipkit_ttlv::ValueView::NameReference(s) => {
+            let bytes = s.as_bytes();
+            write_ttlv_header(out, tag_bytes, 0x0E, bytes.len());
+            out.extend_from_slice(bytes);
+            write_ttlv_padding(out, bytes.len());
+        }
+        _ => {}
+    });
+}
+
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_incoming_server_batch_item_put(
+pub extern "C" fn kmipkit_incoming_server_batch_item_put_v2(
     batch: *mut kmipkit_incoming_server_batch_t,
     item_index: u32,
+    out_put_function: *mut u32,
     out_uid_buffer: *mut u8,
     uid_capacity: u64,
     out_uid_len: *mut u64,
-    out_put_function: *mut u32,
+    out_replaced_uid_buffer: *mut u8,
+    replaced_uid_capacity: u64,
+    out_replaced_uid_len: *mut u64,
+    out_object_item: *mut *mut kmipkit_ttlv_item_t,
+    out_attributes: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let out_len = scalar_out!(out_uid_len);
-        let out_func = scalar_out!(out_put_function);
         let batch_handle = read_handle!(batch, IncomingServerBatch);
         let HandleValue::IncomingServerBatch(batch) = &batch_handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -9863,24 +9972,83 @@ pub extern "C" fn kmipkit_incoming_server_batch_item_put(
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         if let Some(req) = items[idx].as_put() {
-            let uid = req.unique_identifier().as_bytes();
-            let len = uid.len() as u64;
-            *out_len = len;
-            *out_func = req.put_function().raw();
-            if uid_capacity < len || out_uid_buffer.is_null() {
-                return if uid_capacity == 0 {
-                    SUCCESS
-                } else {
-                    record_ffi_error(ERROR_INVALID_INPUT)
-                };
+            if !out_put_function.is_null() {
+                unsafe { *out_put_function = req.put_function().raw(); }
             }
-            unsafe {
-                ptr::copy_nonoverlapping(uid.as_ptr(), out_uid_buffer, uid.len());
+            let uid = req.unique_identifier().as_bytes();
+            let uid_len = uid.len() as u64;
+            if !out_uid_len.is_null() {
+                unsafe { *out_uid_len = uid_len; }
+            }
+            if !out_uid_buffer.is_null() && uid_capacity >= uid_len {
+                unsafe {
+                    ptr::copy_nonoverlapping(uid.as_ptr(), out_uid_buffer, uid.len());
+                }
+            } else if !out_uid_buffer.is_null() && uid_capacity < uid_len && uid_capacity > 0 {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            if let Some(rep_uid) = req.replaced_unique_identifier() {
+                let rep_bytes = rep_uid.as_bytes();
+                let rep_len = rep_bytes.len() as u64;
+                if !out_replaced_uid_len.is_null() {
+                    unsafe { *out_replaced_uid_len = rep_len; }
+                }
+                if !out_replaced_uid_buffer.is_null() && replaced_uid_capacity >= rep_len {
+                    unsafe {
+                        ptr::copy_nonoverlapping(rep_bytes.as_ptr(), out_replaced_uid_buffer, rep_bytes.len());
+                    }
+                } else if !out_replaced_uid_buffer.is_null() && replaced_uid_capacity < rep_len && replaced_uid_capacity > 0 {
+                    return record_ffi_error(ERROR_INVALID_INPUT);
+                }
+            } else if !out_replaced_uid_len.is_null() {
+                unsafe { *out_replaced_uid_len = 0; }
+            }
+            if !out_object_item.is_null() {
+                let cloned_item = try_ffi!(req.object_item().try_clone().map_err(|_| ERROR_INTERNAL));
+                unsafe {
+                    *out_object_item = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(cloned_item)));
+                }
+            }
+            if !out_attributes.is_null() {
+                if let Some(attrs) = req.attributes() {
+                    let cloned_attrs = try_ffi!(attrs.view().try_clone().map_err(|_| ERROR_INTERNAL));
+                    unsafe {
+                        *out_attributes = try_ffi!(try_make_handle(Kind::Structure, HandleValue::Structure(cloned_attrs)));
+                    }
+                } else {
+                    unsafe { *out_attributes = ptr::null_mut(); }
+                }
             }
             SUCCESS
         } else {
             record_ffi_error(ERROR_INVALID_INPUT)
         }
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_incoming_server_batch_item_put(
+    batch: *mut kmipkit_incoming_server_batch_t,
+    item_index: u32,
+    out_uid_buffer: *mut u8,
+    uid_capacity: u64,
+    out_uid_len: *mut u64,
+    out_put_function: *mut u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        kmipkit_incoming_server_batch_item_put_v2(
+            batch,
+            item_index,
+            out_put_function,
+            out_uid_buffer,
+            uid_capacity,
+            out_uid_len,
+            ptr::null_mut(),
+            0,
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+        )
     })
 }
 
@@ -9904,7 +10072,10 @@ pub extern "C" fn kmipkit_incoming_server_batch_item_query(
         if let Some(req) = items[idx].as_query() {
             let mut flags: u32 = 0;
             for qf in req.query_functions() {
-                flags |= 1u32 << (qf.raw().min(31));
+                let raw = qf.raw();
+                if (1..=32).contains(&raw) {
+                    flags |= 1u32 << (raw - 1);
+                }
             }
             *out_flags = flags;
             SUCCESS
@@ -10022,9 +10193,20 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapter {
         let view = kmipkit_server_request_item_view_v1_t {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
-            operation: 0x0000_001F,
+            operation: 0x0000_001B,
             unique_batch_item_id_data: ptr::null(),
             unique_batch_item_id_length: 0,
+        };
+        let mut attr_bytes = Vec::new();
+        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
+            let mut st_bytes = Vec::new();
+            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
+            let raw_tag = 0x0042_0125u32.to_be_bytes();
+            write_ttlv_header(&mut attr_bytes, [raw_tag[1], raw_tag[2], raw_tag[3]], 0x01, st_bytes.len());
+            attr_bytes.extend_from_slice(&st_bytes);
+            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
+        } else {
+            (ptr::null(), 0)
         };
         let code = unsafe {
             callback(
@@ -10032,6 +10214,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapter {
                 &view,
                 uid.as_ptr(),
                 uid.len() as u64,
+                attr_ptr,
+                attr_len,
             )
         };
         if code != 0 {
@@ -10052,18 +10236,44 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapter {
         let view = kmipkit_server_request_item_view_v1_t {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
-            operation: 0x0000_0020,
+            operation: 0x0000_001C,
             unique_batch_item_id_data: ptr::null(),
             unique_batch_item_id_length: 0,
         };
+        let mut obj_bytes = Vec::new();
+        encode_ttlv_item_bytes(request.object_item(), &mut obj_bytes);
+
+        let mut attr_bytes = Vec::new();
+        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
+            let mut st_bytes = Vec::new();
+            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
+            let raw_tag = 0x0042_0125u32.to_be_bytes();
+            write_ttlv_header(&mut attr_bytes, [raw_tag[1], raw_tag[2], raw_tag[3]], 0x01, st_bytes.len());
+            attr_bytes.extend_from_slice(&st_bytes);
+            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
+        } else {
+            (ptr::null(), 0)
+        };
+
+        let (rep_ptr, rep_len) = if let Some(rep_uid) = request.replaced_unique_identifier() {
+            (rep_uid.as_ptr(), rep_uid.len() as u64)
+        } else {
+            (ptr::null(), 0)
+        };
+
         let code = unsafe {
             callback(
                 self.handler.user_data,
                 &view,
+                request.put_function().raw(),
                 uid.as_ptr(),
                 uid.len() as u64,
-                ptr::null(),
-                0,
+                rep_ptr,
+                rep_len,
+                obj_bytes.as_ptr(),
+                obj_bytes.len() as u64,
+                attr_ptr,
+                attr_len,
             )
         };
         if code != 0 {
@@ -10083,33 +10293,81 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapter {
         let view = kmipkit_server_request_item_view_v1_t {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
-            operation: 0x0000_0021,
+            operation: 0x0000_0018,
             unique_batch_item_id_data: ptr::null(),
             unique_batch_item_id_length: 0,
         };
         let mut flags: u32 = 0;
         for qf in request.query_functions() {
-            flags |= 1u32 << (qf.raw().min(31));
+            let raw = qf.raw();
+            if (1..=32).contains(&raw) {
+                flags |= 1u32 << (raw - 1);
+            }
         }
+        let mut out_caps = kmipkit_s2c_capabilities_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32,
+            abi_version: 1,
+            operations: ptr::null(),
+            operations_count: 0,
+            object_types: ptr::null(),
+            object_types_count: 0,
+            vendor_identification_data: ptr::null(),
+            vendor_identification_length: 0,
+            extension_tags: ptr::null(),
+            extension_tags_count: 0,
+            reserved: 0,
+        };
         let code = unsafe {
             callback(
                 self.handler.user_data,
                 &view,
                 flags,
+                &mut out_caps,
             )
         };
         if code != 0 {
             return Err(s2c_failure_result());
         }
         let mut caps = kmipkit_protocol::ServerCapabilities::new();
-        caps.set_operations(vec![
-            0x0000_001E,
-            0x0000_001F,
-            0x0000_0020,
-            0x0000_0021,
-        ]);
-        caps.set_object_types(vec![0x01, 0x02, 0x07]);
-        caps.set_vendor_identification("KMIPKit");
+        if !out_caps.operations.is_null() && out_caps.operations_count > 0 {
+            let mut ops = Vec::new();
+            for i in 0..(out_caps.operations_count as usize) {
+                ops.push(unsafe { *out_caps.operations.add(i) });
+            }
+            caps.set_operations(ops);
+        } else {
+            caps.set_operations(vec![
+                0x0000_001E,
+                0x0000_001B,
+                0x0000_001C,
+                0x0000_0018,
+            ]);
+        }
+        if !out_caps.object_types.is_null() && out_caps.object_types_count > 0 {
+            let mut ots = Vec::new();
+            for i in 0..(out_caps.object_types_count as usize) {
+                ots.push(unsafe { *out_caps.object_types.add(i) });
+            }
+            caps.set_object_types(ots);
+        } else {
+            caps.set_object_types(vec![0x01, 0x02, 0x07]);
+        }
+        if !out_caps.vendor_identification_data.is_null() && out_caps.vendor_identification_length > 0 {
+            if let Ok(span) = input_span(out_caps.vendor_identification_data, out_caps.vendor_identification_length, MAX_FFI_INPUT_BYTES) {
+                if let Ok(text) = std::str::from_utf8(span) {
+                    caps.set_vendor_identification(text);
+                }
+            }
+        } else {
+            caps.set_vendor_identification("KMIPKit");
+        }
+        if !out_caps.extension_tags.is_null() && out_caps.extension_tags_count > 0 {
+            let mut tags = Vec::new();
+            for i in 0..(out_caps.extension_tags_count as usize) {
+                tags.push(unsafe { *out_caps.extension_tags.add(i) });
+            }
+            caps.set_extension_tags(tags);
+        }
         Ok(kmipkit_protocol::ServerQueryResponse::respond(request, &caps))
     }
 
@@ -10268,10 +10526,9 @@ pub extern "C" fn kmipkit_s2c_put_effective_function(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_s2c_query_respond_ttlv(
+pub extern "C" fn kmipkit_s2c_query_respond_with_capabilities_v1(
     query_function_flags: u32,
-    vendor_id_data: *const u8,
-    vendor_id_len: u64,
+    capabilities: *const kmipkit_s2c_capabilities_v1_t,
     out_structure: *mut *mut kmipkit_ttlv_structure_t,
 ) -> i32 {
     ffi_entrypoint(|| {
@@ -10294,17 +10551,36 @@ pub extern "C" fn kmipkit_s2c_query_respond_ttlv(
         }
         let req = kmipkit_protocol::ServerQueryRequest::new(functions);
         let mut caps = kmipkit_protocol::ServerCapabilities::new();
-        caps.set_operations(vec![
-            0x0000_001E,
-            0x0000_001F,
-            0x0000_0020,
-            0x0000_0021,
-        ]);
-        caps.set_object_types(vec![0x01, 0x02, 0x07]);
-        if !vendor_id_data.is_null() && vendor_id_len > 0 {
-            let span = try_ffi!(input_span(vendor_id_data, vendor_id_len, MAX_FFI_INPUT_BYTES));
-            if let Ok(text) = std::str::from_utf8(span) {
-                caps.set_vendor_identification(text);
+        if !capabilities.is_null() {
+            let cap_ref = unsafe { &*capabilities };
+            if cap_ref.abi_version == 1 {
+                if !cap_ref.operations.is_null() && cap_ref.operations_count > 0 {
+                    let mut ops = Vec::new();
+                    for i in 0..(cap_ref.operations_count as usize) {
+                        ops.push(unsafe { *cap_ref.operations.add(i) });
+                    }
+                    caps.set_operations(ops);
+                }
+                if !cap_ref.object_types.is_null() && cap_ref.object_types_count > 0 {
+                    let mut ots = Vec::new();
+                    for i in 0..(cap_ref.object_types_count as usize) {
+                        ots.push(unsafe { *cap_ref.object_types.add(i) });
+                    }
+                    caps.set_object_types(ots);
+                }
+                if !cap_ref.vendor_identification_data.is_null() && cap_ref.vendor_identification_length > 0 {
+                    let span = try_ffi!(input_span(cap_ref.vendor_identification_data, cap_ref.vendor_identification_length, MAX_FFI_INPUT_BYTES));
+                    if let Ok(text) = std::str::from_utf8(span) {
+                        caps.set_vendor_identification(text);
+                    }
+                }
+                if !cap_ref.extension_tags.is_null() && cap_ref.extension_tags_count > 0 {
+                    let mut tags = Vec::new();
+                    for i in 0..(cap_ref.extension_tags_count as usize) {
+                        tags.push(unsafe { *cap_ref.extension_tags.add(i) });
+                    }
+                    caps.set_extension_tags(tags);
+                }
             }
         }
         let resp = kmipkit_protocol::ServerQueryResponse::respond(&req, &caps);
@@ -10322,6 +10598,31 @@ pub extern "C" fn kmipkit_s2c_query_respond_ttlv(
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_query_respond_ttlv(
+    query_function_flags: u32,
+    vendor_id_data: *const u8,
+    vendor_id_len: u64,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let caps = kmipkit_s2c_capabilities_v1_t {
+            struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32,
+            abi_version: 1,
+            operations: [0x0000_001E, 0x0000_001B, 0x0000_001C, 0x0000_0018].as_ptr(),
+            operations_count: 4,
+            object_types: [0x01, 0x02, 0x07].as_ptr(),
+            object_types_count: 3,
+            vendor_identification_data: vendor_id_data,
+            vendor_identification_length: vendor_id_len,
+            extension_tags: ptr::null(),
+            extension_tags_count: 0,
+            reserved: 0,
+        };
+        kmipkit_s2c_query_respond_with_capabilities_v1(query_function_flags, &caps, out_structure)
+    })
+}
+
+#[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_set_endpoint_role(
     client: *mut kmipkit_client_t,
     endpoint_role: u32,
@@ -10330,15 +10631,17 @@ pub extern "C" fn kmipkit_client_set_endpoint_role(
     limits: *mut kmipkit_codec_limits_t,
     out_response: *mut *mut kmipkit_client_batch_item_response_t,
 ) -> i32 {
-    kmipkit_client_set_endpoint_role_with_options_v1(
-        client,
-        endpoint_role,
-        vendor_identification,
-        vendor_identification_length,
-        limits,
-        ptr::null(),
-        out_response,
-    )
+    ffi_entrypoint(|| {
+        kmipkit_client_set_endpoint_role_with_options_v1(
+            client,
+            endpoint_role,
+            vendor_identification,
+            vendor_identification_length,
+            limits,
+            ptr::null(),
+            out_response,
+        )
+    })
 }
 
 #[unsafe(no_mangle)]
