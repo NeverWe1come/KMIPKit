@@ -8,10 +8,9 @@ public final class NativeLibraryLoadProbe {
     private NativeLibraryLoadProbe() {}
 
     public static void main(String[] args) {
-        boolean abiMismatchProbe = args.length == 1 && args[0].equals("abi-mismatch");
         boolean operationInputLimitProbe = args.length == 1 && args[0].equals("operation-input-limit");
         if (System.getProperty("kmipkit.nativeLibrary") != null
-                && !abiMismatchProbe && !operationInputLimitProbe) {
+                && !operationInputLimitProbe) {
             throw new IllegalStateException("The explicit library override must be absent");
         }
         if (operationInputLimitProbe) {

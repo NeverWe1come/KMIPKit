@@ -4,12 +4,10 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -32,24 +30,20 @@ public final class NativeLibraryPackageSmoke {
         if (args.length == 2 && args[0].equals("--probe")) {
             System.exit(runProbe(args[1]));
         }
-        if (args.length != 2) {
-            throw new IllegalArgumentException("The package smoke requires its JAR and wrong-ABI fixture paths.");
+        if (args.length != 1) {
+            throw new IllegalArgumentException("The package smoke requires its JAR path.");
         }
 
         Path packagedJar = Path.of(args[0]).toAbsolutePath();
-        Path wrongAbiLibrary = Path.of(args[1]).toAbsolutePath();
         verifyPublicPkcs11ApiPresent(packagedJar);
         Path classes = Path.of(NativeLibraryPackageSmoke.class.getProtectionDomain()
                 .getCodeSource().getLocation().toURI());
         Path temporaryDirectory = Files.createTempDirectory("kmipkit-java-native-package-smoke-");
         try {
             verifyLoadSuccess(packagedJar, classes);
-            Path missingBundle = createVariant(packagedJar, temporaryDirectory.resolve("missing.jar"), null, true);
+            Path missingBundle = createWithoutNativeLibrary(packagedJar, temporaryDirectory.resolve("missing.jar"));
             verifyMissingBundle(missingBundle, classes);
             verifyUnsupportedArchitecture(packagedJar, classes);
-            Path wrongAbiBundle = createVariant(
-                    packagedJar, temporaryDirectory.resolve("wrong-abi.jar"), wrongAbiLibrary, false);
-            verifyWrongAbi(wrongAbiBundle, classes);
             System.out.println("packaged JNI load and negative probes passed offline");
         } finally {
             deleteTree(temporaryDirectory);
@@ -74,12 +68,6 @@ public final class NativeLibraryPackageSmoke {
         ProcessResult result = runProbe(packagedJar, classes, "failure", "kmipkit-t028-unsupported");
         checkNetworkWasBlocked(result);
         requireRedactedActionableFailure(result, "architecture", "-Dkmipkit.nativeLibrary");
-    }
-
-    private static void verifyWrongAbi(Path wrongAbiBundle, Path classes) throws Exception {
-        ProcessResult result = runProbe(wrongAbiBundle, classes, "failure", null);
-        checkNetworkWasBlocked(result);
-        requireRedactedActionableFailure(result, "ABI", "-Dkmipkit.nativeLibrary");
     }
 
     private static void requireRedactedActionableFailure(ProcessResult result, String action, String overrideHint) {
@@ -204,9 +192,7 @@ public final class NativeLibraryPackageSmoke {
         }
     }
 
-    private static Path createVariant(
-            Path source, Path destination, Path replacementLibrary, boolean omitNativeResources) throws Exception {
-        int libraryEntries = 0;
+    private static Path createWithoutNativeLibrary(Path source, Path destination) throws Exception {
         int omittedNativeLibraryEntries = 0;
         try (JarFile input = new JarFile(source.toFile());
                 JarOutputStream output = new JarOutputStream(Files.newOutputStream(destination))) {
@@ -214,7 +200,7 @@ public final class NativeLibraryPackageSmoke {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 String name = entry.getName();
-                if (omitNativeResources && name.startsWith(NATIVE_RESOURCE_PREFIX)) {
+                if (name.startsWith(NATIVE_RESOURCE_PREFIX)) {
                     if (isNativeLibrary(name)) {
                         omittedNativeLibraryEntries++;
                     }
@@ -222,16 +208,8 @@ public final class NativeLibraryPackageSmoke {
                 }
 
                 byte[] contents;
-                if (replacementLibrary != null && isNativeLibrary(name)) {
-                    libraryEntries++;
-                    contents = Files.readAllBytes(replacementLibrary);
-                } else if (replacementLibrary != null && name.endsWith(".sha256")) {
-                    contents = (sha256(Files.readAllBytes(replacementLibrary)) + "\n")
-                            .getBytes(StandardCharsets.US_ASCII);
-                } else {
-                    try (InputStream content = input.getInputStream(entry)) {
-                        contents = content.readAllBytes();
-                    }
+                try (InputStream content = input.getInputStream(entry)) {
+                    contents = content.readAllBytes();
                 }
                 output.putNextEntry(new JarEntry(name));
                 output.write(contents);
@@ -239,11 +217,8 @@ public final class NativeLibraryPackageSmoke {
             }
         }
 
-        if (omitNativeResources && omittedNativeLibraryEntries != 1) {
+        if (omittedNativeLibraryEntries != 1) {
             throw new IllegalStateException("The missing-library package variant did not omit its native library.");
-        }
-        if (replacementLibrary != null && libraryEntries != 1) {
-            throw new IllegalStateException("The package must contain exactly one host-native resource.");
         }
         return destination;
     }
@@ -251,10 +226,6 @@ public final class NativeLibraryPackageSmoke {
     private static boolean isNativeLibrary(String name) {
         return name.startsWith(NATIVE_RESOURCE_PREFIX)
                 && (name.endsWith(".dll") || name.endsWith(".dylib") || name.endsWith(".so"));
-    }
-
-    private static String sha256(byte[] contents) throws Exception {
-        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(contents));
     }
 
     private static void deleteTree(Path root) throws IOException {

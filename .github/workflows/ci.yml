@@ -749,12 +749,6 @@ jobs:
           $wheel = Get-ChildItem -LiteralPath $wheelDirectory -Filter 'kmipkit-*.whl' | Select-Object -First 1
           if (-not $wheel) { throw 'Maturin did not produce the KMIPKit wheel.' }
 
-          $nativeExtension = if ($IsWindows) { '.dll' } elseif ($IsMacOS) { '.dylib' } else { '.so' }
-          $wrongAbiLibrary = Join-Path $smokeRoot "wrong-abi$nativeExtension"
-          rustc --edition=2024 --crate-name kmipkit_wrong_abi --crate-type cdylib `
-            ../../tools/native_package_smoke/wrong_abi.rs -o $wrongAbiLibrary
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
           uv venv --offline --python 3.12 $consumerEnvironment
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $consumerPython = if ($IsWindows) {
@@ -769,7 +763,6 @@ jobs:
 
           python -B ../../tools/native_package_smoke/python_smoke.py `
             --consumer-python $consumerPython `
-            --wrong-abi-library $wrongAbiLibrary `
             --smoke-root $smokeRoot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

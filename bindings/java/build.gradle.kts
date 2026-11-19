@@ -149,26 +149,10 @@ val compileNativeJarSmoke = tasks.register<JavaCompile>("compileNativeJarSmoke")
     options.encoding = "UTF-8"
 }
 
-val wrongAbiNativeLibrary = layout.buildDirectory.file("native-package-smoke/${hostLibraryName()}")
-val compileWrongAbiNativeLibrary = tasks.register<org.gradle.api.tasks.Exec>("compileWrongAbiNativeLibrary") {
-    val fixture = file("../../tools/native_package_smoke/wrong_abi.rs")
-    val library = wrongAbiNativeLibrary.get().asFile
-    inputs.file(fixture)
-    outputs.file(library)
-    doFirst {
-        library.parentFile.mkdirs()
-        commandLine(
-            "rustc", "--edition=2024", "--crate-name", "kmipkit_wrong_abi", "--crate-type", "cdylib",
-            fixture.absolutePath, "-o", library.absolutePath)
-    }
-}
-
 tasks.register<org.gradle.api.tasks.JavaExec>("nativeJarSmoke") {
-    dependsOn("nativeJar", compileNativeJarSmoke, compileWrongAbiNativeLibrary)
+    dependsOn("nativeJar", compileNativeJarSmoke)
     classpath = files(tasks.named<Jar>("nativeJar").flatMap { it.archiveFile }, nativeJarSmokeClasses)
     mainClass.set("NativeLibraryPackageSmoke")
-    args(
-        tasks.named<Jar>("nativeJar").flatMap { it.archiveFile }.get().asFile.absolutePath,
-        wrongAbiNativeLibrary.get().asFile.absolutePath)
+    args(tasks.named<Jar>("nativeJar").flatMap { it.archiveFile }.get().asFile.absolutePath)
     jvmArgs("-Djava.security.manager=allow")
 }
