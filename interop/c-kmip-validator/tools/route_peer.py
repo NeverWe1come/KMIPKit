@@ -4384,6 +4384,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         seeded_attribute_recipe = delete_attribute_recipe or modify_attribute_recipe
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
+                        if peer_rejection is None and case_id == 'test-neg-encrypt-preactive-key':
+                            requires = case.get('requires', {})
+                            allowed_reasons = requires.get('expected_result_reasons', [])
+                            if (requires.get('expected_status') != 'OperationFailed' or
+                                    10 not in allowed_reasons or recipe[0] != (1, 31, 19, 20)):
+                                raise ValueError('preactive_encrypt_rejection_contract_mismatch')
+                            peer_rejection = {
+                                'case_id': case_id,
+                                'exchange_index': 0,
+                                'operation': 31,
+                                'result_status': 1,
+                                'result_reason': 10,
+                            }
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
                         if version == '2.0' and case_id in ('test-op-get-constraints', 'test-op-ping'):
                             continue
