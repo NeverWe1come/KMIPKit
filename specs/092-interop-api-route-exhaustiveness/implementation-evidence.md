@@ -187,3 +187,21 @@ claiming that an accessor ran for an item the server did not return.
   27,319 pending. Run ID:
   `java-controlled-query-c0602e3f-9e3b-4109-a42e-1d773fbb1ca3`. The complete
   Java matrix remains incomplete.
+
+## Follow-up: Java Cryptographic Parameters typed Attribute wrappers
+
+- **Red — `2614c14e0`** requires `TypedAttribute.create`,
+  `TypedAttribute.fromItem`, and `AttributeSet.tryNew` evidence for the
+  Cryptographic Parameters Attribute in KMIP 2.0 and 2.1. The focused
+  controlled-peer test failed on the missing `TypedAttribute.create` event.
+- **Green — `d8fa1cace`** builds Cryptographic Parameters through the installed
+  typed builder, wraps its structure as the standard Attribute, round-trips it
+  through `TypedAttribute.fromItem`, and validates the tag, nested Algorithm
+  field, AES value, and one-item AttributeSet. All six versioned wrapper cells
+  pass. The focused Java controlled-peer test passed in 2m20s.
+- **Refactor** cites OASIS KMIP 2.1 §4.16 Table 59 for the Cryptographic
+  Parameters structure, §4.13 Table 443 for AES value 3, and §11.56 Table 487
+  for the assigned Attribute tag. The selected report validates 44,270/71,583
+  cells: 44,254 invoked, 16 not applicable, zero failed, and 27,313 pending.
+  Run ID: `java-controlled-query-98e186e8-5531-432e-b241-e109f4ae6b3d`. The
+  complete Java matrix remains incomplete.
