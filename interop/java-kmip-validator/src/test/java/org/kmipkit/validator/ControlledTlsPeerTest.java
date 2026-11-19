@@ -1887,6 +1887,22 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-CREDENTIAL-TICKET",
                     GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-username",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-one-time-password-one-time-password",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
+            assertRouteEventRecorded(events,
+                    "test-norm-structure-member-structure-member-9-11-ticket-ticket",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
