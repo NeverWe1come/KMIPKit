@@ -1706,6 +1706,12 @@ class ControlledTlsPeerTest {
             for (LocalCatalogRouteChecks.Invocation invocation : uniqueIdentifierAttributeInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
+            List<LocalCatalogRouteChecks.Invocation> usageLimitsAttributeInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeUsageLimitsTypedRoutes(readRouteEvidenceCatalog(), protocolVersion,
+                    usageLimitsAttributeInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : usageLimitsAttributeInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -2297,6 +2303,7 @@ class ControlledTlsPeerTest {
         int cryptographicParameterAttributeBuilderRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int domainParametersTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int uniqueIdentifierTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int usageLimitsTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2382,6 +2389,7 @@ class ControlledTlsPeerTest {
                         + cryptographicParameterAttributeBuilderRouteEventCount
                         + domainParametersTypedRouteEventCount
                         + uniqueIdentifierTypedRouteEventCount
+                        + usageLimitsTypedRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
