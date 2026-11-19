@@ -1970,8 +1970,7 @@ class ControlledTlsPeerTest {
             assertRouteEventRecorded(events,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                    "construct", protocolVersion);
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
             assertRouteEventRecorded(events,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_CASE_ID,
                     CREDENTIAL_VALUE_STRUCTURE_MEMBER_TARGET_ID,
@@ -4595,6 +4594,8 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
         byte[] wire = credentialValueWire(credentialModelRoute);
         String treeHash = normalizedTreeSha256(wire);
+        appendCredentialEnvelopeRouteEvent(events, caseId, targetId,
+                credentialModelRoute, 1, protocolVersion);
         try (TtlvStructure structure = credentialValueStructure(credentialModelRoute);
                 CredentialValue credentialValue = CredentialValue.fromTtlv(1, structure)) {
             assertEquals(1L, credentialValue.credentialTypeRaw());
@@ -4603,8 +4604,36 @@ class ControlledTlsPeerTest {
         }
         appendRouteEvent(events, caseId, modelRoute, targetId, modelSymbol, null, null,
                 "construct", protocolVersion, null, treeHash, null);
-        appendCredentialGenericStructureRouteEvents(events, caseId, targetId,
+        appendCredentialValueGenericTtlvRoutes(events, caseId, targetId,
                 credentialModelRoute, protocolVersion, treeHash);
+    }
+
+    private static void appendCredentialValueGenericTtlvRoutes(ArrayNode events, String caseId,
+            String targetId, String modelRoute, String protocolVersion, String treeHash) throws Exception {
+        byte[] wire = credentialValueWire(modelRoute);
+        try (TtlvStructure structure = credentialValueStructure(modelRoute);
+                TtlvValue value = TtlvValue.structure(structure, CodecLimits.defaults());
+                RawTag rawTag = RawTag.fromRaw(0x420025);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = item.view()) {
+            assertEquals(0x420025, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view()) {
+            assertEquals(0x420025, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
     }
 
     private static void appendCredentialMemberRouteEvent(ArrayNode events, String caseId, String targetId,
