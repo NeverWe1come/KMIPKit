@@ -1713,6 +1713,7 @@ class ControlledTlsPeerTest {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
             appendCryptographicParametersAttributeTypedRoutes(events, protocolVersion);
+            appendDigestAttributeTypedRoutes(events, protocolVersion);
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -1737,6 +1738,15 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
                 "construct", "2.1");
         for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-attr-cryptographic-parameters",
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -2318,6 +2328,7 @@ class ControlledTlsPeerTest {
         int uniqueIdentifierTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int usageLimitsTypedRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int cryptographicParametersTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int digestTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2405,6 +2416,7 @@ class ControlledTlsPeerTest {
                         + uniqueIdentifierTypedRouteEventCount
                         + usageLimitsTypedRouteEventCount
                         + cryptographicParametersTypedAttributeRouteEventCount
+                        + digestTypedAttributeRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -2537,6 +2549,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §8.2 Attestation Capable Indicator message-field case.
                         + 1 // KMIP 2.0/2.1 §5.1 Attributes generic Structure routes.
                         + 1 // KMIP 2.0/2.1 §4.16 Cryptographic Parameters typed Attribute routes.
+                        + 1 // KMIP 2.0/2.1 §4.21 Digest typed Attribute routes.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
                         + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
                         + LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.size() - 2
@@ -6514,6 +6527,7 @@ class ControlledTlsPeerTest {
         TAG_RANGE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-attr-activation-date");
         caseIds.add("test-attr-cryptographic-parameters");
+        caseIds.add("test-attr-digest");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
@@ -17061,6 +17075,63 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
                         "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
                         "construct", protocolVersion, null, treeHash, null);
+            }
+        }
+    }
+
+    private static void appendDigestAttributeTypedRoutes(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] source = "kmipkit-digest-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] digest = MessageDigest.getInstance("SHA-256").digest(source);
+        // OASIS KMIP 2.1 §4.21 Table 69 defines Hashing Algorithm and Digest Value;
+        // §11.21 Table 454 assigns SHA-256 value 6, and §11.56 Table 487 assigns the Attribute tag.
+        byte[] wire = structure(0x420034,
+                item(0x420036, 5, intBytes(6)), item(0x420035, 8, digest));
+        String treeHash = normalizedTreeSha256(wire);
+        TtlvStructure fields = appendTtlvItem(TtlvStructure.create(), 0x420036,
+                TtlvValue.Enumeration(6), limits);
+        fields = appendTtlvItem(fields, 0x420035, TtlvValue.ByteString(digest, limits), limits);
+        TtlvStructure completeFields = fields;
+        try (completeFields;
+                TtlvValue value = TtlvValue.structure(completeFields, limits);
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.DIGEST, value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.DIGEST, item);
+                TtlvItem decodedItem = decoded.asItem();
+                TtlvItemView view = decodedItem.view();
+                Tag tag = view.tag();
+                var decodedValue = view.value();
+                TtlvStructureView structure = decodedValue.structure();
+                TtlvItemView algorithm = structure.itemAt(0);
+                Tag algorithmTag = algorithm.tag();
+                var algorithmValue = algorithm.value();
+                TtlvItemView digestItem = structure.itemAt(1);
+                Tag digestTag = digestItem.tag();
+                var digestValue = digestItem.value()) {
+            assertEquals(StandardAttribute.DIGEST.tag(), tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(2, structure.itemCount());
+            assertEquals(0x420036, algorithmTag.raw());
+            assertEquals(6L, algorithmValue.enumeration());
+            assertEquals(0x420035, digestTag.raw());
+            assertArrayEquals(digest, digestValue.bytes());
+            appendRouteEvent(events, "test-attr-digest",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "KMIPKIT-ELEM-ATTRIBUTE-DIGEST", "org.kmipkit.ttlv.TypedAttribute.create",
+                    null, null, "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, "test-attr-digest",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "KMIPKIT-ELEM-ATTRIBUTE-DIGEST", "org.kmipkit.ttlv.TypedAttribute.fromItem",
+                    null, null, "construct", protocolVersion, null, treeHash, null);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, limits);
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, "test-attr-digest",
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        "KMIPKIT-ELEM-ATTRIBUTE-DIGEST", "org.kmipkit.extensions.AttributeSet.tryNew",
+                        null, null, "construct", protocolVersion, null, treeHash, null);
             }
         }
     }
