@@ -5379,6 +5379,22 @@ class RouteMatrixTests(unittest.TestCase):
                             event['action'] == 'send' for event in events))
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
+        response_accessors = {
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_unique_batch_item_id',
+        }
+        self.assertTrue(all(response_accessors <= set(check['public_api_success_symbols'])
+                            for check in checks),
+                        'the single-item Get fixture must validate typed response accessors')
+        decode_events = [event for event in events
+                         if event['case_id'] == case_id and event['action'] == 'decode'
+                         and event['public_api_symbol'] in response_accessors]
+        self.assertEqual(len(decode_events), 10)
+        self.assertEqual({event['protocol_version'] for event in decode_events}, {'2.0', '2.1'})
+        self.assertTrue(all(event['status'] == 'passed' for event in decode_events))
 
     def test_single_item_default_continuation_keeps_stop_implicit(self):
         """OASIS KMIP 2.0/2.1 §9.6 defaults an omitted continuation option to Stop."""
