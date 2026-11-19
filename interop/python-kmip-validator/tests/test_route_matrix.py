@@ -1026,6 +1026,26 @@ class RouteMatrixTests(unittest.TestCase):
                        or route['public_api_symbol'].rsplit('.', 1)[1] in suffixes)}
         self.assert_route_cells_pass(symbols)
 
+    def test_batch_stop_omitted_typed_response_accessor_is_not_invoked(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == target['target_id']
+                    and cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.get_response'
+                    and cell.get('workflow_item_index') == 1
+                    and cell['action'] == 'decode')
+
+        outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', outcome)
+        self.assertEqual('not_applicable', event['status'])
+        self.assertEqual(0, event['invocation_count'])
+        self.assertEqual('stop_unprocessed_response_omitted', event['not_applicable_reason'])
+        self.assertNotIn('invocation_id', event)
+
     def test_typed_response_ttlv_accessors_preserve_complete_structures(self):
         suffixes = {'.response_ttlv', '.response_payload_ttlv'}
         symbols = {route['public_api_symbol'] for route in self.manifest['routes']
