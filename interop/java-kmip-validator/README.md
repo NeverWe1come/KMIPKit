@@ -1463,10 +1463,29 @@ The controlled peer proves client route behavior, not external KMS
 interoperability.
 
 Red `5675b351c` requires 18 wire and three local route cells per version (42
-cells across both versions). Green `013d30dc6` executes the exchanges and validates the typed error.
+cells across both versions). Green `013d30dc6` executes the exchanges and
+validates the typed error.
 The focused controlled-peer test passes; shared route, schema, and capability
 tests pass 112/112; the capability audit accepts 1,511 routes; and ledger
 comparison passes. Selected evidence validates 44,236/44,236 cells: 44,220
 invocations, 16 not-applicable cells, and zero failures. The ledger records
 71,583 planned, 44,236 executed, and 27,347 pending cells. The full matrix
 remains incomplete, so the Java stack stays WIP.
+
+### Java KMIP 2.0 asynchronous model boundary routes — 2026-11-19
+
+The KMIP 2.0 version-boundary checks now invoke the local Java
+`ProcessRequest.create`/`toTtlvPayload` and
+`QueryAsyncRequestsRequest.create`/`toTtlvPayload` routes before checking the
+public client calls. The existing controlled listeners still confirm the
+KMIP 2.1-only operations fail before opening raw TLS or sending HTTPS, with
+`NotSent` and zero transport invocations. This adds four local TTLV cells; it
+does not add a wire exchange. References: OASIS KMIP 2.1 §§6.1.39 and 6.1.41,
+and KMIP 2.0 §6.1 for the unsupported-version boundary.
+
+Red `c70c494bd` requires the four missing local model cells. Green `cd99c8dae`
+executes both request models and checks the constructed Process correlation
+field and Query payload shape. The focused controlled-peer test passes;
+selected evidence validates 44,240/44,240 cells: 44,224 invocations, 16
+not-applicable cells, and zero failures. The ledger records 71,583 planned,
+44,240 executed, and 27,343 pending cells; the full matrix remains WIP.
