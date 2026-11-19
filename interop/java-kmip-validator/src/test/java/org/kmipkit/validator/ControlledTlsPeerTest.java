@@ -252,7 +252,27 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-9-11-device-password",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
                     "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    2, 0x4200a1));
+                    2, 0x4200a1),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200b0),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200a9),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200aa),
+            new CredentialStructureMemberFixture(
+                    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+                    2, 0x4200ab));
 
     private record CreateRequestPayloadFixture(String caseId, String targetId, String protocolVersion,
             boolean protectionStorageMasksPresent) { }
