@@ -4523,6 +4523,7 @@ class ControlledTlsPeerTest {
     private static byte[] oneTimePasswordCredentialValueWire() throws Exception {
         return structure(0x420025,
                 textItem(0x420099, "validator-user"),
+                textItem(0x4200a1, "validator-password-fixture"),
                 textItem(0x420156, "one-time-password-fixture"));
     }
 
@@ -4581,6 +4582,7 @@ class ControlledTlsPeerTest {
         CodecLimits limits = CodecLimits.defaults();
         TtlvStructure structure = TtlvStructure.create();
         structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
+        structure = appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
         return appendCredentialText(structure, 0x420156, "one-time-password-fixture", limits);
     }
 
