@@ -2231,6 +2231,7 @@ class ControlledTlsPeerTest {
                 readRouteEvidenceCatalog());
         int asyncLifecyclePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 5;
+        int asyncQueryOutstandingRouteEventCount = 3 * 3 * 2 + 3;
         int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncPollRepeatedPendingToSuccessRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
@@ -2322,6 +2323,7 @@ class ControlledTlsPeerTest {
                         + asyncCancelNetworkRouteEventCount
                         + asyncLifecyclePollRouteEventCount
                         + asyncLifecycleQueryRouteEventCount
+                        + asyncQueryOutstandingRouteEventCount
                         + asyncNoRecursivePollRouteEventCount
                         + asyncOperationPollRouteEventCount
                         + asyncPollRepeatedPendingToSuccessRouteEventCount
@@ -14411,6 +14413,7 @@ class ControlledTlsPeerTest {
         assertAsyncPollRaceRouteCoverage(events, protocolVersion);
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
+        assertAsyncQueryOutstandingFilterRouteCoverage(events, protocolVersion);
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
         assertAsyncPollRepeatedPendingToSuccessRouteCoverage(events, protocolVersion);
@@ -16202,6 +16205,42 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+                "decode", protocolVersion);
+    }
+
+    private static void assertAsyncQueryOutstandingFilterRouteCoverage(ArrayNode events, String protocolVersion)
+            throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        String caseId = "test-async-query-outstanding-filter";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS";
+        String routeId = "java.typed-protocol.client.execute_query_async_requests";
+        int workflowStepIndex = asyncWorkflowStepIndex(readRouteEvidenceCatalog(),
+                caseId, "Query Asynchronous Requests");
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                for (String action : List.of("construct", "send", "decode")) {
+                    int matches = 0;
+                    for (JsonNode event : events) {
+                        if (!routeEventMatches(event, caseId, routeId, protocolVersion, targetId)
+                                || !action.equals(event.path("action").asText())
+                                || !encoding.equals(event.path("encoding").asText())
+                                || !transport.equals(event.path("transport").asText())) continue;
+                        assertEquals(workflowStepIndex, event.path("workflow_step_index").asInt(-1));
+                        assertEquals("Query Asynchronous Requests", event.path("workflow_operation").asText());
+                        matches++;
+                    }
+                    assertEquals(1, matches,
+                            "The outstanding-filter Query route must execute once for every wire combination.");
+                }
+            }
+        }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.query_async_requests_request.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.async_query_async_requests_request_to_ttlv_payload",
+                "encode", protocolVersion);
         assertRouteEventRecorded(events, caseId, targetId,
                 "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
                 "decode", protocolVersion);
