@@ -1604,3 +1604,17 @@ matrix is incomplete. The report uses installed artifact SHA-256
 Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
 source; the current evidence retains the existing 2.0/2.1 catalog pending that
 decision.
+
+### Java Right Usage Limits stack verification — 2026-11-19
+
+After updating #217 with #216's refreshed base, the selected report
+`java-controlled-query-0b04efec-fd0c-4d74-b3c8-eb91ecb95603` validates 44,446
+cells (44,430 invocations, 16 not applicable, zero failures) out of 71,513
+planned; 27,067 remain pending. The Right Usage Limits optional-member checks
+remain included, along with #216's Usage Limits structure assertions. Java
+Gradle passes 111/111, shared tests pass 204/204, and catalog, route audit, and
+ledger comparison pass. The matrix remains incomplete, so #217 stays WIP.
+Artifact SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+Add Attribute applicability remains open pending resolution of the pinned
+KMIP 2.0 source conflict; current evidence follows the existing catalog.
