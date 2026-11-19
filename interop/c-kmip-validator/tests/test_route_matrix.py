@@ -6150,6 +6150,47 @@ class RouteMatrixTests(unittest.TestCase):
             'multipart SHA-256 must run through the installed Hash route',
         )
 
+    def test_multipart_hash_runs_init_update_final_through_installed_c_api(self):
+        """OASIS KMIP 2.0 §6.1.23 and 2.1 §6.1.24 define Hash multipart framing."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        case_id = 'test-multipart-hash-sha256'
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        expected_symbols = {
+            'kmipkit_client_batch_item_hash',
+            'kmipkit_client_batch_item_response_hash',
+            'kmipkit_client_batch_item_response_hash_ttlv',
+            'kmipkit_client_execute',
+        }
+        for check in checks:
+            with self.subTest(version=check['protocol_version'], encoding=check['encoding'],
+                              transport=check['transport']):
+                self.assertTrue(expected_symbols <= set(check['public_api_success_symbols']), check)
+                self.assertEqual(check['peer_multipart_hash_operations'], [39, 39, 39])
+                self.assertEqual(check['peer_multipart_hash_exchange_count'], 3)
+                self.assertTrue(check['peer_multipart_hash_first_correlation_issued'])
+                self.assertTrue(check['peer_multipart_hash_correlation_reused'])
+                self.assertTrue(check['peer_multipart_hash_response_data_absent'])
+                self.assertTrue(check['peer_multipart_hash_final_indicator'])
+
+        local_decodes = [event for event in events if event['case_id'] == case_id and
+                         event['transport'] is None and event['action'] == 'decode']
+        self.assertEqual(len(local_decodes), 4, local_decodes)
+        self.assertEqual({event['protocol_version'] for event in local_decodes}, {'2.0', '2.1'})
+        self.assertEqual({event['public_api_symbol'] for event in local_decodes}, {
+            'kmipkit_client_batch_item_response_hash',
+            'kmipkit_client_batch_item_response_hash_ttlv',
+        })
+
 
     def attribute_executor(self):
         self.assertIsNotNone(importlib.util.find_spec('route_attributes'), 'typed attribute route executor is missing')

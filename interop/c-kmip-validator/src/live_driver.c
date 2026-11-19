@@ -440,6 +440,24 @@ static bool text_value_matches(kmipkit_ttlv_value_view_t *value,
     return true;
 }
 
+static bool byte_value_matches(kmipkit_ttlv_value_view_t *value,
+                               const uint8_t *expected,
+                               uint64_t expected_length) {
+    uint8_t item_type = 0;
+    uint64_t actual_length = 0;
+    if (!value || (!expected && expected_length != 0) ||
+        kmipkit_ttlv_value_view_type(value, &item_type) != 0 ||
+        item_type != KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ||
+        kmipkit_ttlv_value_view_byte_length(value, &actual_length) != 0 ||
+        actual_length != expected_length) return false;
+    for (uint64_t index = 0; index < actual_length; ++index) {
+        uint8_t actual_byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, index, &actual_byte) != 0 ||
+            actual_byte != expected[index]) return false;
+    }
+    return true;
+}
+
 static bool structure_view_has_text(kmipkit_ttlv_structure_view_t *structure,
                                     uint32_t tag,
                                     const uint8_t *expected,
@@ -1490,6 +1508,196 @@ static kmip_execution_outcome_t outcome_not_run(const char *reason) {
 static kmip_execution_outcome_t outcome_failed(const char *reason) {
     kmip_execution_outcome_t outcome = {0};
     if (reason) snprintf(outcome.result_reason, sizeof(outcome.result_reason), "%s", reason);
+    return outcome;
+}
+
+static bool hash_response_ttlv_matches_correlation(
+    kmipkit_client_batch_item_response_t *response_item,
+    const uint8_t *expected_correlation,
+    uint64_t expected_correlation_length,
+    bool correlation_expected,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    kmipkit_ttlv_item_view_t *correlation_item = NULL;
+    kmipkit_ttlv_value_view_t *correlation_value = NULL;
+    uint64_t response_field_count = 0;
+    uint64_t payload_field_count = 0;
+    int32_t status = kmipkit_client_batch_item_response_hash_ttlv(
+        response_item, &present, &payload);
+    if (status == 0 && present && payload) status = kmipkit_ttlv_structure_view(payload, &view);
+    if (status == 0 && present && view)
+        status = kmipkit_ttlv_structure_view_item_count(view, &response_field_count);
+    bool valid = status == 0 && present && payload && view &&
+        response_field_count == 3;
+    bool response_payload_found = false;
+    for (uint64_t index = 0; valid && index < response_field_count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *field_value = NULL;
+        status = kmipkit_ttlv_structure_view_item_at(view, index, &field);
+        if (status == 0 && item_view_has_tag(
+                field, UINT32_C(0x42007C), KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &field_value)) {
+            response_payload_found = !response_payload_found &&
+                kmipkit_ttlv_value_view_structure(field_value, &payload_view) == 0;
+            if (!response_payload_found && status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (field_value) kmipkit_ttlv_value_view_release(field_value);
+        if (field) kmipkit_ttlv_item_view_release(field);
+    }
+    if (status == 0 && response_payload_found)
+        status = kmipkit_ttlv_structure_view_item_count(payload_view, &payload_field_count);
+    valid = valid && status == 0 && response_payload_found &&
+        payload_field_count == (correlation_expected ? 1U : 0U);
+    if (valid && correlation_expected) {
+        valid = kmipkit_ttlv_structure_view_item_at(payload_view, 0, &correlation_item) == 0 &&
+            item_view_has_tag(correlation_item, UINT32_C(0x4200D6),
+                              KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &correlation_value) &&
+            byte_value_matches(correlation_value, expected_correlation,
+                               expected_correlation_length);
+    }
+    if (correlation_value) kmipkit_ttlv_value_view_release(correlation_value);
+    if (correlation_item) kmipkit_ttlv_item_view_release(correlation_item);
+    if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    *out_status = status;
+    return valid;
+}
+
+static kmip_execution_outcome_t execute_multipart_hash_route(kmip_live_client_t *client) {
+    static const uint8_t expected_correlation[] = "fixture-hash-correlation";
+    static const uint8_t initial_data[] = "KMIP ";
+    static const uint8_t update_data[] = "Hash";
+    static const uint8_t final_data[] = "!";
+    const uint8_t *chunks[] = {initial_data, update_data, final_data};
+    const uint64_t chunk_lengths[] = {
+        sizeof(initial_data) - 1, sizeof(update_data) - 1, sizeof(final_data) - 1
+    };
+    uint8_t correlation_storage[sizeof(expected_correlation) - 1] = {0};
+    bool correlation_available = false;
+    kmip_execution_outcome_t outcome = {.executed = true};
+    int32_t status = 0;
+    const char *failed_stage = "request construction";
+
+    if (!client || !client->client || !client->limits ||
+        (client->protocol_minor != 0 && client->protocol_minor != 1)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit multipart Hash fixture client configuration is invalid");
+        return outcome;
+    }
+
+    for (uint32_t exchange_index = 0; exchange_index < 3 && status == 0; ++exchange_index) {
+        kmipkit_ttlv_structure_t *parameters = NULL;
+        kmipkit_ttlv_value_t *algorithm = NULL;
+        kmipkit_ttlv_value_t *data = NULL;
+        kmipkit_client_batch_item_t *item = NULL;
+        kmipkit_client_batch_t *batch = NULL;
+        kmipkit_client_batch_response_t *response = NULL;
+        kmipkit_client_batch_item_response_t *response_item = NULL;
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        kmipkit_byte_span_v1_t request_correlation = {
+            .data = correlation_storage,
+            .length = sizeof(correlation_storage)
+        };
+        kmipkit_byte_span_v1_t response_data = {0};
+        kmipkit_byte_span_v1_t response_correlation = {0};
+        uint8_t present = 0;
+        uint8_t data_present = 0;
+        uint8_t correlation_present = 0;
+        uint64_t response_count = 0;
+        bool first_response = exchange_index == 0;
+        bool correlation_expected = first_response;
+
+        status = kmipkit_ttlv_structure_create(&parameters);
+        if (status == 0) status = kmipkit_ttlv_value_enumeration(
+            KMIPKIT_ENUMERATION_HASHING_ALGORITHM_SHA_256, &algorithm);
+        if (status == 0 && !append_ttlv_value(
+                client, &parameters, UINT32_C(0x420038), &algorithm)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (status == 0) status = kmipkit_ttlv_value_byte_string(
+            client->limits, chunks[exchange_index], chunk_lengths[exchange_index], &data);
+        if (status == 0 && exchange_index > 0 && !correlation_available)
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_item_hash(
+            parameters, data, exchange_index > 0 ? &request_correlation : NULL,
+            exchange_index == 0 ? 2 : 0, exchange_index == 2 ? 2 : 0, &item);
+        if (algorithm) kmipkit_ttlv_value_release(algorithm);
+        if (data) kmipkit_ttlv_value_release(data);
+        if (parameters) kmipkit_ttlv_structure_release(parameters);
+        if (status == 0) status = kmipkit_client_batch_create(&batch);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0) {
+            failed_stage = "request execution";
+            status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+        }
+        if (status == 0) status = kmipkit_client_batch_response_item_count(response, &response_count);
+        if (status == 0 && response_count == 1)
+            status = kmipkit_client_batch_response_item_at(response, 0, &response_item);
+        else if (status == 0)
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            response_item, &metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_hash(
+            response_item, &present, &data_present, &response_data,
+            &correlation_present, &response_correlation);
+        if (status == 0) {
+            bool expected_response_shape = metadata.operation == KMIPKIT_ENUMERATION_OPERATION_HASH &&
+                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+                metadata.has_result_reason == 0 && present == 1 && data_present == 0 &&
+                response_data.data == NULL && response_data.length == 0 &&
+                correlation_present == (first_response ? 1 : 0);
+            if (first_response) {
+                expected_response_shape = expected_response_shape && response_correlation.data &&
+                    response_correlation.length == sizeof(expected_correlation) - 1 &&
+                    memcmp(response_correlation.data, expected_correlation,
+                           sizeof(expected_correlation) - 1) == 0;
+                if (expected_response_shape) {
+                    memcpy(correlation_storage, response_correlation.data,
+                           sizeof(correlation_storage));
+                    correlation_available = true;
+                }
+            } else {
+                expected_response_shape = expected_response_shape &&
+                    response_correlation.data == NULL && response_correlation.length == 0;
+            }
+            if (!expected_response_shape) status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (status == 0) {
+            failed_stage = "response TTLV accessor";
+            if (!hash_response_ttlv_matches_correlation(
+                    response_item, correlation_storage, sizeof(correlation_storage),
+                    correlation_expected, &status) && status == 0) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        }
+        if (response_item) kmipkit_client_batch_item_response_release(response_item);
+        if (response) kmipkit_client_batch_response_release(response);
+        if (batch) kmipkit_client_batch_release(batch);
+        if (item) kmipkit_client_batch_item_release(item);
+    }
+
+    if (status == 0 && correlation_available) {
+        outcome.success = true;
+        outcome.library_validated = true;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    } else {
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        if (status != 0) (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit multipart Hash route failed at %s (category=%u cause=%u delivery=%u)",
+                 failed_stage, category, cause, delivery);
+    }
     return outcome;
 }
 
@@ -8739,6 +8947,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (query_async_requests_v20_boundary_workflow) {
         return execute_v20_query_async_requests_boundary_route(client);
+    }
+    if (strcmp(test_case->case_id, "test-multipart-hash-sha256") == 0) {
+        return execute_multipart_hash_route(client);
     }
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {

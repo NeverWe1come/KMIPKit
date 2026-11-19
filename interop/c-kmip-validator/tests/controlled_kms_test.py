@@ -128,7 +128,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              returned_unique_identifiers: tuple[bytes, ...] | None = None,
              discover_versions_minors: tuple[int, ...] | None = None,
              crypto_output: bytes | None = None,
-             signature_data: bytes | None = None) -> bytes:
+             signature_data: bytes | None = None,
+             multipart_hash: bool = False,
+             hash_correlation_value: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -261,7 +263,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + symmetric_key
             )
         elif operation == 39:
-            payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
+            if multipart_hash:
+                payload_value = (tlv(0x4200D6, 8, hash_correlation_value)
+                                 if hash_correlation_value is not None else b"")
+            else:
+                payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
         elif operation == 40:
             payload_value = (tlv(0x420094, 7, b"fixture-split-part-1") +
                              tlv(0x420094, 7, b"fixture-split-part-2"))

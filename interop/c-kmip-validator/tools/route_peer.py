@@ -55,6 +55,8 @@ BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
 BATCH_CRYPTO_CBC_IV = bytes.fromhex('000102030405060708090a0b0c0d0e0f')
 BATCH_CRYPTO_AES256_CBC_CIPHERTEXT = bytes.fromhex('78e16b06817a4453abef8a235fa9fa51')
+MULTIPART_HASH_CORRELATION = b'fixture-hash-correlation'
+MULTIPART_HASH_CHUNKS = (b'KMIP ', b'Hash', b'!')
 BATCH_CONTINUATION_CONSTRUCTOR_CASES = frozenset({
     'test-batch-continue-after-failure',
     'test-batch-stop-on-first-failure',
@@ -322,6 +324,11 @@ def byte_string_values(node, tag):
     return [item[2] for item in descendants(node, tag) if item[1] == 8]
 
 
+def boolean_values(node, tag):
+    return [bool(int.from_bytes(item[2], 'big')) for item in descendants(node, tag)
+            if item[1] == 6]
+
+
 def has_single_empty_response_payload(batch_item):
     """Check the generic response shape for a Pending Create result."""
     payloads = [child for child in batch_item[2] if child[0] == RESPONSE_PAYLOAD_TAG]
@@ -422,6 +429,7 @@ RECIPES = {
     'test-async-cancel-vs-poll-race': ((25,), 'cancel_poll_race'),
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
+    'test-multipart-hash-sha256': ((39,), 'multipart_hash_sha256'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
     'test-crypto-rng-retrieve-rng-32': ((37,), 'rng_retrieve'),
     'test-op-rng-seed': ((38,), 'rng_seed'),
@@ -1909,8 +1917,50 @@ def verify_obtain_lease_response(response_tree):
         raise ValueError('fixture_obtain_lease_response_fields_mismatch')
 
 
+def assert_multipart_hash_request(node, exchange_index):
+    """Check KMIP 2.0 §6.1.23 / 2.1 §6.1.24 multipart Hash framing."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    expected_tags = [0x42002B, 0x4200C2]
+    if exchange_index > 0:
+        expected_tags.append(0x4200D6)
+    if exchange_index == 0:
+        expected_tags.append(0x4200D7)
+    elif exchange_index == 2:
+        expected_tags.append(0x4200D8)
+    payload_fields = payloads[0][2] if len(payloads) == 1 else []
+    expected_correlation = [] if exchange_index == 0 else [MULTIPART_HASH_CORRELATION]
+    expected_init = [True] if exchange_index == 0 else []
+    expected_final = [True] if exchange_index == 2 else []
+    if (exchange_index not in range(3) or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [39] or len(payloads) != 1 or
+            [field[0] for field in payload_fields] != expected_tags or
+            numbers(node, 0x420038) != [6] or
+            byte_string_values(node, 0x4200C2) != [MULTIPART_HASH_CHUNKS[exchange_index]] or
+            byte_string_values(node, 0x4200D6) != expected_correlation or
+            boolean_values(node, 0x4200D7) != expected_init or
+            boolean_values(node, 0x4200D8) != expected_final):
+        raise ValueError('fixture_multipart_hash_request_mismatch')
+
+
+def verify_multipart_hash_response(node, exchange_index):
+    """Check the controlled success payload and its optional first Correlation Value."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    expected_correlation = ([MULTIPART_HASH_CORRELATION] if exchange_index == 0 else [])
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [39] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            [field[0] for field in payloads[0][2]] !=
+            ([0x4200D6] if exchange_index == 0 else []) or
+            byte_string_values(node, 0x4200C2) or
+            byte_string_values(node, 0x4200D6) != expected_correlation):
+        raise ValueError('fixture_multipart_hash_response_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
-                  constructor_variant=None, export_field=None):
+                  constructor_variant=None, export_field=None, exchange_index=0):
     selected_recipe = recipe or RECIPES[case_id]
     expected, _ = selected_recipe
     observed_operations = tuple(numbers(node, 0x42005C))
@@ -2370,6 +2420,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
     if selected_recipe[1] == 'hash':
         if numbers(node, 0x420038) != [6] or [item[2] for item in descendants(node, 0x4200C2)] != [b'abc']:
             raise ValueError('fixture_hash_input_mismatch')
+    if selected_recipe[1] == 'multipart_hash_sha256':
+        assert_multipart_hash_request(node, exchange_index)
     expected_rng_length = 32 if case_id.endswith('-rng-32') else 16
     if selected_recipe[1] == 'rng_retrieve' and numbers(node, 0x4200C4) != [expected_rng_length]:
         raise ValueError('fixture_rng_length_mismatch')
@@ -2707,6 +2759,31 @@ def query_async_empty_peer_check(observation):
         'peer_final_state_matches_setup':
             observation[0][2]['peer_observed_state_before_sha256'] ==
             observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def multipart_hash_peer_check(observation):
+    """Record the three-request Init/Update/Final contract without request bytes."""
+    if len(observation) != 3:
+        raise ValueError('fixture_multipart_hash_exchange_count_mismatch')
+    for index, (request_tree, response_tree, _) in enumerate(observation):
+        assert_multipart_hash_request(request_tree, index)
+        verify_multipart_hash_response(response_tree, index)
+    return {
+        'peer_multipart_hash_operations': [
+            numbers(request_tree, 0x42005C)[0] for request_tree, _, _ in observation],
+        'peer_multipart_hash_exchange_count': len(observation),
+        'peer_multipart_hash_first_correlation_issued':
+            byte_string_values(observation[0][1], 0x4200D6) == [MULTIPART_HASH_CORRELATION],
+        'peer_multipart_hash_correlation_reused': all(
+            byte_string_values(request_tree, 0x4200D6) == [MULTIPART_HASH_CORRELATION]
+            for request_tree, _, _ in observation[1:]),
+        'peer_multipart_hash_response_data_absent': all(
+            not byte_string_values(response_tree, 0x4200C2)
+            for _, response_tree, _ in observation),
+        'peer_multipart_hash_final_indicator':
+            boolean_values(observation[-1][0], 0x4200D8) == [True],
+        'peer_multipart_hash_response_tree_sha256': tree_digest(observation[0][1]),
     }
 
 
@@ -4435,6 +4512,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 try:
                                     exchange_count = (
                                         9 if recipe[1] == 'async_query_outstanding_filter' else
+                                        3 if recipe[1] == 'multipart_hash_sha256' else
                                         3 if recipe[1] == 'query_async_empty' else
                                         4 if seeded_attribute_recipe or
                                         recipe[1] == 'async_create_poll_lifecycle' else
@@ -4726,7 +4804,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                           case.get('requires', {}).get('field_name')
                                                           if case_id.startswith(
                                                               'test-norm-payload-client-export-request-')
-                                                          else None)
+                                                          else None,
+                                                          exchange_index=exchange_index)
                                             response_operations = recipe[0]
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe,
@@ -4734,7 +4813,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                           case.get('requires', {}).get('field_name')
                                                           if case_id.startswith(
                                                               'test-norm-payload-client-export-request-')
-                                                          else None)
+                                                          else None,
+                                                          exchange_index=exchange_index)
                                             response_operations = recipe[0]
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
@@ -5038,7 +5118,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                                if recipe[1] == 'encrypt_aes256_cbc'
                                                                else None),
                                                 signature_data=(bytes(64)
-                                                                if recipe[1] == 'sign_ecdsa' else None))
+                                                                if recipe[1] == 'sign_ecdsa' else None),
+                                                multipart_hash=recipe[1] == 'multipart_hash_sha256',
+                                                hash_correlation_value=(MULTIPART_HASH_CORRELATION
+                                                                        if recipe[1] == 'multipart_hash_sha256' and
+                                                                        exchange_index == 0 else None))
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -5049,6 +5133,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if recipe[1] == 'discover_versions':
                                             assert_discover_versions_response(response_tree, version)
+                                        if recipe[1] == 'multipart_hash_sha256':
+                                            verify_multipart_hash_response(response_tree, exchange_index)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
@@ -5626,6 +5712,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(query_async_empty_peer_check(observation)
                                               if recipe[1] == 'query_async_empty' and
                                               len(observation) == 3 else {}),
+                                           **(multipart_hash_peer_check(observation)
+                                              if recipe[1] == 'multipart_hash_sha256' and
+                                              len(observation) == 3 else {}),
                                            **(batch_single_item_default_continuation_peer_check(observation)
                                               if recipe[1] == 'batch_single_item_default_continuation' and
                                               len(observation) == 1 else {}),
@@ -6010,4 +6099,31 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'peer_observed_state_after_sha256'])
                                 events.append(event)
                                 keys.add(_key(cell))
+    multipart_hash_local_symbols = {
+        'kmipkit_client_batch_item_response_hash',
+        'kmipkit_client_batch_item_response_hash_ttlv',
+    }
+    for cell in all_cells:
+        if (cell['case_id'] != 'test-multipart-hash-sha256' or cell['mode'] != 'local' or
+                cell['action'] != 'decode' or cell['transport'] is not None or
+                cell['public_api_symbol'] not in multipart_hash_local_symbols or
+                _key(cell) in keys):
+            continue
+        successful_check = next((check for check in checks
+                                 if check['case_id'] == cell['case_id'] and
+                                 check['protocol_version'] == cell['protocol_version'] and
+                                 check['status'] == 'passed' and
+                                 cell['public_api_symbol'] in check['public_api_success_symbols'] and
+                                 check.get('peer_multipart_hash_response_tree_sha256')),
+                                None)
+        if successful_check is None:
+            continue
+        event = cell_fields(cell)
+        event.update(status='passed', invocation_count=1,
+                     invocation_id=f"c-multipart-hash-{cell['protocol_version']}-"
+                                   f"{cell['public_api_symbol'].rsplit('_', 1)[-1]}",
+                     response_tree_sha256=
+                     successful_check['peer_multipart_hash_response_tree_sha256'])
+        events.append(event)
+        keys.add(_key(cell))
     return events, keys, checks
