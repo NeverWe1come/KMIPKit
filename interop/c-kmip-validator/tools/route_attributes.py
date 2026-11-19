@@ -104,9 +104,14 @@ class AttributeCases(TreeAbi):
         tag = self.tags[norm(name)]
         if target['kind'] in ('enumeration_value', 'bitmask_value'):
             raw = target.get('wire_value', '')
-            if not re.fullmatch('[0-9A-Fa-f]{8}', raw):
+            if re.fullmatch('[0-9A-Fa-f]{8}', raw):
+                value = int(raw, 16)
+            elif (target.get('allocation') == 'extension'
+                  and re.fullmatch('[0-9A-Fa-fXx]{8}', raw)):
+                value = int(raw.replace('X', '0').replace('x', '0'), 16)
+            else:
                 return None
-            return [(tag, 2 if target['kind'] == 'bitmask_value' else 5, int(raw, 16).to_bytes(4, 'big'))]
+            return [(tag, 2 if target['kind'] == 'bitmask_value' else 5, value.to_bytes(4, 'big'))]
         encoding = attribute.get('source_encoding') or attribute.get('attribute_policy', {}).get('value_type')
         if encoding is None:
             return None
