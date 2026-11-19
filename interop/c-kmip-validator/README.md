@@ -773,33 +773,39 @@ responses). All previous cell identities remain. The first pending cells
 remain the Re-Provision response decoders, so the global matrix is still
 incomplete.
 
-### C full-matrix report after the shared contract update
+### C full-matrix report after Recover and ECDSA Sign
 
-The latest full C report is `c-route-cdf7fa74-f5b0-451d-a6d5-2b6742b885d3`
+The latest full C report is `c-route-ef0cbe1a-c819-446f-9e58-45775e433be6`
 (`build/route-execution-evidence-c-current.json`), SHA-256
-`ce27130640dc6548520750b45c7808865532e8414d77dec758d1a746108df60c`. It
+`be1d15ccdafa3ea73500b9404f12803b350d0e2433c20e69809e344fa9f3f4c8`. It
 uses catalog SHA-256
 `511468935d55435681bec13fb66d1d9327e91a5a92fb781e9450edb043951fba`, route
 manifest SHA-256
 `28b381ebca85752ba8eb3c41c003f02b2d1d8ad8180f0e8908a7e716724732f5`, and
 pinned artifact SHA-256
 `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
-ledger has 66,280 planned cells: 44,106 invoked, 52 explicitly not
-applicable, zero failed, and 22,122 pending. The shared validator confirms all
-44,158 emitted cells, with `selected_scope_complete=true`,
+ledger has 66,280 planned cells: 44,146 invoked, 52 explicitly not
+applicable, zero failed, and 22,082 pending. The shared validator confirms all
+44,198 emitted cells, with `selected_scope_complete=true`,
 `all_invocations_passed=true`, and `complete_matrix=false`.
 
-This run adds 38 Recover route cells while preserving its four existing
-generic TTLV cells. The controlled consumer creates a SymmetricKey, archives
-it, recovers it by the ID Placeholder, checks the typed Recover response
-Unique Identifier, and destroys the recovered key. It passes both KMIP
-versions and all six TTLV/JSON/XML plus raw TLS/HTTPS combinations. The
-catalog's zero-count batch case now contains only the Batch Count target and
-does not plan operation, Batch Item, send, or response-decode cells; eight C
-cells from the previous ledger are therefore removed. A direct comparison
-with the previous full report preserves all other 44,120 event identities;
-199 existing tree hashes changed only because certificate fixtures are
-regenerated per run (192 request hashes) and asynchronous responses contain
-time values (seven response hashes). Full CTest passes 7/7 in 148.45 seconds,
-and the shared Python contract suite passes 212/212. The complete C route
-matrix remains open with 22,122 pending cells, so this PR remains WIP.
+The Recover route adds 38 network cells. The controlled consumer creates a
+SymmetricKey, archives it, recovers it by the ID Placeholder, checks the typed
+Recover response Unique Identifier, and destroys the recovered key across both
+KMIP versions and all six TTLV/JSON/XML plus raw TLS/HTTPS combinations. The
+ECDSA Sign case adds 40 invoked cells: 36 network request/send/response routes
+and four typed response-accessor decodes. Four generic TTLV construct/decode
+cells in its 44-event scope were already present in the previous ledger. The
+case covers Create Key Pair → Activate → Sign → Revoke → Destroy for both
+KMIP versions and all six encoding/transport combinations. The peer checks
+ECDSA, 256-bit key length, P-256 domain parameters, and ECDSA-with-SHA256
+parameters; it returns a controlled 64-byte signature fixture, while the C
+response check only requires nonempty signature data and does not assume its
+encoding. This is fixture evidence for OASIS KMIP 2.0 §6.1.49 and KMIP 2.1
+§6.1.55, not an external KMS result.
+
+The catalog's zero-count batch case contains only the Batch Count target and
+does not plan operation, Batch Item, send, or response-decode cells. The full
+report's scoped validation passes for all emitted cells; full-matrix validation
+remains incomplete. Full CTest passes 7/7 in 151.07 seconds. The complete C
+route matrix remains open with 22,082 pending cells, so this PR remains WIP.
