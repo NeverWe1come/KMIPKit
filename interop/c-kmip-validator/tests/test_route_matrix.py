@@ -4791,7 +4791,7 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 84,
+        self.assertEqual(len(checks), 96,
                          'batch read cases must cover direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
@@ -4822,12 +4822,20 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
         standalone_get_attribute_list = [event for event in events
-                                         if event['case_id'] == 'test-batch-continue-after-failure'
+                                         if event['case_id'] in {
+                                             'test-batch-continue-after-failure',
+                                             'test-batch-unique-item-id-response-correlation'}
                                          and event['public_api_symbol'] ==
                                          'kmipkit_client_batch_item_get_attribute_list_from_request'
                                          and event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST'
                                          and event.get('workflow_item_index') == 1]
-        self.assertEqual(len(standalone_get_attribute_list), 36)
+        self.assertEqual(len(standalone_get_attribute_list), 72)
+        self.assertEqual({case_id: sum(event['case_id'] == case_id
+                                       for event in standalone_get_attribute_list)
+                          for case_id in ('test-batch-continue-after-failure',
+                                          'test-batch-unique-item-id-response-correlation')},
+                         {'test-batch-continue-after-failure': 36,
+                          'test-batch-unique-item-id-response-correlation': 36})
         self.assertEqual({event['action'] for event in standalone_get_attribute_list},
                          {'construct', 'send', 'decode'})
         self.assertEqual({(event['protocol_version'], event['encoding'], event['transport'])
@@ -4836,6 +4844,15 @@ class RouteMatrixTests(unittest.TestCase):
                           for version in ('2.0', '2.1')
                           for encoding in ('TTLV', 'JSON', 'XML')
                           for transport in ('raw_tls', 'https')})
+        unique_id_standalone = [check for check in checks
+                                if check['case_id'] ==
+                                'test-batch-unique-item-id-response-correlation'
+                                and check['constructor_variant'] == 'standalone']
+        self.assertEqual(len(unique_id_standalone), 12)
+        self.assertTrue(all({'kmipkit_get_attribute_list_request_to_ttlv_payload',
+                             'kmipkit_client_batch_item_get_attribute_list_from_request'}
+                            <= set(check['public_api_trace_symbols'])
+                            for check in unique_id_standalone))
         for check in checks:
             symbols = check['public_api_trace_symbols']
             self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_response_item_count',
