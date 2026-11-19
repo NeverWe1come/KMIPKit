@@ -4575,10 +4575,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response((20,), int(version[-1]),
                                                          created_object_type=2,
                                                          unique_batch_item_ids=response_item_ids)
-                                                if case_id == 'test-op-process' and exchange_index == 4 else
-                                                response((20,), int(version[-1]),
-                                                         created_object_type=2,
-                                                         unique_batch_item_ids=response_item_ids))
+                                            )
                                         elif (recipe[1] == 'async_create_poll_lifecycle' and
                                                 exchange_index < 3):
                                             response_wire = (
