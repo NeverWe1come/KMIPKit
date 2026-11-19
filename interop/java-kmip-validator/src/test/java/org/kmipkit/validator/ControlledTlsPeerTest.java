@@ -17019,6 +17019,8 @@ class ControlledTlsPeerTest {
     private static void appendCryptographicParametersAttributeTypedRoutes(
             ArrayNode events, String protocolVersion) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
+        // OASIS KMIP 2.1 §4.16 Table 59 defines this Structure; §4.13 Table 443 assigns AES value 3;
+        // §11.56 Table 487 assigns the Cryptographic Parameters tag.
         byte[] wire = structure(0x42002b, item(0x420028, 5, intBytes(3)));
         String treeHash = normalizedTreeSha256(wire);
         try (CryptographicParameters.Builder builder = CryptographicParameters.builder();
