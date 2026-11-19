@@ -677,6 +677,8 @@ def main() -> int:
     expected_cases += ("test-op-obtain-lease",)
     expected_operations += (1, 21, 19, 20)
     expected_cases += ("test-op-archive",)
+    expected_operations += (1, 21, 22, 20)
+    expected_cases += ("test-op-recover",)
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 10)
     expected_cases += ("test-batch-undo-rolls-back-prior-success",)
@@ -1072,6 +1074,17 @@ def main() -> int:
                                         "isolated Archive batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_archive_item_ids
+                            if operations == (1, 21, 22, 20):
+                                expected_recover_item_ids = (
+                                    b"recover-create", b"recover-archive",
+                                    b"recover-target", b"recover-destroy",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_recover_item_ids):
+                                    raise AssertionError(
+                                        "isolated Recover batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_recover_item_ids
                             if operations in ((2, 18, 33, 19, 20, 20), (2, 18, 34, 19, 20, 20)):
                                 expected_signature_item_ids = (
                                     (b"sign-create-pair", b"sign-activate", b"sign-target",
@@ -1224,6 +1237,7 @@ def main() -> int:
                             get_usage_allocation_lifecycle = operations == (1, 17, 19, 20)
                             export_lifecycle = operations == (1, 43, 19, 20)
                             archive_lifecycle = operations == (1, 21, 19, 20)
+                            recover_lifecycle = operations == (1, 21, 22, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -1246,6 +1260,8 @@ def main() -> int:
                                 lifecycle_target = {43: b"interop-export"}
                             if archive_lifecycle:
                                 lifecycle_target = {21: b"archive-target"}
+                            if recover_lifecycle:
+                                lifecycle_target = {21: b"recover-archive", 22: b"recover-target"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
@@ -1265,6 +1281,11 @@ def main() -> int:
                                 lifecycle_ids = (
                                     b"archive-create", b"archive-target", b"archive-revoke",
                                     b"archive-destroy"
+                                )
+                            if recover_lifecycle:
+                                lifecycle_ids = (
+                                    b"recover-create", b"recover-archive",
+                                    b"recover-target", b"recover-destroy"
                                 )
                             if lifecycle_target and any(
                                     tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
@@ -1296,9 +1317,9 @@ def main() -> int:
                             if operations in ((1, 9, 19, 20), (1, 18, 19, 20), (1, 19, 20),
                                               (1, 20, 19, 20), (1, 56, 19, 20), (1, 17, 19, 20),
                                               (1, 43, 19, 20), (1, 10, 20),
-                                              (1, 21, 19, 20)) and request.count(
+                                              (1, 21, 19, 20), (1, 21, 22, 20)) and request.count(
                                     enumeration(0x420094, 1)) < (
-                                        3 if archive_lifecycle else
+                                        3 if (archive_lifecycle or recover_lifecycle) else
                                         3 if (check_lifecycle or activate_lifecycle or destroy_lifecycle or
                                               export_lifecycle) else 2):
                                 raise AssertionError("target operation and cleanup must consume the created ID Placeholder")
