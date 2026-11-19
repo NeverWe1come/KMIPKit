@@ -1678,6 +1678,12 @@ class ControlledTlsPeerTest {
             }
         }
 
+        assertRouteEventRecorded(events, "test-attr-certificate-attributes",
+                "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", "2.0");
+        assertRouteEventRecorded(events, "test-attr-certificate-attributes",
+                "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", "2.1");
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
