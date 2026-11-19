@@ -718,7 +718,10 @@ def main() -> int:
             "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
             "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key"
         )
-        expected_cases += ("test-v20-reject-get-constraints", "test-v20-reject-ping")
+        expected_cases += (
+            "test-v20-reject-get-constraints", "test-v20-reject-ping",
+            "test-v20-reject-process",
+        )
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
     catalog_data = json.loads(catalog.read_text(encoding="utf-8"))
@@ -1599,6 +1602,17 @@ def main() -> int:
                 raise AssertionError(
                     "KMIP 2.1-only Ping must be rejected before transport under KMIP 2.0: "
                     f"{ping_boundary!r}"
+                )
+            process_boundary = next(
+                case for case in result["cases"]
+                if case["case_id"] == "test-v20-reject-process"
+            )
+            if process_boundary["status"] != "passed" or \
+                    process_boundary["server_compatibility"] != "unknown" or \
+                    process_boundary["library_correctness"] != "passed":
+                raise AssertionError(
+                    "KMIP 2.1-only Process must be rejected before transport under KMIP 2.0: "
+                    f"{process_boundary!r}"
                 )
             discovery = next(case for case in result["cases"]
                              if case["case_id"] == "test-op-discover-versions")
