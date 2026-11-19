@@ -1717,6 +1717,20 @@ class ControlledTlsPeerTest {
                 "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
                 "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
                 "construct", "2.1");
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-cryptographic-domain-parameters",
+                    "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
+        }
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
                 "The Tag aggregate must represent every catalogued tag and tag-allocation range cell.");
