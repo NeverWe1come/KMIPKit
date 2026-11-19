@@ -1917,6 +1917,58 @@ static kmip_execution_outcome_t execute_v20_process_boundary_route(
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_v20_query_async_requests_boundary_route(
+    kmip_live_client_t *client) {
+    kmipkit_query_async_requests_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    kmipkit_client_async_operation_outcome_t *query_outcome = NULL;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    uint64_t payload_item_count = 0;
+    bool query_invoked = false;
+    int32_t status = kmipkit_query_async_requests_request_create(&request);
+    if (status == 0) status = kmipkit_query_async_requests_request_to_ttlv_payload(
+        request, &payload);
+    if (status == 0) status = kmipkit_ttlv_structure_view(payload, &payload_view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
+        payload_view, &payload_item_count);
+    if (status == 0 && payload_item_count != 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) {
+        query_invoked = true;
+        status = kmipkit_client_execute_query_async_requests(
+            client->client, 0, NULL, 0, 0, NULL, 0, 0, 0,
+            client->limits, &query_outcome);
+    }
+    if (status != 0) {
+        int32_t last_status = 0;
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        if (query_invoked) {
+            (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+        }
+        if (query_invoked && last_status != 0 && delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected Query Asynchronous Requests before sending under KMIP 2.0");
+        } else {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not report a pre-send Query Asynchronous Requests rejection under KMIP 2.0");
+        }
+    } else {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit accepted Query Asynchronous Requests under KMIP 2.0");
+    }
+    if (query_outcome) kmipkit_client_async_operation_outcome_release(query_outcome);
+    if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_query_async_requests_request_release(request);
+    return outcome;
+}
+
 static bool async_response_correlation_matches(
     const kmipkit_client_async_operation_response_v1_t *response,
     const kmipkit_byte_span_v1_t *correlation) {
@@ -8623,7 +8675,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-process") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0 ||
-        strcmp(test_case->case_id, "test-v20-reject-set-constraints") == 0;
+        strcmp(test_case->case_id, "test-v20-reject-set-constraints") == 0 ||
+        strcmp(test_case->case_id, "test-v20-reject-query-asynchronous-requests") == 0;
     bool process_v20_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-process") == 0;
     bool batch_forward_placeholder_workflow =
@@ -8654,6 +8707,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     bool set_defaults_v20_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-set-defaults") == 0;
+    bool query_async_requests_v20_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-query-asynchronous-requests") == 0;
     bool interop_workflow = strcmp(test_case->case_id, "test-op-interop") == 0;
     bool batch_count_mismatch_workflow =
         strcmp(test_case->case_id, "test-batch-count-mismatch-rejected") == 0;
@@ -8681,6 +8736,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (process_v20_boundary_workflow) {
         return execute_v20_process_boundary_route(client);
+    }
+    if (query_async_requests_v20_boundary_workflow) {
+        return execute_v20_query_async_requests_boundary_route(client);
     }
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {

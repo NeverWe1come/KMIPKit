@@ -431,6 +431,7 @@ RECIPES = {
     'test-v20-reject-process': ((58,), 'process_v20_boundary'),
     'test-v20-reject-set-defaults': ((54,), 'set_defaults_v20_boundary'),
     'test-v20-reject-set-constraints': ((55,), 'set_constraints_v20_boundary'),
+    'test-v20-reject-query-asynchronous-requests': ((57,), 'query_async_requests_v20_boundary'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
     'test-op-recover': ((1, 21, 22, 20), 'recover'),
@@ -4421,7 +4422,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         boundary = local_placeholder_rejection or case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping',
                             'test-v20-reject-process', 'test-v20-reject-set-defaults',
-                            'test-v20-reject-set-constraints')
+                            'test-v20-reject-set-constraints',
+                            'test-v20-reject-query-asynchronous-requests')
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)

@@ -1412,18 +1412,23 @@ class RouteMatrixTests(unittest.TestCase):
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
             {**catalog, 'test_cases': [case]}, manifest, protocol_versions=('2.0',))
 
-        self.assertEqual(len(events), 12)
+        self.assertEqual(len(events), 13)
         self.assertEqual(len(checks), 6)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check['consumer_server_compatibility'] == 'unknown' for check in checks))
-        self.assertTrue(all('kmipkit_client_batch_item_query_async_requests_from_request' in
+        self.assertTrue(all('kmipkit_query_async_requests_request_create' in
                             check['public_api_trace_symbols'] and
-                            'kmipkit_client_execute' in check['public_api_trace_symbols']
-                            for check in checks))
+                            'kmipkit_query_async_requests_request_to_ttlv_payload' in
+                            check['public_api_trace_symbols'] and
+                            'kmipkit_client_execute_query_async_requests' in
+                            check['public_api_trace_symbols'] for check in checks))
         send_events = [event for event in events if event['action'] == 'send']
         construct_events = [event for event in events if event['action'] == 'construct']
+        encode_events = [event for event in events if event['action'] == 'encode']
         self.assertEqual(len(send_events), 6)
         self.assertEqual(len(construct_events), 6)
+        self.assertEqual(len(encode_events), 1)
+        self.assertTrue(all(event['status'] == 'passed' for event in encode_events))
         self.assertTrue(all(event['status'] == 'passed' for event in construct_events))
         self.assertTrue(all(event['request_delivery_state'] == 'not_sent' and
                             event['transport_invocation_count'] == 0 for event in send_events))
