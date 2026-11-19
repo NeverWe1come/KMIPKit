@@ -4353,3 +4353,29 @@ validates 44,047/44,047 cells: 44,031 invocations, 16 not-applicable cells,
 and zero failures. The ledger records 71,583 planned, 44,047 executed, and
 27,536 pending cells. The full matrix remains incomplete, so the Java stack
 stays WIP.
+
+## Java final-failure Poll routes — 2026-11-19
+
+The controlled Poll fixture now completes the `test-async-poll-final-operation-failure`
+case for KMIP 2.0 and 2.1. It reuses the correlation value from the Pending
+Create fixture and returns the original Create failure as a terminal Poll
+result: `OperationFailed` with `Invalid Object Type`, no success payload, and
+the same correlation value. The client verifies the typed Poll metadata and
+payload absence across TTLV, JSON, and XML over raw TLS and HTTPS. Route
+evidence includes `Client.executePoll`, `PollRequest.create`,
+`PollRequest.toTtlvPayload`, and `AsyncOperationOutcome.pollResponse`.
+References: OASIS KMIP 2.0 §6.1.36 and KMIP 2.1 §6.1.38 (Poll), with §§8.2,
+8.3, 8.6, 9.1, and 9.2 for the result and original-operation response shape.
+The controlled peer proves client route behavior, not external KMS
+interoperability.
+
+Red `9cd609ff2` requires all 36 network route cells and three local TTLV route
+cells. Green `73ef2ae3d` sends the real Poll requests to a controlled TLS/HTTPS
+peer and checks status, reason, correlation, and payload shape. The full Gradle
+suite passes 111/111; shared route, schema, and capability tests pass 112/112;
+requirement and feature traceability pass 2/2 and 31/31. The capability audit
+accepts 1,511 routes and ledger comparison passes. Selected evidence validates
+44,089/44,089 cells: 44,073 invocations, 16 not-applicable cells, and zero
+failures. The ledger records 71,583 planned, 44,089 executed, and 27,494
+pending cells. The full matrix remains incomplete, so the Java stack stays
+WIP.

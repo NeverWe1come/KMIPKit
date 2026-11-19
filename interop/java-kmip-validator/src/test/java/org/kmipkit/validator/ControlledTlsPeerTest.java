@@ -14382,7 +14382,6 @@ class ControlledTlsPeerTest {
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
         assertAsyncPollFinalFailureRouteCoverage(events, protocolVersion);
-        assertAsyncPollFinalFailureRouteCoverage(events, protocolVersion);
         assertAsyncOperationProcessRouteCoverage(events, protocolVersion);
         assertAsyncOperationQueryRouteCoverage(events, protocolVersion);
     }
