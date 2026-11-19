@@ -454,6 +454,7 @@ RECIPES = {
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
     'test-crypto-encrypt-aes-256-cbc': ((1, 18, 31, 19, 20), 'encrypt_aes256_cbc'),
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
+    'test-crypto-decrypt-aes-256-cbc': ((1, 18, 32, 19, 20), 'decrypt_aes256_cbc'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
     'test-op-sign': ((2, 18, 33, 19, 20, 20), 'sign'),
@@ -822,7 +823,8 @@ def assert_crypto_request(node, decrypt, *, aes256_cbc=False):
     operation = 32 if decrypt else 31
     item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
     usage_mask = 8 if decrypt else 4
-    input_data = BATCH_CRYPTO_CIPHERTEXT if decrypt else BATCH_CRYPTO_PLAINTEXT
+    input_data = (BATCH_CRYPTO_AES256_CBC_CIPHERTEXT if aes256_cbc else BATCH_CRYPTO_CIPHERTEXT) \
+        if decrypt else BATCH_CRYPTO_PLAINTEXT
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [numbers(item, 0x42005C) for item in items]
     observed_item_ids = [byte_string_values(item, 0x420093) for item in items]
@@ -870,7 +872,8 @@ def assert_crypto_request(node, decrypt, *, aes256_cbc=False):
 
 def verify_crypto_response(response_tree, decrypt, *, aes256_cbc=False):
     """Check all lifecycle outcomes and typed Encrypt or Decrypt fields."""
-    case_id = 'test-op-decrypt' if decrypt else 'test-op-encrypt'
+    case_id = ('test-crypto-decrypt-aes-256-cbc' if aes256_cbc else 'test-op-decrypt') \
+        if decrypt else 'test-op-encrypt'
     item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
     expected_data = (BATCH_CRYPTO_PLAINTEXT if decrypt else
                      BATCH_CRYPTO_AES256_CBC_CIPHERTEXT if aes256_cbc else
@@ -1902,6 +1905,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             raise ValueError('fixture_archive_identifier_mismatch')
     if selected_recipe[1] == 'encrypt_aes256_cbc':
         assert_crypto_request(node, False, aes256_cbc=True)
+    if selected_recipe[1] == 'decrypt_aes256_cbc':
+        assert_crypto_request(node, True, aes256_cbc=True)
     if selected_recipe[1] == 'encrypt':
         assert_crypto_request(node, False)
     if selected_recipe[1] == 'decrypt':
@@ -1994,13 +1999,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
         expected_algorithms = ([3, 3] if selected_recipe[1] in
-                               ('encrypt', 'encrypt_aes256_cbc', 'decrypt') else
+                               ('encrypt', 'encrypt_aes256_cbc', 'decrypt', 'decrypt_aes256_cbc') else
                                [9, 9] if selected_recipe[1] in ('mac', 'mac_verify') else
                                [4 if object_type in (3, 4) else 3])
         if numbers(node, 0x420028) != expected_algorithms:
             raise ValueError('fixture_algorithm_mismatch')
         expected_key_length = 256 if selected_recipe[1] in ('mac', 'mac_verify',
-                                                             'encrypt_aes256_cbc') else (
+                                                             'encrypt_aes256_cbc',
+                                                             'decrypt_aes256_cbc') else (
             2048 if object_type in (3, 4) else 128)
         if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
@@ -2412,7 +2418,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-placeholder-chain-resolves',
                        'test-batch-order-required-placeholder-resolution',
                        'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
-                       'test-crypto-encrypt-aes-256-cbc',
+                       'test-crypto-encrypt-aes-256-cbc', 'test-crypto-decrypt-aes-256-cbc',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
                        'test-op-archive', 'test-op-pkcs#11', 'test-op-obtain-lease'):
         return
@@ -4655,7 +4661,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = BATCH_CRYPTO_ITEM_IDS
                                         elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc'):
                                             response_item_ids = ENCRYPT_ITEM_IDS
-                                        elif recipe[1] == 'decrypt':
+                                        elif recipe[1] in ('decrypt', 'decrypt_aes256_cbc'):
                                             response_item_ids = DECRYPT_ITEM_IDS
                                         elif recipe[1] == 'mac':
                                             response_item_ids = MAC_ITEM_IDS
@@ -5030,10 +5036,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     'fixture_single_item_default_continuation_response_mismatch')
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
-                                        elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc', 'decrypt'):
+                                        elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc', 'decrypt',
+                                                          'decrypt_aes256_cbc'):
                                             verify_crypto_response(
-                                                response_tree, recipe[1] == 'decrypt',
-                                                aes256_cbc=recipe[1] == 'encrypt_aes256_cbc')
+                                                response_tree, recipe[1] in ('decrypt', 'decrypt_aes256_cbc'),
+                                                aes256_cbc=recipe[1] in
+                                                ('encrypt_aes256_cbc', 'decrypt_aes256_cbc'))
                                         elif recipe[1] == 'mac':
                                             verify_mac_response(response_tree)
                                         elif recipe[1] == 'mac_verify':

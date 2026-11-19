@@ -710,6 +710,7 @@ def main() -> int:
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
     expected_cases += ("test-crypto-encrypt-aes-256-cbc",)
+    expected_cases += ("test-crypto-decrypt-aes-256-cbc",)
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
     expected_cases += ("test-op-mac-verify",)

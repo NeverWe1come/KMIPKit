@@ -5280,6 +5280,10 @@ static const uint8_t BATCH_CRYPTO_CIPHERTEXT[] = {
     0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
     0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
 };
+static const uint8_t BATCH_CRYPTO_AES256_CBC_CIPHERTEXT[] = {
+    0x78, 0xe1, 0x6b, 0x06, 0x81, 0x7a, 0x44, 0x53,
+    0xab, 0xef, 0x8a, 0x23, 0x5f, 0xa9, 0xfa, 0x51
+};
 
 static int32_t batch_crypto_secret_value(const uint8_t *data, uint64_t length,
                                          kmipkit_ttlv_value_t **out_value) {
@@ -5384,7 +5388,8 @@ static bool batch_crypto_response_matches(kmipkit_client_batch_item_response_t *
 
 static bool created_key_crypto_response_matches(kmipkit_client_batch_item_response_t *item,
                                                 const kmipkit_unique_identifier_v1_t *identifier,
-                                                uint32_t operation, int32_t *out_status) {
+                                                uint32_t operation, bool aes256_cbc,
+                                                int32_t *out_status) {
     if (operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY) {
         uint8_t present = 0, validity_present = 0, correlation_present = 0;
         uint32_t validity_indicator = 0;
@@ -5424,10 +5429,16 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
             &correlation_present, &correlation);
     uint64_t expected_length = operation == KMIPKIT_ENUMERATION_OPERATION_MAC ? 32U :
         (uint64_t)sizeof(BATCH_CRYPTO_PLAINTEXT);
+    const uint8_t *expected_data = operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT ?
+        (aes256_cbc ? BATCH_CRYPTO_AES256_CBC_CIPHERTEXT : BATCH_CRYPTO_CIPHERTEXT) :
+        operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT ? BATCH_CRYPTO_PLAINTEXT : NULL;
     *out_status = status;
     bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         data_present && data.length == expected_length && data.data &&
         !iv_present && !correlation_present && !tag_present;
+    if (valid && expected_data) {
+        valid = memcmp(data.data, expected_data, sizeof(BATCH_CRYPTO_PLAINTEXT)) == 0;
+    }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MAC) {
         valid = response_ttlv_matches_field_count(
             item, kmipkit_client_batch_item_response_mac_ttlv,
@@ -5702,7 +5713,17 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (status == 0 && !archive) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
     if (status == 0 && !archive &&
         !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
-    const uint8_t *input = decrypt ? BATCH_CRYPTO_CIPHERTEXT : BATCH_CRYPTO_PLAINTEXT;
+    const uint8_t *input = decrypt ?
+        (aes256_cbc ? BATCH_CRYPTO_AES256_CBC_CIPHERTEXT : BATCH_CRYPTO_CIPHERTEXT) :
+        BATCH_CRYPTO_PLAINTEXT;
+    static const uint8_t cbc_iv_bytes[] = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+    };
+    const kmipkit_byte_span_v1_t cbc_iv = {
+        .data = cbc_iv_bytes,
+        .length = sizeof(cbc_iv_bytes),
+    };
     if (status == 0 && !archive) status = batch_crypto_secret_value(
         input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
     if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
@@ -5710,18 +5731,11 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
         &placeholder, parameters, plaintext, NULL, 0, 0, &items[target_index]);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
-        &placeholder, parameters, plaintext, NULL, NULL, NULL, 0, 0, NULL, &items[target_index]);
+        &placeholder, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
+        NULL, NULL, 0, 0, NULL, &items[target_index]);
     else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(
         &placeholder, &items[target_index]);
     else if (status == 0) {
-        static const uint8_t cbc_iv_bytes[] = {
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-            0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-        };
-        const kmipkit_byte_span_v1_t cbc_iv = {
-            .data = cbc_iv_bytes,
-            .length = sizeof(cbc_iv_bytes),
-        };
         status = kmipkit_client_batch_item_encrypt(
             &placeholder, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
             NULL, 0, 0, NULL, &items[target_index]);
@@ -5802,8 +5816,9 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
         (archive ? archive_response_matches_key(responses[1], &identifier, &status) :
-         (activate_response_matches_created_key(responses[1], &identifier, &status) &&
-          created_key_crypto_response_matches(responses[2], &identifier, operation, &status))) &&
+          (activate_response_matches_created_key(responses[1], &identifier, &status) &&
+          created_key_crypto_response_matches(responses[2], &identifier, operation,
+                                              aes256_cbc, &status))) &&
         revoke_response_matches_created_key(responses[revoke_index], &identifier, &status) &&
         response_ttlv_matches_identifier(responses[revoke_index], kmipkit_client_batch_item_response_revoke_ttlv,
                                          &identifier, &status) &&
@@ -8669,6 +8684,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, false);
     if (strcmp(test_case->case_id, "test-op-decrypt") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, false);
+    if (strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-cbc") == 0)
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, true);
     if (strcmp(test_case->case_id, "test-op-mac") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC, false);
     if (strcmp(test_case->case_id, "test-op-mac-verify") == 0)
