@@ -1426,6 +1426,43 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['action'] == 'decode' and event['status'] == 'passed'
                             for event in local_events))
 
+    def test_aes256_cbc_decrypt_recipe_covers_typed_request_and_response_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.11 covers AES-256-CBC Decrypt payloads."""
+        import route_peer
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-crypto-decrypt-aes-256-cbc')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None),
+                         ((1, 18, 32, 19, 20), 'decrypt_aes256_cbc'))
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.0', '2.1'))
+
+        self.assertEqual(len(events), 38)
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_library_correctness'] == 'passed' for check in checks))
+        network_events = [event for event in events if event['transport'] is not None]
+        self.assertEqual(len(network_events), 36)
+        self.assertEqual({event['action'] for event in network_events}, {'construct', 'send', 'decode'})
+        local_events = [event for event in events if event['transport'] is None]
+        self.assertEqual(len(local_events), 2)
+        self.assertEqual({event['protocol_version'] for event in local_events}, {'2.0', '2.1'})
+        self.assertTrue(all(event['action'] == 'decode' and event['status'] == 'passed'
+                            for event in local_events))
+        send_events = [event for event in network_events if event['action'] == 'send']
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'Decrypt', 'Revoke', 'Destroy'] and
+                            event['peer_observed_effects'] ==
+                            ['created', 'activated', 'decrypted', 'revoked', 'destroyed']
+                            for event in send_events))
+
     def test_recertify_recipe_renews_a_certificate_for_both_protocol_versions(self):
         """OASIS KMIP 2.0 §6.1.41 and 2.1 §6.1.45 renew an existing certificate."""
         import route_peer
