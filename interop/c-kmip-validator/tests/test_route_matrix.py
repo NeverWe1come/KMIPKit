@@ -5517,6 +5517,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['negative_checks'], 5)
         self.assertGreater(result['sample_count'], 1)
 
+    def test_certificate_type_extension_value_uses_all_typed_attribute_paths(self):
+        """OASIS KMIP 2.0/2.1 §11.9: preserve the lowest Certificate Type extension value."""
+        executor = self.attribute_executor()
+        target = next(target for target in executor.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-ENUM-VALUE-CERTIFICATE-TYPE-EXTENSIONS-8XXXXXXX')
+        expected_symbols = {
+            'kmipkit_typed_attribute_from_item',
+            'kmipkit_typed_attribute_from_value',
+            'kmipkit_attribute_set_create',
+            'kmipkit_attribute_set_try_push',
+            'kmipkit_attribute_set_try_push_typed',
+        }
+
+        for version in ('2.0', '2.1'):
+            with self.subTest(protocol_version=version):
+                fixtures = executor.fixtures(target, version)
+                self.assertIsNotNone(fixtures)
+                self.assertEqual([tree[2] for tree in fixtures], [bytes.fromhex('80000000')])
+                result = executor.execute(target, version)
+                self.assertIsNotNone(result)
+                self.assertEqual(result['sample_count'], 1)
+                self.assertTrue(expected_symbols <= result['invoked_symbols'])
+                self.assertEqual(result['negative_checks'], 5)
+
     def test_attribute_local_routes_also_run_for_server_exchange_cases(self):
         self.assertTrue(self.runner.should_execute_attribute_case(
             {'transport': None}, {'category': 'attributes', 'requires': {}}, {'kind': 'attribute'}))
