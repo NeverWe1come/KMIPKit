@@ -1401,6 +1401,8 @@ class ControlledTlsPeerTest {
                 assertPingVersionBoundaryRouteCoverage(events);
                 appendCreateOperationRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
                         clientCertificatePem, clientPrivateKeyPem);
+                appendRevokeNetworkRouteEvidence(events, serverCertificatePem, serverPrivateKeyPem,
+                        clientCertificatePem, clientPrivateKeyPem);
                 assertAsyncCreatePayloadGenericRouteCoverage(events, "2.0");
                 assertAsyncCreatePayloadGenericRouteCoverage(events, "2.1");
                 for (String asyncVersion : KMIP_2_0_AND_2_1) {
@@ -2403,6 +2405,7 @@ class ControlledTlsPeerTest {
         int randomNumberGeneratorTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int vendorAttributeTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int x509CertificateTypedAttributeRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 3;
+        int revokeNetworkRouteEventCount = KMIP_2_0_AND_2_1.size() * (2 * 3 * 3 * 2 + 2);
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2494,6 +2497,7 @@ class ControlledTlsPeerTest {
                         + randomNumberGeneratorTypedAttributeRouteEventCount
                         + vendorAttributeTypedAttributeRouteEventCount
                         + x509CertificateTypedAttributeRouteEventCount
+                        + revokeNetworkRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -2630,6 +2634,7 @@ class ControlledTlsPeerTest {
                         + 1 // KMIP 2.0/2.1 §4.46 Random Number Generator typed Attribute routes.
                         + 1 // KMIP 2.0/2.1 §4.60 Vendor Attribute typed Attribute routes.
                         + 3 // KMIP 2.0/2.1 §§4.61–4.63 X.509 certificate typed Attribute routes.
+                        + 1 // KMIP 2.0/2.1 Revoke network route evidence case.
                         + LocalCatalogRouteChecks.TRANSPARENT_KEY_MATERIAL_CASE_IDS.size()
                         + LocalCatalogRouteChecks.SPLIT_KEY_MANAGED_OBJECT_MEMBER_CASE_IDS.size() - 1
                         + LocalCatalogRouteChecks.PGP_KEY_AND_SECRET_DATA_CASE_IDS.size() - 2
@@ -6613,6 +6618,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-x.509-certificate-identifier");
         caseIds.add("test-attr-x.509-certificate-issuer");
         caseIds.add("test-attr-x.509-certificate-subject");
+        caseIds.add("test-op-revoke");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
@@ -8140,6 +8146,221 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private void appendRevokeNetworkRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        String caseId = "test-op-revoke";
+        String identifier = CREATED_OBJECT_ID;
+        byte[] batchItemId = "revoke-route-item".getBytes(StandardCharsets.US_ASCII);
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
+            int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+            byte[] responseTtlv = revokeRouteResponse(minor, batchItemId);
+            String responseHash = normalizedTreeSha256(responseTtlv);
+            String requestHash = null;
+            for (String encoding : CREATE_ROUTE_ENCODINGS) {
+                byte[] responseBytes = switch (encoding) {
+                    case "TTLV" -> responseTtlv;
+                    case "JSON" -> jsonRevokeRouteResponse(minor, batchItemId)
+                            .getBytes(StandardCharsets.UTF_8);
+                    case "XML" -> xmlRevokeRouteResponse(minor, batchItemId)
+                            .getBytes(StandardCharsets.UTF_8);
+                    default -> throw new IllegalArgumentException("Unsupported Revoke fixture encoding.");
+                };
+                for (String transport : CREATE_ROUTE_TRANSPORTS) {
+                    Path connectionFile = temporaryDirectory.resolve("revoke-route-"
+                            + protocolVersion.replace('.', '-') + "-" + encoding + "-" + transport + ".json");
+                    byte[] observedRequest;
+                    boolean recordResponseAccessors = "TTLV".equals(encoding) && "raw_tls".equals(transport);
+                    if ("raw_tls".equals(transport)) {
+                        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        FutureTask<byte[]> peer = new FutureTask<>(
+                                () -> serveOneEncodedResponse(listener, responseBytes, encoding));
+                        Thread peerThread = new Thread(peer,
+                                "java-validator-controlled-revoke-peer-" + protocolVersion + "-" + encoding);
+                        peerThread.setDaemon(true);
+                        peerThread.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            executeRevokeRouteRequest(connectionFile, batchItemId, identifier,
+                                    recordResponseAccessors, events, protocolVersion, responseHash);
+                        } finally {
+                            listener.close();
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    } else {
+                        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+                        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+                        listener.createContext("/kmip", exchange -> {
+                            try {
+                                if (!"POST".equals(exchange.getRequestMethod())) {
+                                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                                }
+                                peer.complete(exchange.getRequestBody().readAllBytes());
+                                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                                exchange.sendResponseHeaders(200, responseBytes.length);
+                                try (OutputStream output = exchange.getResponseBody()) {
+                                    output.write(responseBytes);
+                                }
+                            } catch (Exception failure) {
+                                peer.completeExceptionally(failure);
+                                try {
+                                    exchange.sendResponseHeaders(500, -1);
+                                } catch (Exception ignored) {
+                                    // The peer future retains the controlled-fixture failure.
+                                }
+                            } finally {
+                                exchange.close();
+                            }
+                        });
+                        listener.start();
+                        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                                protocolVersion, encoding, transport));
+                        try {
+                            executeRevokeRouteRequest(connectionFile, batchItemId, identifier,
+                                    false, events, protocolVersion, responseHash);
+                        } finally {
+                            listener.stop(0);
+                        }
+                        observedRequest = peer.get(15, TimeUnit.SECONDS);
+                    }
+                    assertRevokeRouteRequest(observedRequest, encoding, minor, batchItemId, identifier);
+                    if (requestHash == null) requestHash = normalizedTreeSha256(observedRequest);
+                    appendTypedNetworkRouteEvents(events, caseId,
+                            "java.typed-protocol.revoke_request.create", "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                            "org.kmipkit.extensions.RevokeRequest.create", protocolVersion,
+                            requestHash, responseHash, encoding, transport);
+                    appendTypedNetworkRouteEvents(events, caseId,
+                            "java.typed-protocol.client_batch_item.revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                            "org.kmipkit.extensions.ClientBatchItem.revoke", protocolVersion,
+                            requestHash, responseHash, encoding, transport);
+                }
+            }
+        }
+    }
+
+    private void executeRevokeRouteRequest(Path connectionFile, byte[] batchItemId, String identifier,
+            boolean recordResponseAccessors, ArrayNode events, String protocolVersion, String responseHash)
+            throws Exception {
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = createRouteRevokeItem("test-op-revoke", 0)
+                        .withUniqueBatchItemId(batchItemId)) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(1, response.itemCount());
+                assertEquals(KmipValues.Operation.REVOKE, result.operation());
+                assertEquals(0, result.resultStatus());
+                assertTrue(result.outcomeKind().isCompleted());
+                if (recordResponseAccessors) {
+                    try (ClientBatchItemResult.RevokeResponse revokeResponse =
+                                    result.revokeResponse().orElseThrow()) {
+                        UniqueIdentifier responseIdentifier = revokeResponse.uniqueIdentifier();
+                        assertEquals(identifier, responseIdentifier.text());
+                        try (TtlvStructure responseTtlv = revokeResponse.responseTtlv();
+                                TtlvStructureView responseView = responseTtlv.view()) {
+                            assertEquals(4, responseView.itemCount());
+                        }
+                    }
+                    appendLocalTypedResponseAccessorRouteEvent(events, "test-op-revoke",
+                            "java.typed-protocol.function.client_batch_item_response_revoke",
+                            "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                            "org.kmipkit.extensions.ClientBatchItemResult.revokeResponse",
+                            protocolVersion, responseHash);
+                    appendLocalTypedResponseAccessorRouteEvent(events, "test-op-revoke",
+                            "java.typed-protocol.function.client_batch_item_response_revoke_ttlv",
+                            "KMIPKIT-ELEM-OP-C2S-REVOKE",
+                            "org.kmipkit.extensions.ClientBatchItemResult.RevokeResponse.responseTtlv",
+                            protocolVersion, responseHash);
+                }
+            }
+        }
+    }
+
+    private static void assertRevokeRouteRequest(byte[] request, String encoding, int minor,
+            byte[] batchItemId, String identifier) throws Exception {
+        if ("TTLV".equals(encoding)) {
+            assertEquals(KmipValues.Operation.REVOKE, requestOperation(request));
+            assertEquals(minor, requestProtocolMinorVersion(request));
+            assertTrue(contains(request, item(0x420093, TtlvItemType.ByteString.code(), batchItemId)));
+            assertTrue(contains(request, item(0x420094, TtlvItemType.TextString.code(),
+                    identifier.getBytes(StandardCharsets.UTF_8))));
+            return;
+        }
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            assertEquals("RequestMessage", root.path("tag").asText());
+            assertEquals(List.of("Revoke"), jsonValuesForTag(root, "Operation").stream()
+                    .map(JsonNode::asText).toList());
+            assertEquals(List.of(minor), jsonValuesForTag(root, "ProtocolVersionMinor").stream()
+                    .map(JsonNode::asInt).toList());
+            assertEquals(List.of(HexFormat.of().formatHex(batchItemId)),
+                    jsonValuesForTag(root, "UniqueBatchItemID").stream().map(JsonNode::asText).toList());
+            assertEquals(List.of(identifier), jsonValuesForTag(root, "UniqueIdentifier").stream()
+                    .map(JsonNode::asText).toList());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Revoke\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("value=\"" + HexFormat.of().withUpperCase().formatHex(batchItemId) + "\""));
+        assertTrue(xml.contains("<UniqueIdentifier type=\"TextString\" value=\"" + identifier + "\"/>"));
+    }
+
+    private static byte[] revokeRouteResponse(int minor, byte[] batchItemId) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, TtlvItemType.Integer.code(), intBytes(2)),
+                item(0x42006b, TtlvItemType.Integer.code(), intBytes(minor)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, TtlvItemType.DateTime.code(), longBytes(1)),
+                item(0x42000d, TtlvItemType.Integer.code(), intBytes(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, TtlvItemType.TextString.code(), CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)));
+        byte[] batchItem = structure(0x42000f,
+                item(0x42005c, TtlvItemType.Enumeration.code(),
+                        intBytes(Math.toIntExact(KmipValues.Operation.REVOKE))),
+                item(0x420093, TtlvItemType.ByteString.code(), batchItemId),
+                item(0x42007f, TtlvItemType.Enumeration.code(), intBytes(0)), payload);
+        return structure(0x42007b, header, batchItem);
+    }
+
+    private static String jsonRevokeRouteResponse(int minor, byte[] batchItemId) {
+        return "{\"tag\":\"ResponseMessage\",\"value\":["
+                + "{\"tag\":\"ResponseHeader\",\"value\":["
+                + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                + "{\"tag\":\"BatchItem\",\"value\":["
+                + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Revoke\"},"
+                + "{\"tag\":\"UniqueBatchItemID\",\"type\":\"ByteString\",\"value\":\""
+                + HexFormat.of().formatHex(batchItemId) + "\"},"
+                + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"Success\"},"
+                + "{\"tag\":\"ResponsePayload\",\"value\":["
+                + "{\"tag\":\"UniqueIdentifier\",\"type\":\"TextString\",\"value\":\""
+                + CREATED_OBJECT_ID + "\"}]}]}]}";
+    }
+
+    private static String xmlRevokeRouteResponse(int minor, byte[] batchItemId) {
+        return "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Revoke\"/>"
+                + "<UniqueBatchItemID type=\"ByteString\" value=\""
+                + HexFormat.of().withUpperCase().formatHex(batchItemId) + "\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"Success\"/><ResponsePayload>"
+                + "<UniqueIdentifier type=\"TextString\" value=\"" + CREATED_OBJECT_ID + "\"/>"
+                + "</ResponsePayload></BatchItem></ResponseMessage>";
     }
 
     private void appendPingVersionBoundaryRouteEvidence(ArrayNode events, byte[] serverCertificatePem,
