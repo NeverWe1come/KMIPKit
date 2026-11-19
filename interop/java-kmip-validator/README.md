@@ -1601,10 +1601,6 @@ reference. This branch and its dependent stack remain WIP because the full
 matrix is incomplete. The report uses installed artifact SHA-256
 `d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
 
-Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
-source; the current evidence retains the existing 2.0/2.1 catalog pending that
-decision.
-
 ### Java Right Usage Limits stack verification — 2026-11-19
 
 After updating #217 with #216's refreshed base, the selected report
@@ -1616,5 +1612,25 @@ Gradle passes 111/111, shared tests pass 204/204, and catalog, route audit, and
 ledger comparison pass. The matrix remains incomplete, so #217 stays WIP.
 Artifact SHA-256: `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
 
-Add Attribute applicability remains open pending resolution of the pinned
-KMIP 2.0 source conflict; current evidence follows the existing catalog.
+
+### Java generic Random Number Generator Attribute TTLV routes — 2026-11-19
+
+The controlled Java fixture now invokes generic `TtlvItem.create`, item view,
+and `TtlvCodec.decode` for the `RANDOM_NUMBER_GENERATOR` Attribute in KMIP 2.0
+and 2.1. Each fixture checks the outer Attribute Structure and its
+Random Number Generator Algorithm member. The catalog does not require a
+separate `TtlvValue.structure` route for this target. Generic TTLV routes for
+Cryptographic Parameters were already present, so this change avoids recording
+duplicate cells. References: OASIS KMIP 2.0 and 2.1 §4.46, §6.1, and §11.56.
+
+Red `b3357cd4a` exposed the missing Random Number Generator generic Item cells.
+Green `1a245ce65` adds the generic Item construction, view, and decode routes.
+The selected evidence report `java-controlled-query-e0caeb84-9855-4e14-82c0-5c1670ab01ec`
+validates 44,452 cells (44,436 invocations, 16 not applicable, zero failed)
+out of 71,513 planned; 27,061 remain pending. The selected scope is complete,
+but the full Java matrix is not, so the stack remains WIP. Artifact SHA-256:
+`504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+
+The pinned OASIS specifications define Add Attribute in both KMIP 2.0 and 2.1
+§6.1.2. The catalog and route evidence therefore retain both versions; the
+KMIP 2.0 rejection proposed during review was not added.
