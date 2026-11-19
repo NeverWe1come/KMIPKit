@@ -36,6 +36,9 @@ TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
          'Boolean', 'TextString', 'ByteString', 'DateTime', 'Interval', 'DateTimeExtended')
 
 BATCH_ITEM_TAG = 0x42000F
+BATCH_ORDER_OPTION_TAG = 0x420010
+BATCH_ERROR_CONTINUATION_OPTION_TAG = 0x42000E
+REQUEST_HEADER_TAG = 0x420077
 REQUEST_PAYLOAD_TAG = 0x420079
 RESPONSE_PAYLOAD_TAG = 0x42007C
 UNIQUE_IDENTIFIER_TAG = 0x420094
@@ -106,6 +109,12 @@ IMPORT_OBJECT_DATA = b'controlled-import-object'
 CERTIFY_ITEM_IDS = (b'certify-create-pair', b'certify-activate-private', b'certify-public-key',
                     b'certify-revoke-private', b'certify-destroy-certificate',
                     b'certify-destroy-private', b'certify-destroy-public')
+RECERTIFY_ITEM_IDS = (b'recertify-create-pair', b'recertify-activate-private',
+                      b'recertify-public-key', b'recertify-renew-certificate',
+                      b'recertify-revoke-private', b'recertify-destroy-new-certificate',
+                      b'recertify-destroy-old-certificate', b'recertify-destroy-private',
+                      b'recertify-destroy-public')
+RECERTIFIED_CERTIFICATE_IDENTIFIER = b'fixture-recertified-certificate-1'
 MAC_TEST_OUTPUT = bytes(range(32))
 CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
 ASYNC_QUERY_CORRELATION_CREATE_COMPLETED = b'fixture-query-create-completed'
@@ -450,6 +459,8 @@ RECIPES = {
     'test-op-re-key': ((1, 4, 19, 20, 19, 20), 'rekey'),
     'test-op-derive-key': ((1, 18, 5, 19, 20, 20), 'derive_key'),
     'test-op-certify': ((2, 18, 6, 19, 20, 20, 20), 'certify'),
+    'test-op-re-certify': ((2, 18, 6, 7, 19, 20, 20, 20, 20), 'recertify'),
+    'test-op-validate': ((23,), 'validate_certificate_chain'),
     'test-op-pkcs#11': ((1, 18, 51, 19, 20), 'pkcs11'),
     'test-op-obtain-lease': ((1, 16, 19, 20), 'obtain_lease'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
@@ -1518,6 +1529,52 @@ def assert_certify_request(node):
         raise ValueError('fixture_certify_certificate_type_attribute_mismatch')
 
 
+def assert_recertify_request(node):
+    """Check renewal of the existing X.509 certificate for the same key pair."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [7], [19], [20], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in RECERTIFY_ITEM_IDS]):
+        raise ValueError('fixture_recertify_batch_mismatch')
+    if [numbers(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:3] + items[4:5] + items[7:9]] != [
+            [5], [6], [5], [5], [6]]:
+        raise ValueError('fixture_recertify_unique_identifier_mapping_mismatch')
+    payloads = [child for child in items[3][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if (len(payloads) != 1 or [field[0] for field in payloads[0][2]] != [UNIQUE_IDENTIFIER_TAG] or
+            text_values(items[3], UNIQUE_IDENTIFIER_TAG) != ['fixture-certificate-1'] or
+            text_values(items[5], UNIQUE_IDENTIFIER_TAG) != ['fixture-recertified-certificate-1'] or
+            text_values(items[6], UNIQUE_IDENTIFIER_TAG) != ['fixture-certificate-1']):
+        raise ValueError('fixture_recertify_target_certificate_mismatch')
+
+
+def assert_validate_certificate_chain_request(node):
+    """Check a valid X.509 Certificate structure with no object identifiers."""
+    headers = [child for child in node[2]
+               if child[0] == REQUEST_HEADER_TAG and child[1] == 1]
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(headers) != 1 or any(
+            field[0] in (BATCH_ORDER_OPTION_TAG, BATCH_ERROR_CONTINUATION_OPTION_TAG)
+            for field in headers[0][2]) or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [23]):
+        raise ValueError('fixture_validate_batch_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    certificates = [field for field in payloads[0][2]
+                    if field[0] == 0x420013 and field[1] == 1] if len(payloads) == 1 else []
+    expected_der = (ROOT / 'interop/rust-kmip-validator/tests/fixtures/certificate.der').read_bytes()
+    if len(payloads) != 1 or len(payloads[0][2]) != 1 or len(certificates) != 1:
+        raise ValueError('fixture_validate_certificate_missing')
+    certificate_fields = certificates[0][2]
+    types = [field for field in certificate_fields if field[0] == 0x42001D and field[1] == 5]
+    values = [field for field in certificate_fields if field[0] == 0x42001E and field[1] == 8]
+    if (len(certificate_fields) != 2 or len(types) != 1 or
+            int.from_bytes(types[0][2], 'big') != 1 or len(values) != 1 or
+            values[0][2] != expected_der or numbers(items[0], UNIQUE_IDENTIFIER_TAG)):
+        raise ValueError('fixture_validate_certificate_chain_mismatch')
+
+
 def verify_certify_response(response_tree):
     """Check the generated certificate ID and all three cleanup results."""
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1553,6 +1610,40 @@ def verify_certify_response(response_tree):
     ]
     if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != expected_identifiers:
         raise ValueError('fixture_certify_response_cleanup_identifiers_mismatch')
+
+
+def verify_recertify_response(response_tree):
+    """Check the renewed certificate identifier and cleanup of both certificates."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    operations = [[2], [18], [6], [7], [19], [20], [20], [20], [20]]
+    if ([numbers(item, 0x42005C) for item in items] != operations or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[item_id] for item_id in RECERTIFY_ITEM_IDS] or
+            [numbers(item, 0x42007F) for item in items] != [[0]] * 9):
+        raise ValueError('fixture_recertify_response_lifecycle_mismatch')
+    expected_identifiers = [
+        ['fixture-private-key-1'], ['fixture-certificate-1'],
+        ['fixture-recertified-certificate-1'], ['fixture-private-key-1'],
+        ['fixture-recertified-certificate-1'], ['fixture-certificate-1'],
+        ['fixture-private-key-1'], ['fixture-public-key-1'],
+    ]
+    if [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] != expected_identifiers:
+        raise ValueError('fixture_recertify_response_identifiers_mismatch')
+
+
+def verify_validate_certificate_chain_response(response_tree):
+    """Check Validate returns the Valid validity indicator."""
+    items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    indicators = [field for field in payloads[0][2]
+                  if field[0] == 0x42009B and field[1] == 5] if len(payloads) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [23] or
+            byte_string_values(items[0], 0x420093) != [b'validate-certificate-chain'] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(indicators) != 1 or
+            int.from_bytes(indicators[0][2], 'big') != 1):
+        raise ValueError('fixture_validate_response_validity_indicator_mismatch')
 
 
 def assert_pkcs11_request(node):
@@ -1705,6 +1796,10 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_create_key_pair_request(node)
     if selected_recipe[1] == 'certify':
         assert_certify_request(node)
+    if selected_recipe[1] == 'recertify':
+        assert_recertify_request(node)
+    if selected_recipe[1] == 'validate_certificate_chain':
+        assert_validate_certificate_chain_request(node)
     if selected_recipe[1] == 'pkcs11':
         assert_pkcs11_request(node)
     if selected_recipe[1] == 'obtain_lease':
@@ -3509,6 +3604,22 @@ class PeerState:
                 self.adjustable_attribute_values[certificate_identifier] = {}
                 placeholder = certificate_identifier
                 effect = 'certified'
+            elif operation == 7:
+                old_certificate_identifier = 'fixture-certificate-1'
+                replacement_certificate_identifier = RECERTIFIED_CERTIFICATE_IDENTIFIER.decode('ascii')
+                if (identifier != old_certificate_identifier or
+                        self.objects.get(old_certificate_identifier) != 'pre_active' or
+                        replacement_certificate_identifier in self.objects):
+                    raise ValueError('fixture_recertify_existing_certificate_mismatch')
+                self.objects[replacement_certificate_identifier] = 'pre_active'
+                self.attributes[replacement_certificate_identifier] = set()
+                self.attribute_values[replacement_certificate_identifier] = {}
+                self.adjustable_attribute_values[replacement_certificate_identifier] = {}
+                placeholder = replacement_certificate_identifier
+                effect = 'recertified'
+            elif operation == 23:
+                assert_validate_certificate_chain_request(request_tree)
+                effect = 'certificate_chain_validated'
             elif operation == 42:
                 if not identifier or identifier in self.objects:
                     raise ValueError('fixture_duplicate_import')
@@ -4385,6 +4496,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 b'archive-revoke', b'archive-destroy')
                                         elif recipe[1] == 'certify':
                                             response_item_ids = CERTIFY_ITEM_IDS
+                                        elif recipe[1] == 'recertify':
+                                            response_item_ids = RECERTIFY_ITEM_IDS
+                                        elif recipe[1] == 'validate_certificate_chain':
+                                            response_item_ids = (b'validate-certificate-chain',)
                                         elif recipe[1] == 'pkcs11':
                                             response_item_ids = PKCS11_ITEM_IDS
                                         elif recipe[1] == 'obtain_lease':
@@ -4816,6 +4931,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_import_response(response_tree)
                                         elif recipe[1] == 'certify':
                                             verify_certify_response(response_tree)
+                                        elif recipe[1] == 'recertify':
+                                            verify_recertify_response(response_tree)
+                                        elif recipe[1] == 'validate_certificate_chain':
+                                            verify_validate_certificate_chain_response(response_tree)
                                         elif recipe[1] == 'pkcs11':
                                             verify_pkcs11_response(response_tree)
                                         elif recipe[1] == 'obtain_lease':

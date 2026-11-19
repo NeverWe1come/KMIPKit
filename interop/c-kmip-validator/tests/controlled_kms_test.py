@@ -176,6 +176,24 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                     6: b"fixture-public-key-1",
                 }[item_index]
                 payload_value = tlv(0x420094, 7, identifier)
+        elif operations == (2, 18, 6, 7, 19, 20, 20, 20, 20):
+            identifiers = {
+                1: b'fixture-private-key-1',
+                2: b'fixture-certificate-1',
+                3: b'fixture-recertified-certificate-1',
+                4: b'fixture-private-key-1',
+                5: b'fixture-recertified-certificate-1',
+                6: b'fixture-certificate-1',
+                7: b'fixture-private-key-1',
+                8: b'fixture-public-key-1',
+            }
+            if item_index == 0:
+                payload_value = tlv(0x420066, 7, b'fixture-private-key-1') + \
+                    tlv(0x42006F, 7, b'fixture-public-key-1')
+            else:
+                payload_value = tlv(0x420094, 7, identifiers[item_index])
+        elif operation == 23:
+            payload_value = enumeration(0x42009B, 1)
         elif operation == 30:
             supported_minors = discover_versions_minors or (protocol_minor,)
             payload_value = b"".join(
@@ -629,6 +647,8 @@ def main() -> int:
     expected_operations += (1, 18, 5, 19, 20, 20)
     expected_cases += ("test-op-derive-key",)
     expected_operations += (2, 18, 6, 19, 20, 20, 20)
+    expected_operations += (2, 18, 6, 7, 19, 20, 20, 20, 20)
+    expected_operations += (23,)
     expected_operations += (1, 18, 51, 19, 20)
     expected_cases += ("test-op-pkcs#11",)
     expected_operations += (1, 16, 19, 20)
@@ -690,6 +710,7 @@ def main() -> int:
     expected_cases += ("test-op-join-split-key",)
     expected_cases += ("test-op-re-key",)
     expected_cases += ("test-op-certify",)
+    expected_cases += ("test-op-re-certify", "test-op-validate")
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
@@ -1060,6 +1081,28 @@ def main() -> int:
                                         "Certify batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_certify_item_ids
+                            if operations == (2, 18, 6, 7, 19, 20, 20, 20, 20):
+                                expected_recertify_item_ids = (
+                                    b"recertify-create-pair", b"recertify-activate-private",
+                                    b"recertify-public-key", b"recertify-renew-certificate",
+                                    b"recertify-revoke-private", b"recertify-destroy-new-certificate",
+                                    b"recertify-destroy-old-certificate",
+                                    b"recertify-destroy-private", b"recertify-destroy-public",
+                                )
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_recertify_item_ids):
+                                    raise AssertionError(
+                                        "Re-certify batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_recertify_item_ids
+                            if operations == (23,):
+                                expected_validate_item_ids = (b"validate-certificate-chain",)
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in expected_validate_item_ids):
+                                    raise AssertionError(
+                                        "Validate batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = expected_validate_item_ids
                             if operations == stop_on_first_failure_batch:
                                 if (request.count(integer(0x42000D, 2)) != 1 or
                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
