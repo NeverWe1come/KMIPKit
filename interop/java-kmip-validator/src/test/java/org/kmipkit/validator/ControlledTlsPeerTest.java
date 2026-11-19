@@ -1821,6 +1821,42 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-issuer",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-issuer",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-issuer",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-subject",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-subject",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-x.509-certificate-subject",
+                    "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
         }
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
