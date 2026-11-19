@@ -658,6 +658,8 @@ def main() -> int:
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
         expected_operations += (1, 58, 26, 20)
         expected_cases += ("test-async-process-then-poll-state",)
+        expected_operations += (1, 58, 26, 20)
+        expected_cases += ("test-op-process",)
         expected_operations += (1, 1, 10, 26, 57, 26, 26, 20, 20)
         expected_cases += ("test-async-query-outstanding-filter",)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
