@@ -687,6 +687,10 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertEqual("Recover the archived SymmetricKey", case["isolation_recipe"]["target_step"])
         self.assertEqual(["Destroy recovered SymmetricKey"],
                          case["isolation_recipe"]["teardown_steps"])
+        references = {(reference["document"], reference["section"])
+                      for reference in case["normative_refs"]}
+        self.assertIn(("OASIS KMIP 2.0 Specification", "6.1.4"), references)
+        self.assertIn(("OASIS KMIP 2.1 Specification", "6.1.4"), references)
 
     def test_version_rejection_cases_assert_the_request_was_never_sent(self) -> None:
         for case in self.catalog["test_cases"]:
