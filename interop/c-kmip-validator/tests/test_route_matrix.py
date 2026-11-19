@@ -4649,6 +4649,34 @@ class RouteMatrixTests(unittest.TestCase):
                             ['key_pair_created', 'destroyed', 'destroyed']
                             for event in send_events))
 
+    def test_private_and_public_key_object_cases_use_create_key_pair(self):
+        """OASIS KMIP 2.0/2.1 §6.1.9 and §11.34 define key-pair object creation."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        for case_id in ('test-obj-private-key', 'test-obj-public-key'):
+            with self.subTest(case_id=case_id):
+                self.assertEqual(RECIPES.get(case_id), ((2, 20, 20), 'create_key_pair'))
+                selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                       if case['case_id'] == case_id]}
+
+                events, _, checks = execute_network_cells(
+                    ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+                self.assertEqual(len(checks), 12)
+                self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+                self.assertEqual({event['target_id'] for event in events},
+                                 {'KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR'})
+                send_events = [event for event in events if event['action'] == 'send']
+                self.assertEqual(len(send_events), 12)
+                self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                                    ['Create Key Pair', 'Destroy', 'Destroy'] and
+                                    event['peer_observed_effects'] ==
+                                    ['key_pair_created', 'destroyed', 'destroyed']
+                                    for event in send_events))
+
     def test_rekey_operation_reads_replacement_identifier_and_restores_state(self):
         """OASIS KMIP 2.0 §6.1.42 and 2.1 §6.1.46 define Re-key."""
         from artifact_support import ROOT
