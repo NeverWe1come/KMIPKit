@@ -50,6 +50,8 @@ BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encryp
 BATCH_CRYPTO_KEY = bytes(range(16))
 BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
+BATCH_CRYPTO_CBC_IV = bytes.fromhex('000102030405060708090a0b0c0d0e0f')
+BATCH_CRYPTO_AES256_CBC_CIPHERTEXT = bytes.fromhex('78e16b06817a4453abef8a235fa9fa51')
 BATCH_CONTINUATION_CONSTRUCTOR_CASES = frozenset({
     'test-batch-continue-after-failure',
     'test-batch-stop-on-first-failure',
@@ -432,6 +434,7 @@ RECIPES = {
     'test-op-register': ((3, 20), 'register'),
     'test-op-import': ((42, 20), 'import_secret_data'),
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
+    'test-crypto-encrypt-aes-256-cbc': ((1, 18, 31, 19, 20), 'encrypt_aes256_cbc'),
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
     'test-op-mac-verify': ((1, 18, 36, 19, 20), 'mac_verify'),
@@ -793,7 +796,7 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
-def assert_crypto_request(node, decrypt):
+def assert_crypto_request(node, decrypt, *, aes256_cbc=False):
     """Check an isolated Create/Activate/crypto/Revoke/Destroy request shape."""
     operation = 32 if decrypt else 31
     item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
@@ -806,7 +809,7 @@ def assert_crypto_request(node, decrypt):
             observed_item_ids != [[item_id] for item_id in item_ids] or
             numbers(items[0], 0x420057) != [2] or
             numbers(items[0], 0x420028) != [3] or
-            numbers(items[0], 0x42002A) != [128] or
+            numbers(items[0], 0x42002A) != [256 if aes256_cbc else 128] or
             numbers(items[0], 0x42002C) != [usage_mask] or
             any(not is_id_placeholder_identifier(identifier)
                 for item in items[1:]
@@ -820,24 +823,37 @@ def assert_crypto_request(node, decrypt):
     parameters = [field for field in fields if field[0] == 0x42002B and field[1] == 1]
     identifiers = [field for field in fields if field[0] == UNIQUE_IDENTIFIER_TAG]
     data = [field for field in fields if field[0] == 0x4200C2 and field[1] == 8]
-    if ([field[0] for field in fields] != [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2] or
+    expected_field_tags = [UNIQUE_IDENTIFIER_TAG, 0x42002B, 0x4200C2]
+    if aes256_cbc:
+        expected_field_tags.append(0x42003D)
+    if ([field[0] for field in fields] != expected_field_tags or
             len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]) or
             len(parameters) != 1 or len(data) != 1 or
             data[0][2] != input_data):
-        raise ValueError('fixture_crypto_request_fields_mismatch')
+        field_shapes = [(field[0], field[1], len(field[2]) if isinstance(field[2], bytes) else None)
+                        for field in fields]
+        raise ValueError(
+            'fixture_crypto_request_fields_mismatch:'
+            f'field_shapes={field_shapes!r}:expected_tags={expected_field_tags!r}')
     parameter_fields = parameters[0][2]
-    expected_parameters = [(0x420011, 5, (2).to_bytes(4, 'big')),
+    expected_parameters = [(0x420011, 5, (1 if aes256_cbc else 2).to_bytes(4, 'big')),
                            (0x42005F, 5, (1).to_bytes(4, 'big')),
                            (0x420028, 5, (3).to_bytes(4, 'big'))]
     if [(field[0], field[1], field[2]) for field in parameter_fields] != expected_parameters:
         raise ValueError('fixture_crypto_parameters_mismatch')
+    if aes256_cbc:
+        ivs = [field for field in fields if field[0] == 0x42003D and field[1] == 8]
+        if len(ivs) != 1 or ivs[0][2] != BATCH_CRYPTO_CBC_IV:
+            raise ValueError('fixture_aes256_cbc_iv_mismatch')
 
 
-def verify_crypto_response(response_tree, decrypt):
+def verify_crypto_response(response_tree, decrypt, *, aes256_cbc=False):
     """Check all lifecycle outcomes and typed Encrypt or Decrypt fields."""
     case_id = 'test-op-decrypt' if decrypt else 'test-op-encrypt'
     item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
-    expected_data = BATCH_CRYPTO_PLAINTEXT if decrypt else BATCH_CRYPTO_CIPHERTEXT
+    expected_data = (BATCH_CRYPTO_PLAINTEXT if decrypt else
+                     BATCH_CRYPTO_AES256_CBC_CIPHERTEXT if aes256_cbc else
+                     BATCH_CRYPTO_CIPHERTEXT)
     verify_lifecycle(RECIPES[case_id][0], response_tree)
     items = [child for child in response_tree[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if [byte_string_values(item, 0x420093) for item in items] != [[item_id] for item_id in item_ids]:
@@ -1671,6 +1687,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                        if child[0] == UNIQUE_IDENTIFIER_TAG] if len(payloads) == 1 else []
         if len(identifiers) != 1 or not is_id_placeholder_identifier(identifiers[0]):
             raise ValueError('fixture_archive_identifier_mismatch')
+    if selected_recipe[1] == 'encrypt_aes256_cbc':
+        assert_crypto_request(node, False, aes256_cbc=True)
     if selected_recipe[1] == 'encrypt':
         assert_crypto_request(node, False)
     if selected_recipe[1] == 'decrypt':
@@ -1758,12 +1776,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
-        expected_algorithms = ([3, 3] if selected_recipe[1] in ('encrypt', 'decrypt') else
+        expected_algorithms = ([3, 3] if selected_recipe[1] in
+                               ('encrypt', 'encrypt_aes256_cbc', 'decrypt') else
                                [9, 9] if selected_recipe[1] in ('mac', 'mac_verify') else
                                [4 if object_type in (3, 4) else 3])
         if numbers(node, 0x420028) != expected_algorithms:
             raise ValueError('fixture_algorithm_mismatch')
-        expected_key_length = 256 if selected_recipe[1] in ('mac', 'mac_verify') else (
+        expected_key_length = 256 if selected_recipe[1] in ('mac', 'mac_verify',
+                                                             'encrypt_aes256_cbc') else (
             2048 if object_type in (3, 4) else 128)
         if numbers(node, 0x42002A) != [expected_key_length]:
             raise ValueError('fixture_key_length_mismatch')
@@ -2175,6 +2195,7 @@ def assert_placeholder_usage(node, case_id):
                        'test-batch-placeholder-chain-resolves',
                        'test-batch-order-required-placeholder-resolution',
                        'test-batch-order-omitted-defaults-true', 'test-op-encrypt',
+                       'test-crypto-encrypt-aes-256-cbc',
                        'test-op-decrypt', 'test-op-mac', 'test-op-mac-verify',
                        'test-op-archive', 'test-op-pkcs#11', 'test-op-obtain-lease'):
         return
@@ -4342,7 +4363,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 b'interop-revoke', b'interop-destroy')
                                         elif recipe[1] == 'batch_register_crypto':
                                             response_item_ids = BATCH_CRYPTO_ITEM_IDS
-                                        elif recipe[1] == 'encrypt':
+                                        elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc'):
                                             response_item_ids = ENCRYPT_ITEM_IDS
                                         elif recipe[1] == 'decrypt':
                                             response_item_ids = DECRYPT_ITEM_IDS
@@ -4614,7 +4635,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16,
                                                 returned_unique_identifier=returned_unique_identifier,
-                                                returned_unique_identifiers=returned_unique_identifiers)
+                                                returned_unique_identifiers=returned_unique_identifiers,
+                                                crypto_output=(BATCH_CRYPTO_AES256_CBC_CIPHERTEXT
+                                                               if recipe[1] == 'encrypt_aes256_cbc'
+                                                               else None))
                                         export_response_negative = (
                                             case_id.startswith('test-norm-payload-client-export-response-') and
                                             variant == 'missing_rejected' and
@@ -4712,8 +4736,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     'fixture_single_item_default_continuation_response_mismatch')
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
-                                        elif recipe[1] in ('encrypt', 'decrypt'):
-                                            verify_crypto_response(response_tree, recipe[1] == 'decrypt')
+                                        elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc', 'decrypt'):
+                                            verify_crypto_response(
+                                                response_tree, recipe[1] == 'decrypt',
+                                                aes256_cbc=recipe[1] == 'encrypt_aes256_cbc')
                                         elif recipe[1] == 'mac':
                                             verify_mac_response(response_tree)
                                         elif recipe[1] == 'mac_verify':

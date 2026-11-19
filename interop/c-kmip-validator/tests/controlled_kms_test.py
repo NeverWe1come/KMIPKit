@@ -117,7 +117,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              cancellation_result: int = 1,
              returned_unique_identifier: bytes | None = None,
              returned_unique_identifiers: tuple[bytes, ...] | None = None,
-             discover_versions_minors: tuple[int, ...] | None = None) -> bytes:
+             discover_versions_minors: tuple[int, ...] | None = None,
+             crypto_output: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -278,7 +279,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = tlv(0x420094, 7, returned_unique_identifier or b"fixture-derived-key")
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
-                0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
+                0x4200C2, 8, crypto_output if crypto_output is not None else
+                bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
         elif operation == 32:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
@@ -611,6 +613,7 @@ def main() -> int:
     expected_cases += ("test-obj-pgp-key",)
     expected_cases += ("test-obj-secret-data",)
     expected_operations += (1, 18, 31, 19, 20)
+    expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 36, 19, 20)
@@ -676,6 +679,7 @@ def main() -> int:
     )
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
+    expected_cases += ("test-crypto-encrypt-aes-256-cbc",)
     expected_cases += ("test-op-decrypt",)
     expected_cases += ("test-op-mac",)
     expected_cases += ("test-op-mac-verify",)
