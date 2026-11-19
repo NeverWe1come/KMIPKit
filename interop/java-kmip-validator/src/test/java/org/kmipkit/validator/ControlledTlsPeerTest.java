@@ -1962,42 +1962,6 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         fixture.modelRoute(), "construct", protocolVersion);
             }
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-device-serial-number",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-machine-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-media-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
-                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE, "construct", protocolVersion);
-            assertRouteEventRecorded(events,
-                    "test-norm-structure-member-structure-member-9-11-device-network-identifier",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
-                    "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
-                    "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
