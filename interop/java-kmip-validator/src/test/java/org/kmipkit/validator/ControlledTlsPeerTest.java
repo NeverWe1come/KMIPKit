@@ -9896,6 +9896,16 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+            String constructorRoute = operation[0].endsWith("process")
+                    ? "java.typed-protocol.process_request.create"
+                    : "java.typed-protocol.query_async_requests_request.create";
+            String encoderRoute = operation[0].endsWith("process")
+                    ? "java.typed-protocol.function.async_process_request_to_ttlv_payload"
+                    : "java.typed-protocol.function.async_query_async_requests_request_to_ttlv_payload";
+            assertRouteEventRecorded(events, operation[0], operation[2], constructorRoute,
+                    "construct", "2.0");
+            assertRouteEventRecorded(events, operation[0], operation[2], encoderRoute,
+                    "encode", "2.0");
         }
     }
 
