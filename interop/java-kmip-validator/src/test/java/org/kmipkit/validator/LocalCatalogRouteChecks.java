@@ -1268,6 +1268,34 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    /** Exercises the permitted Text String shape of the multi-encoding Unique Identifier attribute. */
+    static void executeUniqueIdentifierTypedRoutes(JsonNode catalog, String version,
+            EvidenceSink sink) throws Exception {
+        String caseId = "test-attr-unique-identifier";
+        JsonNode testCase = null;
+        for (JsonNode candidate : catalog.path("test_cases")) {
+            if (caseId.equals(candidate.path("case_id").asText())) {
+                testCase = candidate;
+                break;
+            }
+        }
+        if (testCase == null || !applies(testCase, version)) {
+            throw new IllegalArgumentException("Unique Identifier case is absent for " + version);
+        }
+        String targetId = testCase.path("requires").path("normative_target_id").asText();
+        if (!"KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER".equals(targetId)) {
+            throw new IllegalArgumentException("Unique Identifier target is invalid");
+        }
+        int attributeTag = tagCodeNamed(catalog, "Unique Identifier", version);
+        StandardAttribute attribute = standardAttributeForTag(attributeTag);
+        if (attribute == null) throw new IllegalArgumentException("Unique Identifier has no StandardAttribute");
+        byte[] identifier = "kmipkit-route-object-7".getBytes(StandardCharsets.UTF_8);
+        byte[] wire = itemWire(attributeTag, TtlvItemType.TextString.code(), identifier);
+        executeTypedAttributeRoutes(caseId, targetId, attributeTag, attribute,
+                TtlvValue.TextString(identifier, CodecLimits.defaults()), TtlvItemType.TextString, wire,
+                value -> assertArrayEquals(identifier, value.bytes()), sink);
+    }
+
     private static void assertStructureAttributeValue(TtlvValueView value, List<Integer> memberTags,
             List<TtlvItemType> memberTypes, List<byte[]> memberValues) {
         try (TtlvStructureView structure = value.structure()) {
