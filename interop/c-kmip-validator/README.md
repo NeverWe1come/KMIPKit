@@ -129,9 +129,9 @@ python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 python3 interop/c-kmip-validator/tests/test_route_matrix.py
 python3 interop/c-kmip-validator/tools/route_matrix.py \
   --binary interop/c-kmip-validator/build/kmip_validator_c \
-  --output interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json
+  --output interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json
 python3 interop/shared/tools/validate_route_evidence.py \
-  --report interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json \
+  --report interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json \
   --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
@@ -148,7 +148,7 @@ from pathlib import Path
 sys.path.insert(0, "interop/shared/tools")
 from validate_route_evidence import validate_report
 
-report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-placeholder-na-accounted.json").read_text())
+report = json.loads(Path("interop/c-kmip-validator/build/route-execution-evidence-certificate-type-extension.json").read_text())
 catalog_bytes = Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
 manifest_bytes = Path("interop/shared/coverage/route-capabilities.json").read_bytes()
 artifact_bytes = Path(
@@ -574,3 +574,16 @@ to decode. The shared validator checks their matching `not_sent` calls; the
 after the evidence correction. The first pending cells remain the local
 response decoder for `test-op-re-provision`, whose recipe is unresolved against
 the approved source contract.
+
+The latest full report is `c-route-3712618f-31eb-4f9d-ad02-6fd5af16eebe`
+(`route-execution-evidence-certificate-type-extension.json`) with JSON SHA-256
+`559af072feb69bb9c853fba9d4e5fd824c2ac66a89076a62b19a758280898c87`. It has
+66,288 expected cells: 43,758 invoked, 52 explicitly not applicable, zero
+failed, and 22,478 pending. It preserves all 43,570 prior cell identities and
+adds 240 passing cells across 24 enum and bit-mask extension cases. The
+attribute fixture now selects the lower bound from the catalogued extension
+range (for Certificate Type, `0x80000000`) and verifies the typed attribute
+constructors, decoders, and AttributeSet paths against that value. The shared
+validator accepts the emitted report with `selected_scope_complete=true`,
+`all_invocations_passed=true`, and zero failures; the full matrix remains
+incomplete.
