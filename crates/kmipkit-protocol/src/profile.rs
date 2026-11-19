@@ -13,7 +13,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ItemType, RawTag, StructureView, ValueView};
+use kmipkit_ttlv::{Item, ItemType, KmipTag, RawTag, StructureView, ValueView};
 
 use crate::attribute::{ClientAttributeMutation, client_attribute_mutation_is_prohibited};
 use crate::profiles_generated::{
@@ -1801,7 +1801,7 @@ const TICKET: u32 = 0x0042_0149;
 const OFFSET: u32 = 0x0042_0058;
 const SIGN_CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002B;
 const DELEGATED_LOGIN_RIGHTS: u32 = 0x0042_014D;
-const DELEGATED_LOGIN_RIGHT: u32 = 0x0042_014E;
+const DELEGATED_LOGIN_RIGHT: u32 = KmipTag::Right.as_u32();
 const DELEGATED_LOGIN_REQUEST_COUNT: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_USAGE_LIMITS: u32 = 0x0042_0095;
 const BLOCK_CIPHER_MODE: u32 = 0x0042_0011;
@@ -4765,7 +4765,12 @@ fn client_sets_batch_count_to_request_item_count(
         return false;
     };
 
-    usize::try_from(request.header().batch_count()).ok() == Some(request.batch_items().len())
+    if request.header().protocol_version().major() == 3 {
+        request.header().batch_count().is_none()
+    } else {
+        usize::try_from(request.header().effective_batch_count()).ok()
+            == Some(request.batch_items().len())
+    }
 }
 
 fn client_sets_batch_count_to_one_for_single_operation(
@@ -4776,7 +4781,11 @@ fn client_sets_batch_count_to_one_for_single_operation(
         return false;
     };
 
-    request.batch_items().len() != 1 || request.header().batch_count() == 1
+    if request.header().protocol_version().major() == 3 {
+        request.header().batch_count().is_none()
+    } else {
+        request.batch_items().len() != 1 || request.header().effective_batch_count() == 1
+    }
 }
 
 fn client_defaults_batch_error_continuation_to_stop(
@@ -4823,7 +4832,7 @@ fn client_includes_batch_error_continuation_only_for_multi_item_request(
     };
 
     let header = request.header();
-    header.batch_error_continuation_option().is_none() || header.batch_count() > 1
+    header.batch_error_continuation_option().is_none() || header.effective_batch_count() > 1
 }
 
 fn client_can_inspect_optional_result_message(

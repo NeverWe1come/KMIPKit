@@ -327,7 +327,7 @@ fn incoming_server_batch_decoding_and_dispatch() {
     assert!(handler.query_called);
     assert!(handler.set_endpoint_role_called);
 
-    assert_eq!(response.header().batch_count(), 5);
+    assert_eq!(response.header().effective_batch_count(), 5);
 }
 
 struct FailingHandler;

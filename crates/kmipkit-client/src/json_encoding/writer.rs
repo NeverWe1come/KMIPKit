@@ -94,6 +94,9 @@ impl Writer<'_> {
                 ValueView::DateTime(_) => "DateTime",
                 ValueView::Interval(_) => "Interval",
                 ValueView::DateTimeExtended(_) => "DateTimeExtended",
+                ValueView::Identifier(_) => "Identifier",
+                ValueView::Reference(_) => "Reference",
+                ValueView::NameReference(_) => "NameReference",
                 _ => return Err(error(WireCodecErrorKind::InvalidValue)),
             };
             self.quoted(ty)?;
@@ -142,7 +145,10 @@ impl Writer<'_> {
                     }
                 }
                 ValueView::Boolean(b) => self.put(if *b { b"true" } else { b"false" })?,
-                ValueView::TextString(s) => self.quoted(s)?,
+                ValueView::TextString(s)
+                | ValueView::Identifier(s)
+                | ValueView::Reference(s)
+                | ValueView::NameReference(s) => self.quoted(s)?,
                 ValueView::ByteString(b) => self.hex_value(b, false)?,
                 ValueView::DateTime(n) => self.hex_value(&n.to_be_bytes(), true)?,
                 ValueView::Interval(n) => self.number(n)?,

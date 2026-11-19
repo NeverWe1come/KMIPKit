@@ -173,6 +173,29 @@ impl VersionGate {
             return Err(VersionGateError::UnsupportedProtocolVersion(version));
         }
 
+        if version == ProtocolVersion::V3_0 {
+            match tag {
+                0x0042_0054 // Name Type (Reserved in 3.0)
+                | 0x0042_0055 // Name Value (Reserved in 3.0)
+                | 0x0042_0170 // Rotate Name Value (Reserved in 3.0)
+                | 0x0042_0171 // Rotate Name Type (Reserved in 3.0)
+                | 0x0042_004A // Link (Reserved in 3.0)
+                | 0x0042_004B // Link Type (Reserved in 3.0)
+                | 0x0042_004C // Linked Object Identifier (Reserved in 3.0)
+                | 0x0042_000D // Batch Count (Reserved in 3.0)
+                | 0x0042_0010 // Batch Order Option (Reserved in 3.0)
+                | 0x0042_0093 // Unique Batch Item ID (Reserved in 3.0)
+                => {
+                    return Err(VersionGateError::AttributeNotSupportedInVersion {
+                        tag,
+                        negotiated: version,
+                        introduced: ProtocolVersion::V2_0,
+                    });
+                }
+                _ => {}
+            }
+        }
+
         if let Some(span) = Self::tag_span(tag)
             && !span.is_supported_in(version)
         {

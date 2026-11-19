@@ -40,6 +40,7 @@ mod destroy;
 mod diagnostics;
 mod discover_versions;
 mod encrypt;
+pub mod enums;
 mod error;
 mod export;
 pub mod extension;
@@ -148,6 +149,10 @@ pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use certify::{CertifyError, CertifyRequest, CertifyResponse};
 pub use check::{CheckError, CheckRequest, CheckResponse};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
+pub use enums::{
+    AttributeTag, EphemeralMode, KemAlgorithmCode, KeyLifecycleState, LinkAttributeTag,
+    ObjectTypeCode, OperationCode,
+};
 pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
 pub use create_split_key::{
     CreateSplitKeyError, CreateSplitKeyRequest, CreateSplitKeyResponse, SplitKeyMethod,
@@ -232,6 +237,8 @@ pub use message::{
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
 pub use object_class::ObjectClass;
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
+pub use kmipkit_ttlv::KmipTag;
+pub use lifecycle::NistKeyLifecycleGuard;
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};

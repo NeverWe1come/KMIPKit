@@ -44,6 +44,7 @@ fn identifier_value(identifier: UniqueIdentifier) -> Value {
         UniqueIdentifier::TextString(value) => Value::text_string(value),
         UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
         UniqueIdentifier::Integer(value) => Value::integer(value),
+        UniqueIdentifier::Identifier(value) => Value::identifier(value),
     }
 }
 

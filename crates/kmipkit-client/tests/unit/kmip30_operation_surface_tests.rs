@@ -404,7 +404,6 @@ fn response_with_result(
     let header = test_structure([
         test_item(0x0042_0069, Value::structure(version)),
         test_item(0x0042_0092, Value::date_time(1)),
-        test_item(0x0042_000D, Value::integer(1)),
     ]);
     let mut batch_items = vec![
         test_item(0x0042_005C, Value::enumeration(operation)),

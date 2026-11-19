@@ -62,9 +62,9 @@ fn read_enumeration(item: &Item) -> Option<u32> {
 fn assert_name(item: &Item, expected: &str) {
     let fields = item.as_structure().expect("Name is a Structure").children();
     assert_eq!(fields.len(), 2);
-    assert_eq!(fields[0].tag().raw(), 0x0042_0097);
+    assert_eq!(fields[0].tag().raw(), 0x0042_0054);
     assert_eq!(read_enumeration(&fields[0]), Some(1));
-    assert_eq!(fields[1].tag().raw(), 0x0042_0098);
+    assert_eq!(fields[1].tag().raw(), 0x0042_0055);
     assert!(fields[1].with_value(|value| matches!(
         value,
         ValueView::TextString(value) if value == expected

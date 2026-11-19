@@ -26,6 +26,7 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const EPHEMERAL: u32 = 0x0042_0154;
+const EPHEMERAL_MODE: u32 = 0x0042_01BF;
 const MAXIMUM_RESPONSE_SIZE: u32 = 0x0042_0050;
 const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const NONCE: u32 = 0x0042_00C8;
@@ -144,7 +145,7 @@ impl Error for MessageValidationError {}
 #[derive(Clone, Copy)]
 pub(super) struct ValidatedRequestHeader {
     pub(super) protocol_version: ProtocolVersion,
-    pub(super) batch_count: i32,
+    pub(super) batch_count: Option<i32>,
 }
 
 /// Metadata retained by a successfully validated response.
@@ -152,7 +153,7 @@ pub(super) struct ValidatedRequestHeader {
 pub(super) struct ValidatedResponseHeader {
     pub(super) protocol_version: ProtocolVersion,
     pub(super) time_stamp: i64,
-    pub(super) batch_count: i32,
+    pub(super) batch_count: Option<i32>,
 }
 
 /// Validated positions and the copied required header values for a request.
@@ -210,6 +211,18 @@ const REQUEST_HEADER_FIELDS: &[FieldSpec] = &[
     field(TIME_STAMP, ItemType::DateTime),
     field(BATCH_COUNT, ItemType::Integer),
 ];
+const REQUEST_HEADER_FIELDS_V3: &[FieldSpec] = &[
+    field(PROTOCOL_VERSION, ItemType::Structure),
+    field(MAXIMUM_RESPONSE_SIZE, ItemType::Integer),
+    field(CLIENT_CORRELATION_VALUE, ItemType::TextString),
+    field(SERVER_CORRELATION_VALUE, ItemType::TextString),
+    field(ASYNCHRONOUS_INDICATOR, ItemType::Enumeration),
+    field(ATTESTATION_CAPABLE_INDICATOR, ItemType::Boolean),
+    repeated_field(ATTESTATION_TYPE, ItemType::Enumeration),
+    field(AUTHENTICATION, ItemType::Structure),
+    field(BATCH_ERROR_CONTINUATION_OPTION, ItemType::Enumeration),
+    field(TIME_STAMP, ItemType::DateTime),
+];
 const RESPONSE_HEADER_FIELDS: &[FieldSpec] = &[
     field(PROTOCOL_VERSION, ItemType::Structure),
     field(TIME_STAMP, ItemType::DateTime),
@@ -219,6 +232,15 @@ const RESPONSE_HEADER_FIELDS: &[FieldSpec] = &[
     field(CLIENT_CORRELATION_VALUE, ItemType::TextString),
     field(SERVER_CORRELATION_VALUE, ItemType::TextString),
     field(BATCH_COUNT, ItemType::Integer),
+];
+const RESPONSE_HEADER_FIELDS_V3: &[FieldSpec] = &[
+    field(PROTOCOL_VERSION, ItemType::Structure),
+    field(TIME_STAMP, ItemType::DateTime),
+    field(NONCE, ItemType::Structure),
+    field(SERVER_HASHED_PASSWORD, ItemType::ByteString),
+    repeated_field(ATTESTATION_TYPE, ItemType::Enumeration),
+    field(CLIENT_CORRELATION_VALUE, ItemType::TextString),
+    field(SERVER_CORRELATION_VALUE, ItemType::TextString),
 ];
 const REQUEST_BATCH_FIELDS: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
@@ -234,9 +256,24 @@ const REQUEST_BATCH_FIELDS_WITH_ID: &[FieldSpec] = &[
     field(REQUEST_PAYLOAD, ItemType::Structure),
     repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
 ];
+const REQUEST_BATCH_FIELDS_V3: &[FieldSpec] = &[
+    field(OPERATION, ItemType::Enumeration),
+    field(EPHEMERAL_MODE, ItemType::Enumeration),
+    field(REQUEST_PAYLOAD, ItemType::Structure),
+    repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
+];
 const RESPONSE_BATCH_FIELDS: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
     field(UNIQUE_BATCH_ITEM_ID, ItemType::ByteString),
+    field(RESULT_STATUS, ItemType::Enumeration),
+    field(RESULT_REASON, ItemType::Enumeration),
+    field(RESULT_MESSAGE, ItemType::TextString),
+    field(ASYNCHRONOUS_CORRELATION_VALUE, ItemType::ByteString),
+    field(RESPONSE_PAYLOAD, ItemType::Structure),
+    field(MESSAGE_EXTENSION, ItemType::Structure),
+];
+const RESPONSE_BATCH_FIELDS_V3: &[FieldSpec] = &[
+    field(OPERATION, ItemType::Enumeration),
     field(RESULT_STATUS, ItemType::Enumeration),
     field(RESULT_REASON, ItemType::Enumeration),
     field(RESULT_MESSAGE, ItemType::TextString),
@@ -286,11 +323,16 @@ pub(super) fn validate_request_message(
                         None,
                     ));
                 }
+                let is_v3 = header
+                    .as_ref()
+                    .is_some_and(|(_, h)| h.protocol_version.major() == 3);
                 let multi_item_request = header
                     .as_ref()
-                    .is_some_and(|(_, validated_header)| validated_header.batch_count > 1);
+                    .is_some_and(|(_, validated_header)| {
+                        validated_header.batch_count.is_some_and(|count| count > 1)
+                    });
                 let item_id = with_structure(child, index, None, |view| {
-                    validate_request_batch_item(&view, index, multi_item_request)
+                    validate_request_batch_item(&view, index, multi_item_request, is_v3)
                 })?;
                 if let Some(item_id) = item_id
                     && !request_ids.insert(item_id)
@@ -321,12 +363,14 @@ pub(super) fn validate_request_message(
             None,
         ));
     }
-    if usize::try_from(header.batch_count).ok() != Some(batch_indices.len()) {
-        return Err(error(
-            MessageValidationErrorKind::BatchCountMismatch,
-            Some(header_index),
-            None,
-        ));
+    if let Some(batch_count) = header.batch_count {
+        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
+            return Err(error(
+                MessageValidationErrorKind::BatchCountMismatch,
+                Some(header_index),
+                None,
+            ));
+        }
     }
 
     Ok(ValidatedRequestMessage {
@@ -372,8 +416,11 @@ pub(super) fn validate_response_message(
                         None,
                     ));
                 }
+                let is_v3 = header
+                    .as_ref()
+                    .is_some_and(|(_, h)| h.protocol_version.major() == 3);
                 with_structure(child, index, None, |view| {
-                    validate_response_batch_item(&view, index)
+                    validate_response_batch_item(&view, index, is_v3)
                 })?;
                 batch_indices.push(index);
             }
@@ -395,12 +442,14 @@ pub(super) fn validate_response_message(
             None,
         ));
     }
-    if usize::try_from(header.batch_count).ok() != Some(batch_indices.len()) {
-        return Err(error(
-            MessageValidationErrorKind::BatchCountMismatch,
-            Some(header_index),
-            None,
-        ));
+    if let Some(batch_count) = header.batch_count {
+        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
+            return Err(error(
+                MessageValidationErrorKind::BatchCountMismatch,
+                Some(header_index),
+                None,
+            ));
+        }
     }
 
     Ok(ValidatedResponseMessage {
@@ -414,61 +463,78 @@ fn validate_request_header(
     view: &StructureView<'_>,
     top_index: usize,
 ) -> Result<ValidatedRequestHeader, MessageValidationError> {
-    validate_fields(
-        view.children(),
-        REQUEST_HEADER_FIELDS,
-        &[PROTOCOL_VERSION, BATCH_COUNT],
-        Some(top_index),
-    )?;
     let version_item = required_child(view.children(), PROTOCOL_VERSION, top_index)?;
     let protocol_version = with_structure(version_item, top_index, None, |view| {
         validate_protocol_version(&view)
     })?;
-    let count_item = required_child(view.children(), BATCH_COUNT, top_index)?;
-    let batch_count = integer_value(count_item).ok_or_else(|| {
-        error(
-            MessageValidationErrorKind::WrongItemType,
+
+    if protocol_version.major() == 3 {
+        for child in view.children() {
+            if matches!(child.tag().raw(), BATCH_COUNT | BATCH_ORDER_OPTION) {
+                return Err(error(
+                    MessageValidationErrorKind::InvalidFieldValue,
+                    Some(top_index),
+                    None,
+                ));
+            }
+        }
+        validate_fields(
+            view.children(),
+            REQUEST_HEADER_FIELDS_V3,
+            &[PROTOCOL_VERSION],
             Some(top_index),
-            None,
-        )
-    })?;
-    if batch_count < 1 {
-        return Err(error(
-            MessageValidationErrorKind::InvalidBatchCount,
-            Some(top_index),
-            None,
-        ));
-    }
-    if batch_count == 1
-        && view.children().iter().any(|item| {
-            matches!(
-                item.tag().raw(),
-                BATCH_ORDER_OPTION | BATCH_ERROR_CONTINUATION_OPTION
-            )
+        )?;
+        Ok(ValidatedRequestHeader {
+            protocol_version,
+            batch_count: None,
         })
-    {
-        return Err(error(
-            MessageValidationErrorKind::InvalidSingleItemOption,
+    } else {
+        validate_fields(
+            view.children(),
+            REQUEST_HEADER_FIELDS,
+            &[PROTOCOL_VERSION, BATCH_COUNT],
             Some(top_index),
-            None,
-        ));
+        )?;
+        let count_item = required_child(view.children(), BATCH_COUNT, top_index)?;
+        let batch_count = integer_value(count_item).ok_or_else(|| {
+            error(
+                MessageValidationErrorKind::WrongItemType,
+                Some(top_index),
+                None,
+            )
+        })?;
+        if batch_count < 1 {
+            return Err(error(
+                MessageValidationErrorKind::InvalidBatchCount,
+                Some(top_index),
+                None,
+            ));
+        }
+        if batch_count == 1
+            && view.children().iter().any(|item| {
+                matches!(
+                    item.tag().raw(),
+                    BATCH_ORDER_OPTION | BATCH_ERROR_CONTINUATION_OPTION
+                )
+            })
+        {
+            return Err(error(
+                MessageValidationErrorKind::InvalidSingleItemOption,
+                Some(top_index),
+                None,
+            ));
+        }
+        Ok(ValidatedRequestHeader {
+            protocol_version,
+            batch_count: Some(batch_count),
+        })
     }
-    Ok(ValidatedRequestHeader {
-        protocol_version,
-        batch_count,
-    })
 }
 
 fn validate_response_header(
     view: &StructureView<'_>,
     top_index: usize,
 ) -> Result<ValidatedResponseHeader, MessageValidationError> {
-    validate_fields(
-        view.children(),
-        RESPONSE_HEADER_FIELDS,
-        &[PROTOCOL_VERSION, TIME_STAMP, BATCH_COUNT],
-        Some(top_index),
-    )?;
     let version_item = required_child(view.children(), PROTOCOL_VERSION, top_index)?;
     let protocol_version = with_structure(version_item, top_index, None, |view| {
         validate_protocol_version(&view)
@@ -485,26 +551,56 @@ fn validate_response_header(
                 None,
             )
         })?;
-    let batch_count = integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
-        .ok_or_else(|| {
-            error(
-                MessageValidationErrorKind::WrongItemType,
+
+    if protocol_version.major() == 3 {
+        for child in view.children() {
+            if child.tag().raw() == BATCH_COUNT {
+                return Err(error(
+                    MessageValidationErrorKind::InvalidFieldValue,
+                    Some(top_index),
+                    None,
+                ));
+            }
+        }
+        validate_fields(
+            view.children(),
+            RESPONSE_HEADER_FIELDS_V3,
+            &[PROTOCOL_VERSION, TIME_STAMP],
+            Some(top_index),
+        )?;
+        Ok(ValidatedResponseHeader {
+            protocol_version,
+            time_stamp,
+            batch_count: None,
+        })
+    } else {
+        validate_fields(
+            view.children(),
+            RESPONSE_HEADER_FIELDS,
+            &[PROTOCOL_VERSION, TIME_STAMP, BATCH_COUNT],
+            Some(top_index),
+        )?;
+        let batch_count = integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
+            .ok_or_else(|| {
+                error(
+                    MessageValidationErrorKind::WrongItemType,
+                    Some(top_index),
+                    None,
+                )
+            })?;
+        if batch_count < 1 {
+            return Err(error(
+                MessageValidationErrorKind::InvalidBatchCount,
                 Some(top_index),
                 None,
-            )
-        })?;
-    if batch_count < 1 {
-        return Err(error(
-            MessageValidationErrorKind::InvalidBatchCount,
-            Some(top_index),
-            None,
-        ));
+            ));
+        }
+        Ok(ValidatedResponseHeader {
+            protocol_version,
+            time_stamp,
+            batch_count: Some(batch_count),
+        })
     }
-    Ok(ValidatedResponseHeader {
-        protocol_version,
-        time_stamp,
-        batch_count,
-    })
 }
 
 fn validate_protocol_version(
@@ -527,47 +623,93 @@ fn validate_request_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
     require_unique_batch_item_id: bool,
+    is_v3: bool,
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
-    let required_fields = if require_unique_batch_item_id {
-        &[OPERATION, UNIQUE_BATCH_ITEM_ID, REQUEST_PAYLOAD][..]
-    } else {
-        &[OPERATION, REQUEST_PAYLOAD][..]
-    };
-    validate_fields(
-        view.children(),
-        if require_unique_batch_item_id {
-            REQUEST_BATCH_FIELDS_WITH_ID
-        } else {
-            REQUEST_BATCH_FIELDS
-        },
-        required_fields,
-        Some(top_index),
-    )?;
-    let id = view
-        .children()
-        .iter()
-        .find(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
-        .and_then(byte_string_value);
-    for (index, child) in view.children().iter().enumerate() {
-        if child.tag().raw() == MESSAGE_EXTENSION {
-            with_structure(child, top_index, Some(index), |view| {
-                validate_message_extension(&view)
-            })?;
+    if is_v3 {
+        for child in view.children() {
+            if matches!(child.tag().raw(), UNIQUE_BATCH_ITEM_ID | EPHEMERAL) {
+                return Err(error(
+                    MessageValidationErrorKind::InvalidFieldValue,
+                    Some(top_index),
+                    None,
+                ));
+            }
         }
+        validate_fields(
+            view.children(),
+            REQUEST_BATCH_FIELDS_V3,
+            &[OPERATION, REQUEST_PAYLOAD],
+            Some(top_index),
+        )?;
+        for (index, child) in view.children().iter().enumerate() {
+            if child.tag().raw() == MESSAGE_EXTENSION {
+                with_structure(child, top_index, Some(index), |view| {
+                    validate_message_extension(&view)
+                })?;
+            }
+        }
+        Ok(None)
+    } else {
+        let required_fields = if require_unique_batch_item_id {
+            &[OPERATION, UNIQUE_BATCH_ITEM_ID, REQUEST_PAYLOAD][..]
+        } else {
+            &[OPERATION, REQUEST_PAYLOAD][..]
+        };
+        validate_fields(
+            view.children(),
+            if require_unique_batch_item_id {
+                REQUEST_BATCH_FIELDS_WITH_ID
+            } else {
+                REQUEST_BATCH_FIELDS
+            },
+            required_fields,
+            Some(top_index),
+        )?;
+        let id = view
+            .children()
+            .iter()
+            .find(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
+            .and_then(byte_string_value);
+        for (index, child) in view.children().iter().enumerate() {
+            if child.tag().raw() == MESSAGE_EXTENSION {
+                with_structure(child, top_index, Some(index), |view| {
+                    validate_message_extension(&view)
+                })?;
+            }
+        }
+        Ok(id)
     }
-    Ok(id)
 }
 
 fn validate_response_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
+    is_v3: bool,
 ) -> Result<(), MessageValidationError> {
-    validate_fields(
-        view.children(),
-        RESPONSE_BATCH_FIELDS,
-        &[RESULT_STATUS],
-        Some(top_index),
-    )?;
+    if is_v3 {
+        for child in view.children() {
+            if child.tag().raw() == UNIQUE_BATCH_ITEM_ID {
+                return Err(error(
+                    MessageValidationErrorKind::InvalidFieldValue,
+                    Some(top_index),
+                    None,
+                ));
+            }
+        }
+        validate_fields(
+            view.children(),
+            RESPONSE_BATCH_FIELDS_V3,
+            &[RESULT_STATUS],
+            Some(top_index),
+        )?;
+    } else {
+        validate_fields(
+            view.children(),
+            RESPONSE_BATCH_FIELDS,
+            &[RESULT_STATUS],
+            Some(top_index),
+        )?;
+    }
     let status_value =
         enumeration_value(required_child(view.children(), RESULT_STATUS, top_index)?).ok_or_else(
             || {

@@ -9,7 +9,7 @@ use crate::{QueryError, QueryFunction, QueryRequest, QueryResponse, ResultValida
 use kmipkit_ttlv::{ModelError, Value, ValueView};
 use std::error::Error;
 
-const STANDARD_QUERY_FUNCTIONS: [u32; 14] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+const STANDARD_QUERY_FUNCTIONS: [u32; 15] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 #[test]
 fn names_all_standard_query_function_values_and_preserves_future_values() {
@@ -28,6 +28,7 @@ fn names_all_standard_query_function_values_and_preserves_future_values() {
         QueryFunction::CLIENT_REGISTRATION_METHODS,
         QueryFunction::DEFAULTS_INFORMATION,
         QueryFunction::STORAGE_PROTECTION_MASKS,
+        QueryFunction::PERFORMS_CRL_CHECKS,
     ];
     assert_eq!(named.map(QueryFunction::raw), STANDARD_QUERY_FUNCTIONS);
     assert_eq!(QueryFunction::from_raw(0x8000_0042).raw(), 0x8000_0042);
@@ -36,7 +37,7 @@ fn names_all_standard_query_function_values_and_preserves_future_values() {
         "QueryFunction(1)"
     );
     assert!(
-        QueryRequest::new([QueryFunction::from_raw(15)])
+        QueryRequest::new([QueryFunction::from_raw(16)])
             .to_ttlv_payload()
             .is_err()
     );

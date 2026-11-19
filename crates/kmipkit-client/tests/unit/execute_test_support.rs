@@ -312,11 +312,14 @@ fn one_item_response_bytes_with_version(
             Value::integer(protocol_version.minor()),
         ),
     ]);
-    let header = structure([
+    let mut header_items = vec![
         item(PROTOCOL_VERSION, Value::structure(response_version)),
         item(TIME_STAMP, Value::date_time(1)),
-        item(BATCH_COUNT, Value::integer(1)),
-    ]);
+    ];
+    if protocol_version.major() < 3 {
+        header_items.push(item(BATCH_COUNT, Value::integer(1)));
+    }
+    let header = structure(header_items);
     let mut item_fields = vec![item(OPERATION, Value::enumeration(fields.operation))];
     if let Some(id) = fields.unique_batch_item_id {
         item_fields.push(item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(id.to_vec())));

@@ -111,7 +111,10 @@ mod value {
                     ValueView::BigInteger(bytes) | ValueView::ByteString(bytes) => bytes.is_empty(),
                     ValueView::Enumeration(number) | ValueView::Interval(number) => *number == 0,
                     ValueView::Boolean(boolean) => !boolean,
-                    ValueView::TextString(text) => text.is_empty(),
+                    ValueView::TextString(text)
+                    | ValueView::Identifier(text)
+                    | ValueView::Reference(text)
+                    | ValueView::NameReference(text) => text.is_empty(),
                     ValueView::Structure(_) => false,
                 })
                 .collect::<Vec<_>>();

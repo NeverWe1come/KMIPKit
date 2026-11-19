@@ -194,8 +194,8 @@ fn valid_request_and_response_preserve_envelope_order_and_counts() {
 
     assert_eq!(request.header().protocol_version().major(), 2);
     assert_eq!(request.header().protocol_version().minor(), 1);
-    assert_eq!(request.header().batch_count(), 1);
-    assert_eq!(response.header().batch_count(), 1);
+    assert_eq!(request.header().batch_count(), Some(1));
+    assert_eq!(response.header().batch_count(), Some(1));
     assert_eq!(
         response.with_ttlv(|tree| tree
             .children()

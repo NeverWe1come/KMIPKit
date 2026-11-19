@@ -2,15 +2,16 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{Structure, ValueView};
+use kmipkit_ttlv::{KmipTag, Structure, ValueView};
 
 use crate::{ProtocolError, RequestBatchItemView};
+use crate::enums::OperationCode;
 
 /// The KMIP operation code for Notify (`0x0000_001B`).
-pub const NOTIFY_OPERATION: u32 = 0x0000_001B;
-const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
-const ATTRIBUTES: u32 = 0x0042_0125;
-const DELETED_ATTRIBUTE_REFERENCE: u32 = 0x0042_0126;
+pub const NOTIFY_OPERATION: u32 = OperationCode::Notify.as_u32();
+const UNIQUE_IDENTIFIER: u32 = KmipTag::UniqueIdentifier.as_u32();
+const ATTRIBUTES: u32 = KmipTag::Attributes.as_u32();
+const DELETED_ATTRIBUTE_REFERENCE: u32 = KmipTag::AttributeReference.as_u32();
 
 /// A server-to-client Notify request (§6.2.2).
 #[derive(Debug)]

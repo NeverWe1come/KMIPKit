@@ -525,6 +525,48 @@ fn decode_value(
         ItemKind::DateTimeExtended => {
             Value::date_time_extended(read_i64(value_bytes, value_start)?)
         }
+        ItemKind::Identifier => {
+            str::from_utf8(value_bytes)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            let owned = copy_payload(
+                value_bytes,
+                value_start,
+                state.limits,
+                #[cfg(test)]
+                state.observer,
+            )?;
+            let text = String::from_utf8(owned)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            Value::identifier(text)
+        }
+        ItemKind::Reference => {
+            str::from_utf8(value_bytes)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            let owned = copy_payload(
+                value_bytes,
+                value_start,
+                state.limits,
+                #[cfg(test)]
+                state.observer,
+            )?;
+            let text = String::from_utf8(owned)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            Value::reference(text)
+        }
+        ItemKind::NameReference => {
+            str::from_utf8(value_bytes)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            let owned = copy_payload(
+                value_bytes,
+                value_start,
+                state.limits,
+                #[cfg(test)]
+                state.observer,
+            )?;
+            let text = String::from_utf8(owned)
+                .map_err(|_| DecodeError::new(DecodeErrorKind::InvalidUtf8, value_start))?;
+            Value::name_reference(text)
+        }
     };
     Ok(value)
 }
@@ -542,6 +584,9 @@ enum ItemKind {
     DateTime,
     Interval,
     DateTimeExtended,
+    Identifier,
+    Reference,
+    NameReference,
 }
 
 impl ItemKind {
@@ -558,6 +603,9 @@ impl ItemKind {
             0x09 => Some(Self::DateTime),
             0x0A => Some(Self::Interval),
             0x0B => Some(Self::DateTimeExtended),
+            0x0C => Some(Self::Identifier),
+            0x0D => Some(Self::Reference),
+            0x0E => Some(Self::NameReference),
             _ => None,
         }
     }
@@ -581,7 +629,11 @@ fn validate_item_length(
             }
             length.is_multiple_of(8)
         }
-        ItemKind::TextString | ItemKind::ByteString => true,
+        ItemKind::TextString
+        | ItemKind::ByteString
+        | ItemKind::Identifier
+        | ItemKind::Reference
+        | ItemKind::NameReference => true,
     };
     if valid {
         Ok(())
@@ -593,7 +645,11 @@ fn validate_item_length(
 fn padding_length(item_kind: ItemKind, value_length: usize) -> usize {
     match item_kind {
         ItemKind::Integer | ItemKind::Enumeration | ItemKind::Interval => 4,
-        ItemKind::TextString | ItemKind::ByteString => (8 - value_length % 8) % 8,
+        ItemKind::TextString
+        | ItemKind::ByteString
+        | ItemKind::Identifier
+        | ItemKind::Reference
+        | ItemKind::NameReference => (8 - value_length % 8) % 8,
         ItemKind::Structure
         | ItemKind::LongInteger
         | ItemKind::BigInteger

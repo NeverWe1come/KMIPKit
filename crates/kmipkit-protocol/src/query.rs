@@ -74,6 +74,8 @@ impl QueryFunction {
     pub const DEFAULTS_INFORMATION: Self = Self(13);
     /// Query Storage Protection Masks (14).
     pub const STORAGE_PROTECTION_MASKS: Self = Self(14);
+    /// Query Performs CRL Checks (15, KMIP 3.0).
+    pub const PERFORMS_CRL_CHECKS: Self = Self(15);
 
     /// Constructs a Query Function from its exact raw Enumeration value.
     #[must_use]
@@ -88,7 +90,7 @@ impl QueryFunction {
     }
 
     const fn is_valid_request_value(self) -> bool {
-        (self.0 >= 1 && self.0 <= 14)
+        (self.0 >= 1 && self.0 <= 15)
             || (self.0 >= ENUMERATION_EXTENSION_MIN && self.0 <= ENUMERATION_EXTENSION_MAX)
     }
 }

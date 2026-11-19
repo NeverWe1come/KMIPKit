@@ -103,13 +103,13 @@ fn link_normalizer_additional_coverage() {
 #[test]
 fn query_async_requests_parses_typed_asynchronous_request_entries() {
     let async_request = make_structure(vec![
-        make_item(0x0042_0146, Value::byte_string(vec![0xAA, 0xBB])),
+        make_item(0x0042_0006, Value::byte_string(vec![0xAA, 0xBB])),
         make_item(0x0042_005C, Value::enumeration(0x0000_0001)),
         make_item(0x0042_0174, Value::date_time(1_700_000_000)),
         make_item(0x0042_0175, Value::enumeration(0x0000_0001)),
     ]);
     let payload = make_structure(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(async_request),
     )]);
     let batch_item = make_structure(vec![
@@ -149,7 +149,7 @@ fn query_async_requests_optional_fields_and_debug() {
         make_item(0x0042_000F, Value::structure(nested_batch_item)),
     ]);
     let payload = make_structure(vec![
-        make_item(0x0042_0172, Value::structure(async_request)),
+        make_item(0x0042_0173, Value::structure(async_request)),
         make_item(0x0042_0099, Value::integer(42)),
     ]);
     let batch_item = make_structure(vec![
@@ -206,10 +206,10 @@ fn query_async_requests_optional_fields_and_debug() {
 
 #[test]
 fn query_async_requests_missing_required_fields_rejected() {
-    assert_query_async_error(vec![make_item(0x0042_0172, Value::integer(123))]);
+    assert_query_async_error(vec![make_item(0x0042_0173, Value::integer(123))]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0174, Value::date_time(100)),
@@ -218,27 +218,27 @@ fn query_async_requests_missing_required_fields_rejected() {
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_0174, Value::date_time(100)),
             make_item(0x0042_0175, Value::enumeration(1)),
         ])),
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0175, Value::enumeration(1)),
         ])),
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0174, Value::date_time(100)),
         ])),
@@ -248,9 +248,9 @@ fn query_async_requests_missing_required_fields_rejected() {
 #[test]
 fn query_async_requests_malformed_field_types_rejected() {
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::integer(1)),
+            make_item(0x0042_0006, Value::integer(1)),
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0174, Value::date_time(100)),
             make_item(0x0042_0175, Value::enumeration(1)),
@@ -258,9 +258,9 @@ fn query_async_requests_malformed_field_types_rejected() {
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_005C, Value::text_string("bad".into())),
             make_item(0x0042_0174, Value::date_time(100)),
             make_item(0x0042_0175, Value::enumeration(1)),
@@ -268,9 +268,9 @@ fn query_async_requests_malformed_field_types_rejected() {
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0174, Value::text_string("bad".into())),
             make_item(0x0042_0175, Value::enumeration(1)),
@@ -278,9 +278,9 @@ fn query_async_requests_malformed_field_types_rejected() {
     )]);
 
     assert_query_async_error(vec![make_item(
-        0x0042_0172,
+        0x0042_0173,
         Value::structure(make_structure(vec![
-            make_item(0x0042_0146, Value::byte_string(vec![1])),
+            make_item(0x0042_0006, Value::byte_string(vec![1])),
             make_item(0x0042_005C, Value::enumeration(1)),
             make_item(0x0042_0174, Value::date_time(100)),
             make_item(0x0042_0175, Value::text_string("bad".into())),
@@ -295,9 +295,9 @@ fn query_async_requests_malformed_field_types_rejected() {
     ];
     for bad_field in optional_bad_fields {
         assert_query_async_error(vec![make_item(
-            0x0042_0172,
+            0x0042_0173,
             Value::structure(make_structure(vec![
-                make_item(0x0042_0146, Value::byte_string(vec![1])),
+                make_item(0x0042_0006, Value::byte_string(vec![1])),
                 make_item(0x0042_005C, Value::enumeration(1)),
                 make_item(0x0042_0174, Value::date_time(100)),
                 make_item(0x0042_0175, Value::enumeration(1)),

@@ -234,7 +234,10 @@ fn measure_value(
         ValueView::BigInteger(payload) => measure_big_integer(payload),
         ValueView::Enumeration(_) => Ok(measure_enumeration()),
         ValueView::Boolean(_) => Ok(measure_boolean()),
-        ValueView::TextString(payload) => measure_text_string(payload),
+        ValueView::TextString(payload)
+        | ValueView::Identifier(payload)
+        | ValueView::Reference(payload)
+        | ValueView::NameReference(payload) => measure_text_string(payload),
         ValueView::ByteString(payload) => measure_byte_string(payload),
         ValueView::DateTime(_) => Ok(measure_date_time()),
         ValueView::Interval(_) => Ok(measure_interval()),
@@ -706,7 +709,10 @@ impl Writer<'_> {
             ValueView::BigInteger(payload) => self.write_big_integer_value(payload),
             ValueView::Enumeration(value) => self.write_enumeration_value(*value),
             ValueView::Boolean(value) => self.write_boolean_value(*value),
-            ValueView::TextString(payload) => self.write_text_string_value(payload),
+            ValueView::TextString(payload)
+            | ValueView::Identifier(payload)
+            | ValueView::Reference(payload)
+            | ValueView::NameReference(payload) => self.write_text_string_value(payload),
             ValueView::ByteString(payload) => self.write_byte_string_value(payload),
             ValueView::DateTime(value) => self.write_date_time_value(*value),
             ValueView::Interval(value) => self.write_interval_value(*value),
@@ -851,6 +857,9 @@ const fn type_code(item_type: ItemType) -> u8 {
         ItemType::DateTime => 0x09,
         ItemType::Interval => 0x0a,
         ItemType::DateTimeExtended => 0x0b,
+        ItemType::Identifier => 0x0c,
+        ItemType::Reference => 0x0d,
+        ItemType::NameReference => 0x0e,
         _ => 0,
     }
 }

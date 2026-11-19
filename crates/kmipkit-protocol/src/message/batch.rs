@@ -8,6 +8,7 @@ use super::{RequestMessage, ResponseMessage};
 
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const EPHEMERAL: u32 = 0x0042_0154;
+const EPHEMERAL_MODE: u32 = 0x0042_01BF;
 const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const OPERATION: u32 = 0x0042_005C;
 const REQUEST_PAYLOAD: u32 = 0x0042_0079;
@@ -55,11 +56,28 @@ impl<'a> RequestBatchItemView<'a> {
             .flatten()
     }
 
-    /// Returns the optional Ephemeral Boolean.
+    /// Returns the optional Ephemeral Boolean (KMIP 2.x).
     #[must_use]
     pub fn ephemeral(self) -> Option<bool> {
         self.with_batch(|batch| boolean_field(&batch, EPHEMERAL))
             .flatten()
+    }
+
+    /// Returns the optional Ephemeral Mode Enumeration (KMIP 3.0).
+    #[must_use]
+    pub fn ephemeral_mode(self) -> Option<u32> {
+        self.with_batch(|batch| enumeration_field(&batch, EPHEMERAL_MODE))
+            .flatten()
+    }
+
+    /// Returns whether this batch item is marked ephemeral in either KMIP 2.x or KMIP 3.0.
+    #[must_use]
+    pub fn is_ephemeral(self) -> bool {
+        if let Some(mode) = self.ephemeral_mode() {
+            mode == 1
+        } else {
+            self.ephemeral().unwrap_or(false)
+        }
     }
 
     /// Lends the optional per-item Unique Batch Item ID bytes to a callback.

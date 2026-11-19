@@ -141,7 +141,7 @@ const CHECK_OPERATION_TAG: u32 = 0x0000_0009;
 const LOGIN_OPERATION_TAG: u32 = 0x0000_002D;
 const DELEGATED_LOGIN_OPERATION_TAG: u32 = 0x0000_002F;
 const DELEGATED_LOGIN_RIGHTS_TAG: u32 = 0x0042_014D;
-const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_014E;
+const DELEGATED_LOGIN_RIGHT_TAG: u32 = 0x0042_0150;
 const DELEGATED_LOGIN_REQUEST_COUNT_TAG: u32 = 0x0042_014C;
 const DELEGATED_LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
 const USAGE_LIMITS_TAG: u32 = 0x0042_0095;
@@ -4294,7 +4294,7 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
                 .expect("multi-item requests carry distinct identifiers")
         })
         .collect::<Vec<_>>();
-    assert_eq!(repeated_items_request.header().batch_count(), 2);
+    assert_eq!(repeated_items_request.header().batch_count(), Some(2));
     assert_eq!(actual_ids, vec![b"first".to_vec(), b"second".to_vec()]);
     assert!(evaluate(Some(&repeated_items_request), None));
     result
@@ -4372,7 +4372,7 @@ fn profile_maps_multiple_client_operations_in_one_batch_as_optional_capability()
     ]))
     .expect("two different client operations form a structurally valid request batch");
 
-    assert_eq!(request.header().batch_count(), 2);
+    assert_eq!(request.header().batch_count(), Some(2));
     assert_eq!(
         request
             .batch_items()
@@ -12098,7 +12098,7 @@ fn profile_maps_required_batch_count_to_request_item_count() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let single_item_request = request_message();
-    assert_eq!(single_item_request.header().batch_count(), 1);
+    assert_eq!(single_item_request.header().batch_count(), Some(1));
     assert_eq!(single_item_request.batch_items().len(), 1);
     assert!(evaluate(Some(&single_item_request), None));
     result
@@ -12106,7 +12106,7 @@ fn profile_maps_required_batch_count_to_request_item_count() {
         .expect("one Batch Item is accompanied by Batch Count 1");
 
     let multi_item_request = request_message_with_batch_item_ids(&[b"first", b"second"]);
-    assert_eq!(multi_item_request.header().batch_count(), 2);
+    assert_eq!(multi_item_request.header().batch_count(), Some(2));
     assert_eq!(multi_item_request.batch_items().len(), 2);
     assert!(evaluate(Some(&multi_item_request), None));
     result
@@ -12147,7 +12147,7 @@ fn profile_maps_single_operation_batch_count_to_one() {
     };
     let single_item_request = request_message();
     assert_eq!(single_item_request.batch_items().len(), 1);
-    assert_eq!(single_item_request.header().batch_count(), 1);
+    assert_eq!(single_item_request.header().batch_count(), Some(1));
     assert!(evaluate(Some(&single_item_request), None));
     result
         .validate_request(&single_item_request)
@@ -12155,7 +12155,7 @@ fn profile_maps_single_operation_batch_count_to_one() {
 
     let multi_item_request = request_message_with_batch_item_ids(&[b"first", b"second"]);
     assert_eq!(multi_item_request.batch_items().len(), 2);
-    assert_eq!(multi_item_request.header().batch_count(), 2);
+    assert_eq!(multi_item_request.header().batch_count(), Some(2));
     assert!(evaluate(Some(&multi_item_request), None));
     result
         .validate_request(&multi_item_request)
@@ -12377,7 +12377,7 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
         requirement_ids: vec![REQUIREMENT_ID.to_owned()],
     };
     let single_item_request = request_message();
-    assert_eq!(single_item_request.header().batch_count(), 1);
+    assert_eq!(single_item_request.header().batch_count(), Some(1));
     assert_eq!(
         single_item_request
             .header()
@@ -12391,7 +12391,7 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
 
     let multi_item_request_without_option =
         request_message_with_batch_error_continuation_option(None);
-    assert_eq!(multi_item_request_without_option.header().batch_count(), 2);
+    assert_eq!(multi_item_request_without_option.header().batch_count(), Some(2));
     assert_eq!(
         multi_item_request_without_option
             .header()
@@ -12405,7 +12405,7 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
 
     let multi_item_request_with_option =
         request_message_with_batch_error_continuation_option(Some(1));
-    assert_eq!(multi_item_request_with_option.header().batch_count(), 2);
+    assert_eq!(multi_item_request_with_option.header().batch_count(), Some(2));
     assert_eq!(
         multi_item_request_with_option
             .header()

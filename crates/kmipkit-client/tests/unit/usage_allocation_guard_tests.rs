@@ -21,7 +21,8 @@ use crate::execute_test_support::{
 };
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientErrorCategory,
-    ClientRequest, UsageAllocationContext, UsageAllocationContextError,
+    ClientRequest, LeaseContext, LeaseContextError, UsageAllocationContext,
+    UsageAllocationContextError,
 };
 
 const GET_USAGE_ALLOCATION: u32 = 0x0000_0011;
@@ -1059,4 +1060,30 @@ fn guarded_batch_item_transport_failures_settle_reservations_by_delivery_state()
         assert_eq!(context.reserved_units(), expected_reservation);
         assert_eq!(context.available_units(), ALLOCATION - expected_reservation);
     }
+}
+
+#[test]
+fn test_lease_context_expiration_and_validation() {
+    let lease = LeaseContext::new(
+        UniqueIdentifier::TextString("leased-key-01".into()),
+        1_000_000,
+        3600,
+    );
+
+    assert_eq!(lease.expires_at_unix_secs(), 1_003_600);
+    assert!(!lease.is_expired(1_000_000));
+    assert!(!lease.is_expired(1_003_599));
+    assert!(lease.is_expired(1_003_600));
+    assert!(lease.is_expired(1_003_601));
+
+    assert_eq!(lease.check_valid(1_000_000), Ok(()));
+    assert_eq!(lease.check_valid(1_003_599), Ok(()));
+    assert_eq!(
+        lease.check_valid(1_003_600),
+        Err(LeaseContextError::LeaseExpired)
+    );
+    assert_eq!(
+        lease.check_valid(1_005_000),
+        Err(LeaseContextError::LeaseExpired)
+    );
 }

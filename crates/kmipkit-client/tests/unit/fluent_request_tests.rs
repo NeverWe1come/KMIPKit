@@ -846,9 +846,9 @@ fn aes_256_builder_emits_typed_attributes_and_interpreted_text_name() {
         .iter()
         .collect::<Vec<_>>();
     assert_eq!(name.len(), 2);
-    assert_eq!(name[0].tag().raw(), 0x0042_0097);
+    assert_eq!(name[0].tag().raw(), 0x0042_0054);
     assert_eq!(read_enumeration(name[0]), Some(1));
-    assert_eq!(name[1].tag().raw(), 0x0042_0098);
+    assert_eq!(name[1].tag().raw(), 0x0042_0055);
     assert!(name[1].with_value(|value| matches!(
         value,
         ValueView::TextString(name) if name == "payments-key"

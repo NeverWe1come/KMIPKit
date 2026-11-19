@@ -1,5 +1,6 @@
 mod tests {
     use super::*;
+    use crate::RequestMessage;
     use kmipkit_ttlv::{RawTag, Structure, Tag, Value};
 
     fn tag(raw: u32) -> Tag {
@@ -296,7 +297,7 @@ mod tests {
             validate_request_header(&request_header(2).view(), 0)
                 .expect("valid request header")
                 .batch_count,
-            2
+            Some(2)
         );
         let missing_version = structure([item(BATCH_COUNT, Value::integer(1))]);
         assert_kind(
@@ -391,7 +392,7 @@ mod tests {
     fn request_batch_validation_covers_required_fields_optional_ids_and_extensions() {
         let valid = request_batch();
         assert_eq!(
-            validate_request_batch_item(&valid.view(), 1, false).expect("batch valid"),
+            validate_request_batch_item(&valid.view(), 1, false, false).expect("batch valid"),
             Some(vec![1])
         );
         let identified = structure([
@@ -401,19 +402,19 @@ mod tests {
             message_extension(),
         ]);
         assert_eq!(
-            validate_request_batch_item(&identified.view(), 1, true)
+            validate_request_batch_item(&identified.view(), 1, true, false)
                 .expect("identified batch valid"),
             Some(vec![3, 4])
         );
         let missing_operation =
             structure([item(REQUEST_PAYLOAD, Value::structure(Structure::new()))]);
         assert_kind(
-            validate_request_batch_item(&missing_operation.view(), 1, false),
+            validate_request_batch_item(&missing_operation.view(), 1, false, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_payload = structure([item(OPERATION, Value::enumeration(1))]);
         assert_kind(
-            validate_request_batch_item(&missing_payload.view(), 1, false),
+            validate_request_batch_item(&missing_payload.view(), 1, false, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let missing_id = structure([
@@ -422,12 +423,12 @@ mod tests {
         ]);
         // KMIP Specification v2.1 §8.3 Table 396 permits omission only when Batch Count is one.
         assert_eq!(
-            validate_request_batch_item(&missing_id.view(), 1, false)
+            validate_request_batch_item(&missing_id.view(), 1, false, false)
                 .expect("a request batch item may omit its optional ID"),
             None
         );
         assert_kind(
-            validate_request_batch_item(&missing_id.view(), 1, true),
+            validate_request_batch_item(&missing_id.view(), 1, true, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let wrong_id = structure([
@@ -436,7 +437,7 @@ mod tests {
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_request_batch_item(&wrong_id.view(), 1, false),
+            validate_request_batch_item(&wrong_id.view(), 1, false, false),
             MessageValidationErrorKind::WrongItemType,
         );
 
@@ -446,21 +447,21 @@ mod tests {
             item(MESSAGE_EXTENSION, Value::integer(2)),
         ]);
         assert_kind(
-            validate_request_batch_item(&malformed_extension.view(), 1, false),
+            validate_request_batch_item(&malformed_extension.view(), 1, false, false),
             MessageValidationErrorKind::WrongItemType,
         );
     }
 
     #[test]
     fn response_batch_validation_covers_result_invariants_and_extensions() {
-        assert!(validate_response_batch_item(&response_batch(0).view(), 1).is_ok());
-        assert!(validate_response_batch_item(&response_batch(1).view(), 1).is_ok());
-        assert!(validate_response_batch_item(&response_batch(2).view(), 1).is_ok());
-        assert!(validate_response_batch_item(&response_batch(u32::MAX).view(), 1).is_ok());
+        assert!(validate_response_batch_item(&response_batch(0).view(), 1, false).is_ok());
+        assert!(validate_response_batch_item(&response_batch(1).view(), 1, false).is_ok());
+        assert!(validate_response_batch_item(&response_batch(2).view(), 1, false).is_ok());
+        assert!(validate_response_batch_item(&response_batch(u32::MAX).view(), 1, false).is_ok());
 
         let missing_status = Structure::new();
         assert_kind(
-            validate_response_batch_item(&missing_status.view(), 1),
+            validate_response_batch_item(&missing_status.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let wrong_status = structure([item(
@@ -468,7 +469,7 @@ mod tests {
             Value::text_string("success".to_owned()),
         )]);
         assert_kind(
-            validate_response_batch_item(&wrong_status.view(), 1),
+            validate_response_batch_item(&wrong_status.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
         let success_with_reason = structure([
@@ -477,12 +478,12 @@ mod tests {
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_response_batch_item(&success_with_reason.view(), 1),
+            validate_response_batch_item(&success_with_reason.view(), 1, false),
             MessageValidationErrorKind::InvalidResult,
         );
         let failure_without_reason = structure([item(RESULT_STATUS, Value::enumeration(1))]);
         assert_kind(
-            validate_response_batch_item(&failure_without_reason.view(), 1),
+            validate_response_batch_item(&failure_without_reason.view(), 1, false),
             MessageValidationErrorKind::InvalidResult,
         );
         let failure_with_payload = structure([
@@ -491,7 +492,7 @@ mod tests {
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_response_batch_item(&failure_with_payload.view(), 1),
+            validate_response_batch_item(&failure_with_payload.view(), 1, false),
             MessageValidationErrorKind::InvalidResult,
         );
         let check_failure_with_payload = structure([
@@ -500,14 +501,14 @@ mod tests {
             item(RESULT_REASON, Value::enumeration(0x0000_0029)),
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
         ]);
-        assert!(validate_response_batch_item(&check_failure_with_payload.view(), 1).is_ok());
+        assert!(validate_response_batch_item(&check_failure_with_payload.view(), 1, false).is_ok());
         let success_with_message = structure([
             item(RESULT_STATUS, Value::enumeration(0)),
             item(RESULT_MESSAGE, Value::text_string("not allowed".to_owned())),
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_response_batch_item(&success_with_message.view(), 1),
+            validate_response_batch_item(&success_with_message.view(), 1, false),
             MessageValidationErrorKind::InvalidResult,
         );
         let pending_without_correlation = structure([
@@ -515,7 +516,7 @@ mod tests {
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert_kind(
-            validate_response_batch_item(&pending_without_correlation.view(), 1),
+            validate_response_batch_item(&pending_without_correlation.view(), 1, false),
             MessageValidationErrorKind::MissingRequiredField,
         );
         let extension_on_response = structure([
@@ -523,14 +524,14 @@ mod tests {
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
             message_extension(),
         ]);
-        assert!(validate_response_batch_item(&extension_on_response.view(), 1).is_ok());
+        assert!(validate_response_batch_item(&extension_on_response.view(), 1, false).is_ok());
         let bad_extension = structure([
             item(RESULT_STATUS, Value::enumeration(0)),
             item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
             item(MESSAGE_EXTENSION, Value::integer(1)),
         ]);
         assert_kind(
-            validate_response_batch_item(&bad_extension.view(), 1),
+            validate_response_batch_item(&bad_extension.view(), 1, false),
             MessageValidationErrorKind::WrongItemType,
         );
     }
@@ -811,5 +812,97 @@ mod tests {
             validate_response_message(&empty_response.view()),
             MessageValidationErrorKind::InvalidBatchCount,
         );
+    }
+
+    #[test]
+    fn kmip30_header_and_batch_rules_enforce_option_a_and_prohibit_reserved_fields() {
+        fn v3_version() -> Item {
+            item(
+                PROTOCOL_VERSION,
+                Value::structure(structure([
+                    item(PROTOCOL_VERSION_MAJOR, Value::integer(3)),
+                    item(PROTOCOL_VERSION_MINOR, Value::integer(0)),
+                ])),
+            )
+        }
+
+        // KMIP 3.0 request header without Batch Count is valid
+        let v3_req_header = structure([v3_version()]);
+        let validated = validate_request_header(&v3_req_header.view(), 0)
+            .expect("KMIP 3.0 request header without batch count is valid");
+        assert_eq!(validated.batch_count, None);
+
+        // KMIP 3.0 request header with Batch Count must be rejected with InvalidFieldValue
+        let v3_req_with_count = structure([v3_version(), item(BATCH_COUNT, Value::integer(1))]);
+        assert_kind(
+            validate_request_header(&v3_req_with_count.view(), 0),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 request header with Batch Order Option must be rejected with InvalidFieldValue
+        let v3_req_with_order = structure([v3_version(), item(BATCH_ORDER_OPTION, Value::boolean(true))]);
+        assert_kind(
+            validate_request_header(&v3_req_with_order.view(), 0),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 response header without Batch Count is valid
+        let v3_resp_header = structure([v3_version(), item(TIME_STAMP, Value::date_time(100))]);
+        let val_resp = validate_response_header(&v3_resp_header.view(), 0)
+            .expect("KMIP 3.0 response header without batch count is valid");
+        assert_eq!(val_resp.batch_count, None);
+
+        // KMIP 3.0 response header with Batch Count must be rejected with InvalidFieldValue
+        let v3_resp_with_count = structure([
+            v3_version(),
+            item(TIME_STAMP, Value::date_time(100)),
+            item(BATCH_COUNT, Value::integer(1)),
+        ]);
+        assert_kind(
+            validate_response_header(&v3_resp_with_count.view(), 0),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 request batch: Unique Batch Item ID must be rejected
+        let v3_batch_with_id = structure([
+            item(OPERATION, Value::enumeration(1)),
+            item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(vec![1])),
+            item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
+        ]);
+        assert_kind(
+            validate_request_batch_item(&v3_batch_with_id.view(), 1, false, true),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 request batch: Ephemeral Boolean must be rejected
+        let v3_batch_with_bool_ephemeral = structure([
+            item(OPERATION, Value::enumeration(1)),
+            item(EPHEMERAL, Value::boolean(true)),
+            item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
+        ]);
+        assert_kind(
+            validate_request_batch_item(&v3_batch_with_bool_ephemeral.view(), 1, false, true),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 request batch: Ephemeral Mode Enum is allowed
+        let v3_batch_with_mode = structure([
+            item(OPERATION, Value::enumeration(1)),
+            item(EPHEMERAL_MODE, Value::enumeration(1)),
+            item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
+        ]);
+        assert!(validate_request_batch_item(&v3_batch_with_mode.view(), 1, false, true).is_ok());
+
+        // Full KMIP 3.0 message validation and effective_batch_count
+        let v3_full_req = structure([
+            item(REQUEST_HEADER, Value::structure(v3_req_header)),
+            item(BATCH_ITEM, Value::structure(v3_batch_with_mode)),
+        ]);
+        let msg = RequestMessage::try_from_ttlv(v3_full_req).expect("valid KMIP 3.0 message");
+        assert_eq!(msg.header().batch_count(), None);
+        assert_eq!(msg.header().effective_batch_count(), 1);
+        let first_item = msg.batch_items().next().unwrap();
+        assert!(first_item.is_ephemeral());
+        assert_eq!(first_item.ephemeral_mode(), Some(1));
     }
 }

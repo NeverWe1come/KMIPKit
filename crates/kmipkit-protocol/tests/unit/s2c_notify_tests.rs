@@ -127,7 +127,7 @@ fn test_server_notify_request_decoding_with_attributes_and_deleted_references() 
     payload
         .try_push(
             Item::new(
-                RawTag::new(0x0042_0126).unwrap().try_checked().unwrap(),
+                kmipkit_ttlv::KmipTag::AttributeReference.into_tag(),
                 Value::structure(del_ref),
             )
             .unwrap(),

@@ -208,3 +208,79 @@ impl fmt::Display for UsageAllocationContextError {
 }
 
 impl Error for UsageAllocationContextError {}
+
+/// Caller-owned local guard for a leased KMIP object obtained via `ObtainLease`.
+///
+/// Encapsulates the lease interval (in seconds) or absolute expiry timestamp,
+/// ensuring that client-side operations verify lease validity before sending requests.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LeaseContext {
+    unique_identifier: UniqueIdentifier,
+    obtained_at_unix_secs: i64,
+    lease_time_secs: i64,
+}
+
+impl LeaseContext {
+    /// Creates a new `LeaseContext` from a unique identifier, the Unix timestamp (in seconds) when the lease was granted,
+    /// and the lease duration (in seconds).
+    #[must_use]
+    pub const fn new(
+        unique_identifier: UniqueIdentifier,
+        obtained_at_unix_secs: i64,
+        lease_time_secs: i64,
+    ) -> Self {
+        Self {
+            unique_identifier,
+            obtained_at_unix_secs,
+            lease_time_secs,
+        }
+    }
+
+    /// Returns the unique identifier of the leased object.
+    #[must_use]
+    pub const fn unique_identifier(&self) -> &UniqueIdentifier {
+        &self.unique_identifier
+    }
+
+    /// Returns the absolute expiry Unix timestamp in seconds.
+    #[must_use]
+    pub const fn expires_at_unix_secs(&self) -> i64 {
+        self.obtained_at_unix_secs.saturating_add(self.lease_time_secs)
+    }
+
+    /// Checks if the lease has expired given current time.
+    #[must_use]
+    pub const fn is_expired(&self, current_time_unix_secs: i64) -> bool {
+        current_time_unix_secs >= self.expires_at_unix_secs()
+    }
+
+    /// Validates lease validity at `current_time_unix_secs`.
+    ///
+    /// # Errors
+    /// Returns `LeaseExpired` error if the lease has elapsed.
+    pub const fn check_valid(&self, current_time_unix_secs: i64) -> Result<(), LeaseContextError> {
+        if self.is_expired(current_time_unix_secs) {
+            Err(LeaseContextError::LeaseExpired)
+        } else {
+            Ok(())
+        }
+    }
+}
+
+/// Errors emitted by local lease validation.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum LeaseContextError {
+    /// The lease duration has elapsed.
+    LeaseExpired,
+}
+
+impl fmt::Display for LeaseContextError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::LeaseExpired => formatter.write_str("object lease has expired"),
+        }
+    }
+}
+
+impl Error for LeaseContextError {}

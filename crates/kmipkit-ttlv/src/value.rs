@@ -31,6 +31,12 @@ pub enum ItemType {
     Interval,
     /// A signed 64-bit Date Time Extended value.
     DateTimeExtended,
+    /// A globally unique identifier string (KMIP 3.0+ Item Type 0x0C).
+    Identifier,
+    /// An object or attribute reference (KMIP 3.0+ Item Type 0x0D).
+    Reference,
+    /// A name reference (KMIP 3.0+ Item Type 0x0E).
+    NameReference,
 }
 
 /// An opaque owning KMIP Item Value.
@@ -83,6 +89,9 @@ enum ValueRepr {
     DateTime(i64),
     Interval(u32),
     DateTimeExtended(i64),
+    Identifier(String),
+    Reference(String),
+    NameReference(String),
 }
 
 impl Debug for Value {
@@ -110,6 +119,9 @@ impl Debug for ValueView<'_> {
             Self::DateTime(_) => (ItemType::DateTime, None),
             Self::Interval(_) => (ItemType::Interval, None),
             Self::DateTimeExtended(_) => (ItemType::DateTimeExtended, None),
+            Self::Identifier(_) => (ItemType::Identifier, None),
+            Self::Reference(_) => (ItemType::Reference, None),
+            Self::NameReference(_) => (ItemType::NameReference, None),
         };
 
         debug_value_metadata(formatter, "ValueView", item_type, child_count)
@@ -143,7 +155,10 @@ impl Zeroize for ValueRepr {
             Self::BigInteger(value) | Self::ByteString(value) => value.zeroize(),
             Self::Enumeration(value) | Self::Interval(value) => value.zeroize(),
             Self::Boolean(value) => value.zeroize(),
-            Self::TextString(value) => value.zeroize(),
+            Self::TextString(value)
+            | Self::Identifier(value)
+            | Self::Reference(value)
+            | Self::NameReference(value) => value.zeroize(),
         }
     }
 }
@@ -176,6 +191,12 @@ pub enum ValueView<'a> {
     Interval(&'a u32),
     /// A borrowed signed 64-bit Date Time Extended value.
     DateTimeExtended(&'a i64),
+    /// Borrowed KMIP 3.0 Identifier (0x0C).
+    Identifier(&'a str),
+    /// Borrowed KMIP 3.0 Reference (0x0D).
+    Reference(&'a str),
+    /// Borrowed KMIP 3.0 Name Reference (0x0E).
+    NameReference(&'a str),
 }
 
 impl Value {
@@ -248,6 +269,24 @@ impl Value {
         Self::new(ValueRepr::DateTimeExtended(value))
     }
 
+    /// Creates an Identifier value (KMIP 3.0 Item Type 0x0C).
+    #[must_use]
+    pub fn identifier(value: String) -> Self {
+        Self::new(ValueRepr::Identifier(value))
+    }
+
+    /// Creates a Reference value (KMIP 3.0 Item Type 0x0D).
+    #[must_use]
+    pub fn reference(value: String) -> Self {
+        Self::new(ValueRepr::Reference(value))
+    }
+
+    /// Creates a Name Reference value (KMIP 3.0 Item Type 0x0E).
+    #[must_use]
+    pub fn name_reference(value: String) -> Self {
+        Self::new(ValueRepr::NameReference(value))
+    }
+
     fn new(value: ValueRepr) -> Self {
         Self {
             inner: Secret::new(value),
@@ -269,6 +308,9 @@ impl Value {
             ValueRepr::DateTime(_) => ItemType::DateTime,
             ValueRepr::Interval(_) => ItemType::Interval,
             ValueRepr::DateTimeExtended(_) => ItemType::DateTimeExtended,
+            ValueRepr::Identifier(_) => ItemType::Identifier,
+            ValueRepr::Reference(_) => ItemType::Reference,
+            ValueRepr::NameReference(_) => ItemType::NameReference,
         }
     }
 
@@ -285,6 +327,9 @@ impl Value {
             ValueRepr::DateTime(value) => ValueView::DateTime(value),
             ValueRepr::Interval(value) => ValueView::Interval(value),
             ValueRepr::DateTimeExtended(value) => ValueView::DateTimeExtended(value),
+            ValueRepr::Identifier(value) => ValueView::Identifier(value),
+            ValueRepr::Reference(value) => ValueView::Reference(value),
+            ValueRepr::NameReference(value) => ValueView::NameReference(value),
         }
     }
 
@@ -324,5 +369,8 @@ pub(crate) fn clone_value_view(value: ValueView<'_>) -> Result<Value, crate::Mod
         ValueView::DateTime(value) => Ok(Value::date_time(*value)),
         ValueView::Interval(value) => Ok(Value::interval(*value)),
         ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
+        ValueView::Identifier(value) => Ok(Value::identifier((*value).to_owned())),
+        ValueView::Reference(value) => Ok(Value::reference((*value).to_owned())),
+        ValueView::NameReference(value) => Ok(Value::name_reference((*value).to_owned())),
     }
 }

@@ -1,6 +1,6 @@
 //! Lossless normalization for link relationships shared by KMIP 2.1 and 3.0.
 
-use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
+use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Value, ValueView};
 
 /// A link relationship with an exact KMIP 2.1 and KMIP 3.0 representation.
 ///
@@ -183,8 +183,8 @@ impl LinkNormalizer {
     /// Returns a fixed, redacted error when the input shape or values cannot
     /// be represented without loss.
     pub fn normalize_to_v3(generic_link: &Item) -> Result<Item, String> {
-        if generic_link.tag().raw() != 0x0042_0047 {
-            return Err("Expected KMIP 2.1 generic Link tag 0x0042_0047".into());
+        if generic_link.tag().raw() != KmipTag::Link.as_u32() {
+            return Err("Expected KMIP 2.1 generic Link tag 0x0042_004A".into());
         }
 
         let mut is_structure = false;
@@ -197,20 +197,19 @@ impl LinkNormalizer {
             };
             is_structure = true;
             for child in structure.children() {
-                match child.tag().raw() {
-                    0x0042_0048 if link_type.is_none() => {
-                        child.with_value(|value| match value {
-                            ValueView::Enumeration(raw) => link_type = Some(*raw),
-                            _ => invalid_child = true,
-                        });
-                    }
-                    0x0042_0049 if linked_identifier.is_none() => {
-                        child.with_value(|value| match copy_identifier(&value) {
-                            Ok(identifier) => linked_identifier = Some(identifier),
-                            Err(()) => invalid_child = true,
-                        });
-                    }
-                    _ => invalid_child = true,
+                let tag_raw = child.tag().raw();
+                if tag_raw == KmipTag::LinkType.as_u32() && link_type.is_none() {
+                    child.with_value(|value| match value {
+                        ValueView::Enumeration(raw) => link_type = Some(*raw),
+                        _ => invalid_child = true,
+                    });
+                } else if tag_raw == KmipTag::LinkedObjectIdentifier.as_u32() && linked_identifier.is_none() {
+                    child.with_value(|value| match copy_identifier(&value) {
+                        Ok(identifier) => linked_identifier = Some(identifier),
+                        Err(()) => invalid_child = true,
+                    });
+                } else {
+                    invalid_child = true;
                 }
             }
         });
@@ -251,9 +250,9 @@ impl LinkNormalizer {
             .with_value(|value| copy_identifier(&value))
             .map_err(|()| "KMIP 3.0 link identifier has no KMIP 2.1 representation".to_string())?;
 
-        let link_type_tag = checked_tag(0x0042_0048)?;
-        let identifier_tag = checked_tag(0x0042_0049)?;
-        let link_tag = checked_tag(0x0042_0047)?;
+        let link_type_tag = KmipTag::LinkType.into_tag();
+        let identifier_tag = KmipTag::LinkedObjectIdentifier.into_tag();
+        let link_tag = KmipTag::Link.into_tag();
         let mut structure = Structure::new();
         structure
             .try_push(
@@ -276,13 +275,9 @@ fn copy_identifier(value: &ValueView<'_>) -> Result<Value, ()> {
     match value {
         ValueView::Enumeration(value) => Ok(Value::enumeration(**value)),
         ValueView::Integer(value) => Ok(Value::integer(**value)),
+        ValueView::Identifier(value) => Ok(Value::identifier((*value).to_string())),
+        ValueView::Reference(value) => Ok(Value::reference((*value).to_string())),
+        ValueView::NameReference(value) => Ok(Value::name_reference((*value).to_string())),
         _ => Err(()),
     }
-}
-
-fn checked_tag(raw: u32) -> Result<kmipkit_ttlv::Tag, String> {
-    RawTag::new(raw)
-        .map_err(|_| "KMIP tag is invalid".to_string())?
-        .try_checked()
-        .map_err(|_| "KMIP tag is not allocated".to_string())
 }

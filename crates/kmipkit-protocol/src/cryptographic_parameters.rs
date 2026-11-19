@@ -24,6 +24,11 @@ const MASK_GENERATOR: u32 = 0x0042_0101;
 const MASK_GENERATOR_HASHING_ALGORITHM: u32 = 0x0042_0102;
 const P_SOURCE: u32 = 0x0042_0103;
 const TRAILER_FIELD: u32 = 0x0042_0104;
+const KEM_ALGORITHM: u32 = 0x0042_01C3;
+const DETERMINISTIC: u32 = 0x0042_01C4;
+const CONTEXT_STRING: u32 = 0x0042_01C5;
+const SEED: u32 = 0x0042_01C6;
+const INPUT_KEY_MATERIAL: u32 = 0x0042_01C7;
 
 // OASIS KMIP v2.1 §11.6, Table 436. NIST SP 800-38C Appendix A.1 supports
 // classifying CCM as variable-IV through its permitted example nonce lengths.
@@ -186,6 +191,39 @@ impl CryptographicParameters {
     pub fn trailer_field(&self) -> Option<i32> {
         integer(&self.structure, TRAILER_FIELD)
     }
+
+    /// Returns the raw KEM Algorithm Enumeration (KMIP 3.0), if present.
+    #[must_use]
+    pub fn kem_algorithm(&self) -> Option<u32> {
+        enumeration(&self.structure, KEM_ALGORITHM)
+    }
+
+    /// Returns the Deterministic boolean (KMIP 3.0), if present.
+    #[must_use]
+    pub fn deterministic(&self) -> Option<bool> {
+        boolean(&self.structure, DETERMINISTIC)
+    }
+
+    /// Lends the Context String bytes (KMIP 3.0), if present.
+    pub fn with_context_string<R>(
+        &self,
+        callback: impl for<'a> FnOnce(&'a [u8]) -> R,
+    ) -> Option<R> {
+        byte_string(&self.structure, CONTEXT_STRING, callback)
+    }
+
+    /// Lends the Seed bytes (KMIP 3.0), if present.
+    pub fn with_seed<R>(&self, callback: impl for<'a> FnOnce(&'a [u8]) -> R) -> Option<R> {
+        byte_string(&self.structure, SEED, callback)
+    }
+
+    /// Lends the Input Key Material bytes (KMIP 3.0), if present.
+    pub fn with_input_key_material<R>(
+        &self,
+        callback: impl for<'a> FnOnce(&'a [u8]) -> R,
+    ) -> Option<R> {
+        byte_string(&self.structure, INPUT_KEY_MATERIAL, callback)
+    }
 }
 
 impl fmt::Debug for CryptographicParameters {
@@ -220,6 +258,11 @@ pub struct CryptographicParametersBuilder {
     mask_generator_hashing_algorithm: Option<u32>,
     p_source: Option<SecretBytes>,
     trailer_field: Option<i32>,
+    kem_algorithm: Option<u32>,
+    deterministic: Option<bool>,
+    context_string: Option<Vec<u8>>,
+    seed: Option<SecretBytes>,
+    input_key_material: Option<SecretBytes>,
     extensions: Vec<Item>,
 }
 
@@ -246,6 +289,11 @@ impl CryptographicParametersBuilder {
             mask_generator_hashing_algorithm: None,
             p_source: None,
             trailer_field: None,
+            kem_algorithm: None,
+            deterministic: None,
+            context_string: None,
+            seed: None,
+            input_key_material: None,
             extensions: Vec::new(),
         }
     }
@@ -358,6 +406,36 @@ impl CryptographicParametersBuilder {
         self.trailer_field = Some(value);
         self
     }
+    /// Sets KEM Algorithm Enumeration (KMIP 3.0).
+    #[must_use]
+    pub const fn with_kem_algorithm(mut self, value: u32) -> Self {
+        self.kem_algorithm = Some(value);
+        self
+    }
+    /// Sets Deterministic Boolean (KMIP 3.0).
+    #[must_use]
+    pub const fn with_deterministic(mut self, value: bool) -> Self {
+        self.deterministic = Some(value);
+        self
+    }
+    /// Takes ownership of Context String bytes (KMIP 3.0).
+    #[must_use]
+    pub fn with_context_string(mut self, value: Vec<u8>) -> Self {
+        self.context_string = Some(value);
+        self
+    }
+    /// Takes ownership of Seed bytes (KMIP 3.0).
+    #[must_use]
+    pub fn with_seed(mut self, value: Vec<u8>) -> Self {
+        self.seed = Some(SecretBytes::new(value));
+        self
+    }
+    /// Takes ownership of Input Key Material bytes (KMIP 3.0).
+    #[must_use]
+    pub fn with_input_key_material(mut self, value: Vec<u8>) -> Self {
+        self.input_key_material = Some(SecretBytes::new(value));
+        self
+    }
 
     /// Takes ownership of an unknown or vendor extension member.
     #[must_use]
@@ -414,6 +492,17 @@ impl CryptographicParametersBuilder {
             push(&mut structure, P_SOURCE, value.into_ttlv_value())?;
         }
         push_integer(&mut structure, TRAILER_FIELD, self.trailer_field)?;
+        push_enum(&mut structure, KEM_ALGORITHM, self.kem_algorithm)?;
+        push_boolean(&mut structure, DETERMINISTIC, self.deterministic)?;
+        if let Some(cs) = self.context_string {
+            push(&mut structure, CONTEXT_STRING, Value::byte_string(cs))?;
+        }
+        if let Some(s) = self.seed {
+            push(&mut structure, SEED, s.into_ttlv_value())?;
+        }
+        if let Some(ikm) = self.input_key_material {
+            push(&mut structure, INPUT_KEY_MATERIAL, ikm.into_ttlv_value())?;
+        }
         for extension in self.extensions {
             structure.try_push(extension).map_err(model_error)?;
         }
@@ -483,6 +572,24 @@ fn boolean(structure: &Structure, tag: u32) -> Option<bool> {
         ValueView::Boolean(value) => Some(*value),
         _ => None,
     })
+}
+
+fn byte_string<R>(
+    structure: &Structure,
+    tag: u32,
+    callback: impl for<'a> FnOnce(&'a [u8]) -> R,
+) -> Option<R> {
+    structure
+        .view()
+        .children()
+        .iter()
+        .find(|field| field.tag().raw() == tag)
+        .and_then(|field| {
+            field.with_value(|value| match value {
+                ValueView::ByteString(bytes) => Some(callback(bytes)),
+                _ => None,
+            })
+        })
 }
 
 fn find_field<R>(
@@ -630,7 +737,7 @@ pub(crate) fn validate_cryptographic_parameters_view(
 pub(super) fn validate_known_cryptographic_parameters_view(
     parameters: &StructureView<'_>,
 ) -> Result<(), ProtocolError> {
-    let mut seen = [false; 18];
+    let mut seen = [false; 23];
     let mut last_position = None;
     for field in parameters.children() {
         let (index, valid_type) = match field.tag().raw() {
@@ -705,6 +812,26 @@ pub(super) fn validate_known_cryptographic_parameters_view(
             TRAILER_FIELD => (
                 Some(17),
                 field.with_value(|value| matches!(value, ValueView::Integer(_))),
+            ),
+            KEM_ALGORITHM => (
+                Some(18),
+                field.with_value(|value| matches!(value, ValueView::Enumeration(_))),
+            ),
+            DETERMINISTIC => (
+                Some(19),
+                field.with_value(|value| matches!(value, ValueView::Boolean(_))),
+            ),
+            CONTEXT_STRING => (
+                Some(20),
+                field.with_value(|value| matches!(value, ValueView::ByteString(_))),
+            ),
+            SEED => (
+                Some(21),
+                field.with_value(|value| matches!(value, ValueView::ByteString(_))),
+            ),
+            INPUT_KEY_MATERIAL => (
+                Some(22),
+                field.with_value(|value| matches!(value, ValueView::ByteString(_))),
             ),
             _ => (None, true),
         };

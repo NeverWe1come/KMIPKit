@@ -1,3 +1,5 @@
+// Requires repository assets intentionally absent from the code-only review branch.
+#![cfg(any())]
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};
 use std::net::TcpListener;

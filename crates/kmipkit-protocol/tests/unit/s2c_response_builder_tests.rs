@@ -26,7 +26,7 @@ fn test_server_response_builder_constructors_and_success() {
         .build_success(0x1C, Some(payload))
         .expect("build_success succeeds");
     assert_eq!(resp.header().protocol_version(), custom_ver);
-    assert_eq!(resp.header().batch_count(), 1);
+    assert_eq!(resp.header().effective_batch_count(), 1);
 
     let items: Vec<_> = resp.batch_items().collect();
     assert_eq!(items.len(), 1);
@@ -43,7 +43,7 @@ fn test_server_response_builder_constructors_and_success() {
 fn test_server_response_builder_build_success_without_payload() {
     let builder = ServerResponseBuilder::default();
     let resp = builder.build_success(0x1B, None).expect("build succeeds");
-    assert_eq!(resp.header().batch_count(), 1);
+    assert_eq!(resp.header().effective_batch_count(), 1);
     let item = resp.batch_items().next().expect("item exists");
     assert_eq!(item.operation(), Some(0x1B));
     assert_eq!(
@@ -63,7 +63,7 @@ fn test_server_response_builder_build_error() {
         )
         .expect("build_error succeeds");
 
-    assert_eq!(resp.header().batch_count(), 1);
+    assert_eq!(resp.header().effective_batch_count(), 1);
     let item = resp.batch_items().next().expect("item exists");
     assert_eq!(item.operation(), Some(0x1E));
     assert_eq!(
@@ -142,7 +142,7 @@ fn test_server_response_builder_batch_with_unique_ids() {
     builder.add_item(raw_item);
 
     let resp = builder.build().expect("build batch succeeds");
-    assert_eq!(resp.header().batch_count(), 3);
+    assert_eq!(resp.header().effective_batch_count(), 3);
     let items: Vec<_> = resp.batch_items().collect();
     assert_eq!(items.len(), 3);
     assert_eq!(

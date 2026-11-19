@@ -17,7 +17,7 @@
 //!     assert_eq!(version.minor(), 1);
 //!     assert_eq!(
 //!         message.batch_items().len(),
-//!         usize::try_from(message.header().batch_count())?
+//!         usize::try_from(message.header().effective_batch_count())?
 //!     );
 //!     let _tree_for_the_next_layer = message.into_ttlv();
 //!     Ok(())

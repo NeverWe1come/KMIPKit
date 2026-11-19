@@ -2,28 +2,28 @@
 
 use std::fmt;
 
-use kmipkit_ttlv::{Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{KmipTag, Structure, StructureView, Value, ValueView};
 
 use crate::asynchronous::{
     AsynchronousOperationError, SecretBytes, item, operation_result, structure,
 };
+use crate::enums::OperationCode;
 use crate::{
     KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultReason, ResultStatus,
 };
 
-const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = 0x0000_0039;
-const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
-const ASYNCHRONOUS_REQUEST: u32 = 0x0042_0172;
-const ASYNCHRONOUS_CORRELATION_VALUE_V21: u32 = 0x0042_0146;
-const ASYNCHRONOUS_CORRELATION_VALUE_V20: u32 = 0x0042_0006;
-const SUBMISSION_DATE: u32 = 0x0042_0174;
-const PROCESSING_STAGE: u32 = 0x0042_0175;
-const RESULT_STATUS: u32 = 0x0042_007F;
-const RESULT_REASON: u32 = 0x0042_007E;
-const RESULT_MESSAGE: u32 = 0x0042_007D;
-const BATCH_ITEM: u32 = 0x0042_000F;
-const OPERATIONS: u32 = 0x0042_014F;
-const OPERATION: u32 = 0x0042_005C;
+const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = OperationCode::QueryAsynchronousRequests.as_u32();
+const ASYNCHRONOUS_CORRELATION_VALUES: u32 = KmipTag::AsynchronousCorrelationValues.as_u32();
+const ASYNCHRONOUS_REQUEST: u32 = KmipTag::AsynchronousRequest.as_u32();
+const ASYNCHRONOUS_CORRELATION_VALUE: u32 = KmipTag::AsynchronousCorrelationValue.as_u32();
+const SUBMISSION_DATE: u32 = KmipTag::SubmissionDate.as_u32();
+const PROCESSING_STAGE: u32 = KmipTag::ProcessingStage.as_u32();
+const RESULT_STATUS: u32 = KmipTag::ResultStatus.as_u32();
+const RESULT_REASON: u32 = KmipTag::ResultReason.as_u32();
+const RESULT_MESSAGE: u32 = KmipTag::ResultMessage.as_u32();
+const BATCH_ITEM: u32 = KmipTag::BatchItem.as_u32();
+const OPERATIONS: u32 = KmipTag::Operations.as_u32();
+const OPERATION: u32 = KmipTag::Operation.as_u32();
 
 /// A typed Asynchronous Request entry from KMIP v2.1 §6.1.41, Table 286.
 #[derive(Debug)]
@@ -215,9 +215,7 @@ fn parse_asynchronous_request_entry(
 
     for field in req_struct.children() {
         field.with_value(|value| match field.tag().raw() {
-            ASYNCHRONOUS_CORRELATION_VALUE_V21 | ASYNCHRONOUS_CORRELATION_VALUE_V20
-                if correlation.is_none() =>
-            {
+            ASYNCHRONOUS_CORRELATION_VALUE if correlation.is_none() => {
                 if let ValueView::ByteString(bytes) = value {
                     correlation = Some(bytes.to_vec());
                 } else {

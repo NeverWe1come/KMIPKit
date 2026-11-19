@@ -72,6 +72,7 @@ pub(crate) fn success_payload_duplicate_identifier(identifier: UniqueIdentifier)
 fn identifier_item(identifier: UniqueIdentifier) -> Item {
     let value = match identifier {
         UniqueIdentifier::TextString(value) => Value::text_string(value),
+        UniqueIdentifier::Identifier(value) => Value::identifier(value),
         UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
         UniqueIdentifier::Integer(value) => Value::integer(value),
     };

@@ -27,7 +27,6 @@ const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 const RESULT_STATUS: u32 = 0x0042_007F;
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = 0x0042_0006;
 const TIME_STAMP: u32 = 0x0042_0092;
-const BATCH_COUNT: u32 = 0x0042_000D;
 const BATCH_ITEM: u32 = 0x0042_000F;
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -66,7 +65,6 @@ fn successful_response(operation: u32, payload: Structure) -> crate::ResponseMes
     let header = structure([
         item(PROTOCOL_VERSION, Value::structure(version)),
         item(TIME_STAMP, Value::date_time(1_700_000_000)),
-        item(BATCH_COUNT, Value::integer(1)),
     ]);
     let batch_item = structure([
         item(OPERATION, Value::enumeration(operation)),
@@ -88,7 +86,6 @@ fn pending_response(operation: u32) -> crate::ResponseMessage {
     let header = structure([
         item(PROTOCOL_VERSION, Value::structure(version)),
         item(TIME_STAMP, Value::date_time(1_700_000_000)),
-        item(BATCH_COUNT, Value::integer(1)),
     ]);
     let batch_item = structure([
         item(OPERATION, Value::enumeration(operation)),

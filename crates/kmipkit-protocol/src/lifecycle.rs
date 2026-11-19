@@ -15,6 +15,7 @@ pub(crate) fn request_payload(
             UniqueIdentifier::TextString(value) => Value::text_string(value.clone()),
             UniqueIdentifier::Enumeration(value) => Value::enumeration(*value),
             UniqueIdentifier::Integer(value) => Value::integer(*value),
+            UniqueIdentifier::Identifier(value) => Value::identifier(value.clone()),
         };
         payload.try_push(item(value)?).map_err(model_error)?;
     }
@@ -62,4 +63,32 @@ fn model_error(error: ModelError) -> ProtocolError {
         ProtocolCauseCategory::InvalidValue,
         error,
     )
+}
+
+/// NIST SP 800-57 Key Lifecycle State operational permission guard.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct NistKeyLifecycleGuard;
+
+impl NistKeyLifecycleGuard {
+    /// Validates whether an originating operation (encrypt, sign) is permitted.
+    ///
+    /// According to NIST SP 800-57 Part 1 Rev 5:
+    /// - Only keys in the `Active` state are permitted to generate new signatures or ciphertexts.
+    #[must_use]
+    pub const fn can_originate(state: crate::KeyLifecycleState) -> bool {
+        matches!(state, crate::KeyLifecycleState::Active)
+    }
+
+    /// Validates whether a recipient or processing operation (decrypt, verify) is permitted.
+    ///
+    /// According to NIST SP 800-57 Part 1 Rev 5:
+    /// - Keys in `Active` or `Deactivated` states may decrypt or verify existing data.
+    /// - Keys in `Compromised`, `Destroyed`, or `DestroyedCompromised` states are strictly prohibited.
+    #[must_use]
+    pub const fn can_process(state: crate::KeyLifecycleState) -> bool {
+        matches!(
+            state,
+            crate::KeyLifecycleState::Active | crate::KeyLifecycleState::Deactivated
+        )
+    }
 }

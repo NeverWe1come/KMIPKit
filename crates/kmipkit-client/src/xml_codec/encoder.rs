@@ -137,6 +137,9 @@ fn emit(
             ValueView::DateTime(_) => "DateTime",
             ValueView::Interval(_) => "Interval",
             ValueView::DateTimeExtended(_) => "DateTimeExtended",
+            ValueView::Identifier(_) => "Identifier",
+            ValueView::Reference(_) => "Reference",
+            ValueView::NameReference(_) => "NameReference",
             _ => return Err(INVALID_VALUE),
         };
         output.push(" type=\"")?;
@@ -162,7 +165,10 @@ fn emit(
                 }
             }
             ValueView::Boolean(v) => output.push(if *v { "true" } else { "false" })?,
-            ValueView::TextString(v) => output.escaped(v)?,
+            ValueView::TextString(v)
+            | ValueView::Identifier(v)
+            | ValueView::Reference(v)
+            | ValueView::NameReference(v) => output.escaped(v)?,
             ValueView::ByteString(v) => output.octets(v)?,
             ValueView::DateTime(v) => output.push(&datetime(*v)?)?,
             ValueView::Interval(v) => output.push(&Zeroizing::new(v.to_string()))?,

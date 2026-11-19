@@ -328,8 +328,8 @@ fn register_builder_preserves_pending_correlation_without_polling() {
 #[test]
 fn register_builder_preserves_masks_and_placed_vendor_attributes() {
     const NAME: u32 = 0x0042_0053;
-    const NAME_TYPE: u32 = 0x0042_0097;
-    const NAME_VALUE: u32 = 0x0042_0098;
+    const NAME_TYPE: u32 = 0x0042_0054;
+    const NAME_VALUE: u32 = 0x0042_0055;
     const VENDOR_ATTRIBUTE: u32 = 0x0042_0008;
     const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
     let name = item(

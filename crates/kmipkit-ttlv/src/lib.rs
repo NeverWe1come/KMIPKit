@@ -40,6 +40,7 @@
 
 mod error;
 mod item;
+pub mod kmip_tag;
 mod structure;
 mod tag;
 mod value;
@@ -54,6 +55,7 @@ mod codec_red_tests;
 
 pub use error::ModelError;
 pub use item::Item;
+pub use kmip_tag::KmipTag;
 pub use structure::{Structure, StructureView};
 pub use tag::{RawTag, Tag};
 pub(crate) use value::clone_value_view;

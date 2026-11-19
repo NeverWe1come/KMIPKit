@@ -8675,7 +8675,7 @@ pub extern "C" fn kmipkit_request_header_view_batch_count(
         let HandleValue::RequestHeaderView(message) = &header.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = message.header().batch_count();
+        *out = message.header().effective_batch_count();
         SUCCESS
     })
 }
@@ -9015,7 +9015,7 @@ pub extern "C" fn kmipkit_response_header_view_batch_count(
         let HandleValue::ResponseHeaderView(message) = &header.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        *out = message.header().batch_count();
+        *out = message.header().effective_batch_count();
         SUCCESS
     })
 }

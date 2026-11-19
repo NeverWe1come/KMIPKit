@@ -18,7 +18,7 @@ use kmipkit_protocol::{
     UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
-use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Tag, Value, ValueView};
 
 use crate::{
     Client, ClientBatchItem, ClientBatchItemResponse, ClientCauseCategory, ClientError,
@@ -28,13 +28,13 @@ use crate::{
 const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const MESSAGE_EXTENSION_TAG_START: u32 = 0x0054_0000;
 const MESSAGE_EXTENSION_TAG_END: u32 = 0x0054_FFFF;
-const NAME_TYPE_TAG: u32 = 0x0042_0097;
-const NAME_VALUE_TAG: u32 = 0x0042_0098;
+const NAME_TYPE_TAG: u32 = KmipTag::NameType.as_u32();
+const NAME_VALUE_TAG: u32 = KmipTag::NameValue.as_u32();
 const NAME_TYPE_UNINTERPRETED_TEXT_STRING: u32 = 1;
-const VENDOR_ATTRIBUTE_TAG: u32 = 0x0042_0008;
-const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
-const ATTRIBUTE_NAME_TAG: u32 = 0x0042_000A;
-const ATTRIBUTE_VALUE_TAG: u32 = 0x0042_000B;
+const VENDOR_ATTRIBUTE_TAG: u32 = KmipTag::Attribute.as_u32();
+const VENDOR_IDENTIFICATION_TAG: u32 = KmipTag::VendorIdentification.as_u32();
+const ATTRIBUTE_NAME_TAG: u32 = KmipTag::AttributeName.as_u32();
+const ATTRIBUTE_VALUE_TAG: u32 = KmipTag::AttributeValue.as_u32();
 
 /// KMIP Cryptographic Usage Mask bits encoded as a signed TTLV Integer.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

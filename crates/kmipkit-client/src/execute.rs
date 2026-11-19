@@ -8862,14 +8862,16 @@ fn build_request_header(
     if let Some(value) = batch.request_time_stamp {
         push(&mut header, TIME_STAMP, Value::date_time(value))?;
     }
-    let count = i32::try_from(batch.items.len()).map_err(|error| {
-        ProtocolError::new(
-            ProtocolErrorKind::InvalidValue,
-            ProtocolCauseCategory::InvalidValue,
-            error,
-        )
-    })?;
-    push(&mut header, BATCH_COUNT, Value::integer(count))?;
+    if options.protocol_version.major() < 3 {
+        let count = i32::try_from(batch.items.len()).map_err(|error| {
+            ProtocolError::new(
+                ProtocolErrorKind::InvalidValue,
+                ProtocolCauseCategory::InvalidValue,
+                error,
+            )
+        })?;
+        push(&mut header, BATCH_COUNT, Value::integer(count))?;
+    }
     Ok(header)
 }
 

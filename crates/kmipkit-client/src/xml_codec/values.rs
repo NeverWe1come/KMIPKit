@@ -85,6 +85,27 @@ pub(super) fn scalar(raw: u32, ty: &str, value: &str) -> Result<Value, WireCodec
             text.push_str(value);
             Value::text_string(std::mem::take(&mut *text))
         }
+        "Identifier" => {
+            let mut text = Zeroizing::new(String::new());
+            text.try_reserve_exact(value.len())
+                .map_err(|_| ALLOCATION)?;
+            text.push_str(value);
+            Value::identifier(std::mem::take(&mut *text))
+        }
+        "Reference" => {
+            let mut text = Zeroizing::new(String::new());
+            text.try_reserve_exact(value.len())
+                .map_err(|_| ALLOCATION)?;
+            text.push_str(value);
+            Value::reference(std::mem::take(&mut *text))
+        }
+        "NameReference" => {
+            let mut text = Zeroizing::new(String::new());
+            text.try_reserve_exact(value.len())
+                .map_err(|_| ALLOCATION)?;
+            text.push_str(value);
+            Value::name_reference(std::mem::take(&mut *text))
+        }
         "ByteString" => Value::byte_string(octets(collapsed, false)?),
         "DateTime" => Value::date_time(parse_datetime(collapsed)?),
         "Interval" => Value::interval(collapsed.parse().map_err(|_| INVALID_VALUE)?),

@@ -181,6 +181,7 @@ fn typed_attribute_set_wraps_vendor_validation_errors_as_protocol_errors() {
 fn unique_identifier_preserves_each_source_permitted_value_kind() {
     let cases = [
         UniqueIdentifierValue::TextString("id-text".to_owned()),
+        UniqueIdentifierValue::Identifier("id-identifier".to_owned()),
         UniqueIdentifierValue::Enumeration(0xF123_4567),
         UniqueIdentifierValue::Integer(-17),
     ];
@@ -193,6 +194,9 @@ fn unique_identifier_preserves_each_source_permitted_value_kind() {
             .with_value(|value| match value {
                 UniqueIdentifierView::TextString(text) => {
                     UniqueIdentifierValue::TextString(text.to_owned())
+                }
+                UniqueIdentifierView::Identifier(text) => {
+                    UniqueIdentifierValue::Identifier(text.to_owned())
                 }
                 UniqueIdentifierView::Enumeration(raw) => UniqueIdentifierValue::Enumeration(raw),
                 UniqueIdentifierView::Integer(raw) => UniqueIdentifierValue::Integer(raw),

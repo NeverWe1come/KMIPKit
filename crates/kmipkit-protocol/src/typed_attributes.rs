@@ -161,6 +161,7 @@ impl AttributeValueEncoding for UniqueIdentifierEncoding {
             UniqueIdentifierValue::TextString(value) => Value::text_string(value),
             UniqueIdentifierValue::Enumeration(value) => Value::enumeration(value),
             UniqueIdentifierValue::Integer(value) => Value::integer(value),
+            UniqueIdentifierValue::Identifier(value) => Value::identifier(value),
         }
     }
 
@@ -169,6 +170,7 @@ impl AttributeValueEncoding for UniqueIdentifierEncoding {
             ValueView::TextString(value) => Ok(UniqueIdentifierView::TextString(value)),
             ValueView::Enumeration(value) => Ok(UniqueIdentifierView::Enumeration(*value)),
             ValueView::Integer(value) => Ok(UniqueIdentifierView::Integer(*value)),
+            ValueView::Identifier(value) => Ok(UniqueIdentifierView::Identifier(value)),
             _ => Err(AttributeValueError::ValueTypeMismatch),
         }
     }
@@ -348,6 +350,8 @@ pub enum UniqueIdentifierValue {
     Enumeration(u32),
     /// A signed Integer identifier.
     Integer(i32),
+    /// A KMIP 3.0 Identifier (0x0C).
+    Identifier(String),
 }
 
 impl Clone for UniqueIdentifierValue {
@@ -356,6 +360,7 @@ impl Clone for UniqueIdentifierValue {
             Self::TextString(value) => Self::TextString(value.clone()),
             Self::Enumeration(value) => Self::Enumeration(*value),
             Self::Integer(value) => Self::Integer(*value),
+            Self::Identifier(value) => Self::Identifier(value.clone()),
         }
     }
 }
@@ -366,6 +371,7 @@ impl PartialEq for UniqueIdentifierValue {
             (Self::TextString(left), Self::TextString(right)) => left == right,
             (Self::Enumeration(left), Self::Enumeration(right)) => left == right,
             (Self::Integer(left), Self::Integer(right)) => left == right,
+            (Self::Identifier(left), Self::Identifier(right)) => left == right,
             _ => false,
         }
     }
@@ -383,6 +389,9 @@ impl Debug for UniqueIdentifierValue {
                 formatter.write_str("UniqueIdentifierValue::Enumeration([REDACTED])")
             }
             Self::Integer(_) => formatter.write_str("UniqueIdentifierValue::Integer([REDACTED])"),
+            Self::Identifier(_) => {
+                formatter.write_str("UniqueIdentifierValue::Identifier([REDACTED])")
+            }
         }
     }
 }
@@ -396,6 +405,8 @@ pub enum UniqueIdentifierView<'a> {
     Enumeration(u32),
     /// A signed Integer identifier.
     Integer(i32),
+    /// A borrowed KMIP 3.0 Identifier (0x0C).
+    Identifier(&'a str),
 }
 
 impl Debug for UniqueIdentifierView<'_> {
@@ -408,6 +419,9 @@ impl Debug for UniqueIdentifierView<'_> {
                 formatter.write_str("UniqueIdentifierView::Enumeration([REDACTED])")
             }
             Self::Integer(_) => formatter.write_str("UniqueIdentifierView::Integer([REDACTED])"),
+            Self::Identifier(_) => {
+                formatter.write_str("UniqueIdentifierView::Identifier([REDACTED])")
+            }
         }
     }
 }

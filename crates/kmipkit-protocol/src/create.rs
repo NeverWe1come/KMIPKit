@@ -79,6 +79,8 @@ pub enum UniqueIdentifier {
     Enumeration(u32),
     /// A signed KMIP Integer identifier.
     Integer(i32),
+    /// A KMIP 3.0 Identifier primitive (0x0C).
+    Identifier(String),
 }
 
 impl fmt::Debug for UniqueIdentifier {

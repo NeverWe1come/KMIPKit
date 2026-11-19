@@ -457,6 +457,18 @@ fn scalar(tag: u32, ty: &str, source: &str) -> Result<Value, WireCodecError> {
             let mut value = text(source)?;
             Value::text_string(std::mem::take(&mut *value))
         }
+        "Identifier" => {
+            let mut value = text(source)?;
+            Value::identifier(std::mem::take(&mut *value))
+        }
+        "Reference" => {
+            let mut value = text(source)?;
+            Value::reference(std::mem::take(&mut *value))
+        }
+        "NameReference" => {
+            let mut value = text(source)?;
+            Value::name_reference(std::mem::take(&mut *value))
+        }
         "ByteString" => {
             let mut value = hex_bytes(string.ok_or_else(invalid)?)?;
             Value::byte_string(std::mem::take(&mut *value))

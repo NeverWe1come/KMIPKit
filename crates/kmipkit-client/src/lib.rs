@@ -178,7 +178,9 @@ mod profile_fixture_replay_tests;
 pub use kmipkit_protocol::{Pkcs11Error, Pkcs11Request, Pkcs11Response};
 mod usage_allocation;
 
-pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
+pub use usage_allocation::{
+    LeaseContext, LeaseContextError, UsageAllocationContext, UsageAllocationContextError,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/execution_tests.rs"]

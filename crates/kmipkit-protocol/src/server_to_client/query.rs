@@ -2,22 +2,23 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{ModelError, Structure, Value, ValueView};
+use kmipkit_ttlv::{KmipTag, ModelError, Structure, Value, ValueView};
 
 use crate::asynchronous::item;
+use crate::enums::OperationCode;
 use crate::{
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, QueryFunction, RequestBatchItemView,
 };
 
 /// The KMIP operation code for Query (`0x0000_0018`).
-pub const QUERY_OPERATION: u32 = 0x0000_0018;
-const QUERY_FUNCTION_TAG: u32 = 0x0042_0074;
-const OPERATION_TAG: u32 = 0x0042_005C;
-const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
-const SERVER_INFORMATION_TAG: u32 = 0x0042_0088;
-const VENDOR_IDENTIFICATION_TAG: u32 = 0x0042_009D;
-const EXTENSION_LIST_TAG: u32 = 0x0042_00A3;
-const EXTENSION_MAP_TAG: u32 = 0x0042_00A4;
+pub const QUERY_OPERATION: u32 = OperationCode::Query.as_u32();
+const QUERY_FUNCTION_TAG: u32 = KmipTag::QueryFunction.as_u32();
+const OPERATION_TAG: u32 = KmipTag::Operation.as_u32();
+const OBJECT_TYPE_TAG: u32 = KmipTag::ObjectType.as_u32();
+const SERVER_INFORMATION_TAG: u32 = KmipTag::ServerInformation.as_u32();
+const VENDOR_IDENTIFICATION_TAG: u32 = KmipTag::VendorIdentification.as_u32();
+const EXTENSION_LIST_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
+const EXTENSION_MAP_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
 
 /// Server/Client capabilities queried via §6.2.4.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

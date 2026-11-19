@@ -784,7 +784,7 @@ fn query_validation_rejects_an_empty_function_list() {
 
 #[test]
 fn query_validation_rejects_reserved_function_but_preserves_extension_values() {
-    let invalid = QueryRequest::new([QueryFunction::from_raw(15)]).validate();
+    let invalid = QueryRequest::new([QueryFunction::from_raw(16)]).validate();
     assert!(!invalid.is_valid());
     assert_eq!(
         invalid.issues()[0].source().to_string(),

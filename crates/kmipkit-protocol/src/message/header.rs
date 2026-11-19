@@ -52,10 +52,23 @@ impl<'a> RequestHeaderView<'a> {
         self.validated().protocol_version
     }
 
-    /// Returns the validated positive Batch Count.
+    /// Returns the optional validated positive Batch Count.
+    ///
+    /// In KMIP 2.x this is present on the wire and returns `Some(count)`.
+    /// In KMIP 3.0 Batch Count is reserved and omitted on the wire, returning `None`.
     #[must_use]
-    pub fn batch_count(self) -> i32 {
+    pub fn batch_count(self) -> Option<i32> {
         self.validated().batch_count
+    }
+
+    /// Returns the effective positive Batch Count for the request message.
+    ///
+    /// If encoded on the wire (KMIP 2.x), returns the validated header count.
+    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
+    #[must_use]
+    pub fn effective_batch_count(self) -> i32 {
+        self.batch_count()
+            .unwrap_or_else(|| self.message.batch_items().len() as i32)
     }
 
     /// Returns the optional Maximum Response Size Integer.
@@ -200,10 +213,23 @@ impl<'a> ResponseHeaderView<'a> {
         self.validated().time_stamp
     }
 
-    /// Returns the validated positive Batch Count.
+    /// Returns the optional validated positive Batch Count.
+    ///
+    /// In KMIP 2.x this is present on the wire and returns `Some(count)`.
+    /// In KMIP 3.0 Batch Count is reserved and omitted on the wire, returning `None`.
     #[must_use]
-    pub fn batch_count(self) -> i32 {
+    pub fn batch_count(self) -> Option<i32> {
         self.validated().batch_count
+    }
+
+    /// Returns the effective positive Batch Count for the request message.
+    ///
+    /// If encoded on the wire (KMIP 2.x), returns the validated header count.
+    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
+    #[must_use]
+    pub fn effective_batch_count(self) -> i32 {
+        self.batch_count()
+            .unwrap_or_else(|| self.message.batch_items().len() as i32)
     }
 
     /// Lends the optional Nonce Structure for callback-scoped access.
