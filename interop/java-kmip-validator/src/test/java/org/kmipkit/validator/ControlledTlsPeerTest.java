@@ -1736,6 +1736,18 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
                     "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
                     "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-attr-unique-identifier",
+                    "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                    "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                    "construct", protocolVersion);
         }
         int tagAggregateEventCount = appendTagAggregateRouteEvents(events);
         assertEquals(expectedTagAggregateEventCount(), tagAggregateEventCount,
