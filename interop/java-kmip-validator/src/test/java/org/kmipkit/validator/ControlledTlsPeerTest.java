@@ -15730,6 +15730,9 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+        assertRouteEventRecorded(events, caseId, targetId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_query_async_requests_response_v1",
+                "decode", protocolVersion);
     }
 
     private static void assertAsyncNoRecursivePollRouteCoverage(ArrayNode events, String protocolVersion)
