@@ -2233,6 +2233,7 @@ class ControlledTlsPeerTest {
         int asyncLifecycleQueryRouteEventCount = 3 * 3 * 2 + 3 + 5;
         int asyncNoRecursivePollRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationPollRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
+        int asyncPollRepeatedPendingToSuccessRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncPollFinalFailureRouteEventCount = KMIP_2_0_AND_2_1.size() * (3 * 3 * 2 + 3);
         int asyncOperationProcessRouteEventCount = 3 * 3 * 2 + 3;
         int asyncOperationQueryRouteEventCount = 3 * 3 * 2 + 3;
@@ -2322,6 +2323,7 @@ class ControlledTlsPeerTest {
                         + asyncLifecycleQueryRouteEventCount
                         + asyncNoRecursivePollRouteEventCount
                         + asyncOperationPollRouteEventCount
+                        + asyncPollRepeatedPendingToSuccessRouteEventCount
                         + asyncPollFinalFailureRouteEventCount
                         + asyncOperationProcessRouteEventCount
                         + asyncOperationQueryRouteEventCount
