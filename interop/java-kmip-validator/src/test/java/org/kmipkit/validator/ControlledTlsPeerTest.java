@@ -1686,6 +1686,14 @@ class ControlledTlsPeerTest {
             for (LocalCatalogRouteChecks.Invocation invocation : certificateAttributeInvocations) {
                 appendLocalCatalogInvocation(events, protocolVersion, invocation);
             }
+            List<LocalCatalogRouteChecks.Invocation> cryptographicParameterBuilderInvocations = new ArrayList<>();
+            LocalCatalogRouteChecks.executeCryptographicParameterAttributeBuilders(readRouteEvidenceCatalog(),
+                    protocolVersion, Set.of("test-attr-cryptographic-algorithm",
+                            "test-attr-digital-signature-algorithm"),
+                    cryptographicParameterBuilderInvocations::add);
+            for (LocalCatalogRouteChecks.Invocation invocation : cryptographicParameterBuilderInvocations) {
+                appendLocalCatalogInvocation(events, protocolVersion, invocation);
+            }
         }
         assertRouteEventRecorded(events, "test-attr-certificate-attributes",
                 "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
@@ -2236,6 +2244,7 @@ class ControlledTlsPeerTest {
                 * (GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * USAGE_LIMITS_MEMBER_FIXTURES.size());
         int rightUsageLimitsRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int certificateAttributeTtlvViewRouteEventCount = KMIP_2_0_AND_2_1.size();
+        int cryptographicParameterAttributeBuilderRouteEventCount = KMIP_2_0_AND_2_1.size() * 2;
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -2318,6 +2327,7 @@ class ControlledTlsPeerTest {
                         + usageLimitsRouteEventCount
                         + rightUsageLimitsRouteEventCount
                         + certificateAttributeTtlvViewRouteEventCount
+                        + cryptographicParameterAttributeBuilderRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
