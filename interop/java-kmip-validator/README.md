@@ -1766,3 +1766,24 @@ planned; 26,993 remain pending. The selected scope is complete; the full Java
 matrix remains incomplete, so PR #255 stays WIP. The Java Gradle suite passed
 111/111 tests, the shared evidence/schema/capability suite passed 112/112, the
 1,511-route manifest check passed, and the Java ledger comparison matched.
+
+### Java Credential Value TTLV routes — 2026-11-19
+
+The controlled Java consumer now exercises the Credential Value structure
+member for KMIP 2.0 and 2.1. It invokes `Credential.fromTtlv` on an envelope
+containing a valid Username and Password value, invokes
+`CredentialValue.fromTtlv` on that value with Credential Type 1, and checks
+that the typed view retains both members. It also invokes the catalogued
+generic TTLV Item creation, view, and decode routes. Reference: OASIS KMIP 2.0
+and 2.1 §9.11. Fixture values are deterministic local test data.
+
+Red `63e3ee101` fails because the generic Credential Value TTLV routes are
+missing. Green `6c7196729` adds the generic Item, Credential, and
+CredentialValue routes. Refactor `bcd6e696a` centralizes the case and route
+metadata used by evidence generation and assertions. The final selected report
+`java-controlled-query-833e28c3-7f9b-4763-b6fc-cda70d09c78d` validates 44,530
+cells (44,514 invocations, 16 not applicable, zero failed) out of 71,513
+planned; 26,983 remain pending. The selected scope is complete, but the full
+Java matrix remains incomplete and PR #255 stays WIP. The Java Gradle suite
+passed 111/111 tests; all 112 shared evidence/schema/capability tests and the
+1,511-route manifest check passed, and the ledger comparison matched.
