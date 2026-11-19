@@ -16,6 +16,7 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.AsyncCancelResponse;
 import org.kmipkit.extensions.CancelRequest;
 import org.kmipkit.extensions.PollRequest;
+import org.kmipkit.extensions.ProcessRequest;
 import org.kmipkit.extensions.AddAttributeRequest;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AttributeSet;
@@ -14332,12 +14333,137 @@ class ControlledTlsPeerTest {
             appendControlledAsyncLifecycleQueryRouteEvents(events, lifecyclePoll, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
         }
+        appendControlledAsyncProcessNetworkRouteEvents(events, protocolVersion, serverCertificatePem,
+                serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
         assertAsyncPollRaceRouteCoverage(events, protocolVersion);
         assertAsyncLifecyclePollRouteCoverage(events, protocolVersion);
         assertAsyncLifecycleQueryRouteCoverage(events, protocolVersion);
         assertAsyncNoRecursivePollRouteCoverage(events, protocolVersion);
         assertAsyncOperationPollRouteCoverage(events, protocolVersion);
         assertAsyncOperationProcessRouteCoverage(events, protocolVersion);
+    }
+
+    private void appendControlledAsyncProcessNetworkRouteEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        if (!"2.1".equals(protocolVersion)) return;
+        AsyncCancelRouteScenario scenario = new AsyncCancelRouteScenario(
+                "test-op-process", "Canceled", 1, List.of("KMIPKIT-ELEM-OP-C2S-PROCESS"), -1);
+        String canonicalRequestHash = null;
+        int minor = 1;
+        for (String encoding : List.of("TTLV", "JSON", "XML")) {
+            for (String transport : List.of("raw_tls", "https")) {
+                byte[] request = executeAsyncProcessCombination(scenario, encoding, transport,
+                        serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    canonicalRequestHash = normalizedTreeSha256(request);
+                }
+                assertTrue(canonicalRequestHash != null,
+                        "The TTLV/raw-TLS Process peer must establish the request tree hash.");
+                byte[] correlation = asyncCancelCorrelation(scenario, protocolVersion);
+                byte[] response = asynchronousResponse(0x3a, correlation, minor);
+                String responseHash = normalizedTreeSha256(response);
+                appendAsyncProcessRouteEvents(events, scenario.caseId(), protocolVersion, encoding, transport,
+                        canonicalRequestHash, responseHash);
+                if ("TTLV".equals(encoding) && "raw_tls".equals(transport)) {
+                    appendAsyncProcessLocalRouteEvents(events, scenario, protocolVersion, correlation,
+                            canonicalRequestHash, responseHash);
+                }
+            }
+        }
+    }
+
+    private byte[] executeAsyncProcessCombination(AsyncCancelRouteScenario scenario,
+            String encoding, String transport, byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = asyncCancelCorrelation(scenario, "2.1");
+        var processCase = casesById(CatalogLoader.load(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json")), "test-op-process").get(0);
+        Path connectionFile = temporaryDirectory.resolve(
+                "async-process-2.1-" + encoding + "-" + transport + ".json");
+        if ("raw_tls".equals(transport)) {
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveAsyncProcessRequest(listener, correlation,
+                    encoding));
+            Thread peerThread = new Thread(peer, "java-validator-async-process-peer-" + encoding);
+            peerThread.setDaemon(true);
+            peerThread.start();
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, true, "2.1", encoding, transport));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                var outcome = driver.executeAsynchronousRequest(processCase, correlation.clone());
+                byte[] request = peer.get(30, TimeUnit.SECONDS);
+                assertEquals("passed", outcome.status(),
+                        "The controlled Process result must be valid for 2.1/" + encoding + "/" + transport
+                                + ": " + outcome);
+                return request;
+            } finally {
+                listener.close();
+            }
+        }
+
+        CompletableFuture<byte[]> peer = new CompletableFuture<>();
+        HttpsServer listener = httpsListener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        listener.createContext("/kmip", exchange -> {
+            try {
+                if (!"POST".equals(exchange.getRequestMethod())) {
+                    throw new IllegalStateException("The controlled HTTP peer requires POST.");
+                }
+                byte[] request = exchange.getRequestBody().readAllBytes();
+                assertAsyncProcessWireRequest(request, encoding, correlation);
+                byte[] response = asynchronousProcessResponseBytes(encoding, correlation, 1);
+                exchange.getResponseHeaders().set("Content-Type", contentTypeForEncoding(encoding));
+                exchange.sendResponseHeaders(200, response.length);
+                try (OutputStream output = exchange.getResponseBody()) {
+                    output.write(response);
+                }
+                peer.complete(request);
+            } catch (Exception exception) {
+                peer.completeExceptionally(exception);
+                try {
+                    exchange.sendResponseHeaders(500, -1);
+                } catch (Exception ignored) {
+                    // The peer future carries the controlled-fixture failure to the test thread.
+                }
+            } finally {
+                exchange.close();
+            }
+        });
+        listener.start();
+        Files.writeString(connectionFile, connectionJson(listener.getAddress().getPort(),
+                serverCertificatePem, clientCertificatePem, clientPrivateKeyPem, true,
+                "2.1", encoding, transport));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            var outcome = driver.executeAsynchronousRequest(processCase, correlation.clone());
+            assertEquals("passed", outcome.status(),
+                    "The controlled Process result must be valid for 2.1/" + encoding + "/" + transport
+                            + ": " + outcome);
+        } finally {
+            listener.stop(0);
+        }
+        return peer.get(30, TimeUnit.SECONDS);
+    }
+
+    private static byte[] serveAsyncProcessRequest(SSLServerSocket listener, byte[] correlation,
+            String encoding) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = switch (encoding) {
+                case "TTLV" -> readTtlv(socket.getInputStream());
+                case "JSON" -> readJsonDocument(socket.getInputStream());
+                case "XML" -> readXmlDocument(socket.getInputStream());
+                default -> throw new IllegalArgumentException("Unsupported fixture encoding.");
+            };
+            assertAsyncProcessWireRequest(request, encoding, correlation);
+            byte[] response = asynchronousProcessResponseBytes(encoding, correlation, 1);
+            socket.getOutputStream().write(response);
+            socket.getOutputStream().flush();
+            return request;
+        }
     }
 
 
@@ -14701,6 +14827,38 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static byte[] asynchronousProcessResponseBytes(String encoding, byte[] correlation, int minor)
+            throws Exception {
+        if ("TTLV".equals(encoding)) return asynchronousResponse(0x3a, correlation, minor);
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(correlation)
+                : HexFormat.of().withUpperCase().formatHex(correlation);
+        if ("JSON".equals(encoding)) {
+            return ("{\"tag\":\"ResponseMessage\",\"value\":["
+                    + "{\"tag\":\"ResponseHeader\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersion\",\"value\":["
+                    + "{\"tag\":\"ProtocolVersionMajor\",\"type\":\"Integer\",\"value\":2},"
+                    + "{\"tag\":\"ProtocolVersionMinor\",\"type\":\"Integer\",\"value\":" + minor + "}]},"
+                    + "{\"tag\":\"TimeStamp\",\"type\":\"DateTime\",\"value\":\"0x0000000000000001\"},"
+                    + "{\"tag\":\"BatchCount\",\"type\":\"Integer\",\"value\":1}]},"
+                    + "{\"tag\":\"BatchItem\",\"value\":["
+                    + "{\"tag\":\"Operation\",\"type\":\"Enumeration\",\"value\":\"Process\"},"
+                    + "{\"tag\":\"ResultStatus\",\"type\":\"Enumeration\",\"value\":\"OperationPending\"},"
+                    + "{\"tag\":\"AsynchronousCorrelationValue\",\"type\":\"ByteString\",\"value\":\""
+                    + correlationHex + "\"},{\"tag\":\"ResponsePayload\",\"value\":[]}]}]}")
+                    .getBytes(StandardCharsets.UTF_8);
+        }
+        return ("<ResponseMessage><ResponseHeader><ProtocolVersion>"
+                + "<ProtocolVersionMajor type=\"Integer\" value=\"2\"/>"
+                + "<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"
+                + "</ProtocolVersion><TimeStamp type=\"DateTime\" value=\"1970-01-01T00:00:01Z\"/>"
+                + "<BatchCount type=\"Integer\" value=\"1\"/></ResponseHeader><BatchItem>"
+                + "<Operation type=\"Enumeration\" value=\"Process\"/>"
+                + "<ResultStatus type=\"Enumeration\" value=\"OperationPending\"/>"
+                + "<AsynchronousCorrelationValue type=\"ByteString\" value=\"" + correlationHex + "\"/>"
+                + "<ResponsePayload/></BatchItem></ResponseMessage>").getBytes(StandardCharsets.UTF_8);
+    }
+
     private static byte[] asynchronousPollResponseBytes(String encoding, byte[] correlation, int minor)
             throws Exception {
         return asynchronousPollResponseBytes(encoding, correlation, minor, false);
@@ -14840,6 +14998,35 @@ class ControlledTlsPeerTest {
         assertTrue(xml.startsWith("<RequestMessage>"));
         assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Poll\"/>"));
         assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"" + minor + "\"/>"));
+        assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
+                + correlationHex + "\"/>"));
+    }
+
+    private static void assertAsyncProcessWireRequest(byte[] request, String encoding,
+            byte[] expectedCorrelation) throws Exception {
+        String correlationHex = "JSON".equals(encoding)
+                ? HexFormat.of().formatHex(expectedCorrelation)
+                : HexFormat.of().withUpperCase().formatHex(expectedCorrelation);
+        if ("TTLV".equals(encoding)) {
+            assertEquals(0x3aL, requestOperation(request));
+            assertEquals(1, requestProtocolMinorVersion(request));
+            assertArrayEquals(expectedCorrelation, requestCorrelation(request));
+            return;
+        }
+        if ("JSON".equals(encoding)) {
+            JsonNode root = new ObjectMapper().readTree(request);
+            List<JsonNode> operations = jsonValuesForTag(root, "Operation");
+            assertEquals(1, operations.size());
+            assertEquals("Process", operations.get(0).asText());
+            assertEquals(1, jsonValuesForTag(root, "ProtocolVersionMinor").get(0).asInt());
+            assertEquals(correlationHex,
+                    jsonValuesForTag(root, "AsynchronousCorrelationValue").get(0).asText());
+            return;
+        }
+        String xml = new String(request, StandardCharsets.UTF_8);
+        assertTrue(xml.startsWith("<RequestMessage>"));
+        assertTrue(xml.contains("<Operation type=\"Enumeration\" value=\"Process\"/>"));
+        assertTrue(xml.contains("<ProtocolVersionMinor type=\"Integer\" value=\"1\"/>"));
         assertTrue(xml.contains("<AsynchronousCorrelationValue type=\"ByteString\" value=\""
                 + correlationHex + "\"/>"));
     }
@@ -15219,6 +15406,53 @@ class ControlledTlsPeerTest {
             appendWorkflowIdentity(encoded, identity);
             appendWorkflowIdentity(decoded, identity);
         }
+    }
+
+    private static void appendAsyncProcessRouteEvents(ArrayNode events, String caseId, String protocolVersion,
+            String encoding, String transport, String requestHash, String responseHash) {
+        String routeId = "java.typed-protocol.client.execute_process";
+        String targetId = "KMIPKIT-ELEM-OP-C2S-PROCESS";
+        String apiSymbol = "org.kmipkit.extensions.Client.executeProcess";
+        for (String action : List.of("construct", "send", "decode")) {
+            ObjectNode event = appendRouteEvent(events, caseId, routeId, targetId, apiSymbol,
+                    "java.execute.process", apiSymbol, action, protocolVersion, transport,
+                    "decode".equals(action) ? null : requestHash,
+                    "decode".equals(action) ? responseHash : null);
+            event.put("encoding", encoding);
+            if ("send".equals(action)) {
+                event.put("request_delivery_state", "response_received");
+                event.put("transport_invocation_count", 1);
+            }
+        }
+    }
+
+    private static void appendAsyncProcessLocalRouteEvents(ArrayNode events,
+            AsyncCancelRouteScenario scenario, String protocolVersion, byte[] correlation,
+            String requestHash, String responseHash) throws Exception {
+        String caseId = scenario.caseId();
+        String targetId = "KMIPKIT-ELEM-OP-C2S-PROCESS";
+        try (ProcessRequest request = ProcessRequest.create(correlation.clone());
+                TtlvStructure payload = request.toTtlvPayload();
+                var fields = payload.view()) {
+            assertEquals(1, fields.itemCount());
+            try (TtlvItemView correlationField = fields.itemAt(0);
+                    Tag tag = correlationField.tag();
+                    var value = correlationField.value()) {
+                assertEquals(0x420006, tag.raw());
+                assertArrayEquals(correlation, value.bytes());
+            }
+        }
+        appendRouteEvent(events, caseId, "java.typed-protocol.process_request.create", targetId,
+                "org.kmipkit.extensions.ProcessRequest.create", null, null,
+                "construct", protocolVersion, null, requestHash, null);
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.async_process_request_to_ttlv_payload", targetId,
+                "org.kmipkit.extensions.ProcessRequest.toTtlvPayload", null, null,
+                "encode", protocolVersion, null, requestHash, null);
+        appendRouteEvent(events, caseId,
+                "java.typed-protocol.function.kmipkit_client_async_operation_outcome_process_response_v1",
+                targetId, "org.kmipkit.extensions.AsyncOperationOutcome.processResponse", null, null,
+                "decode", protocolVersion, null, null, responseHash);
     }
 
     private static void assertAsyncPollRaceRouteCoverage(ArrayNode events, String protocolVersion)
