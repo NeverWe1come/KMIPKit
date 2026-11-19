@@ -960,3 +960,34 @@ emitted events with `selected_scope_complete=true` and
 `all_invocations_passed=true`; the full matrix remains incomplete. This slice
 closes the 12 pending construct/send cells for the KMIP 2.0 boundary; its four
 local events were already present in the previous ledger.
+
+### C multipart SHA-256 Hash
+
+The installed C consumer now executes `test-multipart-hash-sha256` as three
+typed Hash requests: Init, Update, and Final. The controlled TLS peer returns a
+Correlation Value only in the first response, checks that C reuses it in the
+next two requests, and omits Data from multipart responses. Each exchange uses
+the configured Username/Password authentication. The route cites OASIS KMIP
+2.0 §6.1.23 and KMIP 2.1 §6.1.24. Fixture input and correlation bytes remain
+in memory; the report contains only normalized response-tree digests and
+sanitized route outcomes.
+
+Red `7620ce973` requires the multipart Hash peer recipe; Green `50b4d574a`
+adds the installed C route and 12-combination consumer test. Red `ed557e51f`
+adds the authenticated three-exchange TLS fixture; Green `26808475f` attaches
+configured credentials to each C batch. Both KMIP 2.0 and 2.1 controlled TLS
+tests pass, and full CTest passes 7/7 in 153.21 seconds. The route-capability
+audit reports 1,491 routes.
+
+The full report is `c-route-079fadbb-43ef-4f96-8e90-5d7c2d571a0a`
+(`build/route-execution-evidence-multipart-hash-sha256.json`), SHA-256
+`8e21f6eb8fd421e893da236e731ac363df758f650f40d98e0a61dd930d0b7cf4`. It
+records 66,280 planned cells: 44,432 invoked, 52 not applicable, zero failed,
+and 21,796 pending. The report schema passes; the shared validator accepts all
+44,484 emitted cells with `selected_scope_complete=true` and
+`all_invocations_passed=true`. The full matrix remains incomplete. This slice
+closes 40 previously pending cells: 36 network construct/send/decode cells
+and four typed Hash response-accessor decodes. The 44-event case scope also
+contains four generic TTLV construction/decode events already counted in the
+previous ledger. The first pending cell remains the KMIP 2.0 local
+Re-Provision response decoder.
