@@ -244,6 +244,76 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    CaseOutcome executeProcessThenPoll(byte[] correlation) {
+        long start = System.nanoTime();
+        if (correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("The Process-to-Poll fixture requires a non-empty correlation value.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome processOutcome = client.executeProcess(
+                correlation.clone(), CODEC_LIMITS, java.util.OptionalLong.of(1))) {
+            var processMetadata = processOutcome.metadataV1();
+            if (processMetadata.operation() != 0x3a || processMetadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The Process response did not complete synchronously.",
+                        elapsedMillis(start), processMetadata.resultStatus(),
+                        optionalCode(processMetadata.resultReason().orElse(-1)));
+            }
+            var processResponse = processOutcome.processResponse();
+            if (processResponse.isEmpty() || processResponse.orElseThrow().isPending()
+                    || processResponse.orElseThrow()
+                            .withAsynchronousCorrelationValue(ignored -> { })
+                    || processResponse.orElseThrow().payloadMemberCount().isEmpty()
+                    || processResponse.orElseThrow().payloadMemberCount().getAsLong() != 0) {
+                return CaseOutcome.failed("The Process response incorrectly retained asynchronous state.",
+                        elapsedMillis(start), processMetadata.resultStatus(), null);
+            }
+            var processPayload = processOutcome.responsePayloadTtlv();
+            if (processPayload.isEmpty()) {
+                return CaseOutcome.failed("The Process response omitted its required empty operation payload.",
+                        elapsedMillis(start), processMetadata.resultStatus(), null);
+            }
+            try (var payload = processPayload.orElseThrow(); var fields = payload.view()) {
+                if (fields.itemCount() != 0) {
+                    return CaseOutcome.failed("The Process response payload was not empty.",
+                            elapsedMillis(start), processMetadata.resultStatus(), null);
+                }
+            }
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+
+        try (AsyncOperationOutcome pollOutcome = client.executePoll(correlation.clone(), CODEC_LIMITS)) {
+            var pollMetadata = pollOutcome.metadataV1();
+            if (pollMetadata.operation() != 0x1a || pollMetadata.resultStatus() != 0) {
+                return CaseOutcome.failed("The Poll response did not reflect Process completion.",
+                        elapsedMillis(start), pollMetadata.resultStatus(),
+                        optionalCode(pollMetadata.resultReason().orElse(-1)));
+            }
+            var pollResponse = pollOutcome.pollResponse();
+            if (pollResponse.isEmpty() || pollResponse.orElseThrow().isPending()
+                    || pollResponse.orElseThrow()
+                            .withAsynchronousCorrelationValue(ignored -> { })) {
+                return CaseOutcome.failed("The terminal Poll response retained asynchronous state.",
+                        elapsedMillis(start), pollMetadata.resultStatus(), null);
+            }
+            var responsePayload = pollOutcome.responsePayloadTtlv();
+            if (responsePayload.isEmpty()) {
+                return CaseOutcome.failed("The terminal Poll response omitted the original Create payload.",
+                        elapsedMillis(start), pollMetadata.resultStatus(), null);
+            }
+            try (var payload = responsePayload.orElseThrow()) {
+                if (!createResponsePayloadMatches(payload)) {
+                    return CaseOutcome.failed("The terminal Poll payload did not match the Create response.",
+                            elapsedMillis(start), pollMetadata.resultStatus(), null);
+                }
+            }
+            return CaseOutcome.passed(elapsedMillis(start), pollMetadata.resultStatus(), null);
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
     private static boolean createResponsePayloadMatches(TtlvStructure payload) {
         try (TtlvStructureView fields = payload.view()) {
             if (fields.itemCount() != 2) return false;
