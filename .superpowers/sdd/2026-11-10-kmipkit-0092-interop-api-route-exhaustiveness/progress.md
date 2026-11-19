@@ -331,26 +331,15 @@ branches, and the common CI therefore reports a planned matrix only.
 - This adds local-model evidence and does not establish interoperability with
   a vendor KMS; the Java PR remains WIP.
 
-## 2026-11-17 Java KMIP 2.0/2.1 Batch Order Option routes
+## 2026-11-17 #216 stack sync with Rotate Name Value
 
-- `test-norm-message-field-message-field-8-2-batch-order-option` now completes
-  three generic TTLV routes and the typed `RequestMessage.fromTtlv` route in both
-  protocol versions. OASIS KMIP 2.0 §9.8 Table 369 and KMIP 2.1 §9.8 Table 407
-  define the field as Boolean; §8.2 identifies the request-header field. The
-  existing parser fixture confirms the field value is true.
-- Red: `234626a25` requires all eight exact route/version cells. The focused
-  controlled-peer test failed as intended (`expected 2 route events, got 0`).
-- Green: `4741dad52` emits the three generic route events per version and adds
-  the normative field to the existing typed RequestMessage parse evidence. The
-  focused test passes for both versions.
-- Refactor: `bd9cc43a5` reuses the stable case and target IDs between fixture
-  and assertions; the focused test still passes.
-- The full Java suite passes 57/57 tests, with no failures or skips, under
-  `--rerun-tasks`. Selected-scope validation passes 27,262/27,262 cells with
-  zero failures. The regenerated ledger comparison passes; the global matrix
-  has 44,379 pending cells across 1,219 case IDs. These results use pinned
-  artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6` with SHA-256
-  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- Updated the Usage Limits branch from the latest #187 head while preserving
+  its Usage Limits and Rotate Name Type cases. The combined report now invokes
+  27,290/27,290 selected cells with zero failures and leaves 44,351/71,641
+  global cells pending across 1,216 case IDs.
+- Red/Green/Refactor evidence for the seven new Rotate Name Value routes is in
+  commits `b0576cd07`, `de16f5d1c`, and `52d7c14d4` on #187. The complete Java
+  suite passes 57/57 tests with no skips under `--rerun-tasks`.
 - Verification commands: `bash ../../bindings/java/gradlew --no-daemon
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
   `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
@@ -358,6 +347,27 @@ branches, and the common CI therefore reports a planned matrix only.
   504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
   --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
   `python3 tools/compare_route_ledger.py`.
+- The ledger is regenerated from that validated report. These checks do not
+  complete the global Java matrix or establish vendor interoperability; #216
+  remains WIP.
+
+## 2026-11-17 #216 Batch Order Option stack sync
+
+- Synced the latest #187 Batch Order Option slice into the Usage Limits branch.
+  The combined Java report invokes 27,298/27,298 selected cells with zero
+  failures and leaves 44,343/71,641 global cells pending across 1,215 case IDs.
+- The full Java suite passes 57/57 tests with no failures or skips. Red/Green/
+  Refactor commits are `234626a25`, `4741dad52`, and `bd9cc43a5` on #187.
+- Verification commands: `bash ../../bindings/java/gradlew --no-daemon
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks`;
+  `python3 ../shared/tools/validate_route_evidence.py --selected-scope --report
+  build/route-execution-evidence.json --artifact-sha256
+  504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545
+  --write-ledger`; `python3 tools/compare_route_ledger.py --refresh-reference`;
+  `python3 tools/compare_route_ledger.py`.
+- The ledger is regenerated from the validated report; the full matrix remains
+  incomplete and no vendor KMS interoperability has been exercised. #216
+  remains WIP.
 - This adds local-model evidence and does not complete the Java matrix or
   establish vendor interoperability; the Java PR remains WIP.
 
@@ -404,6 +414,23 @@ branches, and the common CI therefore reports a planned matrix only.
   ```
 - This adds local-model evidence; it does not complete the Java matrix or
   establish interoperability with a vendor KMS. The Java PR remains WIP.
+
+## 2026-11-17 #216 stack sync with shared Request Header routes
+
+- Merged #187 head `8313b6019ab987f0f0612d9c3bd2c5df10ca6600` into the Usage
+  Limits branch. Usage Limits, Rotate Name, Derivation/Extension Metadata,
+  Attestation Capable Indicator, and shared Request Header route evidence remain
+  present.
+- The complete Java suite passes 57/57 tests, with no failures, errors, or
+  skips. Selected-scope validation passes 27,364/27,364 cells; the regenerated
+  ledger records 44,277 pending of 71,641 cells across 1,207 case IDs. The
+  comparer passes after official ledger regeneration.
+- The artifact installer was run in this worktree so the manifest and package
+  JAR locations match. Artifact source commit and digest are
+  `12496d646d11d4069b58bcc88fc76cc619211ec6` and
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+  This remains local fixture evidence; the matrix is incomplete and #216 stays
+  WIP.
 
 ## 2026-11-17 Java KMIP 2.0/2.1 shared Request Header scalar routes
 
@@ -482,6 +509,22 @@ branches, and the common CI therefore reports a planned matrix only.
 - Verification commands are recorded in
   `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 
+## 2026-11-17 Java Usage Limits stack synchronized with Attestation Type
+
+- Updated the Usage Limits stack branch on top of Java route-matrix head
+  `7647874fb44e9ef0d11ffd65b58cfdd9db43037a`, preserving its Usage Limits,
+  Rotate Name, and Derivation/Extension Metadata slices. The shared controlled
+  Java consumer suite passes 57/57 tests with no skips or failures.
+- The combined selected-scope report validates 27,372/27,372 cells with zero
+  failed cells. The generated ledger records 71,641 planned, 27,372 executed,
+  and 44,269 pending cells across 1,206 pending case IDs. The ledger comparer
+  passes. Artifact commit `12496d646d11d4069b58bcc88fc76cc619211ec6`,
+  SHA-256 `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is selected local-model evidence; the global Java matrix remains
+  incomplete and does not claim vendor interoperability. The PR stays WIP
+  while exact-head CI runs.
+- The full commands and generated ledger comparison are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 ## 2026-11-17 Java KMIP 2.0/2.1 Response Header Client Correlation Value
 
 - OASIS KMIP 2.0/2.1 §8.5 defines Client Correlation Value as an optional
@@ -506,70 +549,65 @@ branches, and the common CI therefore reports a planned matrix only.
 - This adds eight local-model cells. It does not establish server
   interoperability or complete the Java matrix; the Java PR remains WIP.
 
-## 2026-11-18 Java Split Key managed-object root routes
+## 2026-11-17 Java Usage Limits stack synchronized with Client Correlation Value
 
-- Red commit `45b9ab5c5` fails because the Split Key root route recipe is
-  missing. Green commit `e3b1bdfe7` adds the `ManagedObject.splitKey`,
-  `fromFields`, and `fromItem` calls in KMIP 2.0/2.1 with the §2.8 Table 9
-  field order; Refactor commit `e8fdeb63d` reuses canonical scalar wire
-  encoding and checks that all route events have identical bytes.
-- Ruling: keep the fixture member order identical to §2.8 Table 9 because the
-  installed native `fromItem` validator rejects a noncanonical order; if this
-  is wrong, the cost is incorrect route evidence for an invalid KMIP object.
-- Verification: Java suite 87/87; shared route suites 109/109; selected scope
-  34,702/34,702 with no failures; ledger comparison, 1,507-route capability
-  audit, and `git diff --check` pass. Full matrix: 71,641 planned, 34,702
-  executed, 36,939 pending. Exact-head hosted CI and full matrix closure remain
-  outstanding; keep all three stack PRs WIP.
+- Merged Java route-matrix parent `8bf6631e3b4a4da3bd9f4974e10fa81e0a083673`
+  into the Usage Limits stack, preserving the Usage Limits and
+  Derivation/Extension Metadata routes and adding the Response Header Client
+  Correlation Value slice. The test-count assertion includes both changes.
+- The full Java suite passes 57/57 tests with no failures, errors, or skips;
+  shared route-capability tests pass 68/68 and the generated route check reports
+  1,507 routes. Selected-scope validation passes 27,388/27,388 cells with zero
+  failed cells. The generated ledger records 71,641 planned, 27,388 executed,
+  and 44,253 pending cells across 1,204 pending case IDs. Ledger comparison
+  passes. The artifact pin is `12496d646d11d4069b58bcc88fc76cc619211ec6`
+  with SHA-256
+  `504516f1785ec7ad8bead0fb66301708af781e215ac31dd1b4cb1970df257545`.
+- This is selected local-model evidence, not vendor interoperability or full
+  Java matrix coverage. The PR remains WIP pending exact-head CI.
+- Commands and generated-ledger provenance are recorded in
+  `specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md`.
 
-## 2026-11-18 Java Split Key managed-object member routes
+## #216 Split Key member routes — 2026-11-18
 
-- Red `3601224ff` adds tests requiring six Split Key Table 9 members plus the
-  tag to run through the applicable named and generic factories. Green
-  `adbcd43d0` adds those recipes and evidence events. Refactor `af53d1b39`
-  shares report-event matching. The first ledger validation found the Split Key
-  tag duplicated in `case_ids`; the report now omits only that redundant list
-  entry while preserving its new named-factory events.
-- The fixtures use Table 9 order, XOR except for Polynomial Sharing Prime
-  Field with Prime Field Size 257, and a deterministic Raw Key Block. They
-  test local model construction, not cryptographic splitting or server
-  interoperability.
-- Verification: Java suite 87/87 before the case-ID list correction; focused
-  TLS report test passes after correction; selected evidence validates
-  34,740/34,740 cells with zero failures; ledger comparison and 1,507-route
-  capability audit pass. Full Java matrix remains incomplete: 36,901/71,641
-  pending. Exact-head CI and full closure remain open; stack stays WIP.
+- The #216 stack tip now includes the Split Key structure-member and tag
+  routes from #187 while preserving its Usage Limits tests. The combined
+  selected report validates 34,756/34,756 cells with zero failures; the full
+  ledger has 71,641 planned, 34,756 executed, and 36,885 pending cells.
+- The full Java suite passes 87/87; shared route suites pass 109/109; ledger
+  comparison and the 1,507-route capability audit pass. Full matrix closure and
+  exact-head CI remain open, so #216 stays WIP.
 
-## 2026-11-18 Java PGP Key and Secret Data managed-object routes
+## #216 PGP Key and Secret Data routes — 2026-11-18
 
-- Red `7b1f65d3b` requires both object structures, their required members, and
-  assigned tags to invoke the matching named/generic Java factories. Green
-  `6c7820757` adds valid §2.4/§2.7 Table-field fixtures and emits 40 route
-  cells. Refactor `1c67d3647` shares PGP target identification.
-- Fixtures include PGP Key Version 4 or Secret Data Type Password plus a Raw
-  Key Block; they test local model construction only, not key validity.
-- Verification: Java suite 89/89, shared suites 109/109, selected evidence
-  34,780/34,780 with zero failures, ledger comparison and 1,507-route audit
-  pass. The full matrix has 71,641 planned, 34,780 executed, 36,861 pending.
-  Exact-head CI and full closure remain open; all stack PRs remain WIP.
+- #216 includes the PGP Key and Secret Data root/member/tag routes from #187,
+  preserving Usage Limits evidence. The combined report validates
+  34,796/34,796 cells with zero failures and records 36,845 pending of 71,641.
+- The Java suite passes 89/89; shared tests pass 109/109; ledger comparison
+  and the 1,507-route capability audit pass. Full matrix closure and exact-head
+  CI remain open, so #216 stays WIP.
 
-## 2026-11-18 Java generic routes for Key Block structure members
+## #216 Java generic routes for Key Block structure members — 2026-11-18
 
-- Red `738a80069` requires the catalogued PGP, Private, Public, Secret Data,
-  and Split Key Key Block member cases to use the generic TTLV routes. Green
-  `473f57a70` recognizes the catalog's `Object Data Structure` encoding, and
-  Refactor `14210bf1a` separates source structure classification. Follow-up
-  Red `13e375785` catches route evidence that is not declared for a target;
-  Green `f46295a92` uses the manifest's exact target sets for `TtlvValue.structure`
-  and emits only applicable cells.
-- Verification: full Java suite 90/90 with zero failures, errors, or skips;
-  shared suites 109/109; selected evidence 34,816/34,816 with zero failures;
-  ledger comparison and 1,507-route capability audit pass. The full Java
-  ledger has 71,641 planned, 34,816 executed, and 36,825 pending cells.
-- The full route matrix and exact-head CI remain open, so #187, #216, and #217
-  stay WIP.
+- #216 now includes the Key Block structure-member route increment from #187,
+  preserving Usage Limits and PGP Key / Secret Data evidence. The catalog's
+  `Object Data Structure` cases execute generic Item construction, view, and
+  decode using the manifest-declared routes.
+- The full Java suite passes 90/90; shared suites pass 109/109; selected
+  evidence validates 34,832/34,832 cells with zero failures; ledger comparison
+  and the 1,507-route capability audit pass. The full ledger records 71,641
+  planned, 34,832 executed, and 36,809 pending cells.
+- Full matrix closure and exact-head CI remain open, so #216 stays WIP.
 
-## 2026-11-18 Java generic Operation routes for KMIP 2.0 version boundaries
+## #216 generic Operation version-boundary routes — 2026-11-18
+
+- #216 now inherits the six KMIP 2.0 Operation TTLV route fixtures from #187
+  while retaining its Usage Limits slice. They represent the 2.1-only values
+  locally and do not send the unsupported requests.
+- The Java suite passes 91/91; shared suites pass 109/109; selected evidence
+  validates 34,850/34,850 cells with zero failures; ledger comparison and the
+  1,507-route capability audit pass. The full ledger has 36,791 pending of
+  71,641. Full closure and exact-head CI remain open; #216 stays WIP.
 
 - Red `7288a8643` requires all six version-boundary cases to execute the
   generic Operation Item construction, view, and decode routes. Green

@@ -409,6 +409,12 @@ artifact. This is part of the FR-006 artifact provenance check.
   capability audit pass. The Java matrix remains incomplete under FR-002,
   FR-003, and FR-009.
 
+Java FR-003 also includes explicit local TTLV assertions for Usage Limits
+Total, Count, and Unit in KMIP 2.0 and 2.1, including required field order,
+tags, Long Integer/Enumeration types, and values (KMIP 2.0 §7.34 Table 354;
+KMIP 2.1 §7.40 Table 392). This is local route evidence and does not claim
+vendor KMS interoperability.
+
 ## Java typed Alternative Name routes — 2026-11-18
 
 - **FR-003/FR-009:** The catalogued Alternative Name Structure now exercises

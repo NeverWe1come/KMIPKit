@@ -306,78 +306,65 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   36,945 of 71,641 Java cells remain pending. T006, T007, and T009 remain
   open.
 
-## Java Split Key managed-object root routes
+## Development evidence: #216 Usage Limits stack tip after Java key routes
 
-- Red commit `45b9ab5c5` requires the Split Key root case to emit the specific
-  factory and both generic `ManagedObject` factory routes; it fails to compile
-  because the route recipe is absent.
-- Green commit `e3b1bdfe7` constructs the Split Key with KMIP 2.0/2.1 §2.8
-  Table 9 field order, the XOR method, two parts, threshold two, and a Raw Key
-  Block. It invokes `ManagedObject.splitKey`, `fromFields`, and `fromItem`,
-  checks the parsed fields, and records each route in the controlled report.
-- Refactor commit `e8fdeb63d` uses the existing canonical scalar TTLV encoder
-  and verifies that all emitted routes carry identical bytes.
-- Verification: full Java validator suite 87/87, shared route suites 109/109,
-  selected route evidence 34,702/34,702 with zero failures, generated ledger
-  comparison, 1,507-route capability audit, and `git diff --check` pass. The
-  full Java ledger remains incomplete at 36,939 pending of 71,641; the stack
-  remains WIP and T006, T007, and T009 remain open.
+- The #216 branch merges the Java key-object root routes and deterministic
+  ledger fix from #187 while retaining the branch's Usage Limits evidence.
+- Verification: the Java suite passes 87/87 tests; the shared route suites
+  pass 109/109; the 1,507-route capability audit passes; and the combined
+  report validates 34,718/34,718 selected cells with zero failures. The
+  regenerated ledger matches its reference and reports 36,923 pending cells
+  out of 71,641. T006, T007, T009, and full Java matrix closure remain open.
 
-## Java Split Key managed-object member routes
+## Java Split Key managed-object root routes on #216
 
-- Red commit `3601224ff` requires all six §2.8 Table 9 structure members and
-  the Split Key tag to execute through the applicable named and generic Java
-  managed-object factories in KMIP 2.0/2.1.
-- Green commit `adbcd43d0` adds the member fixtures and controlled-report
-  events. It validates the conditional Prime Field Size path with Polynomial
-  Sharing Prime Field and Big Integer 257, and uses XOR without that optional
-  field for the other members.
-- Refactor commit `af53d1b39` shares exact route-event matching between report
-  lookup and cardinality checks. A subsequent validator run exposed a duplicate
-  `case_id` because the tag was already included by generic tag evidence; the
-  selected-case list now adds only the six new member IDs.
-- Verification: full Java suite 87/87 before the case-ID correction; the
-  focused controlled TLS report test passes after it. Selected evidence
-  validates 34,740/34,740 cells with zero failures; ledger comparison and the
-  1,507-route capability audit pass. The ledger has 71,641 planned, 34,740
-  executed, and 36,901 pending cells. Full matrix closure and exact-head CI
-  remain outstanding; keep the stack WIP.
+- #216 contains the #187 Split Key implementation in addition to its Usage
+  Limits routes. Red `45b9ab5c5`, Green `e3b1bdfe7`, and Refactor `e8fdeb63d`
+  preserve the TDD evidence and use the exact KMIP 2.0/2.1 §2.8 Table 9 member
+  order.
+- Verification on the combined #216 head: Java suite 87/87, shared route
+  suites 109/109, selected evidence 34,718/34,718 with zero failures, ledger
+  comparison, and the 1,507-route capability audit all pass. The full Java
+  matrix remains incomplete at 36,923 pending cells of 71,641; keep #216 WIP.
 
-## Java PGP Key and Secret Data managed-object routes
+## Java Split Key member routes on #216
 
-- Red commit `7b1f65d3b` requires both objects' root structures, required
-  members, and assigned tags to run through the applicable Java factories in
-  KMIP 2.0/2.1.
-- Green commit `6c7820757` constructs PGP Key Version 4 or Secret Data Type
-  Password followed by a Raw Key Block, exercises each named factory, and
-  applies `fromFields`/`fromItem` to object structures and members. Refactor
-  commit `1c67d3647` shares the PGP target identity check with report assertions.
-- Verification: Java suite 89/89 with zero failures, errors, or skips; selected
-  evidence 34,780/34,780 with zero failed cells; 109 shared tests pass; ledger
-  comparison and 1,507-route capability audit pass. The full Java ledger has
-  36,861 pending of 71,641. Full matrix closure and exact-head CI remain open;
-  keep the stack WIP.
+- #216 now includes the six §2.8 Table 9 member cases and Split Key tag from
+  #187, while preserving Usage Limits routes. Red `3601224ff`, Green
+  `adbcd43d0`, Refactor `af53d1b39`, and the duplicate-ID correction
+  `5138855e4` are present in the parent history.
+- Verification: full Java suite 87/87; shared route suites 109/109; selected
+  report 34,756/34,756 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full Java ledger has 36,885 pending of 71,641;
+  full matrix closure and exact-head CI remain open, so #216 stays WIP.
 
-## Java generic TTLV routes for Key Block structure members
+## Java PGP Key and Secret Data routes on #216
 
-- Red `738a80069` covers five Object Data Structure member cases; Green
-  `473f57a70` recognizes that catalog encoding; Refactor `14210bf1a` clarifies
-  the selection. Red `13e375785` then proves that evidence must not include
-  undeclared routes; Green `f46295a92` filters `TtlvValue.structure` through
-  the route manifest's exact target list.
+- #216 preserves Usage Limits evidence and incorporates the PGP Key/Secret
+  Data route increment from #187. Red `7b1f65d3b`, Green `6c7820757`, and
+  Refactor `1c67d3647` are in the parent history.
+- Verification: Java suite 89/89; shared route suites 109/109; selected report
+  34,796/34,796 with zero failures; ledger comparison and 1,507-route audit
+  pass. The full ledger has 36,845 pending of 71,641, so #216 remains WIP.
+
+## Java generic TTLV routes for Key Block members on #216
+
+- #216 inherits the Key Block member route increment from #187 while
+  preserving Usage Limits and PGP Key / Secret Data evidence. The route runner
+  selects `TtlvValue.structure` cells only when the shared manifest declares
+  them for the target.
 - Verification: Java suite 90/90; shared suites 109/109; selected report
-  34,816/34,816 with zero failures; ledger comparison and the 1,507-route
-  capability audit pass. The matrix remains incomplete with 36,825 pending of
-  71,641 cells; the stack remains WIP.
+  34,832/34,832 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full matrix has 36,809 pending of 71,641 cells;
+  #216 remains WIP.
 
-## Java generic Operation routes for KMIP 2.0 version boundaries
+## Java generic Operation version-boundary routes on #216
 
-- Red `7288a8643` adds assertions for the six 2.1-only operations rejected in
-  KMIP 2.0; the focused test fails because no catalogued operation target is
-  selected for the 2.0 cases.
-- Green `2843cdfe3` selects the source-defined 2.1 Operation value for local
-  generic TTLV construction, Item view, and decode while keeping protocol
-  context 2.0. This path does not send unsupported requests.
-- Verification: Java suite 91/91; selected report 34,834/34,834 with zero
-  failures; ledger comparison and the 1,507-route capability audit pass. The
-  full Java matrix has 36,807 pending cells of 71,641; #187 remains WIP.
+- #216 inherits Red `7288a8643` and Green `2843cdfe3` from #187 while
+  preserving Usage Limits coverage. Generic Operation Item construction, view,
+  and decode cover the six 2.1-only Operation targets in the local 2.0 rejection
+  cases; no unsupported request is sent.
+- Verification: Java suite 91/91; shared suites 109/109; selected report
+  34,850/34,850 with zero failures; ledger comparison and the 1,507-route
+  capability audit pass. The full matrix has 36,791 pending cells of 71,641;
+  #216 stays WIP.

@@ -1101,6 +1101,15 @@ the selected report validates 42,196/42,196 cells with zero failures. The
 ledger records 71,641 planned, 42,196 executed, and 29,445 pending cells. The
 matrix remains incomplete, so #187 and its dependents stay WIP.
 
+### Usage Limits structure assertions inherited from #216 — 2026-11-18
+
+The #216 branch adds explicit checks for the required Usage Limits member order,
+tags, TTLV types, and values in KMIP 2.0 and 2.1 (§7.34 Table 354; §7.40 Table
+392). The combined selected report validates 42,204/42,204 cells with zero failures;
+these checks exercise catalog cells already represented by the #187 route
+matrix and do not add another 36 cells. The full ledger has 29,437 pending of
+71,641, so the matrix and stack remain WIP.
+
 ### Typed Alternative Name routes — 2026-11-18
 
 The local catalog runner now constructs and decodes the source-shaped KMIP
@@ -1571,3 +1580,17 @@ cells. The full matrix remains incomplete, so #187 and its dependents stay
 WIP. The fixture validates client routes and response handling; it does not
 establish persisted attribute state at an external KMS or claim vendor
 interoperability.
+
+### Java Usage Limits stack verification — 2026-11-19
+
+After merging the refreshed #187 base, #216 retains its Usage Limits structure
+assertions. The selected report is `java-controlled-query-2dff43ea-8694-4a95-8b7f-71e99de0613f` and validates 44,446 cells (44,430 invocations, 16 not applicable,
+zero failures) out of 71,513 planned; 27,067 remain pending. Java Gradle passes
+111/111, shared tests pass 204/204, and the generated ledger matches its
+reference. This branch and its dependent stack remain WIP because the full
+matrix is incomplete. The report uses installed artifact SHA-256
+`d684b2d9f5b54767d544aa96b380dade027c534ff7155c337867a1ed07c10b4e`.
+
+Add Attribute's 2.0 applicability remains unresolved against the pinned OASIS
+source; the current evidence retains the existing 2.0/2.1 catalog pending that
+decision.
