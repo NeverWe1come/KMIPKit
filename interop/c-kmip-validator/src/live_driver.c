@@ -5630,14 +5630,35 @@ static void record_kmip_result(kmip_execution_outcome_t *outcome,
     }
 }
 
+static bool preactive_encrypt_response_has_no_output(
+    kmipkit_client_batch_item_response_t *item, int32_t *out_status) {
+    uint8_t present = 0, data_present = 0, iv_present = 0;
+    uint8_t correlation_present = 0, tag_present = 0;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t data = {0}, iv = {0}, correlation = {0}, tag = {0};
+    int32_t status = kmipkit_client_batch_item_response_encrypt(
+        item, &present, &identifier, &data_present, &data, &iv_present, &iv,
+        &correlation_present, &correlation, &tag_present, &tag);
+    *out_status = status;
+    return status == 0 && !present && !data_present && !data.data && data.length == 0U &&
+        !iv_present && !iv.data && iv.length == 0U && !correlation_present &&
+        !correlation.data && correlation.length == 0U && !tag_present &&
+        !tag.data && tag.length == 0U;
+}
+
 static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *client,
                                                            uint32_t operation,
-                                                           bool aes256_cbc) {
+                                                           bool aes256_cbc,
+                                                           bool preactive_rejection) {
     /* Archive follows KMIP 2.0/2.1 §6.1.4; crypto fixtures follow §§6.1.11,
      * 6.1.17, and 6.1.31–6.1.33. Each fixture isolates and cleans up its key. */
     bool archive = operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE;
     bool recover = operation == KMIPKIT_ENUMERATION_OPERATION_RECOVER;
     bool archived_lifecycle = archive || recover;
+    bool preactive_encrypt_rejection = preactive_rejection &&
+        operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT;
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
@@ -5654,6 +5675,10 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     const uint32_t recover_operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
         KMIPKIT_ENUMERATION_OPERATION_RECOVER, KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
+    const uint32_t preactive_encrypt_operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT,
+        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
     };
     static const char *const encrypt_item_ids[] = {
         "encrypt-create", "encrypt-activate", "encrypt-target", "encrypt-revoke", "encrypt-destroy"
@@ -5674,17 +5699,24 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     static const char *const recover_item_ids[] = {
         "recover-create", "recover-archive", "recover-target", "recover-destroy"
     };
-    const uint32_t *operations = recover ? recover_operations :
+    static const char *const preactive_encrypt_item_ids[] = {
+        "preactive-encrypt-create", "preactive-encrypt-target",
+        "preactive-encrypt-revoke", "preactive-encrypt-destroy"
+    };
+    const uint32_t *operations = preactive_encrypt_rejection ? preactive_encrypt_operations :
+        recover ? recover_operations :
         archive ? archive_operations : active_key_operations;
-    size_t operation_count = (archive || recover) ? 4U : 5U;
-    size_t target_index = recover ? 2U : archive ? 1U : 2U;
-    size_t revoke_index = archive ? 2U : 3U;
-    size_t destroy_index = (archive || recover) ? 3U : 4U;
+    size_t operation_count = (archive || recover || preactive_encrypt_rejection) ? 4U : 5U;
+    size_t target_index = preactive_encrypt_rejection ? 1U : recover ? 2U : archive ? 1U : 2U;
+    size_t revoke_index = (archive || preactive_encrypt_rejection) ? 2U : 3U;
+    size_t destroy_index = (archive || recover || preactive_encrypt_rejection) ? 3U : 4U;
     const char *const *item_ids = mac_verify ? mac_verify_item_ids :
+        preactive_encrypt_rejection ? preactive_encrypt_item_ids :
         recover ? recover_item_ids :
         archive ? archive_item_ids :
         mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
-    const char *operation_name = mac_verify ? "MAC Verify" :
+    const char *operation_name = preactive_encrypt_rejection ? "pre-active Encrypt" :
+        mac_verify ? "MAC Verify" :
         recover ? "Recover" :
         archive ? "Archive" : mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
     kmip_execution_outcome_t outcome = {.executed = true};
@@ -5726,7 +5758,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
     /* Archive/Recover use the archived-key lifecycle from KMIP §6.1.4 and
      * §6.1.38 (2.0) / §6.1.42 (2.1); neither requires Activate first. */
-    if (status == 0 && !archived_lifecycle)
+    if (status == 0 && !archived_lifecycle && !preactive_encrypt_rejection)
         status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
     if (status == 0 && !mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(
@@ -5814,6 +5846,7 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
     if (status == 0 && response_count != operation_count) status = KMIPKIT_ERROR_INVALID_INPUT;
+    bool expected_encrypt_failure = false;
     for (size_t index = 0; status == 0 && index < operation_count; ++index) {
         kmipkit_client_batch_item_metadata_v2_t metadata = {
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
@@ -5823,6 +5856,14 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
             responses[index], &metadata);
         if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
         if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            if (preactive_encrypt_rejection && index == target_index &&
+                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+                metadata.has_result_reason != 0 &&
+                metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_CRYPTOGRAPHIC_FAILURE) {
+                record_kmip_result(&outcome, &metadata);
+                expected_encrypt_failure = true;
+                continue;
+            }
             record_kmip_result(&outcome, &metadata);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "controlled %s lifecycle item %zu was rejected (status=%u reason=%u)",
@@ -5847,7 +5888,10 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
         identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
         identifier.text_data && identifier.text_length &&
-        (recover ? (archive_response_matches_key(responses[1], &identifier, &status) &&
+        (preactive_encrypt_rejection ?
+         (expected_encrypt_failure && preactive_encrypt_response_has_no_output(
+              responses[target_index], &status)) :
+         recover ? (archive_response_matches_key(responses[1], &identifier, &status) &&
                     recover_response_matches_key(responses[target_index], &identifier, &status)) :
          archive ? archive_response_matches_key(responses[1], &identifier, &status) :
           (activate_response_matches_created_key(responses[1], &identifier, &status) &&
@@ -5860,9 +5904,14 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     outcome.success = valid;
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
-    outcome.has_result_status_code = status == 0;
-    outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
-    if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+    if (!preactive_encrypt_rejection || !expected_encrypt_failure) {
+        outcome.has_result_status_code = status == 0;
+        outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    }
+    if (valid && preactive_encrypt_rejection) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit preserved the expected OperationFailed/CryptographicFailure result and omitted Encrypt output");
+    } else if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
         "KMIPKit %s response did not match the created key, cryptographic data, or cleanup results",
         operation_name);
 
@@ -8734,23 +8783,25 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
         return execute_registered_crypto_batch(client);
     if (strcmp(test_case->case_id, "test-crypto-encrypt-aes-256-cbc") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, true);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, true, false);
     if (strcmp(test_case->case_id, "test-op-encrypt") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, false, false);
+    if (strcmp(test_case->case_id, "test-neg-encrypt-preactive-key") == 0)
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, false, true);
     if (strcmp(test_case->case_id, "test-op-archive") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, false, false);
     if (strcmp(test_case->case_id, "test-op-recover") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_RECOVER, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_RECOVER, false, false);
     if (strcmp(test_case->case_id, "test-op-decrypt") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, false, false);
     if (strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-cbc") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, true);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_DECRYPT, true, false);
     if (strcmp(test_case->case_id, "test-op-mac") == 0 ||
         strcmp(test_case->case_id, "test-crypto-mac-hmac_sha256-256") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC, false, false);
     if (strcmp(test_case->case_id, "test-op-mac-verify") == 0 ||
         strcmp(test_case->case_id, "test-crypto-mac-verify-hmac_sha256-256") == 0)
-        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY, false);
+        return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY, false, false);
     if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0 ||
         strcmp(test_case->case_id, "test-obj-private-key") == 0 ||
         strcmp(test_case->case_id, "test-obj-public-key") == 0)

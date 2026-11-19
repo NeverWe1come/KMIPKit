@@ -64,6 +64,8 @@ MODIFY_ATTRIBUTE_CURRENT_MISMATCH_CASE = 'test-neg-modify-attribute-current-mism
 MODIFY_ATTRIBUTE_CURRENT_MISMATCH_REASON = 32
 ENCRYPT_ITEM_IDS = (b'encrypt-create', b'encrypt-activate', b'encrypt-target',
                     b'encrypt-revoke', b'encrypt-destroy')
+PREACTIVE_ENCRYPT_ITEM_IDS = (b'preactive-encrypt-create', b'preactive-encrypt-target',
+                              b'preactive-encrypt-revoke', b'preactive-encrypt-destroy')
 RECOVER_ITEM_IDS = (b'recover-create', b'recover-archive', b'recover-target', b'recover-destroy')
 DECRYPT_ITEM_IDS = (b'decrypt-create', b'decrypt-activate', b'decrypt-target',
                     b'decrypt-revoke', b'decrypt-destroy')
@@ -455,6 +457,7 @@ RECIPES = {
     'test-op-import': ((42, 20), 'import_secret_data'),
     'test-op-encrypt': ((1, 18, 31, 19, 20), 'encrypt'),
     'test-crypto-encrypt-aes-256-cbc': ((1, 18, 31, 19, 20), 'encrypt_aes256_cbc'),
+    'test-neg-encrypt-preactive-key': ((1, 31, 19, 20), 'encrypt_preactive_rejection'),
     'test-op-decrypt': ((1, 18, 32, 19, 20), 'decrypt'),
     'test-crypto-decrypt-aes-256-cbc': ((1, 18, 32, 19, 20), 'decrypt_aes256_cbc'),
     'test-op-mac': ((1, 18, 35, 19, 20), 'mac'),
@@ -836,17 +839,20 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
-def assert_crypto_request(node, decrypt, *, aes256_cbc=False):
+def assert_crypto_request(node, decrypt, *, aes256_cbc=False, preactive_rejection=False):
     """Check an isolated Create/Activate/crypto/Revoke/Destroy request shape."""
     operation = 32 if decrypt else 31
-    item_ids = DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS
+    item_ids = (PREACTIVE_ENCRYPT_ITEM_IDS if preactive_rejection else
+                DECRYPT_ITEM_IDS if decrypt else ENCRYPT_ITEM_IDS)
     usage_mask = 8 if decrypt else 4
     input_data = (BATCH_CRYPTO_AES256_CBC_CIPHERTEXT if aes256_cbc else BATCH_CRYPTO_CIPHERTEXT) \
         if decrypt else BATCH_CRYPTO_PLAINTEXT
     items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     operations = [numbers(item, 0x42005C) for item in items]
     observed_item_ids = [byte_string_values(item, 0x420093) for item in items]
-    if (operations != [[1], [18], [operation], [19], [20]] or
+    expected_operations = ([[1], [operation], [19], [20]] if preactive_rejection else
+                           [[1], [18], [operation], [19], [20]])
+    if (operations != expected_operations or
             observed_item_ids != [[item_id] for item_id in item_ids] or
             numbers(items[0], 0x420057) != [2] or
             numbers(items[0], 0x420028) != [3] or
@@ -856,7 +862,8 @@ def assert_crypto_request(node, decrypt, *, aes256_cbc=False):
                 for item in items[1:]
                 for identifier in descendants(item, UNIQUE_IDENTIFIER_TAG))):
         raise ValueError('fixture_crypto_batch_lifecycle_mismatch')
-    encrypt_payloads = [child for child in items[2][2]
+    encrypt_index = 1 if preactive_rejection else 2
+    encrypt_payloads = [child for child in items[encrypt_index][2]
                         if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
     if len(encrypt_payloads) != 1:
         raise ValueError('fixture_encrypt_payload_missing')
@@ -1946,6 +1953,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_crypto_request(node, True, aes256_cbc=True)
     if selected_recipe[1] == 'encrypt':
         assert_crypto_request(node, False)
+    if selected_recipe[1] == 'encrypt_preactive_rejection':
+        assert_crypto_request(node, False, preactive_rejection=True)
     if selected_recipe[1] == 'decrypt':
         assert_crypto_request(node, True)
     if selected_recipe[1] == 'mac':
@@ -2039,7 +2048,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
         expected_algorithms = ([3, 3] if selected_recipe[1] in
-                               ('encrypt', 'encrypt_aes256_cbc', 'decrypt', 'decrypt_aes256_cbc') else
+                               ('encrypt', 'encrypt_aes256_cbc', 'encrypt_preactive_rejection',
+                                'decrypt', 'decrypt_aes256_cbc') else
                                [9, 9] if selected_recipe[1] in ('mac', 'mac_verify') else
                                [4 if object_type in (3, 4) else 3])
         if numbers(node, 0x420028) != expected_algorithms:
@@ -4728,6 +4738,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = BATCH_CRYPTO_ITEM_IDS
                                         elif recipe[1] in ('encrypt', 'encrypt_aes256_cbc'):
                                             response_item_ids = ENCRYPT_ITEM_IDS
+                                        elif recipe[1] == 'encrypt_preactive_rejection':
+                                            response_item_ids = PREACTIVE_ENCRYPT_ITEM_IDS
                                         elif recipe[1] in ('decrypt', 'decrypt_aes256_cbc'):
                                             response_item_ids = DECRYPT_ITEM_IDS
                                         elif recipe[1] == 'mac':
@@ -5219,13 +5231,25 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif reject_this_exchange:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-                                            if ([numbers(item, 0x42005C) for item in response_items] !=
-                                                    [[peer_rejection['operation']]] or
-                                                    [numbers(item, 0x42007F) for item in response_items] !=
-                                                    [[peer_rejection['result_status']]] or
-                                                    [numbers(item, 0x42007E) for item in response_items] !=
-                                                    [[peer_rejection['result_reason']]]):
-                                                raise ValueError('fixture_rejection_response_mismatch')
+                                            expected_operations = [[operation] for operation in response_operations]
+                                            expected_statuses = [[status] for status in response_statuses]
+                                            expected_reasons = [[reason or 0] for reason in response_reasons]
+                                            observed_operations = [numbers(item, 0x42005C) for item in response_items]
+                                            observed_statuses = [numbers(item, 0x42007F) for item in response_items]
+                                            observed_reasons = [numbers(item, 0x42007E) or [0]
+                                                                for item in response_items]
+                                            if (observed_operations != expected_operations or
+                                                    observed_statuses != expected_statuses or
+                                                    observed_reasons != expected_reasons or
+                                                    [peer_rejection['operation']] not in expected_operations or
+                                                    [peer_rejection['result_status']] not in expected_statuses or
+                                                    [peer_rejection['result_reason']] not in expected_reasons):
+                                                raise ValueError(
+                                                    'fixture_rejection_response_mismatch:'
+                                                    f'operations={observed_operations!r}/'
+                                                    f'{expected_operations!r}:statuses={observed_statuses!r}/'
+                                                    f'{expected_statuses!r}:reasons={observed_reasons!r}/'
+                                                    f'{expected_reasons!r}')
                                         elif attribute_mutation_recipe:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]

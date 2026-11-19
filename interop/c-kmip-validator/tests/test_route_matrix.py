@@ -4121,18 +4121,22 @@ class RouteMatrixTests(unittest.TestCase):
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
             peer_rejection={'case_id': case_id, 'exchange_index': 0,
-                            'operation': 31, 'result_status': 1, 'result_reason': 7})
+                            'operation': 31, 'result_status': 1, 'result_reason': 10})
 
         self.assertEqual(len(checks), 12)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check['consumer_result_status_code'] == 1 and
-                            check['consumer_result_reason_code'] == 7 for check in checks), checks)
+                            check['consumer_result_reason_code'] == 10 and
+                            'kmipkit_client_batch_item_response_encrypt' in
+                            check['public_api_trace_symbols'] and
+                            'kmipkit_client_batch_item_response_encrypt' in
+                            check['public_api_success_symbols'] for check in checks), checks)
         send_events = [event for event in events if event['action'] == 'send']
         self.assertEqual(len(send_events), 12)
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
                             ['Create', 'Encrypt', 'Revoke', 'Destroy'] and
                             event['peer_observed_result_status_codes'] == [0, 1, 0, 0] and
-                            event['peer_observed_result_reason_codes'] == [0, 7, 0, 0] and
+                            event['peer_observed_result_reason_codes'] == [0, 10, 0, 0] and
                             event['peer_observed_effects'] ==
                             ['created', 'operation_rejected', 'revoked', 'destroyed']
                             for event in send_events))

@@ -653,6 +653,7 @@ def main() -> int:
     expected_cases += ("test-obj-secret-data",)
     expected_operations += (1, 18, 31, 19, 20)
     expected_operations += (1, 18, 31, 19, 20)
+    expected_operations += (1, 31, 19, 20)  # test-neg-encrypt-preactive-key
     expected_operations += (1, 18, 32, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
     expected_operations += (1, 18, 35, 19, 20)
@@ -731,6 +732,7 @@ def main() -> int:
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-op-encrypt",)
     expected_cases += ("test-crypto-encrypt-aes-256-cbc",)
+    expected_cases += ("test-neg-encrypt-preactive-key",)
     expected_operations += (1, 18, 32, 19, 20)
     expected_cases += ("test-crypto-decrypt-aes-256-cbc",)
     expected_cases += ("test-op-decrypt",)
@@ -1047,6 +1049,19 @@ def main() -> int:
                                         "isolated Encrypt batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = expected_encrypt_item_ids
+                            if operations == (1, 31, 19, 20):
+                                expected_preactive_encrypt_item_ids = (
+                                    b"preactive-encrypt-create", b"preactive-encrypt-target",
+                                    b"preactive-encrypt-revoke", b"preactive-encrypt-destroy",
+                                )
+                                if (any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                        for item_id in expected_preactive_encrypt_item_ids) or
+                                        integer(0x42000D, 4) not in request or
+                                        enumeration(0x42000E, 1) not in request):
+                                    raise AssertionError(
+                                        "Pre-Active Encrypt batch shape or item IDs mismatch"
+                                    )
+                                response_item_ids = expected_preactive_encrypt_item_ids
                             if operations == (1, 18, 32, 19, 20):
                                 expected_decrypt_item_ids = (
                                     b"decrypt-create", b"decrypt-activate", b"decrypt-target",
@@ -1216,6 +1231,9 @@ def main() -> int:
                             elif operations not in (stop_on_first_failure_batch, (1, 10)):
                                 response_statuses = None
                                 response_reasons = None
+                            if operations == (1, 31, 19, 20):
+                                response_statuses = (0, 1, 0, 0)
+                                response_reasons = (None, 10, None, None)
                             if (operations == (2, 18, 33, 19, 20, 20) and
                                     not ttlv_contains_tag(request, 0x42002B)):
                                 response_item_ids = (
