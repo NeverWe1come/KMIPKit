@@ -757,6 +757,9 @@ class ControlledTlsPeerTest {
             "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv",
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
             "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv");
+    private static final String GENERIC_CREDENTIAL_FROM_TTLV_ROUTE =
+            "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+    private static final String GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL = "org.kmipkit.credentials.Credential.fromTtlv";
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_CASE_IDS = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "test-norm-credential-credential-username-and-password",
@@ -1874,15 +1877,15 @@ class ControlledTlsPeerTest {
                     "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-norm-credential-credential-credential",
                     "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL",
-                    "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-norm-credential-credential-one-time-password",
                     "KMIPKIT-ELEM-CREDENTIAL-ONE-TIME-PASSWORD",
-                    "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-norm-credential-credential-ticket",
                     "KMIPKIT-ELEM-CREDENTIAL-TICKET",
-                    "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                    GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                     "construct", protocolVersion);
             assertRouteEventRecorded(events, "test-op-revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE",
                     "java.typed-protocol.revoke_request.create", "construct", protocolVersion);
@@ -2368,9 +2371,9 @@ class ControlledTlsPeerTest {
                     String credentialTargetId = CREDENTIAL_TYPE_MODEL_TARGET_IDS.get(fixture.targetId());
                     for (String version : fixture.protocolVersions()) {
                         JsonNode envelopeEvent = findRouteEvent(report.path("events"), credentialCaseId,
-                                "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                                GENERIC_CREDENTIAL_FROM_TTLV_ROUTE,
                                 version, credentialTargetId);
-                        assertEquals("org.kmipkit.credentials.Credential.fromTtlv",
+                        assertEquals(GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL,
                                 envelopeEvent.path("public_api_symbol").asText());
                         assertEquals(credentialTargetId,
                                 findRouteEvent(report.path("events"), credentialCaseId,
@@ -2654,7 +2657,8 @@ class ControlledTlsPeerTest {
         assertEquals(17 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + 2 // Generic OTP and Ticket Credential cases.
+                        + genericTagCaseIds.size()
                         + 13 // Includes the new Add Attribute operation-route case.
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + anyObjectAttributeCaseIds.size()
@@ -4339,7 +4343,7 @@ class ControlledTlsPeerTest {
     private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
             String targetId, long credentialTypeRaw, byte[] credentialValueWire,
             TtlvStructure credentialValue, String protocolVersion) throws Exception {
-        String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+        String route = GENERIC_CREDENTIAL_FROM_TTLV_ROUTE;
         String treeHash = normalizedTreeSha256(credentialEnvelopeWire(credentialTypeRaw, credentialValueWire));
         try (TtlvStructure structure = credentialEnvelopeStructure(credentialValue, credentialTypeRaw);
                 Credential credential = Credential.fromTtlv(structure)) {
@@ -4348,7 +4352,7 @@ class ControlledTlsPeerTest {
                     "The generic Credential decoder must retain both envelope fields.");
         }
         appendRouteEvent(events, caseId, route, targetId,
-                "org.kmipkit.credentials.Credential.fromTtlv", null, null, "construct", protocolVersion,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null, "construct", protocolVersion,
                 null, treeHash, null);
     }
 
@@ -4357,7 +4361,7 @@ class ControlledTlsPeerTest {
         String caseId = "test-norm-credential-credential-credential";
         String targetId = "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL";
         String modelRoute = "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
-        String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+        String route = GENERIC_CREDENTIAL_FROM_TTLV_ROUTE;
         byte[] wire = credentialEnvelopeWire(modelRoute, 1);
         String treeHash = normalizedTreeSha256(wire);
         try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, 1);
@@ -4367,7 +4371,7 @@ class ControlledTlsPeerTest {
                     "Credential.fromTtlv must retain the Credential Type and Credential Value members.");
         }
         appendRouteEvent(events, caseId, route, targetId,
-                "org.kmipkit.credentials.Credential.fromTtlv", null, null,
+                GENERIC_CREDENTIAL_FROM_TTLV_SYMBOL, null, null,
                 "construct", protocolVersion, null, treeHash, null);
 
         try (TtlvStructure credentialValue = oneTimePasswordCredentialValueStructure()) {
@@ -6742,6 +6746,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-x.509-certificate-subject");
         caseIds.add("test-op-revoke");
         caseIds.add("test-op-add-attribute");
+        caseIds.add("test-norm-credential-credential-one-time-password");
+        caseIds.add("test-norm-credential-credential-ticket");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
                 .forEach(caseIds::add);
