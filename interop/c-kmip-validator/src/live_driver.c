@@ -8193,12 +8193,7 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     if (status == 0 && !append_ttlv_value(
             client, &common_attributes, UINT32_C(0x420028), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
-    if (ecdsa && status == 0) {
-        kmipkit_ttlv_value_release(value);
-        value = NULL;
-        status = kmipkit_ttlv_value_integer(256, &value);
-    }
+    if (status == 0) status = kmipkit_ttlv_value_integer(ecdsa ? 256 : 2048, &value);
     if (status == 0 && !append_ttlv_value(
             client, &common_attributes, UINT32_C(0x42002A), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;

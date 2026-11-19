@@ -1014,8 +1014,10 @@ def assert_signature_request(node, verify, require_parameters=True, ecdsa=False)
     expected_algorithm, expected_length = (6, 256) if ecdsa else (4, 2048)
     domain_parameters = [field for field in common[2]
                          if field[0] == 0x420029 and field[1] == 1]
-    domain_curve_matches = (len(domain_parameters) == 1 and
-                            numbers(domain_parameters[0], 0x420075) == [7]) if ecdsa else not domain_parameters
+    domain_curve_matches = (
+        len(domain_parameters) == 1 and len(domain_parameters[0][2]) == 1 and
+        numbers(domain_parameters[0], 0x420075) == [7]
+    ) if ecdsa else not domain_parameters
     if (numbers(common, 0x420028) != [expected_algorithm] or
             numbers(common, 0x42002A) != [expected_length] or not domain_curve_matches or
             numbers(private, 0x42002C) != [1] or numbers(public, 0x42002C) != [2]):
