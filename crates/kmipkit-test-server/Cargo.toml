@@ -20,6 +20,7 @@ hyper = { workspace = true, features = ["client", "http1"] }
 kmipkit-protocol.workspace = true
 kmipkit-ttlv.workspace = true
 rcgen.workspace = true
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
 roxmltree.workspace = true
 rustls.workspace = true
 serde_json.workspace = true

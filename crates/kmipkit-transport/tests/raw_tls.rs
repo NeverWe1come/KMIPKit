@@ -16,6 +16,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use kmipkit_test_support::FixtureSigningKey;
 use kmipkit_test_support::{EphemeralPki, LoopbackTcpListener, fixtures};
 pub use kmipkit_transport::{
     RawTlsTransport, RequestDeliveryState, Transport, TransportCauseCategory, TransportError,
@@ -23,8 +24,8 @@ pub use kmipkit_transport::{
 };
 use rcgen::{
     BasicConstraints, Certificate, CertificateParams, CertificateRevocationListParams, DnType,
-    ExtendedKeyUsagePurpose, IsCa, Issuer, KeyIdMethod, KeyPair, KeyUsagePurpose,
-    RevokedCertParams, SerialNumber, date_time_ymd,
+    ExtendedKeyUsagePurpose, IsCa, Issuer, KeyUsagePurpose, RevokedCertParams, SerialNumber,
+    date_time_ymd,
 };
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
@@ -2221,12 +2222,12 @@ const CLIENT_SERIAL: u64 = 42;
 
 struct PolicyPki {
     ca_params: CertificateParams,
-    ca_key: KeyPair,
+    ca_key: FixtureSigningKey,
     ca: Certificate,
     server: Certificate,
-    server_key: KeyPair,
+    server_key: FixtureSigningKey,
     client: Certificate,
-    client_key: KeyPair,
+    client_key: FixtureSigningKey,
     server_serial: SerialNumber,
 }
 
@@ -2245,11 +2246,12 @@ impl PolicyPki {
     }
 
     fn generate_with_validity(server_name: &str, validity: CertificateValidity) -> Self {
-        let ca_key = KeyPair::generate().expect("test CA key generation succeeds");
+        let ca_key = FixtureSigningKey::generate().expect("test CA key generation succeeds");
         let mut ca_params = CertificateParams::default();
         ca_params
             .distinguished_name
             .push(DnType::CommonName, "KMIPKit raw TLS test CA");
+        ca_key.prepare_certificate(&mut ca_params);
         ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
         ca_params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
         ca_params.not_before = date_time_ymd(2020, 1, 1);
@@ -2310,7 +2312,7 @@ impl PolicyPki {
                 reason_code: None,
                 invalidity_date: None,
             }],
-            key_identifier_method: KeyIdMethod::Sha256,
+            key_identifier_method: self.ca_key.key_identifier_method(),
         }
         .signed_by(&issuer)
         .expect("test CRL signing succeeds");
@@ -2355,9 +2357,9 @@ fn policy_leaf(
     usage: ExtendedKeyUsagePurpose,
     serial_number: SerialNumber,
     validity: CertificateValidity,
-    issuer: &Issuer<'_, &KeyPair>,
-) -> (Certificate, KeyPair) {
-    let key = KeyPair::generate().expect("test leaf key generation succeeds");
+    issuer: &Issuer<'_, &FixtureSigningKey>,
+) -> (Certificate, FixtureSigningKey) {
+    let key = FixtureSigningKey::generate().expect("test leaf key generation succeeds");
     let mut params = CertificateParams::new(vec![name.to_owned()])
         .expect("test subject alternative name is valid");
     params.distinguished_name.push(DnType::CommonName, name);
@@ -2378,6 +2380,7 @@ fn policy_leaf(
             params.not_after = date_time_ymd(2099, 1, 1);
         }
     }
+    key.prepare_certificate(&mut params);
     let certificate = params
         .signed_by(&key, issuer)
         .expect("test leaf certificate signing succeeds");
