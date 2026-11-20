@@ -753,10 +753,3 @@ impl CloudKmsProvider for AlibabaKmsProvider {
         Err(ProxyError::Unsupported("Alibaba feature disabled".into()))
     }
 }
-
-mod hex {
-    #[cfg(feature = "alibaba")]
-    pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{b:02x}")).collect()
-    }
-}

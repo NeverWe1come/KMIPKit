@@ -918,10 +918,3 @@ impl CloudKmsProvider for InfisicalKmsProvider {
         ))
     }
 }
-
-mod hex {
-    #[cfg(feature = "infisical")]
-    pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{b:02x}")).collect()
-    }
-}

@@ -822,10 +822,3 @@ impl CloudKmsProvider for IbmKmsProvider {
         Err(ProxyError::Unsupported("IBM feature disabled".into()))
     }
 }
-
-mod hex {
-    #[cfg(feature = "ibm")]
-    pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{b:02x}")).collect()
-    }
-}
