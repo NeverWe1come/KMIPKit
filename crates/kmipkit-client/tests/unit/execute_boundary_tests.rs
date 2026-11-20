@@ -1084,15 +1084,13 @@ impl BoundaryAudit {
                 finder.visit_type(&argument.ty);
             }
         }
-        let mut output_finder = PublicTypeFinder::default();
-        if !batch_response_iterator
-            && !registry_generic_accessor
-            && !raw_response_accessor
-            && !binding_callback_encoding
-            && let syn::ReturnType::Type(_, output) = &signature.output
-        {
-            output_finder.visit_type(output);
-        }
+        let output_finder = find_public_output_types(
+            signature,
+            batch_response_iterator
+                || registry_generic_accessor
+                || raw_response_accessor
+                || binding_callback_encoding,
+        );
         if finder.has_forbidden_type() || output_finder.has_forbidden_output_type() {
             self.reject(format!(
                 "public signature {} exposes a forbidden type (input={:?}, output={:?})",
@@ -1635,6 +1633,17 @@ impl PublicTypeFinder {
             )
         })
     }
+}
+
+fn find_public_output_types(
+    signature: &syn::Signature,
+    output_is_exempt: bool,
+) -> PublicTypeFinder {
+    let mut finder = PublicTypeFinder::default();
+    if !output_is_exempt && let syn::ReturnType::Type(_, output) = &signature.output {
+        finder.visit_type(output);
+    }
+    finder
 }
 
 impl<'ast> Visit<'ast> for PublicTypeFinder {
