@@ -733,7 +733,9 @@ def _check_policy_provenance(
         content = safe_read_bytes(repo_root, source_path, max_bytes=1_048_576).decode("utf-8", errors="strict")
     except (OSError, UnicodeError, PathSecurityError) as error:
         raise CatalogValidationError("project policy provenance source is unavailable") from error
-    heading_pattern = re.compile(r"(?m)^#{1,6}[ \t]+" + re.escape(heading) + r"[ \t]*#*[ \t]*$")
+    heading_pattern = re.compile(
+        r"(?m)^#{1,6}[ \t]+" + re.escape(heading) + r"[ \t]*#*[ \t]*\r?$"
+    )
     if heading_pattern.search(content) is None:
         _fail("project policy provenance heading does not exist in its source")
     if provenance == "ADR" and re.search(r"(?m)^Status:[ \t]*Accepted[ \t]*$", content) is None:
