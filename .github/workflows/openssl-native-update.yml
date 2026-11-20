@@ -28,6 +28,8 @@ jobs:
           persist-credentials: false
 
       - name: Compare pinned version with upstream releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 -B verification/security/openssl/check_upstream.py
 
   report-update:
