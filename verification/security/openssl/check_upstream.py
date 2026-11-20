@@ -15,15 +15,18 @@ PIN_FILE = Path(__file__).with_name("native.json")
 ISSUE_MARKER = "<!-- kmipkit-native-openssl-update -->"
 ISSUE_TITLE_PREFIX = "OpenSSL native update available: "
 USER_AGENT = "KMIPKit OpenSSL release tracker"
+RELEASES_API_URL = "https://api.github.com/repos/openssl/openssl/releases"
 
 
 def load_pin() -> dict[str, str]:
     pin = json.loads(PIN_FILE.read_text(encoding="utf-8"))
     series = pin.get("series", "")
-    if not re.fullmatch(r"\d+\.\d+", series):
+    if not isinstance(series, str) or not re.fullmatch(r"\d+\.\d+", series):
         raise ValueError("native.json has an invalid OpenSSL release series")
     if not re.fullmatch(rf"{re.escape(series)}\.\d+", pin.get("version", "")):
         raise ValueError("native.json version does not match its OpenSSL release series")
+    if pin.get("release_api_url") != RELEASES_API_URL:
+        raise ValueError("native.json must use the official OpenSSL releases API")
     return pin
 
 
@@ -40,9 +43,8 @@ def latest_patch(pin: dict[str, str], token: str | None = None) -> tuple[str, st
     latest = tuple(map(int, pin["version"].split(".")))
     latest_tag = f"openssl-{pin['version']}"
     major, minor = map(int, pin["series"].split("."))
-    api_url = pin["release_api_url"]
     for page in range(1, 6):
-        releases = get_json(f"{api_url}?per_page=100&page={page}", token)
+        releases = get_json(f"{RELEASES_API_URL}?per_page=100&page={page}", token)
         if not isinstance(releases, list):
             raise ValueError("OpenSSL release API returned an unexpected response")
         for release in releases:

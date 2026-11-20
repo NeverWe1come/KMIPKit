@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -24,10 +25,17 @@ def load_pin() -> dict[str, str]:
     version = pin.get("version", "")
     series = pin.get("series", "")
     digest = pin.get("archive_sha256", "")
-    if not version.startswith(f"{series}."):
+    series_match = re.fullmatch(r"([0-9]{1,2})\.([0-9]{1,2})", series)
+    version_match = re.fullmatch(r"([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{1,4})", version)
+    if series_match is None or version_match is None:
+        raise ValueError("native.json must contain a numeric OpenSSL version and release series")
+    if tuple(map(int, series_match.groups())) != tuple(map(int, version_match.groups()[:2])):
         raise ValueError("pinned OpenSSL version is outside the declared release series")
     if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
         raise ValueError("native.json must contain a lowercase SHA-256 digest")
+    major, minor, patch = map(int, version_match.groups())
+    pin["series"] = f"{major}.{minor}"
+    pin["version"] = f"{major}.{minor}.{patch}"
     return pin
 
 
@@ -83,7 +91,7 @@ def write_environment(install: Path) -> None:
         print("export OPENSSL_STATIC=1")
 
 
-def build(install_dir: Path | None) -> None:
+def build() -> None:
     pin = load_pin()
     version = pin["version"]
     runner_temp = Path(os.environ.get("RUNNER_TEMP", tempfile.gettempdir()))
@@ -91,9 +99,7 @@ def build(install_dir: Path | None) -> None:
         # Keep the source and intermediate paths short for Windows build tools.
         runner_temp = Path(os.environ["SystemDrive"] + "/")
     work = Path(tempfile.mkdtemp(prefix="kmip-ossl-", dir=runner_temp))
-    install = install_dir or (
-        work / "install" if os.environ.get("GITHUB_ENV") else default_install_dir(version)
-    )
+    install = work / "install" if os.environ.get("GITHUB_ENV") else default_install_dir(version)
     if not install.resolve().is_relative_to(work.resolve()):
         atexit.register(shutil.rmtree, work, ignore_errors=True)
     if install.exists() and any(install.iterdir()):
@@ -103,6 +109,9 @@ def build(install_dir: Path | None) -> None:
     staging = work / "stage"
     archive = work / "openssl.tar.gz"
     release = f"openssl-{version}"
+    source = (work / release).resolve()
+    if not source.is_relative_to(work.resolve()):
+        raise ValueError("pinned OpenSSL source path must remain inside the build directory")
     url = f"https://github.com/openssl/openssl/releases/download/{release}/{release}.tar.gz"
     request = urllib.request.Request(url, headers={"User-Agent": "KMIPKit OpenSSL build"})
     with urllib.request.urlopen(request, timeout=60) as response, archive.open("wb") as output:
@@ -113,7 +122,6 @@ def build(install_dir: Path | None) -> None:
     with tarfile.open(archive, "r:gz") as package:
         package.extractall(work, filter="data")
 
-    source = work / release
     options = ["no-shared", "no-tests", "--libdir=lib", f"--prefix={staging}"]
     if platform.system() == "Windows":
         if platform.machine().lower() not in {"amd64", "x86_64"}:
@@ -143,17 +151,9 @@ def build(install_dir: Path | None) -> None:
 def main() -> None:
     pin = load_pin()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--install-dir",
-        type=Path,
-        help=(
-            "installation prefix (defaults to the KMIPKit user cache locally "
-            "or the GitHub Actions temporary directory in CI)"
-        ),
-    )
     parser.add_argument("--version", action="version", version=f"OpenSSL {pin['version']}")
-    args = parser.parse_args()
-    build(args.install_dir)
+    parser.parse_args()
+    build()
 
 
 if __name__ == "__main__":
