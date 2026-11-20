@@ -173,7 +173,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
         catalog = json.load(f)
 
     elements = catalog.get("elements", [])
-    repository_root = normative_catalog_path.resolve().parents[2]
+    repository_root = normative_catalog_path.resolve().parents[3]
     section_indexes = oasis_section_indexes(repository_root)
 
     # 1. Collect in-scope client-to-server operations.
