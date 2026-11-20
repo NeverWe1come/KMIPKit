@@ -11,6 +11,14 @@ public final class FluentRequest {
         if (client == null) throw new org.kmipkit.InvalidInputException("client is required");
         this.client = client;
     }
+    public CreateSplitKeyBuilder createSplitKey() { return new CreateSplitKeyBuilder(client); }
+    public RegisterBuilder register() { return new RegisterBuilder(client); }
+    public ActivateBuilder activate() { return new ActivateBuilder(client); }
+    public ArchiveBuilder archive() { return new ArchiveBuilder(client); }
+    public RecoverBuilder recover() { return new RecoverBuilder(client); }
+    public RekeyBuilder rekey() { return new RekeyBuilder(client); }
+    public RekeyKeyPairBuilder rekeyKeyPair() { return new RekeyKeyPairBuilder(client); }
+    public RecertifyBuilder recertify() { return new RecertifyBuilder(client); }
     public SymmetricKeyBuilder createSymmetricKey() { return new SymmetricKeyBuilder(client); }
     public CreateKeyPairBuilder createKeyPair() { return new CreateKeyPairBuilder(client); }
     public AddAttributeBuilder addAttribute() { return new AddAttributeBuilder(client); }

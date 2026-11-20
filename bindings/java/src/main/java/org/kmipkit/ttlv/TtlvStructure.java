@@ -40,6 +40,12 @@ public final class TtlvStructure implements AutoCloseable {
     public NativeHandle nativeHandleOwner() {
         return handle;
     }
+    /** Returns an independent owned copy of this value. */
+    public TtlvStructure copy() {
+        return handle.withValue(value -> TtlvStructure.fromNative(
+                NativeExtensionRegistry.ttlvStructureCopy(value), null));
+    }
+
     @Override
     public void close() {
         handle.close();

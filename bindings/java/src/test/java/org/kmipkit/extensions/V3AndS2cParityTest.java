@@ -399,6 +399,10 @@ class V3AndS2cParityTest {
         ByteArrayOutputStream notifyPayload = new ByteArrayOutputStream();
         notifyPayload.writeBytes(ttlvTestItem(0x00420094, 0x07, "notify-uid".getBytes(StandardCharsets.UTF_8)));
         notifyPayload.writeBytes(attrStruct);
+        notifyPayload.writeBytes(ttlvTestItem(0x42013b, 0x01,
+                ttlvTestItem(0x42000a, 0x07, "first".getBytes(StandardCharsets.UTF_8))));
+        notifyPayload.writeBytes(ttlvTestItem(0x42013b, 0x01,
+                ttlvTestItem(0x42000a, 0x07, "second".getBytes(StandardCharsets.UTF_8))));
 
         ByteArrayOutputStream item4 = new ByteArrayOutputStream();
         item4.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x0000001B))); // Notify
@@ -411,6 +415,8 @@ class V3AndS2cParityTest {
         ByteArrayOutputStream rolePayload = new ByteArrayOutputStream();
         rolePayload.writeBytes(ttlvTestItem(0x00420151, 0x05, intVal(2))); // EndpointRole = SERVER (2)
 
+        rolePayload.writeBytes(ttlvTestItem(0x42009d, 0x07,
+                "server 🔑".getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream item5 = new ByteArrayOutputStream();
         item5.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x00000032))); // SetEndpointRole
         item5.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-role".getBytes(StandardCharsets.UTF_8)));
@@ -1093,6 +1099,65 @@ class V3AndS2cParityTest {
         assertThrows(InvalidInputException.class, () -> S2cUtilities.validateDiscoverVersionsRequest(null));
         assertThrows(InvalidInputException.class, () -> S2cUtilities.buildResponseTtlv(null, Collections.emptyList()));
         assertThrows(InvalidInputException.class, () -> S2cUtilities.buildResponseTtlv(new ProtocolVersion(2, 1), null));
+    }
+
+    @Test
+    void richServerCallbacksPreserveDeletedReferencesAndEndpointVendor() throws Exception {
+        for (String responseVendor : List.of("", "response\0🔑")) {
+            AtomicBoolean notifySeen = new AtomicBoolean();
+            AtomicBoolean roleSeen = new AtomicBoolean();
+            ServerRequestHandler handler = (ServerRequestHandler) java.lang.reflect.Proxy.newProxyInstance(
+                    getClass().getClassLoader(), new Class<?>[] {ServerRequestHandler.class},
+                    (proxy, method, args) -> {
+                        if (method.getName().equals("handleNotify")) {
+                            assertEquals(4, args.length);
+                            try (TtlvItem references = TtlvCodec.decode((byte[]) args[3]);
+                                 TtlvItemView item = references.view();
+                                 TtlvValueView value = item.value();
+                                 var children = value.structure()) {
+                                assertEquals(2, children.itemCount());
+                                for (int index = 0; index < 2; index++) {
+                                    try (var reference = children.itemAt(index);
+                                         var referenceValue = reference.value();
+                                         var fields = referenceValue.structure();
+                                         var field = fields.itemAt(0);
+                                         var text = field.value()) {
+                                        assertEquals(index == 0 ? "first" : "second",
+                                                new String(text.bytes(), StandardCharsets.UTF_8));
+                                    }
+                                }
+                            }
+                            notifySeen.set(true);
+                        }
+                        if (method.getName().equals("handleSetEndpointRole")) {
+                            assertEquals(4, args.length);
+                            assertEquals("server 🔑", args[2]);
+                            ((S2cEndpointRoleResponse) args[3]).endpointRole(1).vendorIdentification(responseVendor);
+                            roleSeen.set(true);
+                        }
+                        return S2cOperationResult.success();
+                    });
+            try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(buildFullS2cBatchBytes(), CodecLimits.defaults());
+                 ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create();
+                 ResponseMessage response = dispatcher.dispatch(batch, handler);
+                 ResponseBatchItemView role = response.batchItemAt(4)) {
+                assertTrue(notifySeen.get());
+                assertTrue(roleSeen.get());
+                assertEquals(0, role.resultStatus().orElseThrow());
+                role.withResponsePayload(payload -> {
+                    for (long index = 0; index < payload.itemCount(); index++) {
+                        try (var field = payload.itemAt(index); var tag = field.tag(); var value = field.value()) {
+                            if (tag.raw() == 0x420151) assertEquals(1, value.enumeration());
+                            if (tag.raw() == 0x42009d) {
+                                assertEquals(responseVendor, new String(value.bytes(), StandardCharsets.UTF_8));
+                            }
+                        }
+                    }
+                    assertEquals(2, payload.itemCount());
+                    return true;
+                });
+            }
+        }
     }
 
     private static byte[] testFixture(String filename) throws Exception {

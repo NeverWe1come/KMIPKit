@@ -8609,6 +8609,81 @@ pub extern "C" fn kmipkit_ttlv_value_structure(
     })
 }
 
+/// Returns an independent value copy from an owned generic item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_item_value_copy(
+    source: *mut kmipkit_ttlv_item_t,
+    output: *mut *mut kmipkit_ttlv_value_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(output);
+        let input = read_handle!(source, Item);
+        let HandleValue::Item(item) = &input.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let copy = try_ffi!(item.with_value(clone_value));
+        *out = try_ffi!(try_make_handle(Kind::Value, HandleValue::Value(copy)));
+        SUCCESS
+    })
+}
+
+/// Returns an independent owned copy while retaining the source.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_structure_copy(
+    source: *mut kmipkit_ttlv_structure_t,
+    output: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(output);
+        let copy = try_ffi!(copy_structure_handle(source, true)).expect("required structure");
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(copy)
+        ));
+        SUCCESS
+    })
+}
+
+/// Returns an independent owned copy while retaining the source.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_item_copy(
+    source: *mut kmipkit_ttlv_item_t,
+    output: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(output);
+        let copy = {
+            let input = read_handle!(source, Item);
+            let HandleValue::Item(item) = &input.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            try_ffi!(clone_item(item))
+        };
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(copy)));
+        SUCCESS
+    })
+}
+
+/// Returns an independent owned copy while retaining the source.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_ttlv_item_view_copy(
+    source: *mut kmipkit_ttlv_item_view_t,
+    output: *mut *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(output);
+        let copy = {
+            let input = read_handle!(source, ItemView);
+            let HandleValue::ItemView(view) = &input.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            try_ffi!(try_ffi!(view.with_item(clone_item)))
+        };
+        *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(copy)));
+        SUCCESS
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_ttlv_structure_create(
     out_structure: *mut *mut kmipkit_ttlv_structure_t,

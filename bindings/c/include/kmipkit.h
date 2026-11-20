@@ -1352,6 +1352,7 @@ typedef struct kmipkit_server_request_handler_v1_t kmipkit_server_request_handle
 typedef struct kmipkit_server_request_handler_v2_t kmipkit_server_request_handler_v2_t;
 typedef struct kmipkit_server_request_handler_v3_t kmipkit_server_request_handler_v3_t;
 typedef struct kmipkit_server_request_handler_v4_t kmipkit_server_request_handler_v4_t;
+typedef struct kmipkit_server_request_handler_v5_t kmipkit_server_request_handler_v5_t;
 typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
@@ -1982,6 +1983,20 @@ struct kmipkit_server_request_handler_v4_t {
     uint32_t (*handle_put)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t put_function, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length, const uint8_t * object_ttlv_data, uint64_t object_ttlv_length, const uint8_t * attributes_ttlv_data, uint64_t attributes_ttlv_length, kmipkit_s2c_operation_result_v1_t * out_result);
     uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags, kmipkit_s2c_capabilities_v1_t * out_capabilities, kmipkit_s2c_operation_result_v1_t * out_result);
     uint32_t (*handle_set_endpoint_role)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t target_role, kmipkit_s2c_operation_result_v1_t * out_result);
+};
+
+/* Notify deleted references use a Request Payload TTLV wrapper. Vendor spans
+ * use null for absent and non-null with length zero for present empty text.
+ * Callback output spans remain readable until the next callback. */
+struct kmipkit_server_request_handler_v5_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    void * user_data;
+    uint32_t (*handle_discover_versions)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint32_t * requested_versions_packed, uint32_t requested_versions_count, const uint32_t ** supported_versions_out, uint32_t * supported_versions_count_out, kmipkit_s2c_operation_result_v1_t * out_result);
+    uint32_t (*handle_notify)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * attributes_ttlv_data, uint64_t attributes_ttlv_length, const uint8_t * deleted_references_ttlv_data, uint64_t deleted_references_ttlv_length, kmipkit_s2c_operation_result_v1_t * out_result);
+    uint32_t (*handle_put)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t put_function, const uint8_t * unique_identifier_data, uint64_t unique_identifier_length, const uint8_t * replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length, const uint8_t * object_ttlv_data, uint64_t object_ttlv_length, const uint8_t * attributes_ttlv_data, uint64_t attributes_ttlv_length, kmipkit_s2c_operation_result_v1_t * out_result);
+    uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags, kmipkit_s2c_capabilities_v1_t * out_capabilities, kmipkit_s2c_operation_result_v1_t * out_result);
+    uint32_t (*handle_set_endpoint_role)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t target_role, const uint8_t * vendor_identification_data, uint64_t vendor_identification_length, uint32_t * out_role, kmipkit_byte_span_v1_t * out_vendor, kmipkit_s2c_operation_result_v1_t * out_result);
 };
 
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
@@ -3869,7 +3884,15 @@ int32_t kmipkit_ttlv_raw_tag_try_checked(kmipkit_raw_tag_t * raw_tag, kmipkit_ta
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_raw_tag_value(kmipkit_raw_tag_t * raw_tag, uint32_t * out_raw);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
+int32_t kmipkit_ttlv_item_value_copy(kmipkit_ttlv_item_t * source, kmipkit_ttlv_value_t ** output);
+
 int32_t kmipkit_ttlv_structure_create(kmipkit_ttlv_structure_t ** out_structure);
+/* Returns an independent copy without consuming source. */
+int32_t kmipkit_ttlv_item_view_copy(kmipkit_ttlv_item_view_t * source, kmipkit_ttlv_item_t ** output);
+/* Returns an independent copy without consuming source. */
+int32_t kmipkit_ttlv_item_copy(kmipkit_ttlv_item_t * source, kmipkit_ttlv_item_t ** output);
+/* Returns an independent copy without consuming source. */
+int32_t kmipkit_ttlv_structure_copy(kmipkit_ttlv_structure_t * source, kmipkit_ttlv_structure_t ** output);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
 int32_t kmipkit_ttlv_structure_view(kmipkit_ttlv_structure_t * structure, kmipkit_ttlv_structure_view_t ** out_view);
 /* KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-007, KMIPKIT-0012-FR-010 */
@@ -4504,6 +4527,7 @@ int32_t kmipkit_server_request_dispatcher_dispatch_v1(kmipkit_server_request_dis
 int32_t kmipkit_server_request_dispatcher_dispatch_v2(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v2_t * handler, kmipkit_response_message_t ** out_response);
 int32_t kmipkit_server_request_dispatcher_dispatch_v3(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v3_t * handler, kmipkit_response_message_t ** out_response);
 int32_t kmipkit_server_request_dispatcher_dispatch_v4(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v4_t * handler, kmipkit_response_message_t ** out_response);
+int32_t kmipkit_server_request_dispatcher_dispatch_v5(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v5_t * handler, kmipkit_response_message_t ** out_response);
 void kmipkit_server_request_dispatcher_release(kmipkit_server_request_dispatcher_t * dispatcher);
 
 /* Server-to-Client helpers */

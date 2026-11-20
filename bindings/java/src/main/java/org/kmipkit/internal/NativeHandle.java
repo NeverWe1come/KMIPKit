@@ -2,6 +2,7 @@ package org.kmipkit.internal;
 
 import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
+import java.util.IdentityHashMap;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
@@ -12,16 +13,15 @@ import org.kmipkit.NativeExtensionRegistry;
 /** Shared lifecycle state for Java wrappers around opaque native handles. */
 public final class NativeHandle {
     private static final Cleaner CLEANER = Cleaner.create();
-    // Serializes scoped native calls, multi-owner transfers, and invalidation.
+    // Protects lifecycle transitions only. Native calls execute outside this monitor.
     private static final Object STATE_LOCK = new Object();
+    private static final ThreadLocal<Scope> CURRENT_SCOPE = new ThreadLocal<>();
 
     private final State state;
     private final Cleaner.Cleanable cleanable;
 
     private NativeHandle(long value, int handleKind) {
-        if (value == 0) {
-            throw new InvalidInputException("native operation returned an empty handle");
-        }
+        if (value == 0) throw new InvalidInputException("native operation returned an empty handle");
         state = new State(value, handleKind);
         cleanable = CLEANER.register(this, state);
     }
@@ -32,30 +32,31 @@ public final class NativeHandle {
 
     public long get() {
         synchronized (STATE_LOCK) {
-            long value = state.value;
-            if (value == 0) {
-                throw new InvalidInputException("native handle is closed");
-            }
+            if (state.value == 0) throw new InvalidInputException("native handle is closed");
+            Scope scope = CURRENT_SCOPE.get();
+            if (scope != null) scope.retain(this);
             Reference.reachabilityFence(this);
-            return value;
+            return state.value;
         }
     }
 
     /** Holds lifecycle ownership until a synchronous native operation returns. */
     public <T> T withValue(LongFunction<T> operation) {
-        if (operation == null) {
-            throw new InvalidInputException("native handle operation is invalid");
-        }
+        if (operation == null) throw new InvalidInputException("native handle operation is invalid");
         return withValues(new NativeHandle[] {this}, values -> operation.apply(values[0]));
     }
 
-    /** Holds the shared lifecycle lock while wrapper code obtains and uses handles. */
+    /** Retains handles obtained within this scope until the native call returns. */
     public static <T> T withNativeHandles(Supplier<T> operation) {
-        if (operation == null) {
-            throw new InvalidInputException("native handle operation is invalid");
-        }
-        synchronized (STATE_LOCK) {
+        if (operation == null) throw new InvalidInputException("native handle operation is invalid");
+        if (CURRENT_SCOPE.get() != null) return operation.get();
+        Scope scope = new Scope();
+        CURRENT_SCOPE.set(scope);
+        try {
             return operation.get();
+        } finally {
+            CURRENT_SCOPE.remove();
+            scope.close();
         }
     }
 
@@ -64,46 +65,43 @@ public final class NativeHandle {
         if (handles == null || operation == null) {
             throw new InvalidInputException("native handle operation is invalid");
         }
-        synchronized (STATE_LOCK) {
+        return withNativeHandles(() -> {
             long[] values = new long[handles.length];
-            for (int index = 0; index < handles.length; index++) {
-                NativeHandle handle = handles[index];
-                if (handle == null || handle.state.value == 0) {
-                    throw new InvalidInputException("native handle is closed");
-                }
-                values[index] = handle.state.value;
-            }
-            try {
-                return operation.apply(values);
-            } finally {
+            synchronized (STATE_LOCK) {
                 for (NativeHandle handle : handles) {
-                    Reference.reachabilityFence(handle);
+                    if (handle == null || handle.state.value == 0) {
+                        throw new InvalidInputException("native handle is closed");
+                    }
+                }
+                for (int index = 0; index < handles.length; index++) {
+                    values[index] = handles[index].get();
                 }
             }
-        }
+            return operation.apply(values);
+        });
     }
 
     /** Transfers the native handle to a consuming native call without releasing it. */
-    public long transfer() {
-        return transferAll(this)[0];
-    }
+    public long transfer() { return transferAll(this)[0]; }
 
-    /**
-     * Atomically transfers several handles for one consuming native call.
-     *
-     * <p>All owners remain active if any owner is null, closed, or repeated.</p>
-     */
+    /** Atomically transfers distinct handles, respecting active native ownership scopes. */
     public static long[] transferAll(NativeHandle... handles) {
-        if (handles == null) {
-            throw new InvalidInputException("native handle transfer inputs are invalid");
-        }
-
+        if (handles == null) throw new InvalidInputException("native handle transfer inputs are invalid");
         long[] transferred = new long[handles.length];
         synchronized (STATE_LOCK) {
+            Scope scope = CURRENT_SCOPE.get();
             for (int index = 0; index < handles.length; index++) {
                 NativeHandle handle = handles[index];
-                if (handle == null || handle.state.value == 0) {
+                if (handle == null) throw new InvalidInputException("native handle is closed");
+                boolean ownLoan = scope != null && scope.owners.containsKey(handle.state);
+                boolean closingLoan = ownLoan && handle.state.waitingForRelease && handle.state.retired != 0;
+                if (handle.state.value == 0 && !closingLoan) {
                     throw new InvalidInputException("native handle is closed");
+                }
+                // A scoped caller also uses transfer to finish a consuming C call.
+                // External close must not release an owner already consumed by that call.
+                if (!ownLoan && handle.state.loans != 0) {
+                    throw new InvalidInputException("native handle is in use by another thread");
                 }
                 for (int prior = 0; prior < index; prior++) {
                     if (handles[prior] == handle) {
@@ -112,32 +110,65 @@ public final class NativeHandle {
                 }
             }
             for (int index = 0; index < handles.length; index++) {
-                transferred[index] = handles[index].state.value;
-                handles[index].state.value = 0;
+                State state = handles[index].state;
+                transferred[index] = state.value != 0 ? state.value : state.retired;
+                state.value = 0;
+                state.retired = 0;
             }
         }
-        for (NativeHandle handle : handles) {
-            handle.cleanable.clean();
-        }
+        for (NativeHandle handle : handles) handle.cleanable.clean();
         return transferred;
     }
 
-    public void close() {
-        long value;
-        synchronized (STATE_LOCK) {
-            value = state.value;
-            state.value = 0;
+    /** Invalidates this owner immediately and releases it after outstanding calls finish. */
+    public void close() { cleanable.clean(); }
+
+    private static void release(int kind, long value) {
+        if (value == 0) return;
+        NativeExtensionRegistry.ensureLoaded();
+        NativeExtensionRegistry.release(kind, value);
+    }
+
+    private static final class Scope {
+        private final IdentityHashMap<State, NativeHandle> owners = new IdentityHashMap<>();
+
+        // Called with STATE_LOCK held. Each thread borrows a state once per outer scope.
+        private void retain(NativeHandle owner) {
+            if (!owners.containsKey(owner.state)) {
+                owners.put(owner.state, owner);
+                owner.state.loans++;
+            }
         }
-        if (value != 0) {
-            NativeExtensionRegistry.ensureLoaded();
-            NativeExtensionRegistry.release(state.handleKind, value);
+
+        private void close() {
+            RuntimeException failure = null;
+            for (State state : owners.keySet()) {
+                long retired = 0;
+                synchronized (STATE_LOCK) {
+                    state.loans--;
+                    if (state.loans == 0 && !state.waitingForRelease) {
+                        retired = state.retired;
+                        state.retired = 0;
+                    }
+                    STATE_LOCK.notifyAll();
+                }
+                try {
+                    release(state.handleKind, retired);
+                } catch (RuntimeException error) {
+                    if (failure == null) failure = error;
+                    else failure.addSuppressed(error);
+                }
+            }
+            Reference.reachabilityFence(owners);
+            if (failure != null) throw failure;
         }
-        cleanable.clean();
     }
 
     private static final class State implements Runnable {
-        // Writes use STATE_LOCK; volatile keeps individual handle reads lock-free.
-        private volatile long value;
+        private long value;
+        private long retired;
+        private int loans;
+        private boolean waitingForRelease;
         private final int handleKind;
 
         private State(long value, int handleKind) {
@@ -148,17 +179,29 @@ public final class NativeHandle {
         @Override
         public void run() {
             long toRelease;
+            boolean interrupted = false;
             synchronized (STATE_LOCK) {
-                toRelease = value;
+                retired = value;
                 value = 0;
-            }
-            if (toRelease != 0) {
-                try {
-                    NativeExtensionRegistry.ensureLoaded();
-                    NativeExtensionRegistry.release(handleKind, toRelease);
-                } catch (LinkageError ignored) {
-                    // Cleaner threads cannot report unload or shutdown failures to callers.
+                Scope scope = CURRENT_SCOPE.get();
+                if (scope != null && scope.owners.containsKey(this)) return;
+                waitingForRelease = true;
+                while (loans != 0) {
+                    try {
+                        STATE_LOCK.wait();
+                    } catch (InterruptedException error) {
+                        interrupted = true;
+                    }
                 }
+                waitingForRelease = false;
+                toRelease = retired;
+                retired = 0;
+            }
+            if (interrupted) Thread.currentThread().interrupt();
+            try {
+                release(handleKind, toRelease);
+            } catch (LinkageError ignored) {
+                // Cleaner threads cannot report unload or shutdown failures to callers.
             }
         }
     }

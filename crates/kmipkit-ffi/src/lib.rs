@@ -1224,3 +1224,78 @@ pub struct kmipkit_server_request_handler_v4_t {
         ) -> u32,
     >,
 }
+
+/// C callback dispatch table for Server-to-Client operations (ABI version 5).
+///
+/// Discover Versions returns borrowed packed versions valid until the next callback.
+/// Notify includes deleted references as a Request Payload TTLV structure.
+/// Set Endpoint Role carries optional UTF-8 vendor text and caller-selected response fields.
+/// A null vendor span means absent; a non-null zero-length span means present empty text.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_server_request_handler_v5_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub user_data: *mut core::ffi::c_void,
+    pub handle_discover_versions: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            requested_versions_packed: *const u32,
+            requested_versions_count: u32,
+            supported_versions_out: *mut *const u32,
+            supported_versions_count_out: *mut u32,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+    pub handle_notify: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+            attributes_ttlv_data: *const u8,
+            attributes_ttlv_length: u64,
+            deleted_references_ttlv_data: *const u8,
+            deleted_references_ttlv_length: u64,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+    pub handle_put: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            put_function: u32,
+            unique_identifier_data: *const u8,
+            unique_identifier_length: u64,
+            replaced_unique_identifier_data: *const u8,
+            replaced_unique_identifier_length: u64,
+            object_ttlv_data: *const u8,
+            object_ttlv_length: u64,
+            attributes_ttlv_data: *const u8,
+            attributes_ttlv_length: u64,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+    pub handle_query: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            query_function_flags: u32,
+            out_capabilities: *mut kmipkit_s2c_capabilities_v1_t,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+    pub handle_set_endpoint_role: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            target_role: u32,
+            vendor_identification_data: *const u8,
+            vendor_identification_length: u64,
+            out_role: *mut u32,
+            out_vendor: *mut kmipkit_byte_span_v1_t,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+}

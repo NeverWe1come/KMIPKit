@@ -47,6 +47,18 @@ public final class TtlvItem implements AutoCloseable {
     public NativeHandle nativeHandleOwner() {
         return handle;
     }
+    /** Returns an independent owned copy of this value. */
+    public TtlvItem copy() {
+        return handle.withValue(value -> TtlvItem.fromNativeHandle(
+                NativeExtensionRegistry.ttlvItemCopy(value)));
+    }
+
+    /** Returns an independently owned copy of this item's value. */
+    public TtlvValue valueCopy() {
+        return handle.withValue(value -> TtlvValue.fromNative(
+                NativeExtensionRegistry.ttlvItemValueCopy(value)));
+    }
+
     @Override
     public void close() {
         handle.close();

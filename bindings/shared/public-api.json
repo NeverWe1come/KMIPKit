@@ -709627,6 +709627,1113 @@
       "declarationState": "declared"
     },
     {
+      "declarationId": "Dynamic:kmipkit_server_request_dispatcher_dispatch_v5",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_request_dispatcher_dispatch_v5",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_ttlv_structure_copy",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ttlv_structure_copy",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_ttlv_item_copy",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ttlv_item_copy",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_ttlv_item_view_copy",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ttlv_item_view_copy",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_ttlv_item_value_copy",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_ttlv_item_value_copy",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ActivateBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ActivateBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.ArchiveBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.ArchiveBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecoverBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecoverBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.attributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.offset",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.protectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.protectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.commonAttributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.commonAttributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.commonProtectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.commonProtectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.offset",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.privateKeyAttributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.privateKeyAttributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.privateKeyUniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.privateKeyUniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.privateProtectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.privateProtectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.publicKeyAttributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.publicKeyAttributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.publicProtectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.publicProtectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RekeyKeyPairBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RekeyKeyPairBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.attributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.certificateRequestType",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.certificateRequestType",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.certificateRequestUniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.certificateRequestUniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.certificateRequestValue",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.certificateRequestValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.offset",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.protectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.protectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RecertifyBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RecertifyBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.attribute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.attributeAt",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.attributeAt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.attributeItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.attributeItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.attributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.object",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.object",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.objectItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.objectItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.opaqueObjectContext",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.opaqueObjectContext",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.protectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.protectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.vendorAttribute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.vendorAttribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.RegisterBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.RegisterBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.asynchronousIndicator",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.attribute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.attributeAt",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.attributeAt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.attributeItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.attributeItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.attributes",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.close",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.executeWithOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.executeWithOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.method",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.method",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.objectType",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.objectType",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.parts",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.parts",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.primeFieldSize",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.primeFieldSize",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.protectionStorageMasks",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.protectionStorageMasks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.threshold",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.threshold",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.toBatchItem",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.uniqueIdentifier",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.validate",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.vendorAttribute",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.vendorAttribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.fluent.CreateSplitKeyBuilder.withOptions",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.fluent.CreateSplitKeyBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.S2cEndpointRoleResponse",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.extensions.S2cEndpointRoleResponse",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.ServerRequestHandler.handleNotify",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.ServerRequestHandler.handleNotify",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.ServerRequestHandler.handleSetEndpointRole",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.ServerRequestHandler.handleSetEndpointRole",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
       "declarationId": "Dynamic:kmipkit_server_request_dispatcher_release",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",

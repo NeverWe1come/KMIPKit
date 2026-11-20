@@ -22,6 +22,10 @@ import org.kmipkit.ttlv.TypedAttribute;
  * to load an administrator-provided library instead.</p>
  */
 public final class NativeExtensionRegistry {
+    public static native long ttlvItemValueCopy(long source);
+    public static native long ttlvStructureCopy(long source);
+    public static native long ttlvItemCopy(long source);
+    public static native long ttlvItemViewCopy(long source);
     public static final int IDENTITY = 1;
     public static final int COMPATIBILITY = 2;
     public static final int PATH = 3;
