@@ -4177,3 +4177,25 @@ def v3_0_tag_name(raw: int) -> str | None:
         0x004201CA: 'Random',
         0x004201CB: 'Performs CRL Checks',
     }.get(raw)
+
+
+# KMIP 3.0 Ephemeral Mode
+V3_0_EPHEMERAL_MODE_NO = 0x00000001
+V3_0_EPHEMERAL_MODE_IMMEDIATE = 0x00000002
+V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = 0x00000003
+
+
+class EphemeralMode:
+    """Named values for KMIP 3.0 Ephemeral Mode."""
+
+    NO = 0x00000001
+    IMMEDIATE = 0x00000002
+    RETAIN_ON_FAILURE = 0x00000003
+
+    @staticmethod
+    def name(raw: int) -> str | None:
+        return {
+            0x00000001: "No",
+            0x00000002: "Immediate",
+            0x00000003: "Retain on Failure",
+        }.get(raw)

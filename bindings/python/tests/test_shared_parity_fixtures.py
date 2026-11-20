@@ -572,6 +572,11 @@ def test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library(
         )
         maturin_path = Path(path_executable)
     build_environment = os.environ.copy()
+    cargo_home_bin = Path.home() / ".cargo" / "bin"
+    if cargo_home_bin.is_dir():
+        current_path = build_environment.get("PATH", "")
+        if str(cargo_home_bin) not in current_path.split(os.pathsep):
+            build_environment["PATH"] = f"{cargo_home_bin}{os.pathsep}{current_path}"
     build_environment["CARGO_TARGET_DIR"] = str(tmp_path / "cargo-target")
     result = subprocess.run(
         [

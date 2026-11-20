@@ -26,6 +26,7 @@ _ENUM_FIELDS = (
     "cryptographic_algorithm",
     "mask_generator",
     "mask_generator_hashing_algorithm",
+    "kem_algorithm",
 )
 _INTEGER_FIELDS = (
     "iv_length",
@@ -78,145 +79,163 @@ class CryptographicParameters(NativeHandle):
 
     def block_cipher_mode(self) -> int | None:
         """Return the raw Block Cipher Mode Enumeration, including future values."""
-        return self._enumeration(0)
+        return self._read_fields().get("block_cipher_mode")
 
     def padding_method(self) -> int | None:
         """Return the raw Padding Method Enumeration, including future values."""
-        return self._enumeration(1)
+        return self._read_fields().get("padding_method")
 
     def hashing_algorithm(self) -> int | None:
         """Return the raw Hashing Algorithm Enumeration, including future values."""
-        return self._enumeration(2)
+        return self._read_fields().get("hashing_algorithm")
 
     def key_role_type(self) -> int | None:
         """Return the raw Key Role Type Enumeration, including future values."""
-        return self._enumeration(3)
+        return self._read_fields().get("key_role_type")
 
     def digital_signature_algorithm(self) -> int | None:
         """Return the raw Digital Signature Algorithm Enumeration, including future values."""
-        return self._enumeration(4)
+        return self._read_fields().get("digital_signature_algorithm")
 
     def cryptographic_algorithm(self) -> int | None:
         """Return the raw Cryptographic Algorithm Enumeration, including future values."""
-        return self._enumeration(5)
+        return self._read_fields().get("cryptographic_algorithm")
 
     def random_iv(self) -> bool | None:
         """Return Random IV when present."""
-        present, values, _p_source = self._read_fields()
-        return bool(values[6]) if present[6] else None
+        return self._read_fields().get("random_iv")
 
     def iv_length(self) -> int | None:
         """Return IV Length when present."""
-        return self._integer(7)
+        return self._read_fields().get("iv_length")
 
     def tag_length(self) -> int | None:
         """Return Tag Length when present."""
-        return self._integer(8)
+        return self._read_fields().get("tag_length")
 
     def fixed_field_length(self) -> int | None:
         """Return Fixed Field Length when present."""
-        return self._integer(9)
+        return self._read_fields().get("fixed_field_length")
 
     def invocation_field_length(self) -> int | None:
         """Return Invocation Field Length when present."""
-        return self._integer(10)
+        return self._read_fields().get("invocation_field_length")
 
     def counter_length(self) -> int | None:
         """Return Counter Length when present."""
-        return self._integer(11)
+        return self._read_fields().get("counter_length")
 
     def initial_counter_value(self) -> int | None:
         """Return Initial Counter Value when present."""
-        return self._integer(12)
+        return self._read_fields().get("initial_counter_value")
 
     def salt_length(self) -> int | None:
         """Return Salt Length when present."""
-        return self._integer(13)
+        return self._read_fields().get("salt_length")
 
     def mask_generator(self) -> int | None:
         """Return the raw Mask Generator Enumeration, including future values."""
-        return self._enumeration(14)
+        return self._read_fields().get("mask_generator")
 
     def mask_generator_hashing_algorithm(self) -> int | None:
         """Return the raw Mask Generator Hashing Algorithm Enumeration."""
-        return self._enumeration(15)
+        return self._read_fields().get("mask_generator_hashing_algorithm")
 
     def p_source(self) -> bytes | None:
         """Return a caller-owned P Source copy when present.
 
         The returned Python bytes object is outside KMIPKit's zeroization guarantee.
         """
-        present, _values, p_source = self._read_fields()
-        return p_source if present[16] else None
+        return self._read_fields().get("p_source")
 
     def trailer_field(self) -> int | None:
         """Return Trailer Field when present."""
-        return self._integer(17)
+        return self._read_fields().get("trailer_field")
 
-    def _enumeration(self, index: int) -> int | None:
-        present, values, _p_source = self._read_fields()
-        return values[index] if present[index] else None
+    def kem_algorithm(self) -> int | None:
+        """Return the KMIP 3.0 KEM Algorithm Enumeration when present."""
+        return self._read_fields().get("kem_algorithm")
 
-    def _integer(self, index: int) -> int | None:
-        present, values, _p_source = self._read_fields()
-        return values[index] if present[index] else None
+    def deterministic(self) -> bool | None:
+        """Return Deterministic Boolean when present."""
+        return self._read_fields().get("deterministic")
+
+    def context_string(self) -> bytes | None:
+        """Return Context String when present."""
+        return self._read_fields().get("context_string")
+
+    def seed(self) -> bytes | None:
+        """Return Seed when present."""
+        return self._read_fields().get("seed")
+
+    def input_key_material(self) -> bytes | None:
+        """Return Input Key Material when present."""
+        return self._read_fields().get("input_key_material")
+
+    def _enumeration(self, name: str) -> int | None:
+        return self._read_fields().get(name)
+
+    def _integer(self, name: str) -> int | None:
+        return self._read_fields().get(name)
 
     @synchronized_native_call
-    def _read_fields(self) -> tuple[tuple[bool, ...], tuple[int, ...], bytes]:
-        fields = ffi.new("kmipkit_cryptographic_parameters_fields_v1_t *")
-        fields.struct_size = ffi.sizeof("kmipkit_cryptographic_parameters_fields_v1_t")
-        fields.abi_version = 1
+    def _read_fields(self) -> dict[str, Any]:
+        fields = ffi.new("kmipkit_cryptographic_parameters_fields_v2_t *")
+        fields.struct_size = ffi.sizeof("kmipkit_cryptographic_parameters_fields_v2_t")
+        fields.abi_version = 2
         address = int(ttlv.ffi.cast("uintptr_t", self._pointer()))
         client_handle = ffi.cast("kmipkit_cryptographic_parameters_t *", address)
         errors.raise_for_status(
-            lib.kmipkit_cryptographic_parameters_read_fields_v1(client_handle, fields)
+            lib.kmipkit_cryptographic_parameters_read_fields_v2(client_handle, fields)
         )
-        present = (
-            bool(fields.block_cipher_mode_present),
-            bool(fields.padding_method_present),
-            bool(fields.hashing_algorithm_present),
-            bool(fields.key_role_type_present),
-            bool(fields.digital_signature_algorithm_present),
-            bool(fields.cryptographic_algorithm_present),
-            bool(fields.random_iv_present),
-            bool(fields.iv_length_present),
-            bool(fields.tag_length_present),
-            bool(fields.fixed_field_length_present),
-            bool(fields.invocation_field_length_present),
-            bool(fields.counter_length_present),
-            bool(fields.initial_counter_value_present),
-            bool(fields.salt_length_present),
-            bool(fields.mask_generator_present),
-            bool(fields.mask_generator_hashing_algorithm_present),
-            bool(fields.p_source_present),
-            bool(fields.trailer_field_present),
-        )
-        values = (
-            int(fields.block_cipher_mode),
-            int(fields.padding_method),
-            int(fields.hashing_algorithm),
-            int(fields.key_role_type),
-            int(fields.digital_signature_algorithm),
-            int(fields.cryptographic_algorithm),
-            int(fields.random_iv),
-            int(fields.iv_length),
-            int(fields.tag_length),
-            int(fields.fixed_field_length),
-            int(fields.invocation_field_length),
-            int(fields.counter_length),
-            int(fields.initial_counter_value),
-            int(fields.salt_length),
-            int(fields.mask_generator),
-            int(fields.mask_generator_hashing_algorithm),
-            int(fields.p_source_length),
-            int(fields.trailer_field),
-        )
-        p_source = (
-            bytes(ffi.buffer(fields.p_source, int(fields.p_source_length)))
-            if fields.p_source_present
-            else b""
-        )
-        return present, values, p_source
+        data: dict[str, Any] = {}
+        if fields.block_cipher_mode_present:
+            data["block_cipher_mode"] = int(fields.block_cipher_mode)
+        if fields.padding_method_present:
+            data["padding_method"] = int(fields.padding_method)
+        if fields.hashing_algorithm_present:
+            data["hashing_algorithm"] = int(fields.hashing_algorithm)
+        if fields.key_role_type_present:
+            data["key_role_type"] = int(fields.key_role_type)
+        if fields.digital_signature_algorithm_present:
+            data["digital_signature_algorithm"] = int(fields.digital_signature_algorithm)
+        if fields.cryptographic_algorithm_present:
+            data["cryptographic_algorithm"] = int(fields.cryptographic_algorithm)
+        if fields.random_iv_present:
+            data["random_iv"] = bool(fields.random_iv)
+        if fields.iv_length_present:
+            data["iv_length"] = int(fields.iv_length)
+        if fields.tag_length_present:
+            data["tag_length"] = int(fields.tag_length)
+        if fields.fixed_field_length_present:
+            data["fixed_field_length"] = int(fields.fixed_field_length)
+        if fields.invocation_field_length_present:
+            data["invocation_field_length"] = int(fields.invocation_field_length)
+        if fields.counter_length_present:
+            data["counter_length"] = int(fields.counter_length)
+        if fields.initial_counter_value_present:
+            data["initial_counter_value"] = int(fields.initial_counter_value)
+        if fields.salt_length_present:
+            data["salt_length"] = int(fields.salt_length)
+        if fields.mask_generator_present:
+            data["mask_generator"] = int(fields.mask_generator)
+        if fields.mask_generator_hashing_algorithm_present:
+            data["mask_generator_hashing_algorithm"] = int(fields.mask_generator_hashing_algorithm)
+        if fields.p_source_present:
+            data["p_source"] = bytes(ffi.buffer(fields.p_source, int(fields.p_source_length)))
+        if fields.trailer_field_present:
+            data["trailer_field"] = int(fields.trailer_field)
+        if fields.kem_algorithm_present:
+            data["kem_algorithm"] = int(fields.kem_algorithm)
+        if fields.deterministic_present:
+            data["deterministic"] = bool(fields.deterministic)
+        if fields.context_string_present:
+            data["context_string"] = bytes(ffi.buffer(fields.context_string, int(fields.context_string_length)))
+        if fields.seed_present:
+            data["seed"] = bytes(ffi.buffer(fields.seed, int(fields.seed_length)))
+        if fields.input_key_material_present:
+            data["input_key_material"] = bytes(ffi.buffer(fields.input_key_material, int(fields.input_key_material_length)))
+        return data
 
 
 class CryptographicParametersBuilder:
@@ -281,28 +300,50 @@ class CryptographicParametersBuilder:
     def mask_generator_hashing_algorithm(self, raw: int) -> Self:
         return self._enum("mask_generator_hashing_algorithm", raw)
 
-    def p_source(self, value: bytes | bytearray | memoryview) -> Self:
+    def _byte_field(self, name: str, value: bytes | bytearray | memoryview) -> Self:
         self._ensure_open()
         if not isinstance(value, (bytes, bytearray, memoryview)):
             errors.raise_for_status(4)
         length = value.nbytes if isinstance(value, memoryview) else len(value)
         if length > _MAX_P_SOURCE_BYTES:
             errors.raise_for_status(6)
-        previous = self._values.get("p_source")
+        previous = self._values.get(name)
         if isinstance(previous, bytearray):
             previous[:] = b"\x00" * len(previous)
-        self._values["p_source"] = bytearray(value)
+        self._values[name] = bytearray(value)
         return self
+
+    def p_source(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._byte_field("p_source", value)
 
     def trailer_field(self, value: int) -> Self:
         return self._integer("trailer_field", value)
 
+    def kem_algorithm(self, raw: int) -> Self:
+        return self._enum("kem_algorithm", raw)
+
+    def deterministic(self, value: bool) -> Self:
+        self._ensure_open()
+        if not isinstance(value, bool):
+            errors.raise_for_status(4)
+        self._values["deterministic"] = value
+        return self
+
+    def context_string(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._byte_field("context_string", value)
+
+    def seed(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._byte_field("seed", value)
+
+    def input_key_material(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._byte_field("input_key_material", value)
+
     def build(self) -> CryptographicParameters:
         """Build, validate, and return the typed value through the Rust ABI."""
         self._ensure_open()
-        fields = ffi.new("kmipkit_cryptographic_parameters_fields_v1_t *")
-        fields.struct_size = ffi.sizeof("kmipkit_cryptographic_parameters_fields_v1_t")
-        fields.abi_version = 1
+        fields = ffi.new("kmipkit_cryptographic_parameters_fields_v2_t *")
+        fields.struct_size = ffi.sizeof("kmipkit_cryptographic_parameters_fields_v2_t")
+        fields.abi_version = 2
         for name in _ENUM_FIELDS:
             present_name = f"{name}_present"
             setattr(fields, present_name, int(name in self._values))
@@ -311,22 +352,34 @@ class CryptographicParametersBuilder:
         random_present = "random_iv" in self._values
         fields.random_iv_present = int(random_present)
         fields.random_iv = int(bool(self._values.get("random_iv", False)))
+        det_present = "deterministic" in self._values
+        fields.deterministic_present = int(det_present)
+        fields.deterministic = int(bool(self._values.get("deterministic", False)))
         for name in _INTEGER_FIELDS:
             present_name = f"{name}_present"
             setattr(fields, present_name, int(name in self._values))
             if name in self._values:
                 setattr(fields, name, int(self._values[name]))
-        stored_source = self._values.get("p_source")
-        source = stored_source if isinstance(stored_source, bytearray) else bytearray()
-        fields.p_source_present = int("p_source" in self._values)
-        fields.p_source_length = len(source)
-        fields.p_source = ffi.from_buffer("const uint8_t[]", source) if source else ffi.NULL
+
+        buffers: list[bytearray] = []
+        for name in ("p_source", "context_string", "seed", "input_key_material"):
+            val = self._values.get(name)
+            if isinstance(val, bytearray):
+                buffers.append(val)
+                setattr(fields, f"{name}_present", 1)
+                setattr(fields, f"{name}_length", len(val))
+                setattr(fields, name, ffi.from_buffer("const uint8_t[]", val) if len(val) > 0 else ffi.NULL)
+            else:
+                setattr(fields, f"{name}_present", 0)
+                setattr(fields, f"{name}_length", 0)
+                setattr(fields, name, ffi.NULL)
+
         output = ffi.new("kmipkit_cryptographic_parameters_t **")
         try:
-            status = int(lib.kmipkit_cryptographic_parameters_from_fields_v1(fields, output))
+            status = int(lib.kmipkit_cryptographic_parameters_from_fields_v2(fields, output))
         finally:
-            if source:
-                source[:] = b"\x00" * len(source)
+            for b in buffers:
+                b[:] = b"\x00" * len(b)
             self.close()
         errors.raise_for_status(status)
         address = int(ffi.cast("uintptr_t", output[0]))

@@ -62,7 +62,10 @@ def _identifier(value: extensions.UniqueIdentifier) -> Any:
     record.abi_version = 1
     record.kind = int(value.kind)
     record.reserved = 0
-    if value.kind is extensions.UniqueIdentifierKind.TEXT_STRING:
+    if value.kind in (
+        extensions.UniqueIdentifierKind.TEXT_STRING,
+        extensions.UniqueIdentifierKind.IDENTIFIER,
+    ):
         encoded = value.text.encode("utf-8")
         owner = ffi.new("uint8_t[]", encoded)
         record.text_data, record.text_length = owner, len(encoded)
@@ -113,7 +116,11 @@ def _execute_direct_attributes(
         errors.raise_for_status(4)
     if (
         not isinstance(unique_identifier, extensions.UniqueIdentifier)
-        or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+        or unique_identifier.kind
+        not in (
+            extensions.UniqueIdentifierKind.TEXT_STRING,
+            extensions.UniqueIdentifierKind.IDENTIFIER,
+        )
     ):
         errors.raise_for_status(4)
     if not isinstance(attribute_references, Sequence) or isinstance(
@@ -255,6 +262,32 @@ def _execute_fluent_builder(
         batch.close()
 
 
+def _normalize_identifier(
+    value: extensions.UniqueIdentifier | str | None,
+) -> extensions.UniqueIdentifier | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return extensions.UniqueIdentifier.text_string(value)
+    if isinstance(value, extensions.UniqueIdentifier):
+        return value
+    errors.raise_for_status(4)
+
+
+def _validated_item(item: extensions.ClientBatchItem) -> extensions.ClientBatchItem:
+    try:
+        report = item.validation_report()
+        try:
+            if not report.is_valid:
+                errors.raise_for_status(4)
+            return item
+        finally:
+            report.close()
+    except BaseException:
+        item.close()
+        raise
+
+
 class Request:
     """Scoped fluent namespace for the foundation lifecycle operations."""
 
@@ -266,6 +299,59 @@ class Request:
 
     def create_key_pair(self) -> CreateKeyPairBuilder:
         return CreateKeyPairBuilder(client=self._client)
+
+    def create_split_key(
+        self,
+        object_type: int | None = None,
+        parts: int | None = None,
+        threshold: int | None = None,
+        method: int | None = None,
+    ) -> CreateSplitKeyBuilder:
+        return CreateSplitKeyBuilder(
+            self._client,
+            object_type=object_type,
+            parts=parts,
+            threshold=threshold,
+            method=method,
+        )
+
+    def register(
+        self,
+        object: Any = None,
+        object_type: int | None = None,
+    ) -> RegisterBuilder:
+        return RegisterBuilder(self._client, object=object, object_type=object_type)
+
+    def activate(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> ActivateBuilder:
+        return ActivateBuilder(self._client, unique_identifier)
+
+    def archive(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> ArchiveBuilder:
+        return ArchiveBuilder(self._client, unique_identifier)
+
+    def recover(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> RecoverBuilder:
+        return RecoverBuilder(self._client, unique_identifier)
+
+    def rekey(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> RekeyBuilder:
+        return RekeyBuilder(self._client, unique_identifier)
+
+    def rekey_key_pair(
+        self,
+        private_key_unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> RekeyKeyPairBuilder:
+        return RekeyKeyPairBuilder(self._client, private_key_unique_identifier)
+
+    def recertify(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> RecertifyBuilder:
+        return RecertifyBuilder(self._client, unique_identifier)
 
     def set_attribute(self) -> SetAttributeBuilder:
         return SetAttributeBuilder(client=self._client)
@@ -1008,7 +1094,10 @@ class _AttributeReadBuilder:
         if unique_identifier is not None and not (
             isinstance(unique_identifier, extensions.UniqueIdentifier)
             and unique_identifier.kind
-            is extensions.UniqueIdentifierKind.TEXT_STRING
+            in (
+                extensions.UniqueIdentifierKind.TEXT_STRING,
+                extensions.UniqueIdentifierKind.IDENTIFIER,
+            )
         ):
             errors.raise_for_status(4)
         self._client = client
@@ -1808,9 +1897,768 @@ class HashBuilder(_CryptoOperationBuilder):
     _creator = staticmethod(lib.kmipkit_hash_builder_create)
 
 
+class _TypedOperationBuilder:
+    """Common execution and ownership for typed lifecycle builders."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+        self._closed = False
+        self._owned: list[Any] = []
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            errors.raise_for_status(4)
+
+    def _own(self, resource: Any) -> Any:
+        self._ensure_open()
+        if resource is not None:
+            self._owned.append(resource)
+        return resource
+
+    def _discard(self, resource: Any) -> None:
+        if resource is None:
+            return
+        if resource in self._owned:
+            self._owned.remove(resource)
+        try:
+            resource.close()
+        except Exception:
+            pass
+
+    def _replace_structure(
+        self, previous: ttlv.Structure | None, value: ttlv.Structure | None
+    ) -> ttlv.Structure | None:
+        self._ensure_open()
+        if value is not None and not isinstance(value, ttlv.Structure):
+            errors.raise_for_status(4)
+        copy = value.copy() if value is not None else None
+        self._discard(previous)
+        return self._own(copy) if copy is not None else None
+
+    def with_options(self, options: RequestOptions) -> Self:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def build(self) -> extensions.ClientBatchItem:
+        raise NotImplementedError
+
+    def execute(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        self._ensure_open()
+        if self._client is None:
+            errors.raise_for_status(4)
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_with_options(
+        self,
+        limits: ttlv.CodecLimits,
+        options: RequestOptions,
+    ) -> BatchResult:
+        return self.execute(limits, options)
+
+    def close(self) -> None:
+        if not self._closed:
+            self._closed = True
+            for res in reversed(self._owned):
+                try:
+                    res.close()
+                except Exception:
+                    pass
+            self._owned.clear()
+
+    def __enter__(self) -> Self:
+        self._ensure_open()
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
+class _AttributeCollectionBuilder(_TypedOperationBuilder):
+    """Owns ordered attribute copies for Register and Create Split Key."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._attributes: list[ttlv.TtlvItem] = []
+        self._positioned: dict[int, ttlv.TtlvItem] = {}
+
+    def _validate_attribute(self, value: ttlv.TtlvItem) -> None:
+        if not isinstance(value, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with ttlv.Structure.create() as empty:
+            with attribute_operations.AttributeSet.try_new(empty) as s:
+                s.try_push(value)
+
+    def attribute(self, value: Any) -> Self:
+        from .typed_attributes import TypedAttribute
+
+        if isinstance(value, TypedAttribute):
+            with value.as_item() as item:
+                return self.attribute_item(item)
+        if isinstance(value, ttlv.TtlvItem):
+            return self.attribute_item(value)
+        errors.raise_for_status(4)
+
+    def attribute_item(self, value: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        self._validate_attribute(value)
+        copy = value.copy()
+        self._attributes.append(self._own(copy))
+        return self
+
+    def attributes(self, values: attribute_operations.AttributeSet) -> Self:
+        self._ensure_open()
+        if not isinstance(values, attribute_operations.AttributeSet):
+            errors.raise_for_status(4)
+        copies: list[ttlv.TtlvItem] = []
+        try:
+            with values.as_items() as items:
+                with items.view() as view:
+                    for idx in range(view.item_count()):
+                        with view.item_at(idx) as item:
+                            copies.append(item.copy())
+        except BaseException:
+            for item in copies:
+                item.close()
+            raise
+        for item in self._attributes:
+            self._discard(item)
+        self._attributes.clear()
+        for item in copies:
+            self._attributes.append(self._own(item))
+        return self
+
+    def attribute_at(self, position: int, value: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        if (
+            not isinstance(position, int)
+            or isinstance(position, bool)
+            or position < 0
+            or position in self._positioned
+        ):
+            errors.raise_for_status(4)
+        self._validate_attribute(value)
+        copy = value.copy()
+        self._positioned[position] = self._own(copy)
+        return self
+
+    def vendor_attribute(self, vendor: str, name: str, value: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        if (
+            not isinstance(vendor, str)
+            or not isinstance(name, str)
+            or not isinstance(value, ttlv.TtlvItem)
+        ):
+            errors.raise_for_status(4)
+        vendor_bytes = vendor.encode("utf-8")
+        name_bytes = name.encode("utf-8")
+        with ttlv.codec_limits_defaults() as limits:
+            fields = ttlv.ttlv_structure_create()
+            try:
+                with (
+                    ttlv.raw_tag_from_raw(0x42009D) as raw_tag,
+                    ttlv.raw_tag_try_checked(raw_tag) as tag,
+                    ttlv.ttlv_value_text_string(vendor_bytes, limits) as v,
+                    ttlv.ttlv_item_create(tag, v, limits) as item,
+                ):
+                    fields = ttlv.ttlv_structure_with_item(fields, item, limits)
+                with (
+                    ttlv.raw_tag_from_raw(0x42000A) as raw_tag,
+                    ttlv.raw_tag_try_checked(raw_tag) as tag,
+                    ttlv.ttlv_value_text_string(name_bytes, limits) as v,
+                    ttlv.ttlv_item_create(tag, v, limits) as item,
+                ):
+                    fields = ttlv.ttlv_structure_with_item(fields, item, limits)
+                with (
+                    ttlv.raw_tag_from_raw(0x42000B) as raw_tag,
+                    ttlv.raw_tag_try_checked(raw_tag) as tag,
+                    value.value_copy() as copy_val,
+                    ttlv.ttlv_item_create(tag, copy_val, limits) as item,
+                ):
+                    fields = ttlv.ttlv_structure_with_item(fields, item, limits)
+                with (
+                    ttlv.raw_tag_from_raw(0x420008) as raw_tag,
+                    ttlv.raw_tag_try_checked(raw_tag) as tag,
+                    ttlv.ttlv_value_structure(fields, limits) as struct_val,
+                    ttlv.ttlv_item_create(tag, struct_val, limits) as attr_item,
+                ):
+                    return self.attribute_item(attr_item)
+            finally:
+                fields.close()
+
+    def _build_attributes(self) -> ttlv.Structure:
+        self._ensure_open()
+        ordered = list(self._attributes)
+        for pos in sorted(self._positioned.keys()):
+            if pos > len(ordered):
+                errors.raise_for_status(4)
+            ordered.insert(pos, self._positioned[pos])
+        with ttlv.codec_limits_defaults() as limits:
+            items = ttlv.ttlv_structure_create()
+            try:
+                for it in ordered:
+                    with it.copy() as cp:
+                        items = ttlv.ttlv_structure_with_item(items, cp, limits)
+                return items
+            except BaseException:
+                items.close()
+                raise
+
+    def close(self) -> None:
+        self._attributes.clear()
+        self._positioned.clear()
+        super().close()
+
+
+class ActivateBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Activate request with optional identifier and exchange options."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        if unique_identifier is not None:
+            self.unique_identifier(unique_identifier)
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_activate(self._unique_identifier)
+        )
+
+
+class ArchiveBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Archive request with optional identifier and exchange options."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        if unique_identifier is not None:
+            self.unique_identifier(unique_identifier)
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_archive(self._unique_identifier)
+        )
+
+
+class RecoverBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Recover request with optional identifier and exchange options."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        if unique_identifier is not None:
+            self.unique_identifier(unique_identifier)
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_recover(self._unique_identifier)
+        )
+
+
+class CreateSplitKeyBuilder(_AttributeCollectionBuilder):
+    """Fluent typed KMIP Create Split Key request with ordered attributes."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        object_type: int | None = None,
+        parts: int | None = None,
+        threshold: int | None = None,
+        method: int | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._object_type: int | None = None
+        self._method: int | None = None
+        self._parts: int | None = None
+        self._threshold: int | None = None
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._prime_field_size: bytearray | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+
+        if object_type is not None:
+            self.object_type(object_type)
+        if method is not None:
+            self.method(method)
+        if parts is not None:
+            self.parts(parts)
+        if threshold is not None:
+            self.threshold(threshold)
+
+    def object_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._object_type = _unsigned(value, 32)
+        return self
+
+    def method(self, value: int) -> Self:
+        self._ensure_open()
+        self._method = _unsigned(value, 32)
+        return self
+
+    def parts(self, value: int) -> Self:
+        self._ensure_open()
+        self._parts = _signed_i32_bits(value)
+        return self
+
+    def threshold(self, value: int) -> Self:
+        self._ensure_open()
+        self._threshold = _signed_i32_bits(value)
+        return self
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def prime_field_size(
+        self, value: bytes | bytearray | memoryview | None
+    ) -> Self:
+        self._ensure_open()
+        if self._prime_field_size is not None:
+            _wipe_crypto_stage(self._prime_field_size)
+            self._prime_field_size = None
+        if value is not None:
+            self._prime_field_size = bytearray(value)
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if (
+            self._object_type is None
+            or self._method is None
+            or self._parts is None
+            or self._threshold is None
+        ):
+            errors.raise_for_status(4)
+        with self._build_attributes() as attributes:
+            return _validated_item(
+                extensions.client_batch_item_create_split_key(
+                    self._object_type,
+                    self._parts,
+                    self._threshold,
+                    self._method,
+                    attributes,
+                    unique_identifier=self._unique_identifier,
+                    prime_field_size=self._prime_field_size,
+                    protection_storage_masks=self._protection_storage_masks,
+                )
+            )
+
+    def close(self) -> None:
+        if self._prime_field_size is not None:
+            _wipe_crypto_stage(self._prime_field_size)
+            self._prime_field_size = None
+        super().close()
+
+
+class RegisterBuilder(_AttributeCollectionBuilder):
+    """Fluent typed KMIP Register request retaining copies of the object and ordered attributes."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        object: Any = None,
+        object_type: int | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._object_type: int | None = None
+        self._object: ttlv.TtlvItem | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+        self._opaque_object_context: extensions.OpaqueObjectContext | None = None
+        if object is not None:
+            if object_type is not None:
+                self.object_item(object_type, object)
+            else:
+                self.object(object)
+
+    def object(self, value: Any) -> Self:
+        self._ensure_open()
+        if value is None:
+            errors.raise_for_status(4)
+        from .managed_objects import ManagedObject
+
+        if isinstance(value, ManagedObject):
+            with value.view() as view:
+                with view.copy() as item:
+                    return self.object_item(value.object_type(), item)
+        if isinstance(value, ttlv.TtlvItem) and self._object_type is not None:
+            return self.object_item(self._object_type, value)
+        errors.raise_for_status(4)
+
+    def object_item(self, object_type: int, value: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        raw_type = _unsigned(object_type, 32)
+        if not isinstance(value, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        copy = value.copy()
+        if self._object is not None:
+            self._discard(self._object)
+        self._object = self._own(copy)
+        self._object_type = raw_type
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def opaque_object_context(
+        self, value: extensions.OpaqueObjectContext | None
+    ) -> Self:
+        self._ensure_open()
+        if value is not None and not isinstance(value, extensions.OpaqueObjectContext):
+            errors.raise_for_status(4)
+        self._opaque_object_context = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._object is None or self._object_type is None:
+            errors.raise_for_status(4)
+        with self._build_attributes() as attributes:
+            with self._object.copy() as copy:
+                request = extensions.RegisterRequest.create(
+                    self._object_type, attributes, copy
+                )
+                try:
+                    if self._opaque_object_context is not None:
+                        request = request.with_opaque_object_context(
+                            self._opaque_object_context
+                        )
+                    if self._protection_storage_masks is not None:
+                        request = request.with_protection_storage_masks(
+                            self._protection_storage_masks
+                        )
+                    return _validated_item(
+                        extensions.client_batch_item_register(request)
+                    )
+                finally:
+                    request.close()
+
+
+class RekeyBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Rekey request preserving identifier, offset and attributes."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._offset: int | None = None
+        self._attributes: ttlv.Structure | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+        if unique_identifier is not None:
+            self.unique_identifier(unique_identifier)
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def offset(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._offset = None if value is None else _unsigned(value, 32)
+        return self
+
+    def attributes(self, value: ttlv.Structure | None) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_rekey(
+                self._unique_identifier,
+                offset=self._offset,
+                attributes=self._attributes,
+                protection_storage_masks=self._protection_storage_masks,
+            )
+        )
+
+
+class RekeyKeyPairBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Re-key Key Pair request retaining all attribute and protection-mask fields."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        private_key_unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._private_key_unique_identifier: extensions.UniqueIdentifier | None = None
+        self._offset: int | None = None
+        self._common_attributes: ttlv.Structure | None = None
+        self._private_key_attributes: ttlv.Structure | None = None
+        self._public_key_attributes: ttlv.Structure | None = None
+        self._common_protection_storage_masks: ttlv.Structure | None = None
+        self._private_protection_storage_masks: ttlv.Structure | None = None
+        self._public_protection_storage_masks: ttlv.Structure | None = None
+        if private_key_unique_identifier is not None:
+            self.private_key_unique_identifier(private_key_unique_identifier)
+
+    def private_key_unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._private_key_unique_identifier = _normalize_identifier(value)
+        return self
+
+    def offset(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._offset = None if value is None else _unsigned(value, 32)
+        return self
+
+    def _convert_attributes(
+        self, value: ttlv.Structure | attribute_operations.AttributeSet | None
+    ) -> ttlv.Structure | None:
+        if value is None:
+            return None
+        if isinstance(value, attribute_operations.AttributeSet):
+            with value.as_items() as items:
+                return items.copy()
+        if isinstance(value, ttlv.Structure):
+            return value.copy()
+        errors.raise_for_status(4)
+
+    def common_attributes(
+        self, value: ttlv.Structure | attribute_operations.AttributeSet | None
+    ) -> Self:
+        self._ensure_open()
+        converted = self._convert_attributes(value)
+        self._discard(self._common_attributes)
+        self._common_attributes = self._own(converted) if converted is not None else None
+        return self
+
+    def private_key_attributes(
+        self, value: ttlv.Structure | attribute_operations.AttributeSet | None
+    ) -> Self:
+        self._ensure_open()
+        converted = self._convert_attributes(value)
+        self._discard(self._private_key_attributes)
+        self._private_key_attributes = self._own(converted) if converted is not None else None
+        return self
+
+    def public_key_attributes(
+        self, value: ttlv.Structure | attribute_operations.AttributeSet | None
+    ) -> Self:
+        self._ensure_open()
+        converted = self._convert_attributes(value)
+        self._discard(self._public_key_attributes)
+        self._public_key_attributes = self._own(converted) if converted is not None else None
+        return self
+
+    def common_protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._common_protection_storage_masks = self._replace_structure(
+            self._common_protection_storage_masks, value
+        )
+        return self
+
+    def private_protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._private_protection_storage_masks = self._replace_structure(
+            self._private_protection_storage_masks, value
+        )
+        return self
+
+    def public_protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._public_protection_storage_masks = self._replace_structure(
+            self._public_protection_storage_masks, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_rekey_key_pair(
+                self._private_key_unique_identifier,
+                offset=self._offset,
+                common_attributes=self._common_attributes,
+                private_key_attributes=self._private_key_attributes,
+                public_key_attributes=self._public_key_attributes,
+                common_protection_storage_masks=self._common_protection_storage_masks,
+                private_protection_storage_masks=self._private_protection_storage_masks,
+                public_protection_storage_masks=self._public_protection_storage_masks,
+            )
+        )
+
+
+class RecertifyBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Recertify request. Structure setters retain independent copies."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier: extensions.UniqueIdentifier | None = None
+        self._offset: int | None = None
+        self._attributes: ttlv.Structure | None = None
+        self._protection_storage_masks: ttlv.Structure | None = None
+        self._certificate_request_unique_identifier: extensions.UniqueIdentifier | None = None
+        self._certificate_request_type: int | None = None
+        self._certificate_request_value: bytearray | None = None
+        if unique_identifier is not None:
+            self.unique_identifier(unique_identifier)
+
+    def unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def offset(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._offset = None if value is None else _unsigned(value, 32)
+        return self
+
+    def attributes(self, value: ttlv.Structure | None) -> Self:
+        self._attributes = self._replace_structure(self._attributes, value)
+        return self
+
+    def protection_storage_masks(self, value: ttlv.Structure | None) -> Self:
+        self._protection_storage_masks = self._replace_structure(
+            self._protection_storage_masks, value
+        )
+        return self
+
+    def certificate_request_unique_identifier(
+        self, value: extensions.UniqueIdentifier | str | None
+    ) -> Self:
+        self._ensure_open()
+        self._certificate_request_unique_identifier = _normalize_identifier(value)
+        return self
+
+    def certificate_request_type(self, value: int | None) -> Self:
+        self._ensure_open()
+        self._certificate_request_type = None if value is None else _unsigned(value, 32)
+        return self
+
+    def certificate_request_value(
+        self, value: bytes | bytearray | memoryview | None
+    ) -> Self:
+        self._ensure_open()
+        if self._certificate_request_value is not None:
+            _wipe_crypto_stage(self._certificate_request_value)
+            self._certificate_request_value = None
+        if value is not None:
+            self._certificate_request_value = bytearray(value)
+        return self
+
+    def close(self) -> None:
+        if self._certificate_request_value is not None:
+            _wipe_crypto_stage(self._certificate_request_value)
+            self._certificate_request_value = None
+        super().close()
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return _validated_item(
+            extensions.client_batch_item_recertify(
+                self._unique_identifier,
+                self._certificate_request_unique_identifier,
+                certificate_request_type=self._certificate_request_type,
+                certificate_request_value=self._certificate_request_value,
+                offset=self._offset,
+                attributes=self._attributes,
+                protection_storage_masks=self._protection_storage_masks,
+            )
+        )
+
+
 __all__ = [
+    "ActivateBuilder",
     "AddAttributeBuilder",
+    "ArchiveBuilder",
     "CreateKeyPairBuilder",
+    "CreateSplitKeyBuilder",
     "DeleteAttributeBuilder",
     "DecryptBuilder",
     "EncryptBuilder",
@@ -1821,6 +2669,11 @@ __all__ = [
     "MacBuilder",
     "MacVerifyBuilder",
     "Operation",
+    "RecertifyBuilder",
+    "RecoverBuilder",
+    "RegisterBuilder",
+    "RekeyBuilder",
+    "RekeyKeyPairBuilder",
     "Request",
     "RevokeBuilder",
     "SetAttributeBuilder",

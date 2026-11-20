@@ -65,4 +65,4 @@ def secret_callback_library() -> ctypes.CDLL:
         raise ImportError("KMIPKit native callback entrypoints are unavailable.") from None
 
 
-__all__ = ["ffi", "lib"]
+__all__ = ["ffi", "lib", "secret_callback_library"]

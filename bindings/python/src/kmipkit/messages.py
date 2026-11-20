@@ -236,12 +236,20 @@ def _materialize_value(value_view: ttlv.TtlvValueView) -> object:
         ttlv.ItemType.BigInteger,
         ttlv.ItemType.TextString,
         ttlv.ItemType.ByteString,
+        ttlv.ItemType.Identifier,
+        ttlv.ItemType.Reference,
+        ttlv.ItemType.NameReference,
     ):
         length = ttlv.ttlv_value_view_byte_length(value_view)
         if length > _MAX_MESSAGE_BYTES:
             errors.raise_for_status(6)
         raw = ttlv.ttlv_value_view_bytes(value_view)
-        if value_type == ttlv.ItemType.TextString:
+        if value_type in (
+            ttlv.ItemType.TextString,
+            ttlv.ItemType.Identifier,
+            ttlv.ItemType.Reference,
+            ttlv.ItemType.NameReference,
+        ):
             try:
                 return raw.decode("utf-8")
             except UnicodeDecodeError:
@@ -394,6 +402,14 @@ class ResponseMessage(_MessageHandle):
         )
         return handle
 
+    @classmethod
+    def _from_native_address(cls, address: int) -> Self:
+        """Adopt an owned ResponseMessage handle returned by native dispatch."""
+        if address <= 0:
+            errors.raise_for_status(4)
+        handle = ffi.cast("kmipkit_response_message_t *", address)
+        return _wrap_handle(cls, handle)
+
     @property
     def batch_item_count(self) -> int:
         """Return the number of validated batch items in source order."""
@@ -460,6 +476,13 @@ class RequestHeaderView(_MessageHandle):
         """Return the validated positive Batch Count."""
         return _scalar(
             "int32_t", lib.kmipkit_request_header_view_batch_count, self._pointer()
+        )
+
+    @property
+    def wire_batch_count(self) -> int:
+        """Return the wire framing batch count."""
+        return _scalar(
+            "uint32_t", lib.kmipkit_request_header_view_wire_batch_count, self._pointer()
         )
 
     def to_ttlv(self) -> ttlv.Structure:
@@ -605,6 +628,13 @@ class ResponseHeaderView(_MessageHandle):
             "int32_t", lib.kmipkit_response_header_view_batch_count, self._pointer()
         )
 
+    @property
+    def wire_batch_count(self) -> int:
+        """Return the wire framing batch count."""
+        return _scalar(
+            "uint32_t", lib.kmipkit_response_header_view_wire_batch_count, self._pointer()
+        )
+
     def to_ttlv(self) -> ttlv.Structure:
         """Return an owned copy of the complete header in source order."""
         return _copy_ttlv(lib.kmipkit_response_header_view_ttlv, self)
@@ -675,9 +705,49 @@ class RequestBatchItemView(_MessageHandle):
     @property
     def ephemeral(self) -> bool | None:
         """Return the optional Ephemeral Boolean."""
-        return _typed_field_value(
-            lib.kmipkit_request_batch_item_view_ttlv, self, _EPHEMERAL, bool
+        present = ffi.new("uint8_t *")
+        value = ffi.new("uint8_t *")
+        _status(
+            _call(
+                lib.kmipkit_request_batch_item_view_ephemeral,
+                self._pointer(),
+                present,
+                value,
+            )
         )
+        if present[0] not in (0, 1):
+            errors.raise_for_status(4)
+        return bool(value[0]) if present[0] else None
+
+    @property
+    def ephemeral_mode(self) -> int | None:
+        """Return the optional KMIP 3.0 Ephemeral Mode Enumeration."""
+        present = ffi.new("uint8_t *")
+        value = ffi.new("uint32_t *")
+        _status(
+            _call(
+                lib.kmipkit_request_batch_item_view_ephemeral_mode,
+                self._pointer(),
+                present,
+                value,
+            )
+        )
+        if present[0] not in (0, 1):
+            errors.raise_for_status(4)
+        return int(value[0]) if present[0] else None
+
+    @property
+    def is_ephemeral(self) -> bool:
+        """Return True if the batch item specifies ephemeral processing under any KMIP version."""
+        out = ffi.new("uint8_t *")
+        _status(
+            _call(
+                lib.kmipkit_request_batch_item_view_is_ephemeral,
+                self._pointer(),
+                out,
+            )
+        )
+        return bool(out[0])
 
     @property
     def unique_batch_item_id(self) -> bytes | None:

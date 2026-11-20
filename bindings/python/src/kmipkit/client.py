@@ -1090,9 +1090,12 @@ class TransportConfig:
     read_timeout: TimeoutLimit = TimeoutLimit()
     total_timeout: TimeoutLimit = TimeoutLimit()
     max_request_bytes: int = 16 * 1024 * 1024
+    tls12_compat: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.endpoint, Endpoint):
+            errors.raise_for_status(4)
+        if not isinstance(self.tls12_compat, bool):
             errors.raise_for_status(4)
         # Read the base dataclass slots and reconstruct a validated value so a
         # subclass cannot suppress Endpoint.__post_init__ and bypass FFI checks.
@@ -1216,6 +1219,7 @@ def _validated_transport_config(value: TransportConfig) -> TransportConfig:
         max_request_bytes = TransportConfig.max_request_bytes.__get__(
             value, TransportConfig
         )
+        tls12_compat = TransportConfig.tls12_compat.__get__(value, TransportConfig)
     except (AttributeError, TypeError):
         errors.raise_for_status(4)
     return TransportConfig(
@@ -1229,6 +1233,7 @@ def _validated_transport_config(value: TransportConfig) -> TransportConfig:
         read_timeout=_snapshot_timeout(read_timeout),
         total_timeout=_snapshot_timeout(total_timeout),
         max_request_bytes=max_request_bytes,
+        tls12_compat=bool(tls12_compat),
     )
 
 
@@ -2126,6 +2131,9 @@ class BatchItemResult(_BatchItemResultNativeState):
     set_attribute_response: SetAttributeResponse | None = field(
         default=None, repr=False
     )
+    set_endpoint_role_response: SetEndpointRoleResponse | None = field(
+        default=None, repr=False
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "_native_response_item", None)
@@ -2949,6 +2957,35 @@ class SetDefaultsResponse:
         self.response_ttlv.close()
 
 
+@dataclass(frozen=True, slots=True)
+class SetEndpointRoleResponse:
+    """Successful Set Endpoint Role response fields."""
+
+    endpoint_role: int
+    vendor_identification: str | None = None
+
+
+def _set_endpoint_role_response(
+    item: _ClientBatchItemResponse,
+) -> SetEndpointRoleResponse | None:
+    present = ffi.new("uint8_t *")
+    role = ffi.new("uint32_t *")
+    vendor = ffi.new("kmipkit_byte_span_v1_t *")
+    with _NATIVE_CALL_LOCK:
+        _raise_abi_status(
+            lib.kmipkit_client_batch_item_response_set_endpoint_role(
+                item._pointer(), present, role, vendor
+            )
+        )
+    if present[0] == 0:
+        return None
+    vendor_id = None
+    if vendor.length > 0 and vendor.data != ffi.NULL:
+        raw = bytes(ffi.buffer(vendor.data, int(vendor.length)))
+        vendor_id = raw.decode("utf-8", errors="strict")
+    return SetEndpointRoleResponse(int(role[0]), vendor_id)
+
+
 @dataclass(frozen=True, slots=True, repr=False)
 class ValidateResponse:
     """Successful Validate result with the raw open indicator and owned generic TTLV."""
@@ -3289,7 +3326,10 @@ class UsageAllocationContext(_ClientHandle):
                 )
             )
             kind = int(identifier.kind)
-            if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+            if kind in (
+                int(extensions.UniqueIdentifierKind.TEXT_STRING),
+                int(extensions.UniqueIdentifierKind.IDENTIFIER),
+            ):
                 if identifier.text_length > _MAX_INPUT_BYTES or (
                     identifier.text_length and identifier.text_data == ffi.NULL
                 ):
@@ -3303,6 +3343,8 @@ class UsageAllocationContext(_ClientHandle):
                     text = encoded.decode("utf-8", errors="strict")
                 except UnicodeDecodeError:
                     errors.raise_for_status(4)
+                if kind == int(extensions.UniqueIdentifierKind.IDENTIFIER):
+                    return extensions.UniqueIdentifier.identifier(text)
                 return extensions.UniqueIdentifier.text_string(text)
             if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
                 return extensions.UniqueIdentifier.enumeration(int(identifier.enumeration_value))
@@ -3463,6 +3505,244 @@ class Client(_ClientHandle):
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
         return _wrap_owned_handle(cls, client_output[0])
+
+    @classmethod
+    def create_mtls(
+        cls,
+        configuration: extensions.ClientConfiguration,
+        host: str,
+        port: int,
+        client_certificates: Sequence[bytes | bytearray | memoryview],
+        client_private_key: bytes | bytearray | memoryview,
+        trust_certificates: Sequence[bytes | bytearray | memoryview],
+        *,
+        tls_server_name: str | None = None,
+        max_request_bytes: int = 8 * 1024 * 1024,
+    ) -> Self:
+        """Construct an mTLS client using the optimized C ABI entrypoint."""
+        if not isinstance(configuration, extensions.ClientConfiguration):
+            errors.raise_for_status(4)
+        if not isinstance(host, str) or not host:
+            errors.raise_for_status(4)
+        raw_port = _integer_range(port, 1, 65535)
+        raw_max_bytes = _integer_range(max_request_bytes, 1, sys.maxsize)
+        if not isinstance(client_certificates, Sequence) or isinstance(
+            client_certificates, (str, bytes, bytearray, memoryview)
+        ):
+            errors.raise_for_status(4)
+        if not isinstance(trust_certificates, Sequence) or isinstance(
+            trust_certificates, (str, bytes, bytearray, memoryview)
+        ):
+            errors.raise_for_status(4)
+        if not client_certificates or not trust_certificates:
+            errors.raise_for_status(4)
+        if len(client_certificates) > 64 or len(trust_certificates) > 64:
+            errors.raise_for_status(4)
+        if tls_server_name is not None and (
+            not isinstance(tls_server_name, str) or not tls_server_name
+        ):
+            errors.raise_for_status(4)
+
+        wipe_buffers: list[tuple[Any, int]] = []
+        try:
+            host_bytes = host.encode("utf-8")
+            host_owner = ffi.new("uint8_t[]", host_bytes)
+            host_span = ffi.new(
+                "kmipkit_byte_span_v1_t *", {"data": host_owner, "length": len(host_bytes)}
+            )[0]
+
+            if tls_server_name is not None:
+                sn_bytes = tls_server_name.encode("utf-8")
+                sn_owner = ffi.new("uint8_t[]", sn_bytes)
+                sn_span = ffi.new(
+                    "kmipkit_byte_span_v1_t *", {"data": sn_owner, "length": len(sn_bytes)}
+                )[0]
+            else:
+                sn_span = ffi.new(
+                    "kmipkit_byte_span_v1_t *", {"data": ffi.NULL, "length": 0}
+                )[0]
+
+            client_cert_spans = ffi.new(
+                "kmipkit_byte_span_v1_t[]", len(client_certificates)
+            )
+            client_cert_owners = []
+            for i, cert in enumerate(client_certificates):
+                cb = bytes(cert)
+                owner = ffi.new("uint8_t[]", cb)
+                client_cert_owners.append(owner)
+                client_cert_spans[i].data = owner
+                client_cert_spans[i].length = len(cb)
+
+            trust_cert_spans = ffi.new(
+                "kmipkit_byte_span_v1_t[]", len(trust_certificates)
+            )
+            trust_cert_owners = []
+            for i, cert in enumerate(trust_certificates):
+                tb = bytes(cert)
+                owner = ffi.new("uint8_t[]", tb)
+                trust_cert_owners.append(owner)
+                trust_cert_spans[i].data = owner
+                trust_cert_spans[i].length = len(tb)
+
+            if not isinstance(client_private_key, (bytes, bytearray, memoryview)):
+                errors.raise_for_status(4)
+            key_bytes = bytes(client_private_key)
+            if not key_bytes:
+                errors.raise_for_status(4)
+            key_buf = ffi.new("uint8_t[]", key_bytes)
+            wipe_buffers.append((key_buf, len(key_bytes)))
+            key_span = ffi.new(
+                "kmipkit_byte_span_v1_t *", {"data": key_buf, "length": len(key_bytes)}
+            )[0]
+
+            config = ffi.new("kmipkit_mtls_client_config_v1_t *")
+            config.struct_size = ffi.sizeof("kmipkit_mtls_client_config_v1_t")
+            config.abi_version = 1
+            config.endpoint_host = host_span
+            config.endpoint_port = raw_port
+            config.reserved = 0
+            config.tls_server_name = sn_span
+            config.client_certificates = client_cert_spans
+            config.client_certificate_count = len(client_certificates)
+            config.client_private_key = key_span
+            config.trust_certificates = trust_cert_spans
+            config.trust_certificate_count = len(trust_certificates)
+            config.max_request_bytes = raw_max_bytes
+
+            client_output = ffi.new("kmipkit_client_t **")
+            with _NATIVE_CALL_LOCK:
+                status = lib.kmipkit_client_create_mtls_v1(
+                    ffi.cast(
+                        "kmipkit_client_configuration_t *", configuration._pointer()
+                    ),
+                    config,
+                    client_output,
+                )
+            _raise_abi_status(status)
+            if client_output[0] == ffi.NULL:
+                errors.raise_for_status(7)
+            return _wrap_owned_handle(cls, client_output[0])
+        finally:
+            if isinstance(client_private_key, bytearray):
+                _wipe_staging_buffer(client_private_key, len(client_private_key))
+            for buf, length in wipe_buffers:
+                _wipe_staging_buffer(buf, length)
+
+    def set_endpoint_role(
+        self,
+        endpoint_role: int,
+        vendor_identification: str | bytes | bytearray | memoryview | None = None,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        """Execute a standalone Set Endpoint Role operation (KMIP 3.0 §6.1.58)."""
+        raw_role = _integer_range(endpoint_role, 0, 0xFFFF_FFFF)
+        actual_limits = ttlv.CodecLimits() if limits is None else limits
+        if not isinstance(actual_limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        if options is not None and not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        if vendor_identification is None:
+            raw_bytes = b""
+            buffer = ffi.NULL
+        else:
+            raw_bytes, buffer = _owned_bytes(
+                vendor_identification, _MAX_OPERATION_INPUT_BYTES
+            )
+        try:
+            item_output = ffi.new("kmipkit_client_batch_item_response_t **")
+            with _NATIVE_CALL_LOCK:
+                if options is None:
+                    status = lib.kmipkit_client_set_endpoint_role(
+                        self._pointer(),
+                        raw_role,
+                        buffer,
+                        len(raw_bytes),
+                        actual_limits._pointer(),
+                        item_output,
+                    )
+                else:
+                    opt_record, opt_owners = _request_options_record(options)
+                    status = lib.kmipkit_client_set_endpoint_role_with_options_v1(
+                        self._pointer(),
+                        raw_role,
+                        buffer,
+                        len(raw_bytes),
+                        actual_limits._pointer(),
+                        opt_record,
+                        item_output,
+                    )
+                    del opt_owners
+            _raise_abi_status(status)
+            if item_output[0] == ffi.NULL:
+                errors.raise_for_status(7)
+            item = _wrap_owned_handle(_ClientBatchItemResponse, item_output[0])
+            keep_item_handle = False
+            try:
+                metadata = ffi.new("kmipkit_client_batch_item_metadata_v2_t *")
+                metadata.struct_size = ffi.sizeof("kmipkit_client_batch_item_metadata_v2_t")
+                metadata.abi_version = 2
+                _raise_abi_status(
+                    lib.kmipkit_client_batch_item_response_metadata_v2(
+                        item._pointer(), metadata
+                    )
+                )
+                if metadata.abi_version != 2 or metadata.struct_size != ffi.sizeof(
+                    "kmipkit_client_batch_item_metadata_v2_t"
+                ):
+                    errors.raise_for_status(4)
+                if metadata.reserved != 0 or metadata.has_result_message not in (0, 1):
+                    errors.raise_for_status(4)
+                try:
+                    outcome: BatchOutcome | int = BatchOutcome(metadata.outcome_kind)
+                except ValueError:
+                    outcome = int(metadata.outcome_kind)
+                if metadata.has_result_reason not in (0, 1):
+                    errors.raise_for_status(4)
+                result_reason = (
+                    int(metadata.result_reason)
+                    if metadata.has_result_reason == 1
+                    else None
+                )
+                message_bytes = _metadata_result_message(metadata)
+                try:
+                    result_message = (
+                        None
+                        if message_bytes is None
+                        else message_bytes.decode("utf-8", errors="strict")
+                    )
+                except UnicodeDecodeError:
+                    errors.raise_for_status(4)
+                unique_id = _response_span(
+                    item, lib.kmipkit_client_batch_item_response_unique_batch_item_id
+                )
+                correlation = _response_span(
+                    item,
+                    lib.kmipkit_client_batch_item_response_pending_correlation_value,
+                )
+                set_endpoint_role_resp = None
+                if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
+                    set_endpoint_role_resp = _set_endpoint_role_response(item)
+                result = BatchItemResult(
+                    outcome,
+                    int(metadata.result_status),
+                    result_reason,
+                    unique_id,
+                    correlation,
+                    None,
+                    int(metadata.operation),
+                    result_message,
+                    set_endpoint_role_response=set_endpoint_role_resp,
+                )
+                object.__setattr__(result, "_native_response_item", item)
+                keep_item_handle = True
+                return result
+            finally:
+                if not keep_item_handle:
+                    item.close()
+        finally:
+            if buffer != ffi.NULL:
+                _wipe_staging_buffer(buffer, len(raw_bytes))
 
     def execute(
         self,
@@ -4426,6 +4706,13 @@ def _batch_result(
                     and int(metadata.operation) == 0x36
                 ):
                     set_defaults_response = _set_defaults_response(item)
+                set_endpoint_role_response = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 50
+                ):
+                    set_endpoint_role_response = _set_endpoint_role_response(item)
                 derive_key_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
@@ -4558,6 +4845,7 @@ def _batch_result(
                     decapsulate_response=decapsulate_response,
                     delete_attribute_response=delete_attribute_response,
                     modify_attribute_response=modify_attribute_response,
+                    set_endpoint_role_response=set_endpoint_role_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -4632,7 +4920,10 @@ def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
     ):
         errors.raise_for_status(4)
     kind = int(output.kind)
-    if kind == int(extensions.UniqueIdentifierKind.TEXT_STRING):
+    if kind in (
+        int(extensions.UniqueIdentifierKind.TEXT_STRING),
+        int(extensions.UniqueIdentifierKind.IDENTIFIER),
+    ):
         if output.text_length > sys.maxsize:
             errors.raise_for_status(6)
         if output.text_length != 0 and output.text_data == ffi.NULL:
@@ -4643,7 +4934,10 @@ def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
             else b""
         )
         try:
-            return extensions.UniqueIdentifier.text_string(raw.decode("utf-8", errors="strict"))
+            text = raw.decode("utf-8", errors="strict")
+            if kind == int(extensions.UniqueIdentifierKind.IDENTIFIER):
+                return extensions.UniqueIdentifier.identifier(text)
+            return extensions.UniqueIdentifier.text_string(text)
         except UnicodeDecodeError:
             errors.raise_for_status(4)
     if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
@@ -6954,6 +7248,8 @@ def _transport_record(configuration: TransportConfig) -> tuple[Any, tuple[object
         if configuration.endpoint.target_uri is not None:
             flags |= 2
             target_uri = span(_utf8_bytes(configuration.endpoint.target_uri))
+        if configuration.tls12_compat:
+            flags |= 4
         record = ffi.new("kmipkit_transport_config_v1_t *")
         record.struct_size = ffi.sizeof("kmipkit_transport_config_v1_t")
         record.abi_version = 1
@@ -7201,6 +7497,7 @@ __all__ = [
     "SetConstraintsResponse",
     "SetAttributeResponse",
     "SetDefaultsResponse",
+    "SetEndpointRoleResponse",
     "ValidateResponse",
     "GetResponse",
     "LocateResponse",

@@ -19,7 +19,7 @@ from ._handles import (
 
 
 class ItemType(IntEnum):
-    """The eleven KMIP 2.1 TTLV Item Types represented by the model."""
+    """The fourteen KMIP TTLV Item Types represented by the model."""
 
     Structure = 1
     Integer = 2
@@ -32,6 +32,9 @@ class ItemType(IntEnum):
     DateTime = 9
     Interval = 10
     DateTimeExtended = 11
+    Identifier = 12
+    Reference = 13
+    NameReference = 14
 
 
 class RawTag(NativeHandle):
@@ -53,6 +56,9 @@ class Value(NativeHandle):
 class Structure(NativeHandle):
     _release_name = "kmipkit_ttlv_structure_release"
 
+    def copy(self) -> Structure:
+        return ttlv_structure_copy(self)
+
 
 def _structure_from_native_address(address: int) -> Structure:
     """Adopt an opaque Structure handle returned through the shared client ABI."""
@@ -65,6 +71,12 @@ def _structure_from_native_address(address: int) -> Structure:
 class TtlvItem(NativeHandle):
     _release_name = "kmipkit_ttlv_item_release"
 
+    def copy(self) -> TtlvItem:
+        return ttlv_item_copy(self)
+
+    def value_copy(self) -> Value:
+        return ttlv_item_value_copy(self)
+
 
 class TtlvStructureView(NativeHandle):
     _release_name = "kmipkit_ttlv_structure_view_release"
@@ -73,9 +85,20 @@ class TtlvStructureView(NativeHandle):
 class TtlvItemView(NativeHandle):
     _release_name = "kmipkit_ttlv_item_view_release"
 
+    def copy(self) -> TtlvItem:
+        return ttlv_item_view_copy(self)
+
+    @property
+    def item_type(self) -> ItemType:
+        return ttlv_item_view_type(self)
+
 
 class TtlvValueView(NativeHandle):
     _release_name = "kmipkit_ttlv_value_view_release"
+
+    @property
+    def item_type(self) -> ItemType:
+        return ttlv_value_view_type(self)
 
 
 def _item_type(value: int) -> ItemType:
@@ -256,6 +279,18 @@ def ttlv_value_byte_string(value: bytes, limits: CodecLimits) -> Value:
     return _variable_value("kmipkit_ttlv_value_byte_string", value, limits)
 
 
+def ttlv_value_identifier(value: bytes, limits: CodecLimits) -> Value:
+    return _variable_value("kmipkit_ttlv_value_identifier", value, limits)
+
+
+def ttlv_value_reference(value: bytes, limits: CodecLimits) -> Value:
+    return _variable_value("kmipkit_ttlv_value_reference", value, limits)
+
+
+def ttlv_value_name_reference(value: bytes, limits: CodecLimits) -> Value:
+    return _variable_value("kmipkit_ttlv_value_name_reference", value, limits)
+
+
 def ttlv_value_structure(structure: Structure, limits: CodecLimits) -> Value:
     handle = _new_handle(
         "kmipkit_ttlv_value_t",
@@ -284,6 +319,50 @@ def ttlv_item_create(tag: Tag, value: Value, limits: CodecLimits) -> TtlvItem:
         consumed=(1,),
     )
     return _wrap_owned_handle(TtlvItem, handle)
+
+
+def ttlv_item_copy(item: TtlvItem) -> TtlvItem:
+    if not isinstance(item, TtlvItem):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_item_t",
+        lib.kmipkit_ttlv_item_copy,
+        item._pointer(),
+    )
+    return _wrap_owned_handle(TtlvItem, handle)
+
+
+def ttlv_item_value_copy(item: TtlvItem) -> Value:
+    if not isinstance(item, TtlvItem):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_value_t",
+        lib.kmipkit_ttlv_item_value_copy,
+        item._pointer(),
+    )
+    return _wrap_owned_handle(Value, handle)
+
+
+def ttlv_item_view_copy(view: TtlvItemView) -> TtlvItem:
+    if not isinstance(view, TtlvItemView):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_item_t",
+        lib.kmipkit_ttlv_item_view_copy,
+        view._pointer(),
+    )
+    return _wrap_owned_handle(TtlvItem, handle)
+
+
+def ttlv_structure_copy(structure: Structure) -> Structure:
+    if not isinstance(structure, Structure):
+        errors.raise_for_status(4)
+    handle = _new_handle(
+        "kmipkit_ttlv_structure_t",
+        lib.kmipkit_ttlv_structure_copy,
+        structure._pointer(),
+    )
+    return _wrap_owned_handle(Structure, handle)
 
 
 def ttlv_item_view_from_item(item: TtlvItem) -> TtlvItemView:

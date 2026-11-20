@@ -532,6 +532,7 @@ class UniqueIdentifierKind(IntEnum):
     TEXT_STRING = 1
     ENUMERATION = 2
     INTEGER = 3
+    IDENTIFIER = 4
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -545,7 +546,7 @@ class UniqueIdentifier:
     def __post_init__(self) -> None:
         if not isinstance(self.kind, UniqueIdentifierKind):
             errors.raise_for_status(4)
-        if self.kind is UniqueIdentifierKind.TEXT_STRING:
+        if self.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
             if self.text is None or self.number is not None:
                 errors.raise_for_status(4)
             _owned_bytes(self.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
@@ -561,6 +562,10 @@ class UniqueIdentifier:
     @classmethod
     def text_string(cls, value: str) -> UniqueIdentifier:
         return cls(UniqueIdentifierKind.TEXT_STRING, text=value)
+
+    @classmethod
+    def identifier(cls, value: str) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.IDENTIFIER, text=value)
 
     @classmethod
     def enumeration(cls, value: int) -> UniqueIdentifier:
@@ -2524,7 +2529,7 @@ def _native_unique_identifier(
     record.enumeration_value = 0
     record.integer_value = 0
     owner = None
-    if value.kind is UniqueIdentifierKind.TEXT_STRING:
+    if value.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
         raw, owner = _owned_bytes(value.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
         if staging_buffers is not None:
             staging_buffers.append(owner)
@@ -2951,7 +2956,7 @@ def client_batch_item_get_attributes(
     """Create a KMIP 2.1 §6.1.20 Get Attributes item with ordered references."""
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     with _staging_buffer_scope() as staging_buffers:
@@ -2978,7 +2983,7 @@ def client_batch_item_add_attribute(
     """Create a KMIP 2.1 §6.1.2 Add Attribute item from a borrowed TTLV Item."""
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     native_item = _client_native_item(new_attribute)
@@ -3002,7 +3007,7 @@ def client_batch_item_modify_attribute(
     """Create a KMIP 2.1 §6.1.34 Modify Attribute item with exact selectors."""
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     native_current = (
@@ -3033,7 +3038,7 @@ def client_batch_item_set_attribute(
     """
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     native_item = _client_native_item(new_attribute)
@@ -3058,7 +3063,7 @@ def client_batch_item_adjust_attribute(
     """Create a KMIP 2.1 §6.1.3 Adjust Attribute item from borrowed generic values."""
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     raw_adjustment_type = _integer_range(adjustment_type, 0, 0xFFFF_FFFF)
@@ -3082,7 +3087,7 @@ def client_batch_item_delete_attribute(
     """Create a KMIP 2.1 §6.1.13 Delete Attribute item from optional selectors."""
     if unique_identifier is not None and not (
         isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind is UniqueIdentifierKind.TEXT_STRING
+        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
     ):
         errors.raise_for_status(4)
     native_item = _client_native_item(current_attribute) if current_attribute is not None else None
@@ -3127,6 +3132,29 @@ def client_batch_item_set_defaults(
         "kmipkit_client_batch_item_set_defaults",
         (native_information,),
     )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_set_endpoint_role(
+    endpoint_role: int,
+    vendor_identification: str | bytes | bytearray | memoryview | None = None,
+) -> ClientBatchItem:
+    """Create a Set Endpoint Role item from KMIP 3.0 §6.1.58, Table 402."""
+    raw_role = _integer_range(endpoint_role, 0, 0xFFFF_FFFF)
+    with _staging_buffer_scope() as staging_buffers:
+        if vendor_identification is None:
+            raw_bytes = b""
+            buffer = ffi.NULL
+        else:
+            raw_bytes, buffer = _owned_bytes(
+                vendor_identification, _MAX_OPERATION_INPUT_BYTES
+            )
+            staging_buffers.append(buffer)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_set_endpoint_role",
+            (raw_role, buffer, len(raw_bytes)),
+        )
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
@@ -3281,7 +3309,7 @@ def client_batch_item_validate(
     total_text_bytes = 0
     identifier_texts: list[str | None] = []
     for identifier in identifier_values:
-        if identifier.kind is UniqueIdentifierKind.TEXT_STRING:
+        if identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
             text = identifier.text
             if text is None:
                 errors.raise_for_status(4)
@@ -3313,7 +3341,7 @@ def client_batch_item_validate(
             record.text_length = 0
             record.enumeration_value = 0
             record.integer_value = 0
-            if identifier.kind is UniqueIdentifierKind.TEXT_STRING:
+            if identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
                 text = identifier_texts[index]
                 if text is None:
                     errors.raise_for_status(4)
@@ -4130,6 +4158,7 @@ __all__ = [
     "client_batch_item_delete_attribute",
     "client_batch_item_set_constraints",
     "client_batch_item_set_defaults",
+    "client_batch_item_set_endpoint_role",
     "client_batch_item_interop",
     "client_batch_item_pkcs11",
     "client_batch_item_log",

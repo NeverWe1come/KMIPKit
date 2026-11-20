@@ -87,7 +87,11 @@ class _AttributeRequest(NativeHandle):
 def _validate_identifier(value: extensions.UniqueIdentifier | None) -> None:
     if value is not None and (
         not isinstance(value, extensions.UniqueIdentifier)
-        or value.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+        or value.kind
+        not in (
+            extensions.UniqueIdentifierKind.TEXT_STRING,
+            extensions.UniqueIdentifierKind.IDENTIFIER,
+        )
     ):
         errors.raise_for_status(4)
 

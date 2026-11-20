@@ -64,8 +64,10 @@ ffi.cdef(
     typedef struct kmipkit_attribute_set_t kmipkit_attribute_set_t;
     typedef struct kmipkit_ttlv_structure_t kmipkit_ttlv_structure_t;
     typedef struct kmipkit_ttlv_item_t kmipkit_ttlv_item_t;
+    typedef struct kmipkit_ttlv_item_view_t kmipkit_ttlv_item_view_t;
     typedef struct kmipkit_ttlv_value_t kmipkit_ttlv_value_t;
     typedef struct kmipkit_ttlv_value_view_t kmipkit_ttlv_value_view_t;
+    typedef struct kmipkit_extension_information_t kmipkit_extension_information_t;
     int32_t kmipkit_ttlv_value_view_copy_bytes(
         kmipkit_ttlv_value_view_t *view, uint8_t *buffer, uint64_t capacity);
     typedef struct kmipkit_authentication_t kmipkit_authentication_t;
@@ -2126,6 +2128,548 @@ ffi.cdef(
         kmipkit_ttlv_structure_t **out_payload);
     void kmipkit_query_async_requests_request_release(
         kmipkit_query_async_requests_request_t *handle);
+
+    /* TTLV KMIP 3.0 primitive constructors and copiers */
+    int32_t kmipkit_ttlv_value_identifier(
+        kmipkit_codec_limits_t * limits,
+        const uint8_t * value,
+        uint64_t len,
+        kmipkit_ttlv_value_t ** out_value);
+    int32_t kmipkit_ttlv_value_reference(
+        kmipkit_codec_limits_t * limits,
+        const uint8_t * value,
+        uint64_t len,
+        kmipkit_ttlv_value_t ** out_value);
+    int32_t kmipkit_ttlv_value_name_reference(
+        kmipkit_codec_limits_t * limits,
+        const uint8_t * value,
+        uint64_t len,
+        kmipkit_ttlv_value_t ** out_value);
+    int32_t kmipkit_ttlv_item_copy(
+        const kmipkit_ttlv_item_t * item,
+        kmipkit_ttlv_item_t ** out_item);
+    int32_t kmipkit_ttlv_item_value_copy(
+        const kmipkit_ttlv_item_t * item,
+        kmipkit_ttlv_value_t ** out_value);
+    int32_t kmipkit_ttlv_item_view_copy(
+        const kmipkit_ttlv_item_view_t * view,
+        kmipkit_ttlv_item_t ** out_item);
+    int32_t kmipkit_ttlv_structure_copy(
+        const kmipkit_ttlv_structure_t * structure,
+        kmipkit_ttlv_structure_t ** out_structure);
+
+    /* Wire batch count and ephemeral mode */
+    int32_t kmipkit_request_header_view_wire_batch_count(
+        kmipkit_request_header_view_t * view,
+        uint32_t * out_wire_batch_count);
+    int32_t kmipkit_response_header_view_wire_batch_count(
+        kmipkit_response_header_view_t * view,
+        uint32_t * out_wire_batch_count);
+    int32_t kmipkit_request_batch_item_view_ephemeral(
+        kmipkit_request_batch_item_view_t * view,
+        uint8_t * out_present,
+        uint8_t * out_ephemeral);
+    int32_t kmipkit_request_batch_item_view_ephemeral_mode(
+        kmipkit_request_batch_item_view_t * view,
+        uint8_t * out_present,
+        uint32_t * out_ephemeral_mode);
+    int32_t kmipkit_request_batch_item_view_is_ephemeral(
+        kmipkit_request_batch_item_view_t * view,
+        uint8_t * out_is_ephemeral);
+
+    /* Cryptographic parameters v2 */
+    typedef struct kmipkit_cryptographic_parameters_fields_v2_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint8_t block_cipher_mode_present;
+        uint32_t block_cipher_mode;
+        uint8_t padding_method_present;
+        uint32_t padding_method;
+        uint8_t hashing_algorithm_present;
+        uint32_t hashing_algorithm;
+        uint8_t key_role_type_present;
+        uint32_t key_role_type;
+        uint8_t digital_signature_algorithm_present;
+        uint32_t digital_signature_algorithm;
+        uint8_t cryptographic_algorithm_present;
+        uint32_t cryptographic_algorithm;
+        uint8_t random_iv_present;
+        uint8_t random_iv;
+        uint8_t iv_length_present;
+        int32_t iv_length;
+        uint8_t tag_length_present;
+        int32_t tag_length;
+        uint8_t fixed_field_length_present;
+        int32_t fixed_field_length;
+        uint8_t invocation_field_length_present;
+        int32_t invocation_field_length;
+        uint8_t counter_length_present;
+        int32_t counter_length;
+        uint8_t initial_counter_value_present;
+        int32_t initial_counter_value;
+        uint8_t salt_length_present;
+        int32_t salt_length;
+        uint8_t mask_generator_present;
+        uint32_t mask_generator;
+        uint8_t mask_generator_hashing_algorithm_present;
+        uint32_t mask_generator_hashing_algorithm;
+        uint8_t p_source_present;
+        const uint8_t * p_source;
+        uint64_t p_source_length;
+        uint8_t trailer_field_present;
+        int32_t trailer_field;
+        uint8_t kem_algorithm_present;
+        uint32_t kem_algorithm;
+        uint8_t deterministic_present;
+        uint8_t deterministic;
+        uint8_t context_string_present;
+        const uint8_t * context_string;
+        uint64_t context_string_length;
+        uint8_t seed_present;
+        const uint8_t * seed;
+        uint64_t seed_length;
+        uint8_t input_key_material_present;
+        const uint8_t * input_key_material;
+        uint64_t input_key_material_length;
+    } kmipkit_cryptographic_parameters_fields_v2_t;
+
+    int32_t kmipkit_cryptographic_parameters_from_fields_v2(
+        const kmipkit_cryptographic_parameters_fields_v2_t * fields,
+        kmipkit_cryptographic_parameters_t ** out_parameters);
+    int32_t kmipkit_cryptographic_parameters_read_fields_v2(
+        kmipkit_cryptographic_parameters_t * parameters,
+        kmipkit_cryptographic_parameters_fields_v2_t * out_fields);
+
+    /* Protocol utilities */
+    int32_t kmipkit_link_normalizer_v2_to_v3(
+        kmipkit_ttlv_item_t * item,
+        kmipkit_ttlv_item_t ** out_item);
+    int32_t kmipkit_link_normalizer_v3_to_v2(
+        kmipkit_ttlv_item_t * item,
+        kmipkit_ttlv_item_t ** out_item);
+    int32_t kmipkit_version_gate_validate_operation(
+        int32_t protocol_version_major,
+        int32_t protocol_version_minor,
+        uint32_t operation);
+    int32_t kmipkit_version_gate_validate_tag(
+        int32_t protocol_version_major,
+        int32_t protocol_version_minor,
+        uint32_t tag);
+    int32_t kmipkit_version_gate_operation_span(
+        uint32_t operation,
+        uint32_t * out_introduced_major,
+        uint32_t * out_introduced_minor,
+        uint32_t * out_deprecated_major,
+        uint32_t * out_deprecated_minor,
+        uint32_t * out_removed_major,
+        uint32_t * out_removed_minor);
+    int32_t kmipkit_version_gate_tag_span(
+        uint32_t tag,
+        uint32_t * out_introduced_major,
+        uint32_t * out_introduced_minor,
+        uint32_t * out_deprecated_major,
+        uint32_t * out_deprecated_minor,
+        uint32_t * out_removed_major,
+        uint32_t * out_removed_minor);
+    int32_t kmipkit_version_gate_validate_attribute_mutation(
+        uint32_t protocol_version_major,
+        uint32_t protocol_version_minor,
+        uint32_t attribute_tag);
+
+    typedef struct kmipkit_lease_context_t kmipkit_lease_context_t;
+    int32_t kmipkit_lease_context_create(
+        const kmipkit_unique_identifier_v1_t * unique_identifier,
+        int64_t obtained_at_unix_secs,
+        int64_t lease_time_secs,
+        kmipkit_lease_context_t ** out_context);
+    void kmipkit_lease_context_release(kmipkit_lease_context_t * context);
+    int32_t kmipkit_lease_context_unique_identifier(
+        kmipkit_lease_context_t * context,
+        kmipkit_unique_identifier_v1_t * out_unique_identifier);
+    int32_t kmipkit_lease_context_expires_at(
+        kmipkit_lease_context_t * context,
+        int64_t * out_expires_at);
+    int32_t kmipkit_lease_context_is_expired(
+        kmipkit_lease_context_t * context,
+        int64_t current_time_unix_secs,
+        uint8_t * out_is_expired);
+    int32_t kmipkit_lease_context_check_valid(
+        kmipkit_lease_context_t * context,
+        int64_t current_time_unix_secs);
+
+    int32_t kmipkit_nist_key_lifecycle_can_originate(
+        uint32_t state_enum,
+        uint8_t * out_can_originate);
+    int32_t kmipkit_nist_key_lifecycle_can_process(
+        uint32_t state_enum,
+        uint8_t * out_can_process);
+
+    /* Client configuration, MTLS, and SetEndpointRole */
+    int32_t kmipkit_client_configuration_protocol_version(
+        kmipkit_client_configuration_t * configuration,
+        kmipkit_protocol_version_v1_t * out_protocol_version);
+    typedef struct kmipkit_mtls_client_config_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_byte_span_v1_t endpoint_host;
+        uint16_t endpoint_port;
+        uint16_t reserved;
+        kmipkit_byte_span_v1_t tls_server_name;
+        const kmipkit_byte_span_v1_t * client_certificates;
+        uint64_t client_certificate_count;
+        kmipkit_byte_span_v1_t client_private_key;
+        const kmipkit_byte_span_v1_t * trust_certificates;
+        uint64_t trust_certificate_count;
+        uint64_t max_request_bytes;
+    } kmipkit_mtls_client_config_v1_t;
+
+    int32_t kmipkit_client_create_mtls_v1(
+        const kmipkit_mtls_client_config_v1_t * config,
+        kmipkit_client_configuration_t * base_configuration,
+        kmipkit_client_t ** out_client);
+    int32_t kmipkit_client_batch_item_set_endpoint_role(
+        uint32_t endpoint_role,
+        const uint8_t * vendor_identification,
+        uint64_t vendor_identification_length,
+        kmipkit_client_batch_item_t ** out_item);
+    int32_t kmipkit_client_batch_item_response_set_endpoint_role(
+        kmipkit_client_batch_item_response_t * item,
+        uint8_t * out_present,
+        uint32_t * out_role,
+        kmipkit_byte_span_v1_t * out_vendor_identification);
+    int32_t kmipkit_client_set_endpoint_role(
+        kmipkit_client_t * client,
+        uint32_t endpoint_role,
+        const uint8_t * vendor_identification,
+        uint64_t vendor_identification_length,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_client_batch_item_response_t ** out_response);
+    int32_t kmipkit_client_set_endpoint_role_with_options_v1(
+        kmipkit_client_t * client,
+        uint32_t endpoint_role,
+        const uint8_t * vendor_identification,
+        uint64_t vendor_identification_length,
+        kmipkit_codec_limits_t * limits,
+        const kmipkit_request_options_v1_t * options,
+        kmipkit_client_batch_item_response_t ** out_response);
+
+    /* Client Listener, Connection, Session, Server Batch */
+    typedef struct kmipkit_listener_transport_config_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        uint32_t flags;
+        uint16_t bind_port;
+        uint16_t reserved;
+        kmipkit_byte_span_v1_t bind_host;
+        const kmipkit_transport_input_v1_t * server_certificates;
+        uint64_t server_certificate_count;
+        kmipkit_transport_input_v1_t server_private_key;
+        const kmipkit_transport_input_v1_t * trust_certificates;
+        uint64_t trust_certificate_count;
+        kmipkit_timeout_limit_v1_t read_timeout;
+        kmipkit_timeout_limit_v1_t write_timeout;
+        uint64_t max_request_bytes;
+    } kmipkit_listener_transport_config_v1_t;
+
+    typedef struct kmipkit_listener_options_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_byte_span_v1_t target_path;
+        const kmipkit_transport_input_v1_t * revocation_lists;
+        uint64_t revocation_list_count;
+        uint32_t wire_encoding;
+        uint32_t reserved;
+    } kmipkit_listener_options_v1_t;
+
+    typedef struct kmipkit_client_listener_t kmipkit_client_listener_t;
+    typedef struct kmipkit_client_listener_connection_t kmipkit_client_listener_connection_t;
+    typedef struct kmipkit_role_reversed_session_t kmipkit_role_reversed_session_t;
+    typedef struct kmipkit_incoming_server_batch_t kmipkit_incoming_server_batch_t;
+
+    int32_t kmipkit_client_listener_bind_raw_tls(
+        const kmipkit_listener_transport_config_v1_t * config,
+        kmipkit_client_listener_t ** out_listener);
+    int32_t kmipkit_client_listener_bind_raw_tls_with_options_v1(
+        const kmipkit_listener_transport_config_v1_t * config,
+        const kmipkit_listener_options_v1_t * options,
+        kmipkit_client_listener_t ** out_listener);
+    int32_t kmipkit_client_listener_bind_https(
+        const kmipkit_listener_transport_config_v1_t * config,
+        kmipkit_client_listener_t ** out_listener);
+    int32_t kmipkit_client_listener_bind_https_with_options_v1(
+        const kmipkit_listener_transport_config_v1_t * config,
+        const kmipkit_listener_options_v1_t * options,
+        kmipkit_client_listener_t ** out_listener);
+    int32_t kmipkit_client_listener_get_port(
+        kmipkit_client_listener_t * listener,
+        uint16_t * out_port);
+    int32_t kmipkit_client_listener_accept(
+        kmipkit_client_listener_t * listener,
+        uint64_t timeout_ms,
+        kmipkit_client_listener_connection_t ** out_connection);
+    void kmipkit_client_listener_release(kmipkit_client_listener_t * listener);
+
+    int32_t kmipkit_client_listener_connection_recv_batch(
+        kmipkit_client_listener_connection_t * connection,
+        kmipkit_codec_limits_t * limits,
+        uint64_t timeout_ms,
+        kmipkit_incoming_server_batch_t ** out_batch);
+    int32_t kmipkit_client_listener_connection_send_response(
+        kmipkit_client_listener_connection_t * connection,
+        kmipkit_response_message_t * response,
+        uint64_t timeout_ms);
+    int32_t kmipkit_client_listener_connection_into_role_reversed(
+        kmipkit_client_listener_connection_t * connection,
+        kmipkit_role_reversed_session_t ** out_session);
+    int32_t kmipkit_client_listener_connection_close(
+        kmipkit_client_listener_connection_t * connection);
+    void kmipkit_client_listener_connection_release(
+        kmipkit_client_listener_connection_t * connection);
+
+    int32_t kmipkit_role_reversed_session_recv_batch(
+        kmipkit_role_reversed_session_t * session,
+        kmipkit_codec_limits_t * limits,
+        uint64_t timeout_ms,
+        kmipkit_incoming_server_batch_t ** out_batch);
+    int32_t kmipkit_role_reversed_session_send_response(
+        kmipkit_role_reversed_session_t * session,
+        kmipkit_response_message_t * response,
+        uint64_t timeout_ms);
+    int32_t kmipkit_role_reversed_session_close(
+        kmipkit_role_reversed_session_t * session);
+    void kmipkit_role_reversed_session_release(
+        kmipkit_role_reversed_session_t * session);
+
+    int32_t kmipkit_incoming_server_batch_decode(
+        const uint8_t * data,
+        uint64_t length,
+        uint32_t encoding,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_incoming_server_batch_t ** out_batch);
+    int32_t kmipkit_incoming_server_batch_decode_ttlv(
+        const uint8_t * data,
+        uint64_t length,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_incoming_server_batch_t ** out_batch);
+    int32_t kmipkit_incoming_server_batch_protocol_version(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t * out_major,
+        uint32_t * out_minor);
+    int32_t kmipkit_incoming_server_batch_item_count(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t * out_count);
+    int32_t kmipkit_incoming_server_batch_item_operation(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint32_t * out_operation);
+    int32_t kmipkit_incoming_server_batch_item_unique_batch_item_id(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint8_t * out_buffer,
+        uint64_t buffer_capacity,
+        uint64_t * out_written_len);
+    int32_t kmipkit_incoming_server_batch_item_discover_versions(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint32_t * out_versions,
+        uint32_t versions_capacity,
+        uint32_t * out_versions_count);
+    int32_t kmipkit_incoming_server_batch_item_notify(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint8_t * out_uid_buffer,
+        uint64_t uid_capacity,
+        uint64_t * out_uid_len);
+    int32_t kmipkit_incoming_server_batch_item_put(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint8_t * out_uid_buffer,
+        uint64_t uid_capacity,
+        uint64_t * out_uid_len,
+        uint32_t * out_put_function);
+    int32_t kmipkit_incoming_server_batch_item_put_v2(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint32_t * out_put_function,
+        uint8_t * out_uid_buffer,
+        uint64_t uid_capacity,
+        uint64_t * out_uid_len,
+        uint8_t * out_replaced_uid_buffer,
+        uint64_t replaced_uid_capacity,
+        uint64_t * out_replaced_uid_len,
+        kmipkit_ttlv_item_t ** out_object_item,
+        kmipkit_ttlv_structure_t ** out_attributes);
+    int32_t kmipkit_incoming_server_batch_item_query(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint32_t * out_query_function_flags);
+    int32_t kmipkit_incoming_server_batch_item_set_endpoint_role(
+        kmipkit_incoming_server_batch_t * batch,
+        uint32_t item_index,
+        uint32_t * out_endpoint_role);
+    void kmipkit_incoming_server_batch_release(
+        kmipkit_incoming_server_batch_t * batch);
+
+    /* S2C utilities and validation */
+    int32_t kmipkit_s2c_notify_request_validate(
+        kmipkit_request_batch_item_view_t * item);
+    int32_t kmipkit_s2c_put_request_validate(
+        kmipkit_request_batch_item_view_t * item);
+    int32_t kmipkit_s2c_query_request_validate(
+        kmipkit_request_batch_item_view_t * item);
+    int32_t kmipkit_s2c_discover_versions_request_validate(
+        kmipkit_request_batch_item_view_t * item);
+    int32_t kmipkit_s2c_build_response_ttlv(
+        int32_t major,
+        int32_t minor,
+        kmipkit_ttlv_structure_t * const * items,
+        uint64_t item_count,
+        kmipkit_ttlv_structure_t ** out_structure);
+    int32_t kmipkit_s2c_discover_versions_negotiate(
+        uint32_t requested_major,
+        uint32_t requested_minor,
+        const uint32_t * supported_versions,
+        uint32_t supported_count,
+        uint32_t * out_negotiated_major,
+        uint32_t * out_negotiated_minor);
+    int32_t kmipkit_s2c_discover_versions_negotiate_v2(
+        const kmipkit_protocol_version_v1_t * requested,
+        uint32_t requested_count,
+        const kmipkit_protocol_version_v1_t * supported,
+        uint32_t supported_count,
+        kmipkit_protocol_version_v1_t * output,
+        uint32_t output_capacity,
+        uint32_t * out_count);
+    int32_t kmipkit_s2c_put_effective_function(
+        uint32_t requested_put_function,
+        uint8_t replaced_object_exists_locally,
+        uint32_t * out_effective_put_function);
+    int32_t kmipkit_s2c_query_respond_ttlv(
+        uint32_t query_function_flags,
+        const uint8_t * vendor_id_data,
+        uint64_t vendor_id_len,
+        kmipkit_ttlv_structure_t ** out_structure);
+    typedef struct kmipkit_s2c_capabilities_v1_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        const uint32_t * operations;
+        uint32_t operations_count;
+        const uint32_t * object_types;
+        uint32_t object_types_count;
+        const uint8_t * vendor_identification_data;
+        uint64_t vendor_identification_length;
+        const uint32_t * extension_tags;
+        uint32_t extension_tags_count;
+        uint32_t reserved;
+    } kmipkit_s2c_capabilities_v1_t;
+
+    typedef struct kmipkit_s2c_capabilities_v2_t {
+        uint32_t struct_size;
+        uint32_t abi_version;
+        kmipkit_s2c_capabilities_v1_t base;
+        kmipkit_extension_information_t * const * extension_information;
+        uint32_t extension_information_count;
+        uint32_t reserved;
+    } kmipkit_s2c_capabilities_v2_t;
+
+    int32_t kmipkit_s2c_query_respond_with_capabilities_v1(
+        uint32_t query_function_flags,
+        const kmipkit_s2c_capabilities_v1_t * capabilities,
+        kmipkit_ttlv_structure_t ** out_structure);
+    int32_t kmipkit_s2c_query_respond_with_capabilities_v2(
+        uint32_t query_function_flags,
+        kmipkit_protocol_version_v1_t version,
+        const kmipkit_s2c_capabilities_v2_t * capabilities,
+        kmipkit_ttlv_structure_t ** out_structure);
+
+    /* ServerRequestDispatcher */
+    typedef struct kmipkit_server_request_dispatcher_t kmipkit_server_request_dispatcher_t;
+    int32_t kmipkit_server_request_dispatcher_create(
+        kmipkit_server_request_dispatcher_t ** out_dispatcher);
+    void kmipkit_server_request_dispatcher_release(
+        kmipkit_server_request_dispatcher_t * dispatcher);
+
+    /* LocateBuilder, RevokeBuilder, CreateKeyPairBuilder execute */
+    typedef struct kmipkit_locate_builder_t kmipkit_locate_builder_t;
+    int32_t kmipkit_locate_builder_create(
+        kmipkit_ttlv_structure_t * attributes,
+        kmipkit_locate_builder_t ** out_builder);
+    void kmipkit_locate_builder_release(kmipkit_locate_builder_t * builder);
+    int32_t kmipkit_locate_builder_execute_v1(
+        kmipkit_locate_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_client_batch_response_t ** out_response);
+    int32_t kmipkit_locate_builder_execute_with_options_v1(
+        kmipkit_locate_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        const kmipkit_request_options_v1_t * options,
+        kmipkit_client_batch_response_t ** out_response);
+    int32_t kmipkit_locate_builder_build_batch_item(
+        kmipkit_locate_builder_t * builder,
+        kmipkit_client_batch_item_t ** out_item);
+    int32_t kmipkit_locate_builder_validate(kmipkit_locate_builder_t * builder);
+    int32_t kmipkit_locate_builder_set_maximum_items(
+        kmipkit_locate_builder_t * builder,
+        int32_t maximum_items);
+    int32_t kmipkit_locate_builder_set_offset_items(
+        kmipkit_locate_builder_t * builder,
+        int32_t offset_items);
+    int32_t kmipkit_locate_builder_set_storage_status_mask(
+        kmipkit_locate_builder_t * builder,
+        uint32_t mask);
+    int32_t kmipkit_locate_builder_set_object_group_member(
+        kmipkit_locate_builder_t * builder,
+        uint32_t member);
+    int32_t kmipkit_locate_builder_set_asynchronous_indicator(
+        kmipkit_locate_builder_t * builder,
+        uint32_t value);
+
+    typedef struct kmipkit_revoke_builder_t kmipkit_revoke_builder_t;
+    int32_t kmipkit_revoke_builder_create(
+        uint32_t reason,
+        kmipkit_revoke_builder_t ** out_builder);
+    void kmipkit_revoke_builder_release(kmipkit_revoke_builder_t * builder);
+    int32_t kmipkit_revoke_builder_execute_v1(
+        kmipkit_revoke_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_client_batch_response_t ** out_response);
+    int32_t kmipkit_revoke_builder_execute_with_options_v1(
+        kmipkit_revoke_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        const kmipkit_request_options_v1_t * options,
+        kmipkit_client_batch_response_t ** out_response);
+    int32_t kmipkit_revoke_builder_build_batch_item(
+        kmipkit_revoke_builder_t * builder,
+        kmipkit_client_batch_item_t ** out_item);
+    int32_t kmipkit_revoke_builder_validate(kmipkit_revoke_builder_t * builder);
+    int32_t kmipkit_revoke_builder_set_unique_identifier(
+        kmipkit_revoke_builder_t * builder,
+        const kmipkit_unique_identifier_v1_t * id);
+    int32_t kmipkit_revoke_builder_set_revocation_message(
+        kmipkit_revoke_builder_t * builder,
+        kmipkit_byte_span_v1_t message);
+    int32_t kmipkit_revoke_builder_set_compromise_occurrence_date(
+        kmipkit_revoke_builder_t * builder,
+        int64_t timestamp);
+    int32_t kmipkit_revoke_builder_set_asynchronous_indicator(
+        kmipkit_revoke_builder_t * builder,
+        uint8_t asynchronous);
+
+    int32_t kmipkit_create_key_pair_builder_execute_v1(
+        kmipkit_create_key_pair_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        kmipkit_client_batch_item_response_t ** out_response);
+    int32_t kmipkit_create_key_pair_builder_execute_with_options_v1(
+        kmipkit_create_key_pair_builder_t * builder,
+        kmipkit_client_t * client,
+        kmipkit_codec_limits_t * limits,
+        const kmipkit_request_options_v1_t * options,
+        kmipkit_client_batch_item_response_t ** out_response);
     """
 )
 
