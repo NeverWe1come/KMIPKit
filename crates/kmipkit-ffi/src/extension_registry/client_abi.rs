@@ -10015,7 +10015,13 @@ fn encode_ttlv_item_bytes(item: &kmipkit_ttlv::Item, out: &mut Vec<u8>) {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_incoming_server_batch_item_put_v2(
+/// Reads the `Put` request fields for an incoming server batch item.
+///
+/// # Safety
+/// `batch` must be null or a valid live batch handle. Every non-null output
+/// pointer must be writable for its declared value, and each non-null UID
+/// buffer must be writable for its declared capacity.
+pub unsafe extern "C" fn kmipkit_incoming_server_batch_item_put_v2(
     batch: *mut kmipkit_incoming_server_batch_t,
     item_index: u32,
     out_put_function: *mut u32,
@@ -10126,19 +10132,23 @@ pub extern "C" fn kmipkit_incoming_server_batch_item_put(
     out_put_function: *mut u32,
 ) -> i32 {
     ffi_entrypoint(|| {
-        kmipkit_incoming_server_batch_item_put_v2(
-            batch,
-            item_index,
-            out_put_function,
-            out_uid_buffer,
-            uid_capacity,
-            out_uid_len,
-            ptr::null_mut(),
-            0,
-            ptr::null_mut(),
-            ptr::null_mut(),
-            ptr::null_mut(),
-        )
+        // SAFETY: null output pointers are permitted; non-null outputs inherit
+        // the writable-pointer requirements of this function's safety contract.
+        unsafe {
+            kmipkit_incoming_server_batch_item_put_v2(
+                batch,
+                item_index,
+                out_put_function,
+                out_uid_buffer,
+                uid_capacity,
+                out_uid_len,
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            )
+        }
     })
 }
 
