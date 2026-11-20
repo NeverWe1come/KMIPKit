@@ -16,6 +16,13 @@ Decision records, feature-design documents, Spec Kit plans, and agent process gu
 
 The [English guides](user-guide/en/) and [Spanish guides](user-guide/es/) explain client execution, protocol messages, operations, transports, bindings, and diagnostics.
 
+## Language bindings
+
+The [bindings index](../bindings/README.md) links the common documentation layout
+for [C](../bindings/c/README.md), [Java](../bindings/java/README.md), and
+[Python](../bindings/python/README.md). Each includes installation, native library
+handling, testing, and examples adapted to that language.
+
 ## Development
 
 - [Rust workspace](development/rust-workspace.md)

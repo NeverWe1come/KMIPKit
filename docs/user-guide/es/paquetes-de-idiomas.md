@@ -109,8 +109,8 @@ cargada mediante `kmipkit_version_get`. Requiere ABI 1. La propiedad explícita
 de administrador `-Dkmipkit.nativeLibrary=<ruta>` sustituye la selección del
 recurso incluido. Se considera código ejecutable confiable; si la ruta no es
 válida, falla sin volver al recurso empaquetado. El cargador no busca en
-`java.library.path` ni descarga bibliotecas. Consulta la carga nativa de
-Java para conocer
+`java.library.path` ni descarga bibliotecas. Consulta la [carga nativa de
+Java](../../../bindings/java/docs/native-library.md) para conocer
 los detalles de permisos y verificación del sistema de archivos.
 
 Python carga el único archivo regular `.dll`, `.dylib` o `.so` situado junto

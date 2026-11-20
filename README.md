@@ -33,6 +33,9 @@ Start with the [documentation index](docs/README.md). Contributors can also
 read the repository's [contribution guide](CONTRIBUTING.md) and
 [governance](GOVERNANCE.md).
 
+The [bindings index](bindings/README.md) provides installation, native library,
+testing, and example guides for C, Java, and Python.
+
 ## Español
 
 KMIPKit es una biblioteca cliente KMIP de código abierto, con núcleo Rust,

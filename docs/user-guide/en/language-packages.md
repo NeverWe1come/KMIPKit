@@ -109,8 +109,9 @@ private temporary directory, and checks the loaded library through
 `-Dkmipkit.nativeLibrary=<path>` administrator property replaces the bundled
 library selection. It is trusted executable code; an invalid override fails
 with no fallback to the packaged library. The loader does not search
-`java.library.path` or download a library. See Java native loading
-for the filesystem and verification details.
+`java.library.path` or download a library. See
+[Java native loading](../../../bindings/java/docs/native-library.md) for the
+filesystem and verification details.
 
 Python loads the single regular `.dll`, `.dylib`, or `.so` adjacent to the
 installed package's generated CFFI declarations. Symlinks and missing or
