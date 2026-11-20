@@ -75,7 +75,12 @@ pub fn generate_gcm_nonce() -> Result<[u8; 12], openssl::error::ErrorStack> {
 }
 
 /// Generates a hex-encoded random identifier with the given prefix.
-#[cfg(any(feature = "vault", feature = "infisical", feature = "ibm", feature = "alibaba"))]
+#[cfg(any(
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba"
+))]
 pub fn random_identifier(prefix: &str) -> Result<String, ProxyError> {
     let mut random = [0u8; 16];
     fill_random_bytes(&mut random)
