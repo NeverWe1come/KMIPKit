@@ -26,6 +26,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust toolchain
         run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
 

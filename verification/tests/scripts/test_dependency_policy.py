@@ -101,7 +101,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
         ttlv_manifest = root / "crates" / "kmipkit-ttlv" / "Cargo.toml"
         ttlv_manifest.parent.mkdir(parents=True)
         ttlv_manifest.write_text("[package]\nname = 'kmipkit-ttlv'\n", encoding="utf-8")
-        fuzz_manifest = root / "fuzz" / "Cargo.toml"
+        fuzz_manifest = root / "verification" / "security" / "fuzz" / "Cargo.toml"
         fuzz_manifest.parent.mkdir(parents=True)
         fuzz_manifest.write_text("[package]\nname = 'kmipkit-ttlv-fuzz'\n", encoding="utf-8")
 
@@ -110,7 +110,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
         fuzz_package = package("kmipkit-ttlv-fuzz", "0.0.0", fuzz_manifest)
         metadata_by_workspace = {
             "root": workspace_metadata(root, [root_package, ttlv_package], [root_package, ttlv_package]),
-            "fuzz": workspace_metadata(root / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
+            "fuzz": workspace_metadata(root / "verification" / "security" / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
         }
         return ttlv_manifest, metadata_by_workspace
 
@@ -379,7 +379,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
         if not deny_config.is_file() or not deny:
             self.skipTest("the candidate scan runs only with the pinned cargo-deny from the policy runner")
 
-        lockfile = REPOSITORY_ROOT / "fuzz" / "Cargo.lock"
+        lockfile = REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.lock"
         before = lockfile.read_bytes()
         completed = subprocess.run(
             [
@@ -423,7 +423,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
         workspaces = (
             ("root", REPOSITORY_ROOT / "Cargo.toml", REPOSITORY_ROOT / "Cargo.lock"),
-            ("fuzz", REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.toml", REPOSITORY_ROOT / "fuzz" / "Cargo.lock"),
+            ("fuzz", REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.toml", REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.lock"),
         )
 
         def snapshot(lockfile: Path) -> tuple[bytes, frozenset[str]]:
@@ -591,7 +591,7 @@ class DependencyExceptionTests(unittest.TestCase):
             ttlv_manifest = root / "crates" / "kmipkit-ttlv" / "Cargo.toml"
             ttlv_manifest.parent.mkdir(parents=True)
             ttlv_manifest.write_text("[package]\nname = 'kmipkit-ttlv'\n", encoding="utf-8")
-            fuzz_manifest = root / "fuzz" / "Cargo.toml"
+            fuzz_manifest = root / "verification" / "security" / "fuzz" / "Cargo.toml"
             fuzz_manifest.parent.mkdir(parents=True)
             fuzz_manifest.write_text("[package]\nname = 'kmipkit-ttlv-fuzz'\n", encoding="utf-8")
             root_package = package("kmipkit", "1.0.0", root / "Cargo.toml")
@@ -601,7 +601,7 @@ class DependencyExceptionTests(unittest.TestCase):
                 "root": workspace_metadata(
                     root, [root_package, ttlv_package], [root_package, ttlv_package]
                 ),
-                "fuzz": workspace_metadata(root / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
+                "fuzz": workspace_metadata(root / "verification" / "security" / "fuzz", [fuzz_package, ttlv_package], [fuzz_package]),
             }
             root_metadata = root / "root.json"
             fuzz_metadata = root / "fuzz.json"

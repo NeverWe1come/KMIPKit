@@ -137,6 +137,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Run focused classifier and normative catalog checks
@@ -203,6 +204,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust toolchain and components
@@ -296,6 +298,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Set up Python 3.12
@@ -489,6 +492,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -612,6 +616,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -723,6 +728,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -802,6 +808,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install nightly Rust
@@ -876,6 +883,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Run the JNI zeroization owner test under native sanitizers
@@ -1153,6 +1161,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install stable Rust
@@ -1412,6 +1421,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -1505,6 +1515,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -1601,6 +1612,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
@@ -1827,6 +1839,7 @@ jobs:
           persist-credentials: false
 
       - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
         uses: ./.github/actions/setup-static-openssl
 
       - name: Install nightly Rust
