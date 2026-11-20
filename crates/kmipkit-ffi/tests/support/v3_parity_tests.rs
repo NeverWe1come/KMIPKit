@@ -1,8 +1,9 @@
 use super::*;
 use std::ptr;
 use crate::{
-    kmipkit_s2c_capabilities_v1_t, kmipkit_server_request_handler_v1_t,
-    kmipkit_server_request_handler_v2_t, KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER,
+    kmipkit_s2c_capabilities_v1_t, kmipkit_s2c_operation_result_v1_t,
+    kmipkit_server_request_handler_v1_t, kmipkit_server_request_handler_v2_t,
+    kmipkit_server_request_handler_v3_t, KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER,
     KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
 };
 
@@ -370,6 +371,76 @@ static PUT_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool
 static QUERY_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static PUT_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static QUERY_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static PUT_V3_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static QUERY_V3_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+static FAIL_MSG: &[u8] = b"Custom Failure From C Handler";
+
+unsafe extern "C" fn test_put_callback_v3(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    put_function: u32,
+    _unique_identifier_data: *const u8,
+    _unique_identifier_length: u64,
+    _replaced_unique_identifier_data: *const u8,
+    _replaced_unique_identifier_length: u64,
+    _object_ttlv_data: *const u8,
+    _object_ttlv_length: u64,
+    _attributes_ttlv_data: *const u8,
+    _attributes_ttlv_length: u64,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert_eq!(put_function, 2);
+    assert!(!out_result.is_null());
+    PUT_V3_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
+
+unsafe extern "C" fn test_put_callback_v3_fail(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    _put_function: u32,
+    _unique_identifier_data: *const u8,
+    _unique_identifier_length: u64,
+    _replaced_unique_identifier_data: *const u8,
+    _replaced_unique_identifier_length: u64,
+    _object_ttlv_data: *const u8,
+    _object_ttlv_length: u64,
+    _attributes_ttlv_data: *const u8,
+    _attributes_ttlv_length: u64,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert!(!out_result.is_null());
+    let res = unsafe { &mut *out_result };
+    res.result_status = 1; // OperationFailed
+    res.has_result_reason = 1;
+    res.result_reason = 0x01; // ItemNotFound
+    res.result_message_data = FAIL_MSG.as_ptr();
+    res.result_message_length = FAIL_MSG.len() as u64;
+    1
+}
+
+unsafe extern "C" fn test_query_callback_v3(
+    _user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    query_function_flags: u32,
+    out_capabilities: *mut kmipkit_s2c_capabilities_v1_t,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert!(query_function_flags & 0x01 != 0);
+    assert!(!out_capabilities.is_null());
+    assert!(!out_result.is_null());
+    let caps = unsafe { &mut *out_capabilities };
+    caps.operations = CUSTOM_QUERY_OPS.as_ptr();
+    caps.operations_count = CUSTOM_QUERY_OPS.len() as u32;
+    caps.object_types = CUSTOM_QUERY_OTS.as_ptr();
+    caps.object_types_count = CUSTOM_QUERY_OTS.len() as u32;
+    caps.vendor_identification_data = CUSTOM_QUERY_VENDOR.as_ptr();
+    caps.vendor_identification_length = CUSTOM_QUERY_VENDOR.len() as u64;
+
+    QUERY_V3_CALLED.store(true, std::sync::atomic::Ordering::SeqCst);
+    0
+}
 
 unsafe extern "C" fn test_put_callback(
     _user_data: *mut core::ffi::c_void,
@@ -612,7 +683,71 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     assert!(!response_v2.is_null());
     kmipkit_response_message_release(response_v2);
 
-    // 3. Test ABI validation and version mismatch
+    // 3. Test dispatch_v3 with kmipkit_server_request_handler_v3_t (Success)
+    let handler_v3 = kmipkit_server_request_handler_v3_t {
+        struct_size: std::mem::size_of::<kmipkit_server_request_handler_v3_t>() as u32,
+        abi_version: 3,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: Some(test_put_callback_v3),
+        handle_query: Some(test_query_callback_v3),
+        handle_set_endpoint_role: None,
+    };
+
+    let mut response_v3 = ptr::null_mut();
+    PUT_V3_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+    QUERY_V3_CALLED.store(false, std::sync::atomic::Ordering::SeqCst);
+
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v3(
+            dispatcher,
+            batch,
+            &handler_v3,
+            &mut response_v3,
+        ),
+        SUCCESS
+    );
+    assert!(PUT_V3_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(QUERY_V3_CALLED.load(std::sync::atomic::Ordering::SeqCst));
+    assert!(!response_v3.is_null());
+    kmipkit_response_message_release(response_v3);
+
+    // 4. Test dispatch_v3 with failure handler setting custom out_result (status, reason, message)
+    let fail_handler_v3 = kmipkit_server_request_handler_v3_t {
+        struct_size: std::mem::size_of::<kmipkit_server_request_handler_v3_t>() as u32,
+        abi_version: 3,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: Some(test_put_callback_v3_fail),
+        handle_query: Some(test_query_callback_v3),
+        handle_set_endpoint_role: None,
+    };
+
+    let mut fail_resp = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v3(
+            dispatcher,
+            batch,
+            &fail_handler_v3,
+            &mut fail_resp,
+        ),
+        SUCCESS
+    );
+    assert!(!fail_resp.is_null());
+    let resp_handle = reference_handle(fail_resp, Kind::ResponseMessage).expect("response message handle");
+    let HandleValue::ResponseMessage(resp_msg) = &resp_handle.value else {
+        panic!("expected ResponseMessage");
+    };
+    let items: Vec<_> = resp_msg.batch_items().collect();
+    assert_eq!(items.len(), 2);
+    assert_eq!(items[0].result_status(), Some(kmipkit_protocol::ResultStatus::from_raw(1)));
+    assert_eq!(items[0].result_reason(), Some(kmipkit_protocol::ResultReason::from_raw(0x01)));
+    items[0].with_result_message(|msg| assert_eq!(msg, "Custom Failure From C Handler"));
+    kmipkit_response_message_release(fail_resp);
+
+    // 5. Test ABI validation and version mismatch
     let mut invalid_handler_v1 = handler_v1;
     invalid_handler_v1.abi_version = 2;
     let mut resp = ptr::null_mut();
@@ -633,6 +768,30 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
             dispatcher,
             batch,
             &invalid_handler_v2,
+            &mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut invalid_handler_v3 = handler_v3;
+    invalid_handler_v3.abi_version = 2;
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v3(
+            dispatcher,
+            batch,
+            &invalid_handler_v3,
+            &mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut invalid_handler_v3_size = handler_v3;
+    invalid_handler_v3_size.struct_size = 0;
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v3(
+            dispatcher,
+            batch,
+            &invalid_handler_v3_size,
             &mut resp,
         ),
         ERROR_INVALID_INPUT

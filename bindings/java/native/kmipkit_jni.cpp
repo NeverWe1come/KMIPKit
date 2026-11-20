@@ -15616,31 +15616,158 @@ struct S2cCallbackContext {
     std::vector<uint32_t> custom_ots;
     std::vector<uint32_t> custom_exts;
     std::vector<uint8_t> custom_vendor;
+    std::vector<uint8_t> result_message_buf;
 };
 
-static inline uint32_t normalize_s2c_callback_status(JNIEnv* env, jlong result) {
+static uint32_t populate_s2c_operation_result(
+        JNIEnv* env,
+        S2cCallbackContext* ctx,
+        jobject jResult,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
+    if (out_result != nullptr) {
+        out_result->struct_size = static_cast<uint32_t>(sizeof(kmipkit_s2c_operation_result_v1_t));
+        out_result->abi_version = 1;
+        out_result->reserved = 0;
+        out_result->result_message_data = nullptr;
+        out_result->result_message_length = 0;
+    }
+
     if (env->ExceptionCheck()) {
         env->ExceptionClear();
+        if (out_result != nullptr) {
+            out_result->result_status = 1U;
+            out_result->has_result_reason = 1U;
+            out_result->result_reason = 0x0BU; // GeneralFailure
+            static const char kExceptionMsg[] = "Handler exception";
+            ctx->result_message_buf.assign(kExceptionMsg, kExceptionMsg + sizeof(kExceptionMsg) - 1);
+            out_result->result_message_data = ctx->result_message_buf.data();
+            out_result->result_message_length = static_cast<uint64_t>(ctx->result_message_buf.size());
+        }
         return 1U;
     }
-    if (result < 0 || result > 0xFFFF'FFFFLL) {
+
+    if (jResult == nullptr) {
+        if (out_result != nullptr) {
+            out_result->result_status = 1U;
+            out_result->has_result_reason = 1U;
+            out_result->result_reason = 0x0BU; // GeneralFailure
+            static const char kNullMsg[] = "Handler returned null";
+            ctx->result_message_buf.assign(kNullMsg, kNullMsg + sizeof(kNullMsg) - 1);
+            out_result->result_message_data = ctx->result_message_buf.data();
+            out_result->result_message_length = static_cast<uint64_t>(ctx->result_message_buf.size());
+        }
         return 1U;
     }
-    return static_cast<uint32_t>(result);
+
+    jclass result_class = env->GetObjectClass(jResult);
+    jmethodID status_mid = env->GetMethodID(result_class, "status", "()J");
+    jmethodID reason_mid = env->GetMethodID(result_class, "reason", "()Ljava/util/Optional;");
+    jmethodID msg_mid = env->GetMethodID(result_class, "message", "()Ljava/util/Optional;");
+
+    jlong raw_status = env->CallLongMethod(jResult, status_mid);
+    if (env->ExceptionCheck()) {
+        env->ExceptionClear();
+        env->DeleteLocalRef(result_class);
+        if (out_result != nullptr) {
+            out_result->result_status = 1U;
+            out_result->has_result_reason = 1U;
+            out_result->result_reason = 0x0BU;
+        }
+        return 1U;
+    }
+
+    uint32_t status = 0;
+    if (raw_status < 0 || raw_status > 0xFFFF'FFFFLL) {
+        status = 1U;
+    } else {
+        status = static_cast<uint32_t>(raw_status);
+    }
+    if (out_result != nullptr) {
+        out_result->result_status = status;
+    }
+
+    jobject jReasonOpt = env->CallObjectMethod(jResult, reason_mid);
+    jobject jMsgOpt = env->CallObjectMethod(jResult, msg_mid);
+
+    if (env->ExceptionCheck()) {
+        env->ExceptionClear();
+        if (jReasonOpt != nullptr) env->DeleteLocalRef(jReasonOpt);
+        if (jMsgOpt != nullptr) env->DeleteLocalRef(jMsgOpt);
+        env->DeleteLocalRef(result_class);
+        if (out_result != nullptr) {
+            out_result->result_status = 1U;
+            out_result->has_result_reason = 1U;
+            out_result->result_reason = 0x0BU;
+        }
+        return 1U;
+    }
+
+    jclass opt_class = env->FindClass("java/util/Optional");
+    jmethodID is_present_mid = env->GetMethodID(opt_class, "isPresent", "()Z");
+    jmethodID get_mid = env->GetMethodID(opt_class, "get", "()Ljava/lang/Object;");
+
+    if (out_result != nullptr) {
+        if (jReasonOpt != nullptr && env->CallBooleanMethod(jReasonOpt, is_present_mid)) {
+            jobject jReasonLong = env->CallObjectMethod(jReasonOpt, get_mid);
+            if (jReasonLong != nullptr) {
+                jclass long_class = env->GetObjectClass(jReasonLong);
+                jmethodID long_val_mid = env->GetMethodID(long_class, "longValue", "()J");
+                jlong r_val = env->CallLongMethod(jReasonLong, long_val_mid);
+                env->DeleteLocalRef(long_class);
+                env->DeleteLocalRef(jReasonLong);
+                out_result->has_result_reason = 1U;
+                out_result->result_reason = (r_val >= 0 && r_val <= 0xFFFF'FFFFLL) ? static_cast<uint32_t>(r_val) : 0x0BU;
+            } else {
+                out_result->has_result_reason = 0U;
+                out_result->result_reason = 0U;
+            }
+        } else {
+            out_result->has_result_reason = 0U;
+            out_result->result_reason = 0U;
+        }
+
+        if (out_result->result_status == 1U && out_result->has_result_reason == 0U) {
+            out_result->has_result_reason = 1U;
+            out_result->result_reason = 0x0BU;
+        }
+
+        if (jMsgOpt != nullptr && env->CallBooleanMethod(jMsgOpt, is_present_mid)) {
+            jstring jMsg = static_cast<jstring>(env->CallObjectMethod(jMsgOpt, get_mid));
+            if (jMsg != nullptr) {
+                const char* utf = env->GetStringUTFChars(jMsg, nullptr);
+                jsize ulen = env->GetStringUTFLength(jMsg);
+                if (utf != nullptr) {
+                    ctx->result_message_buf.assign(utf, utf + ulen);
+                    env->ReleaseStringUTFChars(jMsg, utf);
+                    out_result->result_message_data = ctx->result_message_buf.data();
+                    out_result->result_message_length = static_cast<uint64_t>(ctx->result_message_buf.size());
+                }
+                env->DeleteLocalRef(jMsg);
+            }
+        }
+    }
+
+    if (jReasonOpt != nullptr) env->DeleteLocalRef(jReasonOpt);
+    if (jMsgOpt != nullptr) env->DeleteLocalRef(jMsgOpt);
+    env->DeleteLocalRef(opt_class);
+    env->DeleteLocalRef(result_class);
+
+    return status == 0U ? 0U : 1U;
 }
 
-static uint32_t s2c_handle_discover_versions(
+static uint32_t s2c_handle_discover_versions_v3(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         uint32_t protocol_version_major, uint32_t protocol_version_minor,
         uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
-        uint32_t* supported_versions_count_out) {
+        uint32_t* supported_versions_count_out,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
     jclass handler_class = env->GetObjectClass(ctx->handler);
     if (handler_class == nullptr) {
         if (env->ExceptionCheck()) env->ExceptionClear();
-        return 1;
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
     }
 
     jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
@@ -15664,9 +15791,10 @@ static uint32_t s2c_handle_discover_versions(
     jobject list_obj = env->NewObject(list_class, list_init);
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handleDiscoverVersions",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;Lorg/kmipkit/protocol/VersionGate$ProtocolVersion;Ljava/util/List;)J");
-    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj, client_pv, list_obj);
-    uint32_t status = normalize_s2c_callback_status(env, result);
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;Lorg/kmipkit/protocol/VersionGate$ProtocolVersion;Ljava/util/List;)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj, client_pv, list_obj);
+    uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
+    if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
     if (status == 0) {
         jmethodID list_size = env->GetMethodID(list_class, "size", "()I");
@@ -15717,17 +15845,28 @@ static uint32_t s2c_handle_discover_versions(
     return status;
 }
 
-static uint32_t s2c_handle_notify(
+static uint32_t s2c_handle_discover_versions(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t protocol_version_major, uint32_t protocol_version_minor,
+        uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
+        uint32_t* supported_versions_count_out) {
+    return s2c_handle_discover_versions_v3(user_data, item_view, protocol_version_major, protocol_version_minor,
+            supported_versions_out, supported_versions_capacity, supported_versions_count_out, nullptr);
+}
+
+static uint32_t s2c_handle_notify_v3(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
-        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
     jclass handler_class = env->GetObjectClass(ctx->handler);
     if (handler_class == nullptr) {
         if (env->ExceptionCheck()) env->ExceptionClear();
-        return 1;
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
     }
 
     jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
@@ -15756,9 +15895,10 @@ static uint32_t s2c_handle_notify(
     }
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handleNotify",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;[B[B)J");
-    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj, uid_arr, attr_arr);
-    uint32_t status = normalize_s2c_callback_status(env, result);
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;[B[B)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj, uid_arr, attr_arr);
+    uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
+    if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
     if (uid_arr != nullptr) env->DeleteLocalRef(uid_arr);
     if (attr_arr != nullptr) env->DeleteLocalRef(attr_arr);
@@ -15769,20 +15909,30 @@ static uint32_t s2c_handle_notify(
     return status;
 }
 
-static uint32_t s2c_handle_put(
+static uint32_t s2c_handle_notify(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+    return s2c_handle_notify_v3(user_data, item_view, unique_identifier_data, unique_identifier_length,
+            attributes_ttlv_data, attributes_ttlv_length, nullptr);
+}
+
+static uint32_t s2c_handle_put_v3(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         uint32_t put_function,
         const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
         const uint8_t* replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length,
         const uint8_t* object_ttlv_data, uint64_t object_ttlv_length,
-        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
     jclass handler_class = env->GetObjectClass(ctx->handler);
     if (handler_class == nullptr) {
         if (env->ExceptionCheck()) env->ExceptionClear();
-        return 1;
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
     }
 
     jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
@@ -15809,10 +15959,11 @@ static uint32_t s2c_handle_put(
     jbyteArray attr_arr = make_arr(attributes_ttlv_data, attributes_ttlv_length);
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handlePut",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J[B[B[B[B)J");
-    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J[B[B[B[B)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj,
             static_cast<jlong>(put_function), uid_arr, rep_arr, obj_arr, attr_arr);
-    uint32_t status = normalize_s2c_callback_status(env, result);
+    uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
+    if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
     if (uid_arr != nullptr) env->DeleteLocalRef(uid_arr);
     if (rep_arr != nullptr) env->DeleteLocalRef(rep_arr);
@@ -15825,17 +15976,33 @@ static uint32_t s2c_handle_put(
     return status;
 }
 
-static uint32_t s2c_handle_query(
+static uint32_t s2c_handle_put(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t put_function,
+        const uint8_t* unique_identifier_data, uint64_t unique_identifier_length,
+        const uint8_t* replaced_unique_identifier_data, uint64_t replaced_unique_identifier_length,
+        const uint8_t* object_ttlv_data, uint64_t object_ttlv_length,
+        const uint8_t* attributes_ttlv_data, uint64_t attributes_ttlv_length) {
+    return s2c_handle_put_v3(user_data, item_view, put_function,
+            unique_identifier_data, unique_identifier_length,
+            replaced_unique_identifier_data, replaced_unique_identifier_length,
+            object_ttlv_data, object_ttlv_length,
+            attributes_ttlv_data, attributes_ttlv_length, nullptr);
+}
+
+static uint32_t s2c_handle_query_v3(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         uint32_t query_function_flags,
-        kmipkit_s2c_capabilities_v1_t* out_capabilities) {
+        kmipkit_s2c_capabilities_v1_t* out_capabilities,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
     jclass handler_class = env->GetObjectClass(ctx->handler);
     if (handler_class == nullptr) {
         if (env->ExceptionCheck()) env->ExceptionClear();
-        return 1;
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
     }
 
     jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
@@ -15855,10 +16022,11 @@ static uint32_t s2c_handle_query(
     jobject caps_obj = env->NewObject(caps_class, caps_init);
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handleQuery",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;JLorg/kmipkit/extensions/S2cCapabilities;)J");
-    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;JLorg/kmipkit/extensions/S2cCapabilities;)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj,
             static_cast<jlong>(query_function_flags), caps_obj);
-    uint32_t status = normalize_s2c_callback_status(env, result);
+    uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
+    if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
     if (status == 0) {
         jclass list_class = env->FindClass("java/util/List");
@@ -15948,16 +16116,25 @@ static uint32_t s2c_handle_query(
     return status;
 }
 
-static uint32_t s2c_handle_set_endpoint_role(
+static uint32_t s2c_handle_query(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
-        uint32_t target_role) {
+        uint32_t query_function_flags,
+        kmipkit_s2c_capabilities_v1_t* out_capabilities) {
+    return s2c_handle_query_v3(user_data, item_view, query_function_flags, out_capabilities, nullptr);
+}
+
+static uint32_t s2c_handle_set_endpoint_role_v3(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t target_role,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
     jclass handler_class = env->GetObjectClass(ctx->handler);
     if (handler_class == nullptr) {
         if (env->ExceptionCheck()) env->ExceptionClear();
-        return 1;
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
     }
 
     jclass item_view_class = env->FindClass("org/kmipkit/extensions/ServerRequestHandler$ItemView");
@@ -15973,16 +16150,24 @@ static uint32_t s2c_handle_set_endpoint_role(
     if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handleSetEndpointRole",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J)J");
-    jlong result = env->CallLongMethod(ctx->handler, handle_method, item_obj,
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;J)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj,
             static_cast<jlong>(target_role));
-    uint32_t status = normalize_s2c_callback_status(env, result);
+    uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
+    if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
     env->DeleteLocalRef(item_obj);
     env->DeleteLocalRef(item_view_class);
     env->DeleteLocalRef(handler_class);
 
     return status;
+}
+
+static uint32_t s2c_handle_set_endpoint_role(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t target_role) {
+    return s2c_handle_set_endpoint_role_v3(user_data, item_view, target_role, nullptr);
 }
 
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDispatcherDispatchV2(
@@ -15992,7 +16177,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}};
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}};
         kmipkit_server_request_handler_v2_t handler_v2{};
         handler_v2.struct_size = static_cast<uint32_t>(sizeof(handler_v2));
         handler_v2.abi_version = 2;
@@ -16008,6 +16193,33 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
                     from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
                     from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
                     &handler_v2, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDispatcherDispatchV3(
+        JNIEnv* env, jclass, jlong raw_dispatcher, jlong raw_batch, jobject handler) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_dispatcher == 0 || raw_batch == 0 || handler == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}};
+        kmipkit_server_request_handler_v3_t handler_v3{};
+        handler_v3.struct_size = static_cast<uint32_t>(sizeof(handler_v3));
+        handler_v3.abi_version = 3;
+        handler_v3.user_data = &ctx;
+        handler_v3.handle_discover_versions = s2c_handle_discover_versions_v3;
+        handler_v3.handle_notify = s2c_handle_notify_v3;
+        handler_v3.handle_put = s2c_handle_put_v3;
+        handler_v3.handle_query = s2c_handle_query_v3;
+        handler_v3.handle_set_endpoint_role = s2c_handle_set_endpoint_role_v3;
+
+        return return_handle<kmipkit_response_message_t>(env, [&](auto output) {
+            return kmipkit_server_request_dispatcher_dispatch_v3(
+                    from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
+                    from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
+                    &handler_v3, output);
         });
     });
 }

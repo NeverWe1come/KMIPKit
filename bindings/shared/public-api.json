@@ -709609,6 +709609,15 @@
       "declarationState": "declared"
     },
     {
+      "declarationId": "Dynamic:kmipkit_server_request_dispatcher_dispatch_v3",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_request_dispatcher_dispatch_v3",
+      "capabilityId": "c_parity_coverage",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
       "declarationId": "Dynamic:kmipkit_server_request_dispatcher_release",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",

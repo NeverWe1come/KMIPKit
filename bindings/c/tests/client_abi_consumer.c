@@ -7931,6 +7931,14 @@ static int s2c_abi_is_callable_from_c(void) {
         return 0;
     }
 
+    kmipkit_server_request_handler_v3_t handler_v3;
+    memset(&handler_v3, 0, sizeof(handler_v3));
+    handler_v3.struct_size = (uint32_t)sizeof(handler_v3);
+    handler_v3.abi_version = 3;
+    if (kmipkit_server_request_dispatcher_dispatch_v3(dispatcher, NULL, &handler_v3, NULL) == 0) {
+        return 0;
+    }
+
     kmipkit_server_request_dispatcher_release(dispatcher);
 
     kmipkit_client_listener_t *listener = NULL;

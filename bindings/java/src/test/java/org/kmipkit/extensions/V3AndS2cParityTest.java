@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.message.ResponseBatchItemView;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.protocol.EphemeralMode;
@@ -21,18 +22,39 @@ import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManagerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -321,9 +343,9 @@ class V3AndS2cParityTest {
     private static byte[] buildFullS2cBatchBytes() throws Exception {
         // 1. Put request payload (Operation 0x0000001C)
         ByteArrayOutputStream putPayload = new ByteArrayOutputStream();
-        putPayload.writeBytes(ttlvTestItem(0x00420126, 0x05, intVal(2))); // PutFunction = Replace (2)
+        putPayload.writeBytes(ttlvTestItem(0x00420070, 0x05, intVal(2))); // PutFunction = Replace (2)
         putPayload.writeBytes(ttlvTestItem(0x00420094, 0x07, "sym-key-uid".getBytes(StandardCharsets.UTF_8))); // UniqueIdentifier
-        putPayload.writeBytes(ttlvTestItem(0x00420127, 0x07, "replaced-sym-uid".getBytes(StandardCharsets.UTF_8))); // ReplacedUniqueIdentifier
+        putPayload.writeBytes(ttlvTestItem(0x00420076, 0x07, "replaced-sym-uid".getBytes(StandardCharsets.UTF_8))); // ReplacedUniqueIdentifier
         byte[] keyBlock = ttlvTestItem(0x0042008E, 0x08, new byte[] {0x01, 0x02, 0x03, 0x04});
         byte[] symKey = ttlvTestItem(0x0042008F, 0x01, keyBlock);
         putPayload.writeBytes(symKey);
@@ -422,53 +444,60 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler handler = new ServerRequestHandler() {
                 @Override
-                public long handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
                     discCalled.set(true);
                     assertEquals(2, clientVersion.major());
                     assertEquals(1, clientVersion.minor());
                     supportedVersionsOut.add(new ProtocolVersion(2, 1));
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
                     notifyCalled.set(true);
                     assertNotNull(uniqueIdentifier);
                     assertEquals("notify-uid", new String(uniqueIdentifier, StandardCharsets.UTF_8));
                     assertNotNull(attributesTtlv);
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
                     putCalled.set(true);
                     assertEquals(2L, putFunction);
                     assertEquals("sym-key-uid", new String(uniqueIdentifier, StandardCharsets.UTF_8));
                     assertEquals("replaced-sym-uid", new String(replacedUniqueIdentifier, StandardCharsets.UTF_8));
                     assertNotNull(objectTtlv);
                     assertNotNull(attributesTtlv);
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
                     queryCalled.set(true);
                     outCapabilities.operations(List.of(0x0000001CL, 0x00000018L))
                             .objectTypes(List.of(0x01L, 0x02L))
                             .vendorIdentification("KMIPKitJavaQuery");
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleSetEndpointRole(ItemView item, long targetRole) {
+                public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
                     roleCalled.set(true);
                     assertEquals(2L, targetRole);
-                    return 0;
+                    return S2cOperationResult.success();
                 }
             };
 
             try (ResponseMessage response = dispatcher.dispatch(batch, handler)) {
                 assertNotNull(response);
+                assertEquals(5, response.batchItemCount());
+                for (int i = 0; i < 5; i++) {
+                    try (ResponseBatchItemView item = response.batchItemAt(i)) {
+                        assertEquals(0L, item.resultStatus().orElseThrow(), "Item " + i + " resultStatus failed, reason: " + item.resultReason() + ", msg: " + item.resultMessage());
+                        assertTrue(item.resultReason().isEmpty(), "Item " + i + " reason not empty");
+                    }
+                }
             }
 
             assertTrue(discCalled.get(), "handleDiscoverVersions must be called");
@@ -489,38 +518,41 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler handler = new ServerRequestHandler() {
                 @Override
-                public long handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
                     supportedVersionsOut.add(new ProtocolVersion(2, 1));
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
-                    return 0;
+                public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
-                    return 0;
+                public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
                     // Intentionally leave empty
                     outCapabilities.operations(List.of())
                             .objectTypes(List.of())
                             .vendorIdentification(null);
-                    return 0;
+                    return S2cOperationResult.success();
                 }
 
                 @Override
-                public long handleSetEndpointRole(ItemView item, long targetRole) {
-                    return 0;
+                public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                    return S2cOperationResult.success();
                 }
             };
 
             try (ResponseMessage response = dispatcher.dispatch(batch, handler)) {
                 assertNotNull(response);
+                try (ResponseBatchItemView qItem = response.batchItemAt(3)) {
+                    assertEquals(0L, qItem.resultStatus().orElseThrow());
+                }
             }
         }
     }
@@ -535,33 +567,112 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler failingHandler = new ServerRequestHandler() {
                 @Override
-                public long handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
-                    return 1; // non-zero failure code
+                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                    return S2cOperationResult.failure(0x05L, "version mismatch unsupported");
                 }
 
                 @Override
-                public long handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
-                    return 1;
+                public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                    return S2cOperationResult.failure(0x01L, "notify object not found");
                 }
 
                 @Override
-                public long handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
-                    return 1;
+                public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                    return S2cOperationResult.failure(0x02L, "put permission denied");
                 }
 
                 @Override
-                public long handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
-                    return 1;
+                public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                    return S2cOperationResult.failure(0x05L, "query unsupported");
                 }
 
                 @Override
-                public long handleSetEndpointRole(ItemView item, long targetRole) {
-                    return 1;
+                public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                    return S2cOperationResult.failure(0x08L, "invalid role request");
                 }
             };
 
             try (ResponseMessage response = dispatcher.dispatch(batch, failingHandler)) {
                 assertNotNull(response);
+                assertEquals(5, response.batchItemCount());
+
+                // Item 0: Put
+                try (ResponseBatchItemView item = response.batchItemAt(0)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x02L, item.resultReason().orElseThrow());
+                    assertEquals("put permission denied", item.resultMessage().orElseThrow());
+                }
+                // Item 1: Query
+                try (ResponseBatchItemView item = response.batchItemAt(1)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x05L, item.resultReason().orElseThrow());
+                    assertEquals("query unsupported", item.resultMessage().orElseThrow());
+                }
+                // Item 2: DiscoverVersions
+                try (ResponseBatchItemView item = response.batchItemAt(2)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x05L, item.resultReason().orElseThrow());
+                    assertEquals("version mismatch unsupported", item.resultMessage().orElseThrow());
+                }
+                // Item 3: Notify
+                try (ResponseBatchItemView item = response.batchItemAt(3)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x01L, item.resultReason().orElseThrow());
+                    assertEquals("notify object not found", item.resultMessage().orElseThrow());
+                }
+                // Item 4: SetEndpointRole
+                try (ResponseBatchItemView item = response.batchItemAt(4)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x08L, item.resultReason().orElseThrow());
+                    assertEquals("invalid role request", item.resultMessage().orElseThrow());
+                }
+            }
+        }
+    }
+
+    @Test
+    void serverRequestDispatcherCustomFailureWithoutMessage() throws Exception {
+        byte[] batchBytes = buildFullS2cBatchBytes();
+        CodecLimits limits = CodecLimits.defaults();
+
+        try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(batchBytes, limits);
+             ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
+
+            ServerRequestHandler pendingHandler = new ServerRequestHandler() {
+                @Override
+                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                    supportedVersionsOut.add(new ProtocolVersion(2, 1));
+                    return S2cOperationResult.success();
+                }
+
+                @Override
+                public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                    return S2cOperationResult.success();
+                }
+
+                @Override
+                public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                    return S2cOperationResult.failure(0x04L);
+                }
+
+                @Override
+                public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                    return S2cOperationResult.success();
+                }
+
+                @Override
+                public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                    return S2cOperationResult.success();
+                }
+            };
+
+            try (ResponseMessage response = dispatcher.dispatch(batch, pendingHandler)) {
+                assertNotNull(response);
+                try (ResponseBatchItemView item = response.batchItemAt(0)) {
+                    assertEquals(1L, item.resultStatus().orElseThrow());
+                    assertEquals(0x04L, item.resultReason().orElseThrow());
+                    assertTrue(item.resultMessage().isEmpty());
+                }
             }
         }
     }
@@ -576,76 +687,254 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler throwingHandler = new ServerRequestHandler() {
                 @Override
-                public long handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
                     throw new RuntimeException("DiscoverVersions unexpected error");
                 }
 
                 @Override
-                public long handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
                     throw new RuntimeException("Notify unexpected error");
                 }
 
                 @Override
-                public long handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
                     throw new RuntimeException("Put unexpected error");
                 }
 
                 @Override
-                public long handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
                     throw new RuntimeException("Query unexpected error");
                 }
 
                 @Override
-                public long handleSetEndpointRole(ItemView item, long targetRole) {
+                public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
                     throw new RuntimeException("SetEndpointRole unexpected error");
                 }
             };
 
-            // JNI must catch the exceptions, clear them, and map to non-zero error without JVM crash
             try (ResponseMessage response = dispatcher.dispatch(batch, throwingHandler)) {
                 assertNotNull(response);
+                assertEquals(5, response.batchItemCount());
+                for (int i = 0; i < 5; i++) {
+                    try (ResponseBatchItemView item = response.batchItemAt(i)) {
+                        assertEquals(1L, item.resultStatus().orElseThrow());
+                        assertEquals(0x0BL, item.resultReason().orElseThrow());
+                        assertEquals("Handler exception", item.resultMessage().orElseThrow());
+                    }
+                }
             }
         }
     }
 
     @Test
-    void serverRequestDispatcherNegativeOrOutOfRangeStatusNormalization() throws Exception {
+    void serverRequestDispatcherHandlerNullReturn() throws Exception {
         byte[] batchBytes = buildFullS2cBatchBytes();
         CodecLimits limits = CodecLimits.defaults();
 
         try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(batchBytes, limits);
              ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
 
-            ServerRequestHandler weirdStatusHandler = new ServerRequestHandler() {
-                @Override
-                public long handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
-                    return -1L; // negative code
-                }
-
-                @Override
-                public long handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
-                    return 0x1_0000_0000L; // > uint32 max
-                }
-
-                @Override
-                public long handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
-                    return -100L;
-                }
-
-                @Override
-                public long handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
-                    return 0x2_0000_0000L;
-                }
-
-                @Override
-                public long handleSetEndpointRole(ItemView item, long targetRole) {
-                    return -1L;
-                }
+            ServerRequestHandler nullHandler = new ServerRequestHandler() {
+                @Override public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) { return null; }
+                @Override public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) { return null; }
+                @Override public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) { return null; }
+                @Override public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) { return null; }
+                @Override public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) { return null; }
             };
 
-            try (ResponseMessage response = dispatcher.dispatch(batch, weirdStatusHandler)) {
+            try (ResponseMessage response = dispatcher.dispatch(batch, nullHandler)) {
                 assertNotNull(response);
+                assertEquals(5, response.batchItemCount());
+                for (int i = 0; i < 5; i++) {
+                    try (ResponseBatchItemView item = response.batchItemAt(i)) {
+                        assertEquals(1L, item.resultStatus().orElseThrow());
+                        assertEquals(0x0BL, item.resultReason().orElseThrow());
+                        assertEquals("Handler returned null", item.resultMessage().orElseThrow());
+                    }
+                }
             }
         }
+    }
+
+    @Test
+    void s2cOperationResultValidation() {
+        S2cOperationResult success = S2cOperationResult.success();
+        assertTrue(success.isSuccess());
+        assertEquals(0L, success.status());
+        assertTrue(success.reason().isEmpty());
+        assertTrue(success.message().isEmpty());
+
+        S2cOperationResult fail = S2cOperationResult.failure(0x05L, "custom fail");
+        assertFalse(fail.isSuccess());
+        assertEquals(1L, fail.status());
+        assertEquals(0x05L, fail.reason().orElseThrow());
+        assertEquals("custom fail", fail.message().orElseThrow());
+
+        assertEquals(fail, S2cOperationResult.of(1L, 0x05L, "custom fail"));
+        assertEquals(fail.hashCode(), S2cOperationResult.of(1L, 0x05L, "custom fail").hashCode());
+        assertTrue(fail.toString().contains("custom fail"));
+
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(0L, 0x01L, null));
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(1L, null, "msg"));
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(-1L, null, null));
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(0x1_0000_0000L, null, null));
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(1L, -1L, null));
+        assertThrows(IllegalArgumentException.class, () -> S2cOperationResult.of(1L, 0x1_0000_0000L, null));
+    }
+
+    @Test
+    void clientListenerRawTlsLoopbackRoundTrip() throws Exception {
+        byte[] serverCert = testFixture("server-cert.pem");
+        byte[] serverKey = testFixture("server-key.pem");
+        byte[] clientCert = testFixture("client-cert.pem");
+        byte[] clientKey = testFixture("client-key.pem");
+
+        try (ListenerTransportConfiguration config = ListenerTransportConfiguration.builder()
+                .bind("127.0.0.1", 0)
+                .serverIdentityPem(new byte[][] {serverCert}, serverKey)
+                .trustCertificatesPem(new byte[][] {clientCert})
+                .readTimeout(Duration.ofSeconds(10))
+                .writeTimeout(Duration.ofSeconds(10))
+                .build();
+             ClientListener listener = ClientListener.bindRawTls(config)) {
+
+            int port = listener.port();
+            assertTrue(port > 0, "bound port should be positive");
+
+            // Test negative duration rejection on listener.accept
+            assertThrows(InvalidInputException.class, () -> listener.accept(Duration.ofMillis(-1)));
+
+            byte[] batchBytes = buildFullS2cBatchBytes();
+            SSLContext clientCtx = clientMtlsContext(clientCert, clientKey, serverCert);
+
+            ExecutorService exec = Executors.newSingleThreadExecutor();
+            try {
+                Future<byte[]> clientFuture = exec.submit(() -> {
+                    try (SSLSocket socket = (SSLSocket) clientCtx.getSocketFactory().createSocket("127.0.0.1", port)) {
+                        socket.setSoTimeout(10_000);
+                        socket.startHandshake();
+                        OutputStream out = socket.getOutputStream();
+                        out.write(batchBytes);
+                        out.flush();
+
+                        InputStream in = socket.getInputStream();
+                        byte[] hdr = in.readNBytes(8);
+                        assertEquals(8, hdr.length);
+                        int payloadLen = ByteBuffer.wrap(hdr, 4, 4).getInt();
+                        byte[] payload = in.readNBytes(payloadLen);
+                        assertEquals(payloadLen, payload.length);
+
+                        ByteArrayOutputStream fullResp = new ByteArrayOutputStream();
+                        fullResp.write(hdr);
+                        fullResp.write(payload);
+                        return fullResp.toByteArray();
+                    }
+                });
+
+                try (ClientListenerConnection conn = listener.accept(Duration.ofSeconds(10))) {
+                    assertNotNull(conn);
+
+                    // Test negative duration rejection on recvBatch
+                    CodecLimits limits = CodecLimits.defaults();
+                    assertThrows(InvalidInputException.class, () -> conn.recvBatch(limits, Duration.ofMillis(-1)));
+
+                    try (IncomingServerBatch batch = conn.recvBatch(limits, Duration.ofSeconds(10));
+                         ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
+                        assertEquals(5, batch.itemCount());
+
+                        ServerRequestHandler handler = new ServerRequestHandler() {
+                            @Override
+                            public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                                supportedVersionsOut.add(new ProtocolVersion(2, 1));
+                                return S2cOperationResult.success();
+                            }
+
+                            @Override
+                            public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                                return S2cOperationResult.success();
+                            }
+
+                            @Override
+                            public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                                return S2cOperationResult.failure(0x02L, "net-put-denied");
+                            }
+
+                            @Override
+                            public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                                return S2cOperationResult.success();
+                            }
+
+                            @Override
+                            public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                                return S2cOperationResult.success();
+                            }
+                        };
+
+                        try (ResponseMessage resp = dispatcher.dispatch(batch, handler)) {
+                            // Test negative duration rejection on sendResponse
+                            assertThrows(InvalidInputException.class, () -> conn.sendResponse(resp, Duration.ofMillis(-1)));
+                            conn.sendResponse(resp, Duration.ofSeconds(10));
+                        }
+                    }
+                }
+
+                byte[] clientReceivedBytes = clientFuture.get(10, TimeUnit.SECONDS);
+                assertNotNull(clientReceivedBytes);
+                assertTrue(clientReceivedBytes.length > 8);
+
+                String receivedStr = new String(clientReceivedBytes, StandardCharsets.UTF_8);
+                assertTrue(receivedStr.contains("net-put-denied"), "client must receive the custom failure message over TLS");
+            } finally {
+                exec.shutdownNow();
+            }
+        }
+    }
+
+    private static byte[] testFixture(String filename) throws Exception {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null) {
+            Path candidate = directory.resolve(
+                    Path.of("bindings", "python", "tests", "fixtures", "login-mtls", filename));
+            if (Files.isRegularFile(candidate)) return Files.readAllBytes(candidate);
+            directory = directory.getParent();
+        }
+        throw new IllegalStateException("shared deterministic mTLS fixture is missing: " + filename);
+    }
+
+    private static X509Certificate testCertificate(byte[] pem) throws Exception {
+        return (X509Certificate) CertificateFactory.getInstance("X.509")
+                .generateCertificate(new java.io.ByteArrayInputStream(pem));
+    }
+
+    private static PrivateKey testPrivateKey(byte[] pem) throws Exception {
+        String encoded = new String(pem, StandardCharsets.US_ASCII)
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+        byte[] der = Base64.getDecoder().decode(encoded);
+        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(der));
+    }
+
+    private static SSLContext clientMtlsContext(
+            byte[] clientCertPem, byte[] clientKeyPem, byte[] serverCertPem) throws Exception {
+        X509Certificate clientCert = testCertificate(clientCertPem);
+        X509Certificate serverCert = testCertificate(serverCertPem);
+        char[] pwd = "password".toCharArray();
+
+        KeyStore clientStore = KeyStore.getInstance("PKCS12");
+        clientStore.load(null, pwd);
+        clientStore.setKeyEntry("client", testPrivateKey(clientKeyPem), pwd, new Certificate[] {clientCert});
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(clientStore, pwd);
+
+        KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        trustStore.load(null, pwd);
+        trustStore.setCertificateEntry("server", serverCert);
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trustStore);
+
+        SSLContext ctx = SSLContext.getInstance("TLSv1.3");
+        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+        return ctx;
     }
 }

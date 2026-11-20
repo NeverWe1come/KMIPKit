@@ -7,17 +7,17 @@ import org.kmipkit.protocol.VersionGate.ProtocolVersion;
 public interface ServerRequestHandler {
     public record ItemView(long operation, byte[] uniqueBatchItemId) {}
 
-    long handleDiscoverVersions(
+    S2cOperationResult handleDiscoverVersions(
             ItemView item,
             ProtocolVersion clientVersion,
             List<ProtocolVersion> supportedVersionsOut);
 
-    long handleNotify(
+    S2cOperationResult handleNotify(
             ItemView item,
             byte[] uniqueIdentifier,
             byte[] attributesTtlv);
 
-    long handlePut(
+    S2cOperationResult handlePut(
             ItemView item,
             long putFunction,
             byte[] uniqueIdentifier,
@@ -25,12 +25,12 @@ public interface ServerRequestHandler {
             byte[] objectTtlv,
             byte[] attributesTtlv);
 
-    long handleQuery(
+    S2cOperationResult handleQuery(
             ItemView item,
             long queryFunctionFlags,
             S2cCapabilities outCapabilities);
 
-    long handleSetEndpointRole(
+    S2cOperationResult handleSetEndpointRole(
             ItemView item,
             long targetRole);
 }

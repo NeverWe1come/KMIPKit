@@ -855,4 +855,6 @@ public final class NativeExtensionRegistry {
     public static native long serverRequestDispatcherCreate();
     public static native long serverRequestDispatcherDispatchV2(
             long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
+    public static native long serverRequestDispatcherDispatchV3(
+            long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
 }

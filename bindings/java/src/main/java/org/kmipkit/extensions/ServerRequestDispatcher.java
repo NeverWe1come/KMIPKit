@@ -6,7 +6,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.message.ResponseMessage;
 
-/** Dispatches IncomingServerBatch items to a ServerRequestHandler using C ABI dispatch_v2. */
+/** Dispatches IncomingServerBatch items to a ServerRequestHandler using C ABI dispatch_v3. */
 public final class ServerRequestDispatcher implements AutoCloseable {
     private final NativeHandle handle;
 
@@ -25,7 +25,7 @@ public final class ServerRequestDispatcher implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         long responseHandle = handle.withValue(dispatcher ->
                 batch.nativeHandleOwner().withValue(rawBatch ->
-                        NativeExtensionRegistry.serverRequestDispatcherDispatchV2(dispatcher, rawBatch, handler)));
+                        NativeExtensionRegistry.serverRequestDispatcherDispatchV3(dispatcher, rawBatch, handler)));
         return ResponseMessage.fromNative(responseHandle);
     }
 
