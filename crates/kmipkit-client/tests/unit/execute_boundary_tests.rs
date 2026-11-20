@@ -5112,7 +5112,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
             fixture.id
         );
         assert!(
-            fixture.source.contains(fixture.probe),
+            fixture.source.replace("\r\n", "\n").contains(fixture.probe),
             "fixture {} is missing its syntax probe",
             fixture.id
         );
