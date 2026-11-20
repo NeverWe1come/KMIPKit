@@ -3,13 +3,14 @@ name: Proxy Scaleway CI
 on:
   pull_request:
     paths:
-      - 'proxy/**'
+      - 'kmip-proxy/**'
       - '.github/workflows/proxy-scaleway.yml'
   push:
     branches:
       - release/1.0.0
+      - release/1.0.0-review
     paths:
-      - 'proxy/**'
+      - 'kmip-proxy/**'
       - '.github/workflows/proxy-scaleway.yml'
 
 permissions:
@@ -29,10 +30,10 @@ jobs:
         run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
 
       - name: Check code formatting
-        run: cargo fmt --manifest-path proxy/kmipkit-proxy/Cargo.toml --check
+        run: cargo fmt --manifest-path kmip-proxy/Cargo.toml --check
 
       - name: Lint with Clippy (Scaleway feature)
-        run: cargo clippy --manifest-path proxy/kmipkit-proxy/Cargo.toml --all-targets --features scaleway -- -D warnings
+        run: cargo clippy --manifest-path kmip-proxy/Cargo.toml --all-targets --features scaleway -- -D warnings
 
       - name: Run unit and integration tests (Scaleway feature)
-        run: cargo test --manifest-path proxy/kmipkit-proxy/Cargo.toml --features scaleway
+        run: cargo test --manifest-path kmip-proxy/Cargo.toml --features scaleway

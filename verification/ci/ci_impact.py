@@ -86,7 +86,7 @@ def _path_class(path: str) -> tuple[str, str]:
 
     if path.startswith(".github/workflows/proxy-") and path.endswith(".yml"):
         return "proxy", "proxy workflow configuration changed"
-    if path.startswith("proxy/"):
+    if path.startswith("kmip-proxy/"):
         return "proxy", "KMIP proxy service file changed"
     if path.startswith("deploy/"):
         return "proxy", "KMIP proxy deployment configuration changed"

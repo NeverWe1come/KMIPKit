@@ -3,13 +3,14 @@ name: Proxy GCP CI
 on:
   pull_request:
     paths:
-      - 'proxy/**'
+      - 'kmip-proxy/**'
       - '.github/workflows/proxy-gcp.yml'
   push:
     branches:
       - release/1.0.0
+      - release/1.0.0-review
     paths:
-      - 'proxy/**'
+      - 'kmip-proxy/**'
       - '.github/workflows/proxy-gcp.yml'
 
 permissions:
@@ -29,10 +30,10 @@ jobs:
         run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
 
       - name: Check code formatting
-        run: cargo fmt --manifest-path proxy/kmipkit-proxy/Cargo.toml --check
+        run: cargo fmt --manifest-path kmip-proxy/Cargo.toml --check
 
       - name: Lint with Clippy (GCP feature)
-        run: cargo clippy --manifest-path proxy/kmipkit-proxy/Cargo.toml --all-targets --features gcp -- -D warnings
+        run: cargo clippy --manifest-path kmip-proxy/Cargo.toml --all-targets --features gcp -- -D warnings
 
       - name: Run unit and integration tests (GCP feature)
-        run: cargo test --manifest-path proxy/kmipkit-proxy/Cargo.toml --features gcp
+        run: cargo test --manifest-path kmip-proxy/Cargo.toml --features gcp

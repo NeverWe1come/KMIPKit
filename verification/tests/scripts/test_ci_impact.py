@@ -105,7 +105,7 @@ class CiImpactTests(unittest.TestCase):
                 {"docs-contracts"},
                 set(),
             ),
-            "proxy/kmipkit-proxy/src/main.rs": (
+            "kmip-proxy/src/main.rs": (
                 "proxy",
                 {"docs-contracts"},
                 set(),
@@ -265,7 +265,7 @@ class CiImpactTests(unittest.TestCase):
     def test_copy_only_classifies_destination_path(self) -> None:
         impact = self.require_impact()
         plan = impact.classify_changes(
-            [{"status": "C100", "paths": ["crates/kmipkit/src/lib.rs", "proxy/kmipkit-proxy/src/lib.rs"]}],
+            [{"status": "C100", "paths": ["crates/kmipkit/src/lib.rs", "kmip-proxy/src/lib.rs"]}],
             base_sha="a" * 40,
             merge_sha="b" * 40,
         )
