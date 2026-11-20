@@ -1,0 +1,397 @@
+"""Private C ABI handle and marshalling helpers.
+
+Pointers remain in this module and in private handle fields; public accessors
+return Python-owned values and never return CFFI pointers.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from functools import wraps
+from threading import RLock
+from types import FunctionType
+from typing import Any, Self, TypeVar
+
+from . import errors
+from ._ffi import ffi, lib
+
+
+_NATIVE_CALL_LOCK = RLock()
+_NATIVE_HANDLE_TOKEN = object()
+_NativeHandleT = TypeVar("_NativeHandleT", bound="NativeHandle")
+
+
+def _integer_range(value: int, minimum: int, maximum: int) -> int:
+    """Return a canonical built-in integer after checking a fixed-width range."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.raise_for_status(4)
+    number = int.__index__(value)
+    if number < minimum or number > maximum:
+        errors.raise_for_status(4)
+    return number
+
+
+def _fixed_width_integer_bounds(argument_type: Any) -> tuple[int, int] | None:
+    """Return the representable range for a fixed-width C integer argument."""
+    if argument_type.kind != "primitive":
+        return None
+    name = argument_type.cname
+    if not name.endswith("_t"):
+        return None
+    width = ffi.sizeof(argument_type) * 8
+    if name.startswith("uint"):
+        return 0, (1 << width) - 1
+    if name.startswith("int"):
+        return -(1 << (width - 1)), (1 << (width - 1)) - 1
+    return None
+
+
+def _normalize_integer_arguments(
+    function: Callable[..., int], arguments: tuple[object, ...]
+) -> tuple[object, ...]:
+    """Canonicalize C ABI integer inputs before CFFI conversion or ownership transfer."""
+    try:
+        signature = ffi.typeof(function)
+    except (AttributeError, TypeError):
+        return arguments
+    if signature.kind != "function":
+        return arguments
+
+    normalized = list(arguments)
+    for index, argument_type in enumerate(signature.args[: len(arguments)]):
+        bounds = _fixed_width_integer_bounds(argument_type)
+        if bounds is None:
+            continue
+        normalized[index] = _integer_range(normalized[index], *bounds)
+    return tuple(normalized)
+
+
+def synchronized_native_call(function: Callable[..., Any]) -> Callable[..., Any]:
+    """Keep wrapper handles alive while one public operation crosses CFFI."""
+
+    @wraps(function)
+    def invoke(*arguments: object, **keywords: object) -> Any:
+        with _NATIVE_CALL_LOCK:
+            return function(*arguments, **keywords)
+
+    return invoke
+
+
+def synchronize_public_functions(namespace: dict[str, object], names: list[str]) -> None:
+    """Serialize exported CFFI operations against native-handle release."""
+    for name in names:
+        function = namespace.get(name)
+        if isinstance(function, FunctionType):
+            namespace[name] = synchronized_native_call(function)
+
+
+class NativeHandle:
+    """Own one opaque C handle and release it deterministically."""
+
+    __slots__ = ("__handle", "__lock", "_owner")
+    _release_name: str
+
+    def __new__(cls, *arguments: object, **keywords: object) -> Self:
+        if keywords.get("_token") is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
+        return super().__new__(cls)
+
+    def __init__(
+        self, handle: Any, *, _token: object, owner: object | None = None
+    ) -> None:
+        if _token is not _NATIVE_HANDLE_TOKEN:
+            errors.raise_for_status(4)
+        if handle == ffi.NULL:
+            errors.raise_for_status(4)
+        self.__handle = handle
+        self.__lock = RLock()
+        self._owner = owner
+
+    def _pointer(self) -> Any:
+        with self.__lock:
+            handle = self.__handle
+            if handle == ffi.NULL:
+                errors.raise_for_status(4)
+            return handle
+
+    def _take(self) -> tuple[Any, object | None]:
+        """Transfer this handle to a manifest-declared consuming ABI call."""
+        with self.__lock:
+            handle = self._pointer()
+            owner = self._owner
+            self.__handle = ffi.NULL
+            self._owner = None
+            return handle, owner
+
+    def _restore(self, handle: Any, owner: object | None) -> None:
+        """Restore a transfer when CFFI rejects arguments before entering C."""
+        with self.__lock:
+            if self.__handle != ffi.NULL:
+                errors.raise_for_status(4)
+            self.__handle = handle
+            self._owner = owner
+
+    def _acquire_ownership_lock(self) -> None:
+        self.__lock.acquire()
+
+    def _release_ownership_lock(self) -> None:
+        self.__lock.release()
+
+    @property
+    def closed(self) -> bool:
+        with self.__lock:
+            return self.__handle == ffi.NULL
+
+    def close(self) -> None:
+        with _NATIVE_CALL_LOCK:
+            with self.__lock:
+                handle = self.__handle
+                if handle == ffi.NULL:
+                    return
+                self.__handle = ffi.NULL
+                owner = self._owner
+                self._owner = None
+            getattr(lib, self._release_name)(handle)
+            del owner
+
+    def __enter__(self) -> Self:
+        self._pointer()
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001, S110 - finalizers must not raise during shutdown.
+            # Finalizers must not surface native cleanup failures at shutdown.
+            pass
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(closed={self.closed})"
+
+
+def _wrap_owned_handle(
+    wrapper: type[_NativeHandleT], *arguments: object, **keywords: object
+) -> _NativeHandleT:
+    """Construct one wrapper for a handle returned by an internal C ABI call."""
+    return wrapper(*arguments, _token=_NATIVE_HANDLE_TOKEN, **keywords)
+
+
+def _new_handle(
+    c_type: str,
+    function: Callable[..., int],
+    *arguments: object,
+    consumed: tuple[int, ...] = (),
+    restore_on_statuses: tuple[int, ...] = (),
+    credential_validation_error: bool = False,
+) -> Any:
+    """Call an out-handle ABI function and return its private CFFI value."""
+    output = ffi.new(f"{c_type} **")
+    call_arguments = (*arguments, output)
+    status = (
+        _invoke_consuming(
+            function,
+            call_arguments,
+            consumed,
+            restore_on_statuses=restore_on_statuses,
+        )
+        if consumed
+        else _invoke(function, *call_arguments)
+    )
+    _raise_for_credential_status(status, credential_validation_error)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return output[0]
+
+
+def _new_handle_from_array(
+    input_c_type: str,
+    output_c_type: str,
+    function: Callable[..., int],
+    values: list[NativeHandle] | tuple[NativeHandle, ...],
+    *,
+    restore_on_statuses: tuple[int, ...] = (),
+    credential_validation_error: bool = False,
+) -> Any:
+    """Call a consuming array ABI function while preserving wrapper ownership on rejection."""
+    handles = tuple(values)
+    if any(not isinstance(handle, NativeHandle) for handle in handles):
+        errors.raise_for_status(4)
+    if len({id(handle) for handle in handles}) != len(handles):
+        errors.raise_for_status(4)
+
+    output = ffi.new(f"{output_c_type} **")
+    ordered_locks = sorted(handles, key=id)
+    with _NATIVE_CALL_LOCK:
+        for handle in ordered_locks:
+            handle._acquire_ownership_lock()
+        try:
+            pointers = [handle._pointer() for handle in handles]
+            pointer_array = ffi.new(f"{input_c_type} *[]", pointers)
+            try:
+                status = _invoke(function, pointer_array, len(handles), output)
+            except errors.KmipKitError:
+                raise
+            if status not in restore_on_statuses:
+                # The C ABI consumes the handles after its validation boundary. Retire
+                # the wrappers only after the call returns so concurrent close/use
+                # cannot race the transfer.
+                for handle in handles:
+                    handle._take()
+        finally:
+            for handle in reversed(ordered_locks):
+                handle._release_ownership_lock()
+    _raise_for_credential_status(status, credential_validation_error)
+    if output[0] == ffi.NULL:
+        errors.raise_for_status(4)
+    return output[0]
+
+
+def _raise_for_credential_status(status: int, enabled: bool) -> None:
+    """Raise a credential category when the native constructor supplies one."""
+    if status == 0:
+        return
+    if enabled and status == 4:
+        detail = ffi.new("kmipkit_credential_validation_error_v1_t *")
+        detail.struct_size = ffi.sizeof("kmipkit_credential_validation_error_v1_t")
+        detail.abi_version = 1
+        try:
+            detail_status = int(lib.kmipkit_last_credential_validation_error_get_v1(detail))
+        except (AttributeError, TypeError, ValueError):
+            detail_status = 4
+        if detail_status == 0 and detail.kind != 0:
+            raise errors.CredentialValidationError(int(detail.kind))
+    errors.raise_for_status(status)
+
+
+def _scalar(
+    c_type: str,
+    function: Callable[..., int],
+    *arguments: object,
+) -> int:
+    output = ffi.new(f"{c_type} *")
+    errors.raise_for_status(_invoke(function, *arguments, output))
+    return int(output[0])
+
+
+def _invoke(function: Callable[..., int], *arguments: object) -> int:
+    """Normalize CFFI argument conversion failures without echoing inputs."""
+    normalized = _normalize_integer_arguments(function, arguments)
+    try:
+        return int(function(*normalized))
+    except (OverflowError, TypeError, ValueError):
+        raise errors.InvalidInputError() from None
+
+
+def _invoke_consuming(
+    function: Callable[..., int],
+    arguments: tuple[object, ...],
+    consumed_indices: tuple[int, ...],
+    *,
+    restore_on_statuses: tuple[int, ...] = (),
+) -> int:
+    """Transfer selected handles, optionally restoring them for pre-consume statuses."""
+    normalized_arguments = _normalize_integer_arguments(function, arguments)
+    handles: list[tuple[int, NativeHandle]] = []
+    seen: set[int] = set()
+    for index in consumed_indices:
+        if index < 0 or index >= len(arguments):
+            errors.raise_for_status(4)
+        handle = arguments[index]
+        if not isinstance(handle, NativeHandle) or id(handle) in seen:
+            errors.raise_for_status(4)
+        seen.add(id(handle))
+        handles.append((index, handle))
+
+    locked_handles = sorted((handle for _, handle in handles), key=id)
+    for handle in locked_handles:
+        handle._acquire_ownership_lock()
+    try:
+        # Check every source before transferring any of them.
+        for _, handle in handles:
+            handle._pointer()
+        call_arguments = list(normalized_arguments)
+        tickets: list[tuple[NativeHandle, Any, object | None]] = []
+        for index, handle in handles:
+            pointer, owner = handle._take()
+            call_arguments[index] = pointer
+            tickets.append((handle, pointer, owner))
+        try:
+            status = int(function(*call_arguments))
+            if status in restore_on_statuses:
+                for handle, pointer, owner in reversed(tickets):
+                    handle._restore(pointer, owner)
+            return status
+        except (OverflowError, TypeError, ValueError):
+            for handle, pointer, owner in reversed(tickets):
+                handle._restore(pointer, owner)
+            raise errors.InvalidInputError() from None
+    finally:
+        for handle in reversed(locked_handles):
+            handle._release_ownership_lock()
+
+
+def _owned_bytes(
+    value: str | bytes | bytearray | memoryview, maximum: int = 4_096
+) -> tuple[bytes, Any]:
+    """Bound text or byte input before making ABI-owned copies."""
+    if isinstance(value, str):
+        if str.__len__(value) > maximum:
+            errors.raise_for_status(6)
+        byte_length = 0
+        for character in str.__iter__(value):
+            codepoint = ord(character)
+            byte_length += (
+                1
+                if codepoint <= 0x7F
+                else 2
+                if codepoint <= 0x7FF
+                else 3
+                if codepoint <= 0xFFFF
+                else 4
+            )
+            if byte_length > maximum:
+                errors.raise_for_status(6)
+        try:
+            raw = str.encode(value, "utf-8")
+        except UnicodeEncodeError:
+            raise errors.InvalidInputError() from None
+    elif isinstance(value, (bytes, bytearray, memoryview)):
+        try:
+            view = memoryview(value)
+        except (TypeError, ValueError):
+            errors.raise_for_status(4)
+        if view.nbytes > maximum:
+            errors.raise_for_status(6)
+        raw = view.tobytes()
+    else:
+        errors.raise_for_status(4)
+    if len(raw) > maximum:
+        errors.raise_for_status(6)
+    return raw, ffi.new("uint8_t[]", raw)
+
+
+def _wipe_staging_buffer(buffer: Any) -> None:
+    """Overwrite a temporary CFFI byte array owned by the Python adapter."""
+    if buffer is None or buffer == ffi.NULL:
+        return
+    length = ffi.sizeof(buffer)
+    if length:
+        ffi.buffer(buffer, length)[:] = b"\x00" * length
+
+
+def _handle_array(
+    c_type: str, values: list[NativeHandle] | tuple[NativeHandle, ...]
+) -> Any:
+    """Build a typed opaque-handle array while keeping raw pointers private."""
+    return ffi.new(f"{c_type} *[]", [value._pointer() for value in values])
+
+
+def _array_or_null(
+    c_type: str, values: list[NativeHandle] | tuple[NativeHandle, ...]
+) -> Any:
+    if not values:
+        return ffi.NULL
+    return _handle_array(c_type, values)

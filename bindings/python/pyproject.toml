@@ -1,0 +1,29 @@
+[build-system]
+requires = ["maturin>=1.8,<2.0", "cffi>=1.15"]
+build-backend = "maturin"
+
+[project]
+name = "kmipkit"
+version = "1.0.0"
+description = "KMIPKit Python 3.12 bindings, version 1.0.0 (unreleased)"
+requires-python = ">=3.12,<3.13"
+license = { text = "Apache-2.0" }
+dependencies = ["cffi>=1.15"]
+
+[tool.maturin]
+manifest-path = "../../crates/kmipkit-ffi/Cargo.toml"
+python-source = "src"
+module-name = "kmipkit._native_ffi"
+bindings = "cffi"
+
+[tool.coverage.run]
+branch = false
+relative_files = true
+source = ["kmipkit"]
+# Maturin generates these wrappers at install time; they are not maintained source.
+omit = ["*/kmipkit/_native_ffi/__init__.py", "*/kmipkit/_native_ffi/ffi.py", "*/kmipkit/protocol_values.py"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
