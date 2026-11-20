@@ -11183,9 +11183,8 @@ pub extern "C" fn kmipkit_link_normalizer_v2_to_v3(
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
         let input_item = try_ffi!(copy_required_item_handle(item));
-        let normalized = match kmipkit_protocol::LinkNormalizer::normalize_to_v3(&input_item) {
-            Ok(item) => item,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(normalized) = kmipkit_protocol::LinkNormalizer::normalize_to_v3(&input_item) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(normalized)));
         SUCCESS
@@ -11200,9 +11199,8 @@ pub extern "C" fn kmipkit_link_normalizer_v3_to_v2(
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
         let input_item = try_ffi!(copy_required_item_handle(item));
-        let normalized = match kmipkit_protocol::LinkNormalizer::normalize_to_v2(&input_item) {
-            Ok(item) => item,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(normalized) = kmipkit_protocol::LinkNormalizer::normalize_to_v2(&input_item) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = try_ffi!(try_make_handle(Kind::Item, HandleValue::Item(normalized)));
         SUCCESS
@@ -11329,9 +11327,8 @@ pub extern "C" fn kmipkit_s2c_build_response_ttlv(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
-        let count = match usize::try_from(item_count) {
-            Ok(c) => c,
-            Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
+        let Ok(count) = usize::try_from(item_count) else {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
         };
         if count != 0 && items.is_null() {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -11345,9 +11342,8 @@ pub extern "C" fn kmipkit_s2c_build_response_ttlv(
             let structure = try_ffi!(copy_required_structure_handle(ptr));
             builder.add_item(structure);
         }
-        let response_msg = match builder.build() {
-            Ok(msg) => msg,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(response_msg) = builder.build() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = try_ffi!(try_make_handle(
             Kind::Structure,
@@ -11397,9 +11393,8 @@ pub extern "C" fn kmipkit_lease_context_unique_identifier(
         let HandleValue::LeaseContext(context) = &context.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let context = match context.lock() {
-            Ok(guard) => guard,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         try_ffi!(client_abi::write_unique_identifier_v1(
             out_unique_identifier,
@@ -11420,9 +11415,8 @@ pub extern "C" fn kmipkit_lease_context_expires_at(
         let HandleValue::LeaseContext(context) = &context.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let context = match context.lock() {
-            Ok(guard) => guard,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = context.expires_at_unix_secs();
         SUCCESS
@@ -11441,9 +11435,8 @@ pub extern "C" fn kmipkit_lease_context_is_expired(
         let HandleValue::LeaseContext(context) = &context.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let context = match context.lock() {
-            Ok(guard) => guard,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         *out = u8::from(context.is_expired(current_time_unix_secs));
         SUCCESS
@@ -11460,9 +11453,8 @@ pub extern "C" fn kmipkit_lease_context_check_valid(
         let HandleValue::LeaseContext(context) = &context.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let context = match context.lock() {
-            Ok(guard) => guard,
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let Ok(context) = context.lock() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
         };
         match context.check_valid(current_time_unix_secs) {
             Ok(()) => SUCCESS,

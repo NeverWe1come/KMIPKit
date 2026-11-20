@@ -1046,78 +1046,121 @@ impl MonotonicClock for TestClock {
 
 static TEMPORARY_FILE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
-#[test]
-fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
+fn openssl_test_certificate(
+    name: &str,
+    serial: u32,
+    key: &openssl::pkey::PKey<openssl::pkey::Private>,
+    issuer: Option<(
+        &openssl::x509::X509,
+        &openssl::pkey::PKey<openssl::pkey::Private>,
+    )>,
+) -> openssl::x509::X509 {
     use openssl::asn1::{Asn1Integer, Asn1Time};
     use openssl::bn::BigNum;
     use openssl::hash::MessageDigest;
-    use openssl::pkey::{KeyType, PKey, Private};
+    use openssl::x509::X509;
+    use openssl::x509::X509NameBuilder;
     use openssl::x509::extension::{
-        AuthorityKeyIdentifier, BasicConstraints, CrlNumber, KeyUsage, SubjectAlternativeName,
-        SubjectKeyIdentifier,
+        BasicConstraints, KeyUsage, SubjectAlternativeName, SubjectKeyIdentifier,
     };
-    use openssl::x509::{X509, X509CrlBuilder, X509NameBuilder, X509RevokedBuilder};
 
-    fn certificate(
-        name: &str,
-        serial: u32,
-        key: &PKey<Private>,
-        issuer: Option<(&X509, &PKey<Private>)>,
-    ) -> X509 {
-        let mut subject = X509NameBuilder::new().unwrap();
-        subject.append_entry_by_text("CN", name).unwrap();
-        let subject = subject.build();
-        let mut certificate = X509::builder().unwrap();
-        certificate.set_version(2).unwrap();
-        let serial = Asn1Integer::from_bn(&BigNum::from_u32(serial).unwrap()).unwrap();
-        certificate.set_serial_number(&serial).unwrap();
-        certificate.set_subject_name(&subject).unwrap();
-        certificate
-            .set_issuer_name(issuer.map_or(subject.as_ref(), |(cert, _)| cert.subject_name()))
+    let mut subject = X509NameBuilder::new().unwrap();
+    subject.append_entry_by_text("CN", name).unwrap();
+    let subject = subject.build();
+    let mut certificate = X509::builder().unwrap();
+    certificate.set_version(2).unwrap();
+    let serial = Asn1Integer::from_bn(&BigNum::from_u32(serial).unwrap()).unwrap();
+    certificate.set_serial_number(&serial).unwrap();
+    certificate.set_subject_name(&subject).unwrap();
+    certificate
+        .set_issuer_name(issuer.map_or(subject.as_ref(), |(cert, _)| cert.subject_name()))
+        .unwrap();
+    certificate.set_pubkey(key).unwrap();
+    let not_before = Asn1Time::from_unix(1_700_000_000).unwrap();
+    let not_after = Asn1Time::days_from_now(1).unwrap();
+    certificate.set_not_before(&not_before).unwrap();
+    certificate.set_not_after(&not_after).unwrap();
+    let mut limits = BasicConstraints::new();
+    let mut usage = KeyUsage::new();
+    if issuer.is_none() {
+        limits.ca();
+        usage.key_cert_sign().crl_sign();
+        let identifier = SubjectKeyIdentifier::new()
+            .build(&certificate.x509v3_context(None, None))
             .unwrap();
-        certificate.set_pubkey(key).unwrap();
-        let not_before = Asn1Time::from_unix(1_700_000_000).unwrap();
-        let not_after = Asn1Time::days_from_now(1).unwrap();
-        certificate.set_not_before(&not_before).unwrap();
-        certificate.set_not_after(&not_after).unwrap();
-        let mut limits = BasicConstraints::new();
-        let mut usage = KeyUsage::new();
-        if issuer.is_none() {
-            limits.ca();
-            usage.key_cert_sign().crl_sign();
-            let identifier = SubjectKeyIdentifier::new()
-                .build(&certificate.x509v3_context(None, None))
-                .unwrap();
-            certificate.append_extension(identifier).unwrap();
-        } else {
-            usage.digital_signature();
-            let san = SubjectAlternativeName::new()
-                .dns(name)
-                .build(&certificate.x509v3_context(issuer.map(|(cert, _)| cert.as_ref()), None))
-                .unwrap();
-            certificate.append_extension(san).unwrap();
-        }
-        certificate
-            .append_extension(limits.critical().build().unwrap())
+        certificate.append_extension(identifier).unwrap();
+    } else {
+        usage.digital_signature();
+        let san = SubjectAlternativeName::new()
+            .dns(name)
+            .build(&certificate.x509v3_context(issuer.map(|(cert, _)| cert.as_ref()), None))
             .unwrap();
-        certificate
-            .append_extension(usage.critical().build().unwrap())
-            .unwrap();
-        certificate
-            .sign(issuer.map_or(key, |(_, key)| key), MessageDigest::null())
-            .unwrap();
-        certificate.build()
+        certificate.append_extension(san).unwrap();
     }
+    certificate
+        .append_extension(limits.critical().build().unwrap())
+        .unwrap();
+    certificate
+        .append_extension(usage.critical().build().unwrap())
+        .unwrap();
+    certificate
+        .sign(issuer.map_or(key, |(_, key)| key), MessageDigest::null())
+        .unwrap();
+    certificate.build()
+}
+
+fn openssl_test_revocation_list(
+    ca: &openssl::x509::X509,
+    ca_key: &openssl::pkey::PKey<openssl::pkey::Private>,
+    revoked_certificate: &openssl::x509::X509,
+) -> Vec<u8> {
+    use openssl::asn1::Asn1Time;
+    use openssl::bn::BigNum;
+    use openssl::hash::MessageDigest;
+    use openssl::x509::extension::{AuthorityKeyIdentifier, CrlNumber};
+    use openssl::x509::{X509, X509CrlBuilder, X509RevokedBuilder};
+
+    let mut crl = X509CrlBuilder::new().unwrap();
+    crl.set_issuer_name(ca.subject_name()).unwrap();
+    let last_update = Asn1Time::from_unix(1_700_000_000).unwrap();
+    let next_update = Asn1Time::days_from_now(1).unwrap();
+    crl.set_last_update(&last_update).unwrap();
+    crl.set_next_update(&next_update).unwrap();
+    let authority = AuthorityKeyIdentifier::new()
+        .keyid(true)
+        .build(&X509::builder().unwrap().x509v3_context(Some(ca), None))
+        .unwrap();
+    crl.append_extension(authority).unwrap();
+    crl.append_extension(
+        CrlNumber::new(BigNum::from_u32(1).unwrap())
+            .unwrap()
+            .build()
+            .unwrap(),
+    )
+    .unwrap();
+    let mut entry = X509RevokedBuilder::new().unwrap();
+    entry
+        .set_serial_number(revoked_certificate.serial_number())
+        .unwrap();
+    entry.set_revocation_date(&last_update).unwrap();
+    crl.add_revoked(entry.build()).unwrap();
+    crl.sign(ca_key, MessageDigest::null()).unwrap();
+    crl.build().unwrap().to_der().unwrap()
+}
+
+#[test]
+fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
+    use openssl::pkey::{KeyType, PKey};
 
     for key_type in [KeyType::ML_DSA_44, KeyType::ML_DSA_65, KeyType::ML_DSA_87] {
         let key = |seed| PKey::private_key_from_seed(None, key_type, None, &[seed; 32]).unwrap();
         let ca_key = key(1);
         let client_key = key(2);
         let server_key = key(3);
-        let ca = certificate("ML-DSA test CA", 1, &ca_key, None);
+        let ca = openssl_test_certificate("ML-DSA test CA", 1, &ca_key, None);
         let signer = Some((&ca, &ca_key));
-        let client_leaf = certificate("client.kmipkit.test", 2, &client_key, signer);
-        let server_leaf = certificate(SERVER_NAME, 3, &server_key, signer);
+        let client_leaf = openssl_test_certificate("client.kmipkit.test", 2, &client_key, signer);
+        let server_leaf = openssl_test_certificate(SERVER_NAME, 3, &server_key, signer);
         let ca_der = ca.to_der().unwrap();
 
         let client_config = |revocation_lists| {
@@ -1136,33 +1179,8 @@ fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
         };
         let client = client_config(Vec::new());
 
-        let mut crl = X509CrlBuilder::new().unwrap();
-        crl.set_issuer_name(ca.subject_name()).unwrap();
-        let last_update = Asn1Time::from_unix(1_700_000_000).unwrap();
-        let next_update = Asn1Time::days_from_now(1).unwrap();
-        crl.set_last_update(&last_update).unwrap();
-        crl.set_next_update(&next_update).unwrap();
-        let authority = AuthorityKeyIdentifier::new()
-            .keyid(true)
-            .build(&X509::builder().unwrap().x509v3_context(Some(&ca), None))
-            .unwrap();
-        crl.append_extension(authority).unwrap();
-        crl.append_extension(
-            CrlNumber::new(BigNum::from_u32(1).unwrap())
-                .unwrap()
-                .build()
-                .unwrap(),
-        )
-        .unwrap();
-        let mut entry = X509RevokedBuilder::new().unwrap();
-        entry
-            .set_serial_number(server_leaf.serial_number())
-            .unwrap();
-        entry.set_revocation_date(&last_update).unwrap();
-        crl.add_revoked(entry.build()).unwrap();
-        crl.sign(&ca_key, MessageDigest::null()).unwrap();
         let revoked = client_config(vec![RevocationListInput::from_der(vec![
-            crl.build().unwrap().to_der().unwrap(),
+            openssl_test_revocation_list(&ca, &ca_key, &server_leaf),
         ])]);
 
         let provider = tls::openssl_crypto_provider();

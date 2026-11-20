@@ -1034,10 +1034,7 @@ impl BoundaryAudit {
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
             is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
-        let fluent_explicit_value =
-            is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature)
-                || is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature)
-                || is_exact_fluent_crypto_secret_input(fluent_root_scope, impl_type, signature);
+        let fluent_explicit_value = is_exact_fluent_value(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
@@ -2755,6 +2752,16 @@ fn is_exact_fluent_crypto_secret_input(
                         && matches!(arguments.args.first(),
                             Some(syn::GenericArgument::Type(ty))
                                 if is_plain_type_path(ty, "u8"))))
+}
+
+fn is_exact_fluent_value(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature)
+        || is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature)
+        || is_exact_fluent_crypto_secret_input(fluent_root_scope, impl_type, signature)
 }
 
 fn is_plain_reference_to_str(ty: &Type) -> bool {

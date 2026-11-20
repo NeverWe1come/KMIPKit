@@ -1084,21 +1084,7 @@ pub struct kmipkit_server_request_handler_v2_t {
             attributes_ttlv_length: u64,
         ) -> u32,
     >,
-    pub handle_put: Option<
-        unsafe extern "C" fn(
-            user_data: *mut core::ffi::c_void,
-            item_view: *const kmipkit_server_request_item_view_v1_t,
-            put_function: u32,
-            unique_identifier_data: *const u8,
-            unique_identifier_length: u64,
-            replaced_unique_identifier_data: *const u8,
-            replaced_unique_identifier_length: u64,
-            object_ttlv_data: *const u8,
-            object_ttlv_length: u64,
-            attributes_ttlv_data: *const u8,
-            attributes_ttlv_length: u64,
-        ) -> u32,
-    >,
+    pub handle_put: Option<ServerHandlePutCallbackV2>,
     pub handle_query: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1116,8 +1102,39 @@ pub struct kmipkit_server_request_handler_v2_t {
     >,
 }
 
+/// Callback used by server dispatch ABI version 2 for Put operations.
+pub type ServerHandlePutCallbackV2 = unsafe extern "C" fn(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    put_function: u32,
+    unique_identifier_data: *const u8,
+    unique_identifier_length: u64,
+    replaced_unique_identifier_data: *const u8,
+    replaced_unique_identifier_length: u64,
+    object_ttlv_data: *const u8,
+    object_ttlv_length: u64,
+    attributes_ttlv_data: *const u8,
+    attributes_ttlv_length: u64,
+) -> u32;
+
+/// Callback used by server dispatch ABI versions 3 through 5 for Put operations.
+pub type ServerHandlePutCallbackV3 = unsafe extern "C" fn(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    put_function: u32,
+    unique_identifier_data: *const u8,
+    unique_identifier_length: u64,
+    replaced_unique_identifier_data: *const u8,
+    replaced_unique_identifier_length: u64,
+    object_ttlv_data: *const u8,
+    object_ttlv_length: u64,
+    attributes_ttlv_data: *const u8,
+    attributes_ttlv_length: u64,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32;
+
 /// C callback dispatch table for Server-to-Client operations (ABI version 3),
-/// supporting granular KmipOperationResult (status, reason, message) error returns.
+/// supporting granular `KmipOperationResult` (status, reason, message) error returns.
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct kmipkit_server_request_handler_v3_t {
@@ -1147,22 +1164,7 @@ pub struct kmipkit_server_request_handler_v3_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
-    pub handle_put: Option<
-        unsafe extern "C" fn(
-            user_data: *mut core::ffi::c_void,
-            item_view: *const kmipkit_server_request_item_view_v1_t,
-            put_function: u32,
-            unique_identifier_data: *const u8,
-            unique_identifier_length: u64,
-            replaced_unique_identifier_data: *const u8,
-            replaced_unique_identifier_length: u64,
-            object_ttlv_data: *const u8,
-            object_ttlv_length: u64,
-            attributes_ttlv_data: *const u8,
-            attributes_ttlv_length: u64,
-            out_result: *mut kmipkit_s2c_operation_result_v1_t,
-        ) -> u32,
-    >,
+    pub handle_put: Option<ServerHandlePutCallbackV3>,
     pub handle_query: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1214,22 +1216,7 @@ pub struct kmipkit_server_request_handler_v4_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
-    pub handle_put: Option<
-        unsafe extern "C" fn(
-            user_data: *mut core::ffi::c_void,
-            item_view: *const kmipkit_server_request_item_view_v1_t,
-            put_function: u32,
-            unique_identifier_data: *const u8,
-            unique_identifier_length: u64,
-            replaced_unique_identifier_data: *const u8,
-            replaced_unique_identifier_length: u64,
-            object_ttlv_data: *const u8,
-            object_ttlv_length: u64,
-            attributes_ttlv_data: *const u8,
-            attributes_ttlv_length: u64,
-            out_result: *mut kmipkit_s2c_operation_result_v1_t,
-        ) -> u32,
-    >,
+    pub handle_put: Option<ServerHandlePutCallbackV3>,
     pub handle_query: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1285,22 +1272,7 @@ pub struct kmipkit_server_request_handler_v5_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
-    pub handle_put: Option<
-        unsafe extern "C" fn(
-            user_data: *mut core::ffi::c_void,
-            item_view: *const kmipkit_server_request_item_view_v1_t,
-            put_function: u32,
-            unique_identifier_data: *const u8,
-            unique_identifier_length: u64,
-            replaced_unique_identifier_data: *const u8,
-            replaced_unique_identifier_length: u64,
-            object_ttlv_data: *const u8,
-            object_ttlv_length: u64,
-            attributes_ttlv_data: *const u8,
-            attributes_ttlv_length: u64,
-            out_result: *mut kmipkit_s2c_operation_result_v1_t,
-        ) -> u32,
-    >,
+    pub handle_put: Option<ServerHandlePutCallbackV3>,
     pub handle_query: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,

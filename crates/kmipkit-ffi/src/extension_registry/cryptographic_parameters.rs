@@ -493,6 +493,8 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v2(
 }
 
 /// Copies every present Cryptographic Parameters field into a version 2 output record.
+// Keep this exhaustive map atomic so callers never receive partial output.
+#[allow(clippy::too_many_lines)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v2(
     parameters: *mut kmipkit_cryptographic_parameters_t,

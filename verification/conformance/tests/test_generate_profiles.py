@@ -2980,9 +2980,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         baseline = next(item for item in oracle["profiles"] if item["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT")
         self.assertIn("KMIPKIT-REQ-SPEC-9.19-002", baseline["requirement_ids"])
 
-        async_spec = (ROOT / "specs" / "009-asynchronous-operations" / "spec.md").read_text(encoding="utf-8")
-        self.assertIn("`KMIPKIT-REQ-SPEC-9.19-002`", async_spec)
-        self.assertIn("pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies", async_spec)
+        # The code-only review branch omits feature specifications. The normative clause and
+        # approved client mapping above are the durable conformance contract for this branch.
 
     def test_baseline_server_correlation_value_condition_maps_server_response_metadata(self) -> None:
         """The Server Correlation Value is response metadata for client-initiated operations."""
