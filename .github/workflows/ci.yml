@@ -943,6 +943,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install nightly Rust
         id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
@@ -955,11 +959,11 @@ jobs:
         id: fuzz-the-bounded-extension-schema-target
         working-directory: verification/security/fuzz
         run: |
-          cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run json_codec -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . json_codec -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
 
       - name: Diagnose job result
         id: ci-diagnostics

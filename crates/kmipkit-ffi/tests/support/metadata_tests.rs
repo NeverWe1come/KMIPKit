@@ -406,10 +406,9 @@ fn panic_boundary_records_internal_error_for_void_exports() {
 }
 
 fn manifest_c_symbols() -> (BTreeSet<String>, BTreeSet<String>) {
-    let manifest: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../bindings/shared/public-api.json"
-    ))
-    .expect("the approved public API manifest is valid JSON");
+    let manifest: serde_json::Value =
+        serde_json::from_str(include_str!("../../../../bindings/shared/public-api.json"))
+            .expect("the approved public API manifest is valid JSON");
     let declarations = manifest["publicDeclarations"]
         .as_array()
         .expect("the approved manifest lists public declarations");

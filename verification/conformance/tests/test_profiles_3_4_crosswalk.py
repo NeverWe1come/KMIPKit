@@ -309,7 +309,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                 "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
                 "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
                 "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
-                "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider",
+                "crates/kmipkit-transport/src/tls.rs::openssl_crypto_provider",
             ],
         )
         profile_test_id = (
@@ -373,7 +373,7 @@ class ProfileSectionsThreeAndFourCrosswalkTests(unittest.TestCase):
                 "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
                 "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
                 "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
-                "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider",
+                "crates/kmipkit-transport/src/tls.rs::openssl_crypto_provider",
             ],
         )
         profile_test_id = (

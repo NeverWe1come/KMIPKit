@@ -1097,7 +1097,9 @@ impl KmipTag {
             Self::PKCS12FriendlyName => "PKCS#12 Friendly Name",
             Self::Description => "Description",
             Self::Comment => "Comment",
-            Self::AuthenticatedEncryptionAdditionalData => "Authenticated Encryption Additional Data",
+            Self::AuthenticatedEncryptionAdditionalData => {
+                "Authenticated Encryption Additional Data"
+            }
             Self::AuthenticatedEncryptionTag => "Authenticated Encryption Tag",
             Self::SaltLength => "Salt Length",
             Self::MaskGenerator => "Mask Generator",
@@ -1756,4 +1758,3 @@ impl TryFrom<Tag> for KmipTag {
         Self::from_u32(tag.raw()).ok_or(ModelError::TagNotAllocated)
     }
 }
-

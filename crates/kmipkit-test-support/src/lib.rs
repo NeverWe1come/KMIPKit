@@ -3,8 +3,6 @@
 
 mod dns;
 mod local_transport;
-// Requires the normative catalog omitted from this review branch.
-#[cfg(any())]
 pub mod oasis_crypto_fixtures;
 #[cfg(feature = "fixtures")]
 mod pki;

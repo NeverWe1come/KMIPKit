@@ -233,18 +233,26 @@ impl AttributeTag {
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
             x if x == KmipTag::ActivationDate as u32 => Some(Self::ActivationDate),
-            x if x == KmipTag::ApplicationSpecificInformation as u32 => Some(Self::ApplicationSpecificInformation),
+            x if x == KmipTag::ApplicationSpecificInformation as u32 => {
+                Some(Self::ApplicationSpecificInformation)
+            }
             x if x == KmipTag::ArchiveDate as u32 => Some(Self::ArchiveDate),
             x if x == KmipTag::Attribute as u32 => Some(Self::Attribute),
             x if x == KmipTag::CertificateType as u32 => Some(Self::CertificateType),
             x if x == KmipTag::CompromiseDate as u32 => Some(Self::CompromiseDate),
-            x if x == KmipTag::CompromiseOccurrenceDate as u32 => Some(Self::CompromiseOccurrenceDate),
+            x if x == KmipTag::CompromiseOccurrenceDate as u32 => {
+                Some(Self::CompromiseOccurrenceDate)
+            }
             x if x == KmipTag::ContactInformation as u32 => Some(Self::ContactInformation),
             x if x == KmipTag::CredentialType as u32 => Some(Self::CredentialType),
             x if x == KmipTag::CryptographicAlgorithm as u32 => Some(Self::CryptographicAlgorithm),
-            x if x == KmipTag::CryptographicDomainParameters as u32 => Some(Self::CryptographicDomainParameters),
+            x if x == KmipTag::CryptographicDomainParameters as u32 => {
+                Some(Self::CryptographicDomainParameters)
+            }
             x if x == KmipTag::CryptographicLength as u32 => Some(Self::CryptographicLength),
-            x if x == KmipTag::CryptographicParameters as u32 => Some(Self::CryptographicParameters),
+            x if x == KmipTag::CryptographicParameters as u32 => {
+                Some(Self::CryptographicParameters)
+            }
             x if x == KmipTag::CryptographicUsageMask as u32 => Some(Self::CryptographicUsageMask),
             x if x == KmipTag::DeactivationDate as u32 => Some(Self::DeactivationDate),
             x if x == KmipTag::DestroyDate as u32 => Some(Self::DestroyDate),
@@ -270,8 +278,12 @@ impl AttributeTag {
             x if x == KmipTag::UsageLimits as u32 => Some(Self::UsageLimits),
             x if x == KmipTag::Fresh as u32 => Some(Self::Fresh),
             x if x == KmipTag::CertificateLength as u32 => Some(Self::CertificateLength),
-            x if x == KmipTag::DigitalSignatureAlgorithm as u32 => Some(Self::DigitalSignatureAlgorithm),
-            x if x == KmipTag::X509CertificateIdentifier as u32 => Some(Self::X509CertificateIdentifier),
+            x if x == KmipTag::DigitalSignatureAlgorithm as u32 => {
+                Some(Self::DigitalSignatureAlgorithm)
+            }
+            x if x == KmipTag::X509CertificateIdentifier as u32 => {
+                Some(Self::X509CertificateIdentifier)
+            }
             x if x == KmipTag::X509CertificateIssuer as u32 => Some(Self::X509CertificateIssuer),
             x if x == KmipTag::X509CertificateSubject as u32 => Some(Self::X509CertificateSubject),
             x if x == KmipTag::KeyValueLocation as u32 => Some(Self::KeyValueLocation),
@@ -301,7 +313,9 @@ impl AttributeTag {
             x if x == KmipTag::RotateLatest as u32 => Some(Self::RotateLatest),
             x if x == KmipTag::CertificateLink as u32 => Some(Self::CertificateLink),
             x if x == KmipTag::ChildLink as u32 => Some(Self::ChildLink),
-            x if x == KmipTag::DerivationBaseObjectLink as u32 => Some(Self::DerivationBaseObjectLink),
+            x if x == KmipTag::DerivationBaseObjectLink as u32 => {
+                Some(Self::DerivationBaseObjectLink)
+            }
             x if x == KmipTag::DerivedObjectLink as u32 => Some(Self::DerivedObjectLink),
             x if x == KmipTag::NextLink as u32 => Some(Self::NextLink),
             x if x == KmipTag::ParentLink as u32 => Some(Self::ParentLink),
@@ -319,7 +333,9 @@ impl AttributeTag {
             x if x == KmipTag::OTPCounter as u32 => Some(Self::OTPCounter),
             x if x == KmipTag::GroupLink as u32 => Some(Self::GroupLink),
             x if x == KmipTag::SplitKeyBaseLink as u32 => Some(Self::SplitKeyBaseLink),
-            x if x == KmipTag::JoinedSplitKeyPartsLink as u32 => Some(Self::JoinedSplitKeyPartsLink),
+            x if x == KmipTag::JoinedSplitKeyPartsLink as u32 => {
+                Some(Self::JoinedSplitKeyPartsLink)
+            }
             x if x == KmipTag::SplitKeyPolynomial as u32 => Some(Self::SplitKeyPolynomial),
             x if x == KmipTag::DeactivationReason as u32 => Some(Self::DeactivationReason),
             x if x == KmipTag::CertificateSubjectDN as u32 => Some(Self::CertificateSubjectDN),
@@ -421,7 +437,9 @@ impl LinkAttributeTag {
         match raw {
             x if x == KmipTag::CertificateLink as u32 => Some(Self::CertificateLink),
             x if x == KmipTag::ChildLink as u32 => Some(Self::ChildLink),
-            x if x == KmipTag::DerivationBaseObjectLink as u32 => Some(Self::DerivationBaseObjectLink),
+            x if x == KmipTag::DerivationBaseObjectLink as u32 => {
+                Some(Self::DerivationBaseObjectLink)
+            }
             x if x == KmipTag::DerivedObjectLink as u32 => Some(Self::DerivedObjectLink),
             x if x == KmipTag::NextLink as u32 => Some(Self::NextLink),
             x if x == KmipTag::ParentLink as u32 => Some(Self::ParentLink),
@@ -437,7 +455,9 @@ impl LinkAttributeTag {
             x if x == KmipTag::PasswordLink as u32 => Some(Self::PasswordLink),
             x if x == KmipTag::GroupLink as u32 => Some(Self::GroupLink),
             x if x == KmipTag::SplitKeyBaseLink as u32 => Some(Self::SplitKeyBaseLink),
-            x if x == KmipTag::JoinedSplitKeyPartsLink as u32 => Some(Self::JoinedSplitKeyPartsLink),
+            x if x == KmipTag::JoinedSplitKeyPartsLink as u32 => {
+                Some(Self::JoinedSplitKeyPartsLink)
+            }
             x if x == KmipTag::CertificateRequestLink as u32 => Some(Self::CertificateRequestLink),
             _ => None,
         }
@@ -827,4 +847,3 @@ impl EphemeralMode {
         }
     }
 }
-
