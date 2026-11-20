@@ -4178,24 +4178,30 @@ def v3_0_tag_name(raw: int) -> str | None:
         0x004201CB: 'Performs CRL Checks',
     }.get(raw)
 
+V3_0_EPHEMERAL_MODE_NO = 0x00000001  # KMIPKit project-defined compatibility mapping; not an OASIS allocation
+V3_0_EPHEMERAL_MODE_IMMEDIATE = 0x00000002  # KMIPKit project-defined compatibility mapping; not an OASIS allocation
+V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = 0x00000003  # KMIPKit project-defined compatibility mapping; not an OASIS allocation
 
-# KMIP 3.0 Ephemeral Mode
-V3_0_EPHEMERAL_MODE_NO = 0x00000001
-V3_0_EPHEMERAL_MODE_IMMEDIATE = 0x00000002
-V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = 0x00000003
+def v3_0_ephemeral_mode_name(raw: int) -> str | None:
+    """Return the KMIPKit v3.0 compatibility name for Ephemeral Mode."""
+    return {
+        0x00000001: 'No',
+        0x00000002: 'Immediate',
+        0x00000003: 'Retain on Failure',
+    }.get(raw)
 
 
 class EphemeralMode:
-    """Named values for KMIP 3.0 Ephemeral Mode."""
-
+    """KMIPKit compatibility values for the Ephemeral Mode property."""
     NO = 0x00000001
     IMMEDIATE = 0x00000002
     RETAIN_ON_FAILURE = 0x00000003
 
     @staticmethod
     def name(raw: int) -> str | None:
+        """Return the compatibility name, or None for an unknown value."""
         return {
-            0x00000001: "No",
-            0x00000002: "Immediate",
-            0x00000003: "Retain on Failure",
+            0x00000001: 'No',
+            0x00000002: 'Immediate',
+            0x00000003: 'Retain on Failure',
         }.get(raw)

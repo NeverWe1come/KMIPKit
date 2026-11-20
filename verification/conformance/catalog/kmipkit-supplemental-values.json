@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "groups": [
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Ephemeral Mode",
+      "values": [
+        {
+          "name": "No",
+          "wire_value": "0x00000001"
+        },
+        {
+          "name": "Immediate",
+          "wire_value": "0x00000002"
+        },
+        {
+          "name": "Retain on Failure",
+          "wire_value": "0x00000003"
+        }
+      ]
+    }
+  ]
+}

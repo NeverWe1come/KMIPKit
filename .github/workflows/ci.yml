@@ -534,7 +534,7 @@ jobs:
             Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
             Select-Object -First 1
           if (-not $nativeLibrary) { throw 'The C ABI shared library was not built.' }
-          & $python.Source -B verification/api/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
+          & $python.Source -B verification/api/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check-c-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure the C consumer with MSVC

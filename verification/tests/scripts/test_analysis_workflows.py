@@ -39,7 +39,11 @@ class AnalysisWorkflowTests(unittest.TestCase):
 
     def test_codeql_actions_are_pinned_to_reviewed_commits(self) -> None:
         workflow = self.read_workflow("codeql.yml")
-        action_lines = [line for line in workflow.splitlines() if re.search(r"\buses:\s", line)]
+        action_lines = [
+            line
+            for line in workflow.splitlines()
+            if re.search(r"\buses:\s", line) and "uses: ./.github/" not in line
+        ]
         self.assertTrue(action_lines)
         for line in action_lines:
             self.assertRegex(line, r"@[0-9a-f]{40}\s+#\s+.+v\d")

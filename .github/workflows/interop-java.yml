@@ -74,7 +74,7 @@ jobs:
 
       - name: Test Java 17 consumer against the installed artifact
         run: |
-          bash ../../bindings/java/gradlew \
+          bash ../../../bindings/java/gradlew \
             -PkmipkitMavenRepo="$GITHUB_WORKSPACE/verification/interop/java-kmip-validator/build/maven-repository" \
             test
 
