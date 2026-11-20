@@ -10,26 +10,15 @@ use openssl::sha::sha256;
 use openssl::sign::{Signer, Verifier};
 use zeroize::Zeroizing;
 
-#[cfg(any(
-    feature = "azure",
-    feature = "gcp",
-    feature = "oci",
-    feature = "vault",
-    feature = "infisical",
-    feature = "ibm",
-    feature = "alibaba",
-    feature = "scaleway",
-    feature = "otc"
-))]
 use crate::ProxyError;
 
 static RUSTLS_PROVIDER: OnceLock<Result<(), String>> = OnceLock::new();
 
 /// Installs OpenSSL as the process-wide rustls crypto provider.
 ///
-/// This is required by Azure's rustls client, which is built without a
-/// provider so it can use the same OpenSSL-backed implementation as the
-/// proxy listener.
+/// This installs the provider needed by the listener and by rustls clients
+/// Azure's rustls client is one such client; it uses the same OpenSSL-backed
+/// implementation as the proxy listener.
 pub fn install_rustls_openssl_provider() -> Result<(), ProxyError> {
     RUSTLS_PROVIDER
         .get_or_init(|| {

@@ -80,6 +80,8 @@ impl ProxyServer {
         provider: Arc<dyn CloudKmsProvider>,
         pki: Option<AutoPki>,
     ) -> Result<ProxyServerHandle, String> {
+        crate::crypto::install_rustls_openssl_provider()
+            .map_err(|error| format!("failed to install rustls crypto provider: {error}"))?;
         let dispatcher = Arc::new(RequestDispatcher::new(
             provider,
             config.proxy_behavior.clone(),
