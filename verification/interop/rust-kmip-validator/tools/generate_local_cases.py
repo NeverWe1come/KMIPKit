@@ -38,4 +38,5 @@ output = ROOT / "verification/interop/rust-kmip-validator/src/local_cases_genera
 output.write_text("\n".join(lines))
 
 import subprocess
-subprocess.run(["cargo", "+1.94", "fmt", "--manifest-path", str(ROOT / "verification/interop/rust-kmip-validator/Cargo.toml")], check=True)
+# Format this output without resolving the validator's installed-library dependencies.
+subprocess.run(["rustfmt", "+1.94", "--edition", "2024", str(output)], check=True)
