@@ -10,11 +10,10 @@ publish = false
 
 [features]
 default = ["fixtures"]
-fixtures = ["dep:aws-lc-rs", "dep:rcgen"]
+fixtures = ["dep:rcgen"]
 scripted-transport = ["dep:kmipkit-transport"]
 
 [dependencies]
-aws-lc-rs = { workspace = true, optional = true }
 kmipkit-protocol.workspace = true
 kmipkit-transport = { workspace = true, optional = true }
 kmipkit-ttlv.workspace = true

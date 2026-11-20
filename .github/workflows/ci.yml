@@ -136,6 +136,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Run focused classifier and normative catalog checks
         id: run-focused-classifier-and-normative-catalog-checks
         run: >-
@@ -198,6 +201,9 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust toolchain and components
         id: install-rust-toolchain-and-components
@@ -288,6 +294,9 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Set up Python 3.12
         id: set-up-python-3-12
@@ -479,6 +488,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -599,6 +611,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -707,6 +722,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -783,6 +801,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install nightly Rust
         id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
@@ -853,6 +874,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Run the JNI zeroization owner test under native sanitizers
         id: run-native-sanitizers
@@ -1128,6 +1152,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install stable Rust
         id: install-stable-rust
         run: rustup toolchain install stable --profile minimal
@@ -1384,6 +1411,9 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -1473,6 +1503,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
         id: install-rust-1-94
@@ -1566,6 +1599,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
         id: install-rust-1-94
@@ -1789,6 +1825,9 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install nightly Rust
         id: install-nightly

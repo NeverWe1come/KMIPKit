@@ -18,6 +18,7 @@ zeroize.workspace = true
 quick-xml = { version = "=0.42.0", default-features = false }
 
 [dev-dependencies]
+rustls-openssl.workspace = true
 roxmltree.workspace = true
 static_assertions = { version = "=1.1.0", default-features = false }
 kmipkit-protocol = { workspace = true, features = ["test-support"] }

@@ -36,16 +36,10 @@ fail. Cached advisory data alone is not a successful fresh scan. The check
 does not update manifests or lockfiles; it uses locked operations and compares
 lockfile hashes so an accidental change fails.
 
-The root workspace has one exact path-patched vendor package:
-`aws-lc-sys@0.45.0` at `vendor/aws-lc-sys-0.45.0/Cargo.toml`. The local
-metadata validator permits that exact package/version/path in addition to
-canonical workspace members; another package, version, path, or symlink
-resolution remains rejected. The vendored package is the upstream crates.io
-archive with a narrowly scoped jitterentropy symbol-visibility patch. Its
-archive hash, source revision, license evidence, patch, and ABI verification
-are recorded in the [vendor provenance note](../development/aws-lc-sys-vendoring.md).
-This path allowance does not waive cargo-deny license, source, advisory,
-duplicate, or architecture checks.
+Local dependencies must be canonical workspace members. The release CI builds
+OpenSSL from a checksum-pinned upstream source archive in the runner's temporary
+directory. The Rust dependency scan covers the OpenSSL bindings and TLS adapter;
+the version and provenance of the native library are checked by the build step.
 
 On a cargo-deny failure, the runner requests its JSON diagnostic format and
 prints only validated package coordinates, rule codes, known advisory
@@ -133,14 +127,10 @@ supported.
 
 ## Finite architecture bans
 
-The policy bans exactly `native-tls`, `openssl`, and `openssl-sys`, as required
-by ADR-0005's selection of
-the rustls TLS backend with aws-lc-rs. These names enforce that specific
-architecture decision. They are a finite list of exact crate names, not a
-pattern intended to ban unrelated packages. Do not add a general-purpose ban
-list in this policy change, and do not add exceptions for these three crates.
-Any change to the TLS backend boundary requires a separately reviewed
-specification and ADR.
+The client workspace bans `native-tls`, `aws-lc-rs`, `aws-lc-sys`, and
+`openssl-src`. Rustls handles TLS through the OpenSSL provider. The native
+OpenSSL release comes from the build environment, so the Cargo graph cannot
+silently choose a different source archive.
 
 Other checks deny wildcard dependency requirements and duplicate versions,
 including development dependencies; any duplicate exception must cover the

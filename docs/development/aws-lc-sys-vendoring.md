@@ -1,5 +1,9 @@
 # Patched `aws-lc-sys` provenance
 
+This note records the AWS-LC configuration before the OpenSSL migration. The
+original source tree and Cargo patch are available in [the last AWS-LC review
+commit](https://github.com/NeverWe1come/KMIPKit/tree/20e0edfdb7dcbc0f1a32034e501939956dcfa045).
+
 KMIPKit pins `aws-lc-rs` 1.18.1, which resolves `aws-lc-sys` 0.45.0. The
 vendored copy at `vendor/aws-lc-sys-0.45.0` is the exact crates.io package
 with one documented change to the embedded jitterentropy header. Its original

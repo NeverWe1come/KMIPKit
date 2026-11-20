@@ -60,7 +60,7 @@ fn runtime_client_configuration_negotiates_tls13_with_a_local_peer() {
 
 fn tls13_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
     let identity = pki.server_identity();
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("TLS 1.3 is available in the test-only server policy");

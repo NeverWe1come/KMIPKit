@@ -31,7 +31,7 @@ impl S2cClient {
             ))
             .map_err(|e| format!("CA cert error: {e}"))?;
 
-        let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+        let provider = Arc::new(rustls_openssl::default_provider());
         let cert_chain = vec![rustls::pki_types::CertificateDer::from(
             pki.client_cert_der.clone(),
         )];

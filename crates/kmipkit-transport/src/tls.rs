@@ -11,7 +11,6 @@ use rustls::client::{
     ClientConfig, ClientSessionStore, Resumption, Tls12ClientSessionValue, Tls13ClientSessionValue,
     WebPkiServerVerifier,
 };
-use rustls::crypto::aws_lc_rs;
 use rustls::pki_types::ServerName;
 use rustls::sign::SingleCertAndKey;
 use rustls::{ConfigBuilder, WantsVerifier};
@@ -29,20 +28,24 @@ use crate::config::{TlsVersionPolicy, TransportConfig, TransportConfigError};
 #[path = "../tests/unit/tls_session_store_tests.rs"]
 mod session_store_tests;
 
+#[path = "tls_mldsa.rs"]
+mod mldsa;
+
 const MAX_TICKETS: usize = 16;
 const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 
-/// Selects the AWS-LC provider retained by one validated transport configuration
+/// Selects the OpenSSL provider retained by one validated transport configuration
 /// under the strict TLS 1.3-only default policy.
-pub(crate) fn aws_lc_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
-    aws_lc_crypto_provider_for_policy(TlsVersionPolicy::Tls13Only)
+pub(crate) fn openssl_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    openssl_crypto_provider_for_policy(TlsVersionPolicy::Tls13Only)
 }
 
-/// Selects the AWS-LC provider retained for the requested TLS version policy.
-pub(crate) fn aws_lc_crypto_provider_for_policy(
+/// Selects the OpenSSL provider retained for the requested TLS version policy.
+pub(crate) fn openssl_crypto_provider_for_policy(
     policy: TlsVersionPolicy,
 ) -> Arc<rustls::crypto::CryptoProvider> {
-    let mut provider = aws_lc_rs::default_provider();
+    let mut provider = rustls_openssl::default_provider();
+    mldsa::extend(&mut provider);
     // KMIP Profiles v2.1 §3.1.2 restricts TLS 1.3 to two suites; TLS 1.2 opt-in
     // compatibility restricts TLS 1.2 to OASIS KMIP Profiles ECDHE-GCM suites.
     provider.cipher_suites.retain(|suite| match policy {

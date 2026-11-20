@@ -97,6 +97,14 @@ current Java and Python package target matrix is:
 These are package targets recorded in the manifest, not a claim that every
 published artifact or platform test is complete.
 
+## Building KMIPKit from source
+
+The Rust TLS provider builds against OpenSSL 3.5. CI compiles the official
+release from a checksum-pinned archive. For local builds, use an OpenSSL
+installation that includes the headers and libraries. Point `OPENSSL_DIR` at
+the installation if Cargo cannot find it. Set `OPENSSL_STATIC=1` when building
+self-contained C, Java, or Python artifacts and provide the static libraries.
+
 ## Native library loading
 
 Both package families bundle their native library and do not perform a

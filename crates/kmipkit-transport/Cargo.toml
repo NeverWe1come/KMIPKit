@@ -14,7 +14,8 @@ autotests = false
 test-support = []
 
 [dependencies]
-aws-lc-rs.workspace = true
+openssl.workspace = true
+rustls-openssl.workspace = true
 bytes.workspace = true
 hyper.workspace = true
 kmipkit-protocol.workspace = true

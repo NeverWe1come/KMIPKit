@@ -1,149 +1,97 @@
-//! Real cryptographic operations for kmipkit-test-server using aws-lc-rs.
+//! Cryptographic operations for the KMIP test server.
 
-use aws_lc_rs::digest::{SHA256, SHA384, SHA512, digest};
-use aws_lc_rs::hmac::{
-    HMAC_SHA256, HMAC_SHA384, HMAC_SHA512, Key as HmacKey, sign as hmac_sign, verify as hmac_verify,
-};
-use aws_lc_rs::rand::fill;
+use openssl::hash::{MessageDigest, hash as openssl_hash};
+use openssl::pkey::PKey;
+use openssl::rand::rand_bytes;
+use openssl::sign::Signer;
+use openssl::symm::{Cipher, decrypt_aead, encrypt_aead};
 
 pub fn generate_random_bytes(len: usize) -> Result<Vec<u8>, String> {
     let mut buf = vec![0u8; len];
-    fill(&mut buf).map_err(|_| "RNG failure".to_string())?;
+    rand_bytes(&mut buf).map_err(|_| "RNG failure".to_string())?;
     Ok(buf)
 }
 
+fn digest_algorithm(algo_enum: u32) -> Option<MessageDigest> {
+    match algo_enum {
+        0x0000_0005 => Some(MessageDigest::sha256()),
+        0x0000_0006 => Some(MessageDigest::sha384()),
+        0x0000_0007 => Some(MessageDigest::sha512()),
+        _ => None,
+    }
+}
+
 pub fn hash(algo_enum: u32, data: &[u8]) -> Result<Vec<u8>, String> {
-    // CryptographicAlgorithm enumeration:
-    // SHA_256 = 0x0000_0005, SHA_384 = 0x0000_0006, SHA_512 = 0x0000_0007
-    let algorithm = match algo_enum {
-        0x0000_0005 => &SHA256,
-        0x0000_0006 => &SHA384,
-        0x0000_0007 => &SHA512,
-        _ => return Err(format!("unsupported hash algorithm {algo_enum:#010x}")),
-    };
-    let d = digest(algorithm, data);
-    Ok(d.as_ref().to_vec())
+    let algorithm = digest_algorithm(algo_enum)
+        .ok_or_else(|| format!("unsupported hash algorithm {algo_enum:#010x}"))?;
+    openssl_hash(algorithm, data)
+        .map(|digest| digest.to_vec())
+        .map_err(|e| format!("hash failed: {e}"))
 }
 
 pub fn hmac(algo_enum: u32, key: &[u8], data: &[u8]) -> Result<Vec<u8>, String> {
-    let algorithm = match algo_enum {
-        0x0000_0005 => HMAC_SHA256,
-        0x0000_0006 => HMAC_SHA384,
-        0x0000_0007 => HMAC_SHA512,
-        _ => return Err(format!("unsupported HMAC algorithm {algo_enum:#010x}")),
+    let algorithm = digest_algorithm(algo_enum)
+        .ok_or_else(|| format!("unsupported HMAC algorithm {algo_enum:#010x}"))?;
+    // An empty HMAC key and a single zero byte both pad to the same block.
+    let key = if key.is_empty() { &[0u8] } else { key };
+    let sign = || {
+        let key = PKey::hmac(key)?;
+        let mut signer = Signer::new(algorithm, &key)?;
+        signer.update(data)?;
+        signer.sign_to_vec()
     };
-    let key = HmacKey::new(algorithm, key);
-    let tag = hmac_sign(&key, data);
-    Ok(tag.as_ref().to_vec())
+    sign().map_err(|e: openssl::error::ErrorStack| format!("HMAC failed: {e}"))
 }
 
 pub fn hmac_verify_tag(algo_enum: u32, key: &[u8], data: &[u8], mac: &[u8]) -> bool {
-    let algorithm = match algo_enum {
-        0x0000_0005 => HMAC_SHA256,
-        0x0000_0006 => HMAC_SHA384,
-        0x0000_0007 => HMAC_SHA512,
-        _ => return false,
-    };
-    let key = HmacKey::new(algorithm, key);
-    hmac_verify(&key, data, mac).is_ok()
+    hmac(algo_enum, key, data)
+        .is_ok_and(|tag| tag.len() == mac.len() && openssl::memcmp::eq(&tag, mac))
 }
 
-/// AES-GCM or AES-CTR / CBC encryption:
-/// Uses AEAD AES_256_GCM / AES_128_GCM if IV length is 12 bytes, or CBC/CTR.
+const GCM_IV_LEN: usize = 12;
+const GCM_TAG_LEN: usize = 16;
+
+fn aes_gcm_cipher(key: &[u8]) -> Result<Cipher, String> {
+    match key.len() {
+        16 => Ok(Cipher::aes_128_gcm()),
+        32 => Ok(Cipher::aes_256_gcm()),
+        _ => Err("invalid AES key length (must be 16 or 32 bytes)".to_string()),
+    }
+}
+
+fn normalize_iv(iv: &[u8]) -> Vec<u8> {
+    let mut normalized = iv[..iv.len().min(GCM_IV_LEN)].to_vec();
+    normalized.resize(GCM_IV_LEN, 0);
+    normalized
+}
+
 pub fn encrypt_aes(
     key: &[u8],
     iv: Option<&[u8]>,
     data: &[u8],
 ) -> Result<(Vec<u8>, Option<Vec<u8>>), String> {
-    if key.len() != 16 && key.len() != 32 {
-        return Err("invalid AES key length (must be 16 or 32 bytes)".to_string());
-    }
-    let effective_key = key.to_vec();
-
-    let iv_bytes = match iv {
-        Some(v) if v.len() == 12 => v.to_vec(),
-        Some(v) if !v.is_empty() => {
-            let mut buf = v.to_vec();
-            buf.resize(12, 0);
-            buf
-        }
-        _ => generate_random_bytes(12)?,
+    let cipher = aes_gcm_cipher(key)?;
+    let iv_bytes = match iv.filter(|iv| !iv.is_empty()) {
+        Some(iv) => normalize_iv(iv),
+        None => generate_random_bytes(GCM_IV_LEN)?,
     };
-
-    use aws_lc_rs::aead::{
-        AES_128_GCM, AES_256_GCM, Aad, BoundKey, Nonce, NonceSequence, SealingKey, UnboundKey,
-    };
-
-    struct OneNonce(Option<[u8; 12]>);
-    impl NonceSequence for OneNonce {
-        fn advance(&mut self) -> Result<Nonce, aws_lc_rs::error::Unspecified> {
-            let bytes = self.0.take().ok_or(aws_lc_rs::error::Unspecified)?;
-            Nonce::try_assume_unique_for_key(&bytes)
-        }
-    }
-
-    let algo = if effective_key.len() == 16 {
-        &AES_128_GCM
-    } else {
-        &AES_256_GCM
-    };
-
-    let unbound = UnboundKey::new(algo, &effective_key).map_err(|e| format!("invalid key: {e}"))?;
-    let mut iv_array = [0u8; 12];
-    iv_array.copy_from_slice(&iv_bytes[..12]);
-    let mut sealing_key = SealingKey::new(unbound, OneNonce(Some(iv_array)));
-
-    let mut in_out = data.to_vec();
-    sealing_key
-        .seal_in_place_append_tag(Aad::empty(), &mut in_out)
+    let mut tag = [0u8; GCM_TAG_LEN];
+    let mut ciphertext = encrypt_aead(cipher, key, Some(&iv_bytes), &[], data, &mut tag)
         .map_err(|e| format!("encryption failed: {e}"))?;
-
-    Ok((in_out, Some(iv_bytes)))
+    ciphertext.extend_from_slice(&tag);
+    Ok((ciphertext, Some(iv_bytes)))
 }
 
 pub fn decrypt_aes(key: &[u8], iv: Option<&[u8]>, ciphertext: &[u8]) -> Result<Vec<u8>, String> {
-    if key.len() != 16 && key.len() != 32 {
-        return Err("invalid AES key length (must be 16 or 32 bytes)".to_string());
-    }
-    let effective_key = key.to_vec();
-
-    let iv_bytes = match iv {
-        Some(v) if v.len() == 12 => v.to_vec(),
-        Some(v) if !v.is_empty() => {
-            let mut buf = v.to_vec();
-            buf.resize(12, 0);
-            buf
-        }
-        _ => return Err("IV is required for AES decryption".to_string()),
-    };
-
-    use aws_lc_rs::aead::{
-        AES_128_GCM, AES_256_GCM, Aad, BoundKey, Nonce, NonceSequence, OpeningKey, UnboundKey,
-    };
-
-    struct OneNonce(Option<[u8; 12]>);
-    impl NonceSequence for OneNonce {
-        fn advance(&mut self) -> Result<Nonce, aws_lc_rs::error::Unspecified> {
-            let bytes = self.0.take().ok_or(aws_lc_rs::error::Unspecified)?;
-            Nonce::try_assume_unique_for_key(&bytes)
-        }
-    }
-
-    let algo = if effective_key.len() == 16 {
-        &AES_128_GCM
-    } else {
-        &AES_256_GCM
-    };
-
-    let unbound = UnboundKey::new(algo, &effective_key).map_err(|e| format!("invalid key: {e}"))?;
-    let mut iv_array = [0u8; 12];
-    iv_array.copy_from_slice(&iv_bytes[..12]);
-    let mut opening_key = OpeningKey::new(unbound, OneNonce(Some(iv_array)));
-
-    let mut in_out = ciphertext.to_vec();
-    let plaintext = opening_key
-        .open_in_place(Aad::empty(), &mut in_out)
-        .map_err(|e| format!("decryption failed: {e}"))?;
-
-    Ok(plaintext.to_vec())
+    let cipher = aes_gcm_cipher(key)?;
+    let iv_bytes = normalize_iv(
+        iv.filter(|iv| !iv.is_empty())
+            .ok_or_else(|| "IV is required for AES decryption".to_string())?,
+    );
+    let (ciphertext, tag) = ciphertext
+        .split_at_checked(ciphertext.len().saturating_sub(GCM_TAG_LEN))
+        .filter(|(_, tag)| tag.len() == GCM_TAG_LEN)
+        .ok_or_else(|| "decryption failed: invalid authentication tag".to_string())?;
+    decrypt_aead(cipher, key, Some(&iv_bytes), &[], ciphertext, tag)
+        .map_err(|e| format!("decryption failed: {e}"))
 }

@@ -160,22 +160,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
             _, metadata = self.make_repository(root)
             policy.validate_workspace_metadata(root, metadata)
 
-    def test_exact_aws_lc_sys_vendor_manifest_is_allowed_outside_workspace_members(self) -> None:
-        policy = self.require_policy()
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            _, metadata = self.make_repository(root)
-            vendor_manifest = root / "vendor" / "aws-lc-sys-0.45.0" / "Cargo.toml"
-            vendor_manifest.parent.mkdir(parents=True)
-            vendor_manifest.write_text(
-                "[package]\nname = 'aws-lc-sys'\nversion = '0.45.0'\n", encoding="utf-8"
-            )
-            metadata["root"]["packages"].append(
-                package("aws-lc-sys", "0.45.0", vendor_manifest)
-            )
-            policy.validate_workspace_metadata(root, metadata)
-
-    def test_aws_lc_sys_vendor_allowlist_rejects_wrong_version_and_manifest_path(self) -> None:
+    def test_vendor_manifest_is_rejected_outside_workspace_members(self) -> None:
         policy = self.require_policy()
         invalid_cases = (
             ("vendor/aws-lc-sys-0.45.0/Cargo.toml", "aws-lc-sys", "0.46.0"),
@@ -346,7 +331,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
                 source_validator(metadata, {"schema_version": 1, "exceptions": []})
 
     def test_fuzz_package_declares_apache_license_and_matching_local_crate_version(self) -> None:
-        fuzz_manifest = tomllib.loads((REPOSITORY_ROOT / "fuzz" / "Cargo.toml").read_text(encoding="utf-8"))
+        fuzz_manifest = tomllib.loads((REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.toml").read_text(encoding="utf-8"))
         workspace_manifest = tomllib.loads((REPOSITORY_ROOT / "Cargo.toml").read_text(encoding="utf-8"))
         ttlv_manifest = tomllib.loads(
             (REPOSITORY_ROOT / "crates" / "kmipkit-ttlv" / "Cargo.toml").read_text(encoding="utf-8")
@@ -360,7 +345,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
         edge = fuzz_manifest["dependencies"]["kmipkit-ttlv"]
 
         self.assertEqual("Apache-2.0", fuzz_package.get("license"))
-        self.assertEqual("../crates/kmipkit-ttlv", edge["path"])
+        self.assertEqual("../../../crates/kmipkit-ttlv", edge["path"])
         self.assertEqual(expected_version, edge.get("version"))
 
     def test_private_packages_are_not_exempt_from_license_policy(self) -> None:
@@ -400,7 +385,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
             [
                 deny,
                 "--manifest-path",
-                str(REPOSITORY_ROOT / "fuzz" / "Cargo.toml"),
+                str(REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.toml"),
                 "--config",
                 str(deny_config),
                 "--workspace",
@@ -438,7 +423,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
 
         workspaces = (
             ("root", REPOSITORY_ROOT / "Cargo.toml", REPOSITORY_ROOT / "Cargo.lock"),
-            ("fuzz", REPOSITORY_ROOT / "fuzz" / "Cargo.toml", REPOSITORY_ROOT / "fuzz" / "Cargo.lock"),
+            ("fuzz", REPOSITORY_ROOT / "verification" / "security" / "fuzz" / "Cargo.toml", REPOSITORY_ROOT / "fuzz" / "Cargo.lock"),
         )
 
         def snapshot(lockfile: Path) -> tuple[bytes, frozenset[str]]:
@@ -998,8 +983,8 @@ class DependencyExceptionTests(unittest.TestCase):
         with self.assertRaises(self.policy_error()):
             self.validate([entry], [issue])
 
-    def test_architecture_ban_exceptions_cannot_waive_the_three_adr_0005_crates(self) -> None:
-        for banned in ("native-tls", "openssl", "openssl-sys"):
+    def test_architecture_ban_exceptions_cannot_waive_banned_crates(self) -> None:
+        for banned in ("native-tls", "aws-lc-rs", "aws-lc-sys", "openssl-src"):
             with self.subTest(package=banned):
                 entry = exact_exception(
                     "duplicate",
@@ -1009,12 +994,12 @@ class DependencyExceptionTests(unittest.TestCase):
                 issue = finding(
                     "ban",
                     package_name=banned,
-                    rule="ADR-0005 rustls TLS backend ban",
+                    rule="TLS backend architecture ban",
                     source="registry+https://github.com/rust-lang/crates.io-index",
                 )
                 with self.assertRaises(self.policy_error()) as context:
                     self.validate([entry], [issue])
-                self.assertIn("ADR-0005", str(context.exception))
+                self.assertIn("architecture ban", str(context.exception))
 
     def test_wildcard_requirement_cannot_be_waived_by_an_exception(self) -> None:
         entry = exact_exception("duplicate", version="*", source="registry+https://github.com/rust-lang/crates.io-index")
