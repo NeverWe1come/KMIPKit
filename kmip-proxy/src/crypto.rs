@@ -7,7 +7,7 @@ use openssl::pkey::PKey;
 use openssl::rand::rand_bytes;
 #[cfg(feature = "gcp")]
 use openssl::sha::sha256;
-use openssl::sign::{Signer, Verifier};
+use openssl::sign::Signer;
 use zeroize::Zeroizing;
 
 use crate::ProxyError;
@@ -57,16 +57,17 @@ pub fn hmac_sha256(key: &[u8], data: &[u8]) -> Result<Vec<u8>, openssl::error::E
     signer.sign_to_vec()
 }
 
-/// Verifies an HMAC-SHA256 value using OpenSSL's constant-time verifier.
+/// Verifies an HMAC-SHA256 value with a constant-time comparison.
 pub fn verify_hmac_sha256(
     key: &[u8],
     data: &[u8],
     signature: &[u8],
 ) -> Result<bool, openssl::error::ErrorStack> {
-    let key = PKey::hmac(key)?;
-    let mut verifier = Verifier::new(openssl::hash::MessageDigest::sha256(), &key)?;
-    verifier.update(data)?;
-    verifier.verify(signature)
+    let expected = hmac_sha256(key, data)?;
+    if signature.len() != expected.len() {
+        return Ok(false);
+    }
+    Ok(openssl::memcmp::eq(&expected, signature))
 }
 
 /// Computes a SHA-256 digest.
