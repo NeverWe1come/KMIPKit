@@ -477,25 +477,38 @@ impl ServerRequestDispatcher {
                             .map_err(map_protocol_err)?;
                     }
                 },
-                ServerRequestItemPayload::Query(req) => match handler.handle_query(req) {
-                    Ok(resp) => {
-                        let payload = resp.to_ttlv_payload().map_err(map_protocol_err)?;
-                        builder
-                            .add_success_item(QUERY_OPERATION, unique_id, payload)
-                            .map_err(map_protocol_err)?;
+                ServerRequestItemPayload::Query(req) => {
+                    let result = handler.handle_query(req).and_then(|response| {
+                        response
+                            .to_ttlv_payload_for_version(batch.protocol_version())
+                            .map_err(|_| {
+                                KmipOperationResult::new(
+                                    ResultStatus::from_raw(1),
+                                    Some(ResultReason::from_raw(0x07)),
+                                    None,
+                                )
+                                .expect("valid Invalid Field result")
+                            })
+                    });
+                    match result {
+                        Ok(payload) => {
+                            builder
+                                .add_success_item(QUERY_OPERATION, unique_id, payload)
+                                .map_err(map_protocol_err)?;
+                        }
+                        Err(result) => {
+                            builder
+                                .add_failure_item(
+                                    QUERY_OPERATION,
+                                    unique_id,
+                                    result.status(),
+                                    result.reason(),
+                                    result.message().map(|m| m.as_str().to_owned()),
+                                )
+                                .map_err(map_protocol_err)?;
+                        }
                     }
-                    Err(result) => {
-                        builder
-                            .add_failure_item(
-                                QUERY_OPERATION,
-                                unique_id,
-                                result.status(),
-                                result.reason(),
-                                result.message().map(|m| m.as_str().to_owned()),
-                            )
-                            .map_err(map_protocol_err)?;
-                    }
-                },
+                }
                 ServerRequestItemPayload::SetEndpointRole(req) => {
                     match handler.handle_set_endpoint_role(req) {
                         Ok(resp) => {

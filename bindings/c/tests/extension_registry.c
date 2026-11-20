@@ -3627,6 +3627,56 @@ static bool test_kmip_v3_and_lifecycle_parity(void)
     return true;
 }
 
+static bool test_s2c_extension_query_public_abi(void)
+{
+    static const uint8_t name[] = "TenantLabel";
+    kmipkit_extension_information_t *named = NULL;
+    kmipkit_extension_information_t *tagged = NULL;
+    kmipkit_extension_information_t *mapped = NULL;
+    REQUIRE(kmipkit_extension_information_create(name, sizeof(name) - 1U, &named) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_extension_information_tag(named, 0x540001U, &tagged) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_extension_information_type(tagged, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+                                              &mapped) == KMIPKIT_SUCCESS);
+
+    kmipkit_extension_information_t *entries[] = {mapped};
+    kmipkit_s2c_capabilities_v2_t caps = {0};
+    caps.struct_size = (uint32_t)sizeof(caps);
+    caps.abi_version = 2U;
+    caps.base.struct_size = (uint32_t)sizeof(caps.base);
+    caps.base.abi_version = 1U;
+    caps.extension_information = entries;
+    caps.extension_information_count = 1U;
+    const kmipkit_protocol_version_v1_t versions[] = {{2, 0}, {2, 1}, {3, 0}};
+
+    for (size_t index = 0U; index < sizeof(versions) / sizeof(versions[0]); ++index) {
+        kmipkit_ttlv_structure_t *payload = NULL;
+        kmipkit_ttlv_structure_view_t *view = NULL;
+        kmipkit_ttlv_item_view_t *information = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        kmipkit_ttlv_structure_view_t *fields = NULL;
+        uint64_t count = 0U;
+
+        REQUIRE(kmipkit_s2c_query_respond_with_capabilities_v2(
+                    0x30U, versions[index], &caps, &payload) == KMIPKIT_SUCCESS);
+        REQUIRE(kmipkit_ttlv_structure_view(payload, &view) == KMIPKIT_SUCCESS);
+        REQUIRE(kmipkit_ttlv_structure_view_item_count(view, &count) == KMIPKIT_SUCCESS);
+        REQUIRE(count == 1U);
+        REQUIRE(kmipkit_ttlv_structure_view_item_at(view, 0U, &information) == KMIPKIT_SUCCESS);
+        REQUIRE(kmipkit_ttlv_item_view_value(information, &value) == KMIPKIT_SUCCESS);
+        REQUIRE(kmipkit_ttlv_value_view_structure(value, &fields) == KMIPKIT_SUCCESS);
+        REQUIRE(kmipkit_ttlv_structure_view_item_count(fields, &count) == KMIPKIT_SUCCESS);
+        REQUIRE(count == 3U);
+
+        kmipkit_ttlv_structure_view_release(fields);
+        kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(information);
+        kmipkit_ttlv_structure_view_release(view);
+        kmipkit_ttlv_structure_release(payload);
+    }
+    kmipkit_extension_information_release(mapped);
+    return true;
+}
+
 #undef REQUIRE_STATUS_CLEANUP
 #undef REQUIRE_CLEANUP
 
@@ -3661,7 +3711,8 @@ int main(int argc, char **argv)
         {"schema path and order builders", test_schema_path_and_order_builders},
         {"extension information and definition accessors", test_extension_information_and_definition_accessors},
         {"definition validation and TTLV identity readback", test_definition_validation_and_ttlv_identity_readback},
-        {"KMIP 3.0 and lifecycle parity", test_kmip_v3_and_lifecycle_parity}
+        {"KMIP 3.0 and lifecycle parity", test_kmip_v3_and_lifecycle_parity},
+        {"S2C extension Query public ABI across versions", test_s2c_extension_query_public_abi}
     };
     size_t index;
     size_t failures = 0U;

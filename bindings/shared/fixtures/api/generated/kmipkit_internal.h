@@ -1446,12 +1446,14 @@ typedef struct kmipkit_listener_transport_config_v1_t kmipkit_listener_transport
 typedef struct kmipkit_listener_options_v1_t kmipkit_listener_options_v1_t;
 typedef struct kmipkit_server_request_item_view_v1_t kmipkit_server_request_item_view_v1_t;
 typedef struct kmipkit_s2c_capabilities_v1_t kmipkit_s2c_capabilities_v1_t;
+typedef struct kmipkit_s2c_capabilities_v2_t kmipkit_s2c_capabilities_v2_t;
 typedef struct kmipkit_s2c_operation_result_v1_t kmipkit_s2c_operation_result_v1_t;
 typedef struct kmipkit_server_request_handler_v1_t kmipkit_server_request_handler_v1_t;
 typedef struct kmipkit_server_request_handler_v2_t kmipkit_server_request_handler_v2_t;
 typedef struct kmipkit_server_request_handler_v3_t kmipkit_server_request_handler_v3_t;
 typedef struct kmipkit_server_request_handler_v4_t kmipkit_server_request_handler_v4_t;
 typedef struct kmipkit_server_request_handler_v5_t kmipkit_server_request_handler_v5_t;
+typedef struct kmipkit_server_request_handler_v6_t kmipkit_server_request_handler_v6_t;
 typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
 typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
 typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
@@ -2051,6 +2053,18 @@ struct kmipkit_s2c_capabilities_v1_t {
     uint32_t reserved;
 };
 
+/* Initialize the outer header with sizeof(record) and version 2, and base
+ * with its v1 size and version. Extension Information handles are borrowed;
+ * set base.extension_tags_count to zero when providing metadata. */
+struct kmipkit_s2c_capabilities_v2_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_s2c_capabilities_v1_t base;
+    kmipkit_extension_information_t * const * extension_information;
+    uint32_t extension_information_count;
+    uint32_t reserved;
+};
+
 struct kmipkit_s2c_operation_result_v1_t {
     uint32_t struct_size;
     uint32_t abi_version;
@@ -2121,6 +2135,18 @@ struct kmipkit_server_request_handler_v5_t {
     uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags, kmipkit_s2c_capabilities_v1_t * out_capabilities, kmipkit_s2c_operation_result_v1_t * out_result);
     uint32_t (*handle_set_endpoint_role)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t target_role, const uint8_t * vendor_identification_data, uint64_t vendor_identification_length, uint32_t * out_role, kmipkit_byte_span_v1_t * out_vendor, kmipkit_s2c_operation_result_v1_t * out_result);
 };
+
+/* Initialize both headers (v6 and base v5). handle_query supersedes the v5
+ * handler when non-null. Its output arrays and handles remain valid until the
+ * next callback or dispatch returns. The capabilities headers are initialized
+ * by the dispatcher. */
+struct kmipkit_server_request_handler_v6_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_server_request_handler_v5_t base;
+    uint32_t (*handle_query)(void * user_data, const kmipkit_server_request_item_view_v1_t * item_view, uint32_t query_function_flags, kmipkit_s2c_capabilities_v2_t * out_capabilities, kmipkit_s2c_operation_result_v1_t * out_result);
+};
+
 
 void kmipkit_add_attribute_request_release(kmipkit_add_attribute_request_t *handle);
 void kmipkit_adjust_attribute_request_release(kmipkit_adjust_attribute_request_t *handle);
@@ -4653,6 +4679,7 @@ int32_t kmipkit_server_request_dispatcher_dispatch_v2(kmipkit_server_request_dis
 int32_t kmipkit_server_request_dispatcher_dispatch_v3(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v3_t * handler, kmipkit_response_message_t ** out_response);
 int32_t kmipkit_server_request_dispatcher_dispatch_v4(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v4_t * handler, kmipkit_response_message_t ** out_response);
 int32_t kmipkit_server_request_dispatcher_dispatch_v5(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v5_t * handler, kmipkit_response_message_t ** out_response);
+int32_t kmipkit_server_request_dispatcher_dispatch_v6(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v6_t * handler, kmipkit_response_message_t ** out_response);
 void kmipkit_server_request_dispatcher_release(kmipkit_server_request_dispatcher_t * dispatcher);
 
 /* Server-to-Client helpers */
@@ -4661,7 +4688,12 @@ int32_t kmipkit_s2c_discover_versions_negotiate(uint32_t requested_major, uint32
 int32_t kmipkit_s2c_discover_versions_negotiate_v2(const kmipkit_protocol_version_v1_t * requested, uint32_t requested_count, const kmipkit_protocol_version_v1_t * supported, uint32_t supported_count, kmipkit_protocol_version_v1_t * output, uint32_t output_capacity, uint32_t * out_count);
 int32_t kmipkit_s2c_put_effective_function(uint32_t requested_put_function, uint8_t replaced_object_exists_locally, uint32_t * out_effective_put_function);
 int32_t kmipkit_s2c_query_respond_ttlv(uint32_t query_function_flags, const uint8_t * vendor_id_data, uint64_t vendor_id_len, kmipkit_ttlv_structure_t ** out_structure);
+/* Query extension List or Map with a non-empty v1 raw tag array returns
+ * KMIPKIT_ERROR_INVALID_SCHEMA. Supply Extension Information via v2. */
 int32_t kmipkit_s2c_query_respond_with_capabilities_v1(uint32_t query_function_flags, const kmipkit_s2c_capabilities_v1_t * capabilities, kmipkit_ttlv_structure_t ** out_structure);
+/* Builds the Query payload for the given KMIP version. A Map requires both
+ * Extension Tag and Extension Type on each advertised descriptor. */
+int32_t kmipkit_s2c_query_respond_with_capabilities_v2(uint32_t query_function_flags, kmipkit_protocol_version_v1_t version, const kmipkit_s2c_capabilities_v2_t * capabilities, kmipkit_ttlv_structure_t ** out_structure);
 
 /* Client SetEndpointRole execution */
 int32_t kmipkit_client_set_endpoint_role(kmipkit_client_t * client, uint32_t endpoint_role, const uint8_t * vendor_identification, uint64_t vendor_identification_length, kmipkit_codec_limits_t * limits, kmipkit_client_batch_item_response_t ** out_response);

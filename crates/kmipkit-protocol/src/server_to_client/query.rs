@@ -1,13 +1,15 @@
-//! Typed KMIP 2.1 Server-to-Client Query request and response payloads (§6.2.4, Tables 347, 348).
+//! Typed KMIP 2.0, 2.1, and 3.0 draft Server-to-Client Query payloads (§6.2.4).
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{KmipTag, ModelError, Structure, Value, ValueView};
+use kmipkit_ttlv::{ItemType, KmipTag, ModelError, Structure, Value, ValueView};
 
 use crate::asynchronous::item;
 use crate::enums::OperationCode;
+use crate::extension::{self, ExtensionInformation};
 use crate::{
-    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, QueryFunction, RequestBatchItemView,
+    ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion, QueryFunction,
+    RequestBatchItemView,
 };
 
 /// The KMIP operation code for Query (`0x0000_0018`).
@@ -17,8 +19,7 @@ const OPERATION_TAG: u32 = KmipTag::Operation.as_u32();
 const OBJECT_TYPE_TAG: u32 = KmipTag::ObjectType.as_u32();
 const SERVER_INFORMATION_TAG: u32 = KmipTag::ServerInformation.as_u32();
 const VENDOR_IDENTIFICATION_TAG: u32 = KmipTag::VendorIdentification.as_u32();
-const EXTENSION_LIST_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
-const EXTENSION_MAP_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
+const EXTENSION_INFORMATION_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
 
 /// Server/Client capabilities queried via §6.2.4.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -26,7 +27,8 @@ pub struct ServerCapabilities {
     operations: Vec<u32>,
     object_types: Vec<u32>,
     vendor_identification: Option<String>,
-    extension_tags: Vec<u32>,
+    extension_information: Vec<ExtensionInformation>,
+    legacy_extension_tags: Vec<u32>,
 }
 
 impl ServerCapabilities {
@@ -51,9 +53,20 @@ impl ServerCapabilities {
         self.object_types = object_types;
     }
 
-    /// Sets the supported extension tags list.
+    /// Replaces the advertised extension metadata with an ordered list.
+    pub fn set_extension_information(&mut self, information: Vec<ExtensionInformation>) {
+        self.extension_information = information;
+        self.legacy_extension_tags.clear();
+    }
+
+    /// Legacy setter retained for source compatibility.
+    ///
+    /// A non-empty list lacks the metadata required to answer either extension query.
+    /// Use [Self::set_extension_information] to advertise extensions.
+    #[deprecated(note = "use set_extension_information with KMIP Extension Information records")]
     pub fn set_extension_tags(&mut self, tags: Vec<u32>) {
-        self.extension_tags = tags;
+        self.extension_information.clear();
+        self.legacy_extension_tags = tags;
     }
 
     /// Returns the vendor identification string, if configured.
@@ -121,8 +134,15 @@ pub struct ServerQueryResponse {
     operations: Vec<u32>,
     object_types: Vec<u32>,
     server_information: Option<Structure>,
-    extension_map: Vec<u32>,
-    extension_list: Vec<u32>,
+    extensions: Vec<ExtensionInformation>,
+    extension_query: Option<ExtensionQuery>,
+    has_legacy_extension_tags: bool,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum ExtensionQuery {
+    List,
+    Map,
 }
 
 impl ServerQueryResponse {
@@ -169,30 +189,44 @@ impl ServerQueryResponse {
             }
         }
 
-        let (extension_map, extension_list) = if has_ext_map {
-            // Extension Map takes precedence over Extension List
-            (capabilities.extension_tags.clone(), Vec::new())
+        let extension_query = if has_ext_map {
+            Some(ExtensionQuery::Map)
         } else if has_ext_list {
-            (Vec::new(), capabilities.extension_tags.clone())
+            Some(ExtensionQuery::List)
         } else {
-            (Vec::new(), Vec::new())
+            None
         };
 
         Self {
             operations,
             object_types,
             server_information,
-            extension_map,
-            extension_list,
+            extensions: extension_query
+                .map_or_else(Vec::new, |_| capabilities.extension_information.clone()),
+            extension_query,
+            has_legacy_extension_tags: !capabilities.legacy_extension_tags.is_empty(),
         }
     }
 
-    /// Encodes the response payload into an ordered Structure.
+    /// Encodes the response payload using KMIP 2.1.
     ///
     /// # Errors
     ///
-    /// Returns a `ProtocolError` if structure construction fails.
+    /// Returns a protocol error if response metadata is invalid or encoding fails.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
+        self.to_ttlv_payload_for_version(ProtocolVersion::V2_1)
+    }
+
+    /// Encodes a response for the request's protocol version.
+    ///
+    /// # Errors
+    ///
+    /// Returns a protocol error if metadata is missing, a mapped type is unavailable
+    /// in the selected version, or structure construction fails.
+    pub fn to_ttlv_payload_for_version(
+        &self,
+        version: ProtocolVersion,
+    ) -> Result<Structure, ProtocolError> {
         let mut structure = Structure::new();
 
         for op in &self.operations {
@@ -214,24 +248,64 @@ impl ServerQueryResponse {
                 .map_err(protocol_model_error)?;
         }
 
-        // Extension Map
-        for ext in &self.extension_map {
-            let val = i32::try_from(*ext).unwrap_or(0);
-            structure
-                .try_push(item(EXTENSION_MAP_TAG, Value::integer(val))?)
-                .map_err(protocol_model_error)?;
-        }
-
-        // Extension List (only if Extension Map was not used)
-        for ext in &self.extension_list {
-            let val = i32::try_from(*ext).unwrap_or(0);
-            structure
-                .try_push(item(EXTENSION_LIST_TAG, Value::integer(val))?)
-                .map_err(protocol_model_error)?;
+        if let Some(query) = self.extension_query {
+            if self.has_legacy_extension_tags {
+                return Err(invalid_extension_information(
+                    "extension names and types must be supplied as metadata",
+                ));
+            }
+            for info in &self.extensions {
+                let info = match query {
+                    ExtensionQuery::List => extension::extension_information(info.name())?,
+                    ExtensionQuery::Map => {
+                        validate_extension_mapping(info, version)?;
+                        info.clone()
+                    }
+                };
+                let fields = extension::to_ttlv(info)?;
+                structure
+                    .try_push(item(EXTENSION_INFORMATION_TAG, Value::structure(fields))?)
+                    .map_err(protocol_model_error)?;
+            }
         }
 
         Ok(structure)
     }
+}
+
+fn validate_extension_mapping(
+    information: &ExtensionInformation,
+    version: ProtocolVersion,
+) -> Result<(), ProtocolError> {
+    if !information
+        .tag()
+        .is_some_and(|tag| (0x0054_0000..=0x0054_FFFF).contains(&tag))
+    {
+        return Err(invalid_extension_information(
+            "extension map requires a tag in the extension range",
+        ));
+    }
+    match information.item_type() {
+        None => Err(invalid_extension_information(
+            "extension map requires an item type",
+        )),
+        Some(ItemType::Identifier | ItemType::Reference | ItemType::NameReference)
+            if version < ProtocolVersion::V3_0 =>
+        {
+            Err(invalid_extension_information(
+                "extension item type requires KMIP 3.0",
+            ))
+        }
+        Some(_) => Ok(()),
+    }
+}
+
+fn invalid_extension_information(message: &'static str) -> ProtocolError {
+    ProtocolError::new(
+        ProtocolErrorKind::InvalidSchema,
+        ProtocolCauseCategory::InvalidValue,
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, message),
+    )
 }
 
 /// Errors returned while processing Server-to-Client Query requests.

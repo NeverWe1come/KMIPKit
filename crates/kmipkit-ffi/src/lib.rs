@@ -978,6 +978,18 @@ pub struct kmipkit_s2c_capabilities_v1_t {
     pub reserved: u32,
 }
 
+/// S2C Query capabilities with borrowed Extension Information handles.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_s2c_capabilities_v2_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub base: kmipkit_s2c_capabilities_v1_t,
+    pub extension_information: *const *mut kmipkit_extension_information_t,
+    pub extension_information_count: u32,
+    pub reserved: u32,
+}
+
 /// Operation result populated by C application callbacks for Server-to-Client operations (ABI version 1).
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -1307,6 +1319,26 @@ pub struct kmipkit_server_request_handler_v5_t {
             vendor_identification_length: u64,
             out_role: *mut u32,
             out_vendor: *mut kmipkit_byte_span_v1_t,
+            out_result: *mut kmipkit_s2c_operation_result_v1_t,
+        ) -> u32,
+    >,
+}
+
+/// S2C handler with an optional Query callback that can return full extension metadata.
+/// Borrowed response buffers and handles must remain valid until the next callback
+/// or until dispatch returns.
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct kmipkit_server_request_handler_v6_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub base: kmipkit_server_request_handler_v5_t,
+    pub handle_query: Option<
+        unsafe extern "C" fn(
+            user_data: *mut core::ffi::c_void,
+            item_view: *const kmipkit_server_request_item_view_v1_t,
+            query_function_flags: u32,
+            out_capabilities: *mut kmipkit_s2c_capabilities_v2_t,
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,

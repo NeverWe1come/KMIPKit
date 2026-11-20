@@ -150,6 +150,17 @@ public final class S2cUtilities {
     public static TtlvStructure buildQueryResponseTtlv(
             long queryFunctionFlags,
             S2cCapabilities capabilities) {
+        return buildQueryResponseTtlv(new VersionGate.ProtocolVersion(2, 1), queryFunctionFlags, capabilities);
+    }
+
+    /** Builds the advertised Query response payload for the selected protocol version. */
+    public static TtlvStructure buildQueryResponseTtlv(
+            VersionGate.ProtocolVersion version,
+            long queryFunctionFlags,
+            S2cCapabilities capabilities) {
+        if (version == null) {
+            throw new InvalidInputException("protocol version is required");
+        }
         if (capabilities == null) {
             throw new InvalidInputException("capabilities must not be null");
         }
@@ -165,9 +176,10 @@ public final class S2cUtilities {
                 : capabilities.vendorIdentification().getBytes(StandardCharsets.UTF_8);
 
         NativeExtensionRegistry.ensureLoaded();
-        long handle = NativeExtensionRegistry.s2cQueryRespondWithCapabilities(
-                queryFunctionFlags, ops, ots, vendorBytes, exts);
-        return TtlvStructure.fromNative(handle, null);
+        return NativeHandle.withNativeHandles(() -> TtlvStructure.fromNative(
+                NativeExtensionRegistry.s2cQueryRespondWithCapabilitiesV2(
+                        version.major(), version.minor(), queryFunctionFlags, ops, ots, vendorBytes, exts,
+                        capabilities.extensionInformationHandles()), null));
     }
 
     /**

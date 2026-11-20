@@ -15759,6 +15759,7 @@ struct S2cCallbackContext {
     std::vector<uint8_t> result_message_buf;
     std::vector<uint32_t> supported_versions;
     std::vector<uint8_t> response_vendor;
+    std::vector<kmipkit_extension_information_t*> extension_information;
 };
 
 static uint32_t populate_s2c_operation_result(
@@ -16226,11 +16227,36 @@ static uint32_t s2c_handle_put(
             attributes_ttlv_data, attributes_ttlv_length, nullptr);
 }
 
-static uint32_t s2c_handle_query_v3(
+static bool read_s2c_extension_information(
+        JNIEnv* env, jlongArray array, std::vector<kmipkit_extension_information_t*>& handles) {
+    handles.clear();
+    if (array == nullptr) return true;
+    const jsize count = env->GetArrayLength(array);
+    if (count > 1024) {
+        throw_status(env, KMIPKIT_ERROR_RESOURCE_LIMIT);
+        return false;
+    }
+    if (count == 0) return true;
+    std::vector<jlong> values(count);
+    env->GetLongArrayRegion(array, 0, count, values.data());
+    if (env->ExceptionCheck()) return false;
+    handles.reserve(count);
+    for (jlong value : values) {
+        if (value == 0) {
+            throw_invalid_input(env);
+            return false;
+        }
+        handles.push_back(from_java_handle<kmipkit_extension_information_t>(value));
+    }
+    return true;
+}
+
+static uint32_t s2c_handle_query_impl(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         uint32_t query_function_flags,
         kmipkit_s2c_capabilities_v1_t* out_capabilities,
+        kmipkit_s2c_capabilities_v2_t* out_capabilities_v2,
         kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
     JNIEnv* env = ctx->env;
@@ -16338,6 +16364,21 @@ static uint32_t s2c_handle_query_v3(
             out_capabilities->vendor_identification_length = static_cast<uint64_t>(ctx->custom_vendor.size());
         }
 
+        if (out_capabilities_v2 != nullptr) {
+            jmethodID get_information = env->GetMethodID(caps_class, "extensionInformationHandles", "()[J");
+            auto handles = get_information == nullptr ? nullptr : static_cast<jlongArray>(
+                    env->CallObjectMethod(caps_obj, get_information));
+            if (env->ExceptionCheck() || !read_s2c_extension_information(env, handles, ctx->extension_information)) {
+                status = populate_s2c_operation_result(env, ctx, nullptr, out_result);
+            } else {
+                out_capabilities_v2->extension_information = ctx->extension_information.empty()
+                        ? nullptr : ctx->extension_information.data();
+                out_capabilities_v2->extension_information_count =
+                        static_cast<uint32_t>(ctx->extension_information.size());
+            }
+            if (handles != nullptr) env->DeleteLocalRef(handles);
+        }
+
         env->DeleteLocalRef(num_class);
         env->DeleteLocalRef(list_class);
     }
@@ -16351,12 +16392,27 @@ static uint32_t s2c_handle_query_v3(
     return status;
 }
 
+static uint32_t s2c_handle_query_v6(
+        void* user_data,
+        const kmipkit_server_request_item_view_v1_t* item_view,
+        uint32_t query_function_flags,
+        kmipkit_s2c_capabilities_v2_t* out_capabilities,
+        kmipkit_s2c_operation_result_v1_t* out_result) {
+    try {
+        return s2c_handle_query_impl(user_data, item_view, query_function_flags,
+                &out_capabilities->base, out_capabilities, out_result);
+    } catch (...) {
+        // Never unwind through the Rust dispatcher.
+        return 1U;
+    }
+}
+
 static uint32_t s2c_handle_query(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         uint32_t query_function_flags,
         kmipkit_s2c_capabilities_v1_t* out_capabilities) {
-    return s2c_handle_query_v3(user_data, item_view, query_function_flags, out_capabilities, nullptr);
+    return s2c_handle_query_impl(user_data, item_view, query_function_flags, out_capabilities, nullptr, nullptr);
 }
 
 static uint32_t s2c_handle_set_endpoint_role_v3(
@@ -16486,7 +16542,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}, {}};
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}, {}, {}};
         kmipkit_server_request_handler_v2_t handler_v2{};
         handler_v2.struct_size = static_cast<uint32_t>(sizeof(handler_v2));
         handler_v2.abi_version = 2;
@@ -16513,22 +16569,25 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}, {}};
-        kmipkit_server_request_handler_v5_t handler_v5{};
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}, {}, {}};
+        kmipkit_server_request_handler_v6_t handler_v6{};
+        handler_v6.struct_size = static_cast<uint32_t>(sizeof(handler_v6));
+        handler_v6.abi_version = 6;
+        handler_v6.handle_query = s2c_handle_query_v6;
+        auto& handler_v5 = handler_v6.base;
         handler_v5.struct_size = static_cast<uint32_t>(sizeof(handler_v5));
         handler_v5.abi_version = 5;
         handler_v5.user_data = &ctx;
         handler_v5.handle_discover_versions = s2c_handle_discover_versions_v4;
         handler_v5.handle_notify = s2c_handle_notify_v5;
         handler_v5.handle_put = s2c_handle_put_v3;
-        handler_v5.handle_query = s2c_handle_query_v3;
         handler_v5.handle_set_endpoint_role = s2c_handle_set_endpoint_role_v5;
 
         return return_handle<kmipkit_response_message_t>(env, [&](auto output) {
-            return kmipkit_server_request_dispatcher_dispatch_v5(
+            return kmipkit_server_request_dispatcher_dispatch_v6(
                     from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
                     from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
-                    &handler_v5, output);
+                    &handler_v6, output);
         });
     });
 }
@@ -16647,62 +16706,89 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRespond
     });
 }
 
+static jlong build_s2c_query_response(
+        JNIEnv* env, kmipkit_protocol_version_v1_t version, jlong query_flags,
+        jlongArray ops_arr, jlongArray ots_arr, jbyteArray vendor_id,
+        jlongArray exts_arr, jlongArray information_arr) {
+    if (query_flags < 0 || static_cast<uint64_t>(query_flags) > 0xFFFF'FFFFULL) {
+        throw_invalid_input(env);
+        return static_cast<jlong>(0);
+    }
+    auto extract_u32_vec = [&](jlongArray arr, std::vector<uint32_t>& out) -> bool {
+        if (arr == nullptr) return true;
+        jsize len = env->GetArrayLength(arr);
+        if (len > 1024) {
+            throw_java(env, "org/kmipkit/InvalidInputException", "capabilities count exceeds limit");
+            return false;
+        }
+        std::vector<jlong> buf(len);
+        if (len != 0) env->GetLongArrayRegion(arr, 0, len, buf.data());
+        if (env->ExceptionCheck()) return false;
+        out.resize(len);
+        for (jsize i = 0; i < len; ++i) {
+            if (buf[i] < 0 || static_cast<uint64_t>(buf[i]) > 0xFFFF'FFFFULL) {
+                throw_invalid_input(env);
+                return false;
+            }
+            out[i] = static_cast<uint32_t>(buf[i]);
+        }
+        return true;
+    };
+    std::vector<uint32_t> ops_vec;
+    std::vector<uint32_t> ots_vec;
+    std::vector<uint32_t> exts_vec;
+    if (!extract_u32_vec(ops_arr, ops_vec)) return static_cast<jlong>(0);
+    if (!extract_u32_vec(ots_arr, ots_vec)) return static_cast<jlong>(0);
+    if (!extract_u32_vec(exts_arr, exts_vec)) return static_cast<jlong>(0);
+
+    std::vector<uint8_t> vendor_buf;
+    if (vendor_id != nullptr && !read_bytes(env, vendor_id, 16 * 1024 * 1024, vendor_buf)) {
+        return static_cast<jlong>(0);
+    }
+
+    std::vector<kmipkit_extension_information_t*> handles;
+    if (!read_s2c_extension_information(env, information_arr, handles)) return 0;
+
+    kmipkit_s2c_capabilities_v2_t capabilities{};
+    capabilities.struct_size = static_cast<uint32_t>(sizeof(capabilities));
+    capabilities.abi_version = 2;
+    capabilities.extension_information = handles.empty() ? nullptr : handles.data();
+    capabilities.extension_information_count = static_cast<uint32_t>(handles.size());
+    auto& caps = capabilities.base;
+    caps.struct_size = static_cast<uint32_t>(sizeof(caps));
+    caps.abi_version = 1;
+    caps.operations = ops_vec.empty() ? nullptr : ops_vec.data();
+    caps.operations_count = static_cast<uint32_t>(ops_vec.size());
+    caps.object_types = ots_vec.empty() ? nullptr : ots_vec.data();
+    caps.object_types_count = static_cast<uint32_t>(ots_vec.size());
+    caps.vendor_identification_data = vendor_buf.empty() ? nullptr : vendor_buf.data();
+    caps.vendor_identification_length = static_cast<uint64_t>(vendor_buf.size());
+    caps.extension_tags = exts_vec.empty() ? nullptr : exts_vec.data();
+    caps.extension_tags_count = static_cast<uint32_t>(exts_vec.size());
+    caps.reserved = 0;
+
+    return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+        return kmipkit_s2c_query_respond_with_capabilities_v2(
+                static_cast<uint32_t>(query_flags), version, &capabilities, output);
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRespondWithCapabilities(
         JNIEnv* env, jclass, jlong query_flags, jlongArray ops_arr, jlongArray ots_arr,
         jbyteArray vendor_id, jlongArray exts_arr) {
     return guarded<jlong>(env, 0, [&] {
-        if (query_flags < 0 || static_cast<uint64_t>(query_flags) > 0xFFFF'FFFFULL) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
-        }
-        auto extract_u32_vec = [&](jlongArray arr, std::vector<uint32_t>& out) -> bool {
-            if (arr == nullptr) return true;
-            jsize len = env->GetArrayLength(arr);
-            if (len > 1024) {
-                throw_java(env, "org/kmipkit/InvalidInputException", "capabilities count exceeds limit");
-                return false;
-            }
-            std::vector<jlong> buf(len);
-            env->GetLongArrayRegion(arr, 0, len, buf.data());
-            out.resize(len);
-            for (jsize i = 0; i < len; ++i) {
-                if (buf[i] < 0 || static_cast<uint64_t>(buf[i]) > 0xFFFF'FFFFULL) {
-                    throw_invalid_input(env);
-                    return false;
-                }
-                out[i] = static_cast<uint32_t>(buf[i]);
-            }
-            return true;
-        };
-        std::vector<uint32_t> ops_vec;
-        std::vector<uint32_t> ots_vec;
-        std::vector<uint32_t> exts_vec;
-        if (!extract_u32_vec(ops_arr, ops_vec)) return static_cast<jlong>(0);
-        if (!extract_u32_vec(ots_arr, ots_vec)) return static_cast<jlong>(0);
-        if (!extract_u32_vec(exts_arr, exts_vec)) return static_cast<jlong>(0);
+        return build_s2c_query_response(env, {2, 1}, query_flags,
+                ops_arr, ots_arr, vendor_id, exts_arr, nullptr);
+    });
+}
 
-        std::vector<uint8_t> vendor_buf;
-        if (vendor_id != nullptr && !read_bytes(env, vendor_id, 16 * 1024 * 1024, vendor_buf)) {
-            return static_cast<jlong>(0);
-        }
-
-        kmipkit_s2c_capabilities_v1_t caps{};
-        caps.struct_size = static_cast<uint32_t>(sizeof(caps));
-        caps.abi_version = 1;
-        caps.operations = ops_vec.empty() ? nullptr : ops_vec.data();
-        caps.operations_count = static_cast<uint32_t>(ops_vec.size());
-        caps.object_types = ots_vec.empty() ? nullptr : ots_vec.data();
-        caps.object_types_count = static_cast<uint32_t>(ots_vec.size());
-        caps.vendor_identification_data = vendor_buf.empty() ? nullptr : vendor_buf.data();
-        caps.vendor_identification_length = static_cast<uint64_t>(vendor_buf.size());
-        caps.extension_tags = exts_vec.empty() ? nullptr : exts_vec.data();
-        caps.extension_tags_count = static_cast<uint32_t>(exts_vec.size());
-        caps.reserved = 0;
-
-        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
-            return kmipkit_s2c_query_respond_with_capabilities_v1(
-                    static_cast<uint32_t>(query_flags), &caps, output);
-        });
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRespondWithCapabilitiesV2(
+        JNIEnv* env, jclass, jint major, jint minor, jlong query_flags,
+        jlongArray ops_arr, jlongArray ots_arr, jbyteArray vendor_id,
+        jlongArray exts_arr, jlongArray information_arr) {
+    return guarded<jlong>(env, 0, [&] {
+        return build_s2c_query_response(env, {major, minor}, query_flags,
+                ops_arr, ots_arr, vendor_id, exts_arr, information_arr);
     });
 }
 

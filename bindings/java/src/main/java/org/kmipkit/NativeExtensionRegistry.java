@@ -881,6 +881,9 @@ public final class NativeExtensionRegistry {
             long queryFunctionFlags, byte[] vendorIdentification);
     public static native long s2cQueryRespondWithCapabilities(
             long queryFunctionFlags, long[] operations, long[] objectTypes, byte[] vendorIdentification, long[] extensionTags);
+    public static native long s2cQueryRespondWithCapabilitiesV2(
+            int major, int minor, long queryFunctionFlags, long[] operations, long[] objectTypes,
+            byte[] vendorIdentification, long[] extensionTags, long[] extensionInformation);
     public static native boolean s2cNotifyRequestValidate(long rawItemView);
     public static native boolean s2cPutRequestValidate(long rawItemView);
     public static native boolean s2cQueryRequestValidate(long rawItemView);

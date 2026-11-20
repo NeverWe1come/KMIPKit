@@ -1,7 +1,9 @@
+use crate::extension::{extension_information, with_description, with_tag, with_type};
 use crate::{
-    QueryFunction, RequestMessage, ServerCapabilities, ServerQueryRequest, ServerQueryResponse,
+    ProtocolVersion, QueryFunction, RequestMessage, ServerCapabilities, ServerQueryRequest,
+    ServerQueryResponse,
 };
-use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+use kmipkit_ttlv::{Item, ItemType, KmipTag, RawTag, Structure, Value, ValueView};
 
 fn wrap_request_item(operation: u32, payload: Structure) -> RequestMessage {
     let mut pv = Structure::new();
@@ -149,14 +151,7 @@ fn test_server_query_response_extension_map_supersedes_extension_list() {
     let resp = ServerQueryResponse::respond(&req, &capabilities);
     let payload_structure = resp.to_ttlv_payload().expect("payload build succeeds");
 
-    // Must NOT contain Extension List (tag 0x0042_00A3) if Extension Map (0x0042_00A4) is present or requested
-    for item in payload_structure.view().children() {
-        assert_ne!(
-            item.tag().raw(),
-            0x0042_00A3,
-            "Extension List must not be present when Extension Map is requested"
-        );
-    }
+    assert!(payload_structure.view().children().is_empty());
 }
 
 #[test]
@@ -168,7 +163,7 @@ fn test_server_query_constructors_and_capabilities_coverage() {
     caps.set_vendor_identification("AcmeVendor");
     caps.set_operations(vec![0x18, 0x1E]);
     caps.set_object_types(vec![1, 2]);
-    caps.set_extension_tags(vec![0x8000_0001]);
+    caps.set_extension_information(vec![extension_information("TenantLabel").unwrap()]);
     assert_eq!(caps.vendor_identification(), Some("AcmeVendor"));
 
     let req = ServerQueryRequest::new(vec![
@@ -209,7 +204,10 @@ fn test_server_query_extension_map_and_unknown_payload_fields() {
     use crate::QueryFunction;
 
     let mut caps = ServerCapabilities::new();
-    caps.set_extension_tags(vec![0x0001, 0x0002]);
+    caps.set_extension_information(vec![
+        mapped_information("TenantLabel", 0x54_0001, ItemType::TextString),
+        mapped_information("TenantFlags", 0x54_0002, ItemType::Integer),
+    ]);
 
     let req = ServerQueryRequest::new(vec![QueryFunction::EXTENSION_MAP]);
     let resp = ServerQueryResponse::respond(&req, &caps);
@@ -241,4 +239,128 @@ fn test_server_query_extension_map_and_unknown_payload_fields() {
     let view = msg.batch_items().next().expect("valid view");
     let parsed = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
     assert_eq!(parsed.query_functions(), []);
+}
+
+fn mapped_information(
+    name: &str,
+    tag: u32,
+    item_type: ItemType,
+) -> crate::extension::ExtensionInformation {
+    with_type(
+        with_tag(extension_information(name).unwrap(), tag).unwrap(),
+        item_type,
+    )
+    .unwrap()
+}
+
+#[test]
+fn extension_query_encodes_the_kmip_structure_for_each_version() {
+    let versions = [
+        ProtocolVersion::V2_0,
+        ProtocolVersion::V2_1,
+        ProtocolVersion::V3_0,
+    ];
+    let mut caps = ServerCapabilities::new();
+    caps.set_extension_information(vec![
+        with_description(
+            mapped_information("Tenant🔑", 0x54_0002, ItemType::TextString),
+            "optional",
+        )
+        .unwrap(),
+        mapped_information("TenantID", 0x54_0001, ItemType::Integer),
+    ]);
+
+    for version in versions {
+        for (functions, map) in [
+            (vec![QueryFunction::EXTENSION_LIST], false),
+            (vec![QueryFunction::EXTENSION_MAP], true),
+            (
+                vec![QueryFunction::EXTENSION_LIST, QueryFunction::EXTENSION_MAP],
+                true,
+            ),
+        ] {
+            let payload = ServerQueryResponse::respond(&ServerQueryRequest::new(functions), &caps)
+                .to_ttlv_payload_for_version(version)
+                .unwrap();
+            let view = payload.view();
+            assert_eq!(view.children().len(), 2);
+            for (index, item) in view.children().iter().enumerate() {
+                assert_eq!(item.tag(), KmipTag::ExtensionInformation.into());
+                item.with_value(|value| {
+                    let ValueView::Structure(fields) = value else {
+                        panic!("expected Extension Information structure")
+                    };
+                    let fields = fields.children();
+                    let (name, tag, item_type) = if index == 0 {
+                        ("Tenant🔑", 0x54_0002, 7)
+                    } else {
+                        ("TenantID", 0x54_0001, 2)
+                    };
+                    assert_eq!(fields[0].tag(), KmipTag::ExtensionName.into());
+                    fields[0].with_value(|v| {
+                        assert!(matches!(v, ValueView::TextString(value) if value == name))
+                    });
+                    if map {
+                        assert_eq!(fields.len(), if index == 0 { 4 } else { 3 });
+                        assert_eq!(fields[1].tag(), KmipTag::ExtensionTag.into());
+                        fields[1].with_value(|v| {
+                            assert!(matches!(v, ValueView::Integer(value) if *value == tag))
+                        });
+                        assert_eq!(fields[2].tag(), KmipTag::ExtensionType.into());
+                        fields[2].with_value(|v| {
+                            assert!(
+                                matches!(v, ValueView::Enumeration(value) if *value == item_type)
+                            )
+                        });
+                        if index == 0 {
+                            assert_eq!(fields[3].tag(), KmipTag::ExtensionDescription.into());
+                            fields[3].with_value(|v| {
+                                assert!(matches!(v, ValueView::TextString("optional")))
+                            });
+                        }
+                    } else {
+                        assert_eq!(fields.len(), 1);
+                    }
+                });
+            }
+        }
+    }
+}
+
+#[test]
+#[allow(deprecated)]
+fn extension_map_requires_complete_metadata_and_a_versioned_item_type() {
+    let request = ServerQueryRequest::new(vec![QueryFunction::EXTENSION_MAP]);
+    let mut caps = ServerCapabilities::new();
+    caps.set_extension_tags(vec![0x54_0001]);
+    assert!(
+        ServerQueryResponse::respond(&request, &caps)
+            .to_ttlv_payload()
+            .is_err()
+    );
+    for information in [
+        extension_information("NameOnly").unwrap(),
+        mapped_information("StandardTag", 0x42_0001, ItemType::TextString),
+    ] {
+        caps.set_extension_information(vec![information]);
+        assert!(
+            ServerQueryResponse::respond(&request, &caps)
+                .to_ttlv_payload()
+                .is_err()
+        );
+    }
+    caps.set_extension_information(vec![mapped_information(
+        "TenantRef",
+        0x54_0001,
+        ItemType::NameReference,
+    )]);
+    let response = ServerQueryResponse::respond(&request, &caps);
+    for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+        assert!(response.to_ttlv_payload_for_version(version).is_err());
+    }
+    assert!(
+        response
+            .to_ttlv_payload_for_version(ProtocolVersion::V3_0)
+            .is_ok()
+    );
 }

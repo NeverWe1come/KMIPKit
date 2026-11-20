@@ -709636,6 +709636,42 @@
       "declarationState": "declared"
     },
     {
+      "declarationId": "Dynamic:kmipkit_s2c_query_respond_with_capabilities_v2",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_s2c_query_respond_with_capabilities_v2",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_server_request_dispatcher_dispatch_v6",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_request_dispatcher_dispatch_v6",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.S2cCapabilities.extensionInformation",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.S2cCapabilities.extensionInformation",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.S2cUtilities.buildQueryResponseTtlv",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.S2cUtilities.buildQueryResponseTtlv",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
       "declarationId": "Dynamic:kmipkit_s2c_query_respond_with_capabilities_v1",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",

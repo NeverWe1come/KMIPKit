@@ -247,6 +247,9 @@ fn item_type_value(item_type: ItemType) -> Result<u32, ProtocolError> {
         ItemType::DateTime => Ok(0x09),
         ItemType::Interval => Ok(0x0A),
         ItemType::DateTimeExtended => Ok(0x0B),
+        ItemType::Identifier => Ok(0x0C),
+        ItemType::Reference => Ok(0x0D),
+        ItemType::NameReference => Ok(0x0E),
         _ => Err(categorized_error(ProtocolErrorKind::InvalidSchema)),
     }
 }

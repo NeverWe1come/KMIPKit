@@ -21,6 +21,7 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
@@ -1096,22 +1097,127 @@ class V3AndS2cParityTest {
             assertTrue(struct.handle() != 0);
         }
 
-        var extensions = new S2cCapabilities().extensionTags(List.of(0x540001L));
-        for (long mask : new long[]{0x10, 0x20}) {
-            try (var response = S2cUtilities.buildQueryResponseTtlv(mask, extensions);
+        try (var info = extensionForQuery(TtlvItemType.TextString)) {
+            var extensions = new S2cCapabilities().extensionInformation(List.of(info));
+            try (var response = S2cUtilities.buildQueryResponseTtlv(0x08, extensions);
                  var fields = response.view()) {
-                assertEquals(1, fields.itemCount());
+                assertEquals(0, fields.itemCount());
             }
-        }
-        try (var response = S2cUtilities.buildQueryResponseTtlv(0x08, extensions);
-             var fields = response.view()) {
-            assertEquals(0, fields.itemCount());
         }
 
         // Validation bounds
         assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(-1L, "Vendor"));
         assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(0x100000000L, "Vendor"));
         assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(1L, (S2cCapabilities) null));
+    }
+
+    @Test
+    void extensionQueryListAndMapInAllProtocolVersions() throws Exception {
+        try (var info = extensionForQuery(TtlvItemType.TextString);
+             var dispatcher = ServerRequestDispatcher.create()) {
+            var capabilities = new S2cCapabilities().extensionInformation(List.of(info));
+            ServerRequestHandler handler = (ServerRequestHandler) java.lang.reflect.Proxy.newProxyInstance(
+                    getClass().getClassLoader(), new Class<?>[]{ServerRequestHandler.class},
+                    (proxy, method, args) -> {
+                        assertEquals("handleQuery", method.getName());
+                        assertEquals(0x30L, args[1]);
+                        ((S2cCapabilities) args[2]).extensionInformation(List.of(info));
+                        return S2cOperationResult.success();
+                    });
+
+            for (var version : List.of(new ProtocolVersion(2, 0), new ProtocolVersion(2, 1),
+                    new ProtocolVersion(3, 0))) {
+                for (long flags : new long[]{0x10, 0x20, 0x30}) {
+                    try (var response = S2cUtilities.buildQueryResponseTtlv(version, flags, capabilities);
+                         var payload = response.view()) {
+                        assertExtensionInformation(payload, flags != 0x10, TtlvItemType.TextString.code());
+                    }
+                }
+
+                try (var batch = IncomingServerBatch.decodeTtlv(extensionQueryBatch(version), CodecLimits.defaults());
+                     var response = dispatcher.dispatch(batch, handler);
+                     var item = response.batchItemAt(0)) {
+                    assertEquals(0, item.resultStatus().orElseThrow());
+                    item.withResponsePayload(payload -> {
+                        assertExtensionInformation(payload, true, TtlvItemType.TextString.code());
+                        return true;
+                    });
+                }
+            }
+        }
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void extensionQueryRejectsLegacyTagsAndDraftTypesInKmip2() throws Exception {
+        var legacy = new S2cCapabilities().extensionTags(List.of(0x540001L));
+        assertThrows(InvalidExtensionSchemaException.class,
+                () -> S2cUtilities.buildQueryResponseTtlv(0x20, legacy));
+        try (var info = extensionForQuery(TtlvItemType.NameReference);
+             var dispatcher = ServerRequestDispatcher.create()) {
+            var capabilities = new S2cCapabilities().extensionInformation(List.of(info));
+            for (var version : List.of(new ProtocolVersion(2, 0), new ProtocolVersion(2, 1))) {
+                assertThrows(InvalidExtensionSchemaException.class,
+                        () -> S2cUtilities.buildQueryResponseTtlv(version, 0x20, capabilities));
+                ServerRequestHandler handler = (ServerRequestHandler) java.lang.reflect.Proxy.newProxyInstance(
+                        getClass().getClassLoader(), new Class<?>[]{ServerRequestHandler.class},
+                        (proxy, method, args) -> {
+                            ((S2cCapabilities) args[2]).extensionInformation(List.of(info));
+                            return S2cOperationResult.success();
+                        });
+                try (var batch = IncomingServerBatch.decodeTtlv(extensionQueryBatch(version), CodecLimits.defaults());
+                     var response = dispatcher.dispatch(batch, handler);
+                     var item = response.batchItemAt(0)) {
+                    assertEquals(1, item.resultStatus().orElseThrow());
+                    assertEquals(7, item.resultReason().orElseThrow());
+                }
+            }
+            try (var response = S2cUtilities.buildQueryResponseTtlv(
+                         new ProtocolVersion(3, 0), 0x20, capabilities);
+                 var payload = response.view()) {
+                assertExtensionInformation(payload, true, TtlvItemType.NameReference.code());
+            }
+        }
+    }
+
+    private static ExtensionInformation extensionForQuery(TtlvItemType itemType) {
+        return ExtensionInformation.with_type(
+                ExtensionInformation.with_tag(ExtensionInformation.create("Tenant🔑"), 0x540001), itemType);
+    }
+
+    private static byte[] extensionQueryBatch(ProtocolVersion version) throws Exception {
+        byte[] headerVersion = ttlvTestItem(0x420069, 1,
+                concat(ttlvTestItem(0x42006A, 2, intVal(version.major())),
+                        ttlvTestItem(0x42006B, 2, intVal(version.minor()))));
+        byte[] headerFields = version.major() == 3 ? headerVersion
+                : concat(headerVersion, ttlvTestItem(0x42000D, 2, intVal(1)));
+        byte[] header = ttlvTestItem(0x420077, 1, headerFields);
+        byte[] item = ttlvTestItem(0x42000F, 1,
+                concat(ttlvTestItem(0x42005C, 5, intVal(0x18)),
+                        ttlvTestItem(0x420079, 1, concat(ttlvTestItem(0x420074, 5, intVal(5)),
+                                ttlvTestItem(0x420074, 5, intVal(6))))));
+        return ttlvTestItem(0x420078, 1, concat(header, item));
+    }
+
+    private static void assertExtensionInformation(TtlvStructureView payload, boolean map, int itemType) {
+        assertEquals(1, payload.itemCount());
+        try (var item = payload.itemAt(0); var typeTag = item.tag(); var value = item.value();
+             var fields = value.structure(); var name = fields.itemAt(0); var nameTag = name.tag();
+             var nameValue = name.value()) {
+            assertEquals(0x4200a4L, typeTag.raw());
+            assertEquals(0x4200a5L, nameTag.raw());
+            assertEquals("Tenant🔑", new String(nameValue.bytes(), StandardCharsets.UTF_8));
+            assertEquals(map ? 3 : 1, fields.itemCount());
+            if (map) {
+                try (var tag = fields.itemAt(1); var tagTag = tag.tag(); var tagValue = tag.value();
+                     var type = fields.itemAt(2); var extensionTypeTag = type.tag(); var typeValue = type.value()) {
+                    assertEquals(0x4200a6L, tagTag.raw());
+                    assertEquals(0x540001, tagValue.integer());
+                    assertEquals(0x4200a7L, extensionTypeTag.raw());
+                    assertEquals(itemType, typeValue.enumeration());
+                }
+            }
+        }
     }
 
     @Test

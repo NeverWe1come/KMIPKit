@@ -2,7 +2,10 @@
 #![allow(clippy::wildcard_imports)] // Shares the parent module's private FFI handle invariants.
 
 use super::*;
-use crate::{kmipkit_s2c_capabilities_v1_t, kmipkit_server_request_handler_v5_t};
+use crate::{
+    kmipkit_s2c_capabilities_v1_t, kmipkit_s2c_capabilities_v2_t,
+    kmipkit_server_request_handler_v5_t, kmipkit_server_request_handler_v6_t,
+};
 use crate::{kmipkit_listener_options_v1_t, kmipkit_protocol_version_v1_t, kmipkit_s2c_operation_result_v1_t};
 use crate::kmipkit_server_request_handler_v2_t;
 use crate::{kmipkit_server_request_handler_v3_t, kmipkit_server_request_handler_v4_t};
@@ -10231,9 +10234,53 @@ fn parse_s2c_capabilities_v1(
                 cap_ref.extension_tags_count as usize,
             )
         };
+        #[allow(deprecated)]
         caps.set_extension_tags(slice.to_vec());
     }
     Ok(caps)
+}
+
+fn parse_s2c_capabilities_v2(
+    capabilities: *const kmipkit_s2c_capabilities_v2_t,
+) -> FfiResult<kmipkit_protocol::ServerCapabilities> {
+    if capabilities.is_null() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // The caller supplies a readable v2 record.
+    let capabilities = unsafe { &*capabilities };
+    if capabilities.struct_size != std::mem::size_of::<kmipkit_s2c_capabilities_v2_t>() as u32
+        || capabilities.abi_version != 2
+        || capabilities.reserved != 0
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let mut base = parse_s2c_capabilities_v1(&capabilities.base)?;
+    let count = capabilities.extension_information_count;
+    if count == 0 {
+        return Ok(base);
+    }
+    if count > MAX_S2C_CAPABILITY_ITEMS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    if capabilities.extension_information.is_null() || capabilities.base.extension_tags_count != 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // The caller keeps this array and its referenced handles live for the call.
+    let handles = unsafe {
+        std::slice::from_raw_parts(capabilities.extension_information, count as usize)
+    };
+    let information = handles
+        .iter()
+        .map(|&pointer| {
+            let handle = reference_handle(pointer, Kind::Information)?;
+            match &handle.value {
+                HandleValue::Information(value) => Ok(value.clone()),
+                _ => Err(ERROR_INVALID_INPUT),
+            }
+        })
+        .collect::<FfiResult<Vec<_>>>()?;
+    base.set_extension_information(information);
+    Ok(base)
 }
 
 fn parse_s2c_operation_result_v1(
@@ -10719,6 +10766,7 @@ struct CServerRequestHandlerAdapterV3 {
     handler: kmipkit_server_request_handler_v3_t,
     handler_v4: Option<kmipkit_server_request_handler_v4_t>,
     handler_v5: Option<kmipkit_server_request_handler_v5_t>,
+    handler_v6: Option<kmipkit_server_request_handler_v6_t>,
     current_batch_item_id: Option<Vec<u8>>,
 }
 
@@ -11002,10 +11050,6 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         &mut self,
         request: &kmipkit_protocol::ServerQueryRequest,
     ) -> Result<kmipkit_protocol::ServerQueryResponse, kmipkit_protocol::KmipOperationResult> {
-        let callback = match self.handler.handle_query {
-            Some(cb) => cb,
-            None => return Err(s2c_failure_result()),
-        };
         let view = kmipkit_server_request_item_view_v1_t {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
@@ -11020,7 +11064,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
                 flags |= 1u32 << (raw - 1);
             }
         }
-        let mut out_caps = kmipkit_s2c_capabilities_v1_t {
+        let base = kmipkit_s2c_capabilities_v1_t {
             struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32,
             abi_version: 1,
             operations: ptr::null(),
@@ -11043,14 +11087,21 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             result_message_data: ptr::null(),
             result_message_length: 0,
         };
-        let code = unsafe {
-            callback(
-                self.handler.user_data,
-                &view,
-                flags,
-                &mut out_caps,
-                &mut out_result,
-            )
+        let mut out_caps = kmipkit_s2c_capabilities_v2_t {
+            struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v2_t>() as u32,
+            abi_version: 2,
+            base,
+            extension_information: ptr::null(),
+            extension_information_count: 0,
+            reserved: 0,
+        };
+        let rich_query = self.handler_v6.and_then(|handler| handler.handle_query);
+        let code = if let Some(callback) = rich_query {
+            unsafe { callback(self.handler.user_data, &view, flags, &mut out_caps, &mut out_result) }
+        } else if let Some(callback) = self.handler.handle_query {
+            unsafe { callback(self.handler.user_data, &view, flags, &mut out_caps.base, &mut out_result) }
+        } else {
+            return Err(s2c_failure_result());
         };
         if code != 0 {
             let err_result = match parse_s2c_operation_result_v1(&out_result) {
@@ -11059,10 +11110,12 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             };
             return Err(err_result);
         }
-        let caps = match parse_s2c_capabilities_v1(&out_caps) {
-            Ok(c) => c,
-            Err(_) => return Err(s2c_failure_result()),
-        };
+        let caps = if rich_query.is_some() {
+            parse_s2c_capabilities_v2(&out_caps)
+        } else {
+            parse_s2c_capabilities_v1(&out_caps.base)
+        }
+        .map_err(|_| s2c_failure_result())?;
         Ok(kmipkit_protocol::ServerQueryResponse::respond(request, &caps))
     }
 
@@ -11298,6 +11351,7 @@ pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v3(
             handler: *handler_ref,
             handler_v4: None,
             handler_v5: None,
+            handler_v6: None,
             current_batch_item_id: None,
         };
         match disp.dispatch(batch_val, &mut adapter) {
@@ -11354,6 +11408,7 @@ pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v4(
             },
             handler_v4: Some(*handler_ref),
             handler_v5: None,
+            handler_v6: None,
             current_batch_item_id: None,
         };
         match disp.dispatch(batch_val, &mut adapter) {
@@ -11386,52 +11441,87 @@ pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v5(
         if handler_ref.abi_version != 5 || handler_ref.struct_size != req_size {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let disp_handle = read_handle!(dispatcher, ServerRequestDispatcher);
-        let HandleValue::ServerRequestDispatcher(disp) = &disp_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let batch_handle = read_handle!(batch, IncomingServerBatch);
-        let HandleValue::IncomingServerBatch(batch_val) = &batch_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(mut disp) = disp.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let mut adapter = CServerRequestHandlerAdapterV3 {
-            handler: kmipkit_server_request_handler_v3_t {
-                struct_size: std::mem::size_of::<kmipkit_server_request_handler_v3_t>() as u32,
-                abi_version: 3,
-                user_data: handler_ref.user_data,
-                handle_discover_versions: None,
-                handle_notify: None,
-                handle_put: handler_ref.handle_put,
-                handle_query: handler_ref.handle_query,
-                handle_set_endpoint_role: None,
-            },
-            handler_v4: Some(kmipkit_server_request_handler_v4_t {
-                struct_size: std::mem::size_of::<kmipkit_server_request_handler_v4_t>() as u32,
-                abi_version: 4,
-                user_data: handler_ref.user_data,
-                handle_discover_versions: handler_ref.handle_discover_versions,
-                handle_notify: None,
-                handle_put: handler_ref.handle_put,
-                handle_query: handler_ref.handle_query,
-                handle_set_endpoint_role: None,
-            }),
-            handler_v5: Some(*handler_ref),
-            current_batch_item_id: None,
-        };
-        match disp.dispatch(batch_val, &mut adapter) {
-            Ok(resp) => {
-                *out = try_ffi!(try_make_handle(
-                    Kind::ResponseMessage,
-                    HandleValue::ResponseMessage(Arc::new(resp)),
-                ));
-                SUCCESS
-            }
-            Err(err) => record_client_error(&err),
-        }
+        dispatch_server_request_v5(dispatcher, batch, handler_ref, None, out)
     })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v6(
+    dispatcher: *mut kmipkit_server_request_dispatcher_t,
+    batch: *mut kmipkit_incoming_server_batch_t,
+    handler: *const kmipkit_server_request_handler_v6_t,
+    out_response: *mut *mut kmipkit_response_message_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_response);
+        if handler.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let handler = unsafe { &*handler };
+        if handler.abi_version != 6
+            || handler.struct_size != std::mem::size_of::<kmipkit_server_request_handler_v6_t>() as u32
+            || handler.base.abi_version != 5
+            || handler.base.struct_size != std::mem::size_of::<kmipkit_server_request_handler_v5_t>() as u32
+        {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        dispatch_server_request_v5(dispatcher, batch, &handler.base, Some(*handler), out)
+    })
+}
+
+fn dispatch_server_request_v5(
+    dispatcher: *mut kmipkit_server_request_dispatcher_t,
+    batch: *mut kmipkit_incoming_server_batch_t,
+    handler_ref: &kmipkit_server_request_handler_v5_t,
+    handler_v6: Option<kmipkit_server_request_handler_v6_t>,
+    out: &mut *mut kmipkit_response_message_t,
+) -> i32 {
+    let disp_handle = read_handle!(dispatcher, ServerRequestDispatcher);
+    let HandleValue::ServerRequestDispatcher(disp) = &disp_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let batch_handle = read_handle!(batch, IncomingServerBatch);
+    let HandleValue::IncomingServerBatch(batch_val) = &batch_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let Ok(mut disp) = disp.lock() else {
+        return record_ffi_error(ERROR_INTERNAL);
+    };
+    let mut adapter = CServerRequestHandlerAdapterV3 {
+        handler: kmipkit_server_request_handler_v3_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_handler_v3_t>() as u32,
+            abi_version: 3,
+            user_data: handler_ref.user_data,
+            handle_discover_versions: None,
+            handle_notify: None,
+            handle_put: handler_ref.handle_put,
+            handle_query: handler_ref.handle_query,
+            handle_set_endpoint_role: None,
+        },
+        handler_v4: Some(kmipkit_server_request_handler_v4_t {
+            struct_size: std::mem::size_of::<kmipkit_server_request_handler_v4_t>() as u32,
+            abi_version: 4,
+            user_data: handler_ref.user_data,
+            handle_discover_versions: handler_ref.handle_discover_versions,
+            handle_notify: None,
+            handle_put: handler_ref.handle_put,
+            handle_query: handler_ref.handle_query,
+            handle_set_endpoint_role: None,
+        }),
+        handler_v5: Some(*handler_ref),
+        handler_v6,
+        current_batch_item_id: None,
+    };
+    match disp.dispatch(batch_val, &mut adapter) {
+        Ok(resp) => {
+            *out = try_ffi!(try_make_handle(
+                Kind::ResponseMessage,
+                HandleValue::ResponseMessage(Arc::new(resp)),
+            ));
+            SUCCESS
+        }
+        Err(err) => record_client_error(&err),
+    }
 }
 
 #[unsafe(no_mangle)]
@@ -11562,23 +11652,41 @@ pub extern "C" fn kmipkit_s2c_query_respond_with_capabilities_v1(
     ffi_entrypoint(|| {
         let out = out_slot!(out_structure);
         let caps = try_ffi!(parse_s2c_capabilities_v1(capabilities));
-        let functions = (1..=32)
-            .filter(|raw| query_function_flags & (1 << (raw - 1)) != 0)
-            .map(kmipkit_protocol::QueryFunction::from_raw)
-            .collect();
-        let req = kmipkit_protocol::ServerQueryRequest::new(functions);
-        let resp = kmipkit_protocol::ServerQueryResponse::respond(&req, &caps);
-        match resp.to_ttlv_payload() {
-            Ok(structure) => {
-                *out = try_ffi!(try_make_handle(
-                    Kind::Structure,
-                    HandleValue::Structure(structure),
-                ));
-                SUCCESS
-            }
-            Err(_) => record_ffi_error(ERROR_INTERNAL),
-        }
+        build_s2c_query_response(query_function_flags, kmipkit_protocol::ProtocolVersion::V2_1, &caps, out)
     })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_s2c_query_respond_with_capabilities_v2(
+    query_function_flags: u32,
+    version: kmipkit_protocol_version_v1_t,
+    capabilities: *const kmipkit_s2c_capabilities_v2_t,
+    out_structure: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_structure);
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(version.major, version.minor);
+        let caps = try_ffi!(parse_s2c_capabilities_v2(capabilities));
+        build_s2c_query_response(query_function_flags, version, &caps, out)
+    })
+}
+
+fn build_s2c_query_response(
+    query_function_flags: u32,
+    version: kmipkit_protocol::ProtocolVersion,
+    caps: &kmipkit_protocol::ServerCapabilities,
+    out: &mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    let functions = (1..=32)
+        .filter(|raw| query_function_flags & (1 << (raw - 1)) != 0)
+        .map(kmipkit_protocol::QueryFunction::from_raw)
+        .collect();
+    let request = kmipkit_protocol::ServerQueryRequest::new(functions);
+    let response = kmipkit_protocol::ServerQueryResponse::respond(&request, caps);
+    let structure = try_ffi!(response.to_ttlv_payload_for_version(version)
+        .map_err(|error| protocol_status(&error)));
+    *out = try_ffi!(try_make_handle(Kind::Structure, HandleValue::Structure(structure)));
+    SUCCESS
 }
 
 #[unsafe(no_mangle)]

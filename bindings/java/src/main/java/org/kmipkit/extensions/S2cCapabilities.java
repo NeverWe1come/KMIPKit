@@ -15,6 +15,7 @@ public final class S2cCapabilities {
     private List<Long> objectTypes = new ArrayList<>();
     private @Nullable String vendorIdentification;
     private List<Long> extensionTags = new ArrayList<>();
+    private List<ExtensionInformation> extensionInformation = List.of();
 
     public S2cCapabilities() {}
 
@@ -68,8 +69,45 @@ public final class S2cCapabilities {
     }
 
     public List<Long> extensionTags() { return Collections.unmodifiableList(extensionTags); }
+    /** @deprecated Supply named descriptors with {@link #extensionInformation(List)}. */
+    @Deprecated
     public S2cCapabilities extensionTags(List<Long> tags) {
         this.extensionTags = validateAndCopy(tags, "extensionTags");
+        this.extensionInformation = List.of();
         return this;
     }
+
+    /**
+     * Sets the ordered extension descriptors to advertise.
+     * Values are borrowed and must remain open until building the payload or dispatching the batch returns.
+     */
+    public S2cCapabilities extensionInformation(List<ExtensionInformation> information) {
+        if (information == null || information.size() > MAX_CAPABILITY_ITEMS) {
+            throw new InvalidInputException("invalid extension information list");
+        }
+        var copy = new ArrayList<ExtensionInformation>(information.size());
+        for (var entry : information) {
+            if (entry == null) {
+                throw new InvalidInputException("extension information entry is required");
+            }
+            copy.add(entry);
+        }
+        this.extensionInformation = List.copyOf(copy);
+        this.extensionTags = List.of();
+        return this;
+    }
+
+    /** Returns the advertised descriptors in wire order. */
+    public List<ExtensionInformation> extensionInformation() {
+        return extensionInformation;
+    }
+
+    long[] extensionInformationHandles() {
+        long[] handles = new long[extensionInformation.size()];
+        for (int i = 0; i < handles.length; i++) {
+            handles[i] = extensionInformation.get(i).handle();
+        }
+        return handles;
+    }
+
 }

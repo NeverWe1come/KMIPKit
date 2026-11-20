@@ -970,3 +970,161 @@ fn s2c_discover_versions_v2_preserves_order_and_signed_components() {
     assert_eq!(count, 2);
     assert_eq!(output, [large, v21]);
 }
+
+fn assert_query_extension_payload(payload: &kmipkit_ttlv::StructureView<'_>, map: bool) {
+    use kmipkit_ttlv::{KmipTag, ValueView};
+    let [information] = payload.children() else {
+        panic!("expected one Extension Information record");
+    };
+    assert_eq!(information.tag(), KmipTag::ExtensionInformation.into());
+    information.with_value(|value| {
+        let ValueView::Structure(fields) = value else {
+            panic!("expected structured Extension Information");
+        };
+        let fields = fields.children();
+        assert_eq!(fields.len(), if map { 3 } else { 1 });
+        assert_eq!(fields[0].tag(), KmipTag::ExtensionName.into());
+        fields[0].with_value(|value| assert!(matches!(value, ValueView::TextString("TenantLabel"))));
+        if map {
+            assert_eq!(fields[1].tag(), KmipTag::ExtensionTag.into());
+            fields[1].with_value(|value| assert!(matches!(value, ValueView::Integer(&0x540001))));
+            assert_eq!(fields[2].tag(), KmipTag::ExtensionType.into());
+            fields[2].with_value(|value| assert!(matches!(value, ValueView::Enumeration(&7))));
+        }
+    });
+}
+
+unsafe extern "C" fn query_metadata_callback(
+    user_data: *mut core::ffi::c_void,
+    _item_view: *const kmipkit_server_request_item_view_v1_t,
+    query_flags: u32,
+    output: *mut crate::kmipkit_s2c_capabilities_v2_t,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    if query_flags != 0x30 {
+        return 1;
+    }
+    // The test keeps the metadata array live for the duration of dispatch.
+    let output = unsafe { &mut *output };
+    output.extension_information = user_data.cast();
+    output.extension_information_count = 1;
+    0
+}
+
+#[test]
+fn c_abi_extension_query_supports_v2_0_v2_1_and_v3_0() {
+    use crate::{
+        kmipkit_protocol_version_v1_t as Version, kmipkit_s2c_capabilities_v2_t as Capabilities,
+        kmipkit_server_request_handler_v5_t as HandlerV5,
+        kmipkit_server_request_handler_v6_t as HandlerV6,
+    };
+    let name = b"TenantLabel";
+    let mut named = ptr::null_mut();
+    let mut tagged = ptr::null_mut();
+    let mut mapped = ptr::null_mut();
+    assert_eq!(kmipkit_extension_information_create(name.as_ptr(), name.len() as u64, &mut named), SUCCESS);
+    assert_eq!(kmipkit_extension_information_tag(named, 0x540001, &mut tagged), SUCCESS);
+    assert_eq!(kmipkit_extension_information_type(tagged, 7, &mut mapped), SUCCESS);
+    let mut descriptors = [mapped];
+
+    let base = kmipkit_s2c_capabilities_v1_t {
+        struct_size: std::mem::size_of::<kmipkit_s2c_capabilities_v1_t>() as u32,
+        abi_version: 1,
+        operations: ptr::null(),
+        operations_count: 0,
+        object_types: ptr::null(),
+        object_types_count: 0,
+        vendor_identification_data: ptr::null(),
+        vendor_identification_length: 0,
+        extension_tags: ptr::null(),
+        extension_tags_count: 0,
+        reserved: 0,
+    };
+    let caps = Capabilities {
+        struct_size: std::mem::size_of::<Capabilities>() as u32,
+        abi_version: 2,
+        base,
+        extension_information: descriptors.as_ptr(),
+        extension_information_count: 1,
+        reserved: 0,
+    };
+    let mut dispatcher = ptr::null_mut();
+    let mut limits = ptr::null_mut();
+    assert_eq!(client_abi::kmipkit_server_request_dispatcher_create(&mut dispatcher), SUCCESS);
+    assert_eq!(kmipkit_codec_limits_defaults(&mut limits), SUCCESS);
+    let handler = HandlerV6 {
+        struct_size: std::mem::size_of::<HandlerV6>() as u32,
+        abi_version: 6,
+        base: HandlerV5 {
+            struct_size: std::mem::size_of::<HandlerV5>() as u32,
+            abi_version: 5,
+            user_data: descriptors.as_mut_ptr().cast(),
+            handle_discover_versions: None,
+            handle_notify: None,
+            handle_put: None,
+            handle_query: None,
+            handle_set_endpoint_role: None,
+        },
+        handle_query: Some(query_metadata_callback),
+    };
+
+    for (major, minor) in [(2i32, 0i32), (2, 1), (3, 0)] {
+        let version = Version { major, minor };
+        for (flags, map) in [(0x10, false), (0x20, true), (0x30, true)] {
+            let mut result = ptr::null_mut();
+            assert_eq!(
+                client_abi::kmipkit_s2c_query_respond_with_capabilities_v2(flags, version, &caps, &mut result),
+                SUCCESS
+            );
+            {
+                let owner = reference_handle(result, Kind::Structure).unwrap();
+                let HandleValue::Structure(payload) = &owner.value else { unreachable!() };
+                assert_query_extension_payload(&payload.view(), map);
+            }
+            kmipkit_ttlv_structure_release(result);
+        }
+
+        let version_bytes = [
+            ttlv_test_item(0x42006a, 2, &major.to_be_bytes()),
+            ttlv_test_item(0x42006b, 2, &minor.to_be_bytes()),
+        ].concat();
+        let mut header = ttlv_test_item(0x420069, 1, &version_bytes);
+        if major != 3 {
+            header.extend_from_slice(&ttlv_test_item(0x42000d, 2, &1i32.to_be_bytes()));
+        }
+        let functions = [
+            ttlv_test_item(0x420074, 5, &5u32.to_be_bytes()),
+            ttlv_test_item(0x420074, 5, &6u32.to_be_bytes()),
+        ].concat();
+        let item = [
+            ttlv_test_item(0x42005c, 5, &0x18u32.to_be_bytes()),
+            ttlv_test_item(0x420079, 1, &functions),
+        ].concat();
+        let bytes = ttlv_test_item(0x420078, 1, &[
+            ttlv_test_item(0x420077, 1, &header),
+            ttlv_test_item(0x42000f, 1, &item),
+        ].concat());
+        let mut batch = ptr::null_mut();
+        assert_eq!(client_abi::kmipkit_incoming_server_batch_decode_ttlv(
+            bytes.as_ptr(), bytes.len() as u64, limits, &mut batch
+        ), SUCCESS);
+        let mut reply = ptr::null_mut();
+        assert_eq!(client_abi::kmipkit_server_request_dispatcher_dispatch_v6(
+            dispatcher, batch, &handler, &mut reply
+        ), SUCCESS);
+        {
+            let owner = reference_handle(reply, Kind::ResponseMessage).unwrap();
+            let HandleValue::ResponseMessage(message) = &owner.value else { unreachable!() };
+            assert_eq!(message.header().protocol_version(), kmipkit_protocol::ProtocolVersion::from_raw(major, minor));
+            let item = message.batch_items().next().unwrap();
+            assert_eq!(item.result_status().map(|status| status.raw()), Some(0));
+            item.with_response_payload(|payload| assert_query_extension_payload(&payload, true)).unwrap();
+        }
+        kmipkit_response_message_release(reply);
+        client_abi::kmipkit_incoming_server_batch_release(batch);
+    }
+
+    client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_extension_information_release(mapped);
+}
