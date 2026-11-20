@@ -12,7 +12,7 @@ try:
 except ImportError:
     HAS_JSONSCHEMA = False
 
-from interop.shared.tools.preflight_and_audit import audit_profile_diff, validate_connection_config
+from verification.interop.shared.tools.preflight_and_audit import audit_profile_diff, validate_connection_config
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_markdown
 
 
