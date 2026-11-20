@@ -11,6 +11,7 @@ use crate::{
     kmipkit_server_request_handler_v5_t, kmipkit_server_request_handler_v6_t,
 };
 use crate::{kmipkit_server_request_handler_v3_t, kmipkit_server_request_handler_v4_t};
+use kmipkit_client::binding_support;
 use zeroize::{Zeroize, Zeroizing};
 
 #[path = "client_abi/fluent.rs"]
@@ -9911,109 +9912,6 @@ pub extern "C" fn kmipkit_incoming_server_batch_item_notify(
     })
 }
 
-fn write_ttlv_header(out: &mut Vec<u8>, tag_bytes: [u8; 3], item_type: u8, len: usize) {
-    out.extend_from_slice(&tag_bytes);
-    out.push(item_type);
-    out.extend_from_slice(&u32::try_from(len).unwrap_or(0).to_be_bytes());
-}
-
-fn write_ttlv_padding(out: &mut Vec<u8>, len: usize) {
-    let rem = len % 8;
-    if rem > 0 {
-        let pad = 8 - rem;
-        out.extend(std::iter::repeat_n(0u8, pad));
-    }
-}
-
-fn encode_structure_view_bytes(view: &kmipkit_ttlv::StructureView<'_>, out: &mut Vec<u8>) {
-    for child in view.children() {
-        encode_ttlv_item_bytes(child, out);
-    }
-}
-
-fn encode_ttlv_item_bytes(item: &kmipkit_ttlv::Item, out: &mut Vec<u8>) {
-    let raw_tag = item.tag().raw().to_be_bytes();
-    let tag_bytes = [raw_tag[1], raw_tag[2], raw_tag[3]];
-
-    item.with_value(|view| match view {
-        kmipkit_ttlv::ValueView::Structure(structure) => {
-            let mut children_bytes = Vec::new();
-            for child in structure.children() {
-                encode_ttlv_item_bytes(child, &mut children_bytes);
-            }
-            write_ttlv_header(out, tag_bytes, 0x01, children_bytes.len());
-            out.extend_from_slice(&children_bytes);
-        }
-        kmipkit_ttlv::ValueView::Integer(val) => {
-            write_ttlv_header(out, tag_bytes, 0x02, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::LongInteger(val) => {
-            write_ttlv_header(out, tag_bytes, 0x03, 8);
-            out.extend_from_slice(&val.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::BigInteger(bytes) => {
-            write_ttlv_header(out, tag_bytes, 0x04, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::Enumeration(val) => {
-            write_ttlv_header(out, tag_bytes, 0x05, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::Boolean(val) => {
-            write_ttlv_header(out, tag_bytes, 0x06, 8);
-            let byte_val = u8::from(*val);
-            out.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, byte_val]);
-        }
-        kmipkit_ttlv::ValueView::TextString(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x07, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::ByteString(bytes) => {
-            write_ttlv_header(out, tag_bytes, 0x08, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::DateTime(dt) => {
-            write_ttlv_header(out, tag_bytes, 0x09, 8);
-            out.extend_from_slice(&dt.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::Interval(val) => {
-            write_ttlv_header(out, tag_bytes, 0x0A, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::DateTimeExtended(dt) => {
-            write_ttlv_header(out, tag_bytes, 0x0B, 8);
-            out.extend_from_slice(&dt.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::Identifier(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0C, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::Reference(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0D, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::NameReference(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0E, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        _ => {}
-    });
-}
-
 #[unsafe(no_mangle)]
 /// Reads the `Put` request fields for an incoming server batch item.
 ///
@@ -10372,6 +10270,88 @@ fn parse_s2c_operation_result_v1(
         .map_err(|_| ERROR_INVALID_INPUT)
 }
 
+// The caller retains the encoded owner until the synchronous callback returns.
+fn optional_encoded_span(bytes: Option<&[u8]>) -> (*const u8, u64) {
+    bytes.map_or((ptr::null(), 0), |bytes| {
+        (bytes.as_ptr(), bytes.len() as u64)
+    })
+}
+
+// The adapter owns the batch ID while its callback borrows this view.
+fn server_request_item_view(
+    operation: u32,
+    batch_item_id: Option<&[u8]>,
+) -> kmipkit_server_request_item_view_v1_t {
+    kmipkit_server_request_item_view_v1_t {
+        struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
+        abi_version: 1,
+        operation,
+        unique_batch_item_id_data: batch_item_id.map_or(ptr::null(), <[u8]>::as_ptr),
+        unique_batch_item_id_length: batch_item_id.map_or(0, |id| id.len() as u64),
+    }
+}
+
+type LegacyDiscoverVersionsCallback = unsafe extern "C" fn(
+    *mut core::ffi::c_void,
+    *const kmipkit_server_request_item_view_v1_t,
+    u32,
+    u32,
+    *mut u32,
+    u32,
+    *mut u32,
+) -> u32;
+
+fn legacy_discover_versions(
+    callback: Option<LegacyDiscoverVersionsCallback>,
+    user_data: *mut core::ffi::c_void,
+    batch_item_id: Option<&[u8]>,
+    request: &kmipkit_protocol::ServerDiscoverVersionsRequest,
+) -> Result<kmipkit_protocol::ServerDiscoverVersionsResponse, kmipkit_protocol::KmipOperationResult>
+{
+    let callback = match callback {
+        Some(cb) => cb,
+        None => return Err(s2c_failure_result()),
+    };
+    let view = server_request_item_view(0x0000_001E, batch_item_id);
+    let mut supported: [u32; 16] = [0; 16];
+    let mut supported_count: u32 = 0;
+    let requested = request.protocol_versions();
+    let (req_maj, req_min) = if let Some(pv) = requested.first() {
+        (pv.major() as u32, pv.minor() as u32)
+    } else {
+        (2, 1)
+    };
+    // SAFETY: the registered callback receives live stack outputs and a view
+    // borrowing the adapter-owned ID; user_data is passed through unchanged.
+    let code = unsafe {
+        callback(
+            user_data,
+            &view,
+            req_maj,
+            req_min,
+            supported.as_mut_ptr(),
+            16,
+            &mut supported_count,
+        )
+    };
+    if code != 0 {
+        return Err(s2c_failure_result());
+    }
+    let count = (supported_count as usize).min(16);
+    let mut versions = Vec::new();
+    for &packed in &supported[..count] {
+        let maj = (packed >> 16) as i32;
+        let min = (packed & 0xFFFF) as i32;
+        versions.push(kmipkit_protocol::ProtocolVersion::from_raw(maj, min));
+    }
+    if versions.is_empty() {
+        versions.push(kmipkit_protocol::ProtocolVersion::V2_1);
+    }
+    Ok(kmipkit_protocol::ServerDiscoverVersionsResponse::new(
+        versions,
+    ))
+}
+
 struct CServerRequestHandlerAdapterV1 {
     handler: kmipkit_server_request_handler_v1_t,
     current_batch_item_id: Option<Vec<u8>>,
@@ -10389,58 +10369,12 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV1 {
         kmipkit_protocol::ServerDiscoverVersionsResponse,
         kmipkit_protocol::KmipOperationResult,
     > {
-        let callback = match self.handler.handle_discover_versions {
-            Some(cb) => cb,
-            None => return Err(s2c_failure_result()),
-        };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001E,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut supported: [u32; 16] = [0; 16];
-        let mut supported_count: u32 = 0;
-        let requested = request.protocol_versions();
-        let (req_maj, req_min) = if let Some(pv) = requested.first() {
-            (pv.major() as u32, pv.minor() as u32)
-        } else {
-            (2, 1)
-        };
-        let code = unsafe {
-            callback(
-                self.handler.user_data,
-                &view,
-                req_maj,
-                req_min,
-                supported.as_mut_ptr(),
-                16,
-                &mut supported_count,
-            )
-        };
-        if code != 0 {
-            return Err(s2c_failure_result());
-        }
-        let count = (supported_count as usize).min(16);
-        let mut versions = Vec::new();
-        for &packed in &supported[..count] {
-            let maj = (packed >> 16) as i32;
-            let min = (packed & 0xFFFF) as i32;
-            versions.push(kmipkit_protocol::ProtocolVersion::from_raw(maj, min));
-        }
-        if versions.is_empty() {
-            versions.push(kmipkit_protocol::ProtocolVersion::V2_1);
-        }
-        Ok(kmipkit_protocol::ServerDiscoverVersionsResponse::new(
-            versions,
-        ))
+        legacy_discover_versions(
+            self.handler.handle_discover_versions,
+            self.handler.user_data,
+            self.current_batch_item_id.as_deref(),
+            request,
+        )
     }
 
     fn handle_notify(
@@ -10452,19 +10386,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV1 {
             None => return Err(s2c_failure_result()),
         };
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001B,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_001B, self.current_batch_item_id.as_deref());
         let code = unsafe {
             callback(
                 self.handler.user_data,
@@ -10488,21 +10410,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV1 {
             None => return Err(s2c_failure_result()),
         };
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001C,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut obj_bytes = Vec::new();
-        encode_ttlv_item_bytes(request.object_item(), &mut obj_bytes);
+        let view = server_request_item_view(0x0000_001C, self.current_batch_item_id.as_deref());
+        let obj_bytes = binding_support::put_object_ttlv(request);
         let code = unsafe {
             callback(
                 self.handler.user_data,
@@ -10527,19 +10436,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV1 {
             Some(cb) => cb,
             None => return Err(s2c_failure_result()),
         };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0018,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0018, self.current_batch_item_id.as_deref());
         let mut flags: u32 = 0;
         for qf in request.query_functions() {
             let raw = qf.raw();
@@ -10569,19 +10466,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV1 {
             Some(cb) => cb,
             None => return Err(s2c_failure_result()),
         };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0032,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0032, self.current_batch_item_id.as_deref());
         let code =
             unsafe { callback(self.handler.user_data, &view, request.endpoint_role().raw()) };
         if code != 0 {
@@ -10611,58 +10496,12 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
         kmipkit_protocol::ServerDiscoverVersionsResponse,
         kmipkit_protocol::KmipOperationResult,
     > {
-        let callback = match self.handler.handle_discover_versions {
-            Some(cb) => cb,
-            None => return Err(s2c_failure_result()),
-        };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001E,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut supported: [u32; 16] = [0; 16];
-        let mut supported_count: u32 = 0;
-        let requested = request.protocol_versions();
-        let (req_maj, req_min) = if let Some(pv) = requested.first() {
-            (pv.major() as u32, pv.minor() as u32)
-        } else {
-            (2, 1)
-        };
-        let code = unsafe {
-            callback(
-                self.handler.user_data,
-                &view,
-                req_maj,
-                req_min,
-                supported.as_mut_ptr(),
-                16,
-                &mut supported_count,
-            )
-        };
-        if code != 0 {
-            return Err(s2c_failure_result());
-        }
-        let count = (supported_count as usize).min(16);
-        let mut versions = Vec::new();
-        for &packed in &supported[..count] {
-            let maj = (packed >> 16) as i32;
-            let min = (packed & 0xFFFF) as i32;
-            versions.push(kmipkit_protocol::ProtocolVersion::from_raw(maj, min));
-        }
-        if versions.is_empty() {
-            versions.push(kmipkit_protocol::ProtocolVersion::V2_1);
-        }
-        Ok(kmipkit_protocol::ServerDiscoverVersionsResponse::new(
-            versions,
-        ))
+        legacy_discover_versions(
+            self.handler.handle_discover_versions,
+            self.handler.user_data,
+            self.current_batch_item_id.as_deref(),
+            request,
+        )
     }
 
     fn handle_notify(
@@ -10674,35 +10513,10 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
             None => return Err(s2c_failure_result()),
         };
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001B,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut attr_bytes = Vec::new();
-        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
-            let mut st_bytes = Vec::new();
-            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
-            let raw_tag = 0x0042_0125u32.to_be_bytes();
-            write_ttlv_header(
-                &mut attr_bytes,
-                [raw_tag[1], raw_tag[2], raw_tag[3]],
-                0x01,
-                st_bytes.len(),
-            );
-            attr_bytes.extend_from_slice(&st_bytes);
-            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
-        } else {
-            (ptr::null(), 0)
-        };
+        let view = server_request_item_view(0x0000_001B, self.current_batch_item_id.as_deref());
+        let attr_bytes = binding_support::notify_attributes_ttlv(request);
+        let (attr_ptr, attr_len) =
+            optional_encoded_span(attr_bytes.as_ref().map(|bytes| bytes.as_slice()));
         let code = unsafe {
             callback(
                 self.handler.user_data,
@@ -10728,38 +10542,12 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
             None => return Err(s2c_failure_result()),
         };
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001C,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut obj_bytes = Vec::new();
-        encode_ttlv_item_bytes(request.object_item(), &mut obj_bytes);
+        let view = server_request_item_view(0x0000_001C, self.current_batch_item_id.as_deref());
+        let obj_bytes = binding_support::put_object_ttlv(request);
 
-        let mut attr_bytes = Vec::new();
-        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
-            let mut st_bytes = Vec::new();
-            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
-            let raw_tag = 0x0042_0125u32.to_be_bytes();
-            write_ttlv_header(
-                &mut attr_bytes,
-                [raw_tag[1], raw_tag[2], raw_tag[3]],
-                0x01,
-                st_bytes.len(),
-            );
-            attr_bytes.extend_from_slice(&st_bytes);
-            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
-        } else {
-            (ptr::null(), 0)
-        };
+        let attr_bytes = binding_support::put_attributes_ttlv(request);
+        let (attr_ptr, attr_len) =
+            optional_encoded_span(attr_bytes.as_ref().map(|bytes| bytes.as_slice()));
 
         let (rep_ptr, rep_len) = if let Some(rep_uid) = request.replaced_unique_identifier() {
             (rep_uid.as_ptr(), rep_uid.len() as u64)
@@ -10796,19 +10584,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
             Some(cb) => cb,
             None => return Err(s2c_failure_result()),
         };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0018,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0018, self.current_batch_item_id.as_deref());
         let mut flags: u32 = 0;
         for qf in request.query_functions() {
             let raw = qf.raw();
@@ -10851,19 +10627,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
             Some(cb) => cb,
             None => return Err(s2c_failure_result()),
         };
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0032,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0032, self.current_batch_item_id.as_deref());
         let code =
             unsafe { callback(self.handler.user_data, &view, request.endpoint_role().raw()) };
         if code != 0 {
@@ -10896,19 +10660,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         kmipkit_protocol::ServerDiscoverVersionsResponse,
         kmipkit_protocol::KmipOperationResult,
     > {
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001E,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_001E, self.current_batch_item_id.as_deref());
         let mut supported: [u32; 16] = [0; 16];
         let mut supported_count: u32 = 0;
         let requested: Vec<u32> = request
@@ -11000,35 +10752,10 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         request: &kmipkit_protocol::ServerNotifyRequest,
     ) -> Result<kmipkit_protocol::ServerNotifyResponse, kmipkit_protocol::KmipOperationResult> {
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001B,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut attr_bytes = Vec::new();
-        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
-            let mut st_bytes = Vec::new();
-            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
-            let raw_tag = 0x0042_0125u32.to_be_bytes();
-            write_ttlv_header(
-                &mut attr_bytes,
-                [raw_tag[1], raw_tag[2], raw_tag[3]],
-                0x01,
-                st_bytes.len(),
-            );
-            attr_bytes.extend_from_slice(&st_bytes);
-            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
-        } else {
-            (ptr::null(), 0)
-        };
+        let view = server_request_item_view(0x0000_001B, self.current_batch_item_id.as_deref());
+        let attr_bytes = binding_support::notify_attributes_ttlv(request);
+        let (attr_ptr, attr_len) =
+            optional_encoded_span(attr_bytes.as_ref().map(|bytes| bytes.as_slice()));
         let mut out_result = kmipkit_s2c_operation_result_v1_t {
             struct_size: std::mem::size_of::<kmipkit_s2c_operation_result_v1_t>() as u32,
             abi_version: 1,
@@ -11039,26 +10766,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             result_message_data: ptr::null(),
             result_message_length: 0,
         };
-        let mut deleted_content = Vec::new();
-        for reference in request.deleted_attribute_references() {
-            let mut content = Vec::new();
-            encode_structure_view_bytes(&reference.view(), &mut content);
-            write_ttlv_header(
-                &mut deleted_content,
-                [0x42, 0x01, 0x3b],
-                0x01,
-                content.len(),
-            );
-            deleted_content.extend_from_slice(&content);
-        }
-        let mut deleted = Vec::new();
-        write_ttlv_header(
-            &mut deleted,
-            [0x42, 0x00, 0x79],
-            0x01,
-            deleted_content.len(),
-        );
-        deleted.extend_from_slice(&deleted_content);
+        let deleted = binding_support::notify_deleted_attributes_ttlv(request);
         let code = if let Some(handler) = self.handler_v5 {
             let Some(callback) = handler.handle_notify else {
                 return Err(s2c_failure_result());
@@ -11111,38 +10819,12 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             None => return Err(s2c_failure_result()),
         };
         let uid = request.unique_identifier();
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_001C,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
-        let mut obj_bytes = Vec::new();
-        encode_ttlv_item_bytes(request.object_item(), &mut obj_bytes);
+        let view = server_request_item_view(0x0000_001C, self.current_batch_item_id.as_deref());
+        let obj_bytes = binding_support::put_object_ttlv(request);
 
-        let mut attr_bytes = Vec::new();
-        let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
-            let mut st_bytes = Vec::new();
-            encode_structure_view_bytes(&attrs.view(), &mut st_bytes);
-            let raw_tag = 0x0042_0125u32.to_be_bytes();
-            write_ttlv_header(
-                &mut attr_bytes,
-                [raw_tag[1], raw_tag[2], raw_tag[3]],
-                0x01,
-                st_bytes.len(),
-            );
-            attr_bytes.extend_from_slice(&st_bytes);
-            (attr_bytes.as_ptr(), attr_bytes.len() as u64)
-        } else {
-            (ptr::null(), 0)
-        };
+        let attr_bytes = binding_support::put_attributes_ttlv(request);
+        let (attr_ptr, attr_len) =
+            optional_encoded_span(attr_bytes.as_ref().map(|bytes| bytes.as_slice()));
 
         let (rep_ptr, rep_len) = if let Some(rep_uid) = request.replaced_unique_identifier() {
             (rep_uid.as_ptr(), rep_uid.len() as u64)
@@ -11190,19 +10872,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         &mut self,
         request: &kmipkit_protocol::ServerQueryRequest,
     ) -> Result<kmipkit_protocol::ServerQueryResponse, kmipkit_protocol::KmipOperationResult> {
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0018,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0018, self.current_batch_item_id.as_deref());
         let mut flags: u32 = 0;
         for qf in request.query_functions() {
             let raw = qf.raw();
@@ -11288,19 +10958,7 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         request: &kmipkit_protocol::SetEndpointRoleRequest,
     ) -> Result<kmipkit_protocol::SetEndpointRoleResponse, kmipkit_protocol::KmipOperationResult>
     {
-        let view = kmipkit_server_request_item_view_v1_t {
-            struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
-            abi_version: 1,
-            operation: 0x0000_0032,
-            unique_batch_item_id_data: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(ptr::null(), |id| id.as_ptr()),
-            unique_batch_item_id_length: self
-                .current_batch_item_id
-                .as_ref()
-                .map_or(0, |id| id.len() as u64),
-        };
+        let view = server_request_item_view(0x0000_0032, self.current_batch_item_id.as_deref());
         let mut out_result = kmipkit_s2c_operation_result_v1_t {
             struct_size: std::mem::size_of::<kmipkit_s2c_operation_result_v1_t>() as u32,
             abi_version: 1,

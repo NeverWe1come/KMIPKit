@@ -1043,6 +1043,11 @@ impl BoundaryAudit {
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
         let incoming_server_batch_decode =
             is_exact_incoming_server_batch_decode(s2c_root_scope, impl_type, signature);
+        let binding_callback_encoding = is_exact_binding_callback_encoding(
+            self.is_source_root(Path::new("binding_support.rs")),
+            impl_type,
+            signature,
+        );
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
             || async_outcome_callback
@@ -1083,6 +1088,7 @@ impl BoundaryAudit {
         if !batch_response_iterator
             && !registry_generic_accessor
             && !raw_response_accessor
+            && !binding_callback_encoding
             && let syn::ReturnType::Type(_, output) = &signature.output
         {
             output_finder.visit_type(output);
@@ -2095,6 +2101,120 @@ fn is_exact_option_generic_r(ty: &Type) -> bool {
                                     && result.path.segments[0].ident == "R"
                                     && matches!(&result.path.segments[0].arguments,
                                         syn::PathArguments::None))))
+}
+
+fn single_type_argument<'a>(ty: &'a Type, expected: &str) -> Option<&'a Type> {
+    let Type::Path(path) = ty else { return None };
+    if path.qself.is_some() || path.path.leading_colon.is_some() || path.path.segments.len() != 1 {
+        return None;
+    }
+    let segment = &path.path.segments[0];
+    let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
+        return None;
+    };
+    if segment.ident != expected || arguments.args.len() != 1 {
+        return None;
+    }
+    match &arguments.args[0] {
+        syn::GenericArgument::Type(ty) => Some(ty),
+        _ => None,
+    }
+}
+
+// Only typed S2C binding adapters may return encoded owners. This never permits
+// generic TTLV or raw-byte inputs, additional arguments, methods or generics.
+fn is_exact_binding_callback_encoding(
+    binding_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !binding_scope
+        || impl_type.is_some()
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 1
+    {
+        return false;
+    }
+    let (request_type, optional) = match signature.ident.to_string().as_str() {
+        "put_object_ttlv" => ("ServerPutRequest", false),
+        "put_attributes_ttlv" => ("ServerPutRequest", true),
+        "notify_attributes_ttlv" => ("ServerNotifyRequest", true),
+        "notify_deleted_attributes_ttlv" => ("ServerNotifyRequest", false),
+        _ => return false,
+    };
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.first() else {
+        return false;
+    };
+    if !is_shared_reference_to(&argument.ty, &[request_type]) {
+        return false;
+    }
+    let syn::ReturnType::Type(_, output) = &signature.output else {
+        return false;
+    };
+    let output = if optional {
+        let Some(ty) = single_type_argument(output, "Option") else {
+            return false;
+        };
+        ty
+    } else {
+        output.as_ref()
+    };
+    single_type_argument(output, "Zeroizing")
+        .and_then(|ty| single_type_argument(ty, "Vec"))
+        .is_some_and(is_u8)
+}
+
+#[test]
+fn binding_callback_encoder_exception_requires_exact_typed_signatures() {
+    for (name, request, output) in [
+        ("put_object_ttlv", "ServerPutRequest", "Zeroizing<Vec<u8>>"),
+        (
+            "put_attributes_ttlv",
+            "ServerPutRequest",
+            "Option<Zeroizing<Vec<u8>>>",
+        ),
+        (
+            "notify_attributes_ttlv",
+            "ServerNotifyRequest",
+            "Option<Zeroizing<Vec<u8>>>",
+        ),
+        (
+            "notify_deleted_attributes_ttlv",
+            "ServerNotifyRequest",
+            "Zeroizing<Vec<u8>>",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(&format!(
+            "fn {name}(request: &{request}) -> {output}"
+        ))
+        .unwrap();
+        assert!(is_exact_binding_callback_encoding(true, None, &signature));
+        assert!(!is_exact_binding_callback_encoding(false, None, &signature));
+        assert!(!is_exact_binding_callback_encoding(
+            true,
+            Some("Other"),
+            &signature
+        ));
+    }
+    for signature in [
+        "fn arbitrary(request: &ServerPutRequest) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv(request: &Item) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv(request: &[u8]) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv(request: &mut ServerPutRequest) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv<T>(request: &ServerPutRequest) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv(request: &ServerPutRequest, extra: u8) -> Zeroizing<Vec<u8>>",
+        "fn put_object_ttlv(request: &ServerPutRequest) -> Vec<u8>",
+        "fn put_attributes_ttlv(request: &ServerPutRequest) -> Zeroizing<Vec<u8>>",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_binding_callback_encoding(true, None, &signature));
+    }
 }
 
 fn is_plain_type_path(ty: &Type, expected: &str) -> bool {

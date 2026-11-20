@@ -85,6 +85,15 @@ mod extension_registry_test_support;
 mod extension_execution_tests;
 
 mod execute;
+mod s2c_encoding;
+
+/// Implementation support for KMIPKit's native bindings, outside the facade API.
+#[doc(hidden)]
+pub mod binding_support;
+
+#[cfg(test)]
+#[path = "../tests/unit/shared_s2c_encoding_tests.rs"]
+mod shared_s2c_encoding_tests;
 
 /// Internal verification hooks enabled only for repository test consumers.
 #[cfg(feature = "test-support")]
