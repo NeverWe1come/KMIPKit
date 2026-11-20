@@ -1,0 +1,11 @@
+{
+  "ignores": [
+    "target/**"
+  ],
+  "config": {
+    "MD013": {
+      "line_length": 100,
+      "tables": false
+    }
+  }
+}

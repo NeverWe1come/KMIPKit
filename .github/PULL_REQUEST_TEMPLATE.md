@@ -4,24 +4,15 @@
 
 <!-- What changed and why? -->
 
-## Specification and requirements
+## Context and requirements
 
-- Spec ID:
-- Requirement IDs:
-- Normative sources and sections:
+- Related issue or user request:
+- Normative sources and sections, if applicable:
 
 ## Scope
 
 - Included:
 - Explicitly excluded:
-
-## TDD evidence
-
-| Stage | Commit or evidence | Command | Result |
-|---|---|---|---|
-| Red | | | |
-| Green | | | |
-| Refactor | | | |
 
 ## Verification
 
