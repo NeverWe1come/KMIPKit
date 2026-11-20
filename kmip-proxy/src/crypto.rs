@@ -5,10 +5,22 @@ use std::sync::OnceLock;
 
 use openssl::pkey::PKey;
 use openssl::rand::rand_bytes;
+#[cfg(feature = "gcp")]
 use openssl::sha::sha256;
 use openssl::sign::{Signer, Verifier};
 use zeroize::Zeroizing;
 
+#[cfg(any(
+    feature = "azure",
+    feature = "gcp",
+    feature = "oci",
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba",
+    feature = "scaleway",
+    feature = "otc"
+))]
 use crate::ProxyError;
 
 static RUSTLS_PROVIDER: OnceLock<Result<(), String>> = OnceLock::new();
