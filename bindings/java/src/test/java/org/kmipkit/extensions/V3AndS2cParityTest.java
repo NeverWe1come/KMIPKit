@@ -502,10 +502,9 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler handler = new ServerRequestHandler() {
                 @Override
-                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                     discCalled.set(true);
-                    assertEquals(2, clientVersion.major());
-                    assertEquals(1, clientVersion.minor());
+                    assertTrue(clientVersions.contains(new ProtocolVersion(2, 1)));
                     supportedVersionsOut.add(new ProtocolVersion(2, 1));
                     return S2cOperationResult.success();
                 }
@@ -576,7 +575,7 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler handler = new ServerRequestHandler() {
                 @Override
-                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                     supportedVersionsOut.add(new ProtocolVersion(2, 1));
                     return S2cOperationResult.success();
                 }
@@ -625,7 +624,7 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler failingHandler = new ServerRequestHandler() {
                 @Override
-                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                     return S2cOperationResult.failure(0x05L, "version mismatch unsupported");
                 }
 
@@ -698,7 +697,7 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler pendingHandler = new ServerRequestHandler() {
                 @Override
-                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                     supportedVersionsOut.add(new ProtocolVersion(2, 1));
                     return S2cOperationResult.success();
                 }
@@ -745,7 +744,7 @@ class V3AndS2cParityTest {
 
             ServerRequestHandler throwingHandler = new ServerRequestHandler() {
                 @Override
-                public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                     throw new RuntimeException("DiscoverVersions unexpected error");
                 }
 
@@ -793,7 +792,7 @@ class V3AndS2cParityTest {
              ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
 
             ServerRequestHandler nullHandler = new ServerRequestHandler() {
-                @Override public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) { return null; }
+                @Override public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) { return null; }
                 @Override public S2cOperationResult handleNotify(ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) { return null; }
                 @Override public S2cOperationResult handlePut(ItemView item, long putFunction, byte[] uniqueIdentifier, byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) { return null; }
                 @Override public S2cOperationResult handleQuery(ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) { return null; }
@@ -902,7 +901,7 @@ class V3AndS2cParityTest {
 
                         ServerRequestHandler handler = new ServerRequestHandler() {
                             @Override
-                            public S2cOperationResult handleDiscoverVersions(ItemView item, ProtocolVersion clientVersion, List<ProtocolVersion> supportedVersionsOut) {
+                            public S2cOperationResult handleDiscoverVersions(ItemView item, List<ProtocolVersion> clientVersions, List<ProtocolVersion> supportedVersionsOut) {
                                 supportedVersionsOut.add(new ProtocolVersion(2, 1));
                                 return S2cOperationResult.success();
                             }

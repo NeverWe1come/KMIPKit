@@ -1104,8 +1104,8 @@ pub struct kmipkit_server_request_handler_v3_t {
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
             item_view: *const kmipkit_server_request_item_view_v1_t,
-            protocol_version_major: u32,
-            protocol_version_minor: u32,
+            requested_versions_packed: *const u32,
+            requested_versions_count: u32,
             supported_versions_out: *mut u32,
             supported_versions_capacity: u32,
             supported_versions_count_out: *mut u32,

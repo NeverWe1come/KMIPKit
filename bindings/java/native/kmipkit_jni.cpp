@@ -15757,13 +15757,16 @@ static uint32_t populate_s2c_operation_result(
         if (jMsgOpt != nullptr && env->CallBooleanMethod(jMsgOpt, is_present_mid)) {
             jstring jMsg = static_cast<jstring>(env->CallObjectMethod(jMsgOpt, get_mid));
             if (jMsg != nullptr) {
-                const char* utf = env->GetStringUTFChars(jMsg, nullptr);
-                jsize ulen = env->GetStringUTFLength(jMsg);
-                if (utf != nullptr) {
-                    ctx->result_message_buf.assign(utf, utf + ulen);
-                    env->ReleaseStringUTFChars(jMsg, utf);
-                    out_result->result_message_data = ctx->result_message_buf.data();
+                if (java_string_to_utf8(env, jMsg, ctx->result_message_buf)) {
+                    out_result->result_message_data = ctx->result_message_buf.empty()
+                            ? nullptr : ctx->result_message_buf.data();
                     out_result->result_message_length = static_cast<uint64_t>(ctx->result_message_buf.size());
+                } else if (env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    out_result->result_status = 1U;
+                    out_result->has_result_reason = 1U;
+                    out_result->result_reason = 0x0BU;
+                    status = 1U;
                 }
                 env->DeleteLocalRef(jMsg);
             }
@@ -15781,7 +15784,7 @@ static uint32_t populate_s2c_operation_result(
 static uint32_t s2c_handle_discover_versions_v3(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
-        uint32_t protocol_version_major, uint32_t protocol_version_minor,
+        const uint32_t* requested_versions_packed, uint32_t requested_versions_count,
         uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
         uint32_t* supported_versions_count_out,
         kmipkit_s2c_operation_result_v1_t* out_result) {
@@ -15805,17 +15808,31 @@ static uint32_t s2c_handle_discover_versions_v3(
             item_view ? static_cast<jlong>(item_view->operation) : 0, item_id_arr);
     if (item_id_arr != nullptr) env->DeleteLocalRef(item_id_arr);
 
+    if ((requested_versions_count != 0 && requested_versions_packed == nullptr)
+            || requested_versions_count > 1024) {
+        env->DeleteLocalRef(item_obj);
+        env->DeleteLocalRef(item_view_class);
+        env->DeleteLocalRef(handler_class);
+        return populate_s2c_operation_result(env, ctx, nullptr, out_result);
+    }
     jclass pv_class = env->FindClass("org/kmipkit/protocol/VersionGate$ProtocolVersion");
     jmethodID pv_init = env->GetMethodID(pv_class, "<init>", "(II)V");
-    jobject client_pv = env->NewObject(pv_class, pv_init, static_cast<jint>(protocol_version_major), static_cast<jint>(protocol_version_minor));
-
     jclass list_class = env->FindClass("java/util/ArrayList");
     jmethodID list_init = env->GetMethodID(list_class, "<init>", "()V");
+    jmethodID list_add = env->GetMethodID(list_class, "add", "(Ljava/lang/Object;)Z");
+    jobject client_versions = env->NewObject(list_class, list_init);
+    for (uint32_t i = 0; i < requested_versions_count; ++i) {
+        const uint32_t packed = requested_versions_packed[i];
+        jobject pv = env->NewObject(pv_class, pv_init,
+                static_cast<jint>(packed >> 16), static_cast<jint>(packed & 0xFFFFU));
+        env->CallBooleanMethod(client_versions, list_add, pv);
+        env->DeleteLocalRef(pv);
+    }
     jobject list_obj = env->NewObject(list_class, list_init);
 
     jmethodID handle_method = env->GetMethodID(handler_class, "handleDiscoverVersions",
-            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;Lorg/kmipkit/protocol/VersionGate$ProtocolVersion;Ljava/util/List;)Lorg/kmipkit/extensions/S2cOperationResult;");
-    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj, client_pv, list_obj);
+            "(Lorg/kmipkit/extensions/ServerRequestHandler$ItemView;Ljava/util/List;Ljava/util/List;)Lorg/kmipkit/extensions/S2cOperationResult;");
+    jobject jResult = env->CallObjectMethod(ctx->handler, handle_method, item_obj, client_versions, list_obj);
     uint32_t status = populate_s2c_operation_result(env, ctx, jResult, out_result);
     if (jResult != nullptr) env->DeleteLocalRef(jResult);
 
@@ -15858,8 +15875,8 @@ static uint32_t s2c_handle_discover_versions_v3(
     }
 
     env->DeleteLocalRef(list_obj);
+    env->DeleteLocalRef(client_versions);
     env->DeleteLocalRef(list_class);
-    env->DeleteLocalRef(client_pv);
     env->DeleteLocalRef(pv_class);
     env->DeleteLocalRef(item_obj);
     env->DeleteLocalRef(item_view_class);
@@ -15874,7 +15891,8 @@ static uint32_t s2c_handle_discover_versions(
         uint32_t protocol_version_major, uint32_t protocol_version_minor,
         uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
         uint32_t* supported_versions_count_out) {
-    return s2c_handle_discover_versions_v3(user_data, item_view, protocol_version_major, protocol_version_minor,
+    const uint32_t packed_version = (protocol_version_major << 16) | (protocol_version_minor & 0xFFFFU);
+    return s2c_handle_discover_versions_v3(user_data, item_view, &packed_version, 1,
             supported_versions_out, supported_versions_capacity, supported_versions_count_out, nullptr);
 }
 

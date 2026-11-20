@@ -10661,9 +10661,14 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV2 {
 
 struct CServerRequestHandlerAdapterV3 {
     handler: kmipkit_server_request_handler_v3_t,
+    current_batch_item_id: Option<Vec<u8>>,
 }
 
 impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
+    fn set_current_batch_item_id(&mut self, unique_batch_item_id: Option<&[u8]>) {
+        self.current_batch_item_id = unique_batch_item_id.map(<[u8]>::to_vec);
+    }
+
     fn handle_discover_versions(
         &mut self,
         request: &kmipkit_protocol::ServerDiscoverVersionsRequest,
@@ -10676,17 +10681,14 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
             operation: 0x0000_001E,
-            unique_batch_item_id_data: ptr::null(),
-            unique_batch_item_id_length: 0,
+            unique_batch_item_id_data: self.current_batch_item_id.as_ref().map_or(ptr::null(), |id| id.as_ptr()),
+            unique_batch_item_id_length: self.current_batch_item_id.as_ref().map_or(0, |id| id.len() as u64),
         };
         let mut supported: [u32; 16] = [0; 16];
         let mut supported_count: u32 = 0;
-        let requested = request.protocol_versions();
-        let (req_maj, req_min) = if let Some(pv) = requested.first() {
-            (pv.major() as u32, pv.minor() as u32)
-        } else {
-            (2, 1)
-        };
+        let requested: Vec<u32> = request.protocol_versions().iter()
+            .map(|pv| ((pv.major() as u32) << 16) | pv.minor() as u32)
+            .collect();
         let mut out_result = kmipkit_s2c_operation_result_v1_t {
             struct_size: std::mem::size_of::<kmipkit_s2c_operation_result_v1_t>() as u32,
             abi_version: 1,
@@ -10701,8 +10703,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             callback(
                 self.handler.user_data,
                 &view,
-                req_maj,
-                req_min,
+                requested.as_ptr(),
+                requested.len() as u32,
                 supported.as_mut_ptr(),
                 16,
                 &mut supported_count,
@@ -10742,8 +10744,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
             operation: 0x0000_001B,
-            unique_batch_item_id_data: ptr::null(),
-            unique_batch_item_id_length: 0,
+            unique_batch_item_id_data: self.current_batch_item_id.as_ref().map_or(ptr::null(), |id| id.as_ptr()),
+            unique_batch_item_id_length: self.current_batch_item_id.as_ref().map_or(0, |id| id.len() as u64),
         };
         let mut attr_bytes = Vec::new();
         let (attr_ptr, attr_len) = if let Some(attrs) = request.attributes() {
@@ -10800,8 +10802,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
             operation: 0x0000_001C,
-            unique_batch_item_id_data: ptr::null(),
-            unique_batch_item_id_length: 0,
+            unique_batch_item_id_data: self.current_batch_item_id.as_ref().map_or(ptr::null(), |id| id.as_ptr()),
+            unique_batch_item_id_length: self.current_batch_item_id.as_ref().map_or(0, |id| id.len() as u64),
         };
         let mut obj_bytes = Vec::new();
         encode_ttlv_item_bytes(request.object_item(), &mut obj_bytes);
@@ -10872,8 +10874,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
             operation: 0x0000_0018,
-            unique_batch_item_id_data: ptr::null(),
-            unique_batch_item_id_length: 0,
+            unique_batch_item_id_data: self.current_batch_item_id.as_ref().map_or(ptr::null(), |id| id.as_ptr()),
+            unique_batch_item_id_length: self.current_batch_item_id.as_ref().map_or(0, |id| id.len() as u64),
         };
         let mut flags: u32 = 0;
         for qf in request.query_functions() {
@@ -10940,8 +10942,8 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
             struct_size: std::mem::size_of::<kmipkit_server_request_item_view_v1_t>() as u32,
             abi_version: 1,
             operation: 0x0000_0032,
-            unique_batch_item_id_data: ptr::null(),
-            unique_batch_item_id_length: 0,
+            unique_batch_item_id_data: self.current_batch_item_id.as_ref().map_or(ptr::null(), |id| id.as_ptr()),
+            unique_batch_item_id_length: self.current_batch_item_id.as_ref().map_or(0, |id| id.len() as u64),
         };
         let mut out_result = kmipkit_s2c_operation_result_v1_t {
             struct_size: std::mem::size_of::<kmipkit_s2c_operation_result_v1_t>() as u32,
@@ -11106,6 +11108,7 @@ pub extern "C" fn kmipkit_server_request_dispatcher_dispatch_v3(
         };
         let mut adapter = CServerRequestHandlerAdapterV3 {
             handler: *handler_ref,
+            current_batch_item_id: None,
         };
         match disp.dispatch(batch_val, &mut adapter) {
             Ok(resp) => {

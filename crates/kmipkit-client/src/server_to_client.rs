@@ -334,6 +334,10 @@ impl IncomingServerBatch {
 
 /// Handler trait implemented by applications to process Server-to-Client operations.
 pub trait ServerRequestHandler {
+    /// Supplies metadata for the batch item currently being dispatched.
+    /// Handlers that do not need the batch item ID can keep the default implementation.
+    fn set_current_batch_item_id(&mut self, _unique_batch_item_id: Option<&[u8]>) {}
+
     /// Handles incoming Discover Versions request (§6.2.1).
     ///
     /// # Errors
@@ -411,6 +415,7 @@ impl ServerRequestDispatcher {
 
         for item_view in batch.items() {
             let unique_id = item_view.unique_batch_item_id().map(<[u8]>::to_vec);
+            handler.set_current_batch_item_id(item_view.unique_batch_item_id());
 
             match item_view.payload {
                 ServerRequestItemPayload::DiscoverVersions(req) => {

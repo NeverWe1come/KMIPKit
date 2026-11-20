@@ -9,7 +9,7 @@ public interface ServerRequestHandler {
 
     S2cOperationResult handleDiscoverVersions(
             ItemView item,
-            ProtocolVersion clientVersion,
+            List<ProtocolVersion> clientVersions,
             List<ProtocolVersion> supportedVersionsOut);
 
     S2cOperationResult handleNotify(
