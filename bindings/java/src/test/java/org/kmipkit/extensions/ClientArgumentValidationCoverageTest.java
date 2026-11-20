@@ -112,7 +112,7 @@ final class ClientArgumentValidationCoverageTest {
         Path directory = Path.of("").toAbsolutePath();
         while (directory != null) {
             Path candidate = directory.resolve(Path.of(
-                    "bindings", "python", "tests", "fixtures", "login-mtls", filename));
+                    "bindings", "shared", "fixtures", "login-mtls", filename));
             if (Files.isRegularFile(candidate)) {
                 return Files.readAllBytes(candidate);
             }

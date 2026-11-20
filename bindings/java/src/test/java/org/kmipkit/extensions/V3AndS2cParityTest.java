@@ -1358,7 +1358,7 @@ class V3AndS2cParityTest {
         Path directory = Path.of("").toAbsolutePath();
         while (directory != null) {
             Path candidate = directory.resolve(
-                    Path.of("bindings", "python", "tests", "fixtures", "login-mtls", filename));
+                    Path.of("bindings", "shared", "fixtures", "login-mtls", filename));
             if (Files.isRegularFile(candidate)) return Files.readAllBytes(candidate);
             directory = directory.getParent();
         }
