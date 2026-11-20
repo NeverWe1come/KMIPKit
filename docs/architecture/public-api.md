@@ -1,0 +1,474 @@
+# Public API design
+
+This reference describes the current API design and Rust declarations where
+identified. A Rust declaration does not establish 1.0 availability in all
+four languages. The reviewed [package status](../user-guide/en/language-packages.md)
+is the source for operation-level 1.0 API mapping status; `verified` records
+four-language API routes and does not establish protocol conformance or server
+interoperability. `declared` and `blocked` retain their distinct meanings.
+
+## Three supported levels
+
+### Local API-level metadata
+
+The local API taxonomy is available through Rust `kmipkit::api_levels`, C
+`kmipkit_api_levels_get_v1`, Java `RuntimeMetadata.apiLevels()`, and Python
+`kmipkit.metadata.get_api_levels()`. Each query returns the fixed-order
+`high-level`, `typed-protocol`, and `generic-ttlv` levels without a network
+call. It describes the KMIPKit facade surface and is distinct from the KMIP
+Discover Versions operation; it does not assert protocol conformance or peer
+support.
+
+### High level
+
+The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
+not implement the general builder surface. This high-level section describes
+the initial Rust operation subset of the complete 56-variant typed request set,
+shown for batch execution and lifecycle conveniences. The complete set appears
+in the Typed protocol section below, and this subset does not establish
+four-language 1.0 availability by itself. The current typed client exposes
+Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
+Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
+Revoke for batch execution, with single-operation convenience methods for
+lifecycle calls. The maintainer approved KMIPKIT-0009 for implementation on
+2026-10-29. Its four asynchronous follow-up APIs have verified four-language
+API mappings and each method performs one explicit exchange. These mappings do
+not claim conformance: the Process Table 278 catalog requirement gap and
+reviewer-owned checklists remain open. Query Asynchronous Requests retains its
+generic TTLV response under KMIPKIT-DEC-015.
+
+| KMIP operation | Four-language 1.0 mapping |
+|---|---|
+| Cancel | verified |
+| Poll | verified |
+| Process | verified |
+| Query Asynchronous Requests | verified |
+
+KMIPKIT-0013 adds synchronous production construction from a separate
+immutable client extension configuration and validated transport
+configuration. The typed client accepts neither raw request bytes nor an
+arbitrary caller-implemented transport. This request set is not full KMIP 2.1
+coverage. See the [client execution guide](../user-guide/en/client-execution.md)
+for the current boundary and examples.
+
+
+### Low-level transport
+
+kmipkit-transport is a public reusable Rust crate under ADR-0003. ADR-0014
+defines its documented bounded byte-exchange contract. It is not re-exported
+by the kmipkit facade and cannot be injected into the typed client. Direct
+callers supply and own request bytes; this API does not encode or validate
+KMIP messages and does not provide the typed client's request-owner guarantee.
+On success, `TransportResponse` lends bytes through a borrowed view, redacts
+`Debug` output, and zeroizes initialized bytes in its current owned allocation
+on drop. Partial and error cleanup limits, including allocation growth and
+external copies, are defined by ADR-0014. KMIPKIT-0013 provides production
+raw-TLS and HTTPS/HTTP 1.1 adapters; only the validated adapters are reachable
+from the typed client. Direct users may call each adapter's bounded byte API.
+
+### Typed protocol
+
+KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
+`ClientBatch` with a closed typed request set. The complete Rust typed request
+set covers all 56 `client_1_0` operation types, including explicit asynchronous
+follow-up operations (Cancel, Poll, Process, and Query Asynchronous Requests) as
+typed batch items, with verified four-language API mappings. This API status
+does not establish conformance. The Query Asynchronous Requests response
+remains available as a generic TTLV response under KMIPKIT-DEC-015.
+Variants: Discover Versions,
+Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
+Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
+Recover, Get, Locate, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Modify Attribute, Set Attribute, Get
+Attributes, Get Attribute List, Ping, Interop, Log, Validate, PKCS#11, Get
+Constraints, Set Constraints, Set Defaults, Get Usage Allocation, Query,
+Encrypt, Decrypt, Derive Key, Export, Import, Join Split Key, Hash, MAC, MAC
+Verify, Sign, Signature Verify, RNG Retrieve, and RNG Seed. Cross-language
+availability is summarized in the [Java and Python package
+guide](../user-guide/en/language-packages.md); exact operation and capability
+states remain in the [public API
+manifest](../../bindings/shared/public-api.json). The API does not accept
+generic Item values, raw message bytes, or caller-implemented conversions.
+Discover Versions is explicit and is never a hidden preflight.
+Per-call `CodecLimits` bound request encoding and response decoding and supply
+the transport response-byte cap.
+
+Get Usage Allocation follows KMIP v2.1 §6.1.23, Tables 232–234, and encodes
+Usage Limits Count as the exact signed Long Integer from §7.40, Table 392.
+Its request accepts an optional Unique Identifier; a successful typed response
+exposes the resolved Unique Identifier. The Rust, C, Java, and Python facades
+share the operation mapping while the common batch result retains Success,
+Pending, Failure, correlation, and request-delivery state. Pending is returned
+to the caller without automatic polling or retry. A successful response also
+exposes the complete ordered generic TTLV response, including unknown fields:
+Rust lends a `StructureView`, C returns a caller-owned
+`kmipkit_ttlv_structure_t`, Java returns a `TtlvStructure` owned by its
+`GetUsageAllocationResponse`, and Python returns an owned `ttlv.Structure` from
+`response_ttlv`. Release the C handle with
+`kmipkit_ttlv_structure_release`; Java callers close the result, and Python
+callers close the result or its context-managed `response_ttlv` structure. The
+C, Java, and Python typed accessors do not return
+a generic response handle for Failure or Pending, and this does not expand the
+separate T081 error-only response-retention capability. The mapping follows
+the approved contract in policy controls.
+
+Hash, MAC, MAC Verify, Sign, and Signature Verify expose the full ordered
+generic TTLV response only through the matching typed success result. The Rust
+response types lend a `StructureView`; C returns an independently owned
+`kmipkit_ttlv_structure_t`; Java and Python return their owned
+`TtlvStructure`/`ttlv.Structure` from `responseTtlv()`/`response_ttlv`. Callers
+release the C handle with `kmipkit_ttlv_structure_release` and close the Java or
+Python structure when finished. Unknown fields and their order are preserved.
+Failure, Pending, and other-operation results do not expose this success
+accessor. The separate FR-015 error-response access remains limited to its
+approved four identities.
+
+KMIPKIT-0013 constructs the typed client from validated transport
+configuration without arbitrary transport injection. The public low-level
+`kmipkit-transport` exchange contract remains a separate direct caller-byte
+API under ADR-0014. A typed result does not expose raw response bytes. See the
+[client execution guide](../user-guide/en/client-execution.md) and
+ADR-0014.
+
+### Wire encoding selection
+
+KMIPKIT-0057 exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
+The immutable client configuration defaults to TTLV and can select another
+encoding. `RequestOptions` supplies an optional per-exchange override. The
+resolved choice is override, configuration, then TTLV, and applies to both
+request encoding and response decoding through the same typed operation path.
+A mismatched response is a redacted protocol error; the client does not retry
+or fall back to another codec.
+
+Rust exposes the enum, configuration setter, and exchange override. C adds an
+enum and an additive execute-with-options entry point while preserving earlier
+execute symbols. Java exposes `ClientConfiguration.withWireEncoding` and
+`Client.executeWithOptions`; Python exposes `ClientConfiguration.with_wire_encoding`
+and `Client.execute(..., wire_encoding=None)`. The mappings and generated
+surfaces are recorded in `bindings/shared/public-api.json`; declaration
+parity does not establish full operation parity or release readiness.
+
+Both production transports carry the selected format. HTTPS uses the matching
+media type and body under the contextual interpretation documented in
+ADR-0018. Raw TLS uses the standard
+TTLV frame or reads one complete JSON/XML document incrementally and closes
+after the response; this framing is a KMIPKit decision, not an OASIS raw-TLS
+profile requirement. The low-level transport API remains a caller-owned byte
+exchange and does not perform this typed client's message selection.
+
+### Managed-object lifecycle
+
+KMIPKIT-0018 adds typed Activate, Archive, Destroy, and Recover operations.
+KMIPKIT-0022 adds Certify, Check, Obtain Lease, and Re-certify. KMIPKIT-0036
+adds the following nine-operation set to the Rust typed client: Certify, Check,
+Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
+Revoke. This scope does not establish C, Java, or Python operation parity;
+those mappings remain under KMIPKIT-0043. Each single-operation convenience
+call performs one exchange and returns the server result. The client does not
+simulate server object state, retry, or claim that Archive completed.
+Re-certify callers should submit it no more than
+once per existing certificate; KMIPKit does not retain a local certificate
+lifecycle ledger. Re-key callers should submit it no more than once per
+existing key; KMIPKit does not retain a local key lifecycle ledger.
+Re-key Key Pair callers should submit it no more than once per existing pair;
+KMIPKit does not retain a local key-pair lifecycle ledger. Re-Provision callers
+supply a certificate request, replacement certificate, or no parameters for
+server-created credentials; KMIPKit does not retain or change local credentials.
+The convenience
+methods use default batch options; callers
+that want to accept `Operation Pending` use `Client::execute` with an explicit
+Asynchronous Indicator and choose any later Poll/Get action themselves.
+Unknown result values and accepted non-critical Message Extensions remain
+available without inferred policy. See the
+[lifecycle guide](../user-guide/en/lifecycle-operations.md) for request and
+result examples and operation-specific limits.
+
+### Credential and Authentication values
+
+KMIPKIT-0008 adds typed, raw-preserving Credential and Authentication values
+to `kmipkit-protocol`. Authentication requires one or more Credentials in
+caller-supplied order. Known Credential Values validate their KMIP 2.1 table
+fields; unknown Credential Types, fields, and raw Enumeration values remain
+available through the retained TTLV tree. Device values require at least one
+of Device Serial Number, Network Identifier, Machine Identifier, or Media
+Identifier. The caller remains responsible for supplying an identifier or
+combination that is actually unique; KMIPKit neither chooses a comparison
+scope nor checks actual uniqueness.
+
+These values are in-memory protocol models. KMIPKIT-0008 does not add
+Authentication or Credential data to the request payload or introduce a
+secret-bearing request path. Every synchronous and asynchronous client
+Request Header advertises `Attestation Capable Indicator = True` because the
+public API can construct Attestation Credentials. That bit reports
+construction capability only; it
+does not claim to generate or verify evidence, submit a Credential, or predict
+server acceptance. Callers cannot override it per request.
+
+### Generic TTLV
+
+Advanced users can build and inspect an in-memory ordered tree of KMIP items.
+Each item has an allocation-checked Tag, including accepted extension tags,
+and one of the eleven supported KMIP 2.1 typed Value variants; an unknown Item
+Type code has no Value representation. The model checks that the Value
+determines the Item Type. It also preserves child order, raw Enumeration
+values, bitmask bits, and exact Big Integer Item Value octets. The tree has
+KMIPKit's 64-level Structure limit.
+
+All four language facades can construct Big Integer values. The C constructor
+`kmipkit_ttlv_value_big_integer` accepts an explicit-length byte span and the
+configured codec limits; C structure/value/item builders document when their
+opaque-handle ownership transfers.
+
+The generic TTLV layer does not establish wire or protocol validity. It does
+not store original framing, encoded lengths, or padding bytes, and does not
+validate schema-specific field order, cardinality, required fields, or
+operation semantics. The KMIP 2.1 message layer validates Request/Response
+Message envelopes, common headers, batch items, result relationships, and
+Message Extension shapes while retaining the source tree. It leaves
+operation payload contents generic. The public `kmipkit-ttlv` codec surface
+provides the bounded decoder and no byte-producing encoder. KMIPKIT-0007 owns
+the private writer and sole production callsite within the typed
+Client::execute path; callers cannot submit generic TTLV through that path.
+See the generic value-model specification
+and [client execution guide](../user-guide/en/client-execution.md).
+
+### KMIP message model
+
+`kmipkit-protocol` exposes owning `RequestMessage` and `ResponseMessage` values
+created from a generic TTLV `Structure`. Parsing checks message and batch field
+order, required fields, singleton and repeatable fields, Batch Count, request
+item IDs, result-status constraints, and extension structure. Conversion back
+to TTLV returns the original tree, including unknown values and source order.
+Typed header, batch-item, and extension views lend nested values only for the
+duration of an accessor callback. Raw Enumeration values and field presence
+remain observable; absent Asynchronous Indicator, Batch Order Option, Batch
+Error Continuation Option, and Attestation Capable Indicator expose their
+specified effective defaults without materializing fields.
+
+This model is for in-memory validation and inspection. It does not encode or
+send a message, validate operation-specific payloads, apply client send policy,
+or automatically Poll, Cancel, wait, or retry. See the
+[English message-model guide](../user-guide/en/message-model.md) and
+[Spanish message-model guide](../user-guide/es/modelo-mensaje.md) for the
+application-facing behavior.
+
+The Rust, C, Java, and Python message-model consumers are checked against the
+same executable parity fixture. It covers source order, unknown operation and
+result values, unknown bit-mask bits and extension tags, field presence and
+effective defaults, batch-item association, payload-free validation metadata,
+and retained-view lifetime after owner release. This verifies shared API
+behavior; it does not claim that a server accepts a particular operation or
+extension.
+
+## Builder policy
+
+Builders use ordinary strongly typed state and return detailed validation
+errors. The project avoids typestate builders across the whole standard
+because they would produce a large, difficult cross-language type surface.
+
+Automatically supplied fields may include protocol version 2.1, batch count,
+required batch identifiers, timestamp, and normative mechanical defaults.
+
+Explicit application choices include algorithm, key length, cryptographic
+usage, mode, padding, related parameters, export/protection policy, and
+optional profile selection.
+
+## Unknown values
+
+- Generic Enumeration values preserve their raw 32-bit value, including
+  unassigned values; bitmasks preserve unknown bits.
+- Allocation-checked Tags retain their numeric value, including accepted
+  extension tags.
+- Generic nodes retain child order.
+- Unknown Item Type codes are not represented by this model.
+- Rust protocol enums remain non-exhaustive where the typed API retains raw
+  values; Java and Python avoid closed enums where they would lose data.
+- Value preservation does not imply preservation of the original wire bytes or
+  padding; see [Generic TTLV](#generic-ttlv).
+
+## Validation boundary
+
+Typed client requests expose `ValidateKmipRequest::validate()` and
+`ClientRequest::validation_report()`. The report contains stable rule codes,
+schema-relative paths, severity, and the OASIS or project-policy source. It
+does not contain caller values. The validators borrow their request data and
+do not encode or clone secret-bearing values to produce diagnostics.
+
+For a generic TTLV `Structure`, callers must select a
+`RequestPayloadSchema` or `NestedStructureSchema` explicitly when they want
+schema checks. `validate_structure(&view, None)` performs no KMIP schema
+inference; generic model validity is already enforced by the TTLV model.
+The public nested identities include `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData`, and `NestedStructureSchema::SplitKey` for
+the KMIP 2.1 §2.4 Table 5, §2.7 Table 8, and §2.8 Table 9 object schemas.
+KMIP 3.0 Working Draft operations use their own typed request models rather
+than the KMIP 2.1 payload-schema registry; execution still gates their operation
+codes and serialized tags against the effective protocol version before
+calling the transport.
+Schema-aware validation checks known field order, type, cardinality, and
+requiredness while retaining unknown tags, future enum values, unknown mask
+bits, and extensions. The order check follows each OASIS structure
+description, not numeric tag order (KMIP v2.1 §10.1.2).
+
+`Client::execute` applies the same locally decidable request checks before
+encoding or calling the transport. A failed check returns a sanitized
+validation error with delivery state `NotSent` and performs no exchange. A
+valid local report does not establish peer support, server authorization,
+configured algorithms, policy, quotas, object state, or formal profile
+conformance; those outcomes remain with the server.
+
+Profile validation is explicit. Query and Discover Versions are explicit
+operations; they are never hidden prerequisites for ordinary calls.
+
+## Batch
+
+The high level batch builder supports heterogeneous operations and all KMIP
+ordering and continuation options. KMIPKit preserves input order and unique
+batch IDs and never splits, reorders, or retries a batch.
+
+A valid batch response returns a `BatchResult` even when items fail. Each item
+is completed, pending, or failed. Whole-message and transport errors fail the
+call itself.
+
+## Protocol asynchronous outcome
+
+KMIPKIT-0007 represents a Pending item as
+`ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
+Asynchronous Correlation Value behind an explicit borrowed accessor. The
+Pending value retains the originating typed response; `response()` returns a
+borrowed `ClientResponseView` with a shared operation-result accessor and
+operation-specific accessors. The view also preserves Discover Versions'
+supported-version accessor. Formatted output is redacted and KMIPKit-owned
+correlation storage is zeroized when the Pending value is dropped. The
+four-language API exposes explicit one-exchange methods for Poll, Cancel,
+Process, and Query Asynchronous Requests. Correlation bytes are preserved;
+there is no automatic polling, waiting, retry, or background execution. Their
+response outcomes expose operation-specific readers in Rust, C, Java, and
+Python. Cancel exposes its Cancellation Result; Poll and Process expose their
+Pending state; Process also reports whether its required payload is present
+and its member count. The readers return absence for another operation. C
+uses fixed-width v1 records and borrowed spans, while Java and Python response
+views delegate to the owning outcome and become unusable when it is closed.
+Generic payload access remains available through `raw()`. Query Asynchronous
+Requests exposes its operation result and generic TTLV payload only because
+KMIP v2.1 §6.1.41 Table 286 has a caption/body discrepancy; no payload
+semantics are inferred. The Process Table 278 catalog gap and reviewer-owned
+checklists remain open. This is not a complete conformance claim. See the
+[client execution guide](../user-guide/en/client-execution.md).
+
+The managed Java and Python facades expose correlation bytes only inside an
+explicit callback. Each receives a temporary read-only view backed by mutable
+KMIPKit-managed storage, which is zeroized before the callback method returns,
+including on callback failure. Copies deliberately made by application code
+remain caller-owned.
+
+## Secrets
+
+Secret values use dedicated types that cannot be formatted or serialized.
+Exposure requires an explicit operation and produces a controlled temporary
+view or copy. Rust uses closure-scoped access, C an opaque secret handle, Java
+an `AutoCloseable` secret, and Python a context-managed secret.
+
+In `kmipkit-ttlv`, each `Value` privately owns a boxed representation and calls
+the safe `Zeroize` API before releasing it. Payloads in nested Structures are
+zeroized recursively. The dependency is locked to `zeroize` 1.9.0 with only
+its `alloc` feature enabled; see the dependency review
+and the [pinned 1.9.0 source](https://docs.rs/crate/zeroize/1.9.0/source/src/lib.rs).
+
+In that version, `Vec::zeroize` zeroizes the entire capacity of its current
+backing allocation, including spare capacity, and then sets its length to
+zero. `String::zeroize` delegates to its backing vector and has the same
+current-allocation behavior. Neither can guarantee that copies left in an
+earlier allocation by reallocation were cleared. The private outbound owner
+used by KMIPKIT-0007 documents a narrower guarantee: its initialized encoded
+byte range is zeroized after the synchronous exchange and before owner drop.
+Although the pinned `Vec::zeroize` implementation also clears that owner's
+current spare capacity, that extra behavior is not part of the documented
+KMIPKit guarantee. This is not a guarantee that every process copy of a value
+has been erased. Caller-side copies, buffers left by earlier reallocations,
+copies deliberately made from borrowed views, temporary stack or register
+copies, and copies retained by Java, Python, or another runtime are outside
+this Rust model's guarantee.
+
+The KMIPKIT-0007 execute path uses its private zeroizing request owner only for
+a caller-requested typed operation. Initialized encoded bytes are zeroized
+when that owner is dropped after exchange; broader copy and allocation limits
+are defined by ADR-0012.
+The separate low-level raw-byte exchange exception and its response-wrapper
+limits are defined by ADR-0014. The typed client
+always decodes the response wrapper and does not expose raw bodies.
+
+Credential `SecretText` and `SecretBytes` take ownership of their supplied
+String or byte-vector allocation without cloning it and zeroize the owned
+value on drop. Consuming a wrapper into a TTLV value moves that allocation to
+the TTLV owner. The guarantee applies to the owned current allocation before
+its owner releases it. It cannot erase caller-created copies, prior
+allocations left by earlier growth, copies made from callback-borrowed views,
+temporary stack or register copies, or copies retained by a foreign runtime,
+TLS implementation, operating system, or other dependency. The documented
+guarantee covers initialized bytes in KMIPKit-owned current allocations; spare
+or uninitialized capacity is covered only when initialized and cleanup is
+verified. Logging, formatting, and validation diagnostics redact Credential
+contents, including identifiers inside a Credential.
+
+The C secret callbacks expose a pointer and length only for the synchronous
+callback invocation. A callback must not retain the pointer, use it
+asynchronously, or unwind or jump across the ABI; copies made by the callback
+are outside KMIPKit's zeroization guarantee. Java callbacks receive temporary
+arrays that the bridge wipes after return, although applications may retain
+other copies and immutable `String` values cannot be erased. Python
+`SecretBytes.with_bytes` copies the span into a temporary `bytearray`, passes a
+read-only `memoryview`, then releases the view and wipes the bytearray. The
+view's `.obj` remains a mutable route to that temporary copy while the callback
+runs; changes there do not affect the native owner. `SecretText.with_str`
+decodes to an immutable `str`, which Python cannot reliably erase. Copies
+deliberately made by application code remain caller-owned.
+
+## Errors
+
+The shared Rust result/error contract is exposed by the `kmipkit` facade:
+
+- `ResultStatus` and `ResultReason` retain the raw 32-bit Enumeration value.
+  `known_name()` resolves assigned values from the checked-in normative catalog;
+  unknown values remain unchanged.
+- `KmipOperationResult` contains status, optional reason, and optional
+  `ResultMessage`. Construction requires a reason for `Operation Failed` and
+  forbids one for `Success`. Pending, undone, and unknown statuses gain no
+  additional reason rule in this feature.
+- Applications can explicitly inspect Result Message text through
+  `ResultMessage::as_str()` or `as_bytes()`. Its Debug output and the default
+  Display/Debug output of `KmipOperationResult` redact the message.
+- `ClientError` distinguishes validation, protocol, and transport failures
+  from a complete server result. A server result retains the complete
+  `KmipOperationResult` and has no local request-delivery state.
+- Every local `ClientError` requires exactly one `RequestDeliveryState`;
+  validation before transmission is `NotSent`. Constructors cannot omit this
+  evidence.
+- `RequestDeliveryState` reports `NotSent`, `PossiblySent`, or
+  `ResponseStarted`. The first response byte advances the state to
+  `ResponseStarted`; a zero-byte read does not. Delivery evidence alone does
+  not imply that retrying is safe.
+- Protocol, transport, and validation constructors consume and discard
+  arbitrary source errors before retaining safe cause categories. Public error
+  chains contain only those safe categories. This result/error feature adds no
+  automatic serialization and no logger or logging call.
+
+Later operation-specific errors may add configuration, codec, TLS, HTTP,
+extension, unavailable-feature, and operation/batch context. They must preserve
+the source-sanitization and redaction rules above when accepting untrusted
+sources or server text.
+
+Rust returns `Result`. Java exposes unchecked typed exceptions. Python exposes
+an equivalent exception hierarchy. C returns stable codes and exposes detailed
+thread-local context.
+
+## Lifecycle and threading
+
+- Clients are thread safe.
+- One client serializes calls over one connection.
+- `close` is idempotent and waits for active calls before releasing resources.
+- Calls on a closed client return a stable error.
+- Rust also releases through `Drop`; Java and Python finalizers are fallback
+  mechanisms only.

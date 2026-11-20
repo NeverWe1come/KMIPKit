@@ -1,0 +1,1370 @@
+# Ejecución tipada del cliente
+
+Esta guía comenzó describiendo la primera etapa de ejecución Rust introducida
+por KMIPKIT-0007. Su lista de operaciones y ejemplos son puntos de entrada
+históricos; no son el inventario completo de la API actual. La rama de release
+incluye ahora 56 mapeos de operaciones iniciadas por el cliente, la ruta
+independiente Set Endpoint Role y las APIs aprobadas de escucha y despacho
+servidor-cliente de KMIPKIT-0066. Consulta el [estado del
+proyecto](../../project-status.md), el [estado de paquetes y manifiesto
+](paquetes-de-idiomas.md) y la [matriz de interoperabilidad con
+servidores](../../development/kmip-interoperability.md) para distinguir la
+implementación de sus evidencias.
+
+Esta página se centra en ejemplos de ejecución Rust. El alcance aprobado de
+1.0 también incluye TTLV, JSON y XML; el cliente síncrono y los resultados
+asíncronos del protocolo siguen bajo control del llamador. KMIP 2.1 es la
+versión predeterminada, con soporte KMIP 2.0 y una superficie acotada del
+borrador KMIP 3.0 validada por catálogo; los detalles dependen de cada versión
+y no implican conformidad general.
+
+Esta guía describe la superficie de la API Rust de `kmipkit-client`. Un modelo
+o accesor de Rust no establece la disponibilidad de una operación en los
+cuatro lenguajes de la versión 1.0. En el manifiesto, `blocked` significa que
+el mapeo completo de operaciones 1.0 para los cuatro lenguajes no está
+disponible, aunque existan tipos de Rust. Consulta el [estado de paquetes e
+idiomas](paquetes-de-idiomas.md) para ver el estado actual de operaciones y
+capacidades.
+
+## Límite de peticiones tipadas
+
+La API síncrona de Rust `kmipkit_client::Client::execute` acepta un `ClientBatch`
+que contiene únicamente variantes del conjunto cerrado `ClientRequest`. El
+cliente Rust admite peticiones explícitas del cliente al servidor para Discover
+Versions, Create, Create Key Pair, Create Split Key, Add Attribute, Adjust Attribute,
+Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
+Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
+Con la configuración predeterminada, Discover Versions anuncia KMIP 2.1.
+La API multiversión puede anunciar un conjunto configurado explícitamente;
+consulta KMIPKIT-0069 y ADR-0022. Cada respuesta sigue sujeta a las
+comprobaciones de versión efectiva y al comportamiento del servidor. Get Attributes y Get
+Attribute List usan sus modelos tipados de petición y respuesta de
+§§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
+bytes de mensajes codificados ni hooks de
+conversión definidos por el llamador.
+
+Discover Versions es una operación normal que el llamador debe solicitar. El
+cliente no la ejecuta como paso previo oculto ni la usa para negociar otra
+operación. La respuesta comunica versiones, pero no demuestra compatibilidad
+con otras operaciones. Una lista vacía o el resultado `Operation Not
+Supported` del servidor se devuelve como un resultado tipado normal.
+
+Cada elemento del lote conserva su respuesta tipada por operación. La llamada
+`ClientBatchOutcome::response()` devuelve una vista prestada
+`ClientResponseView`, con el accesor común `result()` y accesores tipados para
+Discover Versions, Create, Create Key Pair, Create Split Key, Add Attribute,
+Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
+Attribute, Set Attribute, Activate, Archive, Destroy y Recover. Cuando una
+operación queda en estado Pending, `PendingOutcome` conserva esa respuesta
+tipada y presta el valor de correlación opaco mediante
+`asynchronous_correlation_value()`. KMIPKit no ejecuta Poll ni reintenta
+automáticamente.
+
+Los consumidores de paquetes de los cuatro lenguajes ejecutan Ping mediante
+sus APIs de cliente configuradas y un respondedor de prueba local limitado a
+loopback con TLS 1.3/mTLS. Esto comprueba la ejecución del cliente y la ruta del
+resultado tipado; el respondedor no es una implementación de servidor KMIP ni
+aporta evidencia de interoperabilidad.
+
+KMIP 2.1 sigue siendo la versión predeterminada. KMIP 2.0 y la superficie
+catalogada del borrador/estándar KMIP 3.0 se seleccionan explícitamente y se
+validan antes del envío según KMIPKIT-0069–0071 y ADR-0022. La biblioteca
+cliente no admite KMIP 1.x. Las APIs de KMIP 3.0 se limitan a los modelos y
+rutas aprobados por versión; su presencia no afirma conformidad general con
+3.0, compatibilidad con perfiles ni certificación. Las especificaciones y el
+ADR-0002 iniciales, limitados a KMIP 2.1, han sido sustituidos en alcance por
+decisiones aprobadas posteriores.
+
+## Ciclo fluido de una clave
+
+KMIPKIT-0091 añade un recorrido orientado a tareas para el ciclo habitual de
+una clave simétrica. Construye peticiones tipadas existentes y mantiene
+explícitos el algoritmo, el tamaño de clave y la política de uso. Los presets
+AES solo fijan el algoritmo y la longitud en bits; el llamador elige las
+operaciones permitidas. Create devuelve el Unique Identifier tipado del
+servidor, que después se pasa a Get y Destroy:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn ciclo_fluido_clave(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), ClientError> {
+let created = client
+    .request()
+    .create_symmetric_key()
+    .aes_256()
+    .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+    .name("application-key")
+    .execute(&limits)?;
+let identifier = created.outcome().create_response()
+    .and_then(|response| response.unique_identifier())
+    .expect("Create correcto devuelve un Unique Identifier").clone();
+let key = client.request().get(identifier.clone()).execute(&limits)?;
+let destroyed = client.request().destroy(identifier).execute(&limits)?;
+let _ = (key, destroyed);
+Ok(())
+}
+
+fn main() {}
+```
+
+Para extensiones expertas, Rust también acepta un `Item` TTLV explícito mediante
+`attribute_item()`. `attribute_at(FluentAttributePosition::ObjectAttributes
+{ index })` coloca el ítem en una posición, empezando desde cero, de la lista
+final ordenada de Object Attributes. El índice cuenta los campos semánticos
+como algoritmo, longitud, máscara de uso y nombre, además de los atributos
+expertos añadidos al final. El builder valida los tipos TTLV catalogados, la
+estructura Vendor Attribute y la petición tipada completa antes del envío; las
+posiciones repetidas o fuera de rango fallan con estado de entrega `NotSent`.
+Esta ruta no puede modificar la cabecera, el batch ni el transporte, y tampoco
+permite enviar mensajes arbitrarios.
+
+Java ofrece la misma operación experta mediante
+`SymmetricKeyBuilder.attributeItemAt(index, item)`. El índice empieza en cero
+y se refiere a la secuencia final de Object Attributes; Java rechaza índices
+negativos y el builder rechaza posiciones fuera de rango al construir la
+petición tipada, antes de usar el transporte. Los fallos de validación nativos
+al insertar o construir se exponen como `ClientOperationException`, con los
+códigos originales de estado/categoría/causa y el código de entrega `1`
+(`NotSent`). Los errores directos de argumentos Java conservan sus
+excepciones de entrada existentes.
+
+Python ofrece `SymmetricKeyBuilder.attribute_item_at(index, item)` para esa
+misma secuencia final de Object Attributes. Exige un `ttlv.TtlvItem` explícito
+y un índice entero no negativo (rechaza booleanos). El builder nativo copia
+el Item, por lo que el llamante puede cerrarlo tras insertarlo. Rust sigue
+validando los tipos catalogados y el orden de los campos Vendor Attribute;
+las etiquetas asignadas desconocidas, incluidas las de extensión, conservan
+su tipo TTLV explícito y su etiqueta original. Las posiciones repetidas o
+fuera de rango fallan en `build()` o `execute()` antes de abrir una conexión.
+Los errores y la representación del builder excluyen los valores de los
+atributos. Los fallos de validación nativos al insertar o construir la petición
+tipada producen `ClientExecutionError` con entrega `NOT_SENT`; los tipos de
+argumento Python inválidos producen el `InvalidInputError` existente, sin
+valores de atributos. Esta operación no añade edición de la cabecera ni del batch.
+
+El mismo flujo con ámbito está disponible en Java
+(`client.request().createSymmetricKey()`), Python
+(`client.request().create_symmetric_key()`) y C. Los builders de Java y Python
+exponen `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`, `name()` y
+`execute()`, seguidos por `get(id)` y `destroy(id)`. Los métodos directos del
+cliente también ofrecen `createSymmetricKey`, `getById` y `destroyById` en
+Java, y `create_symmetric_key`, `get_by_id` y `destroy_by_id` en Python.
+Los builders Get y Destroy también pueden producir ítems tipados de batch
+(`to_batch_item()` en Rust, `build()` / `toBatchItem()` en Java y `build()` /
+`to_batch_item()` en Python). El indicador asíncrono se configura aparte en la
+cabecera de la petición; `with_options` sigue limitado a las opciones de
+transporte de ese intercambio.
+
+C ofrece las funciones directas para una operación
+`kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1` y
+`kmipkit_client_destroy_by_id_v1`, además de un builder opaco de clave
+simétrica para atributos expertos. `kmipkit_symmetric_key_builder_insert_attribute_item`
+inserta un `Item` TTLV explícito en su posición, empezando desde cero, dentro
+de la lista final de Object Attributes; los tags catalogados conservan el tipo
+TTLV requerido y los tags de extensión desconocidos siguen siendo Items
+explícitos. Las funciones de inserción/construcción conservan los códigos
+de estado originales y exponen `NotSent` mediante `kmipkit_last_error_get`
+cuando falla la validación. Esta clasificación limitada al builder conserva
+los errores de otras operaciones ABI. Para configurar raw TLS/mTLS de forma
+compacta, `kmipkit_client_create_mtls_v1` acepta spans de certificados y clave;
+si no se indica un límite, usa 8 MiB para la petición. Lee los spans de
+certificados durante la construcción y el cliente devuelto es dueño de su
+configuración de transporte. Las llamadas directas devuelven los códigos de
+estado y handles tipados propiedad del llamador. Get recibe el identificador
+devuelto por Create; los bindings no lo inventan localmente.
+
+Cada lenguaje tiene un recorrido TLS 1.3/mTLS limitado a loopback que envía
+Create, Get, Encrypt, Decrypt y Destroy a un peer controlado. Lee el
+identificador de Create, selecciona los parámetros AES-GCM, el nonce y los datos
+adicionales autenticados, y pasa a Decrypt los campos tipados de la respuesta
+Encrypt del fixture. El fixture valida las peticiones decodificadas y devuelve
+respuestas KMIP codificadas predeterminadas; no ejecuta AES. Esto comprueba la
+ruta del cliente y el intercambio tipado, no la ejecución criptográfica ni la
+interoperabilidad con un KMS externo. Pending sigue siendo un resultado
+explícito; el cliente no ejecuta Poll ni reintenta automáticamente.
+
+## Create Key Pair fluido en Rust
+
+KMIPKIT-0097 añade `client.request().create_key_pair()` sobre la petición tipada
+Create Key Pair existente. Selecciona explícitamente algoritmo y longitud y
+elige por separado las máscaras de uso y los nombres de las claves privada y
+pública:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError, CryptographicUsageMask};
+use kmipkit_protocol::CryptographicAlgorithm;
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn create_signing_key_pair(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .private_usage_mask(CryptographicUsageMask::SIGN)
+        .public_usage_mask(CryptographicUsageMask::VERIFY)
+        .private_name("application-signing-private")
+        .public_name("application-signing-public")
+        .execute(limits)?;
+    if let Some(pair) = response.outcome().create_key_pair_response() {
+        let private_id = pair.private_key_unique_identifier();
+        let public_id = pair.public_key_unique_identifier();
+        let _ = (private_id, public_id);
+    }
+    Ok(response)
+}
+
+fn main() {}
+```
+
+El servidor proporciona ambos Unique Identifiers; consulta
+`create_key_pair_response()` y sus accesores `private_key_unique_identifier()` /
+`public_key_unique_identifier()` cuando el resultado esté completado. Failure
+y Pending conservan sus tipos de resultado existentes; los identificadores
+solo aparecen con Success y Pending conserva la correlación asíncrona.
+No hay Poll ni reintentos automáticos. El ejemplo ejecuta un intercambio tipado
+y devuelve el `ClientBatchItemResponse` completo. El llamador puede consultar
+los identificadores de Success, el estado y motivo de Failure o la correlación
+de Pending; un `Result` correcto de Rust conserva el resultado KMIP recibido.
+
+`common_attribute`, `private_attribute` y `public_attribute` añaden valores
+`Attribute<D>` tipados a sus grupos separados. `build()` y `build_request()`
+validan y devuelven el `CreateKeyPairRequest` existente; `to_batch_item()` crea
+un ítem de batch tipado sin enviarlo. Se conserva el orden de grupos y
+atributos. Los errores locales no contienen payload; la ausencia de algoritmo
+o longitud produce `FluentBuildError::MissingCreateKeyPairAlgorithm` o
+`FluentBuildError::MissingCreateKeyPairLength`. Una construcción inválida impide
+el intercambio y `execute()` devuelve el estado de entrega `NotSent`.
+
+`validate()` realiza la misma construcción local y validación tipada que
+`build_request()` sin consumir el builder ni invocar el transporte.
+Puedes añadir valores `AttributeSet` ya construidos mediante
+`common_attributes`, `private_key_attributes` y `public_key_attributes`:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest, CryptographicAlgorithm};
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+
+#[allow(dead_code)]
+fn prepare_key_pair(
+    client: &mut Client,
+    common: AttributeSet,
+    private: AttributeSet,
+    public: AttributeSet,
+) -> Result<CreateKeyPairRequest, FluentBuildError> {
+    let builder = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .common_attributes(common)
+        .private_key_attributes(private)
+        .public_key_attributes(public);
+    builder.validate()?;
+    builder.build_request()
+}
+
+fn main() {}
+```
+
+Cada conjunto conserva el orden de sus elementos. Los atributos semánticos
+aparecen primero; los atributos tipados y los conjuntos siguen el orden de
+las llamadas dentro de su grupo. Las llamadas repetidas añaden elementos.
+La validación tipada final rechaza valores efectivos duplicados o incompatibles
+antes del transporte, sin sustituir ni descartar atributos anteriores.
+
+El builder no deduce máscara de uso, curva, formato de clave ni versión de
+protocolo. El cliente conserva su versión configurada (2.1 por defecto); la
+sobrescritura explícita de versión sigue en `RequestOptions`. `with_options`
+aporta opciones del intercambio y `with_asynchronous_indicator` selecciona
+explícitamente el indicador de la cabecera. Las vinculaciones de C, Java y
+Python ofrecen builders equivalentes para Create Key Pair y usan la misma
+validación de la petición tipada.
+
+## Create Key Pair fluido en C
+
+C expone un builder opaco reutilizable `kmipkit_create_key_pair_builder_t`.
+Selecciona explícitamente el algoritmo y la longitud en bits, y después las
+máscaras de uso y los nombres opcionales de las claves privada y pública.
+`kmipkit_create_key_pair_builder_validate` comprueba localmente las entradas;
+`kmipkit_create_key_pair_builder_build_batch_item` crea un
+`kmipkit_client_batch_item_t` tipado, y
+`kmipkit_create_key_pair_builder_execute_v1` ejecuta la petición de un solo
+elemento con el cliente existente. La variante
+`_execute_with_options_v1` acepta opciones del intercambio.
+
+El builder mantiene separados los atributos comunes, privados y públicos. La
+API valida el tipo TTLV de los atributos primitivos catalogados; para un valor
+desconocido requiere un Item TTLV con tipo explícito. Las funciones de Vendor
+Attribute construyen la estructura KMIP a partir del fabricante, nombre y
+valor. El llamador libera el ítem devuelto con
+`kmipkit_client_batch_item_release` y el builder con
+`kmipkit_create_key_pair_builder_release`. La ABI no acepta mensajes TTLV
+arbitrarios para ejecutar.
+
+El consumidor C compilado comprueba el rechazo de entradas incompletas, la
+validación local correcta y la construcción del ítem tipado en
+`bindings/c/tests/public_client_api.c`.
+
+## Create Key Pair fluido en Java y Python
+
+Java y Python exponen el builder desde la fachada de peticiones. En ambos hay
+que seleccionar el algoritmo, la longitud en bits y las máscaras de uso de las
+claves privada y pública. Por ejemplo, RSA de 2048 bits con uso de firma para
+la clave privada:
+
+```java
+try (var builder = client.request().createKeyPair()
+        .algorithm(KmipValues.CryptographicAlgorithm.RSA)
+        .length(2048)
+        .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+        .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)) {
+    builder.validate();
+    try (var item = builder.build()) {
+        // Añade el ítem tipado a un ClientBatch o llama a builder.execute(limits).
+    }
+}
+```
+
+```python
+from kmipkit import protocol_values
+
+with client.request().create_key_pair() as builder:
+    builder.algorithm(protocol_values.CryptographicAlgorithm.RSA) \
+        .length(2048) \
+        .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN) \
+        .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+    builder.validate()
+    item = builder.build()
+    item.close()
+```
+
+Cada builder puede validar localmente, producir un ítem tipado para un batch o
+ejecutar un único intercambio con los límites TTLV proporcionados. Los
+atributos catalogados se validan según su tipo TTLV; los desconocidos requieren
+un Item TTLV con tipo explícito y los atributos de fabricante usan constructores
+KMIP específicos.
+
+
+## Create Split Key fluido en Rust
+
+KMIPKIT-0099 añade `client.request().create_split_key()` sobre la operación
+tipada Create Split Key existente. El programador selecciona explícitamente el
+tipo de objeto, el método de división, el número de partes y el umbral:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchOutcome, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::{ObjectType, SplitKeyMethod};
+use kmipkit_protocol::named_values_generated::values::enumeration::object_type;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn split_key(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().create_split_key()
+        .object_type(ObjectType::from_raw(object_type::SYMMETRIC_KEY))
+        .method(SplitKeyMethod::XOR)
+        .parts(3)
+        .threshold(2)
+        .execute(limits)?;
+    if let ClientBatchOutcome::CreateSplitKeyCompleted(completed) = response.outcome() {
+        let identifiers = completed.unique_identifiers();
+        let _ = identifiers;
+    }
+    Ok(response)
+}
+
+fn main() {}
+```
+
+La respuesta expone todos los identificadores únicos devueltos, en el orden
+del mensaje. El builder no genera el material dividido ni elige sus parámetros.
+El identificador de entrada, Prime Field Size, Protection Storage Masks y los
+atributos del objeto son opcionales y solo se añaden si se proporcionan. El
+método Polynomial Sharing Prime Field requiere un Prime Field Size explícito;
+el validador de la petición tipada rechaza su ausencia antes del envío. La
+estructura Attributes permanece presente aunque esté vacía, como exige KMIP.
+
+`attribute(Attribute<D>)`, `attribute_item(Item)` y `attributes(AttributeSet)`
+admiten atributos tipados y expertos y conservan su orden. `vendor_attribute(...)`
+construye una estructura KMIP Vendor Attribute válida. Los tags asignados pero
+desconocidos, incluidos los tags de extensión `0x54xxxx`, requieren un `Item`
+TTLV explícito y se conservan sin cambios como atributos del objeto; no se
+reinterpretan como Vendor Attribute. `validate()` y `build_request()` validan
+localmente sin usar el transporte, y `to_batch_item()` crea el elemento tipado
+existente. `execute()` realiza como máximo un intercambio tipado. Success,
+Failure, Pending, la correlación y el estado de entrega siguen siendo explícitos;
+no hay reintento ni Poll automático. El cliente conserva la versión de protocolo
+configurada y las opciones del intercambio se pasan por separado con
+`with_options`.
+
+
+## Métodos directos y opciones por intercambio
+
+`Client` ofrece un método directo tipado para cada una de las 56 operaciones
+iniciadas por el cliente. Los métodos que realizan un intercambio también
+tienen una variante `*_with_options` que acepta `RequestOptions`; las opciones
+solo se aplican a ese intercambio. Cada llamada directa envía una petición y
+devuelve su respuesta de un solo elemento. No reintenta ni ejecuta Poll de
+forma implícita. El estado Pending y su valor de correlación siguen siendo
+explícitos en el resultado.
+
+Usa `ClientBatch` cuando una petición necesite Authentication en la cabecera,
+Asynchronous Indicator, varios Batch Items ordenados u otros campos
+compartidos de la cabecera. Authentication se adjunta a ese lote y se codifica
+una vez para el Request Message; los métodos directos no seleccionan ni
+conservan credenciales.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatch, ClientBatchItem, ClientError, ClientRequest, RequestOptions};
+use kmipkit_protocol::{Authentication, GetRequest};
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn get_directo(
+    client: &mut Client,
+    limits: &CodecLimits,
+    options: &RequestOptions,
+) -> Result<(), ClientError> {
+    let response = client.get_with_options(GetRequest::new(), limits, options)?;
+    let _outcome = response.outcome();
+    Ok(())
+}
+
+#[allow(dead_code)]
+fn get_con_authentication(
+    client: &mut Client,
+    limits: &CodecLimits,
+    authentication: Authentication,
+) -> Result<(), ClientError> {
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Get(GetRequest::new())))
+        .with_authentication(authentication);
+    let _response = client.execute(batch, limits)?;
+    Ok(())
+}
+
+fn main() {}
+```
+
+`Authentication` es distinta de la autenticación TLS del cliente. La primera
+es un valor KMIP de la cabecera Request proporcionado por el llamador; la
+segunda autentica la conexión TLS. KMIPKit no conserva credenciales KMIP en
+`Client`.
+
+Las fachadas de C, Java y Python adjuntan Authentication al mismo nivel de
+lote; el valor se codifica una vez en Request Header y aplica a todos los
+Batch Items de ese mensaje, conforme a KMIP v2.1 §8.2, Tabla 395. Las llamadas
+directas de `Client` no aceptan ni guardan Authentication global.
+
+| Lenguaje | Adjuntar al lote | Propiedad tras éxito |
+|---|---|---|
+| C | `kmipkit_client_batch_set_authentication(batch, authentication)` | El handle se consume; libéralo solo si la llamada falla. |
+| Java | `batch.setAuthentication(authentication)` | El valor se consume; cierra el lote después de ejecutarlo. |
+| Python | `batch.set_authentication(authentication)` | El valor se consume; cierra el lote después de ejecutarlo. |
+
+La transferencia al lote es transaccional: un fallo de validación conserva la
+propiedad original en el llamador. Authentication no configura TLS ni altera
+los siguientes mensajes enviados por el mismo cliente.
+
+## Operaciones de creación en el servidor
+
+Create, Create Key Pair y Create Split Key envían peticiones tipadas elegidas
+por el llamador mediante el mismo escritor `ClientBatch`. Construir un lote no
+abre una conexión: pásalo a `Client::execute` cuando tengas un cliente de
+producción y una configuración de transporte. El comando
+`python verification/examples/test_user_guide_examples.py` compila todos los ejemplos
+marcados.
+
+### Create
+
+Indica el Object Type KMIP y un `AttributeSet`. Create siempre codifica la
+estructura Attributes externa obligatoria, aunque no tenga miembros. KMIPKit
+no elige atributos criptográficos ni una política de protección.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateRequest, ObjectType};
+
+fn main() {
+    let request = CreateRequest::new(ObjectType::from_raw(7), AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Create(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Key Pair
+
+Los tres grupos de atributos se mantienen separados. Añade solo los valores
+elegidos por el llamador; KMIPKit no selecciona algoritmo, longitud,
+parámetros ni uso de las claves.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest};
+
+fn main() {
+    let request = CreateKeyPairRequest::new()
+        .with_common_attributes(AttributeSet::new());
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateKeyPair(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+### Create Split Key
+
+Indica el tipo de objeto, el número de partes, el umbral, el método de
+separación y la estructura Attributes obligatoria. El Unique Identifier de la
+clave de entrada solo se envía si se proporciona. Según la política FR-015 de
+KMIPKit, para Polynomial Sharing Prime Field el llamador debe proporcionar
+Prime Field Size explícitamente.
+
+```rust,kmipkit-test
+use kmipkit_client::{ClientBatch, ClientBatchItem, ClientRequest};
+use kmipkit_protocol::{AttributeSet, CreateSplitKeyRequest, ObjectType, SplitKeyMethod};
+
+fn main() {
+    let request = CreateSplitKeyRequest::new(
+        ObjectType::from_raw(7),
+        3,
+        2,
+        SplitKeyMethod::XOR,
+        AttributeSet::new(),
+    );
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::CreateSplitKey(request)));
+    assert_eq!(batch.items().len(), 1);
+}
+```
+
+Create Split Key puede devolver varios Unique Identifier. Su petición anuncia
+`Maximum Response Size` como el menor valor entre el límite local de bytes de
+respuesta y el mayor KMIP Integer con signo. El cliente también impone el
+límite local antes de entrar en el decodificador del formato seleccionado,
+aunque el servidor ignore el tamaño anunciado.
+
+Las APIs de lote de C, Java y Python exponen las mismas tres formas de
+petición: C usa `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair` y
+`kmipkit_client_batch_item_create_split_key`; Java usa
+`ClientBatchItem.create`, `createKeyPair` y `createSplitKey`; Python usa
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair` y
+`client_batch_item_create_split_key`. Create requiere una estructura
+Attributes, que puede estar vacía. Create Key Pair mantiene separados sus seis
+grupos opcionales de atributos y máscaras. Create Split Key conserva los
+valores con signo de partes y umbral, el valor abierto del método y el
+identificador de entrada y los bytes del campo primo cuando se proporcionan.
+
+Los accesores de respuesta exitosa conservan el tipo TTLV original de cada
+Unique Identifier. C ofrece `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair` y el par acotado de cantidad/índice
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java expone `createResponse()`, `createKeyPairResponse()` y
+`createSplitKeyUniqueIdentifiers()`; Python expone los campos de respuesta
+correspondientes en `BatchItemResult`. Los identificadores de las claves
+privada y pública siguen siendo distintos, y los de las partes divididas
+conservan su orden en el mensaje.
+
+El accessor aditivo de C `kmipkit_client_batch_item_response_metadata_v2`
+expone la operación de origen sin convertir y el Result Message UTF-8 exacto y
+opcional. La estructura y la función v1 existentes no cambian. El puntero del
+mensaje se presta mientras siga abierto el handle del elemento de respuesta;
+cópialo antes de liberarlo. `ClientBatchItemResult.metadataV2()` en Java y
+`BatchItemResult.metadata_v2` en Python copian el mensaje a una cadena del
+runtime antes de cerrar la respuesta nativa. No se garantiza el borrado de
+esas copias externas al descartarlas. El límite del mensaje completo también
+acota el texto (16 MiB por defecto). Un mensaje ausente se distingue de uno
+presente pero vacío.
+
+Result Message es texto no confiable del servidor. Se obtiene mediante
+inspección explícita de metadata y se omite del formato predeterminado, logs,
+errores y diagnósticos. OASIS KMIP v2.1 §8.6, Tabla 399, lo marca opcional
+solo cuando Result Status no es Pending ni Success; §9.17 permite un mensaje
+descriptivo de error. Por eso los fixtures compartidos de éxito y Pending lo
+omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
+exactos en una respuesta Operation Failed.
+
+Las APIs de lote de C, Java y Python exponen las mismas tres formas de
+petición: C usa `kmipkit_client_batch_item_create`,
+`kmipkit_client_batch_item_create_key_pair` y
+`kmipkit_client_batch_item_create_split_key`; Java usa
+`ClientBatchItem.create`, `createKeyPair` y `createSplitKey`; Python usa
+`extensions.client_batch_item_create`, `client_batch_item_create_key_pair` y
+`client_batch_item_create_split_key`. Create requiere una estructura
+Attributes, que puede estar vacía. Create Key Pair mantiene separados sus seis
+grupos opcionales de atributos y máscaras. Create Split Key conserva los
+valores con signo de partes y umbral, el valor abierto del método y el
+identificador de entrada y los bytes del campo primo cuando se proporcionan.
+
+Los accesores de respuesta exitosa conservan el tipo TTLV original de cada
+Unique Identifier. C ofrece `kmipkit_client_batch_item_response_create`,
+`..._create_key_pair` y el par acotado de cantidad/índice
+`..._create_split_key_count` / `..._create_split_key_unique_identifier_at`;
+Java expone `createResponse()`, `createKeyPairResponse()` y
+`createSplitKeyUniqueIdentifiers()`; Python expone los campos de respuesta
+correspondientes en `BatchItemResult`. Los identificadores de las claves
+privada y pública siguen siendo distintos, y los de las partes divididas
+conservan su orden en el mensaje.
+
+El accessor aditivo de C `kmipkit_client_batch_item_response_metadata_v2`
+expone la operación de origen sin convertir y el Result Message UTF-8 exacto y
+opcional. La estructura y la función v1 existentes no cambian. El puntero del
+mensaje se presta mientras siga abierto el handle del elemento de respuesta;
+cópialo antes de liberarlo. `ClientBatchItemResult.metadataV2()` en Java y
+`BatchItemResult.metadata_v2` en Python copian el mensaje a una cadena del
+runtime antes de cerrar la respuesta nativa. No se garantiza el borrado de
+esas copias externas al descartarlas. El límite del mensaje completo también
+acota el texto (16 MiB por defecto). Un mensaje ausente se distingue de uno
+presente pero vacío.
+
+Result Message es texto no confiable del servidor. Se obtiene mediante
+inspección explícita de metadata y se omite del formato predeterminado, logs,
+errores y diagnósticos. OASIS KMIP v2.1 §8.6, Tabla 399, lo marca opcional
+solo cuando Result Status no es Pending ni Success; §9.17 permite un mensaje
+descriptivo de error. Por eso los fixtures compartidos de éxito y Pending lo
+omiten y `creation.result-message-on-failure.v1` comprueba el texto y UTF-8
+exactos en una respuesta Operation Failed.
+
+## Navegar por el TTLV de las respuestas
+
+Cada elemento de respuesta de un lote expone `raw()` para el Response Payload
+decodificado y `response_header_raw()` para el Response Header común. Rust
+devuelve vistas `StructureView` prestadas, ligadas a la vida del elemento de
+respuesta. `None` significa que el servidor no envió Response Payload; una
+Structure presente pero vacía sigue siendo una vista vacía. Recorre los
+elementos ordenados y usa `Item::as_structure()` para llegar a cualquier
+Structure anidada, incluidas las extensiones de fabricante dentro del
+`KeyBlock` de Get o de Server Information de Query. Se conservan los tags
+desconocidos, elementos repetidos, tipos, valores y el orden de origen.
+
+C ofrece `kmipkit_client_batch_item_response_raw_ttlv` y
+`kmipkit_client_batch_item_response_header_ttlv`. Las estructuras devueltas son
+copias propiedad del llamador; libéralas con `kmipkit_ttlv_structure_release`.
+La función del payload indica que está ausente con `out_present = 0` y un handle
+nulo. `ClientBatchItemResult.raw()` en Java devuelve
+`Optional<TtlvStructure>` y `responseHeaderTtlv()` devuelve un `TtlvStructure`
+propietario; cierra cada estructura al terminar. `BatchItemResult` de Python
+ofrece `raw()` y `response_header_ttlv()` como estructuras `ttlv.Structure`
+propias; usa sus gestores de contexto o llama a `close()`.
+
+Las estructuras de los otros lenguajes son copias independientes y siguen
+disponibles tras cerrar el resultado de respuesta. KMIPKit pone a cero sus
+copias propias al liberarlas. Las copias o valores que cree la aplicación son
+responsabilidad de esta; los runtimes de Java y Python no garantizan el borrado
+determinista de las copias externas. El formato predeterminado y los errores
+ocultan los valores de las respuestas. Lee los campos que puedan contener
+secretos solo cuando haga falta y no los registres en logs.
+
+`raw()` expone el árbol TTLV decodificado, no los bytes recibidos. El decoder
+descarta el padding, así que la API no promete reproducir byte por byte la
+respuesta de red.
+
+`Client::new` construye un cliente de producción a partir de una configuración
+inmutable del cliente y un `TransportConfig` validado. Acepta TTLV, JSON o
+XML sobre TLS directo y HTTPS/HTTP 1.1; no acepta transportes implementados por
+el llamador ni bytes de petición sin procesar. La configuración inmutable usa
+TTLV de forma predeterminada y `RequestOptions` puede reemplazar la codificación
+en un intercambio. La petición y la respuesta usan el formato seleccionado.
+Consulta la [guía de transporte](transportes-produccion.md) para elegir el
+formato, configurar la confianza, los plazos y el comportamiento de conexiones.
+
+## Credenciales y capacidad de atestación
+
+KMIPKIT-0008 proporciona valores tipados de Credential y Authentication que
+conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
+contiene una o más Credential en el orden indicado por el llamador. El cliente
+puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
+del mensaje enviado. Los modelos Credential no se adjuntan por separado: se
+incluyen dentro de Authentication. El objeto `Client` no conserva esas
+credenciales para peticiones posteriores.
+
+Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
+hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se
+omite, el modelo informa SHA-256 como algoritmo efectivo (valor bruto `6`) y
+conserva el campo como ausente en el árbol TTLV. KMIPKit no calcula el hash.
+KMIP Specification v2.1 §9.11 exige que esta marca de tiempo aumente de forma
+monótona. El modelo actual conserva el valor proporcionado, pero no guarda
+marcas anteriores ni impone esa secuencia. KMIPKIT-0008 OD-003 deja sin resolver
+quién debe aplicar la regla, su ámbito de comparación y el comportamiento del
+reloj; KMIPKit no afirma que este requisito esté satisfecho.
+
+Una Credential tipada Device debe incluir al menos uno de estos campos:
+Device Serial Number, Network Identifier, Machine Identifier o Media
+Identifier. El llamador es responsable de elegir un identificador o una
+combinación que realmente sea única. KMIPKit no define el ámbito de
+comparación ni comprueba la unicidad. Los campos Password y Device Identifier
+no sustituyen ese requisito; su presencia
+tampoco exige que el texto no esté vacío.
+
+Los constructores síncronos y asíncronos de la cabecera Request emiten
+`Attestation Capable Indicator = True` porque la API de Rust puede construir
+una Credential Attestation. Esto anuncia únicamente capacidad de construcción:
+no genera ni verifica evidencia de atestación, no envía una Credential ni predice si el
+servidor la aceptará. No existe una opción para cambiarlo en cada petición.
+
+KMIPKit no registra el contenido de las Credential; Debug, Display y los
+diagnósticos de validación también lo redactan. `SecretText` y `SecretBytes`
+ponen a cero los bytes inicializados de la asignación actual propiedad de
+KMIPKit cuando se destruye su propietario; la conversión a TTLV transfiere la
+propiedad sin clonar. La capacidad libre o no inicializada solo queda
+cubierta si se inicializa y se verifica su limpieza. Esto no borra copias
+creadas por el llamador, asignaciones anteriores que queden tras ampliar un buffer, copias
+hechas desde vistas prestadas en callbacks, copias temporales en pila o
+registros, ni copias conservadas por runtimes externos o dependencias.
+
+## Metadatos de petición y resultados de lote
+
+La marca de tiempo opcional de la cabecera Request se omite de forma
+predeterminada. Si la proporciona el llamador, el valor KMIP Date-Time se
+envía exactamente como se recibió. El cliente no genera una marca de tiempo a
+partir del reloj ni de un temporizador de cuenta atrás. Las peticiones
+iniciadas por el cliente omiten Server Correlation Value. Si se proporciona
+Client Correlation Value, es metadato independiente y nunca identifica un
+elemento del lote.
+
+El getter del lote distingue entre el campo ausente y el valor válido cero.
+Rust usa `ClientBatch::request_time_stamp` y devuelve `Option<i64>`; C usa
+`kmipkit_client_batch_request_time_stamp` con un indicador de presencia y un
+valor con signo; Java usa `ClientBatch.getRequestTimestamp()` y devuelve
+`OptionalLong`; Python expone `Batch.request_timestamp` como `int | None`.
+
+KMIP Specification v2.1 §9.20 también permite que un cliente sin reloj en
+tiempo real, pero con temporizador de cuenta atrás, calcule segundos relativos
+restando atributos Date de una marca de tiempo. KMIPKit expone la marca de
+tiempo obligatoria de la respuesta del servidor y valores Date-Time TTLV
+genéricos; la aplicación es responsable del temporizador y la resta. Esto no
+genera una marca de tiempo para una petición saliente.
+
+Cada elemento de una petición de varios elementos tiene un Unique Batch Item
+ID. El cliente asocia cada respuesta devuelta con su petición mediante ese ID,
+aunque el servidor devuelva los elementos en otro orden. Los resultados
+devueltos se exponen en el orden de la petición. Si se proporcionó un ID, el
+servidor debe devolverlo; una respuesta de un solo elemento puede omitir el ID
+cuando la petición también lo omitió. Los ID duplicados, inesperados o
+incompatibles y las operaciones distintas se rechazan con un error de
+protocolo redactado. Se acepta una respuesta parcial no vacía solo si Batch
+Error Continuation efectivo es Stop y algún elemento devuelto tiene
+`Operation Failed`; el cliente devuelve únicamente los resultados presentes.
+Se rechazan las respuestas parciales vacías, sin fallo o bajo Continue. Las
+respuestas parciales bajo Undo siguen KMIPKIT-0120.
+Esta política de KMIPKit admite el caso Stop-on-first-failure de KMIPKIT-0092;
+§11.5 de OASIS no exige explícitamente omitir las respuestas no procesadas.
+Batch Order Option controla el orden de ejecución del servidor, no la regla de
+asociación.
+
+Cada resultado de elemento válido se representa como completado o Pending.
+Pending solo se acepta si el valor efectivo de Asynchronous Indicator de la
+petición lo permite y la respuesta contiene el Asynchronous Correlation Value
+obligatorio. El valor de correlación es opaco: KMIPKit conserva sus bytes y
+solo los presta mediante un accesor explícito. Se redacta en el formato, los
+errores y los logs, y el almacenamiento propiedad de KMIPKit se pone a cero
+al destruir el valor Pending.
+
+## Operaciones asíncronas explícitas
+
+`Client::execute_poll`, `Client::execute_cancel`,
+`Client::execute_process` y `Client::execute_query_async_requests` realizan,
+cada una, un único intercambio síncrono explícito. No vuelven a hacer Poll,
+reintentar, esperar ni programar tareas en segundo plano. Un error de transporte
+conserva el significado del estado de entrega descrito más abajo; ese estado
+no determina si es seguro reintentar.
+
+El llamador construye `PollRequest`, `CancelRequest` o `ProcessRequest` con los
+bytes exactos obtenidos mediante el acceso prestado al valor de correlación de
+un resultado Pending. `execute_poll` devuelve Pending sin enviar otra petición.
+El payload de una finalización correcta se conserva como TTLV genérico hasta
+que exista el modelo tipado de la operación original; una finalización con
+Failure expone el resultado y su razón sin payload. `execute_cancel` comprueba
+que una respuesta correcta repita exactamente los bytes de correlación
+solicitados y expone el valor Cancellation Result asignado o desconocido. Se
+rechaza una respuesta Cancel Pending conforme a OASIS KMIP v2.1 §6.1.5,
+Tablas 176–178, y §11.7, Tablas 437–438.
+
+`execute_process` es una operación de servidor independiente. El llamador
+selecciona si la petición Process permite una respuesta asíncrona. Cada
+respuesta Process distinta de Failure, incluida Pending, contiene el Response
+Payload vacío requerido por OASIS KMIP v2.1 §8.6, Tabla 399, y definido por
+§6.1.39, Tabla 279. Failure no lleva payload según §8.6. Si el resultado es
+Pending, se devuelve al llamador; KMIPKit no afirma que un Poll posterior vaya
+a completarse. El texto de §6.1.39 indica que Process puede afectar a otros
+elementos del lote cuando Batch Order Option es true, su valor predeterminado.
+KMIPKit no afirma controlar esos efectos del servidor.
+
+`execute_query_async_requests` admite los filtros opcionales de valor de
+correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Esta
+especificación expone el payload de respuesta como TTLV genérico.
+`KMIPKIT-DEC-015` registra la interpretación aceptada de la Tabla 286 para el
+trabajo de tipado separado en KMIPKIT-0043 T035; el pie impreso y la fuente
+OASIS fijada permanecen intactos. Esta interpretación no constituye una
+afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
+catálogo para el campo obligatorio de la petición Process de la Tabla 278.
+
+Java y Python exponen la correlación mediante un callback que recibe una vista
+de solo lectura respaldada por almacenamiento temporal gestionado por KMIPKit.
+Ese almacenamiento se pone a cero antes de que el método vuelva, también si
+el callback lanza una excepción. Las copias que cree la aplicación son de su
+propiedad.
+
+Cada resultado asíncrono ofrece una vista tipada específica de la operación:
+`cancelResponse()`/`cancel_response()`, `pollResponse()`/`poll_response()`,
+`processResponse()`/`process_response()` y
+`queryAsyncRequestsResponse()`/`query_async_requests_response()`. Rust ofrece
+los lectores equivalentes en snake case y la ABI de C dispone de una función
+`_response_v1` para cada operación. Si la operación no coincide, el lector no
+devuelve valor. Cancel expone Cancellation Result; Poll y Process exponen el
+estado Pending; Process también informa si el payload está presente y cuántos
+miembros tiene. Las vistas toman prestado o conservan el resultado propietario,
+por lo que las vistas Java/Python dejan de ser utilizables al cerrar el
+resultado. `raw()` mantiene el acceso al payload TTLV genérico. Query
+Asynchronous Requests no interpreta su payload porque la Tabla 286 de KMIP
+v2.1 tiene una discrepancia entre el pie y el contenido. Los spans de C y los
+callbacks de Java/Python leen la correlación del resultado propietario sin
+guardar otra copia.
+
+## Límites de recursos
+
+`CodecLimits` se aplica a cada ejecución de una petición. Sus valores
+predeterminados son:
+
+- Tamaño del mensaje completo: 16 MiB.
+- Profundidad de Structures anidadas: 64.
+- Número de Items TTLV, incluido el Item raíz: 100.000.
+
+El llamador puede configurar los límites de tamaño del mensaje y cantidad de
+Items, incluso a cero. La profundidad de Structure se puede reducir, pero no
+superar el máximo de 64 del modelo. El mismo valor prestado de `CodecLimits`
+se usa para codificar la petición y decodificar la respuesta. Su
+`max_message_bytes()` también es exactamente el límite de bytes de respuesta
+que se pasa al transporte, y el cliente comprueba la longitud recibida antes
+de decodificar. No hay un límite independiente por valor: el límite del
+mensaje completo también acota cada valor individual. Son límites locales de
+recursos que se aplican a todas las operaciones.
+
+Discover Versions no anuncia el campo Maximum Response Size visible para el
+servidor. Create Split Key sí lo anuncia porque su respuesta puede contener
+identificadores repetidos. Ese campo es distinto del límite local de bytes: el
+cliente sigue rechazando antes de decodificar cualquier respuesta que supere
+el límite configurado. La [guía de transporte](transportes-produccion.md) documenta los plazos de conexión,
+escritura, lectura e intercambio completo.
+
+## Validación local de peticiones
+
+KMIPKit valida cada petición tipada antes de codificarla o llamar al
+transporte. Puedes consultar el mismo resultado local sin enviar la petición:
+
+```rust
+use kmipkit_client::ClientRequest;
+
+let request = ClientRequest::discover_versions();
+let report = request.validation_report();
+assert!(report.is_valid());
+```
+
+Las otras fachadas consultan el mismo informe Rust antes del envío:
+
+```c
+int32_t validar_item(kmipkit_client_batch_item_t *item) {
+    kmipkit_validation_report_t *report = 0;
+    uint8_t is_valid = 0;
+    int32_t status = kmipkit_client_batch_item_validation_report(item, &report);
+    if (status == 0) {
+        status = kmipkit_validation_report_is_valid(report, &is_valid);
+    }
+    if (status == 0 && is_valid == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    kmipkit_validation_report_release(report);
+    return status;
+}
+```
+
+```java
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ValidationReport;
+
+final class ValidationExample {
+    public static void main(String[] args) {
+        try (ClientBatchItem item = ClientBatchItem.ping();
+                ValidationReport report = ValidationReport.validateRequest(item)) {
+            if (!report.isValid()) {
+                throw new IllegalArgumentException("request is not valid");
+            }
+        }
+    }
+}
+```
+
+```python
+from kmipkit import extensions, validation
+
+with extensions.client_batch_item_ping() as item:
+    with validation.validate_request(item) as report:
+        assert report.is_valid
+```
+
+El informe contiene códigos estables, rutas de campos, gravedad y la
+referencia exacta a OASIS o a una política de KMIPKit. Nunca incluye valores
+de la petición. El validador toma prestada la petición y no codifica ni copia
+credenciales o material de claves para generar diagnósticos. Si una petición
+no supera la validación local, `Client::execute` devuelve un error de
+validación redactado con estado `NotSent`; el transporte no recibe ningún
+intercambio ni bytes de la petición.
+
+Para TTLV genérico, selecciona explícitamente el esquema de petición o de
+estructura anidada cuando necesites comprobar los campos KMIP. KMIPKit no
+deduce el esquema a partir de tags coincidentes. Conserva tags desconocidos,
+valores Enumeration futuros, bits de máscaras desconocidos y extensiones de
+fabricante mientras comprueba los campos conocidos. El orden sigue la
+descripción de estructura aplicable en KMIP v2.1 §10.1.2, no el orden numérico
+de los tags. Para objetos gestionados, selecciona `NestedStructureSchema::PgpKey`,
+`NestedStructureSchema::SecretData` o `NestedStructureSchema::SplitKey` para
+validar directamente la estructura correspondiente. Un informe local válido
+no predice las capacidades,
+autorizaciones, estado del objeto ni políticas del servidor, y tampoco
+afirma conformidad con un perfil.
+
+Para una Structure TTLV genérica, Java usa
+`ValidationReport.validateStructure(structure, schema)`; Python usa
+`validation.validate_structure(structure, schema=...)`; C usa
+`kmipkit_ttlv_structure_validation_report_v1` con el identificador de esquema
+UTF-8 explícito. Pasa, por ejemplo, `RequestPayload/Create` o
+`Nested/KeyBlock`. Si omites el esquema, se valida solo la estructura genérica;
+no se adivina la operación ni el tipo a partir de sus tags.
+
+## Errores, estado de entrega y redacción
+
+Los `ClientError` locales distinguen errores de validación, protocolo y
+transporte. Conservan solo categorías de causa seguras y el estado de entrega
+`RequestDeliveryState` más avanzado disponible:
+
+- `NotSent`: no se envió ningún byte de la petición.
+- `PossiblySent`: comenzó la transmisión, pero no llegó ningún byte de
+  respuesta.
+- `ResponseStarted`: llegó al menos un byte de respuesta, pero todavía no
+  hay un resultado completo.
+
+Un resultado KMIP completo del servidor se devuelve como resultado del
+servidor y no incluye estado local de entrega. El estado de entrega no indica
+que sea seguro reintentar. El cliente realiza un solo intercambio por llamada
+y nunca reintenta, cambia automáticamente de servidor, hace Poll ni espera.
+
+Si la validación específica de una operación falla después de decodificar una
+respuesta completa, `ClientError::response_ttlv()` devuelve la respuesta
+genérica retenida. Se inspecciona mediante
+`ClientErrorResponseTtlv::with_ttlv`; la vista solo vive durante el callback.
+Usa `StructureView::try_clone` dentro de él únicamente si necesitas una copia
+propia. La respuesta retenida se redacta en `Debug`, `Display` y las cadenas de
+origen, y KMIPKit pone a cero sus payloads cuando se destruye el último
+propietario del error. `response_ttlv()` no está disponible para errores
+de framing o decodificación anteriores a una respuesta completa, ni para
+fallos ajenos al procesamiento de respuestas. También se conserva la respuesta
+genérica cuando falla la asociación del lote después de decodificar el mensaje
+completo. Trata la respuesta que inspecciones explícitamente como dato sensible.
+
+Los cuerpos de petición y respuesta, credenciales, material de claves
+secretas y valores opacos de correlación asíncrona no se registran en logs,
+no se formatean dentro de errores y no se conservan en las cadenas de origen
+expuestas. El propietario privado de la petición codificada sigue vivo
+durante el intercambio síncrono y pone a cero los bytes inicializados al
+destruirse. Esta garantía no cubre capacidad libre o no inicializada, copias
+del llamador, asignaciones anteriores que no se limpiaran antes de crecer el
+buffer ni copias de TLS, del sistema operativo o de bibliotecas externas. La
+política aprobada y sus límites exactos están en
+ADR-0012.
+
+## Búsqueda y ciclo de vida con builders
+
+KMIPKIT-0101 añade builders Rust para Locate, Activate, Archive, Recover,
+Revoke, Re-key, Re-key Key Pair y Re-certify. Cada builder recibe valores
+semánticos y produce la request tipada existente; Locate y Re-key conservan
+los modelos tipados de filtros y atributos. El builder permite validar en
+local, crear un elemento de batch o ejecutar un intercambio. El resultado
+asíncrono Pending y su valor de correlación quedan visibles para quien llama;
+el cliente no ejecuta Poll ni reintentos automáticos.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, RevocationReason, UniqueIdentifier};
+
+#[allow(dead_code)]
+fn fluent_lifecycle_requests(client: &mut Client) -> Result<(), FluentBuildError> {
+    let key_id = UniqueIdentifier::from("existing-key");
+    client.request().activate().unique_identifier(key_id.clone()).build_request()?;
+    client.request().archive().unique_identifier(key_id.clone()).build_request()?;
+    client.request().recover().unique_identifier(key_id.clone()).build_request()?;
+    client.request().revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(key_id.clone())
+        .revocation_message("nota de auditoría indicada por el operador")
+        .compromise_occurrence_date(1_700_000_000)
+        .build_request()?;
+    client.request().locate(AttributeSet::new())
+        .maximum_items(25).offset_items(0).build_request()?;
+    client.request().rekey().unique_identifier(key_id.clone()).build_request()?;
+    client.request().rekey_key_pair().private_key_unique_identifier(key_id).build_request()?;
+    client.request().recertify()
+        .unique_identifier(UniqueIdentifier::from("existing-certificate"))
+        .build_request()?;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_lifecycle_requests;
+}
+```
+
+Los modelos de request tipados siguen determinando los campos obligatorios,
+la cardinalidad y las restricciones de versión. Por ejemplo, Re-certify exige
+un identificador de certificado origen o un valor de solicitud de certificado
+con su tipo; Revoke rechaza Compromise Occurrence Date si el motivo no es Key
+Compromise o CA Compromise. `RequestOptions` de intercambio se configura por
+separado del Asynchronous Indicator de la cabecera.
+
+## Lectura fluida de atributos en Rust
+
+KMIPKIT-0108 añade los builders `get_attributes()` y
+`get_attribute_list()`. Conservan los contratos de las requests y responses
+tipadas existentes, incluido el orden de Attribute References, el rechazo de
+referencias duplicadas, la diferencia entre Attributes ausente y presente pero
+vacío, y los resultados Pending/Failure.
+
+```rust,kmipkit-test
+use kmipkit_client::Client;
+use kmipkit_protocol::AttributeReference;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn fluent_attribute_reads(client: &mut Client) -> Result<(), Box<dyn std::error::Error>> {
+    let limits = CodecLimits::defaults();
+    let attributes = client.request().get_attributes()
+        .unique_identifier("existing-key")
+        .attribute_reference(AttributeReference::tag(0x0042_002F))
+        .execute(&limits)?;
+    let _typed_attributes = attributes.outcome().response().get_attributes();
+
+    let names = client.request().get_attribute_list()
+        .unique_identifier("existing-key")
+        .execute(&limits)?;
+    let _typed_names = names.outcome().response().get_attribute_list();
+
+    let placeholder = client.request().get_attribute_list().to_batch_item()?;
+    let _ = placeholder;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_attribute_reads;
+}
+```
+
+`execute()` envía una operación independiente, por lo que requiere el
+identificador. Puede omitirse al convertir a elemento de batch si un mensaje
+anterior proporciona el KMIP ID Placeholder. La vista específica de cada
+operación conserva los campos presentes en la respuesta; no solicita atributos
+ausentes ni reintenta.
+
+### Lectura de atributos en C, Java y Python
+
+KMIPKIT-0109 añade entradas orientadas a tareas en estos tres bindings. Usan
+las requests tipadas Get Attributes y Get Attribute List, conservan el orden
+de las referencias y ejecutan un solo intercambio. Las llamadas independientes
+requieren un identificador de objeto de tipo texto. Los builders pueden
+omitirlo al crear un elemento de batch que siga a un productor de ID
+Placeholder. Failure, Pending y los metadatos de entrega permanecen en el
+resultado batch existente; ningún builder sondea ni reintenta.
+
+En C, se pueden llamar las funciones directas sin construir el batch a mano:
+
+```c
+kmipkit_client_get_attributes_v1(
+    client, &key_id, references, reference_count, limits, &response);
+kmipkit_client_get_attribute_list_v1(client, &key_id, limits, &response);
+```
+
+Las variantes `_with_options_v1` reciben los timeouts propios del intercambio.
+Las funciones copian sincrónicamente sus entradas versionadas y devuelven una
+respuesta batch propiedad de quien llama; libérala con
+`kmipkit_client_batch_response_release`.
+
+Java y Python ofrecen las mismas operaciones desde sus espacios `request`:
+
+```java
+try (ClientBatchResponse response = client.request()
+        .getAttributes(keyId, references).execute(limits);
+        ClientBatchItemResult item = response.itemAt(0);
+        ClientBatchItemResult.GetAttributesResponse attributes =
+                item.getAttributesResponse().orElseThrow()) {
+    String resolvedId = attributes.uniqueIdentifier();
+}
+```
+
+```python
+result = kmip_client.request().get_attributes(
+    unique_identifier=key_id,
+    attribute_references=[AttributeReference.tag(0x0042002A)],
+).execute(limits)
+try:
+    resolved_id = result.items[0].get_attributes_response.unique_identifier
+finally:
+    result.close()
+```
+
+Python también expone métodos directos de un solo intercambio cuando no hace
+falta construir un batch:
+
+```python
+result = kmip_client.get_attribute_list(unique_identifier=key_id, limits=limits)
+```
+
+Usa `getAttributeList()` o `get_attribute_list()` sin identificador para crear
+un elemento de batch compatible con ID Placeholder. Los métodos directos de C y
+Python requieren identificador porque un intercambio independiente no puede
+resolver un ID Placeholder.
+
+## Peticiones criptográficas fluidas en Rust
+
+KMIPKIT-0102 añade builders de Rust para Encrypt, Decrypt, Sign, Signature
+Verify, MAC, MAC Verify y Hash. Construyen las peticiones tipadas existentes,
+validan los campos comprobables localmente y pueden crear un elemento de batch
+o ejecutar un intercambio. Cada entrada de bytes pasa al propietario de
+petición de KMIPKit, que pone a cero su memoria al liberarla. Elige
+`CryptographicParameters` de forma explícita: estos builders no cifran,
+firman, calculan hashes ni MAC localmente, y no eligen un algoritmo o modo.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{CryptographicParametersBuilder, UniqueIdentifier};
+use kmipkit_protocol::named_values_generated::values::enumeration::{
+    block_cipher_mode, cryptographic_algorithm, hashing_algorithm,
+};
+
+fn aes_gcm_parameters() -> kmipkit_protocol::CryptographicParameters {
+    CryptographicParametersBuilder::new()
+        .with_cryptographic_algorithm(cryptographic_algorithm::AES)
+        .with_block_cipher_mode(block_cipher_mode::GCM)
+        .with_tag_length(128)
+        .build()
+        .expect("estos parámetros AES-GCM seleccionados por quien llama son válidos")
+}
+
+fn sha256_parameters() -> kmipkit_protocol::CryptographicParameters {
+    CryptographicParametersBuilder::new()
+        .with_hashing_algorithm(hashing_algorithm::SHA_256)
+        .build()
+        .expect("estos parámetros SHA-256 seleccionados por quien llama son válidos")
+}
+
+#[allow(dead_code)]
+fn fluent_crypto_requests(client: &mut Client) -> Result<(), FluentBuildError> {
+    let key_id = UniqueIdentifier::from("application-key");
+    client.request().encrypt()
+        .unique_identifier(key_id.clone())
+        .cryptographic_parameters(aes_gcm_parameters())
+        .iv_counter_nonce(vec![0; 12])
+        .authenticated_encryption_additional_data(b"record metadata".to_vec())
+        .data(b"plaintext".to_vec())
+        .build()?;
+    client.request().decrypt()
+        .unique_identifier(key_id)
+        .cryptographic_parameters(aes_gcm_parameters())
+        .iv_counter_nonce(vec![0; 12])
+        .authenticated_encryption_tag(vec![0; 16])
+        .data(b"ciphertext".to_vec())
+        .build()?;
+    client.request().hash()
+        .cryptographic_parameters(sha256_parameters())
+        .data(b"message".to_vec())
+        .build()?;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_crypto_requests;
+}
+```
+
+Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
+`sign()`, `signature_verify()`, `mac()` y `mac_verify()`. Sus builders exponen
+los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
+o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
+`Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
+Poll ni reintentos automáticos. KMIPKIT-0102 a KMIPKIT-0105 añaden las APIs de
+builders para Rust, C, Java y Python en entregas dependientes. Cada binding
+respeta las reglas de propiedad y resultados de su lenguaje y usa las mismas
+operaciones tipadas de Rust.
+
+## Operaciones criptográficas fluidas en C
+
+La API C ofrece builders opacos para Encrypt, Decrypt, Sign, Signature Verify,
+MAC, MAC Verify y Hash. Cada builder crea la request tipada existente y puede
+crear un elemento de batch local o ejecutar un intercambio con un cliente ya
+configurado. El binding C copia cada span de bytes de forma síncrona; el
+llamador conserva la propiedad de sus buffers y KMIPKit pone a cero las copias
+que posee. Los parámetros criptográficos, identificadores, datos, IV, tags,
+firmas, MAC y marcas multipart se suministran de forma explícita. La API no
+realiza criptografía local ni acepta TTLV arbitrario de request para enviarlo
+por la red.
+
+Suponiendo que `client`, un handle tipado `parameters`, `key_id` y los spans de
+entrada ya estén preparados, un intercambio Encrypt tiene esta forma:
+
+```c
+kmipkit_crypto_operation_builder_t *builder = NULL;
+kmipkit_client_batch_response_t *response = NULL;
+kmipkit_client_batch_item_response_t *item = NULL;
+kmipkit_client_batch_item_metadata_v2_t result = {0};
+int32_t status = kmipkit_encrypt_builder_create(&builder);
+
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, &key_id);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(
+        builder, parameters);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &iv);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_data(builder, &plaintext);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_set_asynchronous_indicator(
+        builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_crypto_operation_builder_execute_with_options_v1(
+        builder, client, limits, &options, &response);
+}
+if (status == INT32_C(0)) {
+    status = kmipkit_client_batch_response_item_at(response, 0, &item);
+}
+result.struct_size = (uint32_t)sizeof(result);
+result.abi_version = 2;
+if (status == INT32_C(0)) {
+    status = kmipkit_client_batch_item_response_metadata_v2(item, &result);
+}
+/* Inspecciona result.result_status y result.outcome_kind antes de usar el resultado. */
+kmipkit_client_batch_item_response_release(item);
+kmipkit_client_batch_response_release(response);
+kmipkit_crypto_operation_builder_release(builder);
+```
+
+`outcome_kind` vale `1` para un resultado completado y `2` para `Pending`. En
+una respuesta Pending, llama a
+`kmipkit_client_batch_item_response_pending_correlation_value` mientras `item`
+siga vigente. La operación no ejecuta Poll ni reintenta automáticamente.
+Consulta el [consumidor C compilado](../../../bindings/c/tests/fluent_crypto_consumer.c)
+para ver la liberación de handles y ejemplos ejecutables de las siete
+operaciones. El campo asíncrono de KMIP 2.1 es una Enumeration: usa las
+constantes con nombre de `kmipkit.h` y configura los timeouts de intercambio por
+separado mediante `kmipkit_request_options_v1_t`. El constructor mTLS conserva
+la versión de protocolo seleccionada en su configuración y rechaza versiones
+no soportadas antes de abrir una conexión.
+
+## Operaciones criptográficas fluidas en Python
+
+Python ofrece `request().encrypt()`, `decrypt()`, `sign()`,
+`signature_verify()`, `mac()`, `mac_verify()` y `hash()`. Cada método devuelve
+un builder específico de la operación, respaldado por la request tipada de
+Rust. Acepta `CryptographicParameters` tipados o una estructura TTLV explícita,
+valida los campos comprobables localmente y puede crear un elemento tipado de
+batch o ejecutar un intercambio. No realiza criptografía local ni elige
+algoritmos, modos, padding o uso de claves.
+
+Por ejemplo, con `kmip_client` y `limits` ya configurados, se puede ejecutar
+Hash seleccionando SHA-256 de forma explícita:
+
+```python
+from kmipkit import cryptographic_parameters, protocol_values
+
+parameters_builder = cryptographic_parameters.CryptographicParameters.builder()
+try:
+    parameters = parameters_builder.hashing_algorithm(
+        protocol_values.HashingAlgorithm.SHA_256
+    ).build()
+finally:
+    parameters_builder.close()
+
+try:
+    with kmip_client.request().hash() as request:
+        result = request.cryptographic_parameters(parameters).data(b"message").execute(limits)
+    try:
+        outcome = result.items[0]
+        # Comprueba el resultado tipado antes de consumir su salida.
+        result_status = outcome.result_status
+    finally:
+        result.close()
+finally:
+    parameters.close()
+```
+
+Usa `with_options()` para los timeouts del intercambio y
+`asynchronous_indicator()` para el campo de la cabecera Request Header. Las
+operaciones multipart también exponen `correlation_value()`, `init_indicator()`
+y `final_indicator()`; el validador de requests tipadas comprueba su
+combinación antes del envío. Python copia cada entrada bytes-like a un buffer
+mutable acotado para la llamada nativa síncrona y sobrescribe ese buffer
+propiedad del binding al terminar. El objeto Python original y otras copias del
+runtime siguen sujetos a la gestión de memoria de Python. El binding no ejecuta
+Poll ni reintentos.
+
+## Extensiones de mensaje
+
+KMIP §9.13 exige rechazar una extensión Message Extension crítica que no se
+reconozca. Una
+extensión de respuesta no crítica y desconocida se conserva como TTLV opaco
+para inspección explícita; conservarla no interpreta ni valida la semántica
+del fabricante. Esta parte no registra ni envía extensiones de fabricantes.
+KMIPKIT-0012 es responsable del registro inmutable por cliente y de los
+adaptadores tipados validados para extensiones de fabricantes antes de
+congelar la API 1.0, según ADR-0013.
+
+## Contrato de transporte de bajo nivel
+
+`kmipkit-transport::Transport::exchange` es una API pública documentada para
+usuarios directos de Rust, pero el facade superior `kmipkit` no la reexporta y
+`kmipkit-client` no acepta transportes implementados por el llamador. El
+contrato intercambia de forma síncrona bytes de petición aportados por el
+llamador y un límite de bytes de respuesta. No codifica ni valida mensajes
+KMIP, y no proporciona la garantía de propiedad de la petición del cliente
+tipado. El llamador es dueño de su buffer y responsable de su validez y ciclo
+de vida.
+
+En caso de éxito, el usuario directo del transporte construye un
+`TransportResponse` con el constructor público
+`TransportResponse::new(Vec<u8>)`; `as_bytes()` presta una vista de lectura y `Debug` redacta
+el contenido y, al destruir el wrapper, se ponen a cero los bytes
+inicializados de su asignación actual. La ruta tipada `Client::execute` decodifica los wrappers válidos y nunca devuelve cuerpos de respuesta sin procesar. Las implementaciones de transporte deben aplicar el límite mientras
+leen y
+detenerse antes de ampliar el
+almacenamiento de respuesta más allá de ese límite. No deben registrar ni
+conservar los bytes de petición después del intercambio, reintentar ni dejar
+sin limpiar los bytes temporales de petición o respuesta parcial propiedad de
+KMIPKit antes de liberarlos. Un adaptador concreto debe impedir que el buffer
+de respuesta se reasigne tras almacenar bytes o limpiar las asignaciones
+anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta ADR-0014
+para conocer el contrato exacto.
+
+Los adaptadores de producción TLS y HTTPS usan la configuración de transporte
+validada que se describe en la [guía de transportes](transportes-produccion.md).
+La [arquitectura de transporte](../../architecture/transport-security.md)
+registra su política de seguridad y el ciclo de vida de las conexiones.
+
+## Guías y decisiones relacionadas
+
+- [Inspeccionar mensajes KMIP](modelo-mensaje.md)
+- [Cifrar y descifrar con un cliente tipado](cifrado-descifrado.md)
+- [Transportes de producción TLS y HTTPS](transportes-produccion.md)
+- [Arquitectura de la API pública](../../architecture/public-api.md)
+- Guía rápida de revisión para operaciones asíncronas KMIP 2.1
+- ADR-0002: alcance KMIP 2.1
+- ADR-0012: codificación de bytes solicitada por el llamador
+- ADR-0013: propiedad del registro de extensiones del cliente
+- ADR-0014: contrato público de transporte de bajo nivel
