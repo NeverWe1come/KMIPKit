@@ -15,6 +15,7 @@ use kmipkit_protocol::{
     EndpointRole, KmipOperationResult, ProtocolVersion, ResultReason, ResultStatus,
     SetEndpointRoleRequest, SetEndpointRoleResponse,
 };
+use kmipkit_transport::WireEncoding;
 use kmipkit_ttlv::codec::CodecLimits;
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
@@ -805,6 +806,13 @@ fn client_listener_raw_tls_full_exchange_and_role_reversal() {
 
 #[test]
 fn client_listener_https_full_exchange_and_rejections() {
+    for encoding in [WireEncoding::Ttlv, WireEncoding::Json, WireEncoding::Xml] {
+        check_https_exchange(encoding);
+    }
+}
+
+fn check_https_exchange(encoding: WireEncoding) {
+    use std::io::{BufRead, BufReader};
     use crate::server_to_client::ClientListener;
     use kmipkit_test_support::EphemeralPki;
     use kmipkit_transport::listener::ListenerTransportConfig;
@@ -820,7 +828,8 @@ fn client_listener_https_full_exchange_and_rejections() {
         .trust_source(TrustSource::certificate_authorities(vec![
             CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
         ]))
-        .target_path("/kmip")
+        .target_path("/kmip-s2c")
+        .wire_encoding(encoding)
         .build()
         .expect("config builds");
 
@@ -828,9 +837,18 @@ fn client_listener_https_full_exchange_and_rejections() {
     let port = listener.port().expect("port");
     let client_config = client_tls_config(&pki);
     let ttlv_req = make_test_request_batch_ttlv();
+    let limits = CodecLimits::defaults();
+    let request = kmipkit_ttlv::codec::decode_with_limits(&ttlv_req, &limits).unwrap();
+    let (content_type, request_bytes) = match encoding {
+        WireEncoding::Ttlv => ("application/octet-stream", ttlv_req),
+        WireEncoding::Json => ("application/json", crate::json_encoding::encode(&request, &limits).unwrap().to_vec()),
+        WireEncoding::Xml => ("text/xml", crate::xml_codec::encode(&request, &limits).unwrap().to_vec()),
+        _ => unreachable!(),
+    };
 
     let client_handle = thread::spawn(move || {
         let sock = TcpStream::connect(("127.0.0.1", port)).expect("connect succeeds");
+        sock.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
         let server_name =
             rustls::pki_types::ServerName::try_from("server.kmipkit.test").expect("valid dns name");
         let client_conn = rustls::ClientConnection::new(client_config, server_name)
@@ -838,24 +856,38 @@ fn client_listener_https_full_exchange_and_rejections() {
         let mut tls = rustls::StreamOwned::new(client_conn, sock);
 
         let http_req = format!(
-            "POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/octet-stream\r\nContent-Length: {}\r\n\r\n",
-            ttlv_req.len()
+            "POST /kmip-s2c HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: {content_type}\r\nContent-Length: {}\r\n\r\n",
+            request_bytes.len()
         );
         tls.write_all(http_req.as_bytes()).expect("write headers");
-        tls.write_all(&ttlv_req).expect("write body");
+        tls.write_all(&request_bytes).expect("write body");
         tls.flush().expect("flush");
 
-        let mut resp_buf = Vec::new();
-        let mut chunk = [0_u8; 512];
-        while !resp_buf.windows(4).any(|w| w == b"\r\n\r\n") {
-            let n = tls.read(&mut chunk).expect("read resp headers");
-            if n == 0 {
+        let mut reader = BufReader::new(tls);
+        let mut headers = String::new();
+        loop {
+            let mut line = String::new();
+            assert_ne!(reader.read_line(&mut line).unwrap(), 0);
+            if line == "\r\n" {
                 break;
             }
-            resp_buf.extend_from_slice(&chunk[..n]);
+            headers.push_str(&line);
         }
-        let s = String::from_utf8_lossy(&resp_buf);
-        assert!(s.contains("HTTP/1.1 200 OK"));
+        assert!(headers.starts_with("HTTP/1.1 200 OK"));
+        assert!(headers.contains(&format!("Content-Type: {content_type}\r\n")));
+        let content_length: usize = headers.lines()
+            .find_map(|line| line.strip_prefix("Content-Length: "))
+            .unwrap().parse().unwrap();
+        let mut body = vec![0; content_length];
+        reader.read_exact(&mut body).unwrap();
+        let decoded = match encoding {
+            WireEncoding::Ttlv => kmipkit_ttlv::codec::decode_with_limits(&body, &limits).unwrap(),
+            WireEncoding::Json => crate::json_encoding::decode(&body, &limits).unwrap(),
+            WireEncoding::Xml => crate::xml_codec::decode(&body, &limits).unwrap(),
+            _ => unreachable!(),
+        };
+        assert_eq!(decoded.tag().raw(), 0x0042_007B);
+
     });
 
     let limits = CodecLimits::defaults();

@@ -15,27 +15,24 @@ public final class ClientListener implements AutoCloseable {
     }
 
     public static ClientListener bindRawTls(ListenerTransportConfiguration config) {
-        Objects.requireNonNull(config, "config");
-        NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.clientListenerBindRawTls(
-                config.bindHost, config.bindPort, config.flags,
-                config.serverCertificates, config.serverCertificatesEncoding,
-                config.serverPrivateKey, config.serverPrivateKeyEncoding,
-                config.trustCertificates, config.trustCertificatesEncoding,
-                config.readTimeoutMs, config.writeTimeoutMs, config.maxRequestBytes);
-        return new ClientListener(nativeHandle);
+        return bind(config, false);
     }
 
     public static ClientListener bindHttps(ListenerTransportConfiguration config) {
+        return bind(config, true);
+    }
+
+    private static ClientListener bind(ListenerTransportConfiguration config, boolean https) {
         Objects.requireNonNull(config, "config");
         NativeExtensionRegistry.ensureLoaded();
-        long nativeHandle = NativeExtensionRegistry.clientListenerBindHttps(
-                config.bindHost, config.bindPort, config.flags,
+        return new ClientListener(NativeExtensionRegistry.clientListenerBindWithOptions(
+                https, config.bindHost, config.bindPort, config.flags,
                 config.serverCertificates, config.serverCertificatesEncoding,
                 config.serverPrivateKey, config.serverPrivateKeyEncoding,
                 config.trustCertificates, config.trustCertificatesEncoding,
-                config.readTimeoutMs, config.writeTimeoutMs, config.maxRequestBytes);
-        return new ClientListener(nativeHandle);
+                config.readTimeoutMs, config.writeTimeoutMs, config.maxRequestBytes,
+                config.targetPath, config.revocationLists, config.revocationListsEncoding,
+                config.wireEncoding == null ? 0 : config.wireEncoding.nativeValue() + 1));
     }
 
     public int port() {

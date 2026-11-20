@@ -336,7 +336,7 @@ impl IncomingServerBatch {
 pub trait ServerRequestHandler {
     /// Supplies metadata for the batch item currently being dispatched.
     /// Handlers that do not need the batch item ID can keep the default implementation.
-    fn set_current_batch_item_id(&mut self, _unique_batch_item_id: Option<&[u8]>) {}
+    fn set_current_batch_item(&mut self, _item: &ServerRequestItemView<'_>) {}
 
     /// Handles incoming Discover Versions request (§6.2.1).
     ///
@@ -415,7 +415,7 @@ impl ServerRequestDispatcher {
 
         for item_view in batch.items() {
             let unique_id = item_view.unique_batch_item_id().map(<[u8]>::to_vec);
-            handler.set_current_batch_item_id(item_view.unique_batch_item_id());
+            handler.set_current_batch_item(&item_view);
 
             match item_view.payload {
                 ServerRequestItemPayload::DiscoverVersions(req) => {
@@ -738,18 +738,30 @@ impl ClientListenerConnection {
         response: &ResponseMessage,
         timeout: Option<Duration>,
     ) -> Result<(), ClientError> {
-        let mut bytes = Vec::new();
-        response.with_ttlv(|view| {
-            encode_structure_view(RESPONSE_MESSAGE_TAG, &view, &mut bytes);
-        });
-
+        let binary_response = || {
+            let mut bytes = zeroize::Zeroizing::new(Vec::new());
+            response.with_ttlv(|view| {
+                encode_structure_view(RESPONSE_MESSAGE_TAG, &view, &mut bytes);
+            });
+            bytes
+        };
         match &mut self.inner {
             ConnectionInner::RawTls(conn) => conn
-                .send_response(&bytes, timeout)
+                .send_response(&binary_response(), timeout)
                 .map_err(ClientError::transport),
-            ConnectionInner::Https(conn, encoding) => conn
-                .send_response(&bytes, *encoding, timeout)
+            ConnectionInner::Https(conn, WireEncoding::Ttlv) => conn
+                .send_response(&binary_response(), WireEncoding::Ttlv, timeout)
                 .map_err(ClientError::transport),
+            ConnectionInner::Https(conn, encoding) => {
+                let text = crate::execute::render_response_message(
+                    response,
+                    &CodecLimits::defaults(),
+                    *encoding,
+                )
+                .map_err(|error| ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent))?;
+                conn.send_response(text.as_bytes(), *encoding, timeout)
+                    .map_err(ClientError::transport)
+            }
         }
     }
 

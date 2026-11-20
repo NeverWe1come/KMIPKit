@@ -130,6 +130,7 @@ pub struct ListenerTransportConfigBuilder {
     target_path: Option<String>,
     max_request_bytes: usize,
     timeout_policy: TimeoutPolicy,
+    tls_version_policy: crate::TlsVersionPolicy,
 }
 
 impl ListenerTransportConfigBuilder {
@@ -146,6 +147,7 @@ impl ListenerTransportConfigBuilder {
             target_path: None,
             max_request_bytes: DEFAULT_MAX_REQUEST_BYTES,
             timeout_policy: TimeoutPolicy::default(),
+            tls_version_policy: crate::TlsVersionPolicy::Tls13Only,
         }
     }
 
@@ -205,6 +207,13 @@ impl ListenerTransportConfigBuilder {
         self
     }
 
+    /// Selects the allowed TLS versions for incoming connections.
+    #[must_use]
+    pub fn tls_version_policy(mut self, policy: crate::TlsVersionPolicy) -> Self {
+        self.tls_version_policy = policy;
+        self
+    }
+
     /// Builds and validates the configuration.
     ///
     /// # Errors
@@ -235,7 +244,7 @@ impl ListenerTransportConfigBuilder {
             return Err(TransportConfigError::InvalidEndpoint);
         }
 
-        let provider = crate::tls::aws_lc_crypto_provider();
+        let provider = crate::tls::aws_lc_crypto_provider_for_policy(self.tls_version_policy);
 
         // Load root certificates
         let root_store = match trust_input {
@@ -288,10 +297,15 @@ impl ListenerTransportConfigBuilder {
                     }
                 })?;
 
-        // Build TLS 1.3 ServerConfig
+        let versions: &[&rustls::SupportedProtocolVersion] = match self.tls_version_policy {
+            crate::TlsVersionPolicy::Tls13Only => &[&rustls::version::TLS13],
+            crate::TlsVersionPolicy::Tls12And13Compat => {
+                &[&rustls::version::TLS13, &rustls::version::TLS12]
+            }
+        };
         let cert_resolver = Arc::new(SingleCertAndKey::from(Arc::clone(&identity)));
         let mut server_config = ServerConfig::builder_with_provider(provider)
-            .with_protocol_versions(&[&rustls::version::TLS13])
+            .with_protocol_versions(versions)
             .map_err(|_| TransportConfigError::InvalidTlsConfiguration)?
             .with_client_cert_verifier(verifier)
             .with_cert_resolver(cert_resolver);
@@ -455,6 +469,13 @@ impl RawTlsListener {
     ///
     /// Returns [`TransportError`] if socket binding fails.
     pub fn bind(config: ListenerTransportConfig) -> Result<Self, TransportError> {
+        if config.wire_encoding().is_some_and(|encoding| encoding != WireEncoding::Ttlv) {
+            return Err(TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::new(io::ErrorKind::InvalidInput, "raw TLS requires TTLV"),
+            ));
+        }
         let listener = bind_tcp_listener(config.bind_host(), config.bind_port())?;
         Ok(Self { listener, config })
     }
@@ -690,6 +711,7 @@ impl HttpsListener {
             stream: Some(stream),
             peer_addr,
             target_path: self.config.target_path().to_owned(),
+            wire_encoding: self.config.wire_encoding(),
             max_request_bytes: self.config.max_request_bytes(),
         })
     }
@@ -700,6 +722,7 @@ pub struct HttpsServerConnection {
     stream: Option<StreamOwned<ServerConnection, TcpStream>>,
     peer_addr: SocketAddr,
     target_path: String,
+    wire_encoding: Option<WireEncoding>,
     max_request_bytes: usize,
 }
 
@@ -831,6 +854,13 @@ impl HttpsServerConnection {
             _ => WireEncoding::Ttlv,
         };
 
+        if self.wire_encoding.is_some_and(|expected| expected != encoding) {
+            return Err(TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                io::Error::new(io::ErrorKind::InvalidData, "HTTP Content-Type does not match listener encoding"),
+            ));
+        }
         Ok((TransportResponse::new(body), encoding))
     }
 

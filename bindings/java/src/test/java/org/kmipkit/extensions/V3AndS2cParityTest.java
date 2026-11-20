@@ -137,6 +137,8 @@ class V3AndS2cParityTest {
     void versionGateValidationAndSpans() {
         // Create operation (1) is valid in KMIP 2.1
         assertTrue(VersionGate.validateOperation(2, 1, 1));
+        assertFalse(VersionGate.validateOperation(2, 1, 0x1_0000_0001L));
+        assertTrue(VersionGate.operationSpan(0x1_0000_0001L).isEmpty());
         // Bogus operation 0x7FFFFFFF should fail
         assertFalse(VersionGate.validateOperation(2, 1, 0x7FFFFFFF));
 
@@ -781,7 +783,7 @@ class V3AndS2cParityTest {
                 for (int i = 0; i < 5; i++) {
                     try (ResponseBatchItemView item = response.batchItemAt(i)) {
                         assertEquals(1L, item.resultStatus().orElseThrow());
-                        assertEquals(0x0BL, item.resultReason().orElseThrow());
+                        assertEquals(0x100L, item.resultReason().orElseThrow());
                         assertEquals("Handler exception", item.resultMessage().orElseThrow());
                     }
                 }
@@ -811,7 +813,7 @@ class V3AndS2cParityTest {
                 for (int i = 0; i < 5; i++) {
                     try (ResponseBatchItemView item = response.batchItemAt(i)) {
                         assertEquals(1L, item.resultStatus().orElseThrow());
-                        assertEquals(0x0BL, item.resultReason().orElseThrow());
+                        assertEquals(0x100L, item.resultReason().orElseThrow());
                         assertEquals("Handler returned null", item.resultMessage().orElseThrow());
                     }
                 }
@@ -847,6 +849,11 @@ class V3AndS2cParityTest {
 
     @Test
     void clientListenerRawTlsLoopbackRoundTrip() throws Exception {
+        checkRawTlsRoundTrip("TLSv1.3", false);
+        checkRawTlsRoundTrip("TLSv1.2", true);
+    }
+
+    private static void checkRawTlsRoundTrip(String protocol, boolean compatibility) throws Exception {
         byte[] serverCert = testFixture("server-cert.pem");
         byte[] serverKey = testFixture("server-key.pem");
         byte[] clientCert = testFixture("client-cert.pem");
@@ -854,6 +861,7 @@ class V3AndS2cParityTest {
 
         try (ListenerTransportConfiguration config = ListenerTransportConfiguration.builder()
                 .bind("127.0.0.1", 0)
+                .tls12Compat(compatibility)
                 .serverIdentityPem(new byte[][] {serverCert}, serverKey)
                 .trustCertificatesPem(new byte[][] {clientCert})
                 .readTimeout(Duration.ofSeconds(10))
@@ -875,7 +883,9 @@ class V3AndS2cParityTest {
                 Future<byte[]> clientFuture = exec.submit(() -> {
                     try (SSLSocket socket = (SSLSocket) clientCtx.getSocketFactory().createSocket("127.0.0.1", port)) {
                         socket.setSoTimeout(10_000);
+                        socket.setEnabledProtocols(new String[]{protocol});
                         socket.startHandshake();
+                        assertEquals(protocol, socket.getSession().getProtocol());
                         OutputStream out = socket.getOutputStream();
                         out.write(batchBytes);
                         out.flush();
@@ -992,6 +1002,53 @@ class V3AndS2cParityTest {
     }
 
     @Test
+    void discoversAllVersionsInLocalOrder() {
+        var v21 = new ProtocolVersion(2, 1);
+        var v30 = new ProtocolVersion(3, 0);
+        var v20 = new ProtocolVersion(2, 0);
+        var supported = List.of(v30, v21, v20);
+        assertEquals(supported, S2cUtilities.negotiateDiscoverVersionsList(List.of(), supported));
+        assertEquals(List.of(v30, v21), S2cUtilities.negotiateDiscoverVersionsList(List.of(v21, v30), supported));
+        assertEquals(List.of(), S2cUtilities.negotiateDiscoverVersionsList(List.of(v30), List.of(v21)));
+    }
+
+    @Test
+    void incomingDiscoverVersionsUsesReportedBufferLengths() throws Exception {
+        byte[] version = ttlvTestItem(0x420069, 1,
+                concat(ttlvTestItem(0x42006A, 2, intVal(2)), ttlvTestItem(0x42006B, 2, intVal(1))));
+        ByteArrayOutputStream versions = new ByteArrayOutputStream();
+        for (int i = 0; i < 1025; i++) versions.writeBytes(version);
+        byte[] id = new byte[257];
+        java.util.Arrays.fill(id, (byte) 0xA5);
+        byte[] item = ttlvTestItem(0x42000F, 1,
+                concat(ttlvTestItem(0x42005C, 5, intVal(0x1E)), ttlvTestItem(0x420093, 8, id),
+                        ttlvTestItem(0x420079, 1, versions.toByteArray())));
+        byte[] request = ttlvTestItem(0x420078, 1, concat(buildS2cRequestHeaderBytes(1), item));
+        var expected = Collections.nCopies(1025, new ProtocolVersion(2, 1));
+        ServerRequestHandler handler = (ServerRequestHandler) java.lang.reflect.Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[]{ServerRequestHandler.class},
+                (proxy, method, args) -> {
+                    assertEquals("handleDiscoverVersions", method.getName());
+                    assertEquals(expected, args[1]);
+                    return S2cOperationResult.success();
+                });
+        try (var batch = IncomingServerBatch.decodeTtlv(request, CodecLimits.defaults());
+             var dispatcher = ServerRequestDispatcher.create();
+             var response = dispatcher.dispatch(batch, handler);
+             var result = response.batchItemAt(0)) {
+            assertEquals(expected, batch.itemDiscoverVersions(0));
+            assertArrayEquals(id, batch.itemUniqueBatchItemId(0));
+            assertEquals(0, result.resultStatus().orElseThrow());
+        }
+    }
+
+    private static byte[] concat(byte[]... parts) {
+        var bytes = new ByteArrayOutputStream();
+        for (byte[] part : parts) bytes.writeBytes(part);
+        return bytes.toByteArray();
+    }
+
+    @Test
     void s2cUtilitiesPutEffectiveFunction() {
         // Replace (2) degrades to New (1) if object does not exist locally
         assertEquals(1L, S2cUtilities.effectivePutFunction(2L, false));
@@ -1037,6 +1094,18 @@ class V3AndS2cParityTest {
         try (TtlvStructure struct = S2cUtilities.buildQueryResponseTtlv(1L, emptyCaps)) {
             assertNotNull(struct);
             assertTrue(struct.handle() != 0);
+        }
+
+        var extensions = new S2cCapabilities().extensionTags(List.of(0x540001L));
+        for (long mask : new long[]{0x10, 0x20}) {
+            try (var response = S2cUtilities.buildQueryResponseTtlv(mask, extensions);
+                 var fields = response.view()) {
+                assertEquals(1, fields.itemCount());
+            }
+        }
+        try (var response = S2cUtilities.buildQueryResponseTtlv(0x08, extensions);
+             var fields = response.view()) {
+            assertEquals(0, fields.itemCount());
         }
 
         // Validation bounds

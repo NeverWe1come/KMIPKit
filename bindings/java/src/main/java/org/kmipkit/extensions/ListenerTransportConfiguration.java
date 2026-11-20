@@ -23,6 +23,10 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
     final long readTimeoutMs;
     final long writeTimeoutMs;
     final long maxRequestBytes;
+    final String targetPath;
+    final byte[][] revocationLists;
+    final int revocationListsEncoding;
+    final WireEncoding wireEncoding;
     private boolean closed;
 
     private ListenerTransportConfiguration(
@@ -37,7 +41,8 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
             int trustCertificatesEncoding,
             long readTimeoutMs,
             long writeTimeoutMs,
-            long maxRequestBytes) {
+            long maxRequestBytes, String targetPath, byte[][] revocationLists,
+            int revocationListsEncoding, WireEncoding wireEncoding) {
         this.bindHost = bindHost;
         this.bindPort = bindPort;
         this.flags = flags;
@@ -50,6 +55,10 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
         this.readTimeoutMs = readTimeoutMs;
         this.writeTimeoutMs = writeTimeoutMs;
         this.maxRequestBytes = maxRequestBytes;
+        this.targetPath = targetPath;
+        this.revocationLists = revocationLists;
+        this.revocationListsEncoding = revocationListsEncoding;
+        this.wireEncoding = wireEncoding;
     }
 
     public String bindHost() { return bindHost; }
@@ -82,6 +91,10 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
         private Duration readTimeout = Duration.ofSeconds(30);
         private Duration writeTimeout = Duration.ofSeconds(30);
         private long maxRequestBytes = 16 * 1024 * 1024L;
+        private String targetPath;
+        private byte[][] revocationLists = new byte[0][];
+        private int revocationListsEncoding = 1;
+        private WireEncoding wireEncoding;
         private boolean built;
 
         private Builder() {}
@@ -166,6 +179,34 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
             return this;
         }
 
+        public Builder targetPath(String path) {
+            if (path == null || !path.startsWith("/") || !StandardCharsets.UTF_8.newEncoder().canEncode(path)) {
+                throw new InvalidInputException("invalid listener path");
+            }
+            this.targetPath = path;
+            return this;
+        }
+
+        public Builder revocationLists(byte[][] lists, TransportConfiguration.Encoding encoding) {
+            if (lists == null || encoding == null) {
+                throw new InvalidInputException("revocation lists and encoding are required");
+            }
+            byte[][] copy = new byte[lists.length][];
+            for (int i = 0; i < lists.length; i++) {
+                if (lists[i] == null) throw new InvalidInputException("revocation list is required");
+                copy[i] = lists[i].clone();
+            }
+            this.revocationLists = copy;
+            this.revocationListsEncoding = encoding == TransportConfiguration.Encoding.DER ? 2 : 1;
+            return this;
+        }
+
+        public Builder wireEncoding(WireEncoding encoding) {
+            if (encoding == null) throw new InvalidInputException("wire encoding is required");
+            this.wireEncoding = encoding;
+            return this;
+        }
+
         public ListenerTransportConfiguration build() {
             if (built) throw new InvalidInputException("builder is closed");
             built = true;
@@ -185,7 +226,7 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
                     trustCertificatesEncoding,
                     readTimeout.toMillis(),
                     writeTimeout.toMillis(),
-                    maxRequestBytes);
+                    maxRequestBytes, targetPath, revocationLists, revocationListsEncoding, wireEncoding);
         }
 
         @Override

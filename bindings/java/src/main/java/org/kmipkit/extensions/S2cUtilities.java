@@ -1,11 +1,13 @@
 package org.kmipkit.extensions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.message.RequestBatchItemView;
 import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.TtlvStructure;
@@ -56,6 +58,33 @@ public final class S2cUtilities {
             return Optional.empty();
         }
         return Optional.of(new VersionGate.ProtocolVersion(negotiated[0], negotiated[1]));
+    }
+
+    /** Returns the intersection in local preference order, or all local versions for an empty request. */
+    public static List<VersionGate.ProtocolVersion> negotiateDiscoverVersionsList(
+            List<VersionGate.ProtocolVersion> requested,
+            List<VersionGate.ProtocolVersion> supported) {
+        NativeExtensionRegistry.ensureLoaded();
+        int[] result = NativeExtensionRegistry.s2cDiscoverVersionsNegotiateList(
+                versionComponents(requested), versionComponents(supported));
+        var versions = new ArrayList<VersionGate.ProtocolVersion>(result.length / 2);
+        for (int i = 0; i < result.length; i += 2) {
+            versions.add(new VersionGate.ProtocolVersion(result[i], result[i + 1]));
+        }
+        return List.copyOf(versions);
+    }
+
+    private static int[] versionComponents(List<VersionGate.ProtocolVersion> versions) {
+        if (versions == null) throw new InvalidInputException("version list is required");
+        var snapshot = versions.toArray(VersionGate.ProtocolVersion[]::new);
+        int[] flat = new int[Math.multiplyExact(snapshot.length, 2)];
+        for (int i = 0; i < snapshot.length; i++) {
+            var version = snapshot[i];
+            if (version == null) throw new InvalidInputException("version is required");
+            flat[2 * i] = version.major();
+            flat[2 * i + 1] = version.minor();
+        }
+        return flat;
     }
 
     /**
@@ -217,19 +246,19 @@ public final class S2cUtilities {
         }
         validateVersionBounds(protocolVersion.major(), protocolVersion.minor(), "protocolVersion");
 
-        long[] handles = new long[batchItems.size()];
-        for (int i = 0; i < batchItems.size(); i++) {
-            TtlvStructure st = batchItems.get(i);
-            if (st == null) {
+        TtlvStructure[] items = batchItems.toArray(TtlvStructure[]::new);
+        NativeHandle[] handles = new NativeHandle[items.length];
+        for (int i = 0; i < items.length; i++) {
+            if (items[i] == null) {
                 throw new InvalidInputException("batchItems contains null entry at index " + i);
             }
-            handles[i] = st.handle();
+            handles[i] = items[i].nativeHandleOwner();
         }
 
         NativeExtensionRegistry.ensureLoaded();
-        long handle = NativeExtensionRegistry.s2cBuildResponseTtlv(
-                protocolVersion.major(), protocolVersion.minor(), handles);
-        return TtlvStructure.fromNative(handle, null);
+        return NativeHandle.withValues(handles, raw -> TtlvStructure.fromNative(
+                NativeExtensionRegistry.s2cBuildResponseTtlv(
+                        protocolVersion.major(), protocolVersion.minor(), raw), null));
     }
 
     private static void validateVersionBounds(int major, int minor, String fieldName) {

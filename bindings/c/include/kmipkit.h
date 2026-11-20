@@ -1345,6 +1345,7 @@ typedef struct kmipkit_role_reversed_session_t kmipkit_role_reversed_session_t;
 typedef struct kmipkit_incoming_server_batch_t kmipkit_incoming_server_batch_t;
 typedef struct kmipkit_server_request_dispatcher_t kmipkit_server_request_dispatcher_t;
 typedef struct kmipkit_listener_transport_config_v1_t kmipkit_listener_transport_config_v1_t;
+typedef struct kmipkit_listener_options_v1_t kmipkit_listener_options_v1_t;
 typedef struct kmipkit_server_request_item_view_v1_t kmipkit_server_request_item_view_v1_t;
 typedef struct kmipkit_s2c_capabilities_v1_t kmipkit_s2c_capabilities_v1_t;
 typedef struct kmipkit_s2c_operation_result_v1_t kmipkit_s2c_operation_result_v1_t;
@@ -1904,6 +1905,17 @@ struct kmipkit_listener_transport_config_v1_t {
     kmipkit_timeout_limit_v1_t read_timeout;
     kmipkit_timeout_limit_v1_t write_timeout;
     uint64_t max_request_bytes;
+};
+
+/* wire_encoding: 0 auto, 1 TTLV, 2 JSON, 3 XML. */
+struct kmipkit_listener_options_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    kmipkit_byte_span_v1_t target_path;
+    const kmipkit_transport_input_v1_t * revocation_lists;
+    uint64_t revocation_list_count;
+    uint32_t wire_encoding;
+    uint32_t reserved;
 };
 
 struct kmipkit_server_request_item_view_v1_t {
@@ -4488,7 +4500,9 @@ int32_t kmipkit_cryptographic_parameters_read_fields_v2(kmipkit_cryptographic_pa
 
 /* Client Listener (S2C & Role Reversal) */
 int32_t kmipkit_client_listener_bind_raw_tls(const kmipkit_listener_transport_config_v1_t * config, kmipkit_client_listener_t ** out_listener);
+int32_t kmipkit_client_listener_bind_raw_tls_with_options_v1(const kmipkit_listener_transport_config_v1_t * config, const kmipkit_listener_options_v1_t * options, kmipkit_client_listener_t ** out_listener);
 int32_t kmipkit_client_listener_bind_https(const kmipkit_listener_transport_config_v1_t * config, kmipkit_client_listener_t ** out_listener);
+int32_t kmipkit_client_listener_bind_https_with_options_v1(const kmipkit_listener_transport_config_v1_t * config, const kmipkit_listener_options_v1_t * options, kmipkit_client_listener_t ** out_listener);
 int32_t kmipkit_client_listener_get_port(kmipkit_client_listener_t * listener, uint16_t * out_port);
 int32_t kmipkit_client_listener_accept(kmipkit_client_listener_t * listener, uint64_t timeout_ms, kmipkit_client_listener_connection_t ** out_connection);
 void kmipkit_client_listener_release(kmipkit_client_listener_t * listener);
@@ -4532,6 +4546,8 @@ void kmipkit_server_request_dispatcher_release(kmipkit_server_request_dispatcher
 
 /* Server-to-Client helpers */
 int32_t kmipkit_s2c_discover_versions_negotiate(uint32_t requested_major, uint32_t requested_minor, const uint32_t * supported_versions, uint32_t supported_count, uint32_t * out_negotiated_major, uint32_t * out_negotiated_minor);
+/* Passing NULL and zero capacity queries the required number of output records. */
+int32_t kmipkit_s2c_discover_versions_negotiate_v2(const kmipkit_protocol_version_v1_t * requested, uint32_t requested_count, const kmipkit_protocol_version_v1_t * supported, uint32_t supported_count, kmipkit_protocol_version_v1_t * output, uint32_t output_capacity, uint32_t * out_count);
 int32_t kmipkit_s2c_put_effective_function(uint32_t requested_put_function, uint8_t replaced_object_exists_locally, uint32_t * out_effective_put_function);
 int32_t kmipkit_s2c_query_respond_ttlv(uint32_t query_function_flags, const uint8_t * vendor_id_data, uint64_t vendor_id_len, kmipkit_ttlv_structure_t ** out_structure);
 int32_t kmipkit_s2c_query_respond_with_capabilities_v1(uint32_t query_function_flags, const kmipkit_s2c_capabilities_v1_t * capabilities, kmipkit_ttlv_structure_t ** out_structure);

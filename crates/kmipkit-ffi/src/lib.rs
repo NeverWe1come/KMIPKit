@@ -938,6 +938,18 @@ pub struct kmipkit_listener_transport_config_v1_t {
     pub max_request_bytes: u64,
 }
 
+/// Additional listener configuration for transport paths, encodings and CRLs.
+#[repr(C)]
+pub struct kmipkit_listener_options_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub target_path: kmipkit_byte_span_v1_t,
+    pub revocation_lists: *const kmipkit_transport_input_v1_t,
+    pub revocation_list_count: u64,
+    pub wire_encoding: u32,
+    pub reserved: u32,
+}
+
 /// Metadata view of one incoming Server-to-Client request item.
 #[derive(Clone, Copy)]
 #[repr(C)]

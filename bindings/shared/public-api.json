@@ -708367,6 +708367,69 @@
       "declarationState": "declared"
     },
     {
+      "declarationId": "Dynamic:kmipkit_client_listener_bind_https_with_options_v1",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_listener_bind_https_with_options_v1",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_client_listener_bind_raw_tls_with_options_v1",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_listener_bind_raw_tls_with_options_v1",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "Dynamic:kmipkit_s2c_discover_versions_negotiate_v2",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_s2c_discover_versions_negotiate_v2",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.ListenerTransportConfiguration$Builder.targetPath",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.ListenerTransportConfiguration$Builder.targetPath",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.ListenerTransportConfiguration$Builder.revocationLists",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.ListenerTransportConfiguration$Builder.revocationLists",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.ListenerTransportConfiguration$Builder.wireEncoding",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.ListenerTransportConfiguration$Builder.wireEncoding",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
+      "declarationId": "JavaParity:org.kmipkit.extensions.S2cUtilities.negotiateDiscoverVersionsList",
+      "packageId": "java-kmipkit",
+      "kind": "method",
+      "exportName": "org.kmipkit.extensions.S2cUtilities.negotiateDiscoverVersionsList",
+      "capabilityId": "server_to_client_operations",
+      "requirementIds": [],
+      "declarationState": "declared"
+    },
+    {
       "declarationId": "Dynamic:kmipkit_client_listener_accept",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",

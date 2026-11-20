@@ -947,3 +947,26 @@ fn test_s2c_query_deliberately_empty_capabilities() {
 
     kmipkit_ttlv_structure_release(st);
 }
+
+
+#[test]
+fn s2c_discover_versions_v2_preserves_order_and_signed_components() {
+    use crate::kmipkit_protocol_version_v1_t as Version;
+    let v21 = Version { major: 2, minor: 1 };
+    let v30 = Version { major: 3, minor: 0 };
+    let large = Version { major: 70_000, minor: 100_000 };
+    let supported = [large, v30, v21];
+    let mut count = 0;
+    assert_eq!(client_abi::kmipkit_s2c_discover_versions_negotiate_v2(
+        ptr::null(), 0, supported.as_ptr(), 3, ptr::null_mut(), 0, &mut count
+    ), SUCCESS);
+    assert_eq!(count, 3);
+
+    let requested = [v21, large];
+    let mut output = [v21; 2];
+    assert_eq!(client_abi::kmipkit_s2c_discover_versions_negotiate_v2(
+        requested.as_ptr(), 2, supported.as_ptr(), 3, output.as_mut_ptr(), 2, &mut count
+    ), SUCCESS);
+    assert_eq!(count, 2);
+    assert_eq!(output, [large, v21]);
+}

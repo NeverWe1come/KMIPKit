@@ -520,12 +520,12 @@ jobs:
       - name: Configure the C consumer with MSVC
         id: configure-the-c-consumer-with-msvc
         if: runner.os == 'Windows'
-        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/debug"
+        run: cmake -G "Visual Studio 17 2022" -A x64 -S bindings/c -B build/c-consumer -DKMIPKIT_BUILD_COVERAGE_CONSUMER=ON "-DKMIPKIT_TARGET_DIR=$env:GITHUB_WORKSPACE/target/debug"
 
       - name: Configure the C consumer with Ninja
         id: configure-the-c-consumer-with-ninja
         if: runner.os != 'Windows'
-        run: cmake -G Ninja -S bindings/c -B build/c-consumer "-DKMIPKIT_TARGET_DIR=$GITHUB_WORKSPACE/target/debug"
+        run: cmake -G Ninja -S bindings/c -B build/c-consumer -DKMIPKIT_BUILD_COVERAGE_CONSUMER=ON "-DKMIPKIT_TARGET_DIR=$GITHUB_WORKSPACE/target/debug"
 
       - name: Compile the C consumer and example
         id: compile-the-c-consumer-and-example

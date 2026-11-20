@@ -141,6 +141,23 @@ mod signature_verify_execution_tests;
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 
+pub(crate) fn render_response_message(
+    response: &ResponseMessage,
+    limits: &CodecLimits,
+    encoding: WireEncoding,
+) -> Result<Zeroizing<String>, ResponseEncodingError> {
+    let tree = response
+        .with_ttlv(|view| view.try_clone())
+        .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: ResponseMessage retains a Structure bounded to the same clone-depth limit.
+    let tag = RawTag::new(0x0042_007B)
+        .and_then(|raw| raw.try_checked())
+        .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: 0x0042007B is the catalogued Message tag checked here as a constant.
+    let item = Item::new(tag, Value::structure(tree))
+        .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: Item::new has no rejecting condition for a checked tag and owned Value.
+    private_wire_writer::render_for_inspection(&item, limits, encoding)
+        .map_err(|error| map_response_encoding_error(&error))
+}
+
 #[cfg(test)]
 #[path = "../tests/unit/wire_encoding_tests.rs"]
 mod wire_encoding_tests;
@@ -4785,17 +4802,7 @@ impl ClientBatchItemResponse {
         limits: &CodecLimits,
         encoding: WireEncoding,
     ) -> Result<Zeroizing<String>, ResponseEncodingError> {
-        let tree = self
-            .response
-            .with_ttlv(|view| view.try_clone())
-            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: ResponseMessage retains a Structure bounded to the same clone-depth limit.
-        let tag = RawTag::new(0x0042_007B)
-            .and_then(|raw| raw.try_checked())
-            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: 0x0042007B is the catalogued Message tag checked here as a constant.
-        let item = Item::new(tag, Value::structure(tree))
-            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: Item::new has no rejecting condition for a checked tag and owned Value.
-        private_wire_writer::render_for_inspection(&item, limits, encoding)
-            .map_err(|error| map_response_encoding_error(&error))
+        render_response_message(&self.response, limits, encoding)
     }
 
     /// Returns canonical uppercase TTLV hex for the complete retained response.

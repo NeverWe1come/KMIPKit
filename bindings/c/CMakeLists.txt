@@ -29,13 +29,22 @@ add_library(kmipkit_register_opaque_context_consumer OBJECT
 target_compile_features(kmipkit_register_opaque_context_consumer PRIVATE c_std_11)
 target_include_directories(kmipkit_register_opaque_context_consumer PRIVATE include)
 
-add_executable(kmipkit_client_abi_consumer tests/client_abi_consumer.c)
-target_compile_features(kmipkit_client_abi_consumer PRIVATE c_std_11)
-target_include_directories(kmipkit_client_abi_consumer PRIVATE include)
-target_link_libraries(kmipkit_client_abi_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
-set_target_properties(kmipkit_client_abi_consumer PROPERTIES
-    BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
-)
+option(KMIPKIT_BUILD_COVERAGE_CONSUMER
+    "Build the consumer that requires the Rust coverage-c-consumer feature" OFF)
+if(KMIPKIT_BUILD_COVERAGE_CONSUMER)
+    add_executable(kmipkit_client_abi_consumer tests/client_abi_consumer.c)
+    target_compile_features(kmipkit_client_abi_consumer PRIVATE c_std_11)
+    target_include_directories(kmipkit_client_abi_consumer PRIVATE include)
+    target_link_libraries(kmipkit_client_abi_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
+    set_target_properties(kmipkit_client_abi_consumer PROPERTIES
+        BUILD_RPATH "${KMIPKIT_TARGET_DIR}"
+    )
+
+    add_test(
+        NAME kmipkit_client_abi_consumer
+        COMMAND kmipkit_client_abi_consumer high-level typed-protocol generic-ttlv
+    )
+endif()
 
 add_executable(kmipkit_vendor_extension_example examples/vendor_extension.c)
 target_compile_features(kmipkit_vendor_extension_example PRIVATE c_std_11)
@@ -55,11 +64,6 @@ target_include_directories(kmipkit_named_values_consumer PRIVATE include)
 add_test(
     NAME kmipkit_extension_registry_consumer
     COMMAND kmipkit_extension_registry_consumer
-)
-
-add_test(
-    NAME kmipkit_client_abi_consumer
-    COMMAND kmipkit_client_abi_consumer high-level typed-protocol generic-ttlv
 )
 
 add_test(

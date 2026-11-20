@@ -835,6 +835,13 @@ public final class NativeExtensionRegistry {
             byte[] serverPrivateKey, int serverPrivateKeyEncoding,
             byte[][] trustCerts, int trustCertsEncoding,
             long readTimeoutMs, long writeTimeoutMs, long maxRequestBytes);
+    public static native long clientListenerBindWithOptions(
+            boolean https, String bindHost, int bindPort, int flags,
+            byte[][] serverCerts, int serverCertsEncoding,
+            byte[] serverPrivateKey, int serverPrivateKeyEncoding,
+            byte[][] trustCerts, int trustCertsEncoding,
+            long readTimeoutMs, long writeTimeoutMs, long maxRequestBytes,
+            String targetPath, byte[][] revocationLists, int revocationListsEncoding, int wireEncoding);
     public static native int clientListenerGetPort(long rawListener);
     public static native long clientListenerAccept(long rawListener, long timeoutMs);
 
@@ -867,6 +874,7 @@ public final class NativeExtensionRegistry {
     // S2C standalone utilities
     public static native int[] s2cDiscoverVersionsNegotiate(
             int requestedMajor, int requestedMinor, int[] packedSupportedVersions);
+    public static native int[] s2cDiscoverVersionsNegotiateList(int[] requested, int[] supported);
     public static native long s2cPutEffectiveFunction(
             long requestedPutFunction, boolean replacedObjectExistsLocally);
     public static native long s2cQueryRespondTtlv(
