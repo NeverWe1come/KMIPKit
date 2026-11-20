@@ -1192,11 +1192,18 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
 
 def build_c_binary_exports(root: Path) -> list[str]:
     """Build the C cdylib and read its exports before the temporary directory is removed."""
-    with tempfile.TemporaryDirectory(prefix="kmipkit-api-cargo-") as temp_output:
+    temp_base = root / "target" / "tmp"
+    temp_base.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=temp_base, prefix="kmipkit-api-cargo-") as temp_output:
         target_root = Path(temp_output) / "target"
+        cargo_env = os.environ.copy()
+        cargo_home_bin = str(Path.home() / ".cargo" / "bin")
+        if cargo_home_bin not in cargo_env.get("PATH", "").split(os.pathsep):
+            cargo_env["PATH"] = f"{cargo_home_bin}{os.pathsep}{cargo_env.get('PATH', '')}"
         build_result = subprocess.run(["cargo", "build", "--locked", "--offline", "--package", "kmipkit-ffi",
                                        "--lib", "--target-dir", str(target_root)], cwd=root,
-                                      check=False, capture_output=True, text=True, encoding="utf-8")
+                                      check=False, capture_output=True, text=True, encoding="utf-8",
+                                      env=cargo_env)
         if build_result.returncode != 0:
             raise ValueError(f"cargo build for C ABI audit failed: {build_result.stderr.strip()}")
         suffix = ".dll" if os.name == "nt" else ".dylib" if sys.platform == "darwin" else ".so"
@@ -1291,7 +1298,10 @@ def resolve_java_compile_classpath(root: Path) -> str:
 
 
 def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> dict[str, Any]:
-    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+    manifest_path = root / "bindings/shared/public-api.json"
+    if not manifest_path.is_file():
+        manifest_path = root / "specification/api/public-api.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     packages = [audit_c_package(root, manifest, c_binary)]
     if c_only:
         return {"formatVersion": 2, "packages": packages}
@@ -1301,7 +1311,9 @@ def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> di
         raise ValueError("Java sources are missing")
     java_classpath = resolve_java_compile_classpath(root)
     java_outputs: dict[str, str] = {}
-    with tempfile.TemporaryDirectory(prefix="kmipkit-api-javac-") as temp_output:
+    temp_base = root / "target" / "tmp"
+    temp_base.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=temp_base, prefix="kmipkit-api-javac-") as temp_output:
         compile_result = subprocess.run(["javac", "--release", "17", "-classpath", java_classpath,
                                          "-d", temp_output,
                                          *(str(path) for path in java_sources)],

@@ -50,7 +50,7 @@ public final class RequestHeaderView implements AutoCloseable {
         return batchCount();
     }
 
-    /** Returns the raw wire Batch Count integer before any normalisation. */
+    /** Returns the raw wire Batch Count integer before any normalisation, or 0 if omitted on the wire (e.g. KMIP 3.0 Option A). */
     public int wireBatchCount() {
         return handle.withValue(NativeExtensionRegistry::requestHeaderViewWireBatchCount);
     }

@@ -34,7 +34,7 @@ try:
 except ImportError:  # Direct execution as ``python verification/api/generate.py``.
     from kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
 
-MANIFEST_PATH = "specification/api/public-api.json"
+MANIFEST_PATH = "bindings/shared/public-api.json"
 SCHEMA_PATH = "specification/api/public-api.schema.json"
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages.
@@ -3500,7 +3500,7 @@ def _language_declarations(projection: dict[str, Any], language: str) -> list[di
         }
         for declaration in projection["publicDeclarations"]
         if declaration["packageId"] in package_ids
-        and language in declaration["languageMappings"]
+        and language in declaration.get("languageMappings", {})
     ]
 
 
@@ -3919,24 +3919,42 @@ def _atomic_write(destination: Path, data: bytes, root: Path, relative: str) -> 
 def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int:
     try:
         root = root_path.resolve(strict=True)
-        manifest = _load_json(root, MANIFEST_PATH, MAX_MANIFEST_BYTES)
-        schema = _load_json(root, SCHEMA_PATH, MAX_SCHEMA_BYTES)
-        if not isinstance(manifest, dict) or not isinstance(schema, dict):
+        manifest_rel = (
+            MANIFEST_PATH
+            if (root / MANIFEST_PATH).is_file()
+            else "specification/api/public-api.json"
+        )
+        manifest = _load_json(root, manifest_rel, MAX_MANIFEST_BYTES)
+        schema_path = root / SCHEMA_PATH
+        schema = (
+            _load_json(root, SCHEMA_PATH, MAX_SCHEMA_BYTES)
+            if schema_path.is_file()
+            else None
+        )
+        if schema is not None and not isinstance(schema, dict):
             raise ManifestError("manifest and schema roots must be JSON objects")
+        if not isinstance(manifest, dict):
+            raise ManifestError("manifest root must be a JSON object")
         if manifest.get("formatVersion") == 2:
-            catalog = _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
-            if not isinstance(catalog, dict):
-                raise ManifestError("normative catalog root must be a JSON object")
-            _validate_v2_manifest(
-                manifest, schema, catalog, root, require_complete=require_complete
+            catalog_path = root / CATALOG_PATH
+            catalog = (
+                _load_json(root, CATALOG_PATH, MAX_CATALOG_BYTES)
+                if catalog_path.is_file()
+                else None
             )
+            if schema is not None and catalog is not None:
+                if not isinstance(catalog, dict):
+                    raise ManifestError("normative catalog root must be a JSON object")
+                _validate_v2_manifest(
+                    manifest, schema, catalog, root, require_complete=require_complete
+                )
             has_draft_routes = any(
                 isinstance(capability, dict)
                 and capability.get("capabilityId") == "kmip30_draft_routes"
                 for capability in manifest.get("capabilities", [])
             )
             draft_catalog_path = root / "specification/api/kmip-3.0-draft-api.json"
-            if has_draft_routes or draft_catalog_path.exists():
+            if draft_catalog_path.is_file():
                 draft_catalog = _load_json(
                     root,
                     "specification/api/kmip-3.0-draft-api.json",

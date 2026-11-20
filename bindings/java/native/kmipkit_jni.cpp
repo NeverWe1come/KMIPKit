@@ -14623,24 +14623,26 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_validati
 JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_requestHeaderViewWireBatchCount(
         JNIEnv* env, jclass, jlong raw_header) {
     return guarded<jint>(env, 0, [&] {
-        uint32_t count = 0;
+        uint8_t has_count = 0;
+        int32_t count = 0;
         if (!check_status(env, [&] {
             return kmipkit_request_header_view_wire_batch_count(
-                    from_java_handle<kmipkit_request_header_view_t>(raw_header), &count);
+                    from_java_handle<kmipkit_request_header_view_t>(raw_header), &has_count, &count);
         })) return static_cast<jint>(0);
-        return static_cast<jint>(count);
+        return has_count != 0 ? static_cast<jint>(count) : static_cast<jint>(0);
     });
 }
 
 JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_responseHeaderViewWireBatchCount(
         JNIEnv* env, jclass, jlong raw_header) {
     return guarded<jint>(env, 0, [&] {
-        uint32_t count = 0;
+        uint8_t has_count = 0;
+        int32_t count = 0;
         if (!check_status(env, [&] {
             return kmipkit_response_header_view_wire_batch_count(
-                    from_java_handle<kmipkit_response_header_view_t>(raw_header), &count);
+                    from_java_handle<kmipkit_response_header_view_t>(raw_header), &has_count, &count);
         })) return static_cast<jint>(0);
-        return static_cast<jint>(count);
+        return has_count != 0 ? static_cast<jint>(count) : static_cast<jint>(0);
     });
 }
 

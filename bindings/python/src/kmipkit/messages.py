@@ -479,11 +479,17 @@ class RequestHeaderView(_MessageHandle):
         )
 
     @property
-    def wire_batch_count(self) -> int:
-        """Return the wire framing batch count."""
-        return _scalar(
-            "uint32_t", lib.kmipkit_request_header_view_wire_batch_count, self._pointer()
-        )
+    def wire_batch_count(self) -> int | None:
+        """Return the wire framing batch count, or None if omitted on the wire (KMIP 3.0)."""
+        has_count = ffi.new("uint8_t *")
+        count = ffi.new("int32_t *")
+        with _NATIVE_CALL_LOCK:
+            errors.raise_for_status(
+                lib.kmipkit_request_header_view_wire_batch_count(
+                    self._pointer(), has_count, count
+                )
+            )
+        return int(count[0]) if has_count[0] != 0 else None
 
     def to_ttlv(self) -> ttlv.Structure:
         """Return an owned copy of the complete header in source order."""
@@ -629,11 +635,17 @@ class ResponseHeaderView(_MessageHandle):
         )
 
     @property
-    def wire_batch_count(self) -> int:
-        """Return the wire framing batch count."""
-        return _scalar(
-            "uint32_t", lib.kmipkit_response_header_view_wire_batch_count, self._pointer()
-        )
+    def wire_batch_count(self) -> int | None:
+        """Return the wire framing batch count, or None if omitted on the wire (KMIP 3.0)."""
+        has_count = ffi.new("uint8_t *")
+        count = ffi.new("int32_t *")
+        with _NATIVE_CALL_LOCK:
+            errors.raise_for_status(
+                lib.kmipkit_response_header_view_wire_batch_count(
+                    self._pointer(), has_count, count
+                )
+            )
+        return int(count[0]) if has_count[0] != 0 else None
 
     def to_ttlv(self) -> ttlv.Structure:
         """Return an owned copy of the complete header in source order."""

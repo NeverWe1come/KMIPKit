@@ -3543,7 +3543,7 @@ class Client(_ClientHandle):
         ):
             errors.raise_for_status(4)
 
-        wipe_buffers: list[tuple[Any, int]] = []
+        wipe_buffers: list[Any] = []
         try:
             host_bytes = host.encode("utf-8")
             host_owner = ffi.new("uint8_t[]", host_bytes)
@@ -3590,7 +3590,7 @@ class Client(_ClientHandle):
             if not key_bytes:
                 errors.raise_for_status(4)
             key_buf = ffi.new("uint8_t[]", key_bytes)
-            wipe_buffers.append((key_buf, len(key_bytes)))
+            wipe_buffers.append(key_buf)
             key_span = ffi.new(
                 "kmipkit_byte_span_v1_t *", {"data": key_buf, "length": len(key_bytes)}
             )[0]
@@ -3623,10 +3623,8 @@ class Client(_ClientHandle):
                 errors.raise_for_status(7)
             return _wrap_owned_handle(cls, client_output[0])
         finally:
-            if isinstance(client_private_key, bytearray):
-                _wipe_staging_buffer(client_private_key, len(client_private_key))
-            for buf, length in wipe_buffers:
-                _wipe_staging_buffer(buf, length)
+            for buf in wipe_buffers:
+                _wipe_staging_buffer(buf)
 
     def set_endpoint_role(
         self,
@@ -3637,20 +3635,35 @@ class Client(_ClientHandle):
     ) -> BatchItemResult:
         """Execute a standalone Set Endpoint Role operation (KMIP 3.0 §6.1.58)."""
         raw_role = _integer_range(endpoint_role, 0, 0xFFFF_FFFF)
-        actual_limits = ttlv.CodecLimits() if limits is None else limits
-        if not isinstance(actual_limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
+        owned_limits: ttlv.CodecLimits | None = None
+        if limits is None:
+            owned_limits = ttlv.codec_limits_defaults()
+            actual_limits = owned_limits
+        else:
+            if not isinstance(limits, ttlv.CodecLimits):
+                errors.raise_for_status(4)
+            actual_limits = limits
         if options is not None and not isinstance(options, RequestOptions):
             errors.raise_for_status(4)
         if vendor_identification is None:
             raw_bytes = b""
             buffer = ffi.NULL
         else:
-            raw_bytes, buffer = _owned_bytes(
-                vendor_identification, _MAX_OPERATION_INPUT_BYTES
-            )
+            if isinstance(vendor_identification, str):
+                raw_bytes = vendor_identification.encode("utf-8")
+            elif isinstance(vendor_identification, (bytes, bytearray, memoryview)):
+                raw_bytes = bytes(vendor_identification)
+            else:
+                errors.raise_for_status(4)
+            if len(raw_bytes) > _MAX_INPUT_BYTES:
+                errors.raise_for_status(6)
+            buffer = ffi.new("uint8_t[]", raw_bytes)
         try:
             item_output = ffi.new("kmipkit_client_batch_item_response_t **")
+            limits_ptr = ffi.cast(
+                "kmipkit_codec_limits_t *",
+                int(_base_ffi.cast("uintptr_t", actual_limits._pointer())),
+            )
             with _NATIVE_CALL_LOCK:
                 if options is None:
                     status = lib.kmipkit_client_set_endpoint_role(
@@ -3658,21 +3671,20 @@ class Client(_ClientHandle):
                         raw_role,
                         buffer,
                         len(raw_bytes),
-                        actual_limits._pointer(),
+                        limits_ptr,
                         item_output,
                     )
                 else:
-                    opt_record, opt_owners = _request_options_record(options)
+                    opt_record = _request_options_record(options)
                     status = lib.kmipkit_client_set_endpoint_role_with_options_v1(
                         self._pointer(),
                         raw_role,
                         buffer,
                         len(raw_bytes),
-                        actual_limits._pointer(),
+                        limits_ptr,
                         opt_record,
                         item_output,
                     )
-                    del opt_owners
             _raise_abi_status(status)
             if item_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
@@ -3741,8 +3753,10 @@ class Client(_ClientHandle):
                 if not keep_item_handle:
                     item.close()
         finally:
+            if owned_limits is not None:
+                owned_limits.close()
             if buffer != ffi.NULL:
-                _wipe_staging_buffer(buffer, len(raw_bytes))
+                _wipe_staging_buffer(buffer)
 
     def execute(
         self,

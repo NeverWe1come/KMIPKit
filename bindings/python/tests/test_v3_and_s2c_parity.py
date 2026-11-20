@@ -2,17 +2,30 @@
 
 from __future__ import annotations
 
+import base64
 import queue
+import re
+import ssl
 import struct
+import sys
 import threading
 from pathlib import Path
 
 import pytest
 
+from _test_support import (
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration as _test_ttlv_enumeration,
+    ttlv_item as _test_ttlv_item,
+    ttlv_structure as _test_ttlv_structure,
+)
+
 from kmipkit import (
     client,
     errors,
     extensions,
+    messages,
     protocol,
     server_to_client,
     ttlv,
@@ -460,3 +473,355 @@ def test_s2c_utilities() -> None:
     caps = S2cCapabilities(operations=[0x1C], object_types=[1])
     with S2cUtilities.build_query_response_ttlv(1, capabilities=caps) as ttlv_data:
         assert ttlv_data is not None
+
+
+def _make_ttlv_item_helper(raw_tag: int, val: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
+    raw = ttlv.raw_tag_from_raw(raw_tag)
+    try:
+        checked = ttlv.raw_tag_try_checked(raw)
+    finally:
+        raw.close()
+    try:
+        return ttlv.ttlv_item_create(checked, val, limits)
+    finally:
+        checked.close()
+
+
+def _make_structure_helper(fields: list[tuple[int, ttlv.Value]], limits: ttlv.CodecLimits) -> ttlv.Structure:
+    st = ttlv.ttlv_structure_create()
+    for tag, val in fields:
+        st = ttlv.ttlv_structure_with_item(st, _make_ttlv_item_helper(tag, val, limits), limits)
+    return st
+
+
+def test_wire_batch_count_two_items_and_absent() -> None:
+    limits = ttlv.codec_limits_defaults()
+
+    # 1. KMIP 2.1 Request with BatchCount = 2
+    ver21 = _make_structure_helper([
+        (0x42006A, ttlv.ttlv_value_integer(2)),
+        (0x42006B, ttlv.ttlv_value_integer(1)),
+    ], limits)
+    hdr21 = _make_structure_helper([
+        (0x420069, ttlv.ttlv_value_structure(ver21, limits)),
+        (0x42000D, ttlv.ttlv_value_integer(2)),
+    ], limits)
+    it1_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(1))], limits)
+    it1 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420093, ttlv.ttlv_value_byte_string(b"1", limits)),
+        (0x420079, ttlv.ttlv_value_structure(it1_p, limits)),
+    ], limits)
+    it2_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(2))], limits)
+    it2 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420093, ttlv.ttlv_value_byte_string(b"2", limits)),
+        (0x420079, ttlv.ttlv_value_structure(it2_p, limits)),
+    ], limits)
+    req21_st = _make_structure_helper([
+        (0x420077, ttlv.ttlv_value_structure(hdr21, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(it1, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(it2, limits)),
+    ], limits)
+
+    with messages.RequestMessage.from_ttlv(req21_st) as req21:
+        assert req21.batch_item_count == 2
+        hdr = req21.header()
+        assert hdr.batch_count == 2
+        assert hdr.wire_batch_count == 2
+
+    # 2. KMIP 3.0 Request with omitted batch count (Option A)
+    ver30 = _make_structure_helper([
+        (0x42006A, ttlv.ttlv_value_integer(3)),
+        (0x42006B, ttlv.ttlv_value_integer(0)),
+    ], limits)
+    hdr30 = _make_structure_helper([
+        (0x420069, ttlv.ttlv_value_structure(ver30, limits)),
+    ], limits)
+    it1_3_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(1))], limits)
+    it1_3 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420079, ttlv.ttlv_value_structure(it1_3_p, limits)),
+    ], limits)
+    it2_3_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(2))], limits)
+    it2_3 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420079, ttlv.ttlv_value_structure(it2_3_p, limits)),
+    ], limits)
+    req30_st = _make_structure_helper([
+        (0x420077, ttlv.ttlv_value_structure(hdr30, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(it1_3, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(it2_3, limits)),
+    ], limits)
+
+    with messages.RequestMessage.from_ttlv(req30_st) as req30:
+        assert req30.batch_item_count == 2
+        hdr_30 = req30.header()
+        assert hdr_30.batch_count == 2
+        assert hdr_30.wire_batch_count is None
+
+    # 3. KMIP 2.1 Response with BatchCount = 2
+    resp_ver21 = _make_structure_helper([
+        (0x42006A, ttlv.ttlv_value_integer(2)),
+        (0x42006B, ttlv.ttlv_value_integer(1)),
+    ], limits)
+    resp_hdr21 = _make_structure_helper([
+        (0x420069, ttlv.ttlv_value_structure(resp_ver21, limits)),
+        (0x420092, ttlv.ttlv_value_date_time(123456789)),
+        (0x42000D, ttlv.ttlv_value_integer(2)),
+    ], limits)
+    resp_it1_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(1))], limits)
+    resp_it1 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420093, ttlv.ttlv_value_byte_string(b"1", limits)),
+        (0x42007F, ttlv.ttlv_value_enumeration(0)),
+        (0x42007C, ttlv.ttlv_value_structure(resp_it1_p, limits)),
+    ], limits)
+    resp_it2_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(2))], limits)
+    resp_it2 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x420093, ttlv.ttlv_value_byte_string(b"2", limits)),
+        (0x42007F, ttlv.ttlv_value_enumeration(0)),
+        (0x42007C, ttlv.ttlv_value_structure(resp_it2_p, limits)),
+    ], limits)
+    resp21_st = _make_structure_helper([
+        (0x42007A, ttlv.ttlv_value_structure(resp_hdr21, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(resp_it1, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(resp_it2, limits)),
+    ], limits)
+
+    with messages.ResponseMessage.from_ttlv(resp21_st) as resp21:
+        assert resp21.batch_item_count == 2
+        r_hdr21 = resp21.header()
+        assert r_hdr21.batch_count == 2
+        assert r_hdr21.wire_batch_count == 2
+
+    # 4. KMIP 3.0 Response with omitted batch count
+    resp_ver30 = _make_structure_helper([
+        (0x42006A, ttlv.ttlv_value_integer(3)),
+        (0x42006B, ttlv.ttlv_value_integer(0)),
+    ], limits)
+    resp_hdr30 = _make_structure_helper([
+        (0x420069, ttlv.ttlv_value_structure(resp_ver30, limits)),
+        (0x420092, ttlv.ttlv_value_date_time(123456789)),
+    ], limits)
+    resp_it1_3_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(1))], limits)
+    resp_it1_3 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x42007F, ttlv.ttlv_value_enumeration(0)),
+        (0x42007C, ttlv.ttlv_value_structure(resp_it1_3_p, limits)),
+    ], limits)
+    resp_it2_3_p = _make_structure_helper([(0x540002, ttlv.ttlv_value_integer(2))], limits)
+    resp_it2_3 = _make_structure_helper([
+        (0x42005C, ttlv.ttlv_value_enumeration(0x01)),
+        (0x42007F, ttlv.ttlv_value_enumeration(0)),
+        (0x42007C, ttlv.ttlv_value_structure(resp_it2_3_p, limits)),
+    ], limits)
+    resp30_st = _make_structure_helper([
+        (0x42007A, ttlv.ttlv_value_structure(resp_hdr30, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(resp_it1_3, limits)),
+        (0x42000F, ttlv.ttlv_value_structure(resp_it2_3, limits)),
+    ], limits)
+
+    with messages.ResponseMessage.from_ttlv(resp30_st) as resp30:
+        assert resp30.batch_item_count == 2
+        r_hdr30 = resp30.header()
+        assert r_hdr30.batch_count == 2
+        assert r_hdr30.wire_batch_count is None
+
+
+def test_client_create_mtls_der_and_zeroization_contract() -> None:
+    server_cert_pem = (_FIXTURES / "server-cert.pem").read_text()
+    client_cert_pem = (_FIXTURES / "client-cert.pem").read_text()
+    client_key_pem = (_FIXTURES / "client-key.pem").read_text()
+
+    client_cert_der = ssl.PEM_cert_to_DER_cert(client_cert_pem)
+    server_cert_der = ssl.PEM_cert_to_DER_cert(server_cert_pem)
+    key_lines = [l for l in client_key_pem.splitlines() if not l.startswith("-----")]
+    client_key_der = bytearray(base64.b64decode("".join(key_lines)))
+    client_key_der_original = bytearray(client_key_der)
+
+    reg = extensions.create_client_extension_registry((), extensions.default_extension_registry_limits())
+    conf = extensions.create_client_configuration(reg)
+
+    # 1. Success case: caller's bytearray remains preserved
+    with client.Client.create_mtls(
+        conf,
+        "127.0.0.1",
+        4433,
+        [client_cert_der],
+        client_key_der,
+        [server_cert_der],
+        tls_server_name="localhost",
+    ) as c:
+        assert c is not None
+        assert not c.closed
+        assert client_key_der == client_key_der_original, "Caller private key buffer must not be zeroized"
+
+    # 2. Error case with invalid DER input: caller's bytearray must also remain preserved
+    invalid_key = bytearray(b"invalid-der-pkcs8-key-content-bytes")
+    invalid_key_copy = bytearray(invalid_key)
+    with pytest.raises((errors.InvalidInputError, errors.KmipKitError)):
+        client.Client.create_mtls(
+            conf,
+            "127.0.0.1",
+            4433,
+            [client_cert_der],
+            invalid_key,
+            [server_cert_der],
+            tls_server_name="localhost",
+        )
+    assert invalid_key == invalid_key_copy, "Caller key buffer must not be zeroized on failure"
+
+
+def test_client_set_endpoint_role_end_to_end_local_tls() -> None:
+    server_cert_pem = (_FIXTURES / "server-cert.pem").read_text()
+    client_cert_pem = (_FIXTURES / "client-cert.pem").read_text()
+    client_key_pem = (_FIXTURES / "client-key.pem").read_text()
+
+    client_cert_der = ssl.PEM_cert_to_DER_cert(client_cert_pem)
+    server_cert_der = ssl.PEM_cert_to_DER_cert(server_cert_pem)
+    key_lines = [l for l in client_key_pem.splitlines() if not l.startswith("-----")]
+    client_key_der = bytearray(base64.b64decode("".join(key_lines)))
+
+    def _build_set_endpoint_role_response(role: int, vendor: str | None) -> bytes:
+        ver = _test_ttlv_structure(
+            0x420069,
+            _test_ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+            _test_ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+        )
+        hdr = _test_ttlv_structure(
+            0x42007A,
+            ver,
+            _test_ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+            _test_ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
+        )
+        payload_items = [_test_ttlv_enumeration(0x00420151, role)]
+        if vendor is not None:
+            payload_items.append(_test_ttlv_item(0x0042009D, 7, vendor.encode("utf-8")))
+        resp_item = _test_ttlv_structure(
+            0x42000F,
+            _test_ttlv_enumeration(0x42005C, 0x32),
+            _test_ttlv_enumeration(0x42007F, 0),
+            _test_ttlv_structure(0x42007C, *payload_items),
+        )
+        return _test_ttlv_structure(0x42007B, hdr, resp_item)
+
+    def _make_conf() -> extensions.ClientConfiguration:
+        reg = extensions.create_client_extension_registry((), extensions.default_extension_registry_limits())
+        return extensions.create_client_configuration(reg)
+
+    # Test 1: limits=None
+    def handler1(stream: ssl.SSLSocket) -> None:
+        read_ttlv_frame(stream)
+        stream.sendall(_build_set_endpoint_role_response(1, "server-ack"))
+
+    port1, failures1, peer1 = start_tls13_mtls_peer(_FIXTURES, handler1)
+    with client.Client.create_mtls(
+        _make_conf(), "127.0.0.1", port1, [client_cert_der], client_key_der, [server_cert_der], tls_server_name="localhost"
+    ) as c1:
+        res1 = c1.set_endpoint_role(1)
+        assert res1.result_status == 0
+        assert res1.outcome == client.BatchOutcome.COMPLETED
+        resp1 = res1.set_endpoint_role_response
+        assert resp1 is not None
+        assert resp1.endpoint_role == 1
+        assert resp1.vendor_identification == "server-ack"
+    peer1.join(timeout=3)
+    assert failures1.empty()
+
+    # Test 2: vendor_identification string
+    def handler2(stream: ssl.SSLSocket) -> None:
+        read_ttlv_frame(stream)
+        stream.sendall(_build_set_endpoint_role_response(2, "my-vendor-ack"))
+
+    port2, failures2, peer2 = start_tls13_mtls_peer(_FIXTURES, handler2)
+    with client.Client.create_mtls(
+        _make_conf(), "127.0.0.1", port2, [client_cert_der], client_key_der, [server_cert_der], tls_server_name="localhost"
+    ) as c2:
+        res2 = c2.set_endpoint_role(2, vendor_identification="custom-vendor")
+        assert res2.result_status == 0
+        assert res2.outcome == client.BatchOutcome.COMPLETED
+        resp2 = res2.set_endpoint_role_response
+        assert resp2 is not None
+        assert resp2.endpoint_role == 2
+        assert resp2.vendor_identification == "my-vendor-ack"
+    peer2.join(timeout=3)
+    assert failures2.empty()
+
+    # Test 3: with options and caller-provided limits (caller limits remain open)
+    def handler3(stream: ssl.SSLSocket) -> None:
+        read_ttlv_frame(stream)
+        stream.sendall(_build_set_endpoint_role_response(1, None))
+
+    port3, failures3, peer3 = start_tls13_mtls_peer(_FIXTURES, handler3)
+    caller_limits = ttlv.codec_limits_defaults()
+    opts = client.RequestOptions()
+    try:
+        with client.Client.create_mtls(
+            _make_conf(), "127.0.0.1", port3, [client_cert_der], client_key_der, [server_cert_der], tls_server_name="localhost"
+        ) as c3:
+            res3 = c3.set_endpoint_role(1, limits=caller_limits, options=opts)
+            assert res3.result_status == 0
+            assert res3.outcome == client.BatchOutcome.COMPLETED
+            resp3 = res3.set_endpoint_role_response
+            assert resp3 is not None
+            assert resp3.endpoint_role == 1
+            assert resp3.vendor_identification is None
+            assert not caller_limits.closed, "Caller limits must remain open"
+    finally:
+        caller_limits.close()
+    peer3.join(timeout=3)
+    assert failures3.empty()
+
+
+def test_ffi_signatures_match_rust_sources() -> None:
+    ffi_root = Path(__file__).resolve().parents[3] / "crates" / "kmipkit-ffi" / "src"
+    py_root = Path(__file__).resolve().parents[1] / "src" / "kmipkit"
+
+    rust_pattern = re.compile(
+        r"pub\s+(?:unsafe\s+)?extern\s+\"C\"\s+fn\s+([a-zA-Z0-9_]+)\s*\((.*?)\)",
+        re.DOTALL,
+    )
+    rust_fns: dict[str, list[str]] = {}
+    for rf in ffi_root.rglob("*.rs"):
+        text = rf.read_text(encoding="utf-8")
+        for match in rust_pattern.finditer(text):
+            name = match.group(1)
+            params_str = match.group(2).strip()
+            params = [p.strip() for p in params_str.split(",") if p.strip()] if params_str else []
+            rust_fns[name] = params
+
+    cdef_pattern = re.compile(
+        r"^\s*(?:int32_t|void|uint64_t|uint32_t|int64_t|size_t|\w+\s*\*)\s+([a-zA-Z0-9_]+)\s*\((.*?)\);",
+        re.MULTILINE | re.DOTALL,
+    )
+    py_cdef_fns: dict[str, list[str]] = {}
+    for pf in py_root.rglob("*.py"):
+        text = pf.read_text(encoding="utf-8")
+        for match in cdef_pattern.finditer(text):
+            name = match.group(1)
+            params_str = match.group(2).strip()
+            params = [p.strip() for p in params_str.split(",") if p.strip() and p.strip() != "void"]
+            py_cdef_fns[name] = params
+
+    # 1. Critical targeted functions:
+    assert len(rust_fns["kmipkit_request_header_view_wire_batch_count"]) == 3
+    assert len(py_cdef_fns["kmipkit_request_header_view_wire_batch_count"]) == 3
+
+    assert len(rust_fns["kmipkit_response_header_view_wire_batch_count"]) == 3
+    assert len(py_cdef_fns["kmipkit_response_header_view_wire_batch_count"]) == 3
+
+    assert len(rust_fns["kmipkit_client_create_mtls_v1"]) == 3
+    assert len(py_cdef_fns["kmipkit_client_create_mtls_v1"]) == 3
+
+    # 2. Complete check across all shared functions between Python cdef and Rust
+    mismatches = []
+    for name, py_params in py_cdef_fns.items():
+        if name in rust_fns:
+            rs_params = rust_fns[name]
+            if len(py_params) != len(rs_params):
+                mismatches.append((name, len(py_params), len(rs_params), py_params, rs_params))
+
+    assert len(mismatches) == 0, f"Found FFI signature mismatches against Rust: {mismatches}"
+

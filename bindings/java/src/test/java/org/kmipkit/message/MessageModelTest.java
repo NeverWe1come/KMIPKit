@@ -74,6 +74,7 @@ final class MessageModelTest {
             assertEquals(2, header.protocolVersion().major());
             assertEquals(1, header.protocolVersion().minor());
             assertEquals(1, header.batchCount());
+            assertEquals(1, header.wireBatchCount());
             assertEquals(OptionalInt.of(65536), header.maximumResponseSize());
             assertEquals(Optional.of("client-correlation"), header.clientCorrelationValue());
             assertEquals(OptionalLong.of(RAW_UNKNOWN), header.asynchronousIndicator());
@@ -126,6 +127,7 @@ final class MessageModelTest {
             assertEquals(1, header.protocolVersion().minor());
             assertEquals(123456789L, header.timeStamp());
             assertEquals(1, header.batchCount());
+            assertEquals(1, header.wireBatchCount());
             assertEquals(Optional.of(1L), header.withNonce(TtlvStructureView::itemCount));
             assertEquals(List.of(RAW_UNKNOWN, 11L), header.attestationTypes());
             assertEquals(Optional.of("client-response"), header.clientCorrelationValue());
@@ -160,6 +162,94 @@ final class MessageModelTest {
         assertTrue(error.fieldIndex().isEmpty());
         assertFalse(error.getMessage().contains("payload-secret-sentinel"));
         assertFalse(error.toString().contains("payload-secret-sentinel"));
+    }
+
+    @Test
+    void wireBatchCountWithTwoItemsAndOmission() {
+        TtlvStructure header21 = structure(
+                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 2), integer(PROTOCOL_VERSION_MINOR, 1))),
+                integer(BATCH_COUNT, 2));
+        TtlvStructure item1 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                byteString(UNIQUE_BATCH_ITEM_ID, new byte[] {1}),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 1))));
+        TtlvStructure item2 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                byteString(UNIQUE_BATCH_ITEM_ID, new byte[] {2}),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 2))));
+
+        try (RequestMessage req = RequestMessage.fromTtlv(multiItemMessage(REQUEST_HEADER, header21, item1, item2));
+             RequestHeaderView reqHeader = req.header()) {
+            assertEquals(2, req.batchItemCount());
+            assertEquals(2, reqHeader.batchCount());
+            assertEquals(2, reqHeader.wireBatchCount());
+        }
+
+        TtlvStructure header30 = structure(
+                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 3), integer(PROTOCOL_VERSION_MINOR, 0))));
+        TtlvStructure v3Item1 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 1))));
+        TtlvStructure v3Item2 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 2))));
+
+        try (RequestMessage req30 = RequestMessage.fromTtlv(multiItemMessage(REQUEST_HEADER, header30, v3Item1, v3Item2));
+             RequestHeaderView reqHeader30 = req30.header()) {
+            assertEquals(2, req30.batchItemCount());
+            assertEquals(2, reqHeader30.batchCount());
+            assertEquals(0, reqHeader30.wireBatchCount());
+        }
+
+        TtlvStructure respHeader21 = structure(
+                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 2), integer(PROTOCOL_VERSION_MINOR, 1))),
+                datetime(TIME_STAMP, 123456789L),
+                integer(BATCH_COUNT, 2));
+        TtlvStructure respItem1 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                byteString(UNIQUE_BATCH_ITEM_ID, new byte[] {1}),
+                enumeration(RESULT_STATUS, 0),
+                nested(RESPONSE_PAYLOAD, structure(integer(0x540002, 1))));
+        TtlvStructure respItem2 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                byteString(UNIQUE_BATCH_ITEM_ID, new byte[] {2}),
+                enumeration(RESULT_STATUS, 0),
+                nested(RESPONSE_PAYLOAD, structure(integer(0x540002, 2))));
+
+        try (ResponseMessage resp = ResponseMessage.fromTtlv(multiItemMessage(RESPONSE_HEADER, respHeader21, respItem1, respItem2));
+             ResponseHeaderView respHeader = resp.header()) {
+            assertEquals(2, resp.batchItemCount());
+            assertEquals(2, respHeader.batchCount());
+            assertEquals(2, respHeader.wireBatchCount());
+        }
+
+        TtlvStructure respHeader30 = structure(
+                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 3), integer(PROTOCOL_VERSION_MINOR, 0))),
+                datetime(TIME_STAMP, 123456789L));
+        TtlvStructure v3RespItem1 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                enumeration(RESULT_STATUS, 0),
+                nested(RESPONSE_PAYLOAD, structure(integer(0x540002, 1))));
+        TtlvStructure v3RespItem2 = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                enumeration(RESULT_STATUS, 0),
+                nested(RESPONSE_PAYLOAD, structure(integer(0x540002, 2))));
+
+        try (ResponseMessage resp30 = ResponseMessage.fromTtlv(multiItemMessage(RESPONSE_HEADER, respHeader30, v3RespItem1, v3RespItem2));
+             ResponseHeaderView respHeader30View = resp30.header()) {
+            assertEquals(2, resp30.batchItemCount());
+            assertEquals(2, respHeader30View.batchCount());
+            assertEquals(0, respHeader30View.wireBatchCount());
+        }
+    }
+
+    private static TtlvStructure multiItemMessage(int headerTag, TtlvStructure header, TtlvStructure... items) {
+        TtlvItem[] entries = new TtlvItem[items.length + 1];
+        entries[0] = nested(headerTag, header);
+        for (int i = 0; i < items.length; i++) {
+            entries[i + 1] = nested(BATCH_ITEM, items[i]);
+        }
+        return structure(entries);
     }
 
     private static TtlvStructure requestWithExtension() {

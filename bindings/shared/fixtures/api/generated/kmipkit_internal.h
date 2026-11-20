@@ -4592,8 +4592,8 @@ int32_t kmipkit_ttlv_value_reference(kmipkit_codec_limits_t * limits, const uint
 int32_t kmipkit_ttlv_value_name_reference(kmipkit_codec_limits_t * limits, const uint8_t * value, uint64_t len, kmipkit_ttlv_value_t ** out_value);
 
 /* Wire framing batch count */
-int32_t kmipkit_request_header_view_wire_batch_count(kmipkit_request_header_view_t * view, uint32_t * out_wire_batch_count);
-int32_t kmipkit_response_header_view_wire_batch_count(kmipkit_response_header_view_t * view, uint32_t * out_wire_batch_count);
+int32_t kmipkit_request_header_view_wire_batch_count(kmipkit_request_header_view_t * header, uint8_t * out_has_count, int32_t * out_count);
+int32_t kmipkit_response_header_view_wire_batch_count(kmipkit_response_header_view_t * header, uint8_t * out_has_count, int32_t * out_count);
 
 /* Ephemeral batch item inspection */
 int32_t kmipkit_request_batch_item_view_ephemeral(kmipkit_request_batch_item_view_t * view, uint8_t * out_present, uint8_t * out_ephemeral);

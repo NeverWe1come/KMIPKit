@@ -2161,10 +2161,12 @@ ffi.cdef(
     /* Wire batch count and ephemeral mode */
     int32_t kmipkit_request_header_view_wire_batch_count(
         kmipkit_request_header_view_t * view,
-        uint32_t * out_wire_batch_count);
+        uint8_t * out_has_count,
+        int32_t * out_wire_batch_count);
     int32_t kmipkit_response_header_view_wire_batch_count(
         kmipkit_response_header_view_t * view,
-        uint32_t * out_wire_batch_count);
+        uint8_t * out_has_count,
+        int32_t * out_wire_batch_count);
     int32_t kmipkit_request_batch_item_view_ephemeral(
         kmipkit_request_batch_item_view_t * view,
         uint8_t * out_present,
@@ -2307,7 +2309,8 @@ ffi.cdef(
     /* Client configuration, MTLS, and SetEndpointRole */
     int32_t kmipkit_client_configuration_protocol_version(
         kmipkit_client_configuration_t * configuration,
-        kmipkit_protocol_version_v1_t * out_protocol_version);
+        int32_t * out_major,
+        int32_t * out_minor);
     typedef struct kmipkit_mtls_client_config_v1_t {
         uint32_t struct_size;
         uint32_t abi_version;
@@ -2324,8 +2327,8 @@ ffi.cdef(
     } kmipkit_mtls_client_config_v1_t;
 
     int32_t kmipkit_client_create_mtls_v1(
-        const kmipkit_mtls_client_config_v1_t * config,
-        kmipkit_client_configuration_t * base_configuration,
+        kmipkit_client_configuration_t * configuration,
+        const kmipkit_mtls_client_config_v1_t * input,
         kmipkit_client_t ** out_client);
     int32_t kmipkit_client_batch_item_set_endpoint_role(
         uint32_t endpoint_role,
@@ -2651,25 +2654,26 @@ ffi.cdef(
         const kmipkit_unique_identifier_v1_t * id);
     int32_t kmipkit_revoke_builder_set_revocation_message(
         kmipkit_revoke_builder_t * builder,
-        kmipkit_byte_span_v1_t message);
+        const uint8_t * message_data,
+        uint64_t message_length);
     int32_t kmipkit_revoke_builder_set_compromise_occurrence_date(
         kmipkit_revoke_builder_t * builder,
         int64_t timestamp);
     int32_t kmipkit_revoke_builder_set_asynchronous_indicator(
         kmipkit_revoke_builder_t * builder,
-        uint8_t asynchronous);
+        uint32_t value);
 
     int32_t kmipkit_create_key_pair_builder_execute_v1(
         kmipkit_create_key_pair_builder_t * builder,
         kmipkit_client_t * client,
         kmipkit_codec_limits_t * limits,
-        kmipkit_client_batch_item_response_t ** out_response);
+        kmipkit_client_batch_response_t ** out_response);
     int32_t kmipkit_create_key_pair_builder_execute_with_options_v1(
         kmipkit_create_key_pair_builder_t * builder,
         kmipkit_client_t * client,
         kmipkit_codec_limits_t * limits,
         const kmipkit_request_options_v1_t * options,
-        kmipkit_client_batch_item_response_t ** out_response);
+        kmipkit_client_batch_response_t ** out_response);
     """
 )
 
