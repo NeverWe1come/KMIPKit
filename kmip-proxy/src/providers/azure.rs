@@ -74,6 +74,7 @@ pub struct AzureKeyVaultProvider {
 #[cfg(feature = "azure")]
 impl AzureKeyVaultProvider {
     pub fn new(config: &AzureConfig) -> Result<Self, ProxyError> {
+        crate::crypto::install_rustls_openssl_provider()?;
         let vault_url = config
             .vault_url
             .clone()
@@ -685,12 +686,10 @@ impl CloudKmsProvider for AzureKeyVaultProvider {
         if self.is_secret_id(unique_id) {
             let (mat, _) = self.get_key_material(unique_id).await?;
             match mat {
-                KeyMaterialPayload::Symmetric(sym) => {
-                    use aws_lc_rs::hmac;
-                    let s_key = hmac::Key::new(hmac::HMAC_SHA256, &sym);
-                    let tag = hmac::sign(&s_key, data);
-                    Ok(tag.as_ref().to_vec())
-                }
+                KeyMaterialPayload::Symmetric(sym) => crate::crypto::hmac_sha256(&sym, data)
+                    .map_err(|error| {
+                        ProxyError::CryptoError(format!("HMAC-SHA256 failed: {error}"))
+                    }),
                 _ => Err(ProxyError::Unsupported(
                     "secret payload must be symmetric for HMAC sign".to_string(),
                 )),
@@ -731,9 +730,9 @@ impl CloudKmsProvider for AzureKeyVaultProvider {
             let (mat, _) = self.get_key_material(unique_id).await?;
             match mat {
                 KeyMaterialPayload::Symmetric(sym) => {
-                    use aws_lc_rs::hmac;
-                    let s_key = hmac::Key::new(hmac::HMAC_SHA256, &sym);
-                    Ok(hmac::verify(&s_key, data, signature).is_ok())
+                    crate::crypto::verify_hmac_sha256(&sym, data, signature).map_err(|error| {
+                        ProxyError::CryptoError(format!("HMAC-SHA256 verification failed: {error}"))
+                    })
                 }
                 _ => Err(ProxyError::Unsupported(
                     "secret payload must be symmetric for HMAC verify".to_string(),

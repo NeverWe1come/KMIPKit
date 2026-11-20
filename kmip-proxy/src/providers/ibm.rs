@@ -42,7 +42,7 @@ impl IbmKmsProvider {
         config: &IbmConfig,
         master_kek: Option<[u8; 32]>,
     ) -> Result<Self, ProxyError> {
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()
@@ -192,11 +192,7 @@ impl CloudKmsProvider for IbmKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("ibm-key-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("ibm-key-"), Ok)?;
 
         let tag_desc = Self::encode_tags(tags);
 
@@ -258,11 +254,7 @@ impl CloudKmsProvider for IbmKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("ibm-secret-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("ibm-secret-"), Ok)?;
 
         let key_len = if spec.length > 0 {
             (spec.length / 8) as usize
@@ -274,8 +266,8 @@ impl CloudKmsProvider for IbmKmsProvider {
             Some(m) => m,
             None => {
                 let mut buf = vec![0u8; key_len];
-                aws_lc_rs::rand::fill(&mut buf).map_err(|e| {
-                    ProxyError::ProviderError(format!("entropy generation failed: {e:?}"))
+                crate::crypto::fill_random_bytes(&mut buf).map_err(|error| {
+                    ProxyError::ProviderError(format!("entropy generation failed: {error}"))
                 })?;
                 Zeroizing::new(buf)
             }
@@ -684,9 +676,8 @@ impl CloudKmsProvider for IbmKmsProvider {
     ) -> Result<Vec<u8>, ProxyError> {
         let safe_id = self.normalize_id(unique_id);
         let key_bytes = safe_id.as_bytes();
-        let key = aws_lc_rs::hmac::Key::new(aws_lc_rs::hmac::HMAC_SHA256, key_bytes);
-        let sig = aws_lc_rs::hmac::sign(&key, data);
-        Ok(sig.as_ref().to_vec())
+        crate::crypto::hmac_sha256(key_bytes, data)
+            .map_err(|error| ProxyError::CryptoError(format!("HMAC-SHA256 failed: {error}")))
     }
 
     async fn verify(
@@ -698,13 +689,14 @@ impl CloudKmsProvider for IbmKmsProvider {
     ) -> Result<bool, ProxyError> {
         let safe_id = self.normalize_id(unique_id);
         let key_bytes = safe_id.as_bytes();
-        let key = aws_lc_rs::hmac::Key::new(aws_lc_rs::hmac::HMAC_SHA256, key_bytes);
-        Ok(aws_lc_rs::hmac::verify(&key, data, signature).is_ok())
+        crate::crypto::verify_hmac_sha256(key_bytes, data, signature).map_err(|error| {
+            ProxyError::CryptoError(format!("HMAC-SHA256 verification failed: {error}"))
+        })
     }
 
     async fn random_bytes(&self, num_bytes: usize) -> Result<Zeroizing<Vec<u8>>, ProxyError> {
         let mut buf = vec![0u8; num_bytes];
-        aws_lc_rs::rand::fill(&mut buf)
+        crate::crypto::fill_random_bytes(&mut buf)
             .map_err(|e| ProxyError::ProviderError(format!("entropy generation failed: {e:?}")))?;
         Ok(Zeroizing::new(buf))
     }

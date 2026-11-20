@@ -31,6 +31,7 @@
 pub mod cache;
 pub mod codec;
 pub mod config;
+pub(crate) mod crypto;
 pub mod dispatcher;
 pub mod envelope;
 pub mod error;
@@ -38,6 +39,9 @@ pub mod pki;
 pub mod providers;
 pub mod server;
 pub mod tag_codec;
+
+#[cfg(feature = "aws")]
+mod aws_http;
 
 pub use cache::MetadataCache;
 pub use config::{KeyCustodyMode, ListenerConfig, ProxyBehaviorConfig, ProxyConfig};

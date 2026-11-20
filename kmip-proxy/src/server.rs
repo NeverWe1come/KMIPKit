@@ -152,7 +152,7 @@ impl ProxyServer {
             (cert_bytes, key_bytes, ca_bytes)
         };
 
-        let crypto_provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+        let crypto_provider = Arc::new(rustls_openssl::default_provider());
         let builder = rustls::ServerConfig::builder_with_provider(crypto_provider)
             .with_protocol_versions(&[&rustls::version::TLS13])
             .map_err(|e| format!("TLS 1.3 config error: {e}"))?;
