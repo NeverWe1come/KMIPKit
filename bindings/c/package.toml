@@ -1,0 +1,13 @@
+[package]
+# Repository-owned logical C distribution metadata for the public API manifest.
+# This identity does not assert that a C artifact has been published.
+name = "kmipkit-c"
+artifact_family = "c-distribution"
+version_source = "releaseLine"
+supported_targets = [
+    "linux-glibc-x86_64",
+    "linux-glibc-aarch64",
+    "windows-x86_64-msvc",
+    "macos-x86_64",
+    "macos-aarch64",
+]
