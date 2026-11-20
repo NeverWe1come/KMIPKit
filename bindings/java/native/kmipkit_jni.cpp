@@ -15287,6 +15287,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerB
         std::vector<uint8_t> host_buf;
         std::vector<OwnedTransportInput> cert_inputs, trust_inputs;
         OwnedTransportInput key_input{1, 1, {}};
+        kmipkit::secure::VectorWiper private_key_wiper(key_input.bytes);
         std::vector<kmipkit_transport_input_v1_t> cert_views, trust_views;
         kmipkit_listener_transport_config_v1_t config{};
 
@@ -15317,6 +15318,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerB
         std::vector<uint8_t> host_buf;
         std::vector<OwnedTransportInput> cert_inputs, trust_inputs;
         OwnedTransportInput key_input{1, 1, {}};
+        kmipkit::secure::VectorWiper private_key_wiper(key_input.bytes);
         std::vector<kmipkit_transport_input_v1_t> cert_views, trust_views;
         kmipkit_listener_transport_config_v1_t config{};
 
@@ -15349,6 +15351,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientListenerB
         std::vector<uint8_t> host_buf, path;
         std::vector<OwnedTransportInput> cert_inputs, trust_inputs, revocation_inputs;
         OwnedTransportInput key_input{1, 1, {}};
+        kmipkit::secure::VectorWiper private_key_wiper(key_input.bytes);
         std::vector<kmipkit_transport_input_v1_t> cert_views, trust_views;
         kmipkit_listener_transport_config_v1_t config{};
         if (!populate_listener_config(env, bind_host, bind_port, flags,

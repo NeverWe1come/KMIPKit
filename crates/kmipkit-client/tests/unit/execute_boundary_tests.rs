@@ -1292,7 +1292,13 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 match member {
                     syn::TraitItem::Fn(function) if !is_test_cfg(&function.attrs) => {
                         self.check_attributes(&function.attrs);
-                        self.check_public_signature(&function.sig, None);
+                        let legacy_batch_item_id_hook =
+                            self.is_source_root(Path::new("server_to_client.rs"))
+                                && trait_item.ident == "ServerRequestHandler"
+                                && is_legacy_batch_item_id_hook(function);
+                        if !legacy_batch_item_id_hook {
+                            self.check_public_signature(&function.sig, None);
+                        }
                     }
                     syn::TraitItem::Type(associated) => {
                         let mut finder = PublicTypeFinder::default();
@@ -3168,6 +3174,51 @@ fn is_exact_registry_generic_accessor(
     )
 }
 
+// This borrowed slice carries batch correlation metadata, not a wire request body.
+fn is_legacy_batch_item_id_hook(method: &syn::TraitItemFn) -> bool {
+    let signature = &method.sig;
+    if signature.ident != "set_current_batch_item_id"
+        || method.default.is_none()
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || !matches!(signature.output, syn::ReturnType::Default)
+        || signature.inputs.len() != 2
+    {
+        return false;
+    }
+    let mut inputs = signature.inputs.iter();
+    let (Some(syn::FnArg::Receiver(receiver)), Some(syn::FnArg::Typed(id))) =
+        (inputs.next(), inputs.next())
+    else {
+        return false;
+    };
+    if !matches!(receiver.reference, Some((_, None)))
+        || receiver.mutability.is_none()
+        || receiver.colon_token.is_some()
+        || !receiver.attrs.is_empty()
+        || !id.attrs.is_empty()
+    {
+        return false;
+    }
+    let Type::Path(option) = id.ty.as_ref() else {
+        return false;
+    };
+    if option.qself.is_some() || option.path.leading_colon.is_some() || option.path.segments.len() != 1 {
+        return false;
+    }
+    let segment = &option.path.segments[0];
+    segment.ident == "Option"
+        && matches!(&segment.arguments, syn::PathArguments::AngleBracketed(args)
+            if args.args.len() == 1
+                && matches!(args.args.first(), Some(syn::GenericArgument::Type(Type::Reference(slice)))
+                    if slice.lifetime.is_none() && slice.mutability.is_none() && is_byte_slice(&slice.elem)))
+}
+
 fn is_exact_server_request_dispatch(
     s2c_root_scope: bool,
     impl_type: Option<&str>,
@@ -4707,6 +4758,30 @@ fn logical_not_in_a_matches_guard_remains_allowed() {
         Ok(()),
         "a logical negation in a matches guard is not a nested macro invocation"
     );
+}
+
+#[test]
+fn exception_for_legacy_batch_item_id_is_limited_to_its_public_trait_and_signature() {
+    let hook = "pub trait ServerRequestHandler { fn set_current_batch_item_id(&mut self, id: Option<&[u8]>) {} }";
+    let source_path = Path::new("server_to_client.rs");
+    let visit = |source: &str, path: &Path| {
+        let parsed = syn::parse_file(source).expect("legacy hook fixture parses");
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, path);
+        audit.is_rejected()
+    };
+    assert!(!visit(hook, source_path));
+    assert!(visit(hook, Path::new("other.rs")));
+    for candidate in [
+        hook.replace("ServerRequestHandler", "OtherHandler"),
+        format!("mod nested {{ {hook} }}"),
+        hook.replace("Option<&[u8]>", "&[u8]"),
+        hook.replace("Option<&[u8]>", "Option<&mut [u8]>"),
+        hook.replace("(&mut self,", "(&self,"),
+        hook.replace(") {}", ") -> Vec<u8> { loop {} }"),
+    ] {
+        assert!(visit(&candidate, source_path), "unexpectedly accepted {candidate}");
+    }
 }
 
 #[test]

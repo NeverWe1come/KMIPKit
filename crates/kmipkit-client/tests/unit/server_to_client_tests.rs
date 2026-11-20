@@ -222,7 +222,9 @@ fn write_header(out: &mut Vec<u8>, tag: [u8; 3], typ: u8, len: usize) {
 }
 
 #[allow(clippy::struct_excessive_bools)]
+#[derive(Default)]
 struct TestHandler {
+    batch_item_ids: Vec<Option<Vec<u8>>>,
     discover_versions_called: bool,
     notify_called: bool,
     put_called: bool,
@@ -231,6 +233,10 @@ struct TestHandler {
 }
 
 impl ServerRequestHandler for TestHandler {
+    fn set_current_batch_item_id(&mut self, id: Option<&[u8]>) {
+        self.batch_item_ids.push(id.map(<[u8]>::to_vec));
+    }
+
     fn handle_discover_versions(
         &mut self,
         _request: &ServerDiscoverVersionsRequest,
@@ -310,13 +316,7 @@ fn incoming_server_batch_decoding_and_dispatch() {
     assert!(items[4].as_set_endpoint_role().is_some());
 
     // Dispatch
-    let mut handler = TestHandler {
-        discover_versions_called: false,
-        notify_called: false,
-        put_called: false,
-        query_called: false,
-        set_endpoint_role_called: false,
-    };
+    let mut handler = TestHandler::default();
     let mut dispatcher = ServerRequestDispatcher::new();
     let response = dispatcher
         .dispatch(&batch, &mut handler)
@@ -329,6 +329,7 @@ fn incoming_server_batch_decoding_and_dispatch() {
     assert!(handler.set_endpoint_role_called);
 
     assert_eq!(response.header().effective_batch_count(), 5);
+    assert_eq!(handler.batch_item_ids, (1..=5).map(|id| Some(vec![id])).collect::<Vec<_>>());
 }
 
 struct FailingHandler;
@@ -557,13 +558,7 @@ fn dispatcher_unknown_operation_handling() {
     let items = batch.items();
     assert_eq!(items[0].operation(), 0x9999);
 
-    let mut handler = TestHandler {
-        discover_versions_called: false,
-        notify_called: false,
-        put_called: false,
-        query_called: false,
-        set_endpoint_role_called: false,
-    };
+    let mut handler = TestHandler::default();
     let mut dispatcher = ServerRequestDispatcher::new();
     let response = dispatcher.dispatch(&batch, &mut handler).unwrap();
     let res_items: Vec<_> = response.batch_items().collect();
@@ -770,13 +765,7 @@ fn client_listener_raw_tls_full_exchange_and_role_reversal() {
     let batch = conn
         .recv_batch(&limits, Some(Duration::from_secs(5)))
         .expect("recv batch 1");
-    let mut handler = TestHandler {
-        discover_versions_called: false,
-        notify_called: false,
-        put_called: false,
-        query_called: false,
-        set_endpoint_role_called: false,
-    };
+    let mut handler = TestHandler::default();
     let mut dispatcher = ServerRequestDispatcher::new();
     let response = dispatcher
         .dispatch(&batch, &mut handler)
@@ -898,13 +887,7 @@ fn check_https_exchange(encoding: WireEncoding) {
     let batch = conn
         .recv_batch(&limits, Some(Duration::from_secs(5)))
         .expect("recv batch");
-    let mut handler = TestHandler {
-        discover_versions_called: false,
-        notify_called: false,
-        put_called: false,
-        query_called: false,
-        set_endpoint_role_called: false,
-    };
+    let mut handler = TestHandler::default();
     let mut dispatcher = ServerRequestDispatcher::new();
     let response = dispatcher.dispatch(&batch, &mut handler).expect("dispatch");
     conn.send_response(&response, Some(Duration::from_secs(5)))
@@ -930,6 +913,11 @@ fn incoming_server_batch_json_xml_and_unsupported() {
     )
     .expect("json batch decodes");
     assert_eq!(batch_json.batch_count(), 1);
+    let mut handler = TestHandler::default();
+    ServerRequestDispatcher::new()
+        .dispatch(&batch_json, &mut handler)
+        .expect("dispatch a request without a batch item ID");
+    assert_eq!(handler.batch_item_ids, [None]);
 
     // 2. XML decoding
     let xml_bytes = br#"<RequestMessage><RequestHeader><ProtocolVersion><ProtocolVersionMajor type="Integer" value="2"/><ProtocolVersionMinor type="Integer" value="1"/></ProtocolVersion><MaximumResponseSize type="Integer" value="256"/><BatchCount type="Integer" value="1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="DiscoverVersions"/><RequestPayload><ProtocolVersion><ProtocolVersionMajor type="Integer" value="2"/><ProtocolVersionMinor type="Integer" value="1"/></ProtocolVersion></RequestPayload></BatchItem></RequestMessage>"#;

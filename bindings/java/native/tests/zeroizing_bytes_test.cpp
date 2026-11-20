@@ -45,11 +45,23 @@ bool vector_wiper_clears_owned_bytes_before_deallocation() {
     return deallocated_bytes_were_zeroized;
 }
 
+bool copy_then_reject() {
+    std::vector<std::uint8_t, InspectingAllocator<std::uint8_t>> bytes;
+    kmipkit::secure::VectorWiper wiper(bytes);
+    bytes.assign({0x53, 0x45, 0x43});
+    return false;
+}
+
 } // namespace
 
 int main() {
     if (!vector_wiper_clears_owned_bytes_before_deallocation()) {
         std::cerr << "JNI scratch vector was not zeroized before deallocation\n";
+        return 1;
+    }
+    deallocated_bytes_were_zeroized = false;
+    if (copy_then_reject() || !deallocated_bytes_were_zeroized) {
+        std::cerr << "JNI scratch vector was not zeroized on early return\n";
         return 1;
     }
     return 0;

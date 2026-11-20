@@ -2,6 +2,7 @@ package org.kmipkit.extensions;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.message.RequestBatchItemView;
 import org.kmipkit.message.RequestMessage;
 import org.kmipkit.message.ResponseBatchItemView;
@@ -852,6 +853,24 @@ class V3AndS2cParityTest {
     void clientListenerRawTlsLoopbackRoundTrip() throws Exception {
         checkRawTlsRoundTrip("TLSv1.3", false);
         checkRawTlsRoundTrip("TLSv1.2", true);
+    }
+
+    @Test
+    void listenerRejectsInvalidRevocationListAfterCopyingIdentity() throws Exception {
+        byte[][] certificates = {testFixture("server-cert.pem")};
+        byte[] key = testFixture("server-key.pem");
+        byte[][] trusted = {testFixture("client-cert.pem")};
+        NativeExtensionRegistry.ensureLoaded();
+        try {
+            for (boolean https : new boolean[]{false, true}) {
+                assertThrows(InvalidInputException.class, () ->
+                        NativeExtensionRegistry.clientListenerBindWithOptions(
+                                https, "127.0.0.1", 0, 0, certificates, 1, key, 1, trusted, 1,
+                                1000, 1000, 65536, null, new byte[][]{null}, 1, 0));
+            }
+        } finally {
+            java.util.Arrays.fill(key, (byte) 0);
+        }
     }
 
     private static void checkRawTlsRoundTrip(String protocol, boolean compatibility) throws Exception {
