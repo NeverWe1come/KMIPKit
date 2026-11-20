@@ -7,7 +7,7 @@ import json
 import unittest
 from unittest import mock
 
-from scripts import branch_protection
+from verification.ci import branch_protection
 
 
 class BranchProtectionTests(unittest.TestCase):

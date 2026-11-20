@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from scripts import coverage_gate
+from verification.ci import coverage_gate
 
 
 class CoverageThresholdPolicyTests(unittest.TestCase):
