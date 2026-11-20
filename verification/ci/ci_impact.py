@@ -45,7 +45,6 @@ FULL_PREFIXES = (
     ".github/",
     ".cargo/",
     "crates/",
-    "bindings/",
     "vendor/",
 )
 FULL_FILES = {
