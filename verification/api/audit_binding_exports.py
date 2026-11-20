@@ -160,8 +160,20 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             field_names = []
             if balanced:
                 for declarator in declarators:
-                    field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", declarator)
-                    if not field_name or "(" in declarator:
+                    if "(" in declarator:
+                        # Handler records contain C function-pointer fields. The
+                        # name lives inside (*name), rather than after the type.
+                        field_name = re.fullmatch(
+                            r"[^()]+\(\s*\*\s*([A-Za-z_]\w*)\s*\)\s*\(.*\)",
+                            declarator,
+                            re.S,
+                        )
+                    else:
+                        field_name = re.search(
+                            r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$",
+                            declarator,
+                        )
+                    if not field_name:
                         field_names = []
                         break
                     field_names.append(field_name.group(1))
