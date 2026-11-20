@@ -78,6 +78,11 @@ public final class RequestBatchItemView implements AutoCloseable {
                 NativeExtensionRegistry.requestBatchItemExtensionAt(value, extensionIndex), this));
     }
 
+    /** Internal lifecycle bridge for KMIPKit's typed request inspectors. */
+    public NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

@@ -2,6 +2,8 @@ package org.kmipkit.extensions;
 
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.message.RequestBatchItemView;
+import org.kmipkit.message.RequestMessage;
 import org.kmipkit.message.ResponseBatchItemView;
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
@@ -14,6 +16,7 @@ import org.kmipkit.protocol.VersionGate.ProtocolVersion;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvItemView;
@@ -340,8 +343,7 @@ class V3AndS2cParityTest {
         return ByteBuffer.allocate(4).putInt(val).array();
     }
 
-    private static byte[] buildFullS2cBatchBytes() throws Exception {
-        // 1. Put request payload (Operation 0x0000001C)
+    private static byte[] buildS2cBatchItem1Bytes() throws Exception {
         ByteArrayOutputStream putPayload = new ByteArrayOutputStream();
         putPayload.writeBytes(ttlvTestItem(0x00420070, 0x05, intVal(2))); // PutFunction = Replace (2)
         putPayload.writeBytes(ttlvTestItem(0x00420094, 0x07, "sym-key-uid".getBytes(StandardCharsets.UTF_8))); // UniqueIdentifier
@@ -358,9 +360,10 @@ class V3AndS2cParityTest {
         item1.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x0000001C))); // Put
         item1.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-put".getBytes(StandardCharsets.UTF_8)));
         item1.writeBytes(ttlvTestItem(0x00420079, 0x01, putPayload.toByteArray()));
-        byte[] batchItem1 = ttlvTestItem(0x0042000F, 0x01, item1.toByteArray());
+        return ttlvTestItem(0x0042000F, 0x01, item1.toByteArray());
+    }
 
-        // 2. Query request payload (Operation 0x00000018)
+    private static byte[] buildS2cBatchItem2Bytes() throws Exception {
         ByteArrayOutputStream queryPayload = new ByteArrayOutputStream();
         queryPayload.writeBytes(ttlvTestItem(0x00420074, 0x05, intVal(1))); // Operations (1)
         queryPayload.writeBytes(ttlvTestItem(0x00420074, 0x05, intVal(3))); // ServerInformation (3)
@@ -369,9 +372,10 @@ class V3AndS2cParityTest {
         item2.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x00000018))); // Query
         item2.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-query".getBytes(StandardCharsets.UTF_8)));
         item2.writeBytes(ttlvTestItem(0x00420079, 0x01, queryPayload.toByteArray()));
-        byte[] batchItem2 = ttlvTestItem(0x0042000F, 0x01, item2.toByteArray());
+        return ttlvTestItem(0x0042000F, 0x01, item2.toByteArray());
+    }
 
-        // 3. DiscoverVersions request payload (Operation 0x0000001E)
+    private static byte[] buildS2cBatchItem3Bytes() throws Exception {
         ByteArrayOutputStream discPv = new ByteArrayOutputStream();
         discPv.writeBytes(ttlvTestItem(0x0042006A, 0x02, intVal(2)));
         discPv.writeBytes(ttlvTestItem(0x0042006B, 0x02, intVal(1)));
@@ -384,9 +388,14 @@ class V3AndS2cParityTest {
         item3.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x0000001E))); // DiscoverVersions
         item3.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-disc".getBytes(StandardCharsets.UTF_8)));
         item3.writeBytes(ttlvTestItem(0x00420079, 0x01, discPayload.toByteArray()));
-        byte[] batchItem3 = ttlvTestItem(0x0042000F, 0x01, item3.toByteArray());
+        return ttlvTestItem(0x0042000F, 0x01, item3.toByteArray());
+    }
 
-        // 4. Notify request payload (Operation 0x0000001B)
+    private static byte[] buildS2cBatchItem4Bytes() throws Exception {
+        ByteArrayOutputStream attrSt = new ByteArrayOutputStream();
+        attrSt.writeBytes(ttlvTestItem(0x00420008, 0x07, "CustomAttr".getBytes(StandardCharsets.UTF_8)));
+        byte[] attrStruct = ttlvTestItem(0x00420125, 0x01, attrSt.toByteArray());
+
         ByteArrayOutputStream notifyPayload = new ByteArrayOutputStream();
         notifyPayload.writeBytes(ttlvTestItem(0x00420094, 0x07, "notify-uid".getBytes(StandardCharsets.UTF_8)));
         notifyPayload.writeBytes(attrStruct);
@@ -395,9 +404,10 @@ class V3AndS2cParityTest {
         item4.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x0000001B))); // Notify
         item4.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-notify".getBytes(StandardCharsets.UTF_8)));
         item4.writeBytes(ttlvTestItem(0x00420079, 0x01, notifyPayload.toByteArray()));
-        byte[] batchItem4 = ttlvTestItem(0x0042000F, 0x01, item4.toByteArray());
+        return ttlvTestItem(0x0042000F, 0x01, item4.toByteArray());
+    }
 
-        // 5. SetEndpointRole request payload (Operation 0x00000032)
+    private static byte[] buildS2cBatchItem5Bytes() throws Exception {
         ByteArrayOutputStream rolePayload = new ByteArrayOutputStream();
         rolePayload.writeBytes(ttlvTestItem(0x00420151, 0x05, intVal(2))); // EndpointRole = SERVER (2)
 
@@ -405,16 +415,26 @@ class V3AndS2cParityTest {
         item5.writeBytes(ttlvTestItem(0x0042005C, 0x05, intVal(0x00000032))); // SetEndpointRole
         item5.writeBytes(ttlvTestItem(0x00420093, 0x08, "item-role".getBytes(StandardCharsets.UTF_8)));
         item5.writeBytes(ttlvTestItem(0x00420079, 0x01, rolePayload.toByteArray()));
-        byte[] batchItem5 = ttlvTestItem(0x0042000F, 0x01, item5.toByteArray());
+        return ttlvTestItem(0x0042000F, 0x01, item5.toByteArray());
+    }
 
-        // Header & Root
+    private static byte[] buildS2cRequestHeaderBytes(int batchCount) throws Exception {
         ByteArrayOutputStream hdrPv = new ByteArrayOutputStream();
         hdrPv.writeBytes(ttlvTestItem(0x0042006A, 0x02, intVal(2)));
         hdrPv.writeBytes(ttlvTestItem(0x0042006B, 0x02, intVal(1)));
         ByteArrayOutputStream header = new ByteArrayOutputStream();
         header.writeBytes(ttlvTestItem(0x00420069, 0x01, hdrPv.toByteArray()));
-        header.writeBytes(ttlvTestItem(0x0042000D, 0x02, intVal(5))); // BatchCount = 5
-        byte[] requestHeader = ttlvTestItem(0x00420077, 0x01, header.toByteArray());
+        header.writeBytes(ttlvTestItem(0x0042000D, 0x02, intVal(batchCount)));
+        return ttlvTestItem(0x00420077, 0x01, header.toByteArray());
+    }
+
+    private static byte[] buildFullS2cBatchBytes() throws Exception {
+        byte[] batchItem1 = buildS2cBatchItem1Bytes();
+        byte[] batchItem2 = buildS2cBatchItem2Bytes();
+        byte[] batchItem3 = buildS2cBatchItem3Bytes();
+        byte[] batchItem4 = buildS2cBatchItem4Bytes();
+        byte[] batchItem5 = buildS2cBatchItem5Bytes();
+        byte[] requestHeader = buildS2cRequestHeaderBytes(5);
 
         ByteArrayOutputStream root = new ByteArrayOutputStream();
         root.writeBytes(requestHeader);
@@ -425,6 +445,44 @@ class V3AndS2cParityTest {
         root.writeBytes(batchItem5);
 
         return ttlvTestItem(0x00420078, 0x01, root.toByteArray());
+    }
+
+    private static RequestMessage buildTestS2cRequestMessage() throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure root = TtlvStructure.create();
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cRequestHeaderBytes(5), limits), limits);
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cBatchItem1Bytes(), limits), limits);
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cBatchItem2Bytes(), limits), limits);
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cBatchItem3Bytes(), limits), limits);
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cBatchItem4Bytes(), limits), limits);
+        root = TtlvStructure.withItem(root, TtlvCodec.decodeWithLimits(buildS2cBatchItem5Bytes(), limits), limits);
+        return RequestMessage.fromTtlv(root);
+    }
+
+    private static TtlvStructure buildTestResponseBatchItem(long operation, TtlvStructure payload) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure item = TtlvStructure.create();
+        try (RawTag opTag = RawTag.fromRaw(0x42005C);
+             Tag checkedOpTag = opTag.checked();
+             TtlvValue opVal = TtlvValue.Enumeration(operation);
+             TtlvItem opItem = TtlvItem.create(checkedOpTag, opVal, limits)) {
+            item = TtlvStructure.withItem(item, opItem, limits);
+        }
+        try (RawTag stTag = RawTag.fromRaw(0x42007F);
+             Tag checkedStTag = stTag.checked();
+             TtlvValue stVal = TtlvValue.Enumeration(0);
+             TtlvItem stItem = TtlvItem.create(checkedStTag, stVal, limits)) {
+            item = TtlvStructure.withItem(item, stItem, limits);
+        }
+        if (payload != null) {
+            try (RawTag plTag = RawTag.fromRaw(0x42007C);
+                 Tag checkedPlTag = plTag.checked();
+                 TtlvValue plVal = TtlvValue.structure(payload, limits);
+                 TtlvItem plItem = TtlvItem.create(checkedPlTag, plVal, limits)) {
+                item = TtlvStructure.withItem(item, plItem, limits);
+            }
+        }
+        return item;
     }
 
     @Test
@@ -888,6 +946,154 @@ class V3AndS2cParityTest {
                 exec.shutdownNow();
             }
         }
+    }
+
+    @Test
+    void s2cUtilitiesDiscoverVersionsNegotiate() {
+        ProtocolVersion req21 = new ProtocolVersion(2, 1);
+        List<ProtocolVersion> supported = List.of(
+                new ProtocolVersion(1, 4),
+                new ProtocolVersion(2, 0),
+                new ProtocolVersion(2, 1));
+
+        Optional<ProtocolVersion> negotiated = S2cUtilities.negotiateDiscoverVersions(req21, supported);
+        assertTrue(negotiated.isPresent());
+        assertEquals(2, negotiated.get().major());
+        assertEquals(1, negotiated.get().minor());
+
+        // Higher version requested
+        ProtocolVersion req30 = new ProtocolVersion(3, 0);
+        List<ProtocolVersion> serverVersions = List.of(
+                new ProtocolVersion(2, 1),
+                new ProtocolVersion(3, 0));
+        Optional<ProtocolVersion> negotiated30 = S2cUtilities.negotiateDiscoverVersions(req30, serverVersions);
+        assertTrue(negotiated30.isPresent());
+        assertEquals(3, negotiated30.get().major());
+        assertEquals(0, negotiated30.get().minor());
+
+        // No mutual version matches
+        ProtocolVersion req20 = new ProtocolVersion(2, 0);
+        List<ProtocolVersion> disjoint = List.of(new ProtocolVersion(2, 1), new ProtocolVersion(3, 0));
+        Optional<ProtocolVersion> none = S2cUtilities.negotiateDiscoverVersions(req20, disjoint);
+        assertTrue(none.isEmpty());
+
+        // Parameter validation
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.negotiateDiscoverVersions(null, supported));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.negotiateDiscoverVersions(req21, null));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.negotiateDiscoverVersions(
+                new ProtocolVersion(-1, 0), supported));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.negotiateDiscoverVersions(
+                req21, Collections.singletonList(null)));
+    }
+
+    @Test
+    void s2cUtilitiesPutEffectiveFunction() {
+        // Replace (2) degrades to New (1) if object does not exist locally
+        assertEquals(1L, S2cUtilities.effectivePutFunction(2L, false));
+        // Replace (2) stays Replace (2) if object exists locally
+        assertEquals(2L, S2cUtilities.effectivePutFunction(2L, true));
+        // New (1) always remains New (1)
+        assertEquals(1L, S2cUtilities.effectivePutFunction(1L, false));
+        assertEquals(1L, S2cUtilities.effectivePutFunction(1L, true));
+        // Custom PutFunction remains unchanged
+        assertEquals(0x80000001L, S2cUtilities.effectivePutFunction(0x80000001L, false));
+
+        // Bounds checks
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.effectivePutFunction(-1L, false));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.effectivePutFunction(0x100000000L, true));
+    }
+
+    @Test
+    void s2cUtilitiesQueryRespondTtlv() {
+        // Default capabilities with vendor ID
+        try (TtlvStructure struct = S2cUtilities.buildQueryResponseTtlv(1L, "KMIPKitVendor")) {
+            assertNotNull(struct);
+            assertTrue(struct.handle() != 0);
+        }
+
+        // Default capabilities without vendor ID
+        try (TtlvStructure struct = S2cUtilities.buildQueryResponseTtlv(3L)) {
+            assertNotNull(struct);
+            assertTrue(struct.handle() != 0);
+        }
+
+        // Custom S2cCapabilities
+        S2cCapabilities caps = new S2cCapabilities()
+                .operations(List.of(0x0000001CL, 0x00000018L))
+                .objectTypes(List.of(1L, 2L, 7L))
+                .vendorIdentification("CustomVendor");
+        try (TtlvStructure struct = S2cUtilities.buildQueryResponseTtlv(7L, caps)) {
+            assertNotNull(struct);
+            assertTrue(struct.handle() != 0);
+        }
+
+        // Deliberately empty lists in S2cCapabilities
+        S2cCapabilities emptyCaps = new S2cCapabilities();
+        try (TtlvStructure struct = S2cUtilities.buildQueryResponseTtlv(1L, emptyCaps)) {
+            assertNotNull(struct);
+            assertTrue(struct.handle() != 0);
+        }
+
+        // Validation bounds
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(-1L, "Vendor"));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(0x100000000L, "Vendor"));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.buildQueryResponseTtlv(1L, (S2cCapabilities) null));
+    }
+
+    @Test
+    void s2cUtilitiesRequestValidationAndBuildResponseTtlv() throws Exception {
+        try (RequestMessage reqMsg = buildTestS2cRequestMessage()) {
+            assertEquals(5, reqMsg.batchItemCount());
+
+            // Item 0 is Put
+            try (RequestBatchItemView item0 = reqMsg.batchItemAt(0)) {
+                assertTrue(S2cUtilities.validatePutRequest(item0));
+                assertFalse(S2cUtilities.validateNotifyRequest(item0));
+                assertFalse(S2cUtilities.validateQueryRequest(item0));
+                assertFalse(S2cUtilities.validateDiscoverVersionsRequest(item0));
+            }
+
+            // Item 1 is Query
+            try (RequestBatchItemView item1 = reqMsg.batchItemAt(1)) {
+                assertTrue(S2cUtilities.validateQueryRequest(item1));
+                assertFalse(S2cUtilities.validatePutRequest(item1));
+                assertFalse(S2cUtilities.validateNotifyRequest(item1));
+                assertFalse(S2cUtilities.validateDiscoverVersionsRequest(item1));
+            }
+
+            // Item 2 is DiscoverVersions
+            try (RequestBatchItemView item2 = reqMsg.batchItemAt(2)) {
+                assertTrue(S2cUtilities.validateDiscoverVersionsRequest(item2));
+                assertFalse(S2cUtilities.validatePutRequest(item2));
+                assertFalse(S2cUtilities.validateNotifyRequest(item2));
+                assertFalse(S2cUtilities.validateQueryRequest(item2));
+            }
+
+            // Item 3 is Notify
+            try (RequestBatchItemView item3 = reqMsg.batchItemAt(3)) {
+                assertTrue(S2cUtilities.validateNotifyRequest(item3));
+                assertFalse(S2cUtilities.validatePutRequest(item3));
+                assertFalse(S2cUtilities.validateQueryRequest(item3));
+                assertFalse(S2cUtilities.validateDiscoverVersionsRequest(item3));
+            }
+        }
+
+        // Test buildResponseTtlv
+        try (TtlvStructure payload1 = S2cUtilities.buildQueryResponseTtlv(1L, "Vendor1");
+             TtlvStructure batchItem1 = buildTestResponseBatchItem(0x18, payload1);
+             TtlvStructure response = S2cUtilities.buildResponseTtlv(
+                     new ProtocolVersion(2, 1), List.of(batchItem1))) {
+            assertNotNull(response);
+            assertTrue(response.handle() != 0);
+        }
+
+        // Negative parameter validation
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.validateNotifyRequest(null));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.validatePutRequest(null));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.validateQueryRequest(null));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.validateDiscoverVersionsRequest(null));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.buildResponseTtlv(null, Collections.emptyList()));
+        assertThrows(InvalidInputException.class, () -> S2cUtilities.buildResponseTtlv(new ProtocolVersion(2, 1), null));
     }
 
     private static byte[] testFixture(String filename) throws Exception {

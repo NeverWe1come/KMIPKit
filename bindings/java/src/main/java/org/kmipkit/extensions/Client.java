@@ -102,6 +102,24 @@ public final class Client implements AutoCloseable {
         return new ClientBatchItemResult(responseHandle, limits.maxElements(), limits.maxMessageBytes());
     }
 
+    /** Executes a SetEndpointRole operation with explicit request options. */
+    public ClientBatchItemResult setEndpointRole(
+            long endpointRole, @Nullable String vendorIdentification, CodecLimits limits, RequestOptions options)
+            throws ClientOperationException {
+        if (limits == null || options == null) {
+            throw new InvalidInputException("client inputs are invalid");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] vendorBytes = vendorIdentification == null
+                ? null
+                : ExtensionText.encodeUtf8(vendorIdentification, 16 * 1024 * 1024, "vendor identification");
+        long[] timeoutValues = timeoutValues(options);
+        long responseHandle = handle.withValue(client ->
+                NativeExtensionRegistry.clientSetEndpointRoleWithOptions(
+                        client, endpointRole, vendorBytes, NativeExtensionRegistry.codecLimitValues(limits), timeoutValues));
+        return new ClientBatchItemResult(responseHandle, limits.maxElements(), limits.maxMessageBytes());
+    }
+
     /** Executes exactly one exchange with an explicit profile selection. */
     public ClientBatchResponse executeWithProfiles(
             ClientBatch batch, CodecLimits limits, ProfileValidationSelection selection)

@@ -15138,6 +15138,29 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientSetEndpoi
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientSetEndpointRoleWithOptions(
+        JNIEnv* env, jclass, jlong raw_client, jlong endpoint_role, jbyteArray vendor_id,
+        jlongArray raw_limits, jlongArray raw_timeouts) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        kmipkit_request_options_v1_t options{};
+        if (!read_request_options(env, raw_timeouts, options)) return static_cast<jlong>(0);
+        std::vector<uint8_t> vendor_buf;
+        if (vendor_id != nullptr && !read_bytes(env, vendor_id, kMaximumTransportInputBytes, vendor_buf)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_response_t>(env, [&](auto output) {
+            return kmipkit_client_set_endpoint_role_with_options_v1(
+                    from_java_handle<kmipkit_client_t>(raw_client),
+                    static_cast<uint32_t>(endpoint_role),
+                    vendor_buf.empty() ? nullptr : vendor_buf.data(),
+                    static_cast<uint64_t>(vendor_buf.size()),
+                    limits.get(), &options, output);
+        });
+    });
+}
+
 static bool populate_listener_config(
         JNIEnv* env,
         jstring bind_host, jint bind_port, jint flags,
@@ -16220,6 +16243,220 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
                     from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
                     from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
                     &handler_v3, output);
+        });
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cDiscoverVersionsNegotiate(
+        JNIEnv* env, jclass, jint req_maj, jint req_min, jintArray packed_arr) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        if (req_maj < 0 || req_maj > 0xFFFF || req_min < 0 || req_min > 0xFFFF || packed_arr == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jintArray>(nullptr);
+        }
+        jsize len = env->GetArrayLength(packed_arr);
+        std::vector<uint32_t> supported(len);
+        if (len > 0) {
+            env->GetIntArrayRegion(packed_arr, 0, len, reinterpret_cast<jint*>(supported.data()));
+        }
+        uint32_t neg_maj = 0;
+        uint32_t neg_min = 0;
+        int32_t status = kmipkit_s2c_discover_versions_negotiate(
+                static_cast<uint32_t>(req_maj), static_cast<uint32_t>(req_min),
+                supported.empty() ? nullptr : supported.data(),
+                static_cast<uint32_t>(supported.size()),
+                &neg_maj, &neg_min);
+        if (status == KMIPKIT_ERROR_COMPATIBILITY_MISMATCH) {
+            return static_cast<jintArray>(nullptr);
+        }
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jintArray>(nullptr);
+        }
+        jintArray res = env->NewIntArray(2);
+        if (res == nullptr) return static_cast<jintArray>(nullptr);
+        jint vals[2] = {static_cast<jint>(neg_maj), static_cast<jint>(neg_min)};
+        env->SetIntArrayRegion(res, 0, 2, vals);
+        return res;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cPutEffectiveFunction(
+        JNIEnv* env, jclass, jlong req_put_fn, jboolean exists) {
+    return guarded<jlong>(env, 0, [&] {
+        if (req_put_fn < 0 || static_cast<uint64_t>(req_put_fn) > 0xFFFF'FFFFULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        uint32_t eff = 0;
+        int32_t status = kmipkit_s2c_put_effective_function(
+                static_cast<uint32_t>(req_put_fn),
+                static_cast<uint8_t>(exists == JNI_TRUE),
+                &eff);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(eff);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRespondTtlv(
+        JNIEnv* env, jclass, jlong query_flags, jbyteArray vendor_id) {
+    return guarded<jlong>(env, 0, [&] {
+        if (query_flags < 0 || static_cast<uint64_t>(query_flags) > 0xFFFF'FFFFULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> vendor_buf;
+        if (vendor_id != nullptr && !read_bytes(env, vendor_id, 16 * 1024 * 1024, vendor_buf)) {
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_s2c_query_respond_ttlv(
+                    static_cast<uint32_t>(query_flags),
+                    vendor_buf.empty() ? nullptr : vendor_buf.data(),
+                    static_cast<uint64_t>(vendor_buf.size()),
+                    output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRespondWithCapabilities(
+        JNIEnv* env, jclass, jlong query_flags, jlongArray ops_arr, jlongArray ots_arr,
+        jbyteArray vendor_id, jlongArray exts_arr) {
+    return guarded<jlong>(env, 0, [&] {
+        if (query_flags < 0 || static_cast<uint64_t>(query_flags) > 0xFFFF'FFFFULL) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        auto extract_u32_vec = [&](jlongArray arr, std::vector<uint32_t>& out) -> bool {
+            if (arr == nullptr) return true;
+            jsize len = env->GetArrayLength(arr);
+            if (len > 1024) {
+                throw_java(env, "org/kmipkit/InvalidInputException", "capabilities count exceeds limit");
+                return false;
+            }
+            std::vector<jlong> buf(len);
+            env->GetLongArrayRegion(arr, 0, len, buf.data());
+            out.resize(len);
+            for (jsize i = 0; i < len; ++i) {
+                if (buf[i] < 0 || static_cast<uint64_t>(buf[i]) > 0xFFFF'FFFFULL) {
+                    throw_invalid_input(env);
+                    return false;
+                }
+                out[i] = static_cast<uint32_t>(buf[i]);
+            }
+            return true;
+        };
+        std::vector<uint32_t> ops_vec;
+        std::vector<uint32_t> ots_vec;
+        std::vector<uint32_t> exts_vec;
+        if (!extract_u32_vec(ops_arr, ops_vec)) return static_cast<jlong>(0);
+        if (!extract_u32_vec(ots_arr, ots_vec)) return static_cast<jlong>(0);
+        if (!extract_u32_vec(exts_arr, exts_vec)) return static_cast<jlong>(0);
+
+        std::vector<uint8_t> vendor_buf;
+        if (vendor_id != nullptr && !read_bytes(env, vendor_id, 16 * 1024 * 1024, vendor_buf)) {
+            return static_cast<jlong>(0);
+        }
+
+        kmipkit_s2c_capabilities_v1_t caps{};
+        caps.struct_size = static_cast<uint32_t>(sizeof(caps));
+        caps.abi_version = 1;
+        caps.operations = ops_vec.empty() ? nullptr : ops_vec.data();
+        caps.operations_count = static_cast<uint32_t>(ops_vec.size());
+        caps.object_types = ots_vec.empty() ? nullptr : ots_vec.data();
+        caps.object_types_count = static_cast<uint32_t>(ots_vec.size());
+        caps.vendor_identification_data = vendor_buf.empty() ? nullptr : vendor_buf.data();
+        caps.vendor_identification_length = static_cast<uint64_t>(vendor_buf.size());
+        caps.extension_tags = exts_vec.empty() ? nullptr : exts_vec.data();
+        caps.extension_tags_count = static_cast<uint32_t>(exts_vec.size());
+        caps.reserved = 0;
+
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_s2c_query_respond_with_capabilities_v1(
+                    static_cast<uint32_t>(query_flags), &caps, output);
+        });
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cNotifyRequestValidate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* item = from_java_handle<kmipkit_request_batch_item_view_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return JNI_FALSE;
+        }
+        int32_t status = kmipkit_s2c_notify_request_validate(item);
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cPutRequestValidate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* item = from_java_handle<kmipkit_request_batch_item_view_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return JNI_FALSE;
+        }
+        int32_t status = kmipkit_s2c_put_request_validate(item);
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cQueryRequestValidate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* item = from_java_handle<kmipkit_request_batch_item_view_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return JNI_FALSE;
+        }
+        int32_t status = kmipkit_s2c_query_request_validate(item);
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jboolean JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cDiscoverVersionsRequestValidate(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jboolean>(env, JNI_FALSE, [&] {
+        auto* item = from_java_handle<kmipkit_request_batch_item_view_t>(raw_item);
+        if (item == nullptr) {
+            throw_invalid_input(env);
+            return JNI_FALSE;
+        }
+        int32_t status = kmipkit_s2c_discover_versions_request_validate(item);
+        return status == 0 ? JNI_TRUE : JNI_FALSE;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_s2cBuildResponseTtlv(
+        JNIEnv* env, jclass, jint major, jint minor, jlongArray raw_items) {
+    return guarded<jlong>(env, 0, [&] {
+        if (major < 0 || major > 0xFFFF || minor < 0 || minor > 0xFFFF || raw_items == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        jsize count = env->GetArrayLength(raw_items);
+        std::vector<jlong> handles(count);
+        env->GetLongArrayRegion(raw_items, 0, count, handles.data());
+        std::vector<kmipkit_ttlv_structure_t*> item_ptrs(count);
+        for (jsize i = 0; i < count; ++i) {
+            item_ptrs[i] = from_java_handle<kmipkit_ttlv_structure_t>(handles[i]);
+            if (item_ptrs[i] == nullptr) {
+                throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+        }
+        return return_handle<kmipkit_ttlv_structure_t>(env, [&](auto output) {
+            return kmipkit_s2c_build_response_ttlv(
+                    major, minor,
+                    item_ptrs.empty() ? nullptr : item_ptrs.data(),
+                    static_cast<uint64_t>(item_ptrs.size()),
+                    output);
         });
     });
 }

@@ -60,6 +60,12 @@ final class ClientArgumentValidationCoverageTest {
                             null, null, 1, 0x1_0000_0000L, limits));
             assertThrows(InvalidInputException.class,
                     () -> client.executeGuardedProtectionItem(null, null, 0, limits));
+            assertThrows(InvalidInputException.class,
+                    () -> client.setEndpointRole(1L, "vendor", null));
+            assertThrows(InvalidInputException.class,
+                    () -> client.setEndpointRole(1L, "vendor", null, options));
+            assertThrows(InvalidInputException.class,
+                    () -> client.setEndpointRole(1L, "vendor", limits, null));
         }
     }
 

@@ -815,6 +815,8 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemSetEndpointRole(long endpointRole, byte[] vendorIdentification);
     public static native Object[] clientBatchItemResponseSetEndpointRole(long rawResponse);
     public static native long clientSetEndpointRole(long rawClient, long endpointRole, byte[] vendorIdentification, long[] limits);
+    public static native long clientSetEndpointRoleWithOptions(
+            long rawClient, long endpointRole, byte[] vendorIdentification, long[] limits, long[] requestOptions);
 
     // S2C Listener, Connection, Session, Batch, Dispatcher
     public static native long clientListenerBindRawTls(
@@ -857,4 +859,20 @@ public final class NativeExtensionRegistry {
             long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
     public static native long serverRequestDispatcherDispatchV3(
             long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
+
+    // S2C standalone utilities
+    public static native int[] s2cDiscoverVersionsNegotiate(
+            int requestedMajor, int requestedMinor, int[] packedSupportedVersions);
+    public static native long s2cPutEffectiveFunction(
+            long requestedPutFunction, boolean replacedObjectExistsLocally);
+    public static native long s2cQueryRespondTtlv(
+            long queryFunctionFlags, byte[] vendorIdentification);
+    public static native long s2cQueryRespondWithCapabilities(
+            long queryFunctionFlags, long[] operations, long[] objectTypes, byte[] vendorIdentification, long[] extensionTags);
+    public static native boolean s2cNotifyRequestValidate(long rawItemView);
+    public static native boolean s2cPutRequestValidate(long rawItemView);
+    public static native boolean s2cQueryRequestValidate(long rawItemView);
+    public static native boolean s2cDiscoverVersionsRequestValidate(long rawItemView);
+    public static native long s2cBuildResponseTtlv(
+            int major, int minor, long[] rawItemStructures);
 }
