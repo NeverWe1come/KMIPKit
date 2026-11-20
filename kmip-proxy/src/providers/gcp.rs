@@ -42,7 +42,7 @@ impl GcpKmsProvider {
         config: &GcpConfig,
         master_kek: Option<[u8; 32]>,
     ) -> Result<Self, ProxyError> {
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()
@@ -884,8 +884,8 @@ impl CloudKmsProvider for GcpKmsProvider {
             key_name
         );
 
-        let digest = aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, data);
-        let b64_digest = base64::engine::general_purpose::STANDARD.encode(digest.as_ref());
+        let digest = crate::crypto::sha256_digest(data);
+        let b64_digest = base64::engine::general_purpose::STANDARD.encode(digest);
         let body = serde_json::json!({
             "digest": {
                 "sha256": b64_digest

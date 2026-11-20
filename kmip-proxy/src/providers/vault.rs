@@ -42,7 +42,7 @@ impl VaultKmsProvider {
         config: &VaultConfig,
         master_kek: Option<[u8; 32]>,
     ) -> Result<Self, ProxyError> {
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()
@@ -232,11 +232,7 @@ impl CloudKmsProvider for VaultKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("vault-key-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("vault-key-"), Ok)?;
 
         let key_type = Self::map_key_type(spec);
         let transit_body = serde_json::json!({
@@ -286,11 +282,7 @@ impl CloudKmsProvider for VaultKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("vault-secret-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("vault-secret-"), Ok)?;
 
         let key_len = if spec.length > 0 {
             (spec.length / 8) as usize
@@ -302,8 +294,8 @@ impl CloudKmsProvider for VaultKmsProvider {
             Some(m) => m,
             None => {
                 let mut buf = vec![0u8; key_len];
-                aws_lc_rs::rand::fill(&mut buf).map_err(|e| {
-                    ProxyError::ProviderError(format!("entropy generation failed: {e:?}"))
+                crate::crypto::fill_random_bytes(&mut buf).map_err(|error| {
+                    ProxyError::ProviderError(format!("entropy generation failed: {error}"))
                 })?;
                 Zeroizing::new(buf)
             }

@@ -1,4 +1,5 @@
 //! In-memory and file-exportable self-contained PKI for test servers.
+#![forbid(unsafe_code)]
 
 use std::error::Error;
 use std::fmt;
@@ -6,10 +7,16 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-use rcgen::{
-    BasicConstraints, Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, IsCa,
-    Issuer, KeyPair, KeyUsagePurpose,
+use openssl::asn1::{Asn1Integer, Asn1Time};
+use openssl::bn::BigNum;
+use openssl::ec::{EcGroup, EcKey};
+use openssl::hash::MessageDigest;
+use openssl::nid::Nid;
+use openssl::pkey::{PKey, Private};
+use openssl::x509::extension::{
+    BasicConstraints, ExtendedKeyUsage, KeyUsage, SubjectAlternativeName,
 };
+use openssl::x509::{X509, X509Builder, X509Name, X509NameBuilder};
 use zeroize::Zeroizing;
 
 /// Error returned when ephemeral PKI creation fails.
@@ -24,45 +31,166 @@ impl fmt::Display for PkiError {
 
 impl Error for PkiError {}
 
-/// Formats a DER payload into a PEM-encoded string with 64-char lines.
+/// Formats a DER payload into a PEM-encoded string with 64-character lines.
 pub fn pem_encode(label: &str, der: &[u8]) -> String {
-    const B64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = format!("-----BEGIN {label}-----\n");
-    let mut line_len = 0;
+    const BASE64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut output = format!("-----BEGIN {label}-----\n");
+    let mut line_length = 0;
     for chunk in der.chunks(3) {
-        let b = [
+        let bytes = [
             chunk[0],
             *chunk.get(1).unwrap_or(&0),
             *chunk.get(2).unwrap_or(&0),
         ];
-        let chars = [
-            B64[(b[0] >> 2) as usize] as char,
-            B64[(((b[0] & 3) << 4) | (b[1] >> 4)) as usize] as char,
+        let encoded = [
+            BASE64[(bytes[0] >> 2) as usize] as char,
+            BASE64[(((bytes[0] & 3) << 4) | (bytes[1] >> 4)) as usize] as char,
             if chunk.len() > 1 {
-                B64[(((b[1] & 15) << 2) | (b[2] >> 6)) as usize] as char
+                BASE64[(((bytes[1] & 15) << 2) | (bytes[2] >> 6)) as usize] as char
             } else {
                 '='
             },
             if chunk.len() > 2 {
-                B64[(b[2] & 63) as usize] as char
+                BASE64[(bytes[2] & 63) as usize] as char
             } else {
                 '='
             },
         ];
-        for c in chars {
-            out.push(c);
-            line_len += 1;
-            if line_len == 64 {
-                out.push('\n');
-                line_len = 0;
+        for character in encoded {
+            output.push(character);
+            line_length += 1;
+            if line_length == 64 {
+                output.push('\n');
+                line_length = 0;
             }
         }
     }
-    if line_len > 0 {
-        out.push('\n');
+    if line_length > 0 {
+        output.push('\n');
     }
-    out.push_str(&format!("-----END {label}-----\n"));
-    out
+    output.push_str(&format!("-----END {label}-----\n"));
+    output
+}
+
+fn generate_key() -> Result<PKey<Private>, PkiError> {
+    let group = EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).map_err(|_| PkiError)?;
+    let key = EcKey::generate(&group).map_err(|_| PkiError)?;
+    PKey::from_ec_key(key).map_err(|_| PkiError)
+}
+
+fn common_name(value: &str) -> Result<X509Name, PkiError> {
+    let mut name = X509NameBuilder::new().map_err(|_| PkiError)?;
+    name.append_entry_by_nid(Nid::COMMONNAME, value)
+        .map_err(|_| PkiError)?;
+    Ok(name.build())
+}
+
+fn serial_number(value: u32) -> Result<Asn1Integer, PkiError> {
+    let number = BigNum::from_u32(value).map_err(|_| PkiError)?;
+    Asn1Integer::from_bn(&number).map_err(|_| PkiError)
+}
+
+fn set_validity(builder: &mut X509Builder) -> Result<(), PkiError> {
+    let not_before = Asn1Time::days_from_now(0).map_err(|_| PkiError)?;
+    let not_after = Asn1Time::days_from_now(3650).map_err(|_| PkiError)?;
+    builder.set_not_before(&not_before).map_err(|_| PkiError)?;
+    builder.set_not_after(&not_after).map_err(|_| PkiError)
+}
+
+fn create_ca(key: &PKey<Private>) -> Result<X509, PkiError> {
+    let name = common_name("KMIPKit Test Server Authority")?;
+    let mut builder = X509::builder().map_err(|_| PkiError)?;
+    builder.set_version(2).map_err(|_| PkiError)?;
+    let serial = serial_number(1)?;
+    builder.set_serial_number(&serial).map_err(|_| PkiError)?;
+    builder.set_subject_name(&name).map_err(|_| PkiError)?;
+    builder.set_issuer_name(&name).map_err(|_| PkiError)?;
+    builder.set_pubkey(key).map_err(|_| PkiError)?;
+    set_validity(&mut builder)?;
+
+    let constraints = {
+        BasicConstraints::new()
+            .critical()
+            .ca()
+            .pathlen(0)
+            .build()
+            .map_err(|_| PkiError)?
+    };
+    builder
+        .append_extension(constraints)
+        .map_err(|_| PkiError)?;
+    let key_usage = KeyUsage::new()
+        .critical()
+        .key_cert_sign()
+        .crl_sign()
+        .build()
+        .map_err(|_| PkiError)?;
+    builder.append_extension(key_usage).map_err(|_| PkiError)?;
+    builder
+        .sign(key, MessageDigest::sha256())
+        .map_err(|_| PkiError)?;
+    Ok(builder.build())
+}
+
+fn create_leaf(
+    key: &PKey<Private>,
+    ca: &X509,
+    ca_key: &PKey<Private>,
+    common_name_value: &str,
+    dns_names: &[&str],
+    ip_addresses: &[&str],
+    serial: u32,
+    server_auth: bool,
+) -> Result<X509, PkiError> {
+    let name = common_name(common_name_value)?;
+    let mut builder = X509::builder().map_err(|_| PkiError)?;
+    builder.set_version(2).map_err(|_| PkiError)?;
+    let serial_number = serial_number(serial)?;
+    builder
+        .set_serial_number(&serial_number)
+        .map_err(|_| PkiError)?;
+    builder.set_subject_name(&name).map_err(|_| PkiError)?;
+    builder
+        .set_issuer_name(ca.subject_name())
+        .map_err(|_| PkiError)?;
+    builder.set_pubkey(key).map_err(|_| PkiError)?;
+    set_validity(&mut builder)?;
+
+    let subject_alt_name = {
+        let context = builder.x509v3_context(Some(ca), None);
+        let mut names = SubjectAlternativeName::new();
+        for name in dns_names {
+            names.dns(name);
+        }
+        for address in ip_addresses {
+            names.ip(address);
+        }
+        names.build(&context).map_err(|_| PkiError)?
+    };
+    builder
+        .append_extension(subject_alt_name)
+        .map_err(|_| PkiError)?;
+
+    let key_usage = KeyUsage::new()
+        .critical()
+        .digital_signature()
+        .key_encipherment()
+        .build()
+        .map_err(|_| PkiError)?;
+    builder.append_extension(key_usage).map_err(|_| PkiError)?;
+    let extended_key_usage = if server_auth {
+        ExtendedKeyUsage::new().server_auth().build()
+    } else {
+        ExtendedKeyUsage::new().client_auth().build()
+    }
+    .map_err(|_| PkiError)?;
+    builder
+        .append_extension(extended_key_usage)
+        .map_err(|_| PkiError)?;
+    builder
+        .sign(ca_key, MessageDigest::sha256())
+        .map_err(|_| PkiError)?;
+    Ok(builder.build())
 }
 
 /// Fully autonomous PKI containing root CA, server TLS, and client mTLS identities.
@@ -86,58 +214,57 @@ impl AutoPki {
     ///
     /// Returns [`PkiError`] if keypair or certificate generation fails.
     pub fn generate() -> Result<Self, PkiError> {
-        let ca_key = KeyPair::generate().map_err(|_| PkiError)?;
-        let mut ca_params = CertificateParams::default();
-        ca_params
-            .distinguished_name
-            .push(DnType::CommonName, "KMIPKit Test Server Authority");
-        ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
-        ca_params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
-        let ca_cert = ca_params.self_signed(&ca_key).map_err(|_| PkiError)?;
-        let ca_cert_der = ca_cert.der().as_ref().to_vec();
-        let ca_cert_pem = pem_encode("CERTIFICATE", &ca_cert_der);
-        let issuer = Issuer::from_params(&ca_params, &ca_key);
+        let ca_key = generate_key()?;
+        let ca_cert = create_ca(&ca_key)?;
+        let ca_cert_der = ca_cert.to_der().map_err(|_| PkiError)?;
+        let ca_cert_pem =
+            String::from_utf8(ca_cert.to_pem().map_err(|_| PkiError)?).map_err(|_| PkiError)?;
 
-        // Server TLS Identity (SAN includes localhost and 127.0.0.1)
-        let server_key = KeyPair::generate().map_err(|_| PkiError)?;
-        let mut server_params = CertificateParams::new(vec![
-            "localhost".to_owned(),
-            "127.0.0.1".to_owned(),
-            "server.kmipkit.test".to_owned(),
-        ])
+        let server_key = generate_key()?;
+        let server_cert = create_leaf(
+            &server_key,
+            &ca_cert,
+            &ca_key,
+            "localhost",
+            &["localhost", "server.kmipkit.test"],
+            &["127.0.0.1"],
+            2,
+            true,
+        )?;
+        let server_cert_der = server_cert.to_der().map_err(|_| PkiError)?;
+        let server_key_der =
+            Zeroizing::new(server_key.private_key_to_pkcs8().map_err(|_| PkiError)?);
+        let server_cert_pem =
+            String::from_utf8(server_cert.to_pem().map_err(|_| PkiError)?).map_err(|_| PkiError)?;
+        let server_key_pem = String::from_utf8(
+            server_key
+                .private_key_to_pem_pkcs8()
+                .map_err(|_| PkiError)?,
+        )
         .map_err(|_| PkiError)?;
-        server_params
-            .distinguished_name
-            .push(DnType::CommonName, "localhost");
-        server_params.key_usages = vec![
-            KeyUsagePurpose::DigitalSignature,
-            KeyUsagePurpose::KeyEncipherment,
-        ];
-        server_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ServerAuth];
-        let server_cert: Certificate = server_params
-            .signed_by(&server_key, &issuer)
-            .map_err(|_| PkiError)?;
-        let server_cert_der = server_cert.der().as_ref().to_vec();
-        let server_key_der = Zeroizing::new(server_key.serialize_der());
-        let server_cert_pem = pem_encode("CERTIFICATE", &server_cert_der);
-        let server_key_pem = pem_encode("PRIVATE KEY", &server_key_der);
 
-        // Client mTLS Identity
-        let client_key = KeyPair::generate().map_err(|_| PkiError)?;
-        let mut client_params =
-            CertificateParams::new(vec!["client.kmipkit.test".to_owned()]).map_err(|_| PkiError)?;
-        client_params
-            .distinguished_name
-            .push(DnType::CommonName, "kmipkit-test-client");
-        client_params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
-        client_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ClientAuth];
-        let client_cert: Certificate = client_params
-            .signed_by(&client_key, &issuer)
-            .map_err(|_| PkiError)?;
-        let client_cert_der = client_cert.der().as_ref().to_vec();
-        let client_key_der = Zeroizing::new(client_key.serialize_der());
-        let client_cert_pem = pem_encode("CERTIFICATE", &client_cert_der);
-        let client_key_pem = pem_encode("PRIVATE KEY", &client_key_der);
+        let client_key = generate_key()?;
+        let client_cert = create_leaf(
+            &client_key,
+            &ca_cert,
+            &ca_key,
+            "kmipkit-test-client",
+            &["client.kmipkit.test"],
+            &[],
+            3,
+            false,
+        )?;
+        let client_cert_der = client_cert.to_der().map_err(|_| PkiError)?;
+        let client_key_der =
+            Zeroizing::new(client_key.private_key_to_pkcs8().map_err(|_| PkiError)?);
+        let client_cert_pem =
+            String::from_utf8(client_cert.to_pem().map_err(|_| PkiError)?).map_err(|_| PkiError)?;
+        let client_key_pem = String::from_utf8(
+            client_key
+                .private_key_to_pem_pkcs8()
+                .map_err(|_| PkiError)?,
+        )
+        .map_err(|_| PkiError)?;
 
         Ok(Self {
             ca_cert_pem,
