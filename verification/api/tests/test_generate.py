@@ -22,14 +22,14 @@ from jsonschema import Draft202012Validator
 from verification.api import generate
 
 ROOT = Path(__file__).resolve().parents[3]
-GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-SCHEMA = ROOT / "specification" / "api" / "public-api.schema.json"
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-VERSIONED_TAGS = ROOT / "specification" / "catalog" / "kmip-versioned-tags.json"
-DRAFT_CATALOG = ROOT / "specification" / "api" / "kmip-3.0-draft-api.json"
-MINIMAL_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
-PUBLIC_API_V1_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
+GENERATOR = ROOT / "verification" / "api" / "generate.py"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+SCHEMA = ROOT / "bindings" / "shared" / "public-api.schema.json"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
+VERSIONED_TAGS = ROOT / "verification" / "conformance" / "catalog" / "kmip-versioned-tags.json"
+DRAFT_CATALOG = ROOT / "verification" / "api" / "catalog" / "kmip-3.0-draft-api.json"
+MINIMAL_FIXTURE = ROOT / "verification" / "api" / "tests" / "fixtures" / "registry-manifest.json"
+PUBLIC_API_V1_FIXTURE = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api-v1.json"
 GENERATED_OUTPUTS = (
     "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "bindings/c/include/kmipkit.h",
@@ -108,22 +108,23 @@ SYMLINK_DENIAL_WINERRORS = {5, 50, 1314}
 def _create_repo(parent: Path) -> Path:
     """Copy the checked-in generation inputs into an isolated temporary root."""
     root = parent / "repo"
-    api_dir = root / "specification" / "api"
+    api_dir = root / "bindings" / "shared"
     api_dir.mkdir(parents=True)
     shutil.copy2(MANIFEST, api_dir / MANIFEST.name)
     shutil.copy2(SCHEMA, api_dir / SCHEMA.name)
-    catalog_path = root / "specification" / "catalog" / CATALOG.name
+    catalog_path = root / "verification" / "conformance" / "catalog" / CATALOG.name
     catalog_path.parent.mkdir(parents=True)
     shutil.copy2(CATALOG, catalog_path)
     if VERSIONED_TAGS.is_file():
         shutil.copy2(VERSIONED_TAGS, catalog_path.parent / VERSIONED_TAGS.name)
     if DRAFT_CATALOG.is_file():
-        draft_catalog_path = api_dir / DRAFT_CATALOG.name
+        draft_catalog_path = root / "verification" / "api" / "catalog" / DRAFT_CATALOG.name
+        draft_catalog_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(DRAFT_CATALOG, draft_catalog_path)
         for relative_path in (
-            "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
-            "specification/oasis/kmip-3.0/SOURCES.md",
-            "specification/oasis/kmip-3.0/CHECKSUMS.sha256",
+            "verification/conformance/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+            "verification/conformance/oasis/kmip-3.0/SOURCES.md",
+            "verification/conformance/oasis/kmip-3.0/CHECKSUMS.sha256",
         ):
             source_path = ROOT / relative_path
             destination = root / relative_path
@@ -218,7 +219,7 @@ def _create_repo(parent: Path) -> Path:
 def _create_fixture_repo(parent: Path) -> Path:
     """Create an isolated repo root with the minimal valid T002 manifest."""
     root = parent / "repo"
-    api_dir = root / "specification" / "api"
+    api_dir = root / "bindings" / "shared"
     api_dir.mkdir(parents=True)
     shutil.copy2(MINIMAL_FIXTURE, api_dir / "public-api.json")
     shutil.copy2(SCHEMA, api_dir / SCHEMA.name)
@@ -311,12 +312,12 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
 
-            self.assertTrue((root / "specification/api/kmip-3.0-draft-api.json").is_file())
+            self.assertTrue((root / "verification/api/catalog/kmip-3.0-draft-api.json").is_file())
             self.assertTrue(
-                (root / "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html").is_file()
+                (root / "verification/conformance/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html").is_file()
             )
-            self.assertTrue((root / "specification/oasis/kmip-3.0/SOURCES.md").is_file())
-            self.assertTrue((root / "specification/oasis/kmip-3.0/CHECKSUMS.sha256").is_file())
+            self.assertTrue((root / "verification/conformance/oasis/kmip-3.0/SOURCES.md").is_file())
+            self.assertTrue((root / "verification/conformance/oasis/kmip-3.0/CHECKSUMS.sha256").is_file())
 
     def test_java_parity_json_chunks_remain_stable_after_an_array_insertion(self) -> None:
         baseline = [
@@ -1415,11 +1416,11 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
 
     def _load_manifest(self, root: Path) -> dict[str, object]:
-        path = root / "specification" / "api" / "public-api.json"
+        path = root / "bindings" / "shared" / "public-api.json"
         return json.loads(path.read_text(encoding="utf-8"))
 
     def _write_manifest(self, root: Path, manifest: dict[str, object]) -> None:
-        path = root / "specification" / "api" / "public-api.json"
+        path = root / "bindings" / "shared" / "public-api.json"
         path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     def test_v1_registry_slice_generation_does_not_require_the_v2_catalog(self) -> None:
@@ -1427,7 +1428,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
             root = _create_fixture_repo(Path(directory))
             shutil.copy2(
                 PUBLIC_API_V1_FIXTURE,
-                root / "specification" / "api" / "public-api.json",
+                root / "bindings" / "shared" / "public-api.json",
             )
 
             result = self._run_generator(root, "--write")
@@ -2066,10 +2067,10 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            api_directory = root / "specification" / "api"
+            api_directory = root / "bindings" / "shared"
             api_directory.mkdir(parents=True)
             shutil.copy2(SCHEMA, api_directory / SCHEMA.name)
-            catalog_path = root / "specification" / "catalog" / CATALOG.name
+            catalog_path = root / "verification" / "conformance" / "catalog" / CATALOG.name
             catalog_path.parent.mkdir(parents=True)
             shutil.copy2(CATALOG, catalog_path)
 
@@ -2186,7 +2187,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 (
                     sys.executable,
                     "-B",
-                    str(root / "tools" / "api_manifest" / script_name),
+                    str(root / "verification" / "api" / script_name),
                     "--repo-root",
                     str(root),
                     "--check",
@@ -2259,7 +2260,7 @@ class ManifestGeneratorCliTests(unittest.TestCase):
     def test_rejects_malformed_manifest_without_writing_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
-            (root / "specification" / "api" / "public-api.json").write_text("{broken\n", encoding="utf-8")
+            (root / "bindings" / "shared" / "public-api.json").write_text("{broken\n", encoding="utf-8")
 
             result = self._run_generator(root, "--write")
 
@@ -2394,7 +2395,7 @@ class ManifestSchemaTests(unittest.TestCase):
     def _assert_cli_rejects_before_output(self, manifest: dict[str, object]) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_fixture_repo(Path(directory))
-            (root / "specification" / "api" / "public-api.json").write_text(
+            (root / "bindings" / "shared" / "public-api.json").write_text(
                 json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )

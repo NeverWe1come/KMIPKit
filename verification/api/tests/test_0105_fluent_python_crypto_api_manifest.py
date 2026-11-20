@@ -61,7 +61,7 @@ class FluentPythonCryptoManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_all_python_factories_and_builder_methods_are_declared(self) -> None:

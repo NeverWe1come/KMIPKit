@@ -32,8 +32,8 @@ AUDIT_PATHS = (
     Path("specs/053-api-parity-facade/candidate-resolutions/rust-export-audit.json"),
 )
 ROUTE_PATH = Path("specs/053-api-parity-facade/additional-api-routes.json")
-MANIFEST_PATH = Path("specification/api/public-api.json")
-CATALOG_PATH = Path("specification/catalog/kmip-2.1.json")
+MANIFEST_PATH = Path("bindings/shared/public-api.json")
+CATALOG_PATH = Path("verification/conformance/catalog/kmip-2.1.json")
 C_STANDARD_ATTRIBUTE_PREFIX = "KMIPKIT_STANDARD_ATTRIBUTE_"
 VENDOR_ATTRIBUTE_TAG_VALUE = 0x0042_0008
 
@@ -690,7 +690,7 @@ def _validate_rust_functional_routes(
         if (
             not isinstance(reference, dict)
             or set(reference) != {"path", "declarationId"}
-            or reference.get("path") != "specification/api/public-api.json"
+            or reference.get("path") != "bindings/shared/public-api.json"
         ):
             raise ResolutionError("Rust functional route needs an exact manifest declaration reference")
         declaration = by_id.get(_exact_name(reference.get("declarationId"), "manifest declaration ID"))

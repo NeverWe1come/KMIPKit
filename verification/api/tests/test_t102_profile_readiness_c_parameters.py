@@ -9,8 +9,8 @@ from pathlib import Path
 from verification.api import generate
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
+SCHEMA_PATH = ROOT / "bindings" / "shared" / "public-api.schema.json"
 
 
 class T102ProfileReadinessCParameterTests(unittest.TestCase):

@@ -38,11 +38,11 @@ const TC_ENC_1_STEP_1_DATA: &[u8] = &[
 ];
 
 const TC_ENC_1_21_XML: &str =
-    include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml");
+    include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml");
 const TC_ENC_2_21_XML: &str =
-    include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml");
+    include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml");
 const TC_ENCDEC_1_21_XML: &str =
-    include_str!("../../../specification/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml");
+    include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml");
 const SEQUENCE_PAIRING_CASE_ID: &str = "TC-T015-PAIRING-SYNTHETIC";
 const SEQUENCE_PAIRING_XML: &str = r#"
 <KMIP>

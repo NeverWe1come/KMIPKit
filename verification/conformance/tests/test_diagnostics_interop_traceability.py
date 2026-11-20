@@ -8,9 +8,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
-TRACE = ROOT / "specs/028-diagnostics-verification/interop/traceability.md"
-RESEARCH = ROOT / "specs/028-diagnostics-verification/interop/research.md"
+CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
+TRACE = ROOT / "specs/028-diagnostics-interop/traceability.md"
+RESEARCH = ROOT / "specs/028-diagnostics-interop/research.md"
 EXPECTED = {
     "KMIPKIT-REQ-SPEC-6.1.57-001": "req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
     "KMIPKIT-REQ-SPEC-6.1.57-002-001": "req_002_001_certificate_identifier_and_mixed_inputs_are_available",

@@ -582,7 +582,7 @@ def main(argv: list[str] | None = None) -> int:
 
     root = args.repo_root.resolve()
     target = root / args.report
-    manifest_path = root / "specification" / "api" / "public-api.json"
+    manifest_path = root / "bindings" / "shared" / "public-api.json"
     audit_path = root / RUST_REPORT_PATH
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

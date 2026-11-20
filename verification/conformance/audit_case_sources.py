@@ -332,7 +332,7 @@ def _load_catalog(repository: Path, relative_path: str) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
-    parser.add_argument("--catalog", default="specification/catalog/kmip-2.1.json")
+    parser.add_argument("--catalog", default="verification/conformance/catalog/kmip-2.1.json")
     arguments = parser.parse_args(argv)
     try:
         repository = arguments.repo_root.resolve(strict=True)

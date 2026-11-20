@@ -111,67 +111,67 @@ impl Transport for SharedReplayTransport {
 const PINNED_CASES: &[(&str, &str)] = &[
     (
         "BL-M-1-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
     ),
     (
         "BL-M-2-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
     ),
     (
         "BL-M-3-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
     ),
     (
         "BL-M-4-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
     ),
     (
         "BL-M-5-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
     ),
     (
         "BL-M-6-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
     ),
     (
         "BL-M-7-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
     ),
     (
         "BL-M-8-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
     ),
     (
         "BL-M-9-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
     ),
     (
         "BL-M-10-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
     ),
     (
         "BL-M-11-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
     ),
     (
         "BL-M-12-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
     ),
     (
         "BL-M-13-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
     ),
     (
         "SKLC-M-1-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
     ),
     (
         "SKLC-M-2-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
     ),
     (
         "SKLC-M-3-21",
-        include_str!("../../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
+        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
     ),
 ];
 const EXPECTED_RESULTS: &[&str] = &[

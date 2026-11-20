@@ -17,7 +17,7 @@ from verification.api import t071_parity
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RUNNER = ROOT / "tools" / "api_manifest" / "t071_parity.py"
+RUNNER = ROOT / "verification" / "api" / "t071_parity.py"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 BATCH_MIXED_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"

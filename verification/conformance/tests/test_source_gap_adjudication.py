@@ -10,9 +10,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 ORACLE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-SPEC_SOURCE_PATH = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+SPEC_SOURCE_PATH = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
 AUDITED_REQUIREMENTS = {

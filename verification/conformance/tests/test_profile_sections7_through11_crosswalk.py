@@ -15,7 +15,7 @@ class ProfileSectionsSevenThroughElevenCrosswalkTests(unittest.TestCase):
 
     def test_client_correlation_value_requirement_maps_only_request_field(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-9.9-001"
         request_field_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"
@@ -34,12 +34,12 @@ class ProfileSectionsSevenThroughElevenCrosswalkTests(unittest.TestCase):
 
     def test_sections_seven_through_eleven_requirement_ids_are_source_reviewed(self) -> None:
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
                 encoding="utf-8"
             )
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
 
         section_requirements = {

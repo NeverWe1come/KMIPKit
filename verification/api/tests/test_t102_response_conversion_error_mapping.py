@@ -11,7 +11,7 @@ from pathlib import Path
 from verification.api import generate
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 PARTITION_PATH = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t102-macro-lot-partition.json"
 MAPPING_SEMANTICS = "normalized-client-protocol-error"
 
@@ -50,7 +50,7 @@ FAMILY_OWNER = {
     **{family: ("specs/024-credential-sessions/spec.md", "KMIPKIT-0038", {"KMIPKIT-0038-FR-001", "KMIPKIT-0038-FR-004"}) for family in ("DelegatedLoginError", "LoginError", "LogoutError")},
     **{family: ("specs/025-policy-controls/spec.md", "KMIPKIT-0039", {"KMIPKIT-0039-FR-001", "KMIPKIT-0039-FR-004"}) for family in ("GetConstraintsError", "GetUsageAllocationError", "SetConstraintsError", "SetDefaultsError")},
     "Pkcs11Error": ("specs/026-pkcs11/spec.md", "KMIPKIT-0040", {"KMIPKIT-0040-FR-001", "KMIPKIT-0040-FR-004"}),
-    **{family: ("specs/028-diagnostics-verification/interop/spec.md", "KMIPKIT-0042", {"KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"}) for family in ("InteropError", "LogError")},
+    **{family: ("specs/028-diagnostics-interop/spec.md", "KMIPKIT-0042", {"KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"}) for family in ("InteropError", "LogError")},
 }
 
 EXPECTED_MAPPING = {

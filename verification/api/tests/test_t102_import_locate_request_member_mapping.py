@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 PARITY_TEST_EVIDENCE_ID = (
     "verification/api/tests/test_t102_import_locate_request_member_mapping.py"
 )

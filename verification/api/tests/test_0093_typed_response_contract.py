@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 class TypedResponseContractManifestTests(unittest.TestCase):
     def test_typed_batch_result_maps_status_operation_and_pending_correlation(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         required = {
             "KMIPKIT-0093-FR-005",
             "KMIPKIT-0093-FR-008",
@@ -34,7 +34,7 @@ class TypedResponseContractManifestTests(unittest.TestCase):
                 self.assertEqual(set(row["languageMappings"]), {"rust", "c", "java", "python"})
 
     def test_full_response_encodings_map_to_the_master_contract_in_all_languages(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         required = {"KMIPKIT-0093-FR-009"}
         functions = {row["id"]: row for row in manifest["functions"]}
         for function_id in (
@@ -50,7 +50,7 @@ class TypedResponseContractManifestTests(unittest.TestCase):
                 self.assertEqual(row["ordering"], "preserves-response-field-wire-order")
 
     def test_c_response_renderers_document_caller_managed_copies(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         functions = {row["id"]: row for row in manifest["functions"]}
         for function_id in (
             "client_batch_item_response_ttlv_hex",
@@ -66,7 +66,7 @@ class TypedResponseContractManifestTests(unittest.TestCase):
 
 
     def test_operation_response_view_requirement_mapping_is_four_language_parity(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         declarations = manifest["publicDeclarations"]
         by_package_and_name = {
             (row["packageId"], row["exportName"]): row for row in declarations

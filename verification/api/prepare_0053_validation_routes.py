@@ -20,7 +20,7 @@ APPROVAL_EVIDENCE = (
 OWNERS = {"KMIPKIT-0009", "KMIPKIT-0043", "KMIPKIT-0044"}
 PINNED_SOURCE_COMMIT = "63b1f3c9e1ee1f96b8b0b26711cfb16e6e06d0fd"
 EVIDENCE_PATHS = [
-    "specification/api/public-api.json",
+    "bindings/shared/public-api.json",
     "specs/051-pre-send-validation/spec.md",
     "specs/053-api-parity-facade/spec.md",
     "specs/053-api-parity-facade/gap-matrix.md",
@@ -195,7 +195,7 @@ def _validate_candidate_provenance(
             [
                 "git",
                 "show",
-                f"{source_commit}:specification/api/public-api.json",
+                f"{source_commit}:bindings/shared/public-api.json",
             ],
             cwd=repo_root,
             check=True,
@@ -533,7 +533,7 @@ def main() -> int:
     parser.add_argument("--write", action="store_true", help="write the reviewed route input")
     arguments = parser.parse_args()
     root = arguments.repo_root
-    manifest_path = root / "specification" / "api" / "public-api.json"
+    manifest_path = root / "bindings" / "shared" / "public-api.json"
     report_path = (
         root
         / "specs"

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.6-001"
 SOURCE_CLAUSE_ID = "KMIPKIT-CLAUSE-SPEC-6.1.6-001"
 PROFILE_TEST_PATH = "crates/kmipkit-protocol/tests/support/profile_unit.rs"

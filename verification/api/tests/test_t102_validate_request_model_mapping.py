@@ -9,9 +9,9 @@ from pathlib import Path
 from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-VALIDATE"
-OWNER_SPEC = "specs/028-diagnostics-verification/interop/spec.md"
+OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUEST_EXPORTS = {
     "kmipkit_protocol::ValidateRequest::chain_len",

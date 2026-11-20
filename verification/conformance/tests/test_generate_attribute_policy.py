@@ -18,10 +18,10 @@ from verification.conformance.validate import ELEMENT_FIELDS, ELEMENT_KINDS, loa
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "normative_catalog" / "generate_attribute_policy.py"
+SCRIPT = ROOT / "verification" / "conformance" / "generate_attribute_policy.py"
 OUTPUT_PATH = "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
 GENERATOR_MODULE = "verification.conformance.generate_attribute_policy"
-CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 
 
 def _load_catalog() -> dict[str, Any]:
@@ -141,13 +141,13 @@ def _assert_source_literal(testcase: unittest.TestCase, record: str, value: str)
 
 def _copy_validated_catalog_repo(destination: Path) -> None:
     """Create the minimal committed input tree required by catalog validation."""
-    (destination / "specification").mkdir()
+    (destination / "verification" / "conformance").mkdir(parents=True)
     shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
-    shutil.copytree(ROOT / "specification" / "oasis", destination / "specification" / "oasis")
-    shutil.copytree(ROOT / "specification" / "catalog", destination / "specification" / "catalog")
+    shutil.copytree(ROOT / "verification" / "conformance" / "oasis", destination / "verification" / "conformance" / "oasis")
+    shutil.copytree(ROOT / "verification" / "conformance" / "catalog", destination / "verification" / "conformance" / "catalog")
     subprocess.run(["git", "init", "-q"], cwd=destination, check=True)
     subprocess.run(
-        ["git", "-c", "core.autocrlf=false", "add", "specification/oasis"],
+        ["git", "-c", "core.autocrlf=false", "add", "verification/conformance/oasis"],
         cwd=destination,
         check=True,
     )
@@ -518,7 +518,7 @@ class AttributePolicyGeneratorCliTests(unittest.TestCase):
     def test_v3_0_attributes_retain_normative_always_required_rules(self) -> None:
         renderer = _load_renderer(self)
         versioned_tags = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-versioned-tags.json").read_text(
                 encoding="utf-8"
             )
         )

@@ -11,7 +11,7 @@ from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
+MODULE_PATH = REPO_ROOT / "verification" / "api" / "audit_shared_rust_inventory.py"
 REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
 RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-16.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
@@ -71,7 +71,7 @@ SPEC.loader.exec_module(AUDIT)
 class SharedRustInventoryTests(unittest.TestCase):
     def setUp(self) -> None:
         self.manifest = json.loads(
-            (REPO_ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8")
+            (REPO_ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8")
         )
         self.rust_report = json.loads(
             RUST_REPORT_PATH.read_text(encoding="utf-8")

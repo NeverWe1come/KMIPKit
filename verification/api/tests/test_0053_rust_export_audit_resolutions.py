@@ -98,7 +98,7 @@ class RustExportAuditResolutionTests(unittest.TestCase):
 
     def test_functional_routes_are_manifest_ready_and_keep_composition_evidence(self) -> None:
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8")
         )
         declarations = {
             row["declarationId"]: row
@@ -120,7 +120,7 @@ class RustExportAuditResolutionTests(unittest.TestCase):
                     self.assertTrue((ROOT / evidence).is_file(), evidence)
 
                 reference = route["manifestMappingRef"]
-                self.assertEqual(reference["path"], "specification/api/public-api.json")
+                self.assertEqual(reference["path"], "bindings/shared/public-api.json")
                 declaration = declarations[reference["declarationId"]]
                 self.assertEqual(route["capabilityId"], declaration["capabilityId"])
                 self.assertEqual(route["requirementIds"], declaration["requirementIds"])
@@ -369,7 +369,7 @@ class RustExportAuditResolutionTests(unittest.TestCase):
             for evidence in row["evidencePaths"]:
                 self.assertTrue((ROOT / evidence).is_file(), evidence)
 
-        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8"))
         approved_keys = {
             (row["packageId"], row["exportName"])
             for row in manifest["approvedExclusions"]
@@ -458,7 +458,7 @@ class RustExportAuditResolutionTests(unittest.TestCase):
             self.assertTrue(row["evidencePaths"])
             for evidence in row["evidencePaths"]:
                 self.assertTrue((ROOT / evidence).is_file(), evidence)
-        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8"))
         approved_keys = {
             (row["packageId"], row["exportName"])
             for row in manifest["approvedExclusions"]

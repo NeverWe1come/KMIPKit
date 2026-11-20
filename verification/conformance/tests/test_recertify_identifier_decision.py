@@ -17,7 +17,7 @@ BASELINE_CLIENT_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
 class RecertifyIdentifierDecisionTests(unittest.TestCase):
     def test_omitted_request_identifier_uses_a_separate_adjudication_and_evidence(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             (item for item in catalog["requirements"] if item["requirement_id"] == REQUIREMENT_ID),

@@ -35,7 +35,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
             and row.get("packageId") == "c-kmipkit"
         }
         manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         actual = {
             row["declarationId"]: row
@@ -68,7 +68,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
             require_complete=True,
         )
         manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         declarations, mappings = reconcile_named_value_manifest.build_named_value_records(
             catalog, generate_named_values.load_versioned_values(ROOT)
@@ -474,7 +474,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
 
     def test_catalog_contains_the_approved_named_value_surface(self) -> None:
         catalog: dict[str, Any] = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
 
         values = generate_named_values.collect_values(catalog)
@@ -498,7 +498,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
 
     def test_outputs_include_named_values_in_every_language(self) -> None:
         catalog: dict[str, Any] = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
 
         outputs = generate_named_values.render_outputs(
@@ -517,7 +517,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
 
     def test_rust_output_is_clippy_clean_for_numeric_literals_and_pure_lookups(self) -> None:
         catalog: dict[str, Any] = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         rust = generate_named_values.render_outputs(
             generate_named_values.collect_values(catalog)

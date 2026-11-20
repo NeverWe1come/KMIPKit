@@ -17,9 +17,9 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_TAGS_PATH = "specification/catalog/kmip-versioned-tags.json"
-VERSIONED_VALUES_PATH = "specification/catalog/kmip-versioned-values.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_TAGS_PATH = "verification/conformance/catalog/kmip-versioned-tags.json"
+VERSIONED_VALUES_PATH = "verification/conformance/catalog/kmip-versioned-values.json"
 OUTPUT_PATH = "crates/kmipkit-client/src/wire_names_generated.rs"
 _TAG_VALUE = re.compile(r"(?:0[xX])?[0-9A-Fa-f]{6}\Z")
 _TSV_DELIMITER = re.compile(r"[\t\r\n]")

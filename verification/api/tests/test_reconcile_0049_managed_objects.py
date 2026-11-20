@@ -13,7 +13,7 @@ class Reconcile0049Tests(unittest.TestCase):
     def test_effective_hashing_algorithm_reader_is_in_reviewed_manifest(self) -> None:
         repository_root = Path(__file__).resolve().parents[3]
         manifest = json.loads(
-            (repository_root / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (repository_root / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         expected_routes = {
             (

@@ -10,9 +10,9 @@ from verification.conformance.tests.test_source_gap_context_resolutions import p
 
 
 ROOT = Path(__file__).resolve().parents[3]
-PROFILES_SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+PROFILES_SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
 FIXTURE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 
 
 class HttpsEncodingScopeTests(unittest.TestCase):

@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 C_HEADER = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
 OWNER_SPEC = "specs/012-vendor-extension-registry/spec.md"
 

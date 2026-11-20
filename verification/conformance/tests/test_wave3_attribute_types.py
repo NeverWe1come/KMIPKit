@@ -15,10 +15,10 @@ class Wave3AttributeTypesTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         cls.versioned_tags = json.loads(
-            (ROOT / "specification/catalog/kmip-versioned-tags.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-versioned-tags.json").read_text(encoding="utf-8")
         )
 
     def test_attribute_encodings_include_kmip30_object_attributes(self) -> None:

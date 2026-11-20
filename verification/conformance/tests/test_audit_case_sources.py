@@ -16,7 +16,7 @@ from verification.conformance.safe_io import PathSecurityError
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "normative_catalog" / "audit_case_sources.py"
+SCRIPT = ROOT / "verification" / "conformance" / "audit_case_sources.py"
 
 
 class CaseSourceAuditTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class CaseSourceAuditTests(unittest.TestCase):
         profile_html: bytes,
         testcases_html: bytes,
     ) -> list[dict[str, str]]:
-        oasis_root = repository / "specification" / "oasis" / "kmip-2.1"
+        oasis_root = repository / "verification" / "conformance" / "oasis" / "kmip-2.1"
         upstream = oasis_root / "upstream"
         upstream.mkdir(parents=True)
         source_definitions = [
@@ -91,7 +91,7 @@ class CaseSourceAuditTests(unittest.TestCase):
                         "version": "2.1",
                         "stage": stage,
                         "publication_date": date,
-                        "local_path": f"specification/oasis/kmip-2.1/{relative_path}",
+                        "local_path": f"verification/conformance/oasis/kmip-2.1/{relative_path}",
                         "canonical_url": url,
                         "sha256": digest,
                         "authority_class": authority,

@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 T102_REQUIREMENTS = ("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021")
 APPROVAL_SOURCE = {
     "crypto_kind": {

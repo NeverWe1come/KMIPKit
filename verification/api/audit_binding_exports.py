@@ -1300,7 +1300,7 @@ def resolve_java_compile_classpath(root: Path) -> str:
 def run(root: Path, *, c_only: bool = False, c_binary: Path | None = None) -> dict[str, Any]:
     manifest_path = root / "bindings/shared/public-api.json"
     if not manifest_path.is_file():
-        manifest_path = root / "specification/api/public-api.json"
+        manifest_path = root / "bindings/shared/public-api.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     packages = [audit_c_package(root, manifest, c_binary)]
     if c_only:

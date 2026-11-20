@@ -240,7 +240,7 @@ class BindingExportAuditTests(unittest.TestCase):
     def test_c_only_audit_reuses_the_existing_library_and_skips_other_bindings(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            manifest_path = root / "specification" / "api" / "public-api.json"
+            manifest_path = root / "bindings" / "shared" / "public-api.json"
             manifest_path.parent.mkdir(parents=True)
             manifest_path.write_text(
                 '{"publicDeclarations":[{"packageId":"c-kmipkit",'
@@ -995,7 +995,7 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_internal_bridge_and_dataclass_artifacts_use_exact_exclusions(self):
         repo_root = Path(__file__).resolve().parents[3]
-        manifest_path = repo_root / "specification/api/public-api.json"
+        manifest_path = repo_root / "bindings/shared/public-api.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         exclusions = {
             (row["packageId"], row["exportName"]): row
@@ -1597,7 +1597,7 @@ class BindingExportAuditTests(unittest.TestCase):
     def test_request_timestamp_property_uses_python_export_kind(self):
         repo_root = Path(__file__).resolve().parents[3]
         manifest = json.loads(
-            (repo_root / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (repo_root / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         record = next(
             row for row in manifest["publicDeclarations"]

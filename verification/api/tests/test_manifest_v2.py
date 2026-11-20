@@ -28,10 +28,10 @@ from verification.api.generate import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
-CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
-CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+SCHEMA_PATH = ROOT / "bindings" / "shared" / "public-api.schema.json"
+CHECKED_IN_MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
+REGISTRY_FIXTURE_PATH = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api-v1.json"
+CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
 RUST_EXPORT_REPORT_PATH = (
     ROOT
@@ -153,7 +153,7 @@ def _valid_v2_manifest() -> dict[str, object]:
             "formatVersion": 2,
             "scope": "full-1.0",
             "releaseLine": "1.0.0",
-            "catalog": {"path": "specification/catalog/kmip-2.1.json", "schemaVersion": "1"},
+            "catalog": {"path": "verification/conformance/catalog/kmip-2.1.json", "schemaVersion": "1"},
             "requirementIds": requirement_ids,
             "languages": EXPECTED_LANGUAGES,
             "publicPackages": [
@@ -6703,7 +6703,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/026-pkcs11/spec.md",
                 "specs/023-key-material-transfer/spec.md",
                 "specs/024-credential-sessions/spec.md",
-                "specs/028-diagnostics-verification/interop/spec.md",
+                "specs/028-diagnostics-interop/spec.md",
                 "specs/027-rng-operations/spec.md",
                 "specs/018-managed-object-lifecycle/approval-record.md",
                 "specs/093-fluent-complete-api/spec.md",

@@ -47,7 +47,7 @@ SUPPLEMENTAL_TESTS = {
 class Table12ProfileTraceabilityTests(unittest.TestCase):
     def test_pairing_requirements_have_exact_request_scope_and_evidence(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                 encoding="utf-8"
             )
         )

@@ -155,7 +155,7 @@ class CiImpactTests(unittest.TestCase):
             "bindings/python/pyproject.toml",
             "bindings/c/CMakeLists.txt",
             "verification/api/generate.py",
-            "specification/catalog/kmip-2.1.json",
+            "verification/conformance/catalog/kmip-2.1.json",
             "new-area/unclassified.data",
         )
         for path in paths:

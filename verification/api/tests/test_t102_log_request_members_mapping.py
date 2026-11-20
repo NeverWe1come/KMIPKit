@@ -10,8 +10,8 @@ from pathlib import Path
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OWNER = "specs/028-diagnostics-verification/interop/spec.md"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OWNER = "specs/028-diagnostics-interop/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_log_request_members_mapping.py"
 DECLARATIONS = (

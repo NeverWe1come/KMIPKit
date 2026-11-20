@@ -11,11 +11,11 @@ from verification.conformance.audit_sources import _decode_document
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 FIXTURE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
 SOURCE_IDS = {"KMIPKIT-SRC-spec", "KMIPKIT-SRC-profiles"}
 TARGET_MAJOR_SECTIONS = {"2", "3", "4", "5"}
-SOURCE_PATH = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+SOURCE_PATH = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 EXPECTED_LINES = {
     "KMIPKIT-CLAUSE-SPEC-2.1-001": [6700, 6716],
     "KMIPKIT-CLAUSE-SPEC-2.2-001": [6792, 6808],

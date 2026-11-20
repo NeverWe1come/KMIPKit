@@ -46,7 +46,7 @@ class FluentCryptographicManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_exact_root_and_module_paths_map_to_all_four_bindings(self) -> None:

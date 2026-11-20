@@ -10,10 +10,10 @@ from pathlib import Path
 from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-INTEROP"
-OWNER_SPEC = "specs/028-diagnostics-verification/interop/spec.md"
+OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 EXPECTED_MAPPINGS = {
     "rust": {
@@ -141,7 +141,7 @@ class InteropParityManifestTests(unittest.TestCase):
             "org.kmipkit.extensions.ClientBatchItemResult.InteropResponse.toString",
             "kmipkit.client.InteropResponse.__repr__",
         } <= exclusions)
-        traceability = (ROOT / "specs/028-diagnostics-verification/interop/traceability.md").read_text(
+        traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
             encoding="utf-8"
         )
         self.assertTrue(TRACEABILITY_IDS <= set(

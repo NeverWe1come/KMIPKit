@@ -10,12 +10,12 @@ import sys
 from pathlib import Path
 
 
-OASIS_ROOT = "specification/oasis/"
-UPSTREAM_ROOT = "specification/oasis/kmip-2.1/upstream/"
-FIXTURE_ROOT = "specification/oasis/kmip-2.1/fixtures/"
+OASIS_ROOT = "verification/conformance/oasis/"
+UPSTREAM_ROOT = "verification/conformance/oasis/kmip-2.1/upstream/"
+FIXTURE_ROOT = "verification/conformance/oasis/kmip-2.1/fixtures/"
 PROJECT_INVENTORY_PATHS = {
-    "specification/oasis/kmip-2.1/README.md",
-    "specification/oasis/kmip-2.1/SOURCES.md",
+    "verification/conformance/oasis/kmip-2.1/README.md",
+    "verification/conformance/oasis/kmip-2.1/SOURCES.md",
 }
 APPROVED_VERSIONS = {"kmip-2.0", "kmip-2.1", "kmip-3.0"}
 APPROVED_VERSION_DOCS = {"README.md", "SOURCES.md", "CHECKSUMS.sha256"}
@@ -115,25 +115,25 @@ def _is_permitted_change(
 ) -> bool:
     """Allow edits to tracked inventories, additions of new fixtures, and new version trees."""
     parts = Path(path).as_posix().split("/")
-    if len(parts) < 3 or parts[0] != "specification" or parts[1] != "oasis":
+    if len(parts) < 4 or parts[:3] != ["verification", "conformance", "oasis"]:
         return False
-    version = parts[2]
+    version = parts[3]
     if version not in APPROVED_VERSIONS:
         return False
 
-    if len(parts) >= 4 and parts[3] == "upstream":
+    if len(parts) >= 5 and parts[4] == "upstream":
         if path in existing_upstream_paths:
             return False  # Upstream cannot be modified once pinned
         return statuses <= {"A"}  # New upstream additions are permitted
 
-    if len(parts) >= 4 and parts[3] == "fixtures":
+    if len(parts) >= 5 and parts[4] == "fixtures":
         return (
             path not in existing_fixture_paths
             and "A" in statuses
             and statuses <= {"A", "M"}
         )
 
-    if len(parts) == 4 and parts[3] in APPROVED_VERSION_DOCS:
+    if len(parts) == 5 and parts[4] in APPROVED_VERSION_DOCS:
         if version == "kmip-2.1":
             return path in existing_inventory_paths and statuses == {"M"}
         if path in existing_inventory_paths:
@@ -185,7 +185,7 @@ def _untracked_fixture_count(root: Path) -> tuple[bool, int]:
                     continue
                 decoded = os.fsdecode(path)
                 parts = decoded.split("/")
-                if len(parts) >= 4 and parts[2] in APPROVED_VERSIONS and parts[3] == "fixtures":
+                if len(parts) >= 5 and parts[3] in APPROVED_VERSIONS and parts[4] == "fixtures":
                     fixture_count += 1
                 else:
                     process.kill()

@@ -10,19 +10,19 @@ from verification.conformance.tests.test_source_gap_context_resolutions import p
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SPEC_SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+SPEC_SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
 class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
                 encoding="utf-8"
             )
         )
         cls.catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         cls.reviews = {
             row["source_clause_id"]: row for row in cls.oracle["source_requirement_reviews"]

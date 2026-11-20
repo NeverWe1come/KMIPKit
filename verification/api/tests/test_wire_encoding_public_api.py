@@ -11,7 +11,7 @@ from verification.api import generate
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 LANGUAGES = ("rust", "c", "java", "python")
 
 
@@ -150,7 +150,7 @@ class WireEncodingPublicApiTests(unittest.TestCase):
 
     def test_java_nullable_parameters_are_supported_by_schema_and_generator(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-        schema = json.loads((ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+        schema = json.loads((ROOT / "bindings" / "shared" / "public-api.schema.json").read_text(
             encoding="utf-8"
         ))
         function = next(
@@ -210,7 +210,7 @@ class WireEncodingPublicApiTests(unittest.TestCase):
     def test_transport_record_values_are_c_only_manifest_constants(self) -> None:
         manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
         schema = json.loads(
-            (ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.schema.json").read_text(
                 encoding="utf-8"
             )
         )

@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.47-004-002"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"

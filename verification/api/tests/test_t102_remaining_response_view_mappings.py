@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 @dataclass(frozen=True)
@@ -85,7 +85,7 @@ EXPECTED = (
     ExpectedResponseView(
         "rust-observed-0f0e98b3c48648ff81ca", "interop",
         "KMIPKIT-ELEM-OP-C2S-INTEROP", "6.1.26", "KMIPKIT-0042",
-        "specs/028-diagnostics-verification/interop/spec.md", "Table 242",
+        "specs/028-diagnostics-interop/spec.md", "Table 242",
         "kmipkit_client_batch_item_response_interop_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.interopResponse",
         "kmipkit.client.BatchItemResult.interop_response",
@@ -109,7 +109,7 @@ EXPECTED = (
     ExpectedResponseView(
         "rust-observed-141e4937511dd08558c7", "log",
         "KMIPKIT-ELEM-OP-C2S-LOG", "6.1.29", "KMIPKIT-0042",
-        "specs/028-diagnostics-verification/interop/spec.md", "Table 251",
+        "specs/028-diagnostics-interop/spec.md", "Table 251",
         "kmipkit_client_batch_item_response_log_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
         "kmipkit.client.BatchItemResult.log_response",
@@ -173,7 +173,7 @@ EXPECTED = (
     ExpectedResponseView(
         "rust-observed-a0692c89fb668b47105f", "validate",
         "KMIPKIT-ELEM-OP-C2S-VALIDATE", "6.1.57", "KMIPKIT-0042",
-        "specs/028-diagnostics-verification/interop/spec.md", "Table 341",
+        "specs/028-diagnostics-interop/spec.md", "Table 341",
         "kmipkit_client_batch_item_response_validate",
         "org.kmipkit.extensions.ClientBatchItemResult.validateResponse",
         "kmipkit.client.BatchItemResult.validate_response",
@@ -263,7 +263,7 @@ class T102RemainingResponseViewMappingTests(unittest.TestCase):
         owner_spec = (ROOT / locate.owner_spec_path).read_text(encoding="utf-8")
         oasis_source = (
             ROOT
-            / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+            / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         ).read_text(encoding="latin-1")
 
         self.assertEqual("Table 248: Locate Response Payload", locate.table_reference)

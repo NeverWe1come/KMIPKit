@@ -9,7 +9,7 @@ from pathlib import Path
 class ManifestEncodingTests(unittest.TestCase):
     def test_manifest_text_has_no_common_utf8_mojibake(self) -> None:
         repository_root = Path(__file__).resolve().parents[3]
-        manifest = (repository_root / "specification/api/public-api.json").read_text(
+        manifest = (repository_root / "bindings/shared/public-api.json").read_text(
             encoding="utf-8"
         )
 

@@ -16,15 +16,15 @@ else:
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES
 
-BASE_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_PATH = "specification/catalog/kmip-versioned-values.json"
-MANIFEST_PATH = "specification/api/public-api.json"
-MODEL_OWNERS_PATH = "specification/catalog/fluent-operation-model-owners.json"
-OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
+BASE_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_PATH = "verification/conformance/catalog/kmip-versioned-values.json"
+MANIFEST_PATH = "bindings/shared/public-api.json"
+MODEL_OWNERS_PATH = "verification/api/catalog/fluent-operation-model-owners.json"
+OUTPUT_PATH = "verification/api/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
 OWNER_PATH_PATTERN = r"^crates/kmipkit-protocol/src/(?:[a-z0-9_]+/)*[a-z0-9_]+\.rs$"
 OWNER_TYPE_PATTERN = r"^[A-Za-z][A-Za-z0-9]*$"
-TEST_EVIDENCE_PATTERN = r"^(?:bindings|crates|specs|tests|tools)/[A-Za-z0-9_./-]+$"
+TEST_EVIDENCE_PATTERN = r"^(?:bindings|crates|specs|tests|tools|verification)/[A-Za-z0-9_./-]+$"
 V3_OPERATION_SECTIONS = {
     "Create Credential": "6.1.9",
     "Create Group": "6.1.10",

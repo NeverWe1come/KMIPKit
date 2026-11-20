@@ -14,11 +14,11 @@ from pathlib import Path
 
 OASIS_SOURCES = {
     "2.0": (
-        "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+        "verification/conformance/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
         "41346355fc966e555dbcbae68b4d73421b0da0f32fb1a86fc8e3cb5fd35bb4a2",
     ),
     "2.1": (
-        "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+        "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
         "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
     ),
 }
@@ -592,7 +592,7 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
 
     catalog_output = {
         "version": "2.0.0",
-        "catalog_source": "specification/catalog/kmip-2.1.json",
+        "catalog_source": "verification/conformance/catalog/kmip-2.1.json",
         "target_versions": ["2.0", "2.1"],
         "capability_policy": "probe_all_applicable",
         "execution_policy": {
@@ -622,7 +622,7 @@ def main():
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[4]
-    normative_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    normative_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
     output_path = root / "verification" / "interop" / "shared" / "catalog" / "kmipkit-1.0-test-catalog.json"
 
     generated = generate_catalog(normative_path)

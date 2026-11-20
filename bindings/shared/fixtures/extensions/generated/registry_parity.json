@@ -8866,7 +8866,7 @@
     "cHeader": "bindings/c/include/kmipkit.h",
     "javaApi": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
     "javaParityTests": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java",
-    "parityFixtures": "tests/fixtures/extensions/generated/registry_parity.json",
+    "parityFixtures": "bindings/shared/fixtures/extensions/generated/registry_parity.json",
     "pythonApi": "bindings/python/src/kmipkit/_generated/extension_registry.py",
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs"
   },

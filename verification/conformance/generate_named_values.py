@@ -32,20 +32,20 @@ else:
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_CATALOG_PATH = "specification/catalog/kmip-versioned-values.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_CATALOG_PATH = "verification/conformance/catalog/kmip-versioned-values.json"
 VERSIONED_SOURCE_MAX_BYTES = 24 * 1024 * 1024
 PINNED_VERSION_SOURCES = {
     "kmip-2.0": (
-        "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+        "verification/conformance/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
         "41346355fc966e555dbcbae68b4d73421b0da0f32fb1a86fc8e3cb5fd35bb4a2",
     ),
     "kmip-2.1": (
-        "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+        "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
         "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf",
     ),
     "kmip-3.0": (
-        "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+        "verification/conformance/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
         "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b",
     ),
 }

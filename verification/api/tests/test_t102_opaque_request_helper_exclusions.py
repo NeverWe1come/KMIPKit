@@ -18,7 +18,7 @@ from verification.api.tests.t102_manifest_totals import (
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 OWNER = "docs/adr/0006-public-api-and-bindings.md"
 EXPECTED = {

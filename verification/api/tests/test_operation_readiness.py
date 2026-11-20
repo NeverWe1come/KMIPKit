@@ -20,7 +20,7 @@ from verification.api.tests.test_manifest_v2 import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-SCHEMA_PATH = ROOT / "specification" / "api" / "public-api.schema.json"
+SCHEMA_PATH = ROOT / "bindings" / "shared" / "public-api.schema.json"
 LANGUAGES = ("rust", "c", "java", "python")
 AUTH_ONLY_OWNER_STATUS = (
     "Approved for autonomous implementation under a standing instruction"
@@ -761,7 +761,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             ROOT / "specs" / "026-pkcs11" / "spec.md"
         ).read_text(encoding="utf-8")
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -842,7 +842,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def _release_manifest(self) -> dict[str, object]:
         return json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -894,7 +894,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         self.assertTrue(self.errors(manifest))
 
     def test_approved_release_operations_resolve_to_their_current_owner_specs(self) -> None:
-        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8"))
         expected_owner_by_section = {
             "6.1.6": "KMIPKIT-0036",
             "6.1.7": "KMIPKIT-0036",
@@ -945,7 +945,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 self.assertEqual(dependency, {"state": "approved", "specId": spec_id})
 
     def test_checked_in_operation_dependencies_resolve_against_dependency_matrix(self) -> None:
-        manifest = json.loads((ROOT / "specification" / "api" / "public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8"))
         _validate_v2_readiness(self, manifest, ROOT)
         operation = manifest["operations"][0]
         operation["ownerDependency"]["specId"] = "KMIPKIT-9999"

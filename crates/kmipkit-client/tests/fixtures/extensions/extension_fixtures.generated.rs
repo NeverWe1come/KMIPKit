@@ -1,4 +1,4 @@
-// Generated from specification/api/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: 4678cf0597e7f1ba3f14ba15fb7675cced89f395c8557186e9c5d4fbe9fa6a92. Do not edit.
+// Generated from bindings/shared/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: 4678cf0597e7f1ba3f14ba15fb7675cced89f395c8557186e9c5d4fbe9fa6a92. Do not edit.
 use kmipkit_ttlv::ItemType;
 
 #[derive(Clone, Copy)]

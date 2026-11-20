@@ -23,7 +23,7 @@ PKCS11_REQUIREMENT_IDS = (
 class ProfileScopeBoundaryTests(unittest.TestCase):
     def test_pkcs11_encoding_reference_expands_the_reviewed_profile_clause_closure(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -148,7 +148,7 @@ class ProfileScopeBoundaryTests(unittest.TestCase):
 
     def test_pkcs11_encoding_requirements_remain_outside_the_ttlv_only_client_scope(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                 encoding="utf-8"
             )
         )

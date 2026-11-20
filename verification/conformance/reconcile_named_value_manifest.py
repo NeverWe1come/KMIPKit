@@ -27,7 +27,7 @@ else:
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
-MANIFEST_PATH = "specification/api/public-api.json"
+MANIFEST_PATH = "bindings/shared/public-api.json"
 # Keep manifest reads bounded while allowing the approved tag inventory and
 # planned fluent API declaration growth.
 MAX_MANIFEST_BYTES = 72 * 1024 * 1024

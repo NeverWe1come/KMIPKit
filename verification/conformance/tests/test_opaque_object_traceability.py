@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 TRACEABILITY = ROOT / "specs/029-opaque-object-context/traceability.md"
 
 REQUIREMENTS = {
@@ -158,7 +158,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
                 self.assertEqual(gap["source_id"], "KMIPKIT-SRC-spec")
                 self.assertEqual(
                     gap["source_path"],
-                    "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+                    "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
                 )
                 self.assertEqual(gap["source_section"], "2.3")
                 self.assertIsNone(gap["source_clause_id"])

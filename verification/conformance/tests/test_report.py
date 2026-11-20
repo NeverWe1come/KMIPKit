@@ -66,7 +66,7 @@ def report_catalog() -> dict[str, object]:
 class CoverageReportTests(unittest.TestCase):
     def test_profile_review_notes_do_not_duplicate_volatile_baseline_counts(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         notes = [
             requirement["review_note"]
@@ -87,7 +87,7 @@ class CoverageReportTests(unittest.TestCase):
 
     def test_message_envelope_summary_preserves_request_payload_requirement(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             record
@@ -1484,7 +1484,7 @@ mod unrelated {
         from verification.conformance.report import evaluate_profile_readiness
 
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
         discrepancy = next(
@@ -1512,7 +1512,7 @@ mod unrelated {
         from verification.conformance.report import evaluate_profile_readiness
 
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
         discrepancy = next(
@@ -1783,8 +1783,8 @@ mod unrelated {
         self.assertNotIn("Generated at", render_report(first))
 
     def test_output_is_independent_of_permutations_in_every_catalog_collection(self) -> None:
-        first = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        second = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        first = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        second = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         for collection in second.values():
             if isinstance(collection, list):
                 collection.reverse()
@@ -2227,7 +2227,7 @@ mod unrelated {
         self.assertIn("no stable-input blockers", baseline_blocker_row)
 
     def test_requirement_rule_coverage_shows_linked_certify_request_type_element(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
         report = render_report(catalog, typed_rule_mappings=[])
         coverage_report = report.split("## Profile requirement rule coverage", maxsplit=1)[1]
@@ -2241,7 +2241,7 @@ mod unrelated {
         self.assertIn("Certificate Request Type", requirement_row)
 
     def test_requirement_rule_coverage_shows_certify_get_placeholder_path_elements(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
         report = render_report(catalog, typed_rule_mappings=[])
         coverage_report = report.split("## Profile requirement rule coverage", maxsplit=1)[1]
@@ -2269,7 +2269,7 @@ mod unrelated {
             "KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED",
         )
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(
             catalog,
             selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
@@ -2325,7 +2325,7 @@ mod unrelated {
     def test_full_profile_report_keeps_evidence_incomplete_with_runtime_ready_baseline_and_pinned_fixtures(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         target_ids = {"KMIPKIT-PROFILE-BASELINE-CLIENT"}
         typed_rule_mappings = report_module.load_typed_rule_mappings(ROOT)
 
@@ -2975,7 +2975,7 @@ mod unrelated {
     def test_baseline_report_distinguishes_global_unavailable_profile_fixtures(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(
             catalog,
             selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
@@ -3002,7 +3002,7 @@ mod unrelated {
     def test_baseline_test_case_evidence_matches_oasis_minimum(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(
             catalog,
             selected_profile_ids={"KMIPKIT-PROFILE-BASELINE-CLIENT"},
@@ -3043,7 +3043,7 @@ mod unrelated {
     def test_stale_complete_claim_is_downgraded_without_publishing(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         profile_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
         profile = next(row for row in catalog["profiles"] if row["profile_id"] == profile_id)
         profile["claim_state"] = "evidence_complete"
@@ -3068,7 +3068,7 @@ mod unrelated {
     def test_conditional_profile_readiness_requires_explicit_configuration(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
         readiness = report_module.evaluate_profile_readiness(
             catalog,
@@ -3086,7 +3086,7 @@ mod unrelated {
     def test_dependency_readiness_failure_blocks_dependent_profile(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         profile_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
         readiness = report_module.evaluate_profile_readiness(
             catalog,
@@ -3104,7 +3104,7 @@ mod unrelated {
     def test_dependency_readiness_recomputes_stale_dependency_evidence(self) -> None:
         from verification.conformance import report as report_module
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         baseline_id = "KMIPKIT-PROFILE-BASELINE-CLIENT"
         dependent_id = "KMIPKIT-PROFILE-AES-XTS-CLIENT"
         baseline = next(row for row in catalog["profiles"] if row["profile_id"] == baseline_id)
@@ -3257,7 +3257,7 @@ mod unrelated {
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_requires_a_device_identifier_field_in_device_credentials"
         )
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
 
         self.assertEqual(requirement["status"], "scoped_verified")
@@ -3265,7 +3265,7 @@ mod unrelated {
         self.assertIn(test_id, requirement["verification_refs"])
         self.assertIn("Device Credential only", requirement["review_note"])
 
-        with (ROOT / "specification/compliance/requirements/KMIPKIT-0013.csv").open(
+        with (ROOT / "verification/conformance/requirements/KMIPKIT-0013.csv").open(
             newline="", encoding="utf-8"
         ) as stream:
             trace_row = next(row for row in csv.DictReader(stream) if row["requirement_id"] == requirement_id)
@@ -3276,7 +3276,7 @@ mod unrelated {
         self.assertIn("Device Credential only", trace_row["statement"])
 
     def test_full_catalog_report_reconciles_tags_ranges_and_profile_cases(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         report = render_report(catalog)
 
         self.assertIn("| assigned | 354 |", report)
@@ -3332,16 +3332,16 @@ mod unrelated {
     def test_script_entrypoint_works_from_a_clean_repository_root(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            source = ROOT / "specification" / "oasis" / "kmip-2.1"
-            shutil.copytree(source, root / "specification" / "oasis" / "kmip-2.1")
-            catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+            source = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1"
+            shutil.copytree(source, root / "verification" / "conformance" / "oasis" / "kmip-2.1")
+            catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
             catalog_path.parent.mkdir(parents=True)
             catalog_path.write_text(json.dumps(minimal_catalog(), indent=2) + "\n", encoding="utf-8")
             for arguments in (
                 ["git", "init", "--quiet", "--initial-branch=main"],
                 ["git", "config", "user.name", "KMIPKit test"],
                 ["git", "config", "user.email", "tests@example.invalid"],
-                ["git", "add", "specification/oasis"],
+                ["git", "add", "verification/conformance/oasis"],
                 ["git", "commit", "--quiet", "-m", "pinned test evidence"],
             ):
                 subprocess.run(arguments, cwd=root, check=True, capture_output=True)
@@ -3354,7 +3354,7 @@ mod unrelated {
                 text=True,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
-            report = (root / "specification" / "catalog" / "coverage-report.md").read_text(encoding="utf-8")
+            report = (root / "verification" / "conformance" / "catalog" / "coverage-report.md").read_text(encoding="utf-8")
             self.assertIn("KMIPKIT-SRC-profiles", report)
             self.assertIn("| Sources | 4 |", report)
 

@@ -14,7 +14,7 @@ ENCODING_REFERENCE = re.compile(r"§7\.40(?:, |/| )(?:Table|Tabla) 392")
 
 class PolicyControlsEncodingReferencesTests(unittest.TestCase):
     def test_pinned_table_392_defines_usage_limits_count_as_long_integer(self):
-        source = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         # The immutable upstream HTML declares windows-1252.
         text = html.unescape(re.sub(r"<[^>]*>", " ", source.read_text(encoding="cp1252")))
         text = re.sub(r"\s+", " ", text)

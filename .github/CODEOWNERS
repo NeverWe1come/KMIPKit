@@ -4,6 +4,9 @@
 /AGENTS.md @NeverWe1come
 /.github/ @NeverWe1come
 /docs/adr/ @NeverWe1come
-/specification/ @NeverWe1come
+/bindings/shared/ @NeverWe1come
+/verification/conformance/ @NeverWe1come
+/verification/api/catalog/ @NeverWe1come
+/verification/dependencies/ @NeverWe1come
 /crates/kmipkit-ffi/ @NeverWe1come
 /crates/kmipkit-transport/ @NeverWe1come

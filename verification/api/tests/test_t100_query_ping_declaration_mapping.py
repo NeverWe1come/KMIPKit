@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t100-query-ping-baseline.json"
 OWNER_SPEC = "specs/020-query-ping/spec.md"
 BASE_CANDIDATE_COUNT = 262

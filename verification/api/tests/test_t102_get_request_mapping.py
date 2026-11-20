@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GET_BUILDER = ("c-kmipkit", "kmipkit_client_batch_item_get")
 GET_CAPABILITY = "KMIPKIT-ELEM-OP-C2S-GET"
 GET_OWNER = "specs/017-managed-object-retrieval/spec.md"

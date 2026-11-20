@@ -36,7 +36,7 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertEqual(["2.0", "2.1"], versions_by_operation["Import"])
         self.assertEqual(6, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
         source_operations = {
-            element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
+            element["name"] for element in json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
             if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") == "client_1_0"
         }
         catalog_operations = {

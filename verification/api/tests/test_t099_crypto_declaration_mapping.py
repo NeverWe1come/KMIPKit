@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "specs/019-cryptographic-operations/spec.md"
 BASE_CANDIDATE_COUNT = 165
 BASE_CANDIDATE_SHA256 = "8622dae80e3772bab0af270c14d70c6c4ef658f73a73f059c0d4a7eb9d2ba470"

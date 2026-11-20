@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 AGGREGATE_EXCLUSIONS = {
     (package_id, f"{prefix}{member}")
     for package_id, prefix in (

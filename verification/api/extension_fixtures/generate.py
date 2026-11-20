@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CORPUS = ROOT / "tests" / "fixtures" / "extensions" / "cases.json"
 OUTPUTS = {
     ROOT / "bindings" / "c" / "tests" / "extension_fixtures.generated.h": "c",
@@ -600,7 +600,7 @@ def _generate_c(manifest: dict[str, Any], definitions: tuple[Definition, ...], c
     # C test descriptors use a tagged flat representation: each structure owns a
     # depth-first item span, making construction independent of JSON parsing.
     type_values = manifest["item_types"]
-    lines = [f"/* Generated from specification/api/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit. */", "#ifndef KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#define KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#include <stdbool.h>", "#include <stdint.h>", "#include <stddef.h>", "typedef struct kmipkit_fixture_item { uint32_t tag; uint8_t type; const char *text; int64_t signed_value; uint32_t enum_value; const struct kmipkit_fixture_item *children; size_t child_count; } kmipkit_fixture_item_t;", "typedef struct { uint32_t tag; uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const struct kmipkit_fixture_schema *nested; } kmipkit_fixture_child_rule_t;", "typedef struct kmipkit_fixture_schema { uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const kmipkit_fixture_child_rule_t *children; size_t child_count; } kmipkit_fixture_schema_t;", "typedef struct { const char *id; const char *vendor; const char *name; const char *version; const uint32_t *path; size_t path_count; uint8_t discriminator_type; const char *discriminator_text; int64_t discriminator_number; const kmipkit_fixture_schema_t *schema; } kmipkit_fixture_definition_t;", "typedef struct { const char *id; const char *vendor; bool critical; const kmipkit_fixture_item_t *payload; size_t payload_count; const char *outcome; const char *const *matched_ids; size_t matched_count; bool typed; } kmipkit_fixture_case_t;"]
+    lines = [f"/* Generated from bindings/shared/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit. */", "#ifndef KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#define KMIPKIT_EXTENSION_FIXTURES_GENERATED_H", "#include <stdbool.h>", "#include <stdint.h>", "#include <stddef.h>", "typedef struct kmipkit_fixture_item { uint32_t tag; uint8_t type; const char *text; int64_t signed_value; uint32_t enum_value; const struct kmipkit_fixture_item *children; size_t child_count; } kmipkit_fixture_item_t;", "typedef struct { uint32_t tag; uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const struct kmipkit_fixture_schema *nested; } kmipkit_fixture_child_rule_t;", "typedef struct kmipkit_fixture_schema { uint8_t type; const char *text; int64_t minimum; int64_t maximum; bool has_range; const kmipkit_fixture_child_rule_t *children; size_t child_count; } kmipkit_fixture_schema_t;", "typedef struct { const char *id; const char *vendor; const char *name; const char *version; const uint32_t *path; size_t path_count; uint8_t discriminator_type; const char *discriminator_text; int64_t discriminator_number; const kmipkit_fixture_schema_t *schema; } kmipkit_fixture_definition_t;", "typedef struct { const char *id; const char *vendor; bool critical; const kmipkit_fixture_item_t *payload; size_t payload_count; const char *outcome; const char *const *matched_ids; size_t matched_count; bool typed; } kmipkit_fixture_case_t;"]
     lines.extend(
         [
             "typedef struct { const char *fixture_id; bool criticality_indicator; } kmipkit_fixture_attachment_t;",
@@ -702,7 +702,7 @@ def _java_schema(schema: Schema, values: dict[str, int]) -> str:
 
 def _generate_java(manifest: dict[str, Any], definitions: tuple[Definition, ...], cases: tuple[Case, ...]) -> str:
     values = manifest["item_types"]
-    lines = [f"// Generated from specification/api/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit.", "package org.kmipkit;", "", "import java.util.List;", "", "final class SharedExtensionFixtures {", "    record Item(int tag, int type, String text, long number, List<Item> children) {}", "    record ChildRule(int tag, Schema schema) {}", "    record Schema(int type, String text, boolean hasRange, long minimum, long maximum, List<ChildRule> children) {}", "    record Definition(String id, String vendor, String name, String version, List<Integer> path, int discriminatorType, String discriminatorText, long discriminatorNumber, Schema schema) {}", "    record Case(String id, String vendor, boolean critical, List<Item> payload, String outcome, List<String> matchedIds, boolean typed) {}", "    static final List<Definition> DEFINITIONS = List.of("]
+    lines = [f"// Generated from bindings/shared/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit.", "package org.kmipkit;", "", "import java.util.List;", "", "final class SharedExtensionFixtures {", "    record Item(int tag, int type, String text, long number, List<Item> children) {}", "    record ChildRule(int tag, Schema schema) {}", "    record Schema(int type, String text, boolean hasRange, long minimum, long maximum, List<ChildRule> children) {}", "    record Definition(String id, String vendor, String name, String version, List<Integer> path, int discriminatorType, String discriminatorText, long discriminatorNumber, Schema schema) {}", "    record Case(String id, String vendor, boolean critical, List<Item> payload, String outcome, List<String> matchedIds, boolean typed) {}", "    static final List<Definition> DEFINITIONS = List.of("]
     lines[11:11] = [
         "    record Attachment(String fixtureId, boolean criticalityIndicator) {}",
         "    record OutboundRequest(String fixtureId, String outcome, List<Attachment> attachments) {}",
@@ -745,7 +745,7 @@ def _rust_schema(schema: Schema) -> str:
 
 def _generate_rust(manifest: dict[str, Any], definitions: tuple[Definition, ...], cases: tuple[Case, ...]) -> str:
     lines = [
-        f"// Generated from specification/api/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit.",
+        f"// Generated from bindings/shared/public-api.json and bindings/shared/fixtures/extensions/cases.json. API contract sha256: {manifest['fingerprint']}. Do not edit.",
         "use kmipkit_ttlv::ItemType;",
         "",
         "#[derive(Clone, Copy)]",

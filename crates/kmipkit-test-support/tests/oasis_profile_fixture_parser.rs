@@ -9,7 +9,7 @@ const RESPONSE_HEADER_TAG: u32 = 0x0042_007A;
 const TIME_STAMP_TAG: u32 = 0x0042_0092;
 
 fn parse_first_profile_timestamp(value: &str) -> Result<i64, OasisCryptoFixtureError> {
-    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let baseline = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
     let xml = baseline.replacen("$NOW", value, 1);
     let fixture =
         OasisProfileFixture::from_xml("BL-M-1-21", &xml, OasisProfileFixtureBindings::default())?;
@@ -47,82 +47,82 @@ fn parses_all_pinned_profile_fixtures_in_exact_source_order() {
     let cases: &[(&str, &str, &[u32])] = &[
         (
             "BL-M-1-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml"),
             &[0x34, 0x03, 0x08, 0x0a, 0x14, 0x2c, 0x34],
         ),
         (
             "BL-M-2-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-2-21.xml"),
             &[0x34, 0x03, 0x12, 0x09, 0x09, 0x0b, 0x34],
         ),
         (
             "BL-M-3-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-3-21.xml"),
             &[0x34, 0x03, 0x0a, 0x0b, 0x09, 0x09, 0x34],
         ),
         (
             "BL-M-4-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-4-21.xml"),
             &[0x34, 0x03, 0x08, 0x0a, 0x0b, 0x0a, 0x34],
         ),
         (
             "BL-M-5-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-5-21.xml"),
             &[0x34, 0x03, 0x0a, 0x0d, 0x0d, 0x0b, 0x34],
         ),
         (
             "BL-M-6-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-6-21.xml"),
             &[0x34, 0x03, 0x0a, 0x0b, 0x0b, 0x34],
         ),
         (
             "BL-M-7-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-7-21.xml"),
             &[0x34, 0x03, 0x0e, 0x13, 0x0b, 0x34],
         ),
         (
             "BL-M-8-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-8-21.xml"),
             &[0x34, 0x03, 0x0d, 0x14, 0x0b, 0x0a, 0x34],
         ),
         (
             "BL-M-9-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-9-21.xml"),
             &[0x34, 0x03, 0x14, 0x0b, 0x34],
         ),
         (
             "BL-M-10-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-10-21.xml"),
             &[0x34, 0x03, 0x0b, 0x0e, 0x34],
         ),
         (
             "BL-M-11-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-11-21.xml"),
             &[0x34, 0x03, 0x13, 0x0b, 0x34],
         ),
         (
             "BL-M-12-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-12-21.xml"),
             &[0x34, 0x03, 0x0a, 0x0b, 0x34],
         ),
         (
             "BL-M-13-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-13-21.xml"),
             &[0x34, 0x03, 0x0b, 0x0a, 0x0b, 0x34],
         ),
         (
             "SKLC-M-1-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
             &[0x01, 0x0b, 0x14],
         ),
         (
             "SKLC-M-2-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
             &[0x01, 0x0b, 0x12, 0x0b, 0x14, 0x13, 0x0b, 0x14],
         ),
         (
             "SKLC-M-3-21",
-            include_str!("../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
+            include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
             &[0x01, 0x0b, 0x12, 0x0b, 0x0e, 0x13, 0x0b, 0x14],
         ),
     ];
@@ -155,7 +155,7 @@ fn parses_all_pinned_profile_fixtures_in_exact_source_order() {
 
 #[test]
 fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
-    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let baseline = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
     let unknown_symbol = baseline.replacen("$NOW", "$NOW_2", 1);
     assert_eq!(
         OasisProfileFixture::from_xml(
@@ -187,7 +187,7 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
         .is_err()
     );
 
-    let sklc = include_str!("../../../specification/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml");
+    let sklc = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml");
     let reordered = sklc.replacen("step=1", "step=2", 1);
     assert_eq!(
         OasisProfileFixture::from_xml(
@@ -199,7 +199,7 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
         Some(OasisCryptoFixtureError::ReorderedSteps)
     );
 
-    let dated = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-3-21.xml");
+    let dated = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-3-21.xml");
     let malformed_date = dated.replacen("2000-02-01T", "2000x02-01T", 1);
     assert_eq!(
         OasisProfileFixture::from_xml(
@@ -214,7 +214,7 @@ fn rejects_unknown_symbols_operations_malformed_pairs_and_reordered_steps() {
 
 #[test]
 fn profile_fixture_rejects_invalid_document_shapes() {
-    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let baseline = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
     let wrong_root =
         baseline
             .replacen("<KMIP>", "<NotKmip>", 1)
@@ -273,7 +273,7 @@ fn profile_fixture_rejects_invalid_document_shapes() {
 
 #[test]
 fn profile_fixture_rejects_invalid_batch_shapes() {
-    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let baseline = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
     let wrong_batch_header_order =
         baseline.replacen("<RequestHeader>", "<BatchItem/><RequestHeader>", 1);
     let zero_batch_count = baseline.replacen(
@@ -434,7 +434,7 @@ fn profile_fixture_errors_have_stable_payload_free_display() {
 #[test]
 fn profile_fixture_enforces_xml_node_limit_before_parsing_messages() {
     const XML_NODES_ABOVE_LIMIT: usize = 250_001;
-    let baseline = include_str!("../../../specification/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
+    let baseline = include_str!("../../../verification/conformance/oasis/kmip-2.1/fixtures/BL-M-1-21.xml");
     let comments = "<!--x-->".repeat(XML_NODES_ABOVE_LIMIT);
     let xml = baseline.replacen("<KMIP>", &format!("<KMIP>{comments}"), 1);
 

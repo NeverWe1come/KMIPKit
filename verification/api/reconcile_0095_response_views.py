@@ -97,5 +97,5 @@ def reconcile(manifest: dict) -> dict:
 
 
 if __name__ == "__main__":
-    path = Path("specification/api/public-api.json")
+    path = Path("bindings/shared/public-api.json")
     path.write_text(json.dumps(reconcile(json.loads(path.read_text())), indent=2, ensure_ascii=False) + "\n")

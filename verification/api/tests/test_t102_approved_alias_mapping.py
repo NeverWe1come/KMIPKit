@@ -9,7 +9,7 @@ from pathlib import Path
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 EXPECTED_ALIAS_PAIRS = (
     ('rust-kmipkit', 'kmipkit::DelegatedLoginRequest', 'rust-kmipkit-protocol', 'kmipkit_protocol::DelegatedLoginRequest'),
     ('rust-kmipkit', 'kmipkit::DelegatedLoginRequest::new', 'rust-kmipkit-protocol', 'kmipkit_protocol::DelegatedLoginRequest::new'),

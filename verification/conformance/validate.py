@@ -451,8 +451,8 @@ def _reject_surrogates(value: Any) -> None:
 
 def _source_manifest(root: Path) -> dict[str, dict[str, str]]:
     try:
-        inventory = safe_read_bytes(root, "specification/oasis/kmip-2.1/SOURCES.md", max_bytes=1_048_576).decode("utf-8")
-        checksums = safe_read_bytes(root, "specification/oasis/kmip-2.1/CHECKSUMS.sha256", max_bytes=1_048_576).decode("ascii")
+        inventory = safe_read_bytes(root, "verification/conformance/oasis/kmip-2.1/SOURCES.md", max_bytes=1_048_576).decode("utf-8")
+        checksums = safe_read_bytes(root, "verification/conformance/oasis/kmip-2.1/CHECKSUMS.sha256", max_bytes=1_048_576).decode("ascii")
     except (OSError, UnicodeError, PathSecurityError) as error:
         raise CatalogValidationError("pinned OASIS source manifest is unavailable") from error
 
@@ -492,7 +492,7 @@ def _source_manifest(root: Path) -> dict[str, dict[str, str]]:
             "version": "2.1",
             "stage": stage,
             "publication_date": date,
-            "local_path": f"specification/oasis/kmip-2.1/{local_path}",
+            "local_path": f"verification/conformance/oasis/kmip-2.1/{local_path}",
             "canonical_url": url,
             "sha256": digest,
             "authority_class": authority,
@@ -743,7 +743,7 @@ def _check_policy_provenance(
 def _git_tree(root: Path) -> dict[str, tuple[str, str]]:
     try:
         process = subprocess.Popen(
-            ["git", "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", "specification/oasis/"],
+            ["git", "ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", "verification/conformance/oasis/"],
             cwd=root,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -1369,7 +1369,7 @@ def _check_semantics(
         if (
             fixture_path.startswith("/")
             or re.match(r"^[A-Za-z]:", fixture_path)
-            or not fixture_path.startswith("specification/oasis/kmip-2.1/")
+            or not fixture_path.startswith("verification/conformance/oasis/kmip-2.1/")
             or any(part in {"", ".", ".."} for part in parts)
         ):
             _fail("fixture path escapes the pinned OASIS directory")
@@ -1957,7 +1957,7 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
     except OSError:
         return ["repository root is unavailable"]
 
-    catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
     try:
         catalog_path.resolve(strict=True).relative_to(root)
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
@@ -2152,9 +2152,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     arguments = parser.parse_args(argv)
     root = arguments.repo_root.resolve(strict=True)
-    catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+    catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
     try:
-        raw = safe_read_bytes(root, "specification/catalog/kmip-2.1.json", max_bytes=MAX_BYTES)
+        raw = safe_read_bytes(root, "verification/conformance/catalog/kmip-2.1.json", max_bytes=MAX_BYTES)
         result = validate_catalog(raw, root, require_complete=not arguments.structural_only)
     except (OSError, CatalogValidationError, PathSecurityError) as error:
         print(f"catalog validation failed: {error}", file=sys.stderr)

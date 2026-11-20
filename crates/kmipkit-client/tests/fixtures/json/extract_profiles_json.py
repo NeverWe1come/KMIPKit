@@ -9,7 +9,7 @@ from pathlib import Path
 import json
 
 ROOT = Path(__file__).resolve().parents[5]
-SOURCE = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+SOURCE = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
 
 class Text(HTMLParser):
     def __init__(self):

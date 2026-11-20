@@ -12,7 +12,7 @@ from audit_binding_exports import read_native_exports
 
 ROOT = Path(__file__).resolve().parents[2]
 PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
-PUBLIC_API_MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+PUBLIC_API_MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 JNI_EXPORT_PREFIX = "Java_org_kmipkit_"
 NATIVE_REGISTRY_EXPORT_PREFIX = "org.kmipkit.NativeExtensionRegistry."
 

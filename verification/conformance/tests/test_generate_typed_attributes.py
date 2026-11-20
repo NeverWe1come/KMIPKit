@@ -20,7 +20,7 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.catalog: dict[str, Any] = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
 
     def test_catalog_defines_all_and_only_direct_typed_attributes(self) -> None:
@@ -119,7 +119,7 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
 
     def test_typed_attributes_expose_min_and_max_version_metadata(self) -> None:
         versioned_tags = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-versioned-tags.json").read_text(
                 encoding="utf-8"
             )
         )

@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OWNER = "specs/028-diagnostics-verification/interop/spec.md"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OWNER = "specs/028-diagnostics-interop/spec.md"
 DECLARATION_ID = "rust-observed-326a5a1e346eb2a8787e"
 EXPORT_NAME = "kmipkit_protocol::InteropRequest::interop_function"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-INTEROP"

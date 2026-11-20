@@ -16,12 +16,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 class VersionedCatalogsWave1Tests(unittest.TestCase):
     def test_wire_names_include_kmip30_tags_and_enumerations(self) -> None:
-        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        catalog = json.loads((REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text("utf-8"))
         versioned_tags = json.loads(
-            (REPO_ROOT / "specification/catalog/kmip-versioned-tags.json").read_text("utf-8")
+            (REPO_ROOT / "verification/conformance/catalog/kmip-versioned-tags.json").read_text("utf-8")
         )
         versioned_values = json.loads(
-            (REPO_ROOT / "specification/catalog/kmip-versioned-values.json").read_text("utf-8")
+            (REPO_ROOT / "verification/conformance/catalog/kmip-versioned-values.json").read_text("utf-8")
         )
         tsv = generate_wire_names.render_tsv(
             catalog, versioned_tags=versioned_tags, versioned_values=versioned_values
@@ -43,7 +43,7 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertIn("E\tSplit Key Polynomial\t00000002\tPolynomial-285\n", tsv)
 
     def test_wire_names_fail_closed_on_unmapped_enumeration_tag(self) -> None:
-        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        catalog = json.loads((REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text("utf-8"))
         bad_versioned_tags = {
             "tagEnumeration": {
                 "assignments": [
@@ -62,9 +62,9 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
 
 
     def test_attribute_policy_includes_version_bounds_and_kmip30_attributes(self) -> None:
-        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        catalog = json.loads((REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text("utf-8"))
         versioned_tags = json.loads(
-            (REPO_ROOT / "specification/catalog/kmip-versioned-tags.json").read_text("utf-8")
+            (REPO_ROOT / "verification/conformance/catalog/kmip-versioned-tags.json").read_text("utf-8")
         )
         rust = generate_attribute_policy.render_rust(catalog, versioned_tags=versioned_tags)
         self.assertIn("0x42_01_90", rust)  # Certificate Link
@@ -77,9 +77,9 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertIn("max_version", rust)
 
     def test_result_values_include_kmip30_circular_link_error(self) -> None:
-        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        catalog = json.loads((REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text("utf-8"))
         versioned_values = json.loads(
-            (REPO_ROOT / "specification/catalog/kmip-versioned-values.json").read_text("utf-8")
+            (REPO_ROOT / "verification/conformance/catalog/kmip-versioned-values.json").read_text("utf-8")
         )
         rust = generate_result_values.render_rust(catalog, versioned_values=versioned_values)
         self.assertIn("Circular Link Error", rust)
@@ -107,7 +107,7 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
 
     def test_kmip21_versioned_tags_and_rotate_attribute_policy_bounds(self) -> None:
         versioned_tags = json.loads(
-            (REPO_ROOT / "specification/catalog/kmip-versioned-tags.json").read_text("utf-8")
+            (REPO_ROOT / "verification/conformance/catalog/kmip-versioned-tags.json").read_text("utf-8")
         )
         v21_tags = versioned_tags.get("v2_1_tags", [])
         self.assertEqual(len(v21_tags), 36)
@@ -131,7 +131,7 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
         self.assertEqual(tag_by_wire["0x420172"]["name"], "Rotate Latest")
         self.assertTrue(tag_by_wire["0x420172"].get("is_object_attribute"))
 
-        catalog = json.loads((REPO_ROOT / "specification/catalog/kmip-2.1.json").read_text("utf-8"))
+        catalog = json.loads((REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text("utf-8"))
         rust = generate_attribute_policy.render_rust(catalog, versioned_tags=versioned_tags)
         for tag_hex, name in [
             ("0x42_01_6A", "Rotate Interval"),

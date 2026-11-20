@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 CLIENT_EXECUTION_APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/007-client-execution/spec.md",

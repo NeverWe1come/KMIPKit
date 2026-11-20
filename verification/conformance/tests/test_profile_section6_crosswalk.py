@@ -13,7 +13,7 @@ from verification.conformance.tests.test_validate import (
 
 
 SOURCE_ID = "KMIPKIT-SRC-profiles"
-SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
 PROFILE_BY_SECTION = {
     "6.1": "all_client_profiles",
     "6.4": "KMIPKIT-PROFILE-HTTPS-CLIENT",
@@ -41,7 +41,7 @@ def _load_json(relative_path: str) -> dict[str, object]:
 
 class ProfileSectionSixCrosswalkTests(unittest.TestCase):
     def test_catalogued_section_six_atoms_have_exact_profile_crosswalks_and_reviews(self) -> None:
-        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        catalog = _load_json("verification/conformance/catalog/kmip-2.1.json")
         fixture = _load_json("verification/conformance/tests/fixtures/profile-closure-v2.1.json")
         clauses = {
             clause["clause_id"]: clause

@@ -8,8 +8,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-V1_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
+V1_FIXTURE_PATH = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api-v1.json"
 
 
 class VersionedLimitsAbiTests(unittest.TestCase):

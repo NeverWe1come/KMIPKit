@@ -12,7 +12,7 @@ from verification.conformance import report as report_module
 from verification.conformance import validate
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 
 
 class BaselineClientClosureWave2Tests(unittest.TestCase):

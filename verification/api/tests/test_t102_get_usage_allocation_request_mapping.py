@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 BUILDER = ("c-kmipkit", "kmipkit_client_batch_item_get_usage_allocation")
 CAPABILITY = "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
 OWNER = "specs/025-policy-controls/spec.md"

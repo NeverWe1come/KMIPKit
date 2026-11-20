@@ -1,0 +1,4461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kmipkit:schemas:public-api-manifest:2",
+  "title": "KMIPKit Public API Manifest",
+  "description": "Version 2 describes the complete KMIPKit 1.0 public API. The registry-slice branch remains for generator fixture compatibility.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/publicApiV2"
+    },
+    {
+      "$ref": "#/$defs/registrySliceV1"
+    }
+  ],
+  "$defs": {
+    "requirementId": {
+      "type": "string",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
+      "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
+    },
+    "requirementIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/requirementId"
+      },
+      "description": "Requirement identifiers are unique and lexicographically sorted."
+    },
+    "qualifiedName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$"
+    },
+    "rustPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "pythonFunctionName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^_?[A-Za-z][A-Za-z0-9_]*(?:\\._?[A-Za-z][A-Za-z0-9_]*)*$"
+    },
+    "rustOwner": {
+      "type": "string",
+      "enum": [
+        "protocol",
+        "client",
+        "ffi"
+      ]
+    },
+    "typeDeclaration": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "requirementIds",
+        "rust",
+        "c",
+        "java",
+        "python"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "struct",
+            "enum",
+            "opaque-handle",
+            "sealed-value",
+            "alias"
+          ]
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/requirementIds"
+        },
+        "normativeSource": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The exact KMIP 2.1 clause or table defining a typed protocol value."
+        },
+        "enumRepresentation": {
+          "$ref": "#/$defs/enumRepresentation"
+        },
+        "rust": {
+          "type": "object",
+          "required": [
+            "module",
+            "name",
+            "owner"
+          ],
+          "properties": {
+            "module": {
+              "$ref": "#/$defs/rustPath"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "owner": {
+              "$ref": "#/$defs/rustOwner"
+            }
+          },
+          "additionalProperties": false
+        },
+        "c": {
+          "$ref": "#/$defs/cType"
+        },
+        "java": {
+          "type": "object",
+          "required": [
+            "package",
+            "name"
+          ],
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        },
+        "python": {
+          "type": "object",
+          "required": [
+            "module",
+            "name"
+          ],
+          "properties": {
+            "module": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "enumRepresentation"
+            ],
+            "properties": {
+              "c": {
+                "properties": {
+                  "kind": {
+                    "const": "enum"
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "enumRepresentation"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "open-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "preserve-raw"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "enumRepresentation": {
+                "properties": {
+                  "shape": {
+                    "const": "closed-numeric"
+                  }
+                },
+                "required": [
+                  "shape"
+                ]
+              }
+            },
+            "required": [
+              "enumRepresentation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "c": {
+                "properties": {
+                  "unknownValuePolicy": {
+                    "const": "reject-unsupported"
+                  }
+                },
+                "required": [
+                  "unknownValuePolicy"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "enumRepresentation": {
+      "type": "object",
+      "required": [
+        "shape",
+        "unknownValuePolicy",
+        "values"
+      ],
+      "properties": {
+        "shape": {
+          "type": "string",
+          "enum": [
+            "open-numeric",
+            "closed-numeric"
+          ]
+        },
+        "unknownValuePolicy": {
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/enumValue"
+          },
+          "description": "Known symbolic names and numeric codes in deterministic declaration order. Each code fits the declared unsigned C storage type. The generator also checks that names and codes are individually unique. The shape and unknownValuePolicy jointly state whether unknown codes are preserved or rejected.",
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "open-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "preserve-raw"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "const": "closed-numeric"
+              }
+            },
+            "required": [
+              "shape"
+            ]
+          },
+          "then": {
+            "properties": {
+              "unknownValuePolicy": {
+                "const": "reject-unsupported"
+              }
+            }
+          }
+        }
+      ],
+      "description": "A numeric enum with an explicit list of known values and a policy matched to its open or closed shape."
+    },
+    "cType": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^kmipkit_[a-z0-9_]+_t$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "fixed-width-value",
+            "enum",
+            "opaque-handle"
+          ]
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal-only"
+          ],
+          "description": "Whether this C representation is part of the supported public ABI or retained only for private in-repository FFI calls."
+        },
+        "versioned": {
+          "type": "boolean",
+          "description": "Whether the public fixed-width structure begins with uint32_t struct_size and uint32_t abi_version fields."
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "type"
+            ],
+            "properties": {
+              "name": {
+                "allOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  {
+                    "$ref": "#/$defs/cLayoutField/properties/name"
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "pattern": "^(?:const\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:\\s*\\*+)?$"
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "The complete ordered C field layout for a public fixed-width ABI value."
+        },
+        "handleKind": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "ownership": {
+          "type": "string",
+          "enum": [
+            "library-owned",
+            "caller-owned",
+            "borrowed"
+          ]
+        },
+        "releaseFunction": {
+          "type": "string",
+          "pattern": "^kmipkit_[a-z0-9_]+$"
+        },
+        "underlyingType": {
+          "type": "string",
+          "enum": [
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t"
+          ]
+        },
+        "unknownValuePolicy": {
+          "type": "string",
+          "enum": [
+            "preserve-raw",
+            "reject-unsupported"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "opaque-handle"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "handleKind",
+              "ownership",
+              "releaseFunction"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "handleKind"
+                  ]
+                },
+                {
+                  "required": [
+                    "ownership"
+                  ]
+                },
+                {
+                  "required": [
+                    "releaseFunction"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "enum"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "underlyingType",
+              "unknownValuePolicy"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "underlyingType"
+                  ]
+                },
+                {
+                  "required": [
+                    "unknownValuePolicy"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": [
+                "fields"
+              ]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "cLayoutField": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier",
+          "not": {
+            "anyOf": [
+              {
+                "pattern": "__"
+              },
+              {
+                "enum": [
+                  "_Alignas",
+                  "_Alignof",
+                  "_Atomic",
+                  "_Bool",
+                  "_Complex",
+                  "_Generic",
+                  "_Imaginary",
+                  "_Noreturn",
+                  "_Static_assert",
+                  "_Thread_local",
+                  "alignas",
+                  "alignof",
+                  "and",
+                  "and_eq",
+                  "asm",
+                  "auto",
+                  "bitand",
+                  "bitor",
+                  "bool",
+                  "break",
+                  "case",
+                  "catch",
+                  "char",
+                  "char16_t",
+                  "char32_t",
+                  "char8_t",
+                  "class",
+                  "co_await",
+                  "co_return",
+                  "co_yield",
+                  "compl",
+                  "concept",
+                  "const",
+                  "const_cast",
+                  "consteval",
+                  "constexpr",
+                  "constinit",
+                  "continue",
+                  "decltype",
+                  "default",
+                  "delete",
+                  "do",
+                  "double",
+                  "dynamic_cast",
+                  "else",
+                  "enum",
+                  "explicit",
+                  "export",
+                  "extern",
+                  "false",
+                  "float",
+                  "for",
+                  "friend",
+                  "goto",
+                  "if",
+                  "inline",
+                  "int",
+                  "long",
+                  "mutable",
+                  "namespace",
+                  "new",
+                  "noexcept",
+                  "not",
+                  "not_eq",
+                  "nullptr",
+                  "operator",
+                  "or",
+                  "or_eq",
+                  "private",
+                  "protected",
+                  "public",
+                  "register",
+                  "reinterpret_cast",
+                  "requires",
+                  "restrict",
+                  "return",
+                  "short",
+                  "signed",
+                  "sizeof",
+                  "static",
+                  "static_assert",
+                  "static_cast",
+                  "struct",
+                  "switch",
+                  "template",
+                  "this",
+                  "thread_local",
+                  "throw",
+                  "true",
+                  "try",
+                  "typedef",
+                  "typeid",
+                  "typename",
+                  "union",
+                  "unsigned",
+                  "using",
+                  "virtual",
+                  "void",
+                  "volatile",
+                  "wchar_t",
+                  "while",
+                  "xor",
+                  "xor_eq"
+                ]
+              }
+            ]
+          }
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^(?:(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t)|(?:const )?(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t) \\*)$",
+          "description": "A fixed-width scalar or KMIPKit typedef, optionally as a pointer. No arbitrary C declarators are accepted."
+        }
+      },
+      "additionalProperties": false
+    },
+    "cTypeLayout": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind",
+        "fields"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/cType/properties/name"
+        },
+        "kind": {
+          "const": "fixed-width-value"
+        },
+        "versioned": {
+          "type": "boolean",
+          "description": "Whether the layout starts with uint32_t struct_size and uint32_t abi_version fields."
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/cLayoutField"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "errorCategoryId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "errorCategoryIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/errorCategoryId"
+      },
+      "description": "Each identifier must resolve to one errorCategories entry."
+    },
+    "errorCategory": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustVariant",
+        "cCode",
+        "cValue",
+        "javaException",
+        "pythonException"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/errorCategoryId"
+        },
+        "rustVariant": {
+          "$ref": "#/$defs/identifier"
+        },
+        "cCode": {
+          "type": "string",
+          "pattern": "^KMIPKIT_ERROR_[A-Z0-9_]+$",
+          "description": "Stable C error-code name; status values use int32_t."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "Explicit stable numeric value for the named int32_t C error code."
+        },
+        "javaException": {
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "pythonException": {
+          "$ref": "#/$defs/qualifiedName"
+        }
+      },
+      "additionalProperties": false
+    },
+    "errorCategoryV2": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustVariant",
+        "cCode",
+        "cValue",
+        "javaException",
+        "pythonException",
+        "mappingState"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/errorCategoryId"
+        },
+        "rustVariant": {
+          "$ref": "#/$defs/identifier"
+        },
+        "cCode": {
+          "type": "string",
+          "pattern": "^KMIPKIT_ERROR_[A-Z0-9_]+$",
+          "description": "Stable C error-code name; status values use int32_t."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "Explicit stable numeric value for the named int32_t C error code."
+        },
+        "javaException": {
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "pythonException": {
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "mappingState": {
+          "enum": [
+            "ready",
+            "blocked"
+          ],
+          "description": "Whether the full error category mapping is ready across languages."
+        },
+        "blockedReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stableCHeaderCode": {
+          "type": "boolean",
+          "description": "Keep a previously exposed stable C error code in the generated header while cross-language parity mapping is blocked."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mappingState": {
+                "const": "blocked"
+              }
+            },
+            "required": [
+              "mappingState"
+            ]
+          },
+          "then": {
+            "required": [
+              "blockedReason"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "blockedReason"
+              ]
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "cParameter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "scalar"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "int8_t",
+                "uint8_t",
+                "int16_t",
+                "uint16_t",
+                "int32_t",
+                "uint32_t",
+                "int64_t",
+                "uint64_t"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback"
+            },
+            "type": {
+              "const": "void (*)(const uint8_t *, uint64_t, void *)",
+              "description": "Synchronous borrowed byte-span callback with opaque caller context."
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "lifetime"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "callback-context"
+            },
+            "type": {
+              "const": "void *"
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "lifetime": {
+              "const": "synchronous-call"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "borrowed"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Borrowed pointer to a caller-owned fixed-width C value that does not carry embedded size and ABI-version fields."
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-scalar-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^(?:u?int(?:8|16|32|64)_t|size_t) \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "enum": [
+                "uint8_t",
+                "uint16_t",
+                "uint32_t",
+                "uint64_t",
+                "int32_t",
+                "int64_t",
+                "size_t"
+              ]
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "direction",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "versioned-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^(const )?kmipkit_[a-z0-9_]+_v[1-9][0-9]*_t \\*$",
+              "description": "Pointer to a generated fixed-width versioned public value structure."
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            },
+            "ownership": {
+              "type": "string",
+              "enum": [
+                "borrowed",
+                "none"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "elementType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "input-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^const (?:int8_t|uint8_t|int16_t|uint16_t|int32_t|uint32_t|int64_t|uint64_t|kmipkit_[a-z0-9_]+_t) \\*$",
+              "description": "Borrowed pointer to a caller-owned array of fixed-width scalar, byte-span carrier, or declared versioned fixed-width value records."
+            },
+            "elementType": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "kmipkit_byte_span_v1_t",
+                    "kmipkit_attribute_reference_v1_t"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "pattern": "^kmipkit_[a-z0-9_]+_v[1-9][0-9]*_t$",
+                  "description": "Versioned fixed-width C value layouts declared in the public API manifest."
+                }
+              ]
+            },
+            "ownership": {
+              "const": "borrowed"
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "handleType",
+            "ownership",
+            "countParameter",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle-array"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$",
+              "description": "Pointer-to-pointer array of opaque C handles."
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$",
+              "description": "Opaque handle type of each array element; must match the declared pointer type."
+            },
+            "ownership": {
+              "enum": [
+                "borrowed",
+                "consumed"
+              ]
+            },
+            "countParameter": {
+              "$ref": "#/$defs/identifier",
+              "description": "Name of the uint64_t scalar parameter that counts array elements."
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the array pointer may be NULL. When true, NULL is valid only when the linked count is zero; implementations must check the count before reading elements."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "error-output"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Owned optional handle returned only when response-shape validation fails after a complete generic TTLV response was received. The slot is initialized to NULL and remains NULL for success and all other failures."
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "int8_t *",
+                "uint8_t *",
+                "int16_t *",
+                "uint16_t *",
+                "int32_t *",
+                "uint32_t *",
+                "int64_t *",
+                "uint64_t *"
+              ],
+              "description": "Pointer to one fixed-width integer result; not nullable."
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "handleType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "consumed-handle-slot"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "handleType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "consumed"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output-value-pointer"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "none"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership",
+            "nullable"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "output"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*\\*$"
+            },
+            "ownership": {
+              "const": "library-owned"
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether successful status may return no handle. Required explicitly for every output handle."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "handle"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t \\*$"
+            },
+            "ownership": {
+              "type": "string",
+              "enum": [
+                "borrowed",
+                "consumed"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "encoding",
+            "byteLengthParameter",
+            "byteLengthType",
+            "lengthUnit",
+            "limitCheck",
+            "nulTerminatedScan"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "byte-span"
+            },
+            "type": {
+              "const": "const uint8_t *"
+            },
+            "encoding": {
+              "type": "string",
+              "enum": [
+                "octets",
+                "utf-8"
+              ]
+            },
+            "byteLengthParameter": {
+              "$ref": "#/$defs/identifier"
+            },
+            "byteLengthType": {
+              "const": "uint64_t"
+            },
+            "lengthUnit": {
+              "const": "bytes"
+            },
+            "maxBytes": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum accepted input length in bytes when this span has a fixed bound."
+            },
+            "limitCheck": {
+              "const": "before-dereference"
+            },
+            "nulTerminatedScan": {
+              "const": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "enum-value"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$",
+              "description": "A value of a declared fixed-width C enum type."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "functionDeclaration": {
+      "type": "object",
+      "required": [
+        "id",
+        "requirementIds",
+        "rust",
+        "c",
+        "java",
+        "python",
+        "ordering"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "legacyRegistry": {
+          "type": "boolean",
+          "description": "Whether this full-manifest function belongs to the preserved KMIPKIT-0012 v1 registry parity slice. Defaults to true when omitted."
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/requirementIds"
+        },
+        "rust": {
+          "type": "object",
+          "required": [
+            "module",
+            "name",
+            "owner",
+            "requestBoundary",
+            "parameters",
+            "returnType"
+          ],
+          "properties": {
+            "module": {
+              "$ref": "#/$defs/rustPath"
+            },
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "owner": {
+              "$ref": "#/$defs/rustOwner"
+            },
+            "requestBoundary": {
+              "type": "string",
+              "enum": [
+                "not-applicable",
+                "validates-generic-ttlv",
+                "creates-request-use-wrapper",
+                "accepts-only-sealed-validated-values"
+              ],
+              "description": "States how the function relates to typed requests. Generic TTLV and raw bodies never cross the execute boundary."
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rustParameter"
+              },
+              "description": "Rust parameter names and types, in declaration order."
+            },
+            "returnType": {
+              "$ref": "#/$defs/rustType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "c": {
+          "type": "object",
+          "required": [
+            "symbol",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "documentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+              },
+              "description": "Optional C API documentation lines rendered as a block comment before the requirement references."
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cParameter"
+              },
+              "description": "Parameter order is the exact C ABI order. Variable-length byte inputs are byte-span pointers paired with uint64_t byte lengths; output arrays require an explicit fixed-width element type, caller capacity, and returned element count."
+            },
+            "returnType": {
+              "const": "int32_t",
+              "description": "Every exported function returns a fixed-width status code; values and handles are written through explicit output parameters."
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            }
+          },
+          "additionalProperties": false
+        },
+        "java": {
+          "type": "object",
+          "required": [
+            "package",
+            "class",
+            "method",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "package": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^org\\.kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "class": {
+              "$ref": "#/$defs/qualifiedName"
+            },
+            "method": {
+              "$ref": "#/$defs/identifier"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/javaParameter"
+              },
+              "description": "Java parameter names and types, in declaration order."
+            },
+            "jniSymbol": {
+              "type": "string",
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Present only when this public Java method directly maps to a JNI entry point."
+            },
+            "jniAggregateSymbol": {
+              "type": "string",
+              "pattern": "^Java_[A-Za-z0-9_]+$",
+              "description": "Names the aggregate JNI entry point that returns this mapped value alongside other fields; the accessor has no direct JNI entry point."
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/javaReturnType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "python": {
+          "type": "object",
+          "required": [
+            "module",
+            "function",
+            "parameters",
+            "returnType",
+            "cffiSymbol",
+            "errorCategories"
+          ],
+          "properties": {
+            "module": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^kmipkit(?:\\.[a-z][A-Za-z0-9_]*)*$"
+            },
+            "function": {
+              "$ref": "#/$defs/pythonFunctionName"
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/pythonParameter"
+              },
+              "description": "Python parameter names and types, in declaration order."
+            },
+            "cffiSymbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            },
+            "returnType": {
+              "$ref": "#/$defs/pythonType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ordering": {
+          "type": "string",
+          "enum": [
+            "not-applicable",
+            "preserves-caller-batch-and-extension-order",
+            "preserves-response-extension-order",
+            "preserves-response-field-wire-order"
+          ],
+          "description": "For repeatable request extension attachment, declare preservation of caller-selected batch and extension order. For response extension access, declare preservation of the server-provided response extension order. Typed response field indexing preserves decoded TTLV field order."
+        },
+        "criticalityIndicator": {
+          "$ref": "#/$defs/criticalityIndicator"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "rust": {
+                "properties": {
+                  "requestBoundary": {
+                    "const": "creates-request-use-wrapper"
+                  }
+                },
+                "required": [
+                  "requestBoundary"
+                ]
+              }
+            },
+            "required": [
+              "rust"
+            ]
+          },
+          "then": {
+            "required": [
+              "criticalityIndicator"
+            ],
+            "properties": {
+              "ordering": {
+                "const": "preserves-caller-batch-and-extension-order"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "criticalityIndicator"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed-width-value"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {},
+          "else": {
+            "not": {
+              "required": [
+                "fields"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "criticalityIndicator": {
+      "type": "object",
+      "required": [
+        "rustParameter",
+        "cParameter",
+        "javaParameter",
+        "pythonParameter"
+      ],
+      "properties": {
+        "rustParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "bool"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type",
+            "acceptedValues"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "uint8_t"
+            },
+            "acceptedValues": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": 0
+                },
+                {
+                  "const": 1
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        "javaParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticalityIndicator"
+            },
+            "type": {
+              "const": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "pythonParameter": {
+          "type": "object",
+          "required": [
+            "name",
+            "type"
+          ],
+          "properties": {
+            "name": {
+              "const": "criticality_indicator"
+            },
+            "type": {
+              "const": "bool"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "cSignature": {
+      "type": "object",
+      "required": [
+        "parameters",
+        "returnType",
+        "errorCategories"
+      ],
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cParameter"
+          },
+          "description": "Exact C ABI parameter order for a declaration-level symbol."
+        },
+        "returnType": {
+          "type": "string",
+          "enum": [
+            "int32_t",
+            "void"
+          ],
+          "description": "Fixed-width status code or void for a direct lifecycle export."
+        },
+        "errorCategories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/errorCategoryId"
+          }
+        },
+        "documentation": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+          },
+          "description": "Optional C API documentation lines rendered above the declaration."
+        }
+      },
+      "additionalProperties": false
+    },
+    "limitRecord": {
+      "type": "object",
+      "required": [
+        "id",
+        "rustField",
+        "cField",
+        "javaField",
+        "pythonField",
+        "default",
+        "hardMaximum",
+        "unit",
+        "errorCategory"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rustField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "cField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "javaField": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]*$"
+        },
+        "pythonField": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "default": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hardMaximum": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "errorCategory": {
+          "const": "resource_limit"
+        }
+      },
+      "additionalProperties": false
+    },
+    "limitMaxDefinitions": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDefinitions"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 1024
+            },
+            "unit": {
+              "const": "definitions"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxSchemaNodes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxSchemaNodes"
+            },
+            "default": {
+              "const": 16384
+            },
+            "hardMaximum": {
+              "const": 100000
+            },
+            "unit": {
+              "const": "schema-nodes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxChildRulesPerStructure": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxChildRulesPerStructure"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "rules-per-structure"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTextBytesPerField": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTextBytesPerField"
+            },
+            "default": {
+              "const": 4096
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "bytes-per-text-field"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxRegistryTextBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxRegistryTextBytes"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 16777216
+            },
+            "unit": {
+              "const": "aggregate-text-bytes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxDiscriminatorScalarBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDiscriminatorScalarBytes"
+            },
+            "default": {
+              "const": 4096
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "bytes-per-discriminator-scalar"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTotalDiscriminatorScalarBytes": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTotalDiscriminatorScalarBytes"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 16777216
+            },
+            "unit": {
+              "const": "aggregate-discriminator-bytes"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxConstraintMembersPerRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxConstraintMembersPerRule"
+            },
+            "default": {
+              "const": 256
+            },
+            "hardMaximum": {
+              "const": 4096
+            },
+            "unit": {
+              "const": "constraint-members-per-rule"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxTotalConstraintMembers": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxTotalConstraintMembers"
+            },
+            "default": {
+              "const": 16384
+            },
+            "hardMaximum": {
+              "const": 100000
+            },
+            "unit": {
+              "const": "aggregate-constraint-members"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxPayloadIndexRecords": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxPayloadIndexRecords"
+            },
+            "default": {
+              "const": 200000
+            },
+            "hardMaximum": {
+              "const": 200000
+            },
+            "unit": {
+              "const": "payload-index-records"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxLookupComparisons": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxLookupComparisons"
+            },
+            "default": {
+              "const": 1048576
+            },
+            "hardMaximum": {
+              "const": 4194304
+            },
+            "unit": {
+              "const": "tag-comparisons"
+            }
+          }
+        }
+      ]
+    },
+    "limitMaxDepth": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/limitRecord"
+        },
+        {
+          "properties": {
+            "id": {
+              "const": "maxDepth"
+            },
+            "default": {
+              "const": 64
+            },
+            "hardMaximum": {
+              "const": 64
+            },
+            "unit": {
+              "const": "levels"
+            }
+          }
+        }
+      ]
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "defaultDiagnostics",
+        "zeroization",
+        "runtimeCopies"
+      ],
+      "properties": {
+        "defaultDiagnostics": {
+          "type": "string",
+          "const": "redacted",
+          "description": "Logs, errors, and default debug/display representations exclude extension payloads and secrets. Do not include sample payloads in manifest text."
+        },
+        "zeroization": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Describe KMIPKit-owned secret-memory cleanup without including secret values."
+        },
+        "runtimeCopies": {
+          "type": "object",
+          "required": [
+            "c",
+            "java",
+            "python"
+          ],
+          "properties": {
+            "c": {
+              "type": "string",
+              "minLength": 1
+            },
+            "java": {
+              "type": "string",
+              "minLength": 1
+            },
+            "python": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "generatedOutputs": {
+      "type": "object",
+      "required": [
+        "rustFfi",
+        "cHeader",
+        "javaApi",
+        "javaParityTests",
+        "pythonApi",
+        "parityFixtures"
+      ],
+      "properties": {
+        "rustFfi": {
+          "const": "crates/kmipkit-ffi/src/extension_registry_generated.rs"
+        },
+        "cHeader": {
+          "const": "bindings/c/include/kmipkit.h"
+        },
+        "javaApi": {
+          "const": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java"
+        },
+        "javaParityTests": {
+          "const": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java"
+        },
+        "pythonApi": {
+          "const": "bindings/python/src/kmipkit/_generated/extension_registry.py"
+        },
+        "parityFixtures": {
+          "const": "bindings/shared/fixtures/extensions/generated/registry_parity.json"
+        }
+      },
+      "additionalProperties": false,
+      "description": "The generator writes only these source and test destinations, in the property order above. Documentation remains handwritten under the plan's docs/ and language-package docs."
+    },
+    "enumValue": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "additionalProperties": false
+    },
+    "rustType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]\\s*>$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>)?)*\\s*>$"
+        },
+        {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*::)*Result\\s*<\\s*\\(\\)\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*>$"
+        },
+        {
+          "pattern": "^\\(\\)$"
+        },
+        {
+          "pattern": "^\\(\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*,(?:\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*)?\\s*\\)$"
+        },
+        {
+          "pattern": "^\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*;\\s*[0-9]+\\s*\\]$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)*\\s*>$"
+        },
+        {
+          "pattern": "^&(?:\\u0027[A-Za-z_][A-Za-z0-9_]*\\s+)?(?:mut\\s+)?\\[\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*\\s*\\]$"
+        },
+        {
+          "pattern": "^\\*mut\\s+\\*mut\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^\\*(?:const|mut)\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(StructureView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(ValueView<'a>\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(&'a \\[u8\\]\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl for<'a> FnOnce\\(&'a str\\) -> [A-Za-z_][A-Za-z0-9_]*$"
+        },
+        {
+          "pattern": "^impl ExactSizeIterator\\s*<\\s*Item\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*'_\\s*>)?\\s*>\\s*\\+\\s*'_\\s*$"
+        },
+        {
+          "pattern": "^\\*(?:const|mut)\\s+\\*(?:const|mut)\\s+(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*$"
+        }
+      ],
+      "description": "Rust type subset: identifier paths, one- or two-level generic applications with non-empty path arguments, Result<(), E> including a qualified Result path, unit and tuple types, fixed arrays, references, borrowed slices, raw pointers, mutable pointer-to-pointer output slots for reviewed C ABI declarations, higher-ranked StructureView and ValueView callbacks plus secret-byte/text callbacks, and ExactSizeIterator views over borrowed credential views."
+    },
+    "javaType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*(?:\\s*,\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*(?:,|>))[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\s*\\[\\])*)*\\s*>)?(?:\\s*\\[\\])*$"
+        },
+        {
+          "pattern": "^(?!void\\b)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*<\\s*(?!(?:boolean|byte|short|int|long|char|float|double|void)\\s*>)[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*(?:\\[\\])?\\s*>\\s*>$"
+        }
+      ],
+      "description": "Java parameter/type subset: primitive/simple or dot-qualified names, arrays, and one-level generic applications with non-empty reference-type arguments, including array types. Nested reference generics are accepted for typed collection results. Primitive and void generic arguments and wildcards are unsupported."
+    },
+    "javaReturnType": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/javaType"
+        },
+        {
+          "const": "void"
+        }
+      ],
+      "description": "Java method result type: a javaType or void."
+    },
+    "pythonType": {
+      "type": "string",
+      "minLength": 1,
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*$"
+        },
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]$"
+        },
+        {
+          "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\])(?:\\s*\\|\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.)(?:\\s*,\\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*|\\.\\.\\.))*\\s*\\]))+$"
+        }
+      ],
+      "description": "Python 3 type subset: simple or dotted names, one-level subscripted generics (including tuple ellipsis), and PEP 604 unions."
+    },
+    "rustParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/rustType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "javaParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/javaType"
+        },
+        "nullable": {
+          "type": "boolean",
+          "description": "Whether the Java parameter may be null."
+        }
+      },
+      "additionalProperties": false
+    },
+    "pythonParameter": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "$ref": "#/$defs/pythonType"
+        }
+      },
+      "additionalProperties": false
+    },
+    "v2RequirementId": {
+      "type": "string",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
+    },
+    "v2RequirementIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/v2RequirementId"
+      }
+    },
+    "parityEvidenceIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9_./:-]+$"
+      }
+    },
+    "publicPackage": {
+      "type": "object",
+      "required": [
+        "id",
+        "language",
+        "packageName",
+        "artifactFamily",
+        "versionSource",
+        "supportedTargets"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-transport",
+            "rust-kmipkit-client",
+            "rust-kmipkit",
+            "c-kmipkit",
+            "java-kmipkit",
+            "python-kmipkit"
+          ]
+        },
+        "language": {
+          "enum": [
+            "rust",
+            "c",
+            "java",
+            "python"
+          ]
+        },
+        "packageName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifactFamily": {
+          "enum": [
+            "rust-crate",
+            "c-distribution",
+            "java-maven-family",
+            "python-pypi-family"
+          ]
+        },
+        "versionSource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supportedTargets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "approvalSource": {
+      "type": "object",
+      "required": [
+        "kind",
+        "path",
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "feature-specification",
+            "accepted-adr"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "Approved",
+            "Accepted"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "implementationAuthorization": {
+      "type": "object",
+      "required": [
+        "kind",
+        "path",
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "kind": {
+          "const": "direct-human-instruction"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^specs/[0-9]{3}-[a-z0-9-]+/spec\\.md$"
+        },
+        "status": {
+          "const": "Draft"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "publicDeclaration": {
+      "type": "object",
+      "required": [
+        "declarationId",
+        "packageId",
+        "kind",
+        "exportName",
+        "capabilityId",
+        "requirementIds",
+        "declarationState",
+        "parityScope"
+      ],
+      "properties": {
+        "declarationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packageId": {
+          "enum": [
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-transport",
+            "rust-kmipkit-client",
+            "rust-kmipkit",
+            "c-kmipkit",
+            "java-kmipkit",
+            "python-kmipkit"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "module",
+            "type",
+            "variant",
+            "field",
+            "trait",
+            "function",
+            "associated-item",
+            "constant",
+            "macro",
+            "c-symbol",
+            "java-member",
+            "python-export"
+          ]
+        },
+        "exportName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cSignature": {
+          "$ref": "#/$defs/cSignature",
+          "description": "Exact C ABI signature when this symbol is not a high-level function record."
+        },
+        "cValue": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615,
+          "description": "Explicit fixed-width unsigned value for a generated C macro."
+        },
+        "cValueType": {
+          "enum": [
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t"
+          ],
+          "description": "Fixed-width C cast type for cValue."
+        },
+        "javaSignatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Exact javap signatures for an overloaded Java export path."
+        },
+        "capabilityId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/v2RequirementIds"
+        },
+        "declarationState": {
+          "enum": [
+            "blocked",
+            "authorized_wip",
+            "declared",
+            "verified"
+          ]
+        },
+        "parityScope": {
+          "enum": [
+            "four-language",
+            "rust-only-adr",
+            "c-only"
+          ]
+        },
+        "mappingSemantics": {
+          "enum": [
+            "native-handle-release",
+            "native-handle-release-managed-java-value",
+            "secret-buffer-wipe",
+            "normalized-client-protocol-error",
+            "normalized-client-protocol-error-outcome",
+            "standard-attribute-tag-value"
+          ],
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
+        },
+        "lifecycleSemanticsByLanguage": {
+          "type": "object",
+          "properties": {
+            "rust": {
+              "const": "wipe-on-final-owner-drop"
+            },
+            "c": {
+              "const": "release-shared-reference-wipe-on-final-owner-drop"
+            },
+            "java": {
+              "const": "wipe-owned-copy-on-close"
+            },
+            "python": {
+              "const": "wipe-owned-copy-on-close"
+            }
+          },
+          "required": [
+            "rust",
+            "c",
+            "java",
+            "python"
+          ],
+          "additionalProperties": false,
+          "description": "Optional per-language cleanup behavior for cross-language lifecycle mappings where equivalent operations have different ownership boundaries."
+        },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
+        },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Exact approved feature specification authorizing this declaration when it extends a capability owned by another specification."
+        },
+        "blockedReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "condition": {
+          "type": "object",
+          "required": [
+            "subjectBindings",
+            "predicates"
+          ],
+          "properties": {
+            "subjectBindings": {
+              "type": "object",
+              "propertyNames": {
+                "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|'[A-Za-z_][A-Za-z0-9_]*)$"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "predicates": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "subject",
+                      "lifetime"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "outlives"
+                      },
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lifetime": {
+                        "type": "string",
+                        "pattern": "^'(?:static|[A-Za-z_][A-Za-z0-9_]*)$"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "kind",
+                      "subject",
+                      "traitPath",
+                      "arguments",
+                      "modifier"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "traitBound"
+                      },
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "traitPath": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "arguments": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "modifier": {
+                        "enum": [
+                          "none",
+                          "maybe"
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "approvalSource": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "ownerSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Semantic owner specification for a delegated public API capability."
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource",
+          "description": "Approval record for the semantic owner specification."
+        },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
+        "languageMappings": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "cValue"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              },
+              "kind": {
+                "const": "macro"
+              }
+            },
+            "required": [
+              "cValueType"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "cValueType"
+            ]
+          },
+          "then": {
+            "required": [
+              "cValue"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "blockedReason"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "approvalSource"
+                  ]
+                },
+                {
+                  "required": [
+                    "languageMappings"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalSource"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "languageMappings"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "approvalSource"
+                  ]
+                },
+                {
+                  "required": [
+                    "condition"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            },
+            "required": [
+              "declarationState"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "condition"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "approvalSource",
+              "languageMappings"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "four-language"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "rust-only-adr"
+              },
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "rust"
+                ],
+                "propertyNames": {
+                  "const": "rust"
+                }
+              }
+            },
+            "required": [
+              "approvalSource"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "declarationState": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "parityEvidenceIds"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "javaSignatures"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "java-kmipkit"
+              },
+              "kind": {
+                "const": "java-member"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "approvedExclusion": {
+      "type": "object",
+      "required": [
+        "packageId",
+        "exportName",
+        "reason",
+        "approvalSource",
+        "evidence"
+      ],
+      "properties": {
+        "declarationId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$",
+          "description": "Exact stable identifier of a Rust public declaration excluded by a reviewed type-system mapping."
+        },
+        "capabilityId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "packageId": {
+          "enum": [
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-transport",
+            "rust-kmipkit-client",
+            "rust-kmipkit",
+            "c-kmipkit",
+            "java-kmipkit",
+            "python-kmipkit"
+          ]
+        },
+        "exportName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "javaSignatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Exact javap signatures excluded from an overloaded Java export path when sibling overloads remain mapped."
+        },
+        "declarationKind": {
+          "enum": [
+            "module",
+            "type",
+            "variant",
+            "field",
+            "trait",
+            "function",
+            "associated-item",
+            "constant",
+            "macro",
+            "c-symbol",
+            "java-member",
+            "python-export"
+          ]
+        },
+        "artifactKind": {
+          "enum": [
+            "rust-trait",
+            "rust-associated-type",
+            "rust-generic-type",
+            "rust-enum-variant",
+            "rust-enum-field",
+            "rust-module"
+          ],
+          "description": "Narrow Rust type-system artifact excluded only when its runtime value is represented by an exact verified four-language counterpart."
+        },
+        "counterpartDeclarationIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^*?]+$"
+          }
+        },
+        "evidencePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*\\\\).+$"
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approvalSource": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "description": "Exact owner specification for an approved declaration exclusion."
+        },
+    "rustArtifactKind": {
+      "enum": [
+        "rust-trait-implementation-member",
+        "rust-conditional-trait-implementation-member",
+        "exact-route",
+        "ownership-transfer-helper"
+      ],
+      "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
+    },
+    "identity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact serialized Rustdoc identity for a trait implementation member."
+    },
+    "condition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact conditional bound attached to a Rust trait implementation member."
+    },
+    "ownerExportName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "ownerDeclarationId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "exclusionScope": {
+      "const": "exact-route"
+    },
+    "exclusionCategory": {
+      "enum": [
+        "ownership-transfer-helper",
+        "test-support"
+      ]
+    },
+    "precedent": {
+      "type": "object",
+      "required": [
+        "packageId",
+        "exportName"
+      ],
+      "properties": {
+        "packageId": {
+          "enum": [
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-client",
+            "rust-kmipkit"
+          ]
+        },
+        "exportName": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$"
+        }
+      },
+      "additionalProperties": false
+    },
+        "cType": {
+          "$ref": "#/$defs/cTypeLayout",
+          "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
+        },
+        "cFunction": {
+          "type": "object",
+          "required": [
+            "symbol",
+            "parameters",
+            "returnType",
+            "errorCategories"
+          ],
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+$"
+            },
+            "documentation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?![\\s\\S]*\\*/)(?![\\s\\S]*[\\r\\n\\\\]).+$"
+              }
+            },
+            "parameters": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/cParameter"
+              }
+            },
+            "returnType": {
+              "const": "int32_t"
+            },
+            "errorCategories": {
+              "$ref": "#/$defs/errorCategoryIds"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Exact C prototype for a symbol whose idiomatic Rust, Java, or Python surface is represented through another declaration shape."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "cType"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["artifactKind"]
+          },
+          "then": {
+            "required": [
+              "declarationId",
+              "capabilityId",
+              "declarationKind",
+              "counterpartDeclarationIds",
+              "evidencePaths",
+              "candidateSpecId"
+            ],
+            "properties": {
+              "candidateSpecId": {
+                "const": "KMIPKIT-0053"
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "cAbiRecordConstant": {
+      "type": "object",
+      "required": [
+        "name",
+        "field",
+        "value",
+        "meaning",
+        "requirementIds"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "field": {
+          "type": "string",
+          "pattern": "^kmipkit_[a-z0-9_]+_t\\.[a-z0-9_]+$"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "meaning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/v2RequirementIds"
+        }
+      },
+      "additionalProperties": false
+    },
+    "apiLevel": {
+      "type": "object",
+      "required": [
+        "id",
+        "requirementIds"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "high-level",
+            "typed-protocol",
+            "generic-ttlv"
+          ]
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/v2RequirementIds"
+        }
+      },
+      "additionalProperties": false
+    },
+    "catalog": {
+      "type": "object",
+      "required": [
+        "path",
+        "schemaVersion"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./-]+$"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "required": [
+        "operationId",
+        "name",
+        "section",
+        "scope",
+        "ownerDependency",
+        "apiState"
+      ],
+      "properties": {
+        "operationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "section": {
+          "type": "string",
+          "pattern": "^6\\.1\\.[0-9]+$"
+        },
+        "scope": {
+          "const": "client_1_0"
+        },
+        "ownerDependency": {
+          "$ref": "#/$defs/operationOwnerDependency"
+        },
+        "featureSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$"
+        },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$"
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "implementationAuthorization": {
+          "$ref": "#/$defs/implementationAuthorization"
+        },
+        "apiState": {
+          "enum": [
+            "blocked",
+            "authorized_wip",
+            "declared",
+            "verified"
+          ]
+        },
+        "blockedReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
+        },
+        "declarations": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "blockedReason"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "featureSpecId"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "declarations"
+                  ]
+                },
+                {
+                  "required": [
+                    "parityEvidenceIds"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "c-only"
+              },
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "c"
+                ],
+                "propertyNames": {
+                  "const": "c"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "authorized_wip"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidateSpecId",
+              "implementationAuthorization",
+              "declarations"
+            ],
+            "properties": {
+              "declarations": {
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "featureSpecId"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "blockedReason"
+                  ]
+                },
+                {
+                  "required": [
+                    "parityEvidenceIds"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "featureSpecId",
+              "approvalEvidence",
+              "declarations"
+            ],
+            "properties": {
+              "declarations": {
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            },
+            "not": {
+              "required": [
+                "candidateSpecId"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "apiState": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "parityEvidenceIds"
+            ]
+          }
+        }
+      ]
+    },
+    "operationOwnerDependency": {
+      "type": "object",
+      "required": [
+        "state",
+        "specId"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "unassigned",
+            "candidate",
+            "approved"
+          ]
+        },
+        "specId": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^KMIPKIT-[0-9]{4}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unassigned"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "specId": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "candidate",
+                  "approved"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "specId": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "capability": {
+      "type": "object",
+      "required": [
+        "capabilityId",
+        "requirementIds",
+        "capabilityState",
+        "parityScope"
+      ],
+      "properties": {
+        "capabilityId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/v2RequirementIds"
+        },
+        "capabilityState": {
+          "enum": [
+            "blocked",
+            "declared",
+            "verified"
+          ]
+        },
+        "parityScope": {
+          "enum": [
+            "four-language",
+            "rust-only-adr",
+            "c-only"
+          ]
+        },
+        "ownerSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$"
+        },
+        "ownerAdrId": {
+          "type": "string",
+          "pattern": "^ADR-[0-9]{4}$"
+        },
+        "approvalEvidence": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "acceptedEvidence": {
+          "$ref": "#/$defs/approvalSource"
+        },
+        "mappings": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "candidateSpecId": {
+          "type": "string",
+          "pattern": "^KMIPKIT-[0-9]{4}$"
+        },
+        "blockedReason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parityEvidenceIds": {
+          "$ref": "#/$defs/parityEvidenceIds"
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "blockedReason"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "ownerSpecId"
+                  ]
+                },
+                {
+                  "required": [
+                    "ownerAdrId"
+                  ]
+                },
+                {
+                  "required": [
+                    "approvalEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "acceptedEvidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "mappings"
+                  ]
+                },
+                {
+                  "required": [
+                    "parityEvidenceIds"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "mappings"
+            ],
+            "oneOf": [
+              {
+                "required": [
+                  "ownerSpecId",
+                  "approvalEvidence"
+                ],
+                "properties": {
+                  "approvalEvidence": {
+                    "properties": {
+                      "kind": {
+                        "const": "feature-specification"
+                      },
+                      "status": {
+                        "enum": [
+                          "Approved",
+                          "Accepted"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "ownerAdrId"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "acceptedEvidence"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "ownerAdrId",
+                  "acceptedEvidence"
+                ],
+                "properties": {
+                  "acceptedEvidence": {
+                    "properties": {
+                      "kind": {
+                        "const": "accepted-adr"
+                      },
+                      "status": {
+                        "const": "Accepted"
+                      }
+                    }
+                  }
+                },
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "ownerSpecId"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "approvalEvidence"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "not": {
+              "required": [
+                "candidateSpecId"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "capabilityState": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "parityEvidenceIds"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "four-language"
+              },
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": [
+                  "rust",
+                  "c",
+                  "java",
+                  "python"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "rust-only-adr"
+              },
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": [
+                  "rust"
+                ],
+                "propertyNames": {
+                  "const": "rust"
+                }
+              }
+            },
+            "required": [
+              "ownerAdrId",
+              "acceptedEvidence"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "c-only"
+              },
+              "capabilityState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "mappings": {
+                "required": [
+                  "c"
+                ],
+                "propertyNames": {
+                  "const": "c"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "v2GeneratedOutputs": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "prefixItems": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "registryRustFfi"
+            },
+            "path": {
+              "const": "crates/kmipkit-ffi/src/extension_registry_generated.rs"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "cHeader"
+            },
+            "path": {
+              "const": "bindings/c/include/kmipkit.h"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "registryJavaApi"
+            },
+            "path": {
+              "const": "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "registryJavaParityTests"
+            },
+            "path": {
+              "const": "bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "registryPythonApi"
+            },
+            "path": {
+              "const": "bindings/python/src/kmipkit/_generated/extension_registry.py"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "registryParityFixtures"
+            },
+            "path": {
+              "const": "bindings/shared/fixtures/extensions/generated/registry_parity.json"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "rustFfi"
+            },
+            "path": {
+              "const": "crates/kmipkit-ffi/src/public_api_generated.rs"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "javaApi"
+            },
+            "path": {
+              "const": "bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "javaParityTests"
+            },
+            "path": {
+              "const": "bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "pythonApi"
+            },
+            "path": {
+              "const": "bindings/python/src/kmipkit/_generated/public_api.py"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "parityFixtures"
+            },
+            "path": {
+              "const": "bindings/shared/fixtures/api/generated/public_api_parity.json"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "path"
+          ],
+          "properties": {
+            "name": {
+              "const": "internalCHeader"
+            },
+            "path": {
+              "const": "bindings/shared/fixtures/api/generated/kmipkit_internal.h"
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "items": false
+    },
+    "publicApiV2": {
+      "type": "object",
+      "required": [
+        "formatVersion",
+        "scope",
+        "releaseLine",
+        "catalog",
+        "requirementIds",
+        "languages",
+        "publicPackages",
+        "publicDeclarations",
+        "approvedExclusions",
+        "cAbiRecordConstants",
+        "apiLevels",
+        "operations",
+        "capabilities",
+        "types",
+        "functions",
+        "errorCategories",
+        "limits",
+        "security",
+        "generatedOutputs"
+      ],
+      "properties": {
+        "formatVersion": {
+          "type": "integer",
+          "const": 2
+        },
+        "scope": {
+          "const": "full-1.0"
+        },
+        "releaseLine": {
+          "const": "1.0.0"
+        },
+        "catalog": {
+          "$ref": "#/$defs/catalog"
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/v2RequirementIds"
+        },
+        "languages": {
+          "const": [
+            "rust",
+            "c",
+            "java",
+            "python"
+          ]
+        },
+        "publicPackages": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/publicPackage"
+          }
+        },
+        "publicDeclarations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/publicDeclaration"
+          }
+        },
+        "approvedExclusions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/approvedExclusion"
+          }
+        },
+        "cAbiRecordConstants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cAbiRecordConstant"
+          }
+        },
+        "apiLevels": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {
+              "type": "object",
+              "required": [
+                "id",
+                "requirementIds"
+              ],
+              "properties": {
+                "id": {
+                  "const": "high-level"
+                },
+                "requirementIds": {
+                  "$ref": "#/$defs/v2RequirementIds"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "id",
+                "requirementIds"
+              ],
+              "properties": {
+                "id": {
+                  "const": "typed-protocol"
+                },
+                "requirementIds": {
+                  "$ref": "#/$defs/v2RequirementIds"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "required": [
+                "id",
+                "requirementIds"
+              ],
+              "properties": {
+                "id": {
+                  "const": "generic-ttlv"
+                },
+                "requirementIds": {
+                  "$ref": "#/$defs/v2RequirementIds"
+                }
+              },
+              "additionalProperties": false
+            }
+          ],
+          "items": false
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 56,
+          "maxItems": 56,
+          "items": {
+            "$ref": "#/$defs/operation"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/capability"
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/typeDeclaration"
+          }
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/functionDeclaration"
+          }
+        },
+        "errorCategories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/errorCategoryV2"
+          }
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/limitMaxDefinitions"
+            },
+            {
+              "$ref": "#/$defs/limitMaxSchemaNodes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxChildRulesPerStructure"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTextBytesPerField"
+            },
+            {
+              "$ref": "#/$defs/limitMaxRegistryTextBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxDiscriminatorScalarBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTotalDiscriminatorScalarBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxConstraintMembersPerRule"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTotalConstraintMembers"
+            },
+            {
+              "$ref": "#/$defs/limitMaxPayloadIndexRecords"
+            },
+            {
+              "$ref": "#/$defs/limitMaxLookupComparisons"
+            },
+            {
+              "$ref": "#/$defs/limitMaxDepth"
+            }
+          ],
+          "items": false,
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
+        },
+        "security": {
+          "$ref": "#/$defs/security"
+        },
+        "generatedOutputs": {
+          "$ref": "#/$defs/v2GeneratedOutputs"
+        }
+      },
+      "additionalProperties": false
+    },
+    "registrySliceV1": {
+      "type": "object",
+      "required": [
+        "formatVersion",
+        "scope",
+        "requirementIds",
+        "types",
+        "functions",
+        "errorCategories",
+        "limits",
+        "security",
+        "generatedOutputs"
+      ],
+      "properties": {
+        "formatVersion": {
+          "type": "integer",
+          "const": 1,
+          "description": "The manifest data format version. Breaking field or meaning changes require a new version and schema identifier."
+        },
+        "scope": {
+          "type": "string",
+          "const": "registry-slice",
+          "description": "This manifest covers the KMIPKIT-0012 registry surface only; it is not the complete KMIPKit 1.0 API inventory."
+        },
+        "requirementIds": {
+          "$ref": "#/$defs/requirementIds"
+        },
+        "types": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/typeDeclaration"
+          },
+          "description": "Type declarations are emitted in this array order."
+        },
+        "functions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/functionDeclaration"
+          },
+          "description": "Function declarations and each function's parameters are emitted in their declared array order."
+        },
+        "errorCategories": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/errorCategory"
+          },
+          "description": "Stable cross-language error mappings. Entries are emitted in this array order."
+        },
+        "limits": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/limitMaxDefinitions"
+            },
+            {
+              "$ref": "#/$defs/limitMaxSchemaNodes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxChildRulesPerStructure"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTextBytesPerField"
+            },
+            {
+              "$ref": "#/$defs/limitMaxRegistryTextBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxDiscriminatorScalarBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTotalDiscriminatorScalarBytes"
+            },
+            {
+              "$ref": "#/$defs/limitMaxConstraintMembersPerRule"
+            },
+            {
+              "$ref": "#/$defs/limitMaxTotalConstraintMembers"
+            },
+            {
+              "$ref": "#/$defs/limitMaxPayloadIndexRecords"
+            },
+            {
+              "$ref": "#/$defs/limitMaxLookupComparisons"
+            },
+            {
+              "$ref": "#/$defs/limitMaxDepth"
+            }
+          ],
+          "items": false,
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
+        },
+        "security": {
+          "$ref": "#/$defs/security"
+        },
+        "generatedOutputs": {
+          "$ref": "#/$defs/generatedOutputs"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

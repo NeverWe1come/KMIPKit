@@ -13,7 +13,7 @@ from typing import Any
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = REPOSITORY_ROOT / "Cargo.toml"
 LOCKFILE = REPOSITORY_ROOT / "Cargo.lock"
-TRACEABILITY = REPOSITORY_ROOT / "specification" / "compliance" / "requirements" / "KMIPKIT-0045.csv"
+TRACEABILITY = REPOSITORY_ROOT / "verification" / "conformance" / "requirements" / "KMIPKIT-0045.csv"
 PATCHED_FLOOR = (0, 23, 46)
 
 

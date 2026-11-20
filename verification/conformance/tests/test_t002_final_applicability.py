@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = REPO_ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-CATALOG_PATH = REPO_ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json"
 
 SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
 PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.57-002"

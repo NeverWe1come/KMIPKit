@@ -17,7 +17,7 @@ from verification.conformance.validate import load_validated_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "normative_catalog" / "generate_ttlv_tags.py"
+SCRIPT = ROOT / "verification" / "conformance" / "generate_ttlv_tags.py"
 OUTPUT_PATH = "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"
 GENERATOR_MODULE = "verification.conformance.generate_ttlv_tags"
 
@@ -79,13 +79,13 @@ def small_catalog() -> dict[str, Any]:
 
 def _copy_validated_catalog_repo(destination: Path) -> None:
     """Create the minimal committed input tree required by catalog validation."""
-    (destination / "specification").mkdir()
+    (destination / "verification" / "conformance").mkdir(parents=True)
     shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
-    shutil.copytree(ROOT / "specification" / "oasis", destination / "specification" / "oasis")
-    shutil.copytree(ROOT / "specification" / "catalog", destination / "specification" / "catalog")
+    shutil.copytree(ROOT / "verification" / "conformance" / "oasis", destination / "verification" / "conformance" / "oasis")
+    shutil.copytree(ROOT / "verification" / "conformance" / "catalog", destination / "verification" / "conformance" / "catalog")
     subprocess.run(["git", "init", "-q"], cwd=destination, check=True)
     subprocess.run(
-        ["git", "-c", "core.autocrlf=false", "add", "specification/oasis"],
+        ["git", "-c", "core.autocrlf=false", "add", "verification/conformance/oasis"],
         cwd=destination,
         check=True,
     )
@@ -154,7 +154,7 @@ class TagAllocationRenderingTests(unittest.TestCase):
 
     def test_renders_every_exact_catalog_tag_and_range(self) -> None:
         catalog = load_validated_catalog(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_bytes(),
             ROOT,
         )
         rendered = self._render(catalog)
@@ -179,7 +179,7 @@ class TagAllocationRenderingTests(unittest.TestCase):
 
     def test_renders_every_assigned_kmip30_tag_from_table_605(self) -> None:
         catalog = load_validated_catalog(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_bytes(),
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_bytes(),
             ROOT,
         )
         from verification.conformance.generate_ttlv_tags import (
@@ -255,7 +255,7 @@ class TagAllocationRenderingTests(unittest.TestCase):
             ("Performs CRL Checks", "4201CB"),
         )
         versioned_document = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-versioned-tags.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-versioned-tags.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -412,7 +412,7 @@ class TagAllocationGeneratorCliTests(unittest.TestCase):
     def test_catalog_validation_error_does_not_echo_catalog_values(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = self._repo_root(directory)
-            catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
+            catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
             catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
             marker = "KMIPKIT-ELEM-UNTRUSTED-CLI-ERROR"
             catalog["elements"][0]["element_id"] = marker

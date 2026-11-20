@@ -23,7 +23,7 @@ from verification.conformance.rust_source_analysis import (
 
 ROOT = Path(__file__).resolve().parents[3]
 MAX_TEST_SOURCE_BYTES = 1_048_576
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
 PROFILE_CONFORMANCE_FEATURE_SPEC = "KMIPKIT-0010"
 PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS = {
@@ -31,14 +31,14 @@ PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS = {
     "KMIPKIT-REQ-SPEC-14.1-002",
 }
 MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
-MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "specification/compliance/requirements/KMIPKIT-0006.csv"
+MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "verification/conformance/requirements/KMIPKIT-0006.csv"
 CLIENT_EXECUTION_FEATURE_SPEC = "KMIPKIT-0007"
 CLIENT_EXECUTION_SPEC_PATH = ROOT / "specs/007-client-execution/spec.md"
 CLIENT_EXECUTION_REQUIREMENTS_PATH = (
-    ROOT / "specification/compliance/requirements/KMIPKIT-0007.csv"
+    ROOT / "verification/conformance/requirements/KMIPKIT-0007.csv"
 )
 CLIENT_CREDENTIALS_REQUIREMENTS_PATH = (
-    ROOT / "specification/compliance/requirements/KMIPKIT-0008.csv"
+    ROOT / "verification/conformance/requirements/KMIPKIT-0008.csv"
 )
 CLIENT_CREDENTIALS_SPEC_PATH = ROOT / "specs/008-credentials-attestation/spec.md"
 CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS = {
@@ -171,7 +171,7 @@ def _result_element_ids(elements: list[dict[str, object]]) -> set[str]:
 
 
 def _requirements_by_id() -> dict[str, dict[str, str]]:
-    path = ROOT / "specification/compliance/requirements/KMIPKIT-0003.csv"
+    path = ROOT / "verification/conformance/requirements/KMIPKIT-0003.csv"
     with path.open(encoding="utf-8", newline="") as stream:
         return {row["requirement_id"]: row for row in csv.DictReader(stream)}
 

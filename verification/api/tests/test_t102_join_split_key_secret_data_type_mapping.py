@@ -14,8 +14,8 @@ from verification.api.tests.t102_manifest_totals import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/023-key-material-transfer/spec.md"
 DECLARATION_ID = "rust-observed-7c003b4ec061b8499a9e"
 EXPORT_NAME = "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type"
@@ -160,7 +160,7 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
         self.assertRegex(text, r"Password\s+00000001")
         self.assertIn("Table 310: Re-key Key Pair Request Payload", text)
         self.assertIn("Private Key Unique Identifier No Determines the existing Asymmetric key pair to be re-keyed.", text)
-        tag_catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        tag_catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertIn(
             "KMIPKIT-ELEM-TAG-420066",
             {row.get("element_id") for row in tag_catalog.get("elements", [])},

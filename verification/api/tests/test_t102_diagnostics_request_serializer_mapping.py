@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OWNER = "specs/028-diagnostics-verification/interop/spec.md"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OWNER = "specs/028-diagnostics-interop/spec.md"
 PARITY_TEST_EVIDENCE_ID = (
     "verification/api/tests/test_t102_diagnostics_request_serializer_mapping.py"
 )

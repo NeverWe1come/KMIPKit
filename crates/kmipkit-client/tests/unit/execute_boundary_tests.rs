@@ -5115,7 +5115,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
             "fixture {} escapes the crate-local inventory",
             fixture.id
         );
-        assert!(!fixture.path.contains("specification/oasis"));
+        assert!(!fixture.path.contains("verification/conformance/oasis"));
         match fixture.expected {
             ExpectedDecision::Accept => assert!(matches!(
                 fixture.id,

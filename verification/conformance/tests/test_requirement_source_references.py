@@ -12,7 +12,7 @@ from verification.conformance.tests.test_validate import ROOT
 class RequirementSourceReferenceTests(unittest.TestCase):
     def test_active_state_fourth_predicate_is_listed_by_its_source_clause(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
         requirement = next(
@@ -28,7 +28,7 @@ class RequirementSourceReferenceTests(unittest.TestCase):
 
     def test_retired_candidate_review_matches_current_catalog_disposition(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         fixture = json.loads(
             (
@@ -57,11 +57,11 @@ class RequirementSourceReferenceTests(unittest.TestCase):
 
     def test_profile_clause_keyword_inventory_matches_pinned_source_without_changing_requirement(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         source_id = "KMIPKIT-SRC-profiles"
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-007"
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         audited_clause = next(
             item for item in audit_document(source_path.read_bytes(), source_id) if item["clause_id"] == clause_id
         )
@@ -79,11 +79,11 @@ class RequirementSourceReferenceTests(unittest.TestCase):
 
     def test_out_of_scope_profile_clause_keyword_inventory_matches_pinned_source(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         source_id = "KMIPKIT-SRC-profiles"
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-008"
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         audited_clause = next(
             item for item in audit_document(source_path.read_bytes(), source_id) if item["clause_id"] == clause_id
         )

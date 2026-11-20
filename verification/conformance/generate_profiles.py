@@ -21,10 +21,10 @@ else:
 _SECTION = re.compile(r"[0-9]+(?:\.[0-9]+)*\Z")
 _TARGET_DECISION = re.compile(r"KMIPKIT-0010/(FR-[0-9]{3})\Z")
 MAX_PROFILE_TARGET_BYTES = 65_536
-PROFILE_TARGET_PATH = "specification/catalog/profile-targets.json"
+PROFILE_TARGET_PATH = "verification/conformance/catalog/profile-targets.json"
 PROFILE_SPEC_PATH = "specs/010-profile-conformance/spec.md"
 PROFILE_OUTPUT_PATH = "crates/kmipkit-protocol/src/profiles_generated.rs"
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 _VERIFICATION_CATEGORIES = {
     "MUST": "RequiredBehavior",

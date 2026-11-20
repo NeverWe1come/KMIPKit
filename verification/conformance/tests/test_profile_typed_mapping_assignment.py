@@ -19,7 +19,7 @@ TEST_ID = (
 class ProfileTypedMappingAssignmentTests(unittest.TestCase):
     def test_get_attributes_duplicate_reference_prohibition_is_assigned(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == REQUIREMENT_ID
@@ -39,7 +39,7 @@ class ProfileTypedMappingAssignmentTests(unittest.TestCase):
 
     def test_read_only_attribute_modification_is_assigned_with_client_scope(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-4-001-004"
         requirement = next(
@@ -67,7 +67,7 @@ class ProfileTypedMappingAssignmentTests(unittest.TestCase):
 
     def test_read_only_attribute_deletion_is_assigned_with_client_scope(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-4-001-005"
         requirement = next(

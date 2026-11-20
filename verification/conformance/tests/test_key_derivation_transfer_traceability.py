@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 TRACEABILITY = ROOT / "specs" / "023-key-material-transfer" / "traceability.md"
 FEATURE = "KMIPKIT-0037"
 

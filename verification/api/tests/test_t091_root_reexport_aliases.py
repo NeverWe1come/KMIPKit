@@ -11,7 +11,7 @@ from verification.api import generate
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
     ROOT / "specs" / "053-api-parity-facade" / "reports"
     / "rust-export-report-2026-11-07-final.json"

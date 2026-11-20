@@ -13,7 +13,7 @@ from verification.api.tests.t102_manifest_totals import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 PACKAGE = "rust-kmipkit-client"
 NAMESPACE = "kmipkit_client::extension_registry"
 OWNER_SPEC = "specs/043-public-api-bindings/spec.md"

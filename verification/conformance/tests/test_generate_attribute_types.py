@@ -370,7 +370,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                     self.assertNotIn("private", stderr.getvalue())
 
     def test_direct_cli_check_exercises_script_import_path(self) -> None:
-        script = REPOSITORY_ROOT / "tools" / "normative_catalog" / "generate_attribute_types.py"
+        script = REPOSITORY_ROOT / "verification" / "conformance" / "generate_attribute_types.py"
         arguments = [str(script), "--repo-root", str(REPOSITORY_ROOT), "--check"]
         with (
             patch.object(sys, "argv", arguments),

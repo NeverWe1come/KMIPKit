@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 class ResponseViewBindingsManifestTests(unittest.TestCase):
     def test_three_renderers_map_the_same_owned_full_response_in_all_languages(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         functions = {row["id"]: row for row in manifest["functions"]}
         for method, java in [("ttlv_hex", "ttlvHex"), ("json", "json"), ("xml", "xml")]:
             record = functions["client_batch_item_response_" + method]

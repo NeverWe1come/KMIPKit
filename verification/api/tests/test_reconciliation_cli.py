@@ -18,7 +18,7 @@ class ReconciliationCliTests(unittest.TestCase):
         self.temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary_directory.cleanup)
         self.root = Path(self.temporary_directory.name)
-        manifest_path = self.root / "specification" / "api" / "public-api.json"
+        manifest_path = self.root / "bindings" / "shared" / "public-api.json"
         manifest_path.parent.mkdir(parents=True)
         self.original_manifest = {
             "publicDeclarations": [],

@@ -9,7 +9,7 @@ from pathlib import Path
 from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 C_HEADER = ROOT / "bindings" / "c" / "include" / "kmipkit.h"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-EXPORT"

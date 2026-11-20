@@ -10,10 +10,10 @@ from pathlib import Path
 from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
-OWNER_SPEC = "specs/028-diagnostics-verification/interop/spec.md"
+OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OPERATION_REQUIREMENTS = {
     "KMIPKIT-0093-FR-005",
@@ -176,7 +176,7 @@ class LogParityManifestTests(unittest.TestCase):
             self.assertTrue(expected <= actual_mappings[language], language)
         self.assertEqual(OPERATION_REQUIREMENTS, linked_requirements)
 
-        traceability = (ROOT / "specs/028-diagnostics-verification/interop/traceability.md").read_text(
+        traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
             encoding="utf-8"
         )
         self.assertTrue(TRACEABILITY_IDS <= set(

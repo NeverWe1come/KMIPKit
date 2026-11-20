@@ -17,8 +17,8 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_TAGS_PATH = "specification/catalog/kmip-versioned-tags.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_TAGS_PATH = "verification/conformance/catalog/kmip-versioned-tags.json"
 OUTPUT_PATH = "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
 _TAG_VALUE = re.compile(r"(?:0[xX])?([0-9A-Fa-f]{6})\Z")
 _SOURCE_POLICY_COUNT = 62

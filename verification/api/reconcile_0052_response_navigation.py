@@ -1049,7 +1049,7 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
-    path = args.repo_root / "specification/api/public-api.json"
+    path = args.repo_root / "bindings/shared/public-api.json"
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
         reconciled = reconcile(manifest)

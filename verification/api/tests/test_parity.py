@@ -13,8 +13,8 @@ from verification.api import generate
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-REGISTRY_MANIFEST = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+REGISTRY_MANIFEST = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api-v1.json"
 GENERATED_OUTPUTS = {
     "rustFfi": "crates/kmipkit-ffi/src/extension_registry_generated.rs",
     "cHeader": "bindings/c/include/kmipkit.h",

@@ -23,7 +23,7 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_exact_public_paths_separate_0093_parity_from_remaining_0097_candidates(self) -> None:

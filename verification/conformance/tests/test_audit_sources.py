@@ -97,7 +97,7 @@ class SourceAuditTests(unittest.TestCase):
         base_sha = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
         ).stdout.strip()
-        script = ROOT / "tools" / "normative_catalog" / "audit_sources.py"
+        script = ROOT / "verification" / "conformance" / "audit_sources.py"
         result = subprocess.run(
             [sys.executable, str(script), "--base-sha", base_sha, "--repo-root", str(ROOT)],
             cwd=ROOT,
@@ -112,7 +112,7 @@ class SourceAuditTests(unittest.TestCase):
         base_sha = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True, capture_output=True, text=True
         ).stdout.strip()
-        script = ROOT / "tools" / "normative_catalog" / "audit_sources.py"
+        script = ROOT / "verification" / "conformance" / "audit_sources.py"
         result = subprocess.run(
             [
                 sys.executable,

@@ -12,7 +12,7 @@ from verification.api.tests.test_t101_hash_mac_signature_declaration_mapping imp
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-HASH": ("Hash", "6.1.24"),

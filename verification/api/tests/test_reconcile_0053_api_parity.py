@@ -182,7 +182,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             reconcile_0053_api_parity.reconcile_manifest(self.manifest, routes)
 
     def test_repository_inventory_contains_only_the_reviewed_0053_candidate_groups(self) -> None:
-        manifest_path = Path("specification/api/public-api.json")
+        manifest_path = Path("bindings/shared/public-api.json")
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         candidates = [
             declaration
@@ -222,7 +222,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             self.assertEqual("verified", capabilities[capability_id])
 
     def test_kmip30_system_credential_models_have_exact_generic_routes_in_all_languages(self) -> None:
-        manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads(Path("bindings/shared/public-api.json").read_text(encoding="utf-8"))
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
@@ -315,7 +315,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0049-FR-012", declaration["requirementIds"])
 
     def test_reconciles_only_executable_table59_field_getters_and_builder_setters(self) -> None:
-        manifest = json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads(Path("bindings/shared/public-api.json").read_text(encoding="utf-8"))
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
@@ -440,7 +440,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_declaration_corrections_reattribute_decrypt_helpers_exactly(self) -> None:
         manifest = json.loads(
-            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+            Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
@@ -486,7 +486,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_declaration_corrections_resume_partial_predecessor_state(self) -> None:
         manifest = json.loads(
-            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+            Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         route_data = json.loads(
             Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
@@ -530,7 +530,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_generic_ttlv_additions_match_the_canonical_approved_source(self) -> None:
         manifest = json.loads(
-            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+            Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         approved_spec = Path("specs/004-generic-ttlv-model/spec.md").read_text(
             encoding="utf-8"
@@ -578,7 +578,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_synchronization_promotes_fully_resolved_0053_capabilities(self) -> None:
         manifest = json.loads(
-            Path("specification/api/public-api.json").read_text(encoding="utf-8")
+            Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         capability = next(
             row
@@ -1022,7 +1022,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     @staticmethod
     def manifest_for_repository() -> dict:
-        return json.loads(Path("specification/api/public-api.json").read_text(encoding="utf-8"))
+        return json.loads(Path("bindings/shared/public-api.json").read_text(encoding="utf-8"))
 
     def test_latest_validation_exports_have_exact_routes_or_exclusions(self) -> None:
         manifest = self.manifest_for_repository()

@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 def _markdown_section(document: str, heading: str) -> str | None:
@@ -182,7 +182,7 @@ class T073DocumentationReconciliationTests(unittest.TestCase):
             normalized_typed.lower(),
         )
         self.assertIn(
-            "[public api manifest](../../specification/api/public-api.json)",
+            "[public api manifest](../../bindings/shared/public-api.json)",
             normalized_typed.lower(),
         )
         self.assertNotIn("manifest status table below", reference)

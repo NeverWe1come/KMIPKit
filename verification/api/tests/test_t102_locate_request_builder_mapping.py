@@ -9,8 +9,8 @@ from html import unescape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OASIS = ROOT / "specification" / "oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OASIS = ROOT / "verification" / "conformance" / "oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 OWNER_SPEC = "specs/017-managed-object-retrieval/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
 CONTRACT_EVIDENCE = (

@@ -13,10 +13,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
-VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
-VERSIONED_TAGS = ROOT / "specification/catalog/kmip-versioned-tags.json"
-OPERATION_INVENTORY = ROOT / "specification/catalog/fluent-operation-inventory.json"
+BASE_CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_VALUES = ROOT / "verification/conformance/catalog/kmip-versioned-values.json"
+VERSIONED_TAGS = ROOT / "verification/conformance/catalog/kmip-versioned-tags.json"
+OPERATION_INVENTORY = ROOT / "verification/api/catalog/fluent-operation-inventory.json"
 
 
 def _numeric(raw: str) -> int:

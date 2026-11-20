@@ -14,8 +14,8 @@ from verification.api.kmip30_draft_api import (
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification" / "api" / "kmip-3.0-draft-api.json"
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+CATALOG_PATH = ROOT / "verification" / "api" / "catalog" / "kmip-3.0-draft-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 class Kmip30DraftApiCatalogTests(unittest.TestCase):

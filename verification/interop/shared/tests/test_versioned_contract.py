@@ -14,10 +14,10 @@ from verification.interop.shared.tools.aggregate_matrix import aggregate_results
 
 ROOT = Path(__file__).resolve().parents[4]
 CATALOG = ROOT / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"
-NORMATIVE = ROOT / "specification/catalog/kmip-2.1.json"
+NORMATIVE = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 OASIS_PATHS = {
-    "2.0": ROOT / "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
-    "2.1": ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+    "2.0": ROOT / "verification/conformance/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+    "2.1": ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
 }
 
 

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 class PythonExpertAttributePositionManifestTests(unittest.TestCase):
     def test_positioned_item_has_four_language_mappings_and_requirements(self):
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text())
         rows = [row for row in manifest["publicDeclarations"] if row["exportName"]
                 == "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at"]
         self.assertEqual(len(rows), 1)

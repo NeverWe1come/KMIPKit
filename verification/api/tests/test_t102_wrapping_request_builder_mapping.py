@@ -12,9 +12,9 @@ from pathlib import Path
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-OASIS = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
+OASIS = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 BASE_BLOCKED = 658
 EXPECTED_BLOCKED_AFTER_BATCH = 648
 PKCS11_MAPPED_CANDIDATES = 6
@@ -147,7 +147,7 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
             <= set(self.manifest["requirementIds"])
         )
         schema = json.loads(
-            (ROOT / "specification" / "api" / "public-api.schema.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.schema.json").read_text(
                 encoding="utf-8"
             )
         )

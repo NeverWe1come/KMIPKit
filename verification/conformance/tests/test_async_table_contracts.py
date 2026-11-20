@@ -14,7 +14,7 @@ from verification.conformance.validate import validate_source_table_contracts
 
 ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 
 REVIEWED_ASYNC_CONTRACT_SEMANTICS = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED": {

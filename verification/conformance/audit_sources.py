@@ -268,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         if arguments.check:
             raw_catalog = safe_read_bytes(
                 repository,
-                "specification/catalog/kmip-2.1.json",
+                "verification/conformance/catalog/kmip-2.1.json",
                 max_bytes=16 * 1024 * 1024,
             )
             catalog = json.loads(raw_catalog.decode("utf-8"))

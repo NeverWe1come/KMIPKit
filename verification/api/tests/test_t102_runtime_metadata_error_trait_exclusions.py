@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = REPOSITORY_ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = REPOSITORY_ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
     REPOSITORY_ROOT
     / "specs"

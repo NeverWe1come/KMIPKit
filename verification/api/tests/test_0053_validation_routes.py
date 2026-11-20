@@ -16,7 +16,7 @@ from verification.api.prepare_0053_validation_routes import (
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 REPORT_PATH = (
     ROOT
     / "specs"

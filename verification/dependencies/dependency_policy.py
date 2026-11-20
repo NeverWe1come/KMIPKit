@@ -1636,7 +1636,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--exceptions",
         type=Path,
-        default=REPOSITORY_ROOT / "specification" / "compliance" / "dependency-policy-exceptions.json",
+        default=REPOSITORY_ROOT / "verification" / "dependencies" / "dependency-policy-exceptions.json",
     )
     parser.add_argument(
         "--findings",

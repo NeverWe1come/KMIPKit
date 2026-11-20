@@ -11,9 +11,9 @@ from verification.conformance.audit_sources import _decode_document
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 FIXTURE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
 
 
 class _TextParser(HTMLParser):

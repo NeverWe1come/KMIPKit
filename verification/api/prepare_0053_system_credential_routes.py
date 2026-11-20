@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST_PATH = Path("specification/api/public-api.json")
+MANIFEST_PATH = Path("bindings/shared/public-api.json")
 ROUTES_PATH = Path("specs/053-api-parity-facade/additional-api-routes.json")
 SPEC_ID = "KMIPKIT-0053"
 APPROVAL = {

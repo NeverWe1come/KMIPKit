@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t101-hash-mac-signature-baseline.json"
 OWNER_SPEC = "specs/021-hash-mac-signature-operations/spec.md"
 T101_TEST = "verification/api/tests/test_t101_hash_mac_signature_declaration_mapping.py"

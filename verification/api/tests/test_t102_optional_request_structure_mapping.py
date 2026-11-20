@@ -22,10 +22,10 @@ from verification.api.tests.t102_manifest_totals import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CERTIFY_TARGET_IDS = {target["id"] for target in CERTIFY_TARGETS}
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
+OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 MASK_WIRE_FIXTURE_SOURCES = (
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",

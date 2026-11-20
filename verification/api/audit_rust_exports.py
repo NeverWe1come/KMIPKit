@@ -1658,7 +1658,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         with tempfile.TemporaryDirectory(prefix="kmipkit-rust-export-audit-") as build_dir:
             documents = build_documents(root, Path(build_dir))
-        manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+        manifest = json.loads((root / "bindings/shared/public-api.json").read_text(encoding="utf-8"))
         report = compare(inventory(documents), manifest)
         output = json.dumps(report, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
         if args.report is None:

@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
     ROOT
     / "specs"
@@ -35,7 +35,7 @@ CONDITIONAL_TRAIT_SUFFIXES = {
 
 TYPES = {
     "ValidateError": {
-        "owner_spec": "specs/028-diagnostics-verification/interop/spec.md",
+        "owner_spec": "specs/028-diagnostics-interop/spec.md",
         "owner_spec_id": "KMIPKIT-0042",
         "owner_requirement_ids": ("KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"),
         "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342",
@@ -76,7 +76,7 @@ TYPES = {
         "root_states": {},
     },
     "ValidateRequest": {
-        "owner_spec": "specs/028-diagnostics-verification/interop/spec.md",
+        "owner_spec": "specs/028-diagnostics-interop/spec.md",
         "owner_spec_id": "KMIPKIT-0042",
         "owner_requirement_ids": ("KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"),
         "section_tables": "OASIS Key Management Interoperability Protocol Specification v2.1 Section 6.1.57 Tables 340-342",

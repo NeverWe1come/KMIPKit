@@ -9,7 +9,7 @@ from pathlib import Path
 from verification.api import generate
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 class PublicBindingSurfaceReadinessTests(unittest.TestCase):

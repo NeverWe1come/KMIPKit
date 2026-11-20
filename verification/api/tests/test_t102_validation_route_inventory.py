@@ -20,7 +20,7 @@ PREDECESSOR_REPORT = ROOT / "specs/050-parameters-auth-client/reports/rust-expor
 class PreSendValidationRouteInventoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.manifest = json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8"))
+        cls.manifest = json.loads((ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8"))
         cls.report = json.loads(REPORT.read_text(encoding="utf-8"))
 
     def test_exact_252_trait_routes_are_reconciled_as_explicit_exclusions(self) -> None:

@@ -21,7 +21,7 @@ const TICKET_VALUE: u32 = 0x0042_014B;
 const UNKNOWN_VENDOR_TAG: u32 = 0x0054_1234;
 const SECRET_SENTINEL: &[u8] = b"login-ticket-secret-sentinel";
 const LOGIN_FIXTURE: &str =
-    include_str!("../../../../specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml");
+    include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml");
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 

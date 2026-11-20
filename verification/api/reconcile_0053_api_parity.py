@@ -3376,7 +3376,7 @@ def main() -> int:
         "--write", action="store_true", help="update the reviewed manifest input"
     )
     arguments = parser.parse_args()
-    manifest_path = arguments.repo_root / "specification" / "api" / "public-api.json"
+    manifest_path = arguments.repo_root / "bindings" / "shared" / "public-api.json"
     route_path = arguments.routes
     if not route_path.is_absolute():
         route_path = arguments.repo_root / route_path

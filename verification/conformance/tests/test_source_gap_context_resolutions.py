@@ -19,7 +19,7 @@ from verification.conformance.tests.test_feature_traceability import FeatureTrac
 
 ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 HASH_MAC_SIGNATURE_TRACEABILITY_PATH = ROOT / "specs/021-hash-mac-signature-operations/traceability.md"
 HASH_MAC_SIGNATURE_SPEC_PATH = ROOT / "specs/021-hash-mac-signature-operations/spec.md"
 ENCRYPT_DECRYPT_SPEC_PATH = ROOT / "specs/019-cryptographic-operations/spec.md"
@@ -284,7 +284,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
                 self.assertEqual(
                     contract["source_path"],
-                    "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+                    "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
                 )
                 self.assertEqual(contract["source_section"], reviewed["source_section"])
                 self.assertEqual(contract["source_locator"]["kind"], "table_body_row")
@@ -999,7 +999,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         profiles_html = (
-            ROOT / "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+            ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
         normalized_profiles_html = re.sub(r"\s+", " ", profiles_html)
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))

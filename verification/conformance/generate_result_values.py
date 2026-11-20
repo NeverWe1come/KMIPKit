@@ -15,8 +15,8 @@ else:
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
 
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_VALUES_PATH = "specification/catalog/kmip-versioned-values.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_VALUES_PATH = "verification/conformance/catalog/kmip-versioned-values.json"
 OUTPUT_PATH = "crates/kmipkit-protocol/src/result_values_generated.rs"
 MAX_CATALOG_BYTES = 16 * 1024 * 1024
 _SAFE_VALUE_NAME = re.compile(r"[A-Za-z0-9 #()/'-]+\Z")

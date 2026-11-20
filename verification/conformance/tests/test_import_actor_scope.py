@@ -20,7 +20,7 @@ class ImportActorScopeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         cls.oracle = json.loads(
             (

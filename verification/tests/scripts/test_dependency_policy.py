@@ -378,7 +378,7 @@ class DependencyPolicyApiTests(unittest.TestCase):
             (REPOSITORY_ROOT / ".cargo" / "deny-baseline.toml").read_text(encoding="utf-8")
         )
         register = json.loads(
-            (REPOSITORY_ROOT / "specification" / "compliance" / "dependency-policy-exceptions.json").read_text(
+            (REPOSITORY_ROOT / "verification" / "dependencies" / "dependency-policy-exceptions.json").read_text(
                 encoding="utf-8"
             )
         )

@@ -19,7 +19,7 @@ class FluentAttributeReadManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_exact_builder_paths_are_traced_with_current_binding_status(self) -> None:

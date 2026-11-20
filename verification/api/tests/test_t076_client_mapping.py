@@ -126,7 +126,7 @@ PROFILE_VALIDATION_ERROR_RUNTIME_EXPORTS = frozenset(
         "kmipkit.errors.ProfileValidationError.category",
     }
 )
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 T076_SYMBOLS = {
     "kmipkit_client_batch_add_error_continuation_value",
     "kmipkit_client_batch_add_item",

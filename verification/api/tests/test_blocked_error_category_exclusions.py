@@ -10,7 +10,7 @@ from pathlib import Path
 from verification.api.generate import ManifestError, _validate_references
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 INTERNAL_EXPORTS = (
     ("c-kmipkit", "KMIPKIT_ERROR_INTERNAL"),
     ("java-kmipkit", "org.kmipkit.KmipException"),

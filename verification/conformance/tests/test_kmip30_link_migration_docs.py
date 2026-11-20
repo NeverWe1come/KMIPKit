@@ -76,7 +76,7 @@ class Kmip30LinkMigrationDocsTests(unittest.TestCase):
             ROOT / "crates/kmipkit-protocol/tests/unit/kmip30_operations_tests.rs"
         ).read_text(encoding="utf-8")
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-versioned-values.json").read_text(
+            (ROOT / "verification/conformance/catalog/kmip-versioned-values.json").read_text(
                 encoding="utf-8"
             )
         )

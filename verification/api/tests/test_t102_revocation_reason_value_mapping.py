@@ -23,7 +23,7 @@ from verification.api.tests.test_revoke_parity_manifest import (
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 REVOKE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-REVOKE"
 
@@ -57,7 +57,7 @@ class T102RevocationReasonValueMappingTests(unittest.TestCase):
             "Privilege Withdrawn",
         )
         oasis_source = (
-            ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+            ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252")
         table = oasis_source.split(
             'name="_Toc57115828">11.48 Revocation Reason Code', 1

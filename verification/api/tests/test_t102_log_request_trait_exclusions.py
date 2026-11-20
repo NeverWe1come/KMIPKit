@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
     ROOT
     / "specs"
@@ -26,7 +26,7 @@ RUST_REPORT = (
 )
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
-    "path": "specs/028-diagnostics-verification/interop/spec.md",
+    "path": "specs/028-diagnostics-interop/spec.md",
     "status": "Approved",
     "evidence": "**Status**: Approved for implementation",
 }

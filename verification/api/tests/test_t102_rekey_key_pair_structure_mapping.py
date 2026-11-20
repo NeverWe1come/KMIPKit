@@ -15,8 +15,8 @@ from verification.api.tests.t102_manifest_totals import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 OPERATION_NAME = "kmipkit_protocol::RekeyKeyPairRequest::"
@@ -144,7 +144,7 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
         ):
             self.assertIn(label, text)
         tag_catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         catalog_ids = {row.get("element_id") for row in tag_catalog.get("elements", [])}
         self.assertTrue({

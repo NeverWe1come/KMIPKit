@@ -14,9 +14,9 @@ from verification.api.tests.t102_manifest_totals import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
-OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
+OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
 RECERTIFY = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
 REKEY_KEY_PAIR = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"

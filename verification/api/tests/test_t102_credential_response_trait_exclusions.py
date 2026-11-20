@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = REPOSITORY_ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = REPOSITORY_ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
     REPOSITORY_ROOT
     / "specs"
@@ -38,7 +38,7 @@ RESPONSES = {
         "section": "§6.1.30",
         "response_table": "Table 254",
         "cases": "Login cases 2.48–2.50",
-        "case_fixture": "specification/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml",
+        "case_fixture": "verification/conformance/oasis/kmip-2.1/fixtures/TC-LOGIN-1-21.xml",
         "protocol_states": {
             "type": "verified",
             "result": "verified",

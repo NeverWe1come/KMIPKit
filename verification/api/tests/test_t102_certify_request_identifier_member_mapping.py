@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/022-object-lifecycle/spec.md"
 DECLARATION_ID = "rust-observed-d0317408cb64ea049eaf"
 EXPORT_NAME = "kmipkit_protocol::CertifyRequest::unique_identifier"

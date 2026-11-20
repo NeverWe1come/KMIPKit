@@ -96,7 +96,7 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
 
     def test_existing_public_python_exports_match_the_manifest_routes(self) -> None:
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json")
+            (ROOT / "bindings" / "shared" / "public-api.json")
             .read_text(encoding="utf-8")
         )
         route_data = json.loads(

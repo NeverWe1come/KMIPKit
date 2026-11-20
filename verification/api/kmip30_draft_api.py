@@ -21,9 +21,9 @@ _EXPECTED_ROUTES = (
     ("Encapsulate", 0x41, "§6.1.22, Table 317", "encapsulate_draft", "client_batch_item_encapsulate", "encapsulate"),
     ("Decapsulate", 0x42, "§6.1.15, Table 296", "decapsulate_draft", "client_batch_item_decapsulate", "decapsulate"),
 )
-_EXPECTED_SOURCE_PATH = "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html"
-_EXPECTED_SOURCE_INVENTORY = "specification/oasis/kmip-3.0/SOURCES.md"
-_EXPECTED_BASE_MANIFEST = "specification/api/public-api.json"
+_EXPECTED_SOURCE_PATH = "verification/conformance/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html"
+_EXPECTED_SOURCE_INVENTORY = "verification/conformance/oasis/kmip-3.0/SOURCES.md"
+_EXPECTED_BASE_MANIFEST = "bindings/shared/public-api.json"
 _MOJIBAKE_MARKERS = ("\u00c2\u00a7", "\u00c3", "\u00e2\u20ac", "\u00ef\u00bf\u00bd", "\ufffd")
 
 
@@ -140,7 +140,7 @@ def _validate_pinned_source(source: Any, root: Path) -> None:
     _require(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest) is not None, "OASIS source digest is malformed")
     source_path = root / _EXPECTED_SOURCE_PATH
     inventory_path = root / _EXPECTED_SOURCE_INVENTORY
-    checksum_path = root / "specification/oasis/kmip-3.0/CHECKSUMS.sha256"
+    checksum_path = root / "verification/conformance/oasis/kmip-3.0/CHECKSUMS.sha256"
     try:
         resolved_root = root.resolve(strict=True)
         for path in (source_path, inventory_path, checksum_path):

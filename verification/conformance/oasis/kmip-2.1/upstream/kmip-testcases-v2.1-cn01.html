@@ -1,0 +1,2898 @@
+<html>
+
+<head>
+<base href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html">
+<meta name="description" content="This document is intended for developers and architects designing systems that interoperate using the KMIP specification.">
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 15 (filtered)">
+<title>Key Management Interoperability Protocol Test Cases Version 2.1</title>
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Arial Unicode MS";
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:Cambria;
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:"Malgun Gothic";
+	panose-1:2 11 5 3 2 0 0 2 0 4;}
+@font-face
+	{font-family:"Liberation Sans";
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:"\@Malgun Gothic";
+	panose-1:2 11 5 3 2 0 0 2 0 4;}
+@font-face
+	{font-family:"\@Arial Unicode MS";
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+h1
+	{mso-style-name:"Heading 1\,h1\,Level 1 Topic Heading";
+	mso-style-link:"Heading 1 Char\,h1 Char\,Level 1 Topic Heading Char";
+	margin-top:.25in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.3in;
+	margin-bottom:.0001pt;
+	text-indent:-.3in;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+h2
+	{mso-style-name:"Heading 2\,H2\,h2\,Level 2 Topic Heading";
+	mso-style-link:"Heading 2 Char\,H2 Char\,h2 Char\,Level 2 Topic Heading Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.4in;
+	text-indent:-.4in;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+h3
+	{mso-style-name:"Heading 3\,H3\,h3\,Level 3 Topic Heading";
+	mso-style-link:"Heading 3 Char\,H3 Char\,h3 Char\,Level 3 Topic Heading Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	text-indent:-.5in;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+h4
+	{mso-style-name:"Heading 4\,H4\,h4\,First Subheading";
+	mso-style-link:"Heading 4 Char\,H4 Char\,h4 Char\,First Subheading Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.6in;
+	text-indent:-.6in;
+	page-break-after:avoid;
+	font-size:12.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+h5
+	{mso-style-name:"Heading 5\,h5\,Second Subheading";
+	mso-style-link:"Heading 5 Char\,h5 Char\,Second Subheading Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.7in;
+	text-indent:-.7in;
+	page-break-after:avoid;
+	font-size:11.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+h6
+	{mso-style-name:"Heading 6\,h6\,Third Subheading";
+	mso-style-link:"Heading 6 Char\,h6 Char\,Third Subheading Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.8in;
+	text-indent:-.8in;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:normal;}
+p.MsoHeading7, li.MsoHeading7, div.MsoHeading7
+	{mso-style-name:"Heading 7\,DON\0027T USE 7";
+	mso-style-link:"Heading 7 Char\,DON\0027T USE 7 Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.9in;
+	text-indent:-.9in;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.MsoHeading8, li.MsoHeading8, div.MsoHeading8
+	{mso-style-name:"Heading 8\, DON\0027T USE 8";
+	mso-style-link:"Heading 8 Char\, DON\0027T USE 8 Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:1.0in;
+	text-indent:-1.0in;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.MsoHeading9, li.MsoHeading9, div.MsoHeading9
+	{mso-style-name:"Heading 9\, DON\0027T USE 9";
+	mso-style-link:"Heading 9 Char\, DON\0027T USE 9 Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:1.1in;
+	text-indent:-1.1in;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.MsoToc1, li.MsoToc1, div.MsoToc1
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoToc2, li.MsoToc2, div.MsoToc2
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:10.5pt;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoToc3, li.MsoToc3, div.MsoToc3
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:21.0pt;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoToc4, li.MsoToc4, div.MsoToc4
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:33.0pt;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoToc5, li.MsoToc5, div.MsoToc5
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:44.0pt;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoFootnoteText, li.MsoFootnoteText, div.MsoFootnoteText
+	{mso-style-link:"Footnote Text Char";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{mso-style-link:"Header Char";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{mso-style-link:"Footer Char";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoFooterCxSpFirst, li.MsoFooterCxSpFirst, div.MsoFooterCxSpFirst
+	{mso-style-link:"Footer Char";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoFooterCxSpMiddle, li.MsoFooterCxSpMiddle, div.MsoFooterCxSpMiddle
+	{mso-style-link:"Footer Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoFooterCxSpLast, li.MsoFooterCxSpLast, div.MsoFooterCxSpLast
+	{mso-style-link:"Footer Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoCaption, li.MsoCaption, div.MsoCaption
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	font-variant:small-caps;
+	color:black;
+	letter-spacing:.3pt;
+	font-weight:bold;}
+span.MsoFootnoteReference
+	{vertical-align:super;}
+span.MsoPageNumber
+	{font-family:"Arial",sans-serif;
+	color:white;
+	font-weight:bold;}
+p.MsoTitle, li.MsoTitle, div.MsoTitle
+	{mso-style-link:"Title Char";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:10.0pt;
+	margin-left:0in;
+	font-size:24.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.MsoTitleCxSpFirst, li.MsoTitleCxSpFirst, div.MsoTitleCxSpFirst
+	{mso-style-link:"Title Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:24.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.MsoTitleCxSpMiddle, li.MsoTitleCxSpMiddle, div.MsoTitleCxSpMiddle
+	{mso-style-link:"Title Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:24.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.MsoTitleCxSpLast, li.MsoTitleCxSpLast, div.MsoTitleCxSpLast
+	{mso-style-link:"Title Char";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:10.0pt;
+	margin-left:0in;
+	font-size:24.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.MsoSubtitle, li.MsoSubtitle, div.MsoSubtitle
+	{mso-style-link:"Subtitle Char";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:10.0pt;
+	margin-left:0in;
+	font-size:18.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.MsoNoteHeading, li.MsoNoteHeading, div.MsoNoteHeading
+	{mso-style-link:"Note Heading Char";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:none;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoAcetate, li.MsoAcetate, div.MsoAcetate
+	{mso-style-link:"Balloon Text Char";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:"Tahoma",sans-serif;}
+span.MsoPlaceholderText
+	{color:gray;}
+p.MsoNoSpacing, li.MsoNoSpacing, div.MsoNoSpacing
+	{mso-style-link:"No Spacing Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.5in;
+	text-indent:-.2in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#4C4635;}
+p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+	{margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.2in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#4C4635;}
+p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.2in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#4C4635;}
+p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.5in;
+	text-indent:-.2in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#4C4635;}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char\,h1 Char\,Level 1 Topic Heading Char";
+	mso-style-link:"Heading 1\,h1\,Level 1 Topic Heading";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char\,H2 Char\,h2 Char\,Level 2 Topic Heading Char";
+	mso-style-link:"Heading 2\,H2\,h2\,Level 2 Topic Heading";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char\,H3 Char\,h3 Char\,Level 3 Topic Heading Char";
+	mso-style-link:"Heading 3\,H3\,h3\,Level 3 Topic Heading";
+	font-family:"Arial",sans-serif;
+	color:#3B006F;
+	font-weight:bold;}
+span.Heading4Char
+	{mso-style-name:"Heading 4 Char\,H4 Char\,h4 Char\,First Subheading Char";
+	mso-style-link:"Heading 4\,H4\,h4\,First Subheading";
+	font-family:"Arial",sans-serif;
+	color:#3B006F;
+	font-weight:bold;}
+span.Heading5Char
+	{mso-style-name:"Heading 5 Char\,h5 Char\,Second Subheading Char";
+	mso-style-link:"Heading 5\,h5\,Second Subheading";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading6Char
+	{mso-style-name:"Heading 6 Char\,h6 Char\,Third Subheading Char";
+	mso-style-link:"Heading 6\,h6\,Third Subheading";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading7Char
+	{mso-style-name:"Heading 7 Char\,DON\0027T USE 7 Char";
+	mso-style-link:"Heading 7\,DON\0027T USE 7";
+	font-family:"Arial",sans-serif;
+	color:#3B006F;
+	font-weight:bold;}
+span.Heading8Char
+	{mso-style-name:"Heading 8 Char\, DON\0027T USE 8 Char";
+	mso-style-link:"Heading 8\, DON\0027T USE 8";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading9Char
+	{mso-style-name:"Heading 9 Char\, DON\0027T USE 9 Char";
+	mso-style-link:"Heading 9\, DON\0027T USE 9";
+	font-family:"Arial",sans-serif;
+	color:#3B006F;
+	font-weight:bold;
+	font-style:italic;}
+span.TitleChar
+	{mso-style-name:"Title Char";
+	mso-style-link:Title;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+span.SubtitleChar
+	{mso-style-name:"Subtitle Char";
+	mso-style-link:Subtitle;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+span.BalloonTextChar
+	{mso-style-name:"Balloon Text Char";
+	mso-style-link:"Balloon Text";
+	font-family:"Tahoma",sans-serif;}
+span.NoSpacingChar
+	{mso-style-name:"No Spacing Char";
+	mso-style-link:"No Spacing";
+	font-family:"Liberation Sans",sans-serif;}
+p.PersonalName, li.PersonalName, div.PersonalName
+	{mso-style-name:"Personal Name";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:10.0pt;
+	margin-left:0in;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.PersonalNameCxSpFirst, li.PersonalNameCxSpFirst, div.PersonalNameCxSpFirst
+	{mso-style-name:"Personal NameCxSpFirst";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.PersonalNameCxSpMiddle, li.PersonalNameCxSpMiddle, div.PersonalNameCxSpMiddle
+	{mso-style-name:"Personal NameCxSpMiddle";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.PersonalNameCxSpLast, li.PersonalNameCxSpLast, div.PersonalNameCxSpLast
+	{mso-style-name:"Personal NameCxSpLast";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:10.0pt;
+	margin-left:0in;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.HeaderChar
+	{mso-style-name:"Header Char";
+	mso-style-link:Header;}
+span.FooterChar
+	{mso-style-name:"Footer Char";
+	mso-style-link:Footer;
+	font-family:"Liberation Sans",sans-serif;}
+p.Abstract, li.Abstract, div.Abstract
+	{mso-style-name:Abstract;
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.AppendixHeading1, li.AppendixHeading1, div.AppendixHeading1
+	{mso-style-name:AppendixHeading1;
+	margin-right:0in;
+	margin-left:.25in;
+	text-indent:-.25in;
+	page-break-before:always;
+	page-break-after:avoid;
+	border:none;
+	padding:0in;
+	font-size:18.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.FootnoteTextChar
+	{mso-style-name:"Footnote Text Char";
+	mso-style-link:"Footnote Text";}
+p.AppendixHeading3, li.AppendixHeading3, div.AppendixHeading3
+	{mso-style-name:AppendixHeading3;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	text-indent:-.5in;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.Titlepageinfo, li.Titlepageinfo, div.Titlepageinfo
+	{mso-style-name:"Title page info";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;
+	font-weight:bold;}
+p.Titlepageinfodescription, li.Titlepageinfodescription, div.Titlepageinfodescription
+	{mso-style-name:"Title page info description";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.TitlepageinfodescriptionCxSpFirst, li.TitlepageinfodescriptionCxSpFirst, div.TitlepageinfodescriptionCxSpFirst
+	{mso-style-name:"Title page info descriptionCxSpFirst";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.TitlepageinfodescriptionCxSpMiddle, li.TitlepageinfodescriptionCxSpMiddle, div.TitlepageinfodescriptionCxSpMiddle
+	{mso-style-name:"Title page info descriptionCxSpMiddle";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.TitlepageinfodescriptionCxSpLast, li.TitlepageinfodescriptionCxSpLast, div.TitlepageinfodescriptionCxSpLast
+	{mso-style-name:"Title page info descriptionCxSpLast";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.RelatedWork, li.RelatedWork, div.RelatedWork
+	{mso-style-name:"Related Work";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.RelatedWorkCxSpFirst, li.RelatedWorkCxSpFirst, div.RelatedWorkCxSpFirst
+	{mso-style-name:"Related WorkCxSpFirst";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.25in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.RelatedWorkCxSpMiddle, li.RelatedWorkCxSpMiddle, div.RelatedWorkCxSpMiddle
+	{mso-style-name:"Related WorkCxSpMiddle";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.25in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.RelatedWorkCxSpLast, li.RelatedWorkCxSpLast, div.RelatedWorkCxSpLast
+	{mso-style-name:"Related WorkCxSpLast";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.25in;
+	text-indent:-.25in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+span.Refterm
+	{mso-style-name:"Ref term";
+	font-weight:bold;}
+p.Ref, li.Ref, div.Ref
+	{mso-style-name:Ref;
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:2.0pt;
+	margin-left:1.5in;
+	text-indent:-1.25in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:black;}
+p.Notices, li.Notices, div.Notices
+	{mso-style-name:Notices;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:0in;
+	page-break-before:always;
+	border:none;
+	padding:0in;
+	font-size:18.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.Note, li.Note, div.Note
+	{mso-style-name:Note;
+	margin-top:6.0pt;
+	margin-right:.5in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+span.NoteHeadingChar
+	{mso-style-name:"Note Heading Char";
+	mso-style-link:"Note Heading";
+	font-family:"Liberation Sans",sans-serif;}
+span.Keyword
+	{mso-style-name:Keyword;
+	font-family:"Courier New";}
+p.Example, li.Example, div.Example
+	{mso-style-name:Example;
+	margin-top:4.0pt;
+	margin-right:.3in;
+	margin-bottom:0in;
+	margin-left:.3in;
+	margin-bottom:.0001pt;
+	background:#E6E6E6;
+	font-size:9.0pt;
+	font-family:"Courier New";}
+p.Examplesmall, li.Examplesmall, div.Examplesmall
+	{mso-style-name:"Example small";
+	margin-top:4.0pt;
+	margin-right:.3in;
+	margin-bottom:0in;
+	margin-left:.3in;
+	margin-bottom:.0001pt;
+	background:#E6E6E6;
+	font-size:8.0pt;
+	font-family:"Courier New";}
+p.Definition, li.Definition, div.Definition
+	{mso-style-name:Definition;
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.Definitionterm, li.Definitionterm, div.Definitionterm
+	{mso-style-name:"Definition term";
+	margin-top:4.0pt;
+	margin-right:2.0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	font-weight:bold;}
+p.Code, li.Code, div.Code
+	{mso-style-name:Code;
+	margin-top:4.0pt;
+	margin-right:.3in;
+	margin-bottom:0in;
+	margin-left:.3in;
+	margin-bottom:.0001pt;
+	background:#D9D9D9;
+	border:none;
+	padding:0in;
+	font-size:9.0pt;
+	font-family:"Courier New";}
+p.Codesmall, li.Codesmall, div.Codesmall
+	{mso-style-name:"Code small";
+	margin-top:4.0pt;
+	margin-right:.3in;
+	margin-bottom:0in;
+	margin-left:.3in;
+	margin-bottom:.0001pt;
+	background:#E6E6E6;
+	border:none;
+	padding:0in;
+	font-size:8.0pt;
+	font-family:"Courier New";}
+p.Heading1WP, li.Heading1WP, div.Heading1WP
+	{mso-style-name:"Heading 1 WP";
+	mso-style-link:"Heading 1 WP Char";
+	margin-top:24.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.3in;
+	text-indent:-.3in;
+	page-break-before:always;
+	page-break-after:avoid;
+	border:none;
+	padding:0in;
+	font-size:18.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.Heading1WPChar
+	{mso-style-name:"Heading 1 WP Char";
+	mso-style-link:"Heading 1 WP";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.Contributor, li.Contributor, div.Contributor
+	{mso-style-name:Contributor;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.ContributorCxSpFirst, li.ContributorCxSpFirst, div.ContributorCxSpFirst
+	{mso-style-name:ContributorCxSpFirst;
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.ContributorCxSpMiddle, li.ContributorCxSpMiddle, div.ContributorCxSpMiddle
+	{mso-style-name:ContributorCxSpMiddle;
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.ContributorCxSpLast, li.ContributorCxSpLast, div.ContributorCxSpLast
+	{mso-style-name:ContributorCxSpLast;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Liberation Sans",sans-serif;}
+p.TOCHeadingWP, li.TOCHeadingWP, div.TOCHeadingWP
+	{mso-style-name:"TOC Heading WP";
+	mso-style-link:"TOC Heading WP Char";
+	margin-top:24.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	page-break-before:always;
+	page-break-after:avoid;
+	border:none;
+	padding:0in;
+	font-size:18.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+span.TOCHeadingWPChar
+	{mso-style-name:"TOC Heading WP Char";
+	mso-style-link:"TOC Heading WP";
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+p.AppendixHeading2, li.AppendixHeading2, div.AppendixHeading2
+	{mso-style-name:AppendixHeading2;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.4in;
+	text-indent:-.4in;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:"Liberation Sans",sans-serif;
+	color:#446CAA;}
+.MsoChpDefault
+	{font-size:10.0pt;
+	font-family:"Calibri",sans-serif;}
+ /* Page Definitions */
+ @page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in .5in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+@page WordSection2
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in .5in 1.0in;}
+div.WordSection2
+	{page:WordSection2;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US link=blue vlink=purple>
+
+<div class=WordSection1>
+
+<p><a href="https://www.oasis-open.org">
+<img border="0" src="https://docs.oasis-open.org/templates/OASISLogo-v2.0.jpg" alt="OASIS logo" width="250" height="55"></a></p>
+
+<div style='border:none;border-bottom:solid windowtext 1.0pt;padding:0in 0in 1.0pt 0in'>
+
+<p class=MsoSubtitle style='border:none;padding:0in'><span style='color:#717171'>OASIS
+Committee Note</span></p>
+
+</div>
+
+<p class=MsoTitle><span class=TitleChar>Key Management Interoperability
+Protocol Test Cases Version 2.1</span></p>
+
+<p class=MsoSubtitle>Committee Note 01</p>
+
+<p class=MsoSubtitle>07 May 2020</p>
+
+<p class=Titlepageinfo>This stage:</p>
+
+<p class=TitlepageinfodescriptionCxSpFirst><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.docx">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.docx</a>
+(Authoritative)</p>
+
+<p class=TitlepageinfodescriptionCxSpMiddle><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html</a></p>
+
+<p class=TitlepageinfodescriptionCxSpLast><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.pdf">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.pdf</a></p>
+
+<p class=Titlepageinfo>Previous stage:</p>
+
+<p class=Titlepageinfodescription>N/A</p>
+
+<p class=Titlepageinfo>Latest stage:</p>
+
+<p class=TitlepageinfodescriptionCxSpFirst><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.docx">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.docx</a>
+(Authoritative)</p>
+
+<p class=TitlepageinfodescriptionCxSpMiddle><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.html">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.html</a></p>
+
+<p class=TitlepageinfodescriptionCxSpLast><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.pdf">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.pdf</a></p>
+
+<p class=Titlepageinfo>Technical Committee:</p>
+
+<p class=Titlepageinfodescription><a
+href="https://www.oasis-open.org/committees/kmip/">OASIS Key Management
+Interoperability Protocol (KMIP) TC</a></p>
+
+<p class=Titlepageinfo>Chairs:</p>
+
+<p class=ContributorCxSpFirst>Tony Cox (<a href="/cdn-cgi/l/email-protection#b6c2d9d8cf98d5d9cef6d5c4cfc6c2c5d9d0c298d5d9db"><span class="__cf_email__" data-cfemail="10647f7e693e737f68507362696064637f76643e737f7d">[email&#160;protected]</span></a>),
+<a href="http://cryptsoft.com/">Cryptsoft Pty Ltd.</a></p>
+
+<p class=ContributorCxSpLast>Judith Furlong (<a href="/cdn-cgi/l/email-protection#460c33222f322e680033342a2928210622232a2a6825292b"><span class="__cf_email__" data-cfemail="ade7d8c9c4d9c583ebd8dfc1c2c3caedc9c8c1c183cec2c0">[email&#160;protected]</span></a>), <a
+href="http://www.emc.com/">Dell EMC</a></p>
+
+<p class=Titlepageinfo>Editors:</p>
+
+<p class=ContributorCxSpFirst>Tim Chevalier (<a href="/cdn-cgi/l/email-protection#45112c286b062d203324292c2037052b20312435356b262a28"><span class="__cf_email__" data-cfemail="bbefd2d695f8d3decddad7d2dec9fbd5decfdacbcb95d8d4d6">[email&#160;protected]</span></a>), <a
+href="http://www.netapp.com/">NetApp</a></p>
+
+<p class=ContributorCxSpLast>Tim Hudson (<a href="/cdn-cgi/l/email-protection#93e7f9fbd3f0e1eae3e7e0fcf5e7bdf0fcfe" title="Follow link"><span class="__cf_email__" data-cfemail="dda9b7b59dbeafa4ada9aeb2bba9f3beb2b0">[email&#160;protected]</span></a>), <a href="http://cryptsoft.com/">Cryptsoft
+Pty Ltd.</a></p>
+
+<p class=Titlepageinfo>Additional artifacts:</p>
+
+<p class=RelatedWorkCxSpFirst style='margin-left:0in;text-indent:0in'>This
+document is one component of a Work Product that also includes:</p>
+
+<p class=RelatedWorkCxSpLast><span style='font-family:Symbol'>·<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Test cases: <a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/</a>.</p>
+
+<p class=Titlepageinfo>Related work:</p>
+
+<p class=RelatedWorkCxSpFirst style='margin-left:0in;text-indent:0in'>This
+document replaces or supersedes:</p>
+
+<p class=RelatedWorkCxSpMiddle><span style='font-family:Symbol'>·<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><i>Key Management Interoperability Protocol Test Cases Version
+2.0.</i> Edited by Tim Hudson and Mark Joseph. Latest stage:<span
+style='color:blue'> </span><a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.0/kmip-testcases-v2.0.html">https://docs.oasis-open.org/kmip/kmip-testcases/v2.0/kmip-testcases-v2.0.html</a>.</p>
+
+<p class=RelatedWorkCxSpMiddle style='margin-left:0in;text-indent:0in'>This document
+is related to:</p>
+
+<p class=RelatedWorkCxSpMiddle><span class=MsoHyperlink><span style='font-family:
+Symbol;color:windowtext'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><i>Key Management Interoperability Protocol Specification
+Version 2.1</i>. Edited by Tony Cox and Charles White. Latest stage: <a
+href="https://docs.oasis-open.org/kmip/kmip-spec/v2.1/kmip-spec-v2.1.html">https://docs.oasis-open.org/kmip/kmip-spec/v2.1/kmip-spec-v2.1.html</a><span
+class=MsoHyperlink>.</span></p>
+
+<p class=RelatedWorkCxSpMiddle style='margin-top:6.0pt'><span style='font-family:
+Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><i>Key Management Interoperability Protocol Profiles Version 2.1.</i>
+Edited by Tim Chevalier and Tim Hudson. Latest stage: <a
+href="https://docs.oasis-open.org/kmip/kmip-profiles/v2.1/kmip-profiles-v2.1.html">https://docs.oasis-open.org/kmip/kmip-profiles/v2.1/kmip-profiles-v2.1.html</a>.</p>
+
+<p class=RelatedWorkCxSpLast><a name="_Hlk40101494"><span style='font-family:
+Symbol'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><i>Key Management Interoperability Protocol Usage Guide Version
+2.1.</i> Edited by Judith Furlong</a><a name="_Hlk40261160"> and Jeff Bartell</a>.
+Latest stage: <a
+href="https://docs.oasis-open.org/kmip/kmip-ug/v2.1/kmip-ug-v2.1.html">https://docs.oasis-open.org/kmip/kmip-ug/v2.1/kmip-ug-v2.1.html</a>.</p>
+
+<p class=Titlepageinfo>Abstract:</p>
+
+<p class=Abstract>This document is intended for developers and architects who
+wish to design systems and applications that interoperate using the Key
+Management Interoperability Protocol specification.</p>
+
+<p class=Titlepageinfo>Status:</p>
+
+<p class=Abstract>This is a Non-Standards Track Work Product. The patent
+provisions of the OASIS IPR Policy do not apply.</p>
+
+<p class=Abstract>This document was last revised or approved by the OASIS Key
+Management Interoperability Protocol (KMIP) TC on the above date. The level of
+approval is also listed above. Check the “Latest stage” location noted above
+for possible later revisions of this document. Any other numbered Versions and
+other technical work produced by the Technical Committee (TC) are listed at <a
+href="https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=kmip#technical">https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=kmip#technical</a>.</p>
+
+<p class=Abstract>TC members should send comments on this specification to the
+TC’s email list. Others should send comments to the TC’s public comment list,
+after subscribing to it by following the instructions at the “<a
+href="https://www.oasis-open.org/committees/comments/index.php?wg_abbrev=kmip">Send
+A Comment</a>” button on the TC’s web page at <a
+href="https://www.oasis-open.org/committees/kmip/">https://www.oasis-open.org/committees/kmip/</a><span
+class=MsoHyperlink><span style='color:black'>.</span></span></p>
+
+<p class=Titlepageinfo>Citation format:</p>
+
+<p class=Titlepageinfodescription>When referencing this document, the following
+citation format should be used:</p>
+
+<p class=Abstract><span class=Refterm>[kmip-testcases-v2.1]</span></p>
+
+<p class=Abstract><i>Key Management Interoperability Protocol Test Cases
+Version 2.1</i>. Edited by Tim Chevalier and Tim Hudson. 07 May 2020. OASIS
+Committee Note 01. <a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/kmip-testcases-v2.1-cn01.html</a>.
+Latest stage: <a
+href="https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.html">https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.html</a>.</p>
+
+<div style='border:none;border-top:solid gray 1.0pt;padding:1.0pt 0in 0in 0in'>
+
+<p class=Notices>Notices</p>
+
+</div>
+
+<p class=MsoNormal>Copyright © OASIS Open 2020.  All Rights Reserved.</p>
+
+<p class=MsoNormal>All capitalized terms in the following text have the
+meanings assigned to them in the OASIS Intellectual Property Rights Policy (the
+&quot;OASIS IPR Policy&quot;). The full <a
+href="https://www.oasis-open.org/policies-guidelines/ipr">Policy</a> may be
+found at the OASIS website.</p>
+
+<p class=MsoNormal>This document and translations of it may be copied and furnished
+to others, and derivative works that comment on or otherwise explain it or
+assist in its implementation may be prepared, copied, published, and
+distributed, in whole or in part, without restriction of any kind, provided
+that the above copyright notice and this section are included on all such
+copies and derivative works. However, this document itself may not be modified
+in any way, including by removing the copyright notice or references to OASIS,
+except as needed for the purpose of developing any document or deliverable
+produced by an OASIS Technical Committee (in which case the rules applicable to
+copyrights, as set forth in the OASIS IPR Policy, must be followed) or as
+required to translate it into languages other than English.</p>
+
+<p class=MsoNormal>The limited permissions granted above are perpetual and will
+not be revoked by OASIS or its successors or assigns.</p>
+
+<p class=MsoNormal>This document and the information contained herein is
+provided on an &quot;AS IS&quot; basis and OASIS DISCLAIMS ALL WARRANTIES,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+THE INFORMATION HEREIN WILL NOT INFRINGE ANY OWNERSHIP RIGHTS OR ANY IMPLIED
+WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.</p>
+
+<div style='border:none;border-top:solid black 1.0pt;padding:6.0pt 0in 0in 0in'>
+
+<p class=TOCHeadingWP>Table of Contents</p>
+
+</div>
+
+<p class=MsoToc1><a name="_Toc287337061"></a><a name="_Toc287336978"></a><a
+name="_Toc287336977"></a><a href="#_Toc40262178">1<span style='font-size:11.0pt;
+font-family:"Calibri",sans-serif;color:windowtext'>       </span>Introduction<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>7</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262179">1.1 References (non-normative)<span
+style='color:windowtext;display:none'> </span><span
+style='color:windowtext;display:none'>7</span></a></p>
+
+<p class=MsoToc1><a href="#_Toc40262180">2<span style='font-size:11.0pt;
+font-family:"Calibri",sans-serif;color:windowtext'>       </span>KMIP Test
+Cases<span style='color:windowtext;display:none'>. </span><span style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262181">2.1 TC-ASYNC-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262182">2.2 TC-ASYNC-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262183">2.3 TC-ASYNC-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262184">2.4 TC-ASYNC-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262185">2.5 TC-ASYNC-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>8</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262186">2.6 TC-ASYNC-6-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262187">2.7 TC-ASYNC-7-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262188">2.8 TC-ASYNC-8-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262189">2.9 TC-ASYNC-9-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262190">2.10 TC-ASYNC-10-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262191">2.11 TC-CERTATTR-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262192">2.12 TC-CREATE-SD-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262193">2.13 TC-CS-CORVAL-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>9</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262194">2.14 TC-DERIVEKEY-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262195">2.15 TC-DERIVEKEY-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262196">2.16 TC-DERIVEKEY-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262197">2.17 TC-DERIVEKEY-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262198">2.18 TC-DERIVEKEY-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262199">2.19 TC-DERIVEKEY-6-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262200">2.20 TC-DIGESTS-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262201">2.21 TC-DLOGIN-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262202">2.22 TC-DLOGIN-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>10</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262203">2.23 TC-DLOGIN-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262204">2.24 TC-DLOGIN-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262205">2.25 TC-DLOGIN-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262206">2.26 TC-DLOGIN-6-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262207">2.27 TC-DLOGIN-7-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262208">2.28 TC-DLOGIN-8-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262209">2.29 TC-DLOGIN-9-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262210">2.30 TC-DLOGIN-10-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>11</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262211">2.31 TC-DLOGIN-11-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262212">2.32 TC-DLOGIN-12-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262213">2.33 TC-DLOGIN-13-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262214">2.34 TC-ECC-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262215">2.35 TC-ECC-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262216">2.36 TC-ECC-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262217">2.37 TC-ECDSA-SIGN-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262218">2.38 TC-ECDSA-SIGN-DIGESTEDDATA 1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>12</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262219">2.39 TC-EXTRACTABLE-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262220">2.40 TC-I18N-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262221">2.41 TC-I18N-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262222">2.42 TC-I18N-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262223">2.43 TC-IMPEXP-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262224">2.44 TC-IMPEXP-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262225">2.45 TC-IMPEXP-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262226">2.46 TC-IMPEXP-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>13</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262227">2.47 TC-IMPEXP-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262228">2.48 TC-LOGIN-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262229">2.49 TC-LOGIN-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262230">2.50 TC-LOGIN-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262231">2.51 TC-MD-1-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262232">2.52 TC-MD-2-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262233">2.53 TC-MD-3-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262234">2.54 TC-MD-4-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>14</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262235">2.55 TC-MD-5-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262236">2.56 TC-MD-6-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262237">2.57 TC-MD-21-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262238">2.58 TC-MD-22-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262239">2.59 TC-MD-23-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262240">2.60 TC-MD-24-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262241">2.61 TC-MDO-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262242">2.62 TC-MDO-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>15</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262243">2.63 TC-MDO-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262244">2.64 TC-OFFSET-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262245">2.65 TC-OFFSET-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262246">2.66 TC-PGP-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262247">2.67 TC-PING-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262248">2.68 TC-PKCS12-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262249">2.69 TC-PKCS12-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262250">2.70 TC-REENCRYPT-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>16</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262251">2.71 TC-REENCRYPT-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262252">2.72 TC-REENCRYPT-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262253">2.73 TC-REENCRYPT-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262254">2.74 TC-REENCRYPT-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262255">2.75 TC-REENCRYPT-6-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262256">2.76 TC-REKEY-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262257">2.77 TC-REKEY-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262258">2.78 TC-REKEY-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262259">2.79 TC-REKEY-4-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>17</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262260">2.80 TC-REKEY-5-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262261">2.81 TC-REKEY-6-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262262">2.82 TC-REKEY-7-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262263">2.83 TC-REKEY-8-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262264">2.84 TC-REKEY-9-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262265">2.85 TC-REKEY-10-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262266">2.86 TC-REKEY-11-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262267">2.87 TC-REKEY-12-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>18</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262268">2.88 TC-RNG-ATTR-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262269">2.89 TC-RNG-ATTR-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262270">2.90 TC-RSA-SIGN-DIGESTEDDATA 1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262271">2.91 TC-SENSITIVE-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262272">2.92 TC-SETTATTR-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262273">2.93 TC-SETTATTR-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262274">2.94 TC-SETTATTR-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262275">2.95 TC-SJ-1-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>19</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262276">2.96 TC-SJ-2-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262277">2.97 TC-SJ-3-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262278">2.98 TC-SJ-4-21<span style='color:
+windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262279">2.99 TC-STREAM-ENC-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262280">2.100 TC-STREAM-ENC-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262281">2.101 TC-STREAM-ENCDEC-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262282">2.102 TC-STREAM-HASH-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262283">2.103 TC-STREAM-HASH-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>20</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262284">2.104 TC-STREAM-HASH-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262285">2.105 TC-STREAM-MAC-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262286">2.106 TC-STREAM-SIGN-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262287">2.107 TC-STREAM-SIGNVFY-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262288">2.108 TC-WRAP-1-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262289">2.109 TC-WRAP-2-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc2><a href="#_Toc40262290">2.110 TC-WRAP-3-21<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>21</span></a></p>
+
+<p class=MsoToc1><a href="#_Toc40262291">Appendix A.<span style='font-size:
+11.0pt;font-family:"Calibri",sans-serif;color:windowtext'>     </span>Acknowledgments<span
+style='color:windowtext;display:none'>. </span><span
+style='color:windowtext;display:none'>22</span></a></p>
+
+<p class=MsoToc1><a href="#_Toc40262292">Appendix B.<span style='font-size:
+11.0pt;font-family:"Calibri",sans-serif;color:windowtext'>     </span>Revision
+History<span style='color:windowtext;display:none'>. </span><span style='color:windowtext;display:none'>23</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+</div>
+
+<span style='font-size:10.0pt;font-family:"Liberation Sans",sans-serif'><br
+clear=all style='page-break-before:auto'>
+</span>
+
+<div class=WordSection2>
+
+<div style='border:none;border-top:solid black 1.0pt;padding:6.0pt 0in 0in 0in'>
+
+<p class=Heading1WP><a name="_Toc40262178"></a><a name="_Toc17892679">1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Introduction</a></p>
+
+</div>
+
+<p class=MsoNormal>The purpose of this document is to describe test cases to
+demonstrate the Key Management Interoperability Protocol (KMIP) [KMIP-SPEC].
+The test cases illustrate that the concepts within the protocol are sound and
+how the protocol may be used when implementing KMIP in applications. These test
+cases are not intended to fully test an implementation of KMIP.</p>
+
+<h2><a name="_Toc40262179"></a><a name="_Toc17892680">1.1 References
+(non-normative)</a></h2>
+
+<p class=Ref><span class=Refterm>[KMIP-SPEC]</span>          <i>Key Management
+Interoperability Protocol Specification Version 2.1</i>. Edited by Tony Cox and
+Charles White. Latest version: <a
+href="https://docs.oasis-open.org/kmip/kmip-spec/v2.1/kmip-spec-v2.1.html">https://docs.oasis-open.org/kmip/kmip-spec/v2.1/kmip-spec-v2.1.html</a>.</p>
+
+<p class=Ref><span class=Refterm>[KMIP-PROFILES]</span>  <i>Key Management
+Interoperability Protocol Profiles Version 2.1.</i> Edited by Tim Chevalier and
+Tim Hudson. Latest version: <a
+href="https://docs.oasis-open.org/kmip/kmip-profiles/v2.1/kmip-profiles-v2.1.html">https://docs.oasis-open.org/kmip/kmip-profiles/v2.1/kmip-profiles-v2.1.html</a>.</p>
+
+<p class=Ref><span class=Refterm>[XML]</span>                     <span
+style='color:windowtext'>Extensible Markup Language (XML) 1.0 (Fifth Edition)</span>,
+T. Bray, J. Paoli, M. Sperberg-McQueen, E. Maler, F. Yergeau, Editors, W3C
+Recommendation, November 26, 2008, <a
+href="http://www.w3.org/TR/2008/REC-xml-20081126/">http://www.w3.org/TR/2008/REC-xml-20081126/</a>.
+<span style='color:windowtext'>Latest version </span>available at <a
+href="http://www.w3.org/TR/xml/">http://www.w3.org/TR/xml/</a>.</p>
+
+<div style='border:none;border-top:solid black 1.0pt;padding:6.0pt 0in 0in 0in'>
+
+<p class=Heading1WP><a name="_Toc40262180"></a><a name="_Toc17892681">2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>KMIP
+Test Cases</a></p>
+
+</div>
+
+<p class=MsoNormal>The test cases define a number of request-response pairs for
+KMIP operations. Each test case is provided in the XML format specified in <span
+class=Refterm>[KMIP-PROFILES]</span> intended to be both human-readable and
+usable by automated tools.</p>
+
+<p class=MsoNormal>Each test case has a unique label (the section name) with
+the protocol version as part of the identifier.</p>
+
+<p class=MsoNormal>The test cases may depend on a specific configuration of a
+KMIP client and server being configured in a manner consistent with the test
+case assumptions.</p>
+
+<p class=MsoNormal>Where possible, the flow of unique identifiers between
+tests, the date-time values, and other dynamic items are indicated using
+symbolic identifiers – in actual request and response messages these dynamic
+values will be filled in with valid values.</p>
+
+<p class=MsoNormal>The test cases show one possible way to construct the
+messages, and the messages shown are not necessarily the only conformant
+constructions, as many items within KMIP are optional, and server behavior
+depends on the server's policy. Support for a test case is predicated on a server
+matching the test case assumptions and the behavior shown in the
+request-response pairs.</p>
+
+<p class=MsoNormal>Symbolic identifiers are of the form $UPPERCASE_NAME
+followed by an optional unique index value. Wherever a symbolic identifier
+occurs in a test cases, the implementation must replace it with a reasonable
+appearing datum of the expected type. Time values can be specified in terms of
+an offset from the current time in seconds of the form $NOW or $NOW-n or
+$NOW+n.</p>
+
+<h2><a name="_Toc17892682"></a><a name="_Toc535315521"></a><a
+name="_Toc533022333"></a><a name="_Toc533017125"></a><a name="_Toc478054153"></a><a
+name="_Toc40262181">2.1 TC-ASYNC-1-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262182">2.2 TC-ASYNC-2-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262183">2.3 TC-ASYNC-3-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262184">2.4 TC-ASYNC-4-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262185">2.5 TC-ASYNC-5-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262186">2.6 TC-ASYNC-6-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-6-21.xml</span></a></p>
+
+<h2><a name="_Toc40262187">2.7 TC-ASYNC-7-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-7-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-7-21.xml</span></a></p>
+
+<h2><a name="_Toc40262188">2.8 TC-ASYNC-8-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-8-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-8-21.xml</span></a></p>
+
+<h2><a name="_Toc40262189">2.9 TC-ASYNC-9-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-9-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-9-21.xml</span></a></p>
+
+<h2><a name="_Toc40262190">2.10 TC-ASYNC-10-21</a></h2>
+
+<p class=MsoNormal>Asynchronous test.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ASYNC-10-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ASYNC-10-21.xml</span></a></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<h2><a name="_Toc40262191">2.11 TC-CERTATTR-1-2</a>1</h2>
+
+<p class=MsoNormal>A client registers a certificate and the server creates the
+certificate attributes based on the subject and issuer distinguished name
+values. </p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-CERTATTR-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-CERTATTR-1-21.xml</span></a></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<h2><a name="_Toc40262192"></a><a name="_Toc17892683"></a><a
+name="_Toc535315522"></a><a name="_Toc533022334"></a><a name="_Toc533017127"></a><a
+name="_Toc478054155">2.12 TC-CREATE-SD-1-2</a>1</h2>
+
+<p class=MsoNormal>A client requests a server to create a secret data managed
+object. </p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-CREATE-SD-1-21.xml</span></a></p>
+
+<h2><a name="_Toc449973234"></a><a name="_Toc440013389"></a><a
+name="_Toc40262193"></a><a name="_Toc17892684"></a><a name="_Toc535315523"></a><a
+name="_Toc533022335"></a><a name="_Toc533017128"></a><a name="_Toc478054156">2.13
+TC-CS-CORVAL-1-2</a>1</h2>
+
+<p class=MsoNormal>A client sets a client correlation value and the server also
+responds with a server correlation value.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal style='text-align:justify'>See <a
+href="test-cases/kmip-v2.1/TC-CS-CORVAL-1-21.xml"><span style='background:yellow'>test-cases/kmip-v2.1/TC-CS-CORVAL-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262194"></a><a name="_Toc17892685"></a><a
+name="_Toc535315524"></a><a name="_Toc533022336"></a><a name="_Toc533017133"></a><a
+name="_Toc478054161">2.14 TC-DERIVEKEY-1-2</a>1</h2>
+
+<p class=MsoNormal>A client uses Derive Key with SHA_256.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262195"></a><a name="_Toc17892686"></a><a
+name="_Toc535315525"></a><a name="_Toc533022337"></a><a name="_Toc533017138"></a><a
+name="_Toc478054166">2.15 TC-DERIVEKEY-2-2</a>1</h2>
+
+<p class=MsoNormal>A client uses Derive Key with HMAC-SHA_256.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262196"></a><a name="_Toc17892687"></a><a
+name="_Toc535315526"></a><a name="_Toc533022338"></a><a name="_Toc533017143"></a><a
+name="_Toc478054171">2.16 TC-DERIVEKEY-3-2</a>1</h2>
+
+<p class=MsoNormal>A client uses Derive Key with PBKDF2.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262197"></a><a name="_Toc17892688"></a><a
+name="_Toc535315527"></a><a name="_Toc533022339"></a><a name="_Toc533017148"></a><a
+name="_Toc478054176">2.17 TC-DERIVEKEY-4-2</a>1</h2>
+
+<p class=MsoNormal>A client uses Derive Key with PBKDF2.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262198"></a><a name="_Toc17892689"></a><a
+name="_Toc535315528"></a><a name="_Toc533022340"></a><a name="_Toc533017153"></a><a
+name="_Toc478054181">2.18 TC-DERIVEKEY-5-</a>21</h2>
+
+<p class=MsoNormal>A client uses Derive Key with PBKDF2 and SHA-256.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262199"></a><a name="_Toc17892690"></a><a
+name="_Toc535315529"></a><a name="_Toc533022341"></a><a name="_Toc533017154"></a><a
+name="_Toc478054182">2.19 TC-DERIVEKEY-6-</a>21</h2>
+
+<p class=MsoNormal>A client uses Derive Key with ASYMMETRIC_KEY and ECDH.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DERIVEKEY-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DERIVEKEY-6-21.xml</span></a></p>
+
+<h2><a name="_Toc40262200">2.20 TC-DIGESTS-1-21</a></h2>
+
+<p class=MsoNormal>Multiple digests.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DIGESTS-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DIGESTS-1-21.xml</span></a></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<h2><a name="_Toc40262201"></a><a name="_Toc17892691"></a><a
+name="_Toc535315530"></a><a name="_Toc533022342">2.21 TC-DLOGIN-1-2</a>1</h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262202"></a><a name="_Toc17892692"></a><a
+name="_Toc535315531"></a><a name="_Toc533022343">2.22 TC-DLOGIN-2-2</a>1</h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262203">2.23 TC-DLOGIN-3-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262204">2.24 TC-DLOGIN-4-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262205">2.25 TC-DLOGIN-5-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262206">2.26 TC-DLOGIN-6-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-6-21.xml</span></a></p>
+
+<h2><a name="_Toc40262207">2.27 TC-DLOGIN-7-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-7-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-7-21.xml</span></a></p>
+
+<h2><a name="_Toc40262208">2.28 TC-DLOGIN-8-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-8-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-8-21.xml</span></a></p>
+
+<h2><a name="_Toc40262209">2.29 TC-DLOGIN-9-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-9-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-9-21.xml</span></a></p>
+
+<h2><a name="_Toc40262210">2.30 TC-DLOGIN-10-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-10-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-10-21.xml</span></a></p>
+
+<h2><a name="_Toc40262211">2.31 TC-DLOGIN-11-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-11-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-11-21.xml</span></a></p>
+
+<h2><a name="_Toc40262212">2.32 TC-DLOGIN-12-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-12-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-12-21.xml</span></a></p>
+
+<h2><a name="_Toc40262213">2.33 TC-DLOGIN-13-21</a></h2>
+
+<p class=MsoNormal>Delegated Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-DLOGIN-13-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-DLOGIN-13-21.xml</span></a></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<h2><a name="_Toc40262214"></a><a name="_Toc17892693"></a><a
+name="_Toc535315532"></a><a name="_Toc533022344"></a><a name="_Toc533017155"></a><a
+name="_Toc478054183">2.34 TC-ECC-1-2</a>1</h2>
+
+<p class=MsoNormal>A client registers an EC private key in ECPrivateKey format
+and an EC public key in X.509 format using the EC cryptographic algorithm.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ECC-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ECC-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262215"></a><a name="_Toc17892694"></a><a
+name="_Toc535315533"></a><a name="_Toc533022345"></a><a name="_Toc533017156"></a><a
+name="_Toc478054184">2.35 TC-ECC-2-2</a>1</h2>
+
+<p class=MsoNormal>A client registers an EC private key in PKCS8 format and an
+EC public key in X.509 format using the EC cryptographic algorithm.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ECC-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ECC-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262216"></a><a name="_Toc17892695"></a><a
+name="_Toc535315534"></a><a name="_Toc533022346"></a><a name="_Toc533017157"></a><a
+name="_Toc478054185">2.36 TC-ECC-3-2</a>1</h2>
+
+<p class=MsoNormal>A client registers an EC private key in ECPrivateKey format
+and an EC public key in X.509 format using the EC cryptographic algorithm.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ECC-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ECC-3-21.xml</span></a></p>
+
+<h2><a name="_Toc533017158"></a><a name="_Toc478054186"></a><a
+name="_Toc40262217"></a><a name="_Toc17892696"></a><a name="_Toc535315535"></a><a
+name="_Toc533022347"></a><a name="_Toc533017159"></a><a name="_Toc478054187">2.37
+TC-ECDSA-SIGN-1-2</a>1</h2>
+
+<p class=MsoNormal>A client registers an EC private key in ECPrivateKey format
+and an EC public key in X.509 format using the EC cryptographic algorithm and
+performs a Sign operation followed by a Signature Verify operation.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-ECDSA-SIGN-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ECDSA-SIGN-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262218"></a><a name="_Toc17892697"></a><a
+name="_Toc535315536"></a><a name="_Toc533022348">2.38 TC-ECDSA-SIGN-DIGESTEDDATA
+1-2</a>1</h2>
+
+<p class=MsoNormal>ECDSA Signing with the digested data provided by the client.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a
+href="test-cases/kmip-v2.1/TC-ECDSA-SIGN-DIGESTEDDATA-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-ECDSA-SIGN-DIGESTEDDATA-1-21.xml</span></a></p>
+
+<h2><a name="_Toc533017170"></a><a name="_Toc478054198"></a><a
+name="_Toc40262219"></a><a name="_Toc17892698"></a><a name="_Toc535315537"></a><a
+name="_Toc533022349"></a><a name="_Toc533017231">2.39 TC-EXTRACTABLE-1-2</a>1</h2>
+
+<p class=MsoNormal>Show usage of Extractable and Never Extractable.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-EXTRACTABLE-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-EXTRACTABLE-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262220"></a><a name="_Toc17892699"></a><a
+name="_Toc535315538"></a><a name="_Toc533022350">2.40 TC-I18N-1-2</a>1</h2>
+
+<p class=MsoNormal>Client provides a key name containing a Greek capital Alpha.</p>
+
+<p class=MsoNormal>Note: the encoding in XML has to be correctly converted into
+the valid UTF-8 format.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-I18N-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-I18N-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262221"></a><a name="_Toc17892700"></a><a
+name="_Toc535315539"></a><a name="_Toc533022351"></a><a name="_Toc533017171"></a><a
+name="_Toc478054199">2.41 TC-I18N-2-2</a>1</h2>
+
+<p class=MsoNormal>Client provides a key alternative name containing a Greek
+capital Alpha.</p>
+
+<p class=MsoNormal>Note: the encoding in XML has to be correctly converted into
+the valid UTF-8 format.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-I18N-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-I18N-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262222"></a><a name="_Toc17892701"></a><a
+name="_Toc535315540"></a><a name="_Toc533022352"></a><a name="_Toc533017172"></a><a
+name="_Toc478054200">2.42 TC-I18N-3-2</a>1</h2>
+
+<p class=MsoNormal>Client provides a customer attribute containing a Greek
+capital Alpha with the attribute value containing a Greek capital Omega.</p>
+
+<p class=MsoNormal>Note: the encoding in XML has to be correctly converted into
+the valid UTF-8 format.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-I18N-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-I18N-3-21.xml</span></a></p>
+
+<h2><a name="_Toc533017173"></a><a name="_Toc478054201"></a><a
+name="_Toc40262223"></a><a name="_Toc17892702"></a><a name="_Toc535315541"></a><a
+name="_Toc533022353">2.43 TC-IMPEXP-1-2</a>1</h2>
+
+<p class=MsoNormal>Import/Export.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-IMPEXP-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-IMPEXP-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262224"></a><a name="_Toc17892703"></a><a
+name="_Toc535315542"></a><a name="_Toc533022354">2.44 TC-IMPEXP-2-2</a>1</h2>
+
+<p class=MsoNormal>Import/Export.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-IMPEXP-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-IMPEXP-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262225"></a><a name="_Toc17892704"></a><a
+name="_Toc535315543"></a><a name="_Toc533022355">2.45 TC-IMPEXP-3-2</a>1</h2>
+
+<p class=MsoNormal>Import/Export.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-IMPEXP-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-IMPEXP-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262226">2.46 TC-IMPEXP-4-21</a></h2>
+
+<p class=MsoNormal>Import/Export.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-IMPEXP-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-IMPEXP-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262227">2.47 TC-IMPEXP-5-21</a></h2>
+
+<p class=MsoNormal>Import/Export.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-IMPEXP-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-IMPEXP-5-21.xml</span></a></p>
+
+<p class=MsoNormal><span class=MsoHyperlink>&nbsp;</span></p>
+
+<h2><a name="_Toc40262228"></a><a name="_Toc17892705"></a><a
+name="_Toc535315544"></a><a name="_Toc533022356">2.48 TC-LOGIN-1-2</a>1</h2>
+
+<p class=MsoNormal>Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-LOGIN-1-21xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-LOGIN-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262229"></a><a name="_Toc17892706"></a><a
+name="_Toc535315545"></a><a name="_Toc533022357">2.49 TC-LOGIN-2-2</a>1</h2>
+
+<p class=MsoNormal>Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-LOGIN-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-LOGIN-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262230"></a><a name="_Toc17892707"></a><a
+name="_Toc535315546"></a><a name="_Toc533022358">2.50 TC-LOGIN-3-2</a>1</h2>
+
+<p class=MsoNormal>Login.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-LOGIN-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-LOGIN-3-21.xml</span></a></p>
+
+<h2><a name="_Toc17892708"></a><a name="_Toc535315547"></a><a
+name="_Toc533022359"></a><a name="_Toc40262231">2.51 TC-MD-1-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262232">2.52 TC-MD-2-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262233">2.53 TC-MD-3-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262234">2.54 TC-MD-4-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262235">2.55 TC-MD-5-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262236">2.56 TC-MD-6-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-6-21.xml</span></a></p>
+
+<h2><a name="_Toc40262237">2.57 TC-MD-21-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-21-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-21-21.xml</span></a></p>
+
+<h2><a name="_Toc40262238">2.58 TC-MD-22-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-22-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-22-21.xml</span></a></p>
+
+<h2><a name="_Toc40262239">2.59 TC-MD-23-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD-23-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-23-21.xml</span></a></p>
+
+<h2><a name="_Toc40262240">2.60 TC-MD-24-21</a></h2>
+
+<p class=MsoNormal>Message digest testing.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MD241-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MD-24-21.xml</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h2><a name="_Toc40262241">2.61 TC-MDO-1-2</a>1</h2>
+
+<p class=MsoNormal>A client requests a meta-data-only object (no key material).</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MDO-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MDO-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262242"></a><a name="_Toc17892709"></a><a
+name="_Toc535315548"></a><a name="_Toc533022360"></a><a name="_Toc533017174"></a><a
+name="_Toc478054202">2.62 TC-MDO-2-2</a>1</h2>
+
+<p class=MsoNormal>A client requests a meta-data-only object (no key material)
+and an object with key material and performs a Locate operation that only
+returns the meta-data-only object.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MDO-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MDO-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262243"></a><a name="_Toc17892710"></a><a
+name="_Toc535315549"></a><a name="_Toc533022361"></a><a name="_Toc533017175"></a><a
+name="_Toc478054203">2.63 TC-MDO-3-2</a>1</h2>
+
+<p class=MsoNormal>A client requests a meta-data-only object (no key material)
+using the URL format of the Key Value Location and performs Locate.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-MDO-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-MDO-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262244"></a><a name="_Toc17892711"></a><a
+name="_Toc535315550"></a><a name="_Toc533022362"></a><a name="_Toc533017178"></a><a
+name="_Toc478054206">2.64 TC-OFFSET-1-2</a>1</h2>
+
+<p class=MsoNormal>A client requests that the server create a number of
+symmetric keys and then uses the Offset parameter in Locate to return various
+items.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-OFFSET-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-OFFSET-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262245"></a><a name="_Toc17892712"></a><a
+name="_Toc535315551"></a><a name="_Toc533022363"></a><a name="_Toc533017179"></a><a
+name="_Toc478054207"></a><a name="_Toc449973235"></a><a name="_Toc440013390"></a><a
+name="_Toc439997629"></a><a name="_Toc440005490"></a><a name="_Toc439997630"></a><a
+name="_Toc440005491"></a><a name="_Toc439998037"></a><a name="_Toc440005898"></a><a
+name="_Toc439998146"></a><a name="_Toc440006007"></a><a name="_Toc439998287"></a><a
+name="_Toc440006148"></a><a name="_Toc439998434"></a><a name="_Toc440006295"></a><a
+name="_Toc439998581"></a><a name="_Toc440006442"></a><a name="_Toc439998689"></a><a
+name="_Toc440006550"></a><a name="_Toc439998891"></a><a name="_Toc440006752"></a>2.65
+TC-OFFSET-2-21</h2>
+
+<p class=MsoNormal>A client requests that the server create a number of
+symmetric keys and then uses the Offset parameter in Locate to return various
+items.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-OFFSET-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-OFFSET-2-21.xml</span></a></p>
+
+<h2><a name="_Toc449973241"></a><a name="_Toc440013396"></a><a
+name="_Toc40262246"></a><a name="_Toc17892713"></a><a name="_Toc535315552"></a><a
+name="_Toc533022364"></a><a name="_Toc533017185"></a><a name="_Toc478054213"></a><a
+name="_Toc439998893"></a><a name="_Toc440006754"></a><a name="_Toc439998894"></a><a
+name="_Toc440006755"></a><a name="_Toc439999341"></a><a name="_Toc440007202"></a><a
+name="_Toc439999440"></a><a name="_Toc440007301"></a><a name="_Toc439999571"></a><a
+name="_Toc440007432"></a><a name="_Toc439999708"></a><a name="_Toc440007569"></a><a
+name="_Toc439999845"></a><a name="_Toc440007706"></a><a name="_Toc439999943"></a><a
+name="_Toc440007804"></a><a name="_Toc440000145"></a><a name="_Toc440008006"></a><a
+name="_Toc440000147"></a><a name="_Toc440008008"></a><a name="_Toc440000148"></a><a
+name="_Toc440008009"></a><a name="_Toc440000149"></a><a name="_Toc440008010"></a><a
+name="_Toc440000231"></a><a name="_Toc440008092"></a><a name="_Toc440000305"></a><a
+name="_Toc440008166"></a><a name="_Toc440000307"></a><a name="_Toc440008168"></a><a
+name="_Toc440000308"></a><a name="_Toc440008169"></a><a name="_Toc440000390"></a><a
+name="_Toc440008251"></a><a name="_Toc440000464"></a><a name="_Toc440008325"></a><a
+name="_Toc440000466"></a><a name="_Toc440008327"></a><a name="_Toc440000467"></a><a
+name="_Toc440008328"></a><a name="_Toc440000549"></a><a name="_Toc440008410"></a><a
+name="_Toc440000629"></a><a name="_Toc440008490"></a><a name="_Toc440000713"></a><a
+name="_Toc440008574"></a><a name="_Toc440000715"></a><a name="_Toc440008576"></a><a
+name="_Toc440000716"></a><a name="_Toc440008577"></a><a name="_Toc440000717"></a><a
+name="_Toc440008578"></a><a name="_Toc440000799"></a><a name="_Toc440008660"></a><a
+name="_Toc440000879"></a><a name="_Toc440008740"></a><a name="_Toc440000946"></a><a
+name="_Toc440008807"></a>2.66 TC-PGP-1-21</h2>
+
+<p class=MsoNormal>Register a PGP public key block and private key block and
+add appropriate links between the managed objects.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-PGP-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-PGP-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262247">2.67 TC-PING-1-21</a></h2>
+
+<p class=MsoNormal>Ping operation.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-PING-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-PING-1-21.xml</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h2><a name="_Toc40262248"></a><a name="_Toc17892714"></a><a
+name="_Toc535315553"></a><a name="_Toc533022365"></a><a name="_Toc533017186"></a><a
+name="_Toc478054214">2.68 TC-PKCS12-1-2</a>1</h2>
+
+<p class=MsoNormal>Register objects and then perform a Get returning objects in
+PKCS#12 format.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-PKCS12-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-PKCS-12-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262249"></a><a name="_Toc17892715"></a><a
+name="_Toc535315554"></a><a name="_Toc533022366"></a><a name="_Toc533017187"></a><a
+name="_Toc478054215">2.69 TC-PKCS12-2-2</a>1</h2>
+
+<p class=MsoNormal>Register objects in PKCS#12 format and then perform a Get
+returning the individual objects.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-PKCS12-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-PKCS-12-2-21.xml</span></a></p>
+
+<h2><a name="_Toc533017201"></a><a name="_Toc478054229"></a><a
+name="_Toc449973253"></a><a name="_Toc440013408"></a><a name="_Toc17892716"></a><a
+name="_Toc535315555"></a><a name="_Toc533022367"></a><a name="_Toc533017211"></a><a
+name="_Toc478054239"></a><a name="_Toc40262250"></a><a name="_Toc440001032"></a><a
+name="_Toc440008893"></a><a name="_Toc440001034"></a><a name="_Toc440008895"></a><a
+name="_Toc440001035"></a><a name="_Toc440008896"></a><a name="_Toc440001120"></a><a
+name="_Toc440008981"></a><a name="_Toc440001122"></a><a name="_Toc440008983"></a><a
+name="_Toc440001123"></a><a name="_Toc440008984"></a><a name="_Toc440001202"></a><a
+name="_Toc440009063"></a><a name="_Toc440001204"></a><a name="_Toc440009065"></a><a
+name="_Toc440001205"></a><a name="_Toc440009066"></a><a name="_Toc440001278"></a><a
+name="_Toc440009139"></a><a name="_Toc440001281"></a><a name="_Toc440009142"></a><a
+name="_Toc440001283"></a><a name="_Toc440009144"></a><a name="_Toc440001284"></a><a
+name="_Toc440009145"></a><a name="_Toc440001356"></a><a name="_Toc440009217"></a><a
+name="_Toc440001358"></a><a name="_Toc440009219"></a><a name="_Toc440001359"></a><a
+name="_Toc440009220"></a><a name="_Toc440001435"></a><a name="_Toc440009296"></a><a
+name="_Toc440001437"></a><a name="_Toc440009298"></a><a name="_Toc440001438"></a><a
+name="_Toc440009299"></a><a name="_Toc440001514"></a><a name="_Toc440009375"></a><a
+name="_Toc440001516"></a><a name="_Toc440009377"></a><a name="_Toc440001517"></a><a
+name="_Toc440009378"></a><a name="_Toc440001621"></a><a name="_Toc440009482"></a><a
+name="_Toc440001623"></a><a name="_Toc440009484"></a><a name="_Toc440001624"></a><a
+name="_Toc440009485"></a><a name="_Toc440001704"></a><a name="_Toc440009565"></a>2.70
+TC-REENCRYPT-1-21</h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262251">2.71 TC-REENCRYPT-2-21</a></h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262252">2.72 TC-REENCRYPT-3-21</a></h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262253">2.73 TC-REENCRYPT-4-21</a></h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262254">2.74 TC-REENCRYPT-5-21</a></h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262255">2.75 TC-REENCRYPT-6-21</a></h2>
+
+<p class=MsoNormal>Re-encrypt.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REENCRYPT-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REENCRYPT-6-21.xml</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h2><a name="_Toc40262256">2.76 TC-REKEY-1-2</a>1</h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262257">2.77 TC-REKEY-2-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262258">2.78 TC-REKEY-3-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-3-21.xml</span></a></p>
+
+<h2><a name="_Toc40262259">2.79 TC-REKEY-4-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262260">2.80 TC-REKEY-5-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-5-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-5-21.xml</span></a></p>
+
+<h2><a name="_Toc40262261">2.81 TC-REKEY-6-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-6-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-6-21.xml</span></a></p>
+
+<h2><a name="_Toc40262262">2.82 TC-REKEY-7-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-7-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-7-21.xml</span></a></p>
+
+<h2><a name="_Toc40262263">2.83 TC-REKEY-8-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-8-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-8-21.xml</span></a></p>
+
+<h2><a name="_Toc40262264">2.84 TC-REKEY-9-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-9-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-9-21.xml</span></a></p>
+
+<h2><a name="_Toc40262265">2.85 TC-REKEY-10-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-10-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-10-21.xml</span></a></p>
+
+<h2><a name="_Toc40262266">2.86 TC-REKEY-11-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-11-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-11-21.xml</span></a></p>
+
+<h2><a name="_Toc40262267">2.87 TC-REKEY-12-21</a></h2>
+
+<p class=MsoNormal>Create a key and perform multiple rekey operations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-REKEY-12-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-REKEY-12-21.xml</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h2><a name="_Toc40262268"></a><a name="_Toc17892717"></a><a
+name="_Toc535315556"></a><a name="_Toc533022368"></a><a name="_Toc533017212"></a><a
+name="_Toc478054240"></a><a name="_Toc449973259"></a><a name="_Toc440013414"></a><a
+name="_Toc440001706"></a><a name="_Toc440009567"></a><a name="_Toc440001707"></a><a
+name="_Toc440009568"></a><a name="_Toc440001828"></a><a name="_Toc440009689"></a><a
+name="_Toc440001830"></a><a name="_Toc440009691"></a><a name="_Toc440001831"></a><a
+name="_Toc440009692"></a><a name="_Toc440001925"></a><a name="_Toc440009786"></a><a
+name="_Toc440001927"></a><a name="_Toc440009788"></a><a name="_Toc440001928"></a><a
+name="_Toc440009789"></a><a name="_Toc440002001"></a><a name="_Toc440009862"></a><a
+name="_Toc440002003"></a><a name="_Toc440009864"></a><a name="_Toc440002004"></a><a
+name="_Toc440009865"></a><a name="_Toc440002256"></a><a name="_Toc440010117"></a><a
+name="_Toc440002258"></a><a name="_Toc440010119"></a><a name="_Toc440002259"></a><a
+name="_Toc440010120"></a><a name="_Toc440002349"></a><a name="_Toc440010210"></a><a
+name="_Toc440002351"></a><a name="_Toc440010212"></a><a name="_Toc440002352"></a><a
+name="_Toc440010213"></a><a name="_Toc440002418"></a><a name="_Toc440010279"></a>2.88
+TC-RNG-ATTR-1-21</h2>
+
+<p class=MsoNormal>A client registers a symmetric key including details of the
+RNG that the client is claiming was used to generate the symmetric key.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-RNG-ATTR-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-RNG-ATTR-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262269"></a><a name="_Toc17892718"></a><a
+name="_Toc535315557"></a><a name="_Toc533022369"></a><a name="_Toc533017213"></a><a
+name="_Toc478054241"></a><a name="_Toc449973260"></a><a name="_Toc440013415"></a><a
+name="_Toc440002420"></a><a name="_Toc440010281"></a>2.89 TC-RNG-ATTR-2-21</h2>
+
+<p class=MsoNormal>A client requests that the server create a symmetric key. 
+The server does and also includes the required details of the RNG that was used
+to generate the symmetric key.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-RNG-ATTR-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-RNG-ATTR-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262270"></a><a name="_Toc17892719"></a><a
+name="_Toc535315558"></a><a name="_Toc533022370"></a><a name="_Toc533017214"></a><a
+name="_Toc478054242">2.90 TC-RSA-SIGN-DIGESTEDDATA 1-2</a>1</h2>
+
+<p class=MsoNormal>RSA Signing with the digested data provided by the client.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a
+href="test-cases/kmip-v2.1/TC-RSA-SIGN-DIGESTEDDATA-1-21xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-RSA-SIGN-DIGESTEDDATA-1-21xml</span></a></p>
+
+<h2><a name="_Toc449973261"></a><a name="_Toc440013416"></a><a
+name="_Toc533017215"></a><a name="_Toc478054243"></a><a name="_Toc40262271"></a><a
+name="_Toc17892720"></a><a name="_Toc535315559"></a><a name="_Toc533022371"></a><a
+name="_Toc533017230"></a><a name="_Toc440002422"></a><a name="_Toc440010283"></a>2.91
+TC-SENSITIVE-1-21</h2>
+
+<p class=MsoNormal>Show the usage of Sensitive and Always Sensitive.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SENSITIVE-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SENSITIVE-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262272">2.92 TC-SETTATTR-1-21</a></h2>
+
+<p class=MsoNormal>Show the usage of Set Attribute.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SETATTR-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SETATTR-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262273">2.93 TC-SETTATTR-2-21</a></h2>
+
+<p class=MsoNormal>Show the usage of Set Attribute.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SETATTR-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SETATTR-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262274">2.94 TC-SETTATTR-3-21</a></h2>
+
+<p class=MsoNormal>Show the usage of Set Attribute.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SETATTR-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SETATTR-3-21.xml</span></a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<h2><a name="_Toc40262275"></a><a name="_Toc17892721"></a><a
+name="_Toc535315560"></a><a name="_Toc533022372">2.95 TC-SJ-1-2</a>1</h2>
+
+<p class=MsoNormal>Create a symmetric key, performing split and join operations
+in various combinations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SJ-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SJ-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262276"></a><a name="_Toc17892722"></a><a
+name="_Toc535315561"></a><a name="_Toc533022373"></a><a name="_Toc533017216"></a><a
+name="_Toc478054244">2.96 TC-SJ-2-2</a>1</h2>
+
+<p class=MsoNormal>Register a symmetric key, performing split and join
+operations in various combinations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SJ-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SJ-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262277"></a><a name="_Toc17892723"></a><a
+name="_Toc535315562"></a><a name="_Toc533022374"></a><a name="_Toc533017217"></a><a
+name="_Toc478054245">2.97 TC-SJ-3-2</a>1</h2>
+
+<p class=MsoNormal>Register split keys and perform join operations in various
+combinations.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SJ-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SJ-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262278"></a><a name="_Toc17892724"></a><a
+name="_Toc535315563"></a><a name="_Toc533022375"></a><a name="_Toc533017218"></a><a
+name="_Toc478054246">2.98 TC-SJ-4-2</a>1</h2>
+
+<p class=MsoNormal>Create a symmetric key and perform split and join operations
+in various combinations using the XOR method. </p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-SJ-4-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-SJ-4-21.xml</span></a></p>
+
+<h2><a name="_Toc40262279"></a><a name="_Toc17892728"></a><a
+name="_Toc535315567"></a><a name="_Toc533022379"></a><a name="_Toc533017219"></a><a
+name="_Toc478054247">2.99 TC-STREAM-ENC-1-2</a>1</h2>
+
+<p class=MsoNormal>Create a symmetric key and perform encrypt with streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-ENC-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-ENC-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262280"></a><a name="_Toc17892729"></a><a
+name="_Toc535315568"></a><a name="_Toc533022380"></a><a name="_Toc533017220"></a><a
+name="_Toc478054248">2.100 TC-STREAM-ENC-2-2</a>1</h2>
+
+<p class=MsoNormal>Register a symmetric key and perform encrypt and decrypt
+with streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-ENC-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-ENC-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262281"></a><a name="_Toc17892730"></a><a
+name="_Toc535315569"></a><a name="_Toc533022381"></a><a name="_Toc533017221"></a><a
+name="_Toc478054249">2.101 TC-STREAM-ENCDEC-1-2</a>1</h2>
+
+<p class=MsoNormal>Register a symmetric key and perform encrypt with streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-ENCDEC-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262282"></a><a name="_Toc17892731"></a><a
+name="_Toc535315570"></a><a name="_Toc533022382"></a><a name="_Toc533017222"></a><a
+name="_Toc478054250">2.102 TC-STREAM-HASH-1-2</a>1</h2>
+
+<p class=MsoNormal>Hash operation for data ‘abc’ in a single request followed
+immediately by a streaming equivalent for which the result must be identical.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Note: - test vector data from <a
+href="http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf">http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf</a>
+</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-HASH-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-HASH-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262283"></a><a name="_Toc17892732"></a><a
+name="_Toc535315571"></a><a name="_Toc533022383"></a><a name="_Toc533017223"></a><a
+name="_Toc478054251"></a><a name="_Toc449973262"></a><a name="_Toc440013417"></a><a
+name="_Toc440002424"></a><a name="_Toc440010285"></a>2.103 TC-STREAM-HASH-2-21</h2>
+
+<p class=MsoNormal>Hash operation for data ‘abc’ in a single request followed
+immediately by a streaming equivalent for which the result must be identical.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Note: - test vector data from <a
+href="http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf">http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf</a></p>
+
+<p class=MsoNormal> </p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-HASH-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-HASH-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262284"></a><a name="_Toc17892733"></a><a
+name="_Toc535315572"></a><a name="_Toc533022384"></a><a name="_Toc533017224"></a><a
+name="_Toc478054252"></a><a name="_Toc449973263"></a><a name="_Toc440013418"></a><a
+name="_Toc440002426"></a><a name="_Toc440010287"></a><a name="_Toc440002429"></a><a
+name="_Toc440010290"></a><a name="_Toc440002430"></a><a name="_Toc440010291"></a><a
+name="_Toc440002506"></a><a name="_Toc440010367"></a><a name="_Toc440002583"></a><a
+name="_Toc440010444"></a><a name="_Toc440002661"></a><a name="_Toc440010522"></a><a
+name="_Toc440002739"></a><a name="_Toc440010600"></a><a name="_Toc440002820"></a><a
+name="_Toc440010681"></a>2.104 TC-STREAM-HASH-3-21</h2>
+
+<p class=MsoNormal>Hash operation for data ‘abc’ in a single request followed
+immediately by a streaming equivalent for which the result must be identical.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Note: - test vector data from <a
+href="http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf">http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA_All.pdf</a></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-HASH-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-HASH-3-21.xml</span></a></p>
+
+<h2><a name="_Toc17892734"></a><a name="_Toc535315573"></a><a
+name="_Toc533022385"></a><a name="_Toc533017225"></a><a name="_Toc478054253"></a><a
+name="_Toc40262285">2.105 TC-STREAM-MAC-1-21</a></h2>
+
+<p class=MsoNormal>MAC with streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-MAC-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-MAC-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262286">2.106 TC-STREAM-SIGN-1-2</a>1</h2>
+
+<p class=MsoNormal>Sign with a known asymmetric key with streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-SIGN-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-SIGN-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262287"></a><a name="_Toc17892735"></a><a
+name="_Toc535315574"></a><a name="_Toc533022386"></a><a name="_Toc533017226"></a><a
+name="_Toc478054254">2.107 TC-STREAM-SIGNVFY-1-2</a>1</h2>
+
+<p class=MsoNormal>Sign and Signature Verify with a known asymmetric key with
+streaming.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-STREAM-SIGNVFY-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-STREAM-SIGNVFY-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262288"></a><a name="_Toc17892736"></a><a
+name="_Toc535315575"></a><a name="_Toc533022387"></a><a name="_Toc533017227"></a><a
+name="_Toc478054255">2.108 TC-WRAP-1-2</a>1</h2>
+
+<p class=MsoNormal>Show usage of Key Wrap Type as Registered.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-WRAP-1-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-WRAP-1-21.xml</span></a></p>
+
+<h2><a name="_Toc40262289"></a><a name="_Toc17892737"></a><a
+name="_Toc535315576"></a><a name="_Toc533022388"></a><a name="_Toc533017228"></a><a
+name="_Toc478054256">2.109 TC-WRAP-2-2</a>1</h2>
+
+<p class=MsoNormal>Show usage of Key Wrap Type as Not Wrapped.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-WRAP-2-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-WRAP-2-21.xml</span></a></p>
+
+<h2><a name="_Toc40262290"></a><a name="_Toc17892738"></a><a
+name="_Toc535315577"></a><a name="_Toc533022389"></a><a name="_Toc533017229"></a><a
+name="_Toc478054257">2.110 TC-WRAP-3-2</a>1</h2>
+
+<p class=MsoNormal>Show usage of returning wrapped key wrapped with a different
+wrapping key.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>See <a href="test-cases/kmip-v2.1/TC-WRAP-3-21.xml"><span
+style='background:yellow'>test-cases/kmip-v2.1/TC-WRAP-3-21.xml</span></a></p>
+
+<div style='border:none;border-top:solid gray 1.0pt;padding:6.0pt 0in 0in 0in'>
+
+<p class=AppendixHeading1><a name="_Toc40262291"></a><a name="_Toc17892740"></a><a
+name="_Toc287337066"></a><a name="_Toc287336983">Appendix A.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span>Acknowledgments</a></p>
+
+</div>
+
+<p class=MsoNormal>The following individuals have participated in the creation
+of this specification and are gratefully acknowledged:</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=Titlepageinfo>Participants:</p>
+
+<p class=ContributorCxSpFirst><span style='background:yellow'>[Participant
+Name, Affiliation | Individual Member] </span></p>
+
+<p class=ContributorCxSpLast><span style='background:yellow'>[Participant Name,
+Affiliation | Individual Member]</span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<div style='border:none;border-top:solid gray 1.0pt;padding:6.0pt 0in 0in 0in'>
+
+<p class=AppendixHeading1><a name="_Toc40262292"></a><a name="_Toc17892741">Appendix
+B.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span>Revision
+History</a></p>
+
+</div>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none'>
+ <tr>
+  <td width=103 valign=top style='width:77.4pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b>Revision</b></p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b>Date</b></p>
+  </td>
+  <td width=144 valign=top style='width:1.5in;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b>Editor</b></p>
+  </td>
+  <td width=295 valign=top style='width:221.4pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b>Changes Made</b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=103 valign=top style='width:77.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>wd02</p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal align=center style='text-align:center'><b>30-Apr-2020</b></p>
+  </td>
+  <td width=144 valign=top style='width:1.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b>Tim Hudson</b></p>
+  </td>
+  <td width=295 valign=top style='width:221.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><b>Updated test list from interop</b></p>
+  </td>
+ </tr>
+ <tr>
+  <td width=103 valign=top style='width:77.4pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>wd01</p>
+  </td>
+  <td width=96 valign=top style='width:1.0in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>28-Aug-2019</p>
+  </td>
+  <td width=144 valign=top style='width:1.5in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Tim Chevalier</p>
+  </td>
+  <td width=295 valign=top style='width:221.4pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Initial draft</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal>&nbsp;</p>
+
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+
+</html>

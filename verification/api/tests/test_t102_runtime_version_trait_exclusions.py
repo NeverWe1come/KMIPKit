@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = REPOSITORY_ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = REPOSITORY_ROOT / "bindings" / "shared" / "public-api.json"
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/043-public-api-bindings/spec.md",

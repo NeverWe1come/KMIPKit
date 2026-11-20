@@ -1112,7 +1112,7 @@ class _CaptionedTableParser(HTMLParser):
 
 def _pinned_tag_rows() -> tuple[list[tuple[str, str, str]], list[tuple[str, str]]]:
     """Return singleton and range rows from the checksum-pinned Table 487."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1140,7 +1140,7 @@ def _pinned_tag_rows() -> tuple[list[tuple[str, str, str]], list[tuple[str, str]
 
 def _pinned_enumeration_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
     """Return every §11 enumeration heading and its literal Name/Value rows."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1179,7 +1179,7 @@ def _pinned_enumeration_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]
 
 def _pinned_bitmask_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
     """Return the three §12 bitmask enumerations from the pinned Specification."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1210,7 +1210,7 @@ def _pinned_bitmask_groups() -> dict[str, tuple[str, list[tuple[str, str]]]]:
 
 def _pinned_attribute_headings() -> dict[str, str]:
     """Return every attribute heading and section from Specification §4."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1227,7 +1227,7 @@ def _pinned_attribute_headings() -> dict[str, str]:
 
 def _pinned_attribute_mutation_policies() -> dict[str, dict[str, str]]:
     """Return each standard attribute's literal §4 policy cells and rule-table ID."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1282,7 +1282,7 @@ def _pinned_attribute_mutation_policies() -> dict[str, dict[str, str]]:
 
 def _pinned_vendor_attribute_policy() -> tuple[str, str]:
     """Return the verbatim §4.60 server-created rule and its Table 150 identifier."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1313,7 +1313,7 @@ def _pinned_vendor_attribute_policy() -> tuple[str, str]:
 
 def _pinned_policy_sentence(section: str, *required_text: str) -> str:
     """Return a sentence containing the requested text from a pinned section."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1333,7 +1333,7 @@ def _pinned_policy_sentence(section: str, *required_text: str) -> str:
 
 def _pinned_usage_limits_count_table() -> tuple[str, list[str]]:
     """Return the Table 392 identifier and its required Usage Limits Count row."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1521,7 +1521,7 @@ def _nested_strings(value: object) -> list[str]:
 
 def _pinned_attribute_structures() -> tuple[dict[str, tuple[str, str]], set[tuple[str, str, str, str]]]:
     """Return §5 structure roots and literal member rows from Tables 157–163."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1555,7 +1555,7 @@ def _pinned_attribute_structures() -> tuple[dict[str, tuple[str, str]], set[tupl
 
 def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str | None]]]:
     """Return every §4 Structure-valued attribute root and its literal members."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1598,7 +1598,7 @@ def _pinned_attribute_value_structures() -> tuple[dict[str, tuple[str, str, str 
 
 def _pinned_attribute_encodings() -> dict[str, tuple[str, str, str | None, str]]:
     """Return attribute names, encodings, and raw requiredness from the source tables."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1640,7 +1640,7 @@ def _pinned_attribute_encodings() -> dict[str, tuple[str, str, str | None, str]]
 
 def _pinned_operation_structures() -> tuple[dict[str, tuple[str, str, str | None]], set[tuple[str, str, str, str | None]]]:
     """Return §7 operation data structure roots and literal members from Tables 352–393."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1676,7 +1676,7 @@ def _pinned_operation_structures() -> tuple[dict[str, tuple[str, str, str | None
 
 def _pinned_message_structure_rows() -> set[tuple[str, str, str | None, str | None, str | None]]:
     """Return exact root and member rows from the six §8 message structure tables."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1722,7 +1722,7 @@ def _pinned_message_structure_rows() -> set[tuple[str, str, str | None, str | No
 
 def _pinned_message_field_types() -> set[tuple[str, str, str, str | None]]:
     """Return the non-credential field types and nested rows in Tables 400–426."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1755,7 +1755,7 @@ def _pinned_message_field_types() -> set[tuple[str, str, str, str | None]]:
 
 def _pinned_credential_forms() -> tuple[dict[str, tuple[str, str]], set[tuple[str, str, str, str]]]:
     """Return the Credential root, six forms, and literal member rows from Tables 410–416."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1791,7 +1791,7 @@ def _pinned_object_structures() -> tuple[
     set[tuple[str, str, str, str, str]],
 ]:
     """Return object-structure roots and literal members from Specification §§2–3.12."""
-    source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+    source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
     raw = source_path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != "8bf9d914c097e98a6509aa1ffcbf03406f738066e940597aee93d0a5e07addcf":
         raise AssertionError("pinned KMIP Specification checksum changed")
@@ -1874,7 +1874,7 @@ def minimal_catalog() -> dict[str, object]:
             "version": "2.1",
             "stage": stage,
             "publication_date": date,
-            "local_path": f"specification/oasis/kmip-2.1/{path}",
+            "local_path": f"verification/conformance/oasis/kmip-2.1/{path}",
             "canonical_url": url,
             "sha256": digest,
             "authority_class": authority,
@@ -2147,7 +2147,7 @@ def endpoint_role_operation_enum_element() -> dict[str, object]:
 
 class CatalogValidationTests(unittest.TestCase):
     def _requirement_record_from_catalog(self, requirement_id: str) -> dict[str, object]:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         return next(
             row for row in catalog["requirements"]
             if row["requirement_id"] == requirement_id
@@ -2155,7 +2155,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_request_attestation_repetition_does_not_cover_response_header_field(self) -> None:
         """Keep request and response header requirement links separate."""
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_id = "KMIPKIT-REQ-SPEC-8.2-002"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         request_field = next(
@@ -2174,7 +2174,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_client_request_timestamp_requirement_does_not_cover_server_fields(self) -> None:
         """Keep optional client request timestamp scope separate from server fields."""
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_id = "KMIPKIT-REQ-SPEC-9.20-001-001"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         fields = {
@@ -2199,7 +2199,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_unique_batch_item_id_requirements_link_to_directional_fields(self) -> None:
         """Keep request ID requirements separate from response correlation."""
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         request_optional_id = "KMIPKIT-REQ-SPEC-9.21-001-001"
         request_required_id = "KMIPKIT-REQ-SPEC-8.3-003"
         response_correlation_id = "KMIPKIT-REQ-SPEC-9.21-001-002"
@@ -2252,7 +2252,7 @@ class CatalogValidationTests(unittest.TestCase):
         """Preserve the TLS 1.2 MAY clause while keeping it outside the 1.0 client requirement closure."""
         requirement_id = "KMIPKIT-REQ-PROF-3.1.1-004"
         clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-004"
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
             (ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -2277,7 +2277,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(catalog)
 
     def test_checked_in_clause_ledger_covers_all_keyword_strength_mappings(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_keywords = set(catalog_validate.KEYWORD_STRENGTH)
         observed_keywords = {
             keyword for clause in catalog["source_clauses"] for keyword in clause["source_keywords"]
@@ -2299,7 +2299,7 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
     def test_table_body_requirement_keeps_source_gap_without_clause_ids(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row for row in catalog["requirements"]
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-2.3-003"
@@ -2316,7 +2316,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_negated_locate_required_clause_accepts_only_reviewed_permission_strength(self) -> None:
         """A source-negated REQUIRED keyword is optional only for its reviewed row."""
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         locate = next(
             row for row in catalog["requirements"]
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-007"
@@ -2331,7 +2331,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(catalog_validate._expected_normative_strength(mismatched_clause), "mandatory")
 
-        unreviewed = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        unreviewed = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         another_required = next(
             row for row in unreviewed["requirements"]
             if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-004-001"
@@ -2342,7 +2342,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_optional_request_evidence_element_ids_are_sorted(self) -> None:
         """Reviewed optional request rows keep relationship IDs deterministic."""
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_ids = (
             "KMIPKIT-REQ-SPEC-4.26-001",
             "KMIPKIT-REQ-SPEC-4.34-001-001",
@@ -2366,7 +2366,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(element_ids, sorted(element_ids))
 
     def test_id_placeholder_requirement_lists_all_mapped_client_paths(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row
             for row in catalog["requirements"]
@@ -2425,7 +2425,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_optional_lifecycle_evidence_rows_are_client_to_server_requests(self) -> None:
         """Lifecycle MAY evidence remains client-originated and has no official test claim."""
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
@@ -2448,7 +2448,7 @@ class CatalogValidationTests(unittest.TestCase):
     ) -> None:
         """The verified wrapped Register fixture does not claim server acceptance."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row
@@ -2467,7 +2467,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_checked_in_catalog_orders_evidence_policies_and_relationships_deterministically(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
 
         def section_key(value: str) -> tuple[int, ...]:
             return tuple(int(part) for part in value.split("."))
@@ -2496,7 +2496,7 @@ class CatalogValidationTests(unittest.TestCase):
                         )
 
     def test_register_wrapping_requirement_element_links_are_sorted(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row
             for row in catalog["requirements"]
@@ -2506,7 +2506,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["element_ids"], sorted(requirement["element_ids"]))
 
     def test_requirement_and_test_case_requirement_links_must_be_reciprocal(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(row for row in catalog["requirements"] if row["test_case_ids"])
         test_id = requirement["test_case_ids"][0]
         test_case = next(row for row in catalog["test_cases"] if row["test_id"] == test_id)
@@ -2516,7 +2516,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(catalog)
 
     def test_requirement_without_official_test_case_requires_an_evidence_gap_note(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(row for row in catalog["requirements"] if not row["test_case_ids"])
         requirement["review_note"] = None
 
@@ -2524,7 +2524,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(catalog)
 
     def test_official_cases_link_only_html_explicitly_named_operations(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_by_source_section: dict[tuple[str, str], set[str]] = {}
 
         cases_source = "KMIPKIT-SRC-testcases"
@@ -2582,7 +2582,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(actual, expected_by_source_section.get(key, set()), key)
 
     def test_official_cases_link_only_html_explicitly_named_protocol_elements(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = {row["element_id"]: row for row in catalog["elements"]}
         non_operation_ids = {
             element_id for element_id, row in elements.items() if row["kind"] != "operation"
@@ -2622,7 +2622,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_profile_json_template_value_is_gated_as_a_source_defect(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(
             (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-038"),
             None,
@@ -2660,7 +2660,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_async_query_response_caption_conflict_has_an_accepted_context_decision(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(
             (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039"),
             None,
@@ -2700,7 +2700,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("2019 Query Asynch proposal history", decision["approval_evidence"])
 
     def test_reprovision_error_caption_conflict_is_an_open_discrepancy(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(
             (row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-040"),
             None,
@@ -2723,7 +2723,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("RNG Retrieve Errors", discrepancy["summary"])
 
     def test_derive_key_scoped_evidence_names_missing_official_test_case(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row
             for row in catalog["requirements"]
@@ -2739,7 +2739,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_requirement_test_evidence_is_bidirectional_or_has_gap_reason(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         expected_by_requirement: dict[str, set[str]] = {
             row["requirement_id"]: set() for row in catalog["requirements"]
         }
@@ -2863,7 +2863,7 @@ class CatalogValidationTests(unittest.TestCase):
             _check_operation_inventory(elements)
 
     def test_item_types_managed_object_types_and_object_structures_reconcile(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         data_types = {row["name"]: row for row in elements if row.get("kind") == "data_type"}
         object_types = {row["name"]: row for row in elements if row.get("kind") == "object_type"}
@@ -2922,7 +2922,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(set(source_roots), expected_roots)
 
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         structures = [row for row in elements if row.get("kind") == "object_structure"]
         structures_by_key = {
@@ -3016,7 +3016,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_tag_registry_matches_every_pinned_source_value(self) -> None:
         source_singletons, source_ranges = _pinned_tag_rows()
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         tags = [row for row in catalog["elements"] if row.get("kind") == "tag"]
         actual_singletons = {(row["name"], row["wire_value"], row["allocation"]) for row in tags}
         self.assertEqual(actual_singletons, set(source_singletons))
@@ -3041,7 +3041,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_enumerations_and_values_reconcile_with_all_pinned_section_11_tables(self) -> None:
         groups = _pinned_enumeration_groups()
         self.assertEqual(set(groups), {f"11.{number}" for number in range(1, 65)})
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         definitions = [row for row in elements if row.get("kind") == "enumeration"]
         values = [row for row in elements if row.get("kind") == "enumeration_value"]
@@ -3080,7 +3080,7 @@ class CatalogValidationTests(unittest.TestCase):
         groups = _pinned_bitmask_groups()
         self.assertEqual(set(groups), {"12.1", "12.2", "12.3"})
         self.assertEqual(sum(len(values) for _, values in groups.values()), 44)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         definitions = [row for row in elements if row.get("kind") == "bitmask"]
         values = [row for row in elements if row.get("kind") == "bitmask_value"]
@@ -3110,7 +3110,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_attribute_records_reconcile_with_all_pinned_section_4_headings(self) -> None:
         headings = _pinned_attribute_headings()
         self.assertEqual(set(headings), {f"4.{number}" for number in range(1, 64)})
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         attributes = [row for row in catalog["elements"] if row.get("kind") == "attribute"]
         expected = {(name, section) for section, name in headings.items()}
         actual = {(row["name"], row["source_refs"][0]["section"]) for row in attributes}
@@ -3140,7 +3140,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_structures, source_members = _pinned_attribute_structures()
         self.assertEqual(set(source_structures), {f"5.{number}" for number in range(1, 8)})
         self.assertEqual(len(source_members), 9)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         structures = [row for row in elements if row.get("kind") == "attribute_structure"]
         members = [
@@ -3171,7 +3171,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_structures, source_members = _pinned_attribute_value_structures()
         self.assertEqual(len(source_structures), 14)
         self.assertEqual(len(source_members), 46)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         attributes = [row for row in elements if row.get("kind") == "attribute"]
         attributes_by_section = {
@@ -3205,7 +3205,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_structures, source_members = _pinned_operation_structures()
         self.assertEqual(set(source_structures), {f"7.{number}" for number in range(1, 42)})
         self.assertEqual(len(source_members), 94)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         structures = [row for row in elements if row.get("kind") == "operation_structure"]
         self.assertEqual(len(structures), 41)
@@ -3241,7 +3241,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_attribute_encodings_match_pinned_value_tables(self) -> None:
         source_encodings = _pinned_attribute_encodings()
         self.assertEqual(len(source_encodings), 62)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         attributes = [row for row in catalog["elements"] if row.get("kind") == "attribute"]
         attributes_by_section = {
             reference["section"]: row
@@ -3264,7 +3264,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_standard_attribute_mutation_policies_match_pinned_rule_tables(self) -> None:
         source_policies = _pinned_attribute_mutation_policies()
         self.assertEqual(len(source_policies), 62)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         attributes_by_section = {
             reference["section"]: element
             for element in catalog["elements"]
@@ -3356,7 +3356,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_standard_attribute_instance_policy_is_extracted_without_losing_conditions(self) -> None:
-        source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         source_policies, _ = expected_attribute_policies(source_path.read_bytes())
 
         self.assertEqual(len(source_policies), 62)
@@ -3380,7 +3380,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_policies = _pinned_attribute_mutation_policies()
         expected_operation_rules = _pinned_fr015_operation_rules()
         expected_conditional_rules = _pinned_fr015_conditional_rules()
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         attributes_by_section = {
             reference["section"]: element
             for element in catalog["elements"]
@@ -3431,7 +3431,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_validator_rejects_removed_or_contradictory_state_and_usage_count_rules(self) -> None:
         expected_rules = _pinned_fr015_operation_rules()
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         attributes_by_section = {
             reference["section"]: element
@@ -3516,7 +3516,7 @@ class CatalogValidationTests(unittest.TestCase):
             for rule in _pinned_fr015_operation_rules()
             if rule["attribute_section"] == "4.28"
         ]
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         target = next(
             element
@@ -3566,7 +3566,7 @@ class CatalogValidationTests(unittest.TestCase):
                         validate(catalog)
 
     def test_validator_rejects_unsupported_standard_policy_entries(self) -> None:
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         standard_attributes = [
             element
@@ -3623,7 +3623,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_validator_rejects_removed_or_contradictory_usage_limits_qualified_condition(self) -> None:
         source_text = _pinned_attribute_mutation_policies()["4.59"]["source_modifiable_by_client"]
         source_reference = {"source_id": "KMIPKIT-SRC-spec", "section": "4.59"}
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         target = next(
             element
@@ -3680,7 +3680,7 @@ class CatalogValidationTests(unittest.TestCase):
             for rule in _pinned_fr015_conditional_rules()
             if rule["attribute_section"] == "4.34"
         )
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         target = next(
             element
@@ -3728,7 +3728,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_vendor_attribute_value_policy_matches_pinned_section_four_sixty(self) -> None:
         source_text, structure_table = _pinned_vendor_attribute_policy()
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         vendor_attribute = next(
             element
             for element in catalog["elements"]
@@ -3796,7 +3796,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("missing conditional-rule array", "standard", "source_conditional_rules", "missing"),
             ("lost qualified source condition", "qualified", "source_conditional_rules", "missing_qualified_text"),
         ]
-        current_catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        current_catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         current_standard = next(
             element
             for element in current_catalog["elements"]
@@ -3819,7 +3819,7 @@ class CatalogValidationTests(unittest.TestCase):
             if mutation in {"contradictory", "missing_qualified_text"} and not complete_standard_metadata:
                 continue
             with self.subTest(case=label):
-                catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+                catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
                 if target_kind == "vendor":
                     target = next(
                         element
@@ -3862,7 +3862,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_validator_rejects_missing_or_contradictory_vendor_attribute_policy_metadata(self) -> None:
         source_text, _ = _pinned_vendor_attribute_policy()
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         baseline = json.loads(catalog_path.read_text(encoding="utf-8"))
         vendor_attribute = next(
             element
@@ -3950,7 +3950,7 @@ class CatalogValidationTests(unittest.TestCase):
                     validate(catalog)
 
     def test_rejects_attribute_policy_metadata_on_non_attribute_records(self) -> None:
-        catalog_path = ROOT / "specification/catalog/kmip-2.1.json"
+        catalog_path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         operation = next(element for element in catalog["elements"] if element.get("kind") == "operation")
         operation.update(
@@ -3970,7 +3970,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(catalog)
 
     def test_options_and_result_values_have_explicit_inventory_records(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         expected = {
             ("option", "Asynchronous Indicator", ("9.2", "11.3")),
@@ -3994,7 +3994,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_message_fields_match_all_rows_in_tables_394_to_399(self) -> None:
         source_rows = _pinned_message_structure_rows()
         self.assertEqual(len(source_rows), 43)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         messages = [
             row for row in elements
@@ -4016,7 +4016,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_message_field_types_match_tables_400_to_409_and_417_to_426(self) -> None:
         source_rows = _pinned_message_field_types()
         self.assertEqual(len(source_rows), 28)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         messages = [
             row for row in catalog["elements"]
             if row.get("kind") == "message_field"
@@ -4035,7 +4035,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_roots, source_members = _pinned_credential_forms()
         self.assertEqual(len(source_roots), 7)
         self.assertEqual(len(source_members), 22)
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         elements = catalog["elements"]
         credentials = [row for row in elements if row.get("kind") == "credential"]
         self.assertEqual(
@@ -4301,7 +4301,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertGreater(validate(document)["record_count"], 0)
 
     def test_checked_in_catalog_reconciles_profile_and_official_test_evidence(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         raw = catalog_path.read_bytes()
 
         validated = validate_catalog(raw, ROOT, require_complete=True)
@@ -4341,9 +4341,9 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(conformance_sections, {f"6.{section}" for section in range(1, 36)})
 
     def test_baseline_fixtures_are_pinned_but_do_not_complete_conformance_evidence(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         target_manifest = json.loads(
-            (ROOT / "specification/catalog/profile-targets.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/profile-targets.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -4359,9 +4359,9 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertIn(baseline["profile_id"], target_manifest["profile_ids"])
         self.assertEqual(16, len(required_tests))
-        source_index = (ROOT / "specification/oasis/kmip-2.1/SOURCES.md").read_text(encoding="utf-8")
+        source_index = (ROOT / "verification/conformance/oasis/kmip-2.1/SOURCES.md").read_text(encoding="utf-8")
         for test in required_tests:
-            expected_path = f"specification/oasis/kmip-2.1/fixtures/{test['official_case_id']}.xml"
+            expected_path = f"verification/conformance/oasis/kmip-2.1/fixtures/{test['official_case_id']}.xml"
             self.assertEqual("available", test["fixture_availability"])
             self.assertEqual(expected_path, test["fixture_path"])
             self.assertEqual(
@@ -4394,7 +4394,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual("evidence_complete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         discrepancies = document["discrepancies"]
         cited_sections = {
@@ -4446,7 +4446,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(discrepancy["discrepancy_id"], decision["discrepancy_ids"])
 
     def test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         clauses = {row["clause_id"]: row for row in document["source_clauses"]}
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
@@ -4496,7 +4496,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_optional_authentication_capabilities_link_only_bounded_local_evidence(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_evidence = {
@@ -4533,7 +4533,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_private_and_public_key_attribute_repetition_maps_client_request_evidence(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         elements = {row["element_id"]: row for row in catalog["elements"]}
@@ -4565,7 +4565,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn("no official test case is claimed or passed", review_note)
 
     def test_checked_in_credential_catalog_links_authentication_and_credential_elements(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
         elements = {row["element_id"]: row for row in document["elements"]}
@@ -4601,7 +4601,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_checked_in_device_credential_links_keep_field_set_ambiguity_open(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
         elements = {row["element_id"]: row for row in document["elements"]}
@@ -4651,7 +4651,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
 
     def test_checked_in_device_minimum_field_summary_does_not_narrow_to_identifiers(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
         minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
@@ -4663,7 +4663,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("KMIPKIT-DISC-042", minimum_requirement["review_note"])
 
     def test_checked_in_catalog_separates_unknown_vendor_and_extension_policies(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         policies = {row["policy_id"]: row for row in document["policies"]}
         expected_ids = {
@@ -4692,7 +4692,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(document)
 
     def test_result_response_source_clauses_have_server_to_client_direction(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         expected_clause_directions = {
             "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
@@ -4706,7 +4706,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(clauses[clause_id]["direction"], expected_direction)
 
     def test_result_message_mixed_scope_has_open_evidence_gap_record(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy_id = "KMIPKIT-DISC-053"
         discrepancy = next(
             (row for row in catalog["discrepancies"] if row["discrepancy_id"] == discrepancy_id),
@@ -4847,8 +4847,8 @@ class CatalogValidationTests(unittest.TestCase):
             "C:/secret.xml",
             "/secret.xml",
             "../outside.xml",
-            "specification/oasis/kmip-2.1/../../outside.xml",
-            "specification/oasis/kmip-2.1/fixtures\\secret.xml",
+            "verification/conformance/oasis/kmip-2.1/../../outside.xml",
+            "verification/conformance/oasis/kmip-2.1/fixtures\\secret.xml",
             "\\\\server\\share\\fixture.xml",
         ):
             document = minimal_catalog()
@@ -4860,7 +4860,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["test_cases"] = [
             test_case(
-                fixture_path="specification/oasis/kmip-2.1/fixtures/TC-001.xml",
+                fixture_path="verification/conformance/oasis/kmip-2.1/fixtures/TC-001.xml",
                 fixture_availability="available",
             )
         ]
@@ -4868,7 +4868,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(document)
 
     def test_command_line_validator_reports_catalog_counts(self) -> None:
-        script = ROOT / "tools" / "normative_catalog" / "validate.py"
+        script = ROOT / "verification" / "conformance" / "validate.py"
         result = subprocess.run(
             [sys.executable, str(script), "--repo-root", str(ROOT), "--structural-only"],
             cwd=ROOT,
@@ -5134,7 +5134,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_cannot_claim_complete_evidence_with_unavailable_mandatory_fixtures(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5172,7 +5172,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_claim_rejects_omitted_catalog_linked_test_cases(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5203,7 +5203,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_claim_rejects_unlinked_profile_test_cases(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5228,7 +5228,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_claim_checks_required_fixtures_linked_by_closure_requirements(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5267,7 +5267,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_claim_rejects_incomplete_dependency_claim_state(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile = next(
             profile
@@ -5292,7 +5292,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_claim_rejects_dependency_cycles(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5307,7 +5307,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_profile_cannot_claim_complete_evidence_without_requirement_assignments(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5345,7 +5345,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_baseline_profile_links_normative_basic_auth_subclauses(self) -> None:
         """Profiles v2.1 §6.1 item 2 incorporates §§3.1.1 and 3.1.2."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -5366,9 +5366,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_all_client_profiles_include_the_section_14_1_claim_gate(self) -> None:
         """Specification v2.1 §14.1 paragraph 2 gates every profile claim."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        spec_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         pinned_spec_clauses = audit_document(spec_path.read_bytes(), "KMIPKIT-SRC-spec")
         claim_clause = next(
             clause
@@ -5415,10 +5415,10 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_client_profile_closures_match_the_source_audited_oracle(self) -> None:
         """Compare all client metadata with the independent pinned-source fixture."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
             oracle["source_closure_status"],
@@ -5443,8 +5443,8 @@ class CatalogValidationTests(unittest.TestCase):
             "every profile must carry a complete source-derived requirement set",
         )
         pinned_sources = (
-            ("KMIPKIT-SRC-spec", "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"),
-            ("KMIPKIT-SRC-profiles", "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"),
+            ("KMIPKIT-SRC-spec", "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"),
+            ("KMIPKIT-SRC-profiles", "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"),
         )
         audited_source_clauses = []
         for source_id, relative_path in pinned_sources:
@@ -5559,7 +5559,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_source_review_excludes_server_only_batch_order_candidates(self) -> None:
         '''Specification v2.1 section 9.8 paragraph 1 assigns both predicates to the server.'''
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         review = next(
             record
@@ -5582,7 +5582,7 @@ class CatalogValidationTests(unittest.TestCase):
             item["requirement_id"] for item in review["rejected_candidate_mappings"]
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         violations = {
@@ -5600,8 +5600,7 @@ class CatalogValidationTests(unittest.TestCase):
         """Specification v2.1 §4.57's Active paragraph contains four distinct use predicates."""
         raw_spec = (
             ROOT
-            / "specification"
-            / "oasis"
+            / "verification" / "conformance" / "oasis"
             / "kmip-2.1"
             / "upstream"
             / "kmip-spec-v2.1-os.html"
@@ -5632,10 +5631,10 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-4.57-003-004",
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         requirements = {
             requirement["requirement_id"]: requirement
@@ -5697,10 +5696,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_requirement_crosswalk_accounts_for_every_catalog_requirement_id(self) -> None:
         """Every stable label gets a reviewed disposition, including exclusions."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         catalog_ids = {record["requirement_id"] for record in catalog["requirements"]}
         crosswalk_ids = [record["requirement_id"] for record in oracle["requirement_crosswalk"]]
@@ -5776,7 +5775,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_1_through_4_18_source_review_slice_is_complete(self) -> None:
         """The first reviewed §4 slice retains every candidate and actor split."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_candidates = {
             "KMIPKIT-REQ-SPEC-4.1-001-001",
@@ -5883,9 +5882,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_32_mac_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.32 and 6.1.32.1 require a reviewed MAC source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -6179,9 +6178,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_33_mac_verify_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.33 and 6.1.33.1 preserve MAC Verify source atoms and rows."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -6368,7 +6367,7 @@ class CatalogValidationTests(unittest.TestCase):
         data_row = next(row for row in request_rows if row["row_label"] == "Data")
         self.assertIn("KMIPKIT-REQ-SPEC-6.1.33-001-001", data_row.get("source_note", ""))
         self.assertIn("KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009", data_row.get("source_note", ""))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(
             "KMIPKIT-REQ-SPEC-6.1-009-001",
             {requirement["requirement_id"] for requirement in catalog["requirements"]},
@@ -6529,9 +6528,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_34_modify_attribute_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.34 and 6.1.34.1 preserve Modify Attribute atoms and rows."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -6699,15 +6698,15 @@ class CatalogValidationTests(unittest.TestCase):
         ))
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.34-005", {
             row["requirement_id"]
-            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+            for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_35_obtain_lease_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.35 and 6.1.35.1 preserve lease atoms and payload rows."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         section_locators = [
             row
@@ -6870,9 +6869,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_36_ping_keeps_server_may_and_empty_payload_tables(self) -> None:
         """Specification v2.1 §6.1.36 has no Ping client payload requirement or specific error table."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         ping_locators = [row for row in pinned_locators if row["section"] == "6.1.36"]
         expected_locators = {
@@ -6928,13 +6927,13 @@ class CatalogValidationTests(unittest.TestCase):
             [],
         )
         self.assertFalse(any(row["source_section"] == "6.1.36.1" for row in oracle["source_requirement_reviews"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertFalse(any(row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_pkcs11_table_273_required_function_is_a_client_source_contract(self) -> None:
         """The required PKCS#11 Function field is traced to the approved opaque-forwarding client."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.37-PKCS11-FUNCTION-REQUIRED"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -6945,7 +6944,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         contract = contracts[0]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [31203, 31221]
         protocol_test_ref = "crates/kmipkit-protocol/tests/unit/pkcs11_operation_tests.rs::table_273_function_preserves_enumeration_or_integer"
         client_test_ref = "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly"
@@ -6981,7 +6980,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("opaque", contract["evidence_disposition"]["statement"].lower())
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
             row["requirement_id"]
-            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+            for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
             row["requirement_id"] for row in oracle["requirement_crosswalk"]
@@ -6990,9 +6989,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_37_pkcs11_operation_and_errors_preserve_source_force(self) -> None:
         """Specification v2.1 §§6.1.37 and 6.1.37.1 retain payload force and lowercase wording."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         operation_locators = [row for row in pinned_locators if row["section"] in ("6.1.37", "6.1.37.1")]
         expected_locators = {
@@ -7080,7 +7079,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.37"
         }
         self.assertEqual(set(gaps), set())
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {row["requirement_id"] for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
 
         preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37.1-001"]
         self.assertEqual(preamble["source_obligations"][0]["source_keyword"], "SHALL")
@@ -7117,9 +7116,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_38_poll_tracks_async_request_and_server_responses(self) -> None:
         """Specification v2.1 §§6.1.38 and 6.1.38.1 separate client Poll input from server outcomes."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         poll_locators = [row for row in pinned_locators if row["section"] in ("6.1.38", "6.1.38.1")]
         expected_locators = {
@@ -7247,9 +7246,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_39_process_records_server_rule_and_required_correlation(self) -> None:
         """Specification v2.1 §§6.1.39 and 6.1.39.1 separate server behavior from required client input."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         process_locators = [row for row in pinned_locators if row["section"] in ("6.1.39", "6.1.39.1")]
         expected_locators = {
@@ -7347,9 +7346,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_40_query_reviews_client_inputs_and_server_capabilities(self) -> None:
         """Specification v2.1 §§6.1.40 and 6.1.40.1 distinguish Query inputs from server results."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         query_locators = [row for row in pinned_locators if row["section"] in ("6.1.40", "6.1.40.1")]
         expected_locators = {
@@ -7547,7 +7546,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.40"
         }
         self.assertEqual(query_gaps, {})
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {row["requirement_id"] for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
 
         crosswalks = {
             row["requirement_id"]: row
@@ -7580,10 +7579,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_40_object_groups_optional_row_links_approved_feature_and_direct_tests(self) -> None:
         """Table 282 optional Object Groups is tied to approved feature and executable evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.40-OBJECT-GROUPS-OPTIONAL"
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         protocol_tests = [
             "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_preserves_required_repeated_functions_and_object_group_order",
             "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_request_distinguishes_absent_and_present_empty_object_groups",
@@ -7621,7 +7620,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {
             row["requirement_id"]
-            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+            for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
@@ -7649,9 +7648,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_41_query_async_requests_keeps_server_results_and_optional_client_inputs(self) -> None:
         """Specification v2.1 §§6.1.41 and 6.1.41.1 separate client filters from server results."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         query_async_locators = [row for row in pinned_locators if row["section"] in ("6.1.41", "6.1.41.1")]
         expected_locators = {
@@ -7748,7 +7747,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, span))
             self.assertEqual(row["row_label"], label)
             self.assertEqual(row["source_gap_id"], gap_id)
-            self.assertNotIn(proposed_id, {requirement["requirement_id"] for requirement in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+            self.assertNotIn(proposed_id, {requirement["requirement_id"] for requirement in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
 
         query_async_gaps = {
             row["gap_id"]: row
@@ -7786,7 +7785,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "source_note": "Table 286 is printed as PKCS#11 Response Payload; KMIPKIT-DEC-015 resolves KMIPKIT-DISC-039 by interpreting the response item as the §7.2 Asynchronous Request structure.",
             }],
         )
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         caption_discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039")
         self.assertEqual(caption_discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(caption_discrepancy["decision_id"], "KMIPKIT-DEC-015")
@@ -7805,9 +7804,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_44_revoke_reviews_client_input_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.44 and 6.1.44.1 preserve Revoke source roles."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         source_bytes = (ROOT / source_path).read_bytes()
         self.assertEqual(
             hashlib.sha256(source_bytes).hexdigest(),
@@ -7958,9 +7957,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_44_table_295_required_revocation_reason_row_is_contract(self) -> None:
         """The required Table 295 reason maps to Revoke evidence without inventing a REQ ID."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.44-004"
         line_range = [33198, 33210]
@@ -7997,7 +7996,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertNotIn(field, contract)
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in oracle["requirement_crosswalk"]})
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )["requirements"]})
         self.assertEqual([row for row in oracle["source_only_requirement_gaps"] if row["gap_id"] == gap_id], [])
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -8005,7 +8004,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_44_revoke_date_prohibition_has_typed_profile_traceability(self) -> None:
         """The Table 295 client prohibition links the request rule and both source clauses."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement = requirements["KMIPKIT-REQ-SPEC-6.1.44-003-002"]
@@ -8058,9 +8057,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_46_rekey_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.46 and 6.1.46.1 preserve Re-key source roles."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         rekey_locators = [row for row in pinned_locators if row["section"] in ("6.1.46", "6.1.46.1")]
         expected_locators = {
@@ -8237,7 +8236,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_rekey_table_305_optional_rows_have_typed_contracts(self) -> None:
         """Table 305 optional request fields map to the approved typed operation without REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         protocol_test_ref = "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values"
         client_test_ref = "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier"
@@ -8279,7 +8278,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(reviewed_row["source_requirement_ids"], [])
                 self.assertEqual(reviewed_row["disposition"], "optional_request_table_contract")
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_section"], "6.1.46")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
@@ -8317,7 +8316,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_rekey_key_pair_table_310_optional_rows_have_typed_contracts(self) -> None:
         """Table 310 optional request fields map to the approved typed operation without REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         protocol_test_ref = "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups"
         client_test_ref = "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once"
@@ -8360,7 +8359,7 @@ class CatalogValidationTests(unittest.TestCase):
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
                     "section": "6.1.47",
@@ -8390,9 +8389,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_47_rekey_key_pair_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.47 and 6.1.47.1 preserve Re-key Key Pair source roles."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         rekey_pair_locators = [row for row in pinned_locators if row["section"] in ("6.1.47", "6.1.47.1")]
         expected_locators = {
@@ -8579,9 +8578,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_48_reprovision_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.48 and 6.1.48.1 preserve Re-Provision source roles."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         reprovision_locators = [row for row in pinned_locators if row["section"] in ("6.1.48", "6.1.48.1")]
         expected_locators = {
@@ -8760,9 +8759,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_49_rng_retrieve_reviews_payload_and_error_evidence(self) -> None:
         """Specification v2.1 §6.1.49 preserves RNG Retrieve payload and error evidence."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.49-001": ("6.1.49", 1, "table_row", ["REQUIRED"], [35302, 35320]),
@@ -8817,7 +8816,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_rng_retrieve_table_316_data_length_is_a_required_client_source_contract(self) -> None:
         """The required RNG Retrieve Data Length row maps to approved client evidence."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.49-001"
@@ -8826,7 +8825,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
         line_range = [35321, 35339]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.49")
@@ -8863,7 +8862,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
         self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
                              for row in oracle["source_only_requirement_gaps"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
 
         request_review = next(
@@ -8882,7 +8881,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_49_rng_retrieve_error_clause_is_server_to_client(self) -> None:
         """The RNG Retrieve error Result Reason obligation describes server response output."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clause = next(row for row in catalog["source_clauses"]
                       if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001")
         self.assertEqual(clause["disposition"], "server_only")
@@ -8893,9 +8892,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_50_rng_seed_reviews_client_input_and_server_response(self) -> None:
         """Specification v2.1 §§6.1.50 and 6.1.50.1 distinguish client duties from server output."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.50-001": ("6.1.50", 1, "paragraph", ["MAY", "SHALL NOT"], [35462, 35466]),
@@ -8934,7 +8933,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(seed_behavior["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
         self.assertEqual(len(seed_behavior["rejected_candidate_mappings"]), 0)
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         mixed_clause = next(row for row in catalog["source_clauses"]
                             if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.50-001")
         self.assertEqual(mixed_clause["role"], "both")
@@ -9024,7 +9023,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_rng_seed_table_319_data_is_a_required_client_source_contract(self) -> None:
         """The required RNG Seed Data row maps to approved client and secret-handling evidence."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.50-DATA-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.50-004"
@@ -9033,7 +9032,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
         line_range = [35498, 35516]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.50")
@@ -9076,7 +9075,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
         self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
                              for row in oracle["source_only_requirement_gaps"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
 
         request_review = next(
@@ -9094,7 +9093,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_50_rng_seed_error_clause_is_server_to_client(self) -> None:
         """The RNG Seed Result Reason obligation describes server response output."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clause = next(row for row in catalog["source_clauses"]
                       if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.50.1-001")
         self.assertEqual(clause["disposition"], "server_only")
@@ -9105,9 +9104,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_51_set_attribute_reviews_payload_and_error_discrepancy(self) -> None:
         """Set Attribute evidence distinguishes client fields from server output and preserves DISC-019."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.51-001": ("6.1.51", 1, "paragraph", ["SHALL NOT"], [35629, 35635]),
@@ -9183,7 +9182,7 @@ class CatalogValidationTests(unittest.TestCase):
              "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large",
              "Wrong Key Lifecycle State"],
         )
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-019")
         error_clause = next(row for row in catalog["source_clauses"]
                             if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51.1-001")
@@ -9207,11 +9206,11 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_set_attribute_table_322_optional_identifier_is_a_client_source_contract(self) -> None:
         """The optional Set Attribute identifier maps without claiming server placeholder behavior."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-UNIQUE-IDENTIFIER-OPTIONAL"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.51-003"
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [35667, 35683]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
@@ -9253,7 +9252,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
         self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
                              for row in oracle["source_only_requirement_gaps"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
@@ -9271,11 +9270,11 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_set_attribute_table_322_required_new_attribute_is_a_client_source_contract(self) -> None:
         """The required New Attribute row maps to existing Set Attribute evidence without a new REQ."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.51-002"
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [35685, 35699]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
@@ -9317,7 +9316,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
         self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
                              for row in oracle["source_only_requirement_gaps"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
@@ -9335,11 +9334,11 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_modify_attribute_table_265_required_new_attribute_is_a_client_source_contract(self) -> None:
         """The required Modify Attribute New Attribute row maps without inventing a normative REQ."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.34-005"
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [30687, 30705]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
@@ -9381,7 +9380,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
         self.assertFalse(any(row.get("proposed_requirement_id") == proposed_id
                              for row in oracle["source_only_requirement_gaps"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
         self.assertEqual(oracle["counts"]["source_table_contracts"], 68)
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
@@ -9399,9 +9398,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_52_set_constraints_reviews_payload_and_approved_error_decision(self) -> None:
         """Set Constraints links its required payload and error table to the accepted reading of DISC-020."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.52-001": ("6.1.52", 1, "table_row", ["REQUIRED"], [35830, 35848]),
@@ -9463,7 +9462,7 @@ class CatalogValidationTests(unittest.TestCase):
              "Permission Denied", "Response Too Large"],
         )
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-020")
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-006")
         constraints_element = next(row for row in catalog["elements"]
@@ -9493,9 +9492,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_52_table_325_required_constraints_row_is_contract(self) -> None:
         """The required Table 325 field maps to Set Constraints evidence without inventing a REQ ID."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.52-001"
         line_range = [35849, 35864]
@@ -9532,7 +9531,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertNotIn(field, contract)
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in oracle["requirement_crosswalk"]})
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )["requirements"]})
         self.assertEqual([row for row in oracle["source_only_requirement_gaps"]
                           if row["gap_id"] == gap_id], [])
@@ -9543,9 +9542,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_53_set_defaults_reviews_optional_payload_and_approved_error_decision(self) -> None:
         """Set Defaults preserves optional request semantics and the accepted reading of DISC-020."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.53-001": ("6.1.53", 1, "table_row", ["REQUIRED"], [35994, 36012]),
@@ -9627,7 +9626,7 @@ class CatalogValidationTests(unittest.TestCase):
              "Permission Denied", "Response Too Large"],
         )
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-020")
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-006")
         defaults_element = next(row for row in catalog["elements"]
@@ -9699,9 +9698,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_54_set_endpoint_role_reviews_payload_actor_direction_and_scope(self) -> None:
         """Set Endpoint Role preserves source actors and defers role switching to 1.1."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.54-001": ("6.1.54", 1, "table_row", ["REQUIRED"], [36155, 36173]),
@@ -9774,7 +9773,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("accepted endpoint role", response_review["source_context"])
         self.assertIn("KMIPKIT-DISC-052", response_review["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
                    if row["clause_id"].startswith("KMIPKIT-CLAUSE-SPEC-6.1.54-")}
         self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.54-001"]["disposition"], "non_applicable")
@@ -9809,9 +9808,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_54_set_endpoint_role_reviews_server_only_errors_and_duplicate_reasons(self) -> None:
         """Set Endpoint Role error SHALL is server-only and Table 333 retains duplicate enum values."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001": ("6.1.54.1", 1, "paragraph", ["SHALL"], [36251, 36255]),
@@ -9866,7 +9865,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 333: Set Endpoint Role Errors", reason_review["source_context"])
         self.assertIn("Permission Denied appears twice", reason_review["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
                    if row["clause_id"] in expected}
         error_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.54.1-001"]
@@ -9886,9 +9885,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_55_sign_reviews_client_inputs_and_server_effects(self) -> None:
         """Sign keeps client request capabilities separate from server behavior and output."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.55-001": ("6.1.55", 1, "paragraph", ["MAY"], [36304, 36308]),
@@ -10026,7 +10025,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Attestation Required", error_values)
         self.assertIn("enum value", reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-002"]["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
         self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]["scope_state"], "client_1_0")
         self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]["disposition"], "server_only")
@@ -10065,9 +10064,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_signature_verify_table_337_request_rows_are_contracts_with_direct_field_evidence(self) -> None:
         """Table 337 client request rows map to feature evidence without per-cell REQ IDs."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         protocol_path = "crates/kmipkit-protocol/tests/unit/signature_verify_operation_tests.rs"
         client_path = "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs"
         emit_fields = f"{protocol_path}::request_emits_optional_key_parameters_data_digest_signature_and_framing_in_order"
@@ -10248,7 +10247,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_sign_table_334_request_rows_are_contracts_with_preserved_data_conflict(self) -> None:
         """Sign Table 334 client rows resolve to approved evidence without per-cell REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL": (
@@ -10328,7 +10327,7 @@ class CatalogValidationTests(unittest.TestCase):
             ] + [client_test]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_section"], "6.1.55")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
@@ -10377,7 +10376,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_sign_data_contract_validator_rejects_a_silenced_shared_source_conflict(self) -> None:
         """The Sign Data table row cannot discard the unresolved general §6.1 rule."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         broken = json.loads(json.dumps(oracle))
         data_contract = next(
@@ -10398,9 +10397,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_56_signature_verify_reviews_source_atoms_and_server_directions(self) -> None:
         """Signature Verify source clauses keep client requests and server responses distinct."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1.56-001": ("6.1.56", 1, "paragraph", ["MAY"], [36630, 36634]),
@@ -10487,7 +10486,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Attestation Required", false_required["source_excerpt"])
         self.assertIn("enum value", false_required["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
         for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.56-003", "KMIPKIT-CLAUSE-SPEC-6.1.56-009",
                           "KMIPKIT-CLAUSE-SPEC-6.1.56.1-001"):
@@ -10518,9 +10517,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_56_signature_verify_reviews_payload_gaps_and_open_discrepancy(self) -> None:
         """Signature Verify payload rows preserve source requiredness and DISC-048 tension."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         self.assertEqual(
             {clause_id for clause_id in reviews if clause_id.startswith("KMIPKIT-CLAUSE-SPEC-6.1.56")},
@@ -10584,7 +10583,7 @@ class CatalogValidationTests(unittest.TestCase):
                 if row["source_section"] == "6.1.56"}
         self.assertEqual(gaps, {}, "the six Table 337 contracts leave the proposal ledger")
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-048")
         self.assertEqual(discrepancy["state"], "open")
         self.assertIn({"source_id": "KMIPKIT-SRC-spec", "section": "6.1.56"}, discrepancy["source_refs"])
@@ -10596,7 +10595,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_recertify_table_300_optional_rows_have_typed_contracts(self) -> None:
         """Table 300 optional request fields map to the approved typed operation without REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         protocol_test_ref = "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values"
         client_test_ref = "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier"
@@ -10658,7 +10657,7 @@ class CatalogValidationTests(unittest.TestCase):
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
                     "section": "6.1.45",
@@ -10691,9 +10690,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_45_recertify_reviews_client_inputs_and_server_effects(self) -> None:
         """Specification v2.1 §§6.1.45 and 6.1.45.1 preserve Re-certify source roles."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         recertify_locators = [row for row in pinned_locators if row["section"] in ("6.1.45", "6.1.45.1")]
         expected_locators = {
@@ -10923,9 +10922,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_43_register_reviews_client_fields_and_server_results(self) -> None:
         """Specification v2.1 §§6.1.43 and 6.1.43.1 preserve Register source boundaries."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         register_locators = [row for row in pinned_locators if row["section"] in ("6.1.43", "6.1.43.1")]
         expected_locators = {
@@ -11109,9 +11108,9 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_spec_6_1_42_recover_keeps_client_may_and_server_authentication_should(self) -> None:
         """Specification v2.1 §§6.1.42 and 6.1.42.1 preserve Recover actor and payload boundaries."""
-        fixture_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         recover_locators = [row for row in pinned_locators if row["section"] in ("6.1.42", "6.1.42.1")]
         expected_locators = {
@@ -11255,7 +11254,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_19_through_4_25_source_review_slice_preserves_actor_and_force(self) -> None:
         """The source audit separates server duties and the narrow existing client capability."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
             f"KMIPKIT-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
@@ -11378,7 +11377,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_26_through_4_33_source_review_slice_preserves_mixed_actors(self) -> None:
         """The source review separates client labels, server duties, and table metadata."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
             f"KMIPKIT-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
@@ -11459,7 +11458,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         locate_capability = next(
             requirement
@@ -11559,7 +11558,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_34_through_4_42_source_review_slice_preserves_scope_and_candidate_atoms(self) -> None:
         """The source audit keeps attribute duties, ambiguous actors, and client options distinct."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
             f"KMIPKIT-CLAUSE-SPEC-{section}-{ordinal:03d}"
@@ -11659,7 +11658,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_43_through_4_50_source_review_separates_client_and_server_scope(self) -> None:
         """Protection-period scope, RNG lifecycle, and Revocation Message labels follow source text."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
             "KMIPKIT-CLAUSE-SPEC-4.43-001",
@@ -11764,7 +11763,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_51_through_4_56_source_review_keeps_server_lifecycle_out_of_client_closure(self) -> None:
         """Rotate metadata, Sensitive, and Short Unique Identifier duties retain their source actors."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
             "KMIPKIT-CLAUSE-SPEC-4.51-001",
@@ -11799,7 +11798,7 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_source = {
             row["clause_id"]: row
             for row in audit_document_with_text(
-                (ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html").read_bytes(),
+                (ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html").read_bytes(),
                 "KMIPKIT-SRC-spec",
             )
         }
@@ -11874,7 +11873,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_4_57_through_4_63_source_review_preserves_active_atoms_and_certificate_scope(self) -> None:
         """Specification v2.1 §§4.57–4.63 preserve source order, actors, and header exclusions."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_line_ranges = {
             "KMIPKIT-CLAUSE-SPEC-4.57-003": [20225, 20231],
@@ -11906,7 +11905,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(reviews), set(expected_line_ranges))
 
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_source = {
             row["clause_id"]: row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -11985,7 +11984,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(rejected_ids, header_only_ids)
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         included_headers = {
@@ -12016,10 +12015,10 @@ class CatalogValidationTests(unittest.TestCase):
         """Table 155 separates repeatability from SAN presence when Subject DN is empty."""
         requirement_id = "KMIPKIT-REQ-SPEC-4.63-005"
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         source_obligation = next(
             obligation
@@ -12040,12 +12039,12 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_overview_source_rows_preserve_client_server_obligations(self) -> None:
         """Specification v2.1 §6.1 overview separates client capabilities from server state."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         expected = {
             "KMIPKIT-CLAUSE-SPEC-6.1-001": {
                 "lines": [22377, 22384],
@@ -12196,9 +12195,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_1_through_6_1_5_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.1–6.1.5 and descendants retain exact source scope."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         sections = {f"6.1.{number}" for number in range(1, 6)}
         pinned_candidates = [
             row
@@ -12324,7 +12323,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         candidates_by_id = {row["clause_id"]: row for row in pinned_candidates}
         crosswalk = oracle["requirement_crosswalk"]
-        client_closures = [profile for profile in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["profiles"] if profile["role"] == "client"]
+        client_closures = [profile for profile in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["profiles"] if profile["role"] == "client"]
         for clause_id, (section, ordinal, block_kind, line_range) in expected_locators.items():
             with self.subTest(source_clause_id=clause_id):
                 review = reviews[clause_id]
@@ -12401,12 +12400,12 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_6_and_6_1_7_complete_operations_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.6–6.1.7 and immediate subclauses are reviewed completely."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         sections = ("6.1.6", "6.1.7")
         pinned_candidates = [
             row
@@ -12618,12 +12617,12 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_8_through_6_1_10_complete_operations_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.8–6.1.10 and immediate subclauses are reviewed completely."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         sections = ("6.1.8", "6.1.9", "6.1.10")
         pinned_candidates = [
             row
@@ -12830,10 +12829,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_11_decrypt_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.11 and its immediate error-handling subsection are reviewed."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_candidates = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -12967,9 +12966,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_12_delegated_login_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.12 and its immediate error-handling subsection are reviewed."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_candidates = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -13166,9 +13165,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_uid_optional_rows_reuse_general_batch_placeholder_capability(self) -> None:
         """Operation-specific UID omission rows reuse the conditional §6.1 MAY once."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         uid_rows = {
             "6.1.13": (
                 "KMIPKIT-CLAUSE-SPEC-6.1.13-002",
@@ -13243,7 +13242,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(batch_rows[0]["source_keyword"], "MAY")
         self.assertEqual(batch_rows[0]["source_actor"], "client")
         self.assertEqual(batch_rows[0]["scope_state"], "client_1_0")
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
         for profile in client_profiles:
@@ -13272,9 +13271,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_13_delete_attribute_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.13 and its immediate error-handling subsection are reviewed."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_candidates = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -13443,7 +13442,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-003"]["source_obligations"], [])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirements = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
@@ -13458,9 +13457,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_14_derive_key_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.14 and its immediate error-handling subsection are reviewed."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_candidates = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -13639,7 +13638,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.14-001-001", "KMIPKIT-REQ-SPEC-6.1.14-001-002", "KMIPKIT-REQ-SPEC-6.1.14-001-003", "KMIPKIT-REQ-SPEC-6.1.14-001-004",
             "KMIPKIT-REQ-SPEC-6.1.14-002", "KMIPKIT-REQ-SPEC-6.1.14-006-001", "KMIPKIT-REQ-SPEC-6.1.14-006-002", "KMIPKIT-REQ-SPEC-6.1.14-007-002",
         }
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
@@ -13763,9 +13762,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_16_discover_versions_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.16 separates client version-list input from server response rules."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -13899,7 +13898,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.16-001-001",
             "KMIPKIT-REQ-SPEC-6.1.16-001-002",
         }
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
@@ -13934,9 +13933,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_17_encrypt_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.17 separates client request capabilities from server Encrypt rules."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -14019,7 +14018,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.17-001-002",
             "KMIPKIT-REQ-SPEC-6.1.17-006",
         }
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
@@ -14152,9 +14151,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_19_get_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.19 and §6.1.19.1 require pinned-source review rows."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -14244,7 +14243,7 @@ class CatalogValidationTests(unittest.TestCase):
             "Key Wrapping Specification": ([27267, 27285], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.19-006"),
         }
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {requirement["requirement_id"] for requirement in catalog["requirements"]}
         self._assert_optional_request_row_gaps(
             request_rows=request_rows,
@@ -14354,9 +14353,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_22_get_constraints_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.22 and 6.1.22.1 preserve empty request and server response semantics."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_text = audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         pinned_locators = [
@@ -14494,9 +14493,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_23_get_usage_allocation_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.23 and 6.1.23.1 need source-reviewed allocation semantics."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_text = audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         pinned_locators = [
@@ -14666,7 +14665,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(usage_count_contract["source_excerpt"], "Usage Limits Count Yes The number of Usage Limits Units to be protected.")
         self.assertIsNone(usage_count_contract["source_clause_id"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         usage_count_requirement = next(
             requirement
             for requirement in catalog["requirements"]
@@ -14736,14 +14735,14 @@ class CatalogValidationTests(unittest.TestCase):
     def test_usage_allocation_table_232_count_is_a_required_client_source_contract(self) -> None:
         """The Table 232 count row maps to the approved typed client request and tests."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [28080, 28097]
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
@@ -14780,9 +14779,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_21_get_attribute_list_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.21 and 6.1.21.1 distinguish request data from server output."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_text = audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         pinned_locators = [
@@ -14900,7 +14899,7 @@ class CatalogValidationTests(unittest.TestCase):
             {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]},
         )
         reused_id = request_header["source_request_rows"][0]["reused_requirement_id"]
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         reused_requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == reused_id)
         self.assertEqual(reused_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1-003"])
         general_uid_atoms = [
@@ -14967,9 +14966,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_20_get_attributes_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.20 and 6.1.20.1 distinguish client requests from server results."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_text = audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         pinned_locators = [
@@ -15144,7 +15143,7 @@ class CatalogValidationTests(unittest.TestCase):
         ])
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.20.1-002"]["source_obligations"], [])
 
-        client_profiles = [profile for profile in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["profiles"] if profile["role"] == "client"]
+        client_profiles = [profile for profile in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["profiles"] if profile["role"] == "client"]
         expected_profile_ids = {profile["profile_id"]: set(profile["requirement_ids_audited_subset"]) for profile in oracle["profiles"]}
         self.assertEqual(len(client_profiles), 18)
         self.assertEqual(set(expected_profile_ids), {profile["profile_id"] for profile in client_profiles})
@@ -15168,9 +15167,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_18_export_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.18 separates Export request rules from server response behavior."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -15256,7 +15255,7 @@ class CatalogValidationTests(unittest.TestCase):
             "Key Wrapping Specification": ([26951, 26966], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.18-008"),
         }
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {requirement["requirement_id"] for requirement in catalog["requirements"]}
         self._assert_optional_request_row_gaps(
             request_rows=request_rows,
@@ -15379,9 +15378,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_15_destroy_and_error_handling_have_source_review_rows(self) -> None:
         """Specification v2.1 §6.1.15 keeps Destroy effects server-side and records optional UID omission."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -15466,7 +15465,7 @@ class CatalogValidationTests(unittest.TestCase):
         gaps = [gap for gap in oracle["source_only_requirement_gaps"] if gap["source_section"] == "6.1.15"]
         self.assertEqual(gaps, [], "Destroy UID omission reuses the general conditional batch capability")
         self.assertNotEqual(response_uid, request_uid, "response UID data is separate from request UID provenance")
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirement_ids = {row["requirement_id"] for row in catalog["requirements"]}
         self.assertIn("KMIPKIT-REQ-SPEC-6.1-003-002", catalog_requirement_ids)
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
@@ -15477,9 +15476,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_2_complete_section_has_source_review_rows(self) -> None:
         """Specification v2.1 §6.2 and its subclauses stay explicitly outside client-initiated 1.0 scope."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_candidates = [
             row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -15553,7 +15552,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-CLAUSE-SPEC-6.2.5.1-002": 0,
         }
         self.assertEqual(set(expected_atom_counts), expected_clause_ids)
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         candidate_clauses = {
             clause["clause_id"]: clause
             for clause in catalog["source_clauses"]
@@ -15746,7 +15745,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_5_1_through_5_4_source_rows_distinguish_may_capabilities_from_headers(self) -> None:
         """Specification v2.1 §§5.1–5.4 permit repeated Attributes but headings add no requirements."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = {
             "5.1": {
@@ -15778,7 +15777,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(reviews), selected_clause_ids)
 
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned_source = {
             row["clause_id"]: row
             for row in audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
@@ -15837,7 +15836,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(mapping["scope_state"], "client_1_0")
 
         client_profiles = [profile for profile in json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )["profiles"] if profile["role"] == "client"]
         self.assertTrue(client_profiles)
         missing_capabilities = {
@@ -15865,7 +15864,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_closure_fixture_counts_match_source_review_arrays(self) -> None:
         """Fixture counters track the arrays as source-audit rows are added."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         counts = oracle["counts"]
         gaps = oracle["source_only_requirement_gaps"]
@@ -15882,10 +15881,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_crosswalk_requirement_metadata_keeps_split_actors_on_distinct_ids(self) -> None:
         """Client and server atoms use distinct requirement IDs and scopes."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         mappings = {}
@@ -15941,10 +15940,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_check_limited_additional_attributes_have_scoped_client_evidence(self) -> None:
         """The client Check attribute limit has scoped, executable evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
@@ -15994,10 +15993,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_tape_library_client_requirements_use_explicit_profile_closure(self) -> None:
         """Tape Library client duties map only to that profile with source-backed actors."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
         test_case_clause_ids = {
@@ -16053,16 +16052,16 @@ class CatalogValidationTests(unittest.TestCase):
     def test_requirement_crosswalk_rows_match_pinned_sources_and_catalog_labels(self) -> None:
         """Every accepted and rejected label is tied to its pinned source locator."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         source_clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         source_paths = {
-            "KMIPKIT-SRC-spec": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
-            "KMIPKIT-SRC-profiles": "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
+            "KMIPKIT-SRC-spec": "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+            "KMIPKIT-SRC-profiles": "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
         }
         audited_sources = {
             source_id: {
@@ -16270,10 +16269,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_source_only_gap_proposals_are_auditable_and_do_not_collide_with_catalog_ids(self) -> None:
         """Source-identified obligations without labels stay visible for Green assignment."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         catalog_ids = {record["requirement_id"] for record in catalog["requirements"]}
         requirements_by_id = {record["requirement_id"]: record for record in catalog["requirements"]}
@@ -16522,7 +16521,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-6.1.48-004",
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {record["requirement_id"]: record for record in catalog["requirements"]}
         actual_client_scope = {
@@ -16577,10 +16576,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_non_normative_table_header_candidates_are_out_of_scope(self) -> None:
         """A table header's REQUIRED label is not a client obligation."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
@@ -16625,10 +16624,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_server_only_source_obligations_use_server_catalog_role(self) -> None:
         """Source-reviewed server-only obligations retain a server catalog role."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -16650,7 +16649,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_attestation_capable_indicator_requirement_has_client_implementation_evidence(self) -> None:
         """Specification v2.1 §9.3 maps the client's indicator obligation to shipped behavior."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"]
@@ -16709,7 +16708,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_38_table_header_does_not_claim_a_client_requirement(self) -> None:
         """The `Item / REQUIRED / Description` header is not an operative client duty."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         reviews = {
             row["source_clause_id"]: row
@@ -16729,10 +16728,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope(self) -> None:
         """Reviewed source atoms, stable labels, and client dispositions agree with pinned HTML."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         candidate_requirements = {
             row["requirement_id"]: row for row in catalog["requirements"]
@@ -17064,10 +17063,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_three_specification_client_atoms_have_stable_catalog_mappings(self) -> None:
         """Shared source clauses retain separate, exact client requirement mappings."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = (
             (
@@ -17143,7 +17142,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(source_atom["actor"], source_actor)
                 self.assertEqual(source_atom["scope_disposition"], "client_1_0")
                 self.assertEqual(
-                    pinned_source_excerpt("specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html", html_lines),
+                    pinned_source_excerpt("verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html", html_lines),
                     review["source_excerpt"],
                 )
                 self.assertEqual(gap["candidate_requirement_id"], requirement_id)
@@ -17162,7 +17161,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_channel_clause_preserves_unresolved_scope(self) -> None:
         """Profiles §3 item 1 leaves endpoint role and direction unspecified."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         clause = next(
             row
@@ -17179,10 +17178,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_channel_security_does_not_invent_client_actor(self) -> None:
         """Profiles §3 item 1 names channel properties, not a client endpoint."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-PROF-3-002"
         review = next(
@@ -17195,7 +17194,7 @@ class CatalogValidationTests(unittest.TestCase):
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
         )
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html",
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html",
             [3967, 3970],
         ))
         self.assertEqual(obligation["actor"], "unresolved")
@@ -17210,7 +17209,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_server_authenticity_clause_preserves_unresolved_scope(self) -> None:
         """Profiles §3 item 2 does not assign server-authenticity checks to a client."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         clause = next(
             row
@@ -17227,10 +17226,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_server_authenticity_requirement_keeps_source_scope(self) -> None:
         """Profiles §3 item 2 keeps its endpoint and client applicability unresolved."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         review = next(
             row
@@ -17244,7 +17243,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-PROF-3-003"
         )
 
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3972, 3975]))
         self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["direction"], "unresolved")
@@ -17258,7 +17257,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_client_authenticity_clause_preserves_unresolved_scope(self) -> None:
         """Profiles §3 item 3 does not assign client authenticity to a KMIP endpoint."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         clause = next(
             row
@@ -17275,10 +17274,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_client_authenticity_requirement_keeps_source_scope(self) -> None:
         """Profiles §3 item 3 keeps its endpoint and client applicability unresolved."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         review = next(
             row
@@ -17292,7 +17291,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-PROF-3-004"
         )
 
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3977, 3980]))
         self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["direction"], "unresolved")
@@ -17306,7 +17305,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_provisioning_authenticity_clause_preserves_unresolved_scope(self) -> None:
         """Profiles §3 provisioning paragraph grants an alternative without assigning an endpoint."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         clause = next(
             row
@@ -17323,10 +17322,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_section_three_provisioning_authenticity_requirement_keeps_source_scope(self) -> None:
         """Profiles §3 provisioning paragraph does not establish a client capability by itself."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         review = next(
             row
@@ -17340,7 +17339,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["requirement_id"] == "KMIPKIT-REQ-PROF-3-006"
         )
 
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3987, 3990]))
         self.assertEqual(obligation["actor"], "unresolved")
         self.assertEqual(obligation["direction"], "unresolved")
@@ -17354,10 +17353,10 @@ class CatalogValidationTests(unittest.TestCase):
     def test_basic_authentication_suite_clause_is_client_applicable_through_profile_reference(self) -> None:
         """Profiles §6.1 item 2 makes the §3.1 TLS SHALL applicable to client profiles."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         clause_id = "KMIPKIT-CLAUSE-PROF-3.1-001"
         requirement_id = "KMIPKIT-REQ-PROF-3.1-001"
@@ -17371,7 +17370,7 @@ class CatalogValidationTests(unittest.TestCase):
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
         )
 
-        source_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        source_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [3999, 4001]))
         client_inclusion = pinned_source_excerpt(source_path, [10481, 10485])
         self.assertIn("SHALL support the Basic Authentication Suite conditions (3.1)", client_inclusion)
@@ -17390,7 +17389,7 @@ class CatalogValidationTests(unittest.TestCase):
         from verification.conformance.report import load_typed_rule_mappings
 
         catalog = json.loads(
-            (ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-PROF-3.1.1-002"
         clause_id = "KMIPKIT-CLAUSE-PROF-3.1.1-002"
@@ -17399,7 +17398,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         clause = next(row for row in catalog["source_clauses"] if row["clause_id"] == clause_id)
         source_text = pinned_source_excerpt(
-            "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
+            "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html",
             [4016, 4018],
         )
 
@@ -17441,7 +17440,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_optional_capability_evidence_links_name_positive_tests(self) -> None:
         """Known optional capabilities point to their source-reviewed positive tests."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         for expected_test, requirement_ids in OPTIONAL_CAPABILITY_TEST_REQUIREMENTS.items():
@@ -17462,7 +17461,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_id_placeholder_regression_tests_are_traced_to_their_requirements(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -17486,7 +17485,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in json.loads(
-                (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+                (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                     encoding="utf-8"
                 )
             )["requirements"]
@@ -17540,7 +17539,7 @@ class CatalogValidationTests(unittest.TestCase):
             "req_004_repeated_certificate_values_preserve_order"
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -17602,7 +17601,7 @@ class CatalogValidationTests(unittest.TestCase):
             "req_005_repeated_identifiers_preserve_order_and_open_values"
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -17669,7 +17668,7 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/src/profile.rs::client_opaque_object_context_custom_attributes",
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -17705,7 +17704,7 @@ class CatalogValidationTests(unittest.TestCase):
             "profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters"
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -17735,7 +17734,7 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-client/src/execute.rs::ClientRequest::payload",
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -17779,7 +17778,7 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/unit/get_tests.rs::request_serializes_present_table_220_fields_in_source_order",
         }
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -17833,7 +17832,7 @@ class CatalogValidationTests(unittest.TestCase):
         """Client evidence with an unclear direction is eligible only with a typed rule and test."""
         requirement_id = "KMIPKIT-REQ-SPEC-4.16-001-002"
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -18001,7 +18000,7 @@ class CatalogValidationTests(unittest.TestCase):
             "import_preserves_wrapped_secret_data_without_key_wrap_type"
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -18064,7 +18063,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_attributes_repeatability_requirement_element_links_are_symmetric(self) -> None:
         """The §5.1 repeated-attribute requirement and its Attributes element link both ways."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement_id = "KMIPKIT-REQ-SPEC-5.1-002"
         element_id = "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
@@ -18080,7 +18079,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
         """Attribute request permissions remain client-originated catalog evidence."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
@@ -18122,7 +18121,7 @@ class CatalogValidationTests(unittest.TestCase):
             "request_preserves_key_value_attributes_associated_with_raw_key_material"
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row for row in catalog["requirements"] if row["requirement_id"] == requirement_id
@@ -18151,7 +18150,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_optional_request_evidence_notes_retain_source_and_scope_context(self) -> None:
         """Review notes preserve source provenance and the limits of request evidence."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_fragments = {
@@ -18173,7 +18172,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_obtain_lease_evidence_uses_named_tests_without_reassigning_requirement_owner(self) -> None:
         """Obtain Lease evidence names positive client-visible tests under its existing owner."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_refs = {
@@ -18216,7 +18215,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_register_certificate_dsa_omission_evidence_names_client_test_under_existing_owner(self) -> None:
         """Register DSA omission evidence names the client test without claiming an OASIS case."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirement = next(
             row
@@ -18243,13 +18242,13 @@ class CatalogValidationTests(unittest.TestCase):
     def test_unselected_profile_may_remains_catalogued_without_blocking_baseline_scope(self) -> None:
         """Only explicitly selected profile requirements gate Baseline optional evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         targets = json.loads(
-            (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
         selected_clause_ids, selected_source_sections, selected_requirement_ids = _selected_profile_source_scope(
             catalog, targets
@@ -18453,9 +18452,9 @@ class CatalogValidationTests(unittest.TestCase):
                 )
                 (root / "src" / "lib.rs").parent.mkdir(parents=True, exist_ok=True)
                 (root / "src" / "lib.rs").write_text("", encoding="utf-8")
-                catalog_path = root / "specification" / "catalog" / "kmip-2.1.json"
-                targets_path = root / "specification" / "catalog" / "profile-targets.json"
-                oracle_path = root / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+                catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
+                targets_path = root / "verification" / "conformance" / "catalog" / "profile-targets.json"
+                oracle_path = root / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
                 first_test_reference = row["verification_refs"][0] if row["verification_refs"] else "tests/positive_capability.rs"
                 test_path_reference = first_test_reference.partition("::")[0]
                 test_path = root / test_path_reference
@@ -18916,7 +18915,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_object_group_client_capabilities_name_the_outgoing_direction(self) -> None:
         """Object Group client evidence is scoped to values sent in requests."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -18934,13 +18933,13 @@ class CatalogValidationTests(unittest.TestCase):
     ) -> None:
         """Missing selected client MAY/OPTIONAL evidence remains a readiness blocker."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         targets = json.loads(
-            (ROOT / "specification" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "profile-targets.json").read_text(encoding="utf-8")
         )
         selected_clause_ids, selected_source_sections, selected_requirement_ids = _selected_profile_source_scope(
             catalog, targets
@@ -19084,7 +19083,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_profile_omissions_report_the_oracle_stable_identifier(self) -> None:
         """A closure omission should identify the exact source or requirement ID."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -19114,14 +19113,14 @@ class CatalogValidationTests(unittest.TestCase):
     def test_baseline_profile_closes_over_all_normative_specification_candidates(self) -> None:
         """Profiles v2.1 §6.1 item 1 incorporates the entire KMIP Specification v2.1."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
             for profile in catalog["profiles"]
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        spec_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         specification_candidates = audit_document(spec_path.read_bytes(), "KMIPKIT-SRC-spec")
         expected_clause_ids = {candidate["clause_id"] for candidate in specification_candidates}
 
@@ -19135,7 +19134,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_baseline_profile_records_whole_source_and_basic_auth_inclusions(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         baseline = next(
             profile
@@ -19173,7 +19172,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_checked_in_normative_inclusions_have_unique_ids_and_resolve_to_source_scope(self) -> None:
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         source_ids = {source["source_id"] for source in catalog["sources"]}
         clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
@@ -19200,7 +19199,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_normative_inclusion_validation_rejects_duplicate_edges_unresolved_targets_and_cycles(self) -> None:
         original = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         first_id = original["normative_inclusions"][0]["inclusion_id"]
         invalid_changes = (
@@ -19246,7 +19245,7 @@ class CatalogValidationTests(unittest.TestCase):
                     validate_catalog(raw, ROOT, require_complete=True)
 
     def test_catalog_validation_rejects_an_omitted_profile_closure_clause(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_text(encoding="utf-8"))
         baseline = next(
             profile
@@ -19380,7 +19379,7 @@ class CatalogValidationTests(unittest.TestCase):
             validate(document)
 
     def test_opaque_object_context_requirements_retain_register_ownership_and_evidence(self) -> None:
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         validate(catalog)
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
@@ -19416,7 +19415,7 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-client/tests/unit/register_execution_tests.rs",
         }
 
-        source_path = ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         source_bytes = source_path.read_bytes()
         self.assertEqual(
             hashlib.sha256(source_bytes).hexdigest(),
@@ -19566,7 +19565,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_hash_table_235_request_rows_are_contracts_not_requirement_gaps(self) -> None:
         """Hash request table cells map through operation metadata, not per-cell REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_gap_ids = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
@@ -19602,7 +19601,7 @@ class CatalogValidationTests(unittest.TestCase):
             f"KMIPKIT-REQ-SPEC-6.1.24-{ordinal:03d}"
             for ordinal in range(1, 6)
         }
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirement_ids = {row["requirement_id"] for row in catalog["requirements"]}
         self.assertTrue(legacy_proposals.isdisjoint(catalog_requirement_ids))
         for profile in oracle["profiles"]:
@@ -19611,9 +19610,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_hash_table_235_contracts_retain_source_operation_and_executable_evidence(self) -> None:
         """Every Hash table contract resolves pinned source, FR, implementation, and test evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED": (
                 "Cryptographic Parameters", "Yes", "required_table_body_value", [28255, 28267],
@@ -19643,7 +19642,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(contracts), set(expected))
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         hash_operation = next(
             element for element in catalog["elements"]
             if element["element_id"] == "KMIPKIT-ELEM-OP-C2S-HASH"
@@ -19696,7 +19695,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_hash_table_contract_validator_requires_source_operation_and_test_symbols(self) -> None:
         """Missing source, operation, or executable-test links fail oracle validation."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         broken = json.loads(json.dumps(oracle))
         contracts = broken.get("source_table_contracts", [])
@@ -19721,7 +19720,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_import_and_join_split_key_contracts_resolve_approved_operations_and_feature_requirements(self) -> None:
         """Operation table contracts resolve through their approved operation and feature spec."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED": (
@@ -19779,7 +19778,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(oracle["source_table_contracts"]), 68)
         self.assertEqual(oracle["source_closure_status"], "complete")
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_elements = {element["element_id"]: element for element in catalog["elements"]}
         for gap_id, (operation_id, feature_requirements, implementation_refs, verification_refs) in expected.items():
             contract = contracts[gap_id]
@@ -19816,7 +19815,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_mac_table_259_rows_are_contracts_with_a_preserved_data_conflict(self) -> None:
         """MAC Table 259 request rows map to feature evidence without per-cell REQ IDs."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED": (
@@ -19878,7 +19877,7 @@ class CatalogValidationTests(unittest.TestCase):
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_section"], "6.1.32")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
@@ -19918,7 +19917,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_mac_data_contract_validator_rejects_a_silenced_shared_source_conflict(self) -> None:
         """The MAC Data table cell cannot claim away the unresolved general §6.1 rule."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         broken = json.loads(json.dumps(oracle))
         data_contract = next(
@@ -19940,7 +19939,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_register_table_291_optional_masks_are_a_client_source_contract(self) -> None:
         """Register Table 291 optional masks map to the approved client operation contract."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL"
         contracts = {
@@ -19957,7 +19956,7 @@ class CatalogValidationTests(unittest.TestCase):
         contract = contracts[gap_id]
         line_range = [32890, 32908]
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-        self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+        self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
         self.assertEqual(contract["source_section"], "6.1.43")
         self.assertEqual(
             contract["source_locator"],
@@ -20022,7 +20021,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_mac_verify_table_262_request_rows_are_client_contracts_without_requirement_ids(self) -> None:
         """MAC Verify Table 262 body rows retain source provenance and client direction."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED": (
@@ -20074,7 +20073,7 @@ class CatalogValidationTests(unittest.TestCase):
             contract = contracts[gap_id]
             with self.subTest(source_table_contract=gap_id):
                 self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(contract["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
+                self.assertEqual(contract["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html")
                 self.assertEqual(contract["source_locator"], {
                     "kind": "table_body_row",
                     "section": "6.1.33",
@@ -20120,7 +20119,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_hash_data_row_keeps_its_conditional_source_force_and_disposition(self) -> None:
         """The Hash Table 235 Data row remains a conditional source table contract."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         request_clause = next(
             review for review in oracle["source_requirement_reviews"]
@@ -20140,9 +20139,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_24_hash_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.24 and 6.1.24.1 require a reviewed Hash source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned = [
             row
@@ -20334,7 +20333,7 @@ class CatalogValidationTests(unittest.TestCase):
             f"KMIPKIT-REQ-SPEC-6.1.24-{ordinal:03d}"
             for ordinal in range(1, 6)
         }
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {requirement["requirement_id"] for requirement in catalog["requirements"]}
         self.assertTrue(legacy_proposals.isdisjoint(catalog_ids), "Table 235 body rows do not mint REQ records")
         for profile in oracle["profiles"]:
@@ -20347,9 +20346,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_25_import_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.25 and 6.1.25.1 require a reviewed Import source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -20499,7 +20498,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(contracts), set(expected_request_rows))
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected_request_rows).isdisjoint(source_gap_ids))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {row["requirement_id"] for row in catalog["requirements"]}
         catalog_by_id = {row["requirement_id"]: row for row in catalog["requirements"]}
         for gap_id, (row_label, required, line_range, force) in expected_request_rows.items():
@@ -20624,9 +20623,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_26_interop_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.26 and 6.1.26.1 require a reviewed Interop source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -20797,7 +20796,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.26.1-002"]["source_obligations"], [])
         self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.26.1-002"]["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {row["requirement_id"] for row in catalog["requirements"]}
         proposed_ids = {
             "KMIPKIT-REQ-SPEC-6.1.26-001",
@@ -20817,7 +20816,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_interop_table_241_function_is_a_required_client_source_contract(self) -> None:
         """The required Table 241 function maps to approved client Interop evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-FUNCTION-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.26-001"
@@ -20826,7 +20825,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
         line_range = [28763, 28778]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.26")
@@ -20864,7 +20863,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
 
         review = next(
@@ -20893,7 +20892,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_interop_table_241_identifier_is_a_required_client_source_contract(self) -> None:
         """The required Interop Identifier maps to existing typed client request evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-IDENTIFIER-REQUIRED"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -20904,7 +20903,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         contract = contracts[0]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [28779, 28794]
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
@@ -20939,7 +20938,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("forward", contract["evidence_disposition"]["statement"].lower())
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.26-002", {
             row["requirement_id"]
-            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+            for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.26-002", {
             row["requirement_id"] for row in oracle["requirement_crosswalk"]
@@ -20949,7 +20948,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_log_table_250_required_message_is_a_conditional_client_source_contract(self) -> None:
         """The required Log Message maps to the approved conditional client operation."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.29-LOG-MESSAGE-REQUIRED"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.29-003"
@@ -20962,7 +20961,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         self.assertEqual(oracle["counts"]["requirement_crosswalk_records"], 546)
         contract = contracts[0]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [29529, 29544]
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
@@ -20998,7 +20997,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("caller", contract["evidence_disposition"]["statement"].lower())
         self.assertNotIn(proposed_id, {
             row["requirement_id"]
-            for row in json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
+            for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
         self.assertNotIn(proposed_id, {
             row["requirement_id"] for row in oracle["requirement_crosswalk"]
@@ -21022,9 +21021,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_27_join_split_key_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.27 and 6.1.27.1 require a reviewed Join Split Key source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -21283,7 +21282,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.27.1-002"]["source_obligations"], [])
         self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.27.1-002"]["review_note"])
 
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_by_id = {row["requirement_id"]: row for row in catalog["requirements"]}
         accepted_ids = {
             "KMIPKIT-REQ-SPEC-6.1.27-001",
@@ -21343,7 +21342,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_locate_table_247_storage_status_mask_is_a_client_source_contract(self) -> None:
         """The optional Storage Status Mask maps to request-only client evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL"
         proposed_id = "KMIPKIT-REQ-SPEC-6.1.28-014"
@@ -21352,7 +21351,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(contracts), 1)
         contract = contracts[0]
         line_range = [29297, 29316]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.28")
@@ -21388,7 +21387,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertFalse(any(row["gap_id"] == gap_id for row in oracle["source_only_requirement_gaps"]))
         self.assertFalse(any(row["requirement_id"] == proposed_id for row in oracle["requirement_crosswalk"]))
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(proposed_id, {row["requirement_id"] for row in catalog["requirements"]})
 
         request_review = next(
@@ -21410,7 +21409,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_locate_table_247_object_group_member_is_a_client_source_contract(self) -> None:
         """Locate Table 247's optional Object Group Member maps to client evidence."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-OBJECT-GROUP-MEMBER-OPTIONAL"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -21421,7 +21420,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         contract = contracts[0]
         line_range = [29318, 29336]
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         self.assertEqual(contract["source_id"], "KMIPKIT-SRC-spec")
         self.assertEqual(contract["source_path"], source_path)
         self.assertEqual(contract["source_section"], "6.1.28")
@@ -21473,7 +21472,7 @@ class CatalogValidationTests(unittest.TestCase):
         proposed_ids = {row["proposed_requirement_id"] for row in oracle["source_only_requirement_gaps"]}
         self.assertNotIn(gap_id, source_gap_ids)
         self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.28-015", proposed_ids)
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(
             "KMIPKIT-REQ-SPEC-6.1.28-015",
             {row["requirement_id"] for row in catalog["requirements"]},
@@ -21496,9 +21495,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_28_locate_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.28 and 6.1.28.1 require a reviewed Locate source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -21669,7 +21668,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.28" or row["source_section"].startswith("6.1.28.")
         }
         self.assertEqual(crosswalk, expected_crosswalk)
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {row["requirement_id"] for row in catalog["requirements"]}
         self.assertTrue(expected_client_ids <= catalog_ids)
         self.assertEqual(
@@ -21736,9 +21735,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_29_log_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.29 and 6.1.29.1 require a reviewed Log source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -21851,9 +21850,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_30_login_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.30 and 6.1.30.1 require a reviewed Login source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -22007,9 +22006,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_spec_6_1_31_logout_and_errors_have_source_review_rows(self) -> None:
         """Specification v2.1 §§6.1.31 and 6.1.31.1 require a reviewed Logout source slice."""
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         raw_source = (ROOT / source_path).read_bytes()
         pinned_locators = [
             row
@@ -22142,13 +22141,13 @@ class CatalogValidationTests(unittest.TestCase):
     def test_login_logout_request_rows_have_catalog_mapping_and_evidence(self) -> None:
         """Reviewed Login and Logout request rows map to independently evidenced requirements."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
-        source_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         reviews = {
             row["source_clause_id"]: row
@@ -22369,11 +22368,11 @@ class CatalogValidationTests(unittest.TestCase):
     def test_operation_table_gaps_and_optional_capabilities_have_catalog_evidence(self) -> None:
         """Table-row capabilities and existing optional fields retain source-linked evidence."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         evidence_requirements = {
             "KMIPKIT-REQ-SPEC-6.1.12-003": (
@@ -22541,7 +22540,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
     def test_operation_request_evidence_records_the_official_test_case_gap(self) -> None:
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_ids = {
             "KMIPKIT-REQ-SPEC-6.1.9-001-001",
             "KMIPKIT-REQ-SPEC-6.1.9-001-002",
@@ -22583,7 +22582,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_locate_client_may_capabilities_keep_exact_local_evidence_and_official_case_gap(self) -> None:
         """Locate client request rules link only their local evidence."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         locate_implementation_refs = [
@@ -22685,11 +22684,11 @@ class CatalogValidationTests(unittest.TestCase):
     def test_export_and_get_optional_request_rows_have_verified_catalog_evidence(self) -> None:
         """Export and Get request table rows map to separate typed capabilities."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_rows = {
             "KMIPKIT-REQ-SPEC-6.1.18-005": (
@@ -22863,7 +22862,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-REQ-SPEC-2.4-001-001": "evidence covers opaque Key Value byte preservation",
             "KMIPKIT-REQ-SPEC-2.4-001-002": "evidence exercises Integer versions 3 and 4",
         }
-        catalog = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirements = {
             row["requirement_id"]: row
             for row in catalog["requirements"]

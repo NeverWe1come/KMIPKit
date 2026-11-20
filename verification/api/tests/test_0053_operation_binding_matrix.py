@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 def _read(path: Path) -> str:
@@ -120,7 +120,7 @@ class OperationBindingMatrixTests(unittest.TestCase):
             ROOT / "bindings" / "python" / "tests" / "test_operation_binding_parity_0053.py"
         )
         fixture_test = _read(
-            ROOT / "tools" / "api_manifest" / "tests" / "test_operation_catalog_fixture.py"
+            ROOT / "verification" / "api" / "tests" / "test_operation_catalog_fixture.py"
         )
 
         # The C matrix compares its 48 route values to the normative fixture;

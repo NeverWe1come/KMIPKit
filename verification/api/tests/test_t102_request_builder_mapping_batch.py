@@ -10,8 +10,8 @@ from pathlib import Path
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 T102_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 NEW_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",

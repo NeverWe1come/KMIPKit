@@ -51,7 +51,7 @@ PROCESS_DATE_REQUIREMENT_IDS = {
 
 def load_catalog() -> dict[str, Any]:
     """Load the checked-in normative catalog used by profile generation."""
-    path = ROOT / "specification/catalog/kmip-2.1.json"
+    path = ROOT / "verification/conformance/catalog/kmip-2.1.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0014"
 OWNER_SPEC_PATH = "specs/014-server-generated-creation/spec.md"
 BASE_CANDIDATE_COUNT = 316

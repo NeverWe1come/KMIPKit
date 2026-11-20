@@ -11,7 +11,7 @@ from verification.api import generate as api_manifest_generator
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "KMIPKIT-0016"
 BASE_CANDIDATE_COUNT = 909
 BASE_CANDIDATE_SHA256 = "4c2e475ca24b0c6001aa19b4b2bf3149124fd3fd344f44f12a21de710a72463e"

@@ -26,9 +26,9 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_TAG_CATALOG_PATH = "specification/catalog/kmip-versioned-tags.json"
-VERSIONED_SOURCE_PATH = "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_TAG_CATALOG_PATH = "verification/conformance/catalog/kmip-versioned-tags.json"
+VERSIONED_SOURCE_PATH = "verification/conformance/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html"
 VERSIONED_SOURCE_SHA256 = "a7d5e58e63acd9be33fab08b76039fc8db4e072fdbdf4a280ea5b743bae5682b"
 VERSIONED_SOURCE_MAX_BYTES = 24 * 1024 * 1024
 OUTPUT_PATH = "crates/kmipkit-ttlv/src/generated/tag_allocations.rs"

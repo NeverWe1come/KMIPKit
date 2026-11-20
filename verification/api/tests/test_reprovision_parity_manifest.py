@@ -8,7 +8,7 @@ from pathlib import Path
 from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
 LANGUAGES = {"rust", "c", "java", "python"}

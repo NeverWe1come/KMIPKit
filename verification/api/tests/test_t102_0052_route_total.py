@@ -24,7 +24,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
             [
                 "git",
                 "show",
-                f"{KMIPKIT_0051_BASELINE}:specification/api/public-api.json",
+                f"{KMIPKIT_0051_BASELINE}:bindings/shared/public-api.json",
             ],
             cwd=REPOSITORY_ROOT,
             check=True,
@@ -32,7 +32,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
         ).stdout
         baseline = json.loads(baseline_bytes)
         current = json.loads(
-            (REPOSITORY_ROOT / "specification/api/public-api.json").read_text(
+            (REPOSITORY_ROOT / "bindings/shared/public-api.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -47,7 +47,7 @@ class T102ResponseRouteTotalTests(unittest.TestCase):
 
     def test_snapshot_totals_include_async_response_records(self) -> None:
         current = json.loads(
-            (REPOSITORY_ROOT / "specification/api/public-api.json").read_text(
+            (REPOSITORY_ROOT / "bindings/shared/public-api.json").read_text(
                 encoding="utf-8"
             )
         )

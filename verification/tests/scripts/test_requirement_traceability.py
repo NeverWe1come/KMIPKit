@@ -12,7 +12,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 SPECIFICATION = REPOSITORY_ROOT / "specs" / "011-dependency-policy" / "spec.md"
-TRACEABILITY = REPOSITORY_ROOT / "specification" / "compliance" / "requirements" / "KMIPKIT-0011.csv"
+TRACEABILITY = REPOSITORY_ROOT / "verification" / "conformance" / "requirements" / "KMIPKIT-0011.csv"
 CSV_COLUMNS = ("requirement_id", "configuration_path", "implementation_path", "test_reference")
 CONFIGURATION_SUFFIXES = {".json", ".toml", ".yaml", ".yml"}
 EXPECTED_REQUIREMENT_TESTS = {
@@ -201,7 +201,7 @@ class RequirementTraceabilityTests(unittest.TestCase):
         self.assertTrue(
             TRACEABILITY.is_file(),
             "The normative requirement traceability CSV must exist at "
-            "specification/compliance/requirements/KMIPKIT-0011.csv.",
+            "verification/conformance/requirements/KMIPKIT-0011.csv.",
         )
         with TRACEABILITY.open(encoding="utf-8", newline="") as csv_file:
             reader = csv.DictReader(csv_file)

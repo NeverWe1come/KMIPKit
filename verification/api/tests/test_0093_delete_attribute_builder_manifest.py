@@ -25,7 +25,7 @@ class FluentDeleteAttributeBuilderManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_functions_are_declared_for_all_four_languages(self) -> None:

@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 TRACEABILITY_PATH = ROOT / "specs/022-object-lifecycle/traceability.md"
 SPEC_PATH = ROOT / "specs/022-object-lifecycle/spec.md"
-CATALOG_PATH = ROOT / "specification/catalog/kmip-2.1.json"
+CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0036"
 OPERATIONS = {
     "Certify",

@@ -7,7 +7,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
-AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
+AUDIT_GUIDE = ROOT / "verification" / "api" / "binding-export-audit.md"
 AUDIT_REPORT_PATH = Path(
     "specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json"
 )
@@ -76,7 +76,7 @@ class CApiDocumentationTests(unittest.TestCase):
 
     def test_kmip30_and_async_jni_bridges_have_exact_exclusions(self) -> None:
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -90,7 +90,7 @@ class CApiDocumentationTests(unittest.TestCase):
     def test_c_api_docs_point_to_the_generated_manifest_and_symbol_inventory(self) -> None:
         documentation = DOC.read_text(encoding="utf-8")
 
-        self.assertIn("../../specification/api/public-api.json", documentation)
+        self.assertIn("../../bindings/shared/public-api.json", documentation)
         self.assertIn("../../bindings/c/include/kmipkit.h", documentation)
         self.assertIn(
             f"../../{AUDIT_REPORT_PATH.as_posix()}",
@@ -127,7 +127,7 @@ class CApiDocumentationTests(unittest.TestCase):
     def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
         report = _load_audit_report()
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -157,7 +157,7 @@ class CApiDocumentationTests(unittest.TestCase):
     def test_get_attribute_list_c_exports_are_present_in_checked_in_report(self) -> None:
         report = _load_audit_report()
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )

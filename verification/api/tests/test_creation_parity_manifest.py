@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CREATION_OPERATIONS = {
     "KMIPKIT-ELEM-OP-C2S-CREATE",
     "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",

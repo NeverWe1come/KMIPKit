@@ -196,7 +196,7 @@ class JavaExportAuditResolutionTests(unittest.TestCase):
 
     def test_audited_routes_match_existing_exact_manifest_counterparts(self) -> None:
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json")
+            (ROOT / "bindings" / "shared" / "public-api.json")
             .read_text(encoding="utf-8")
         )
         declarations = {

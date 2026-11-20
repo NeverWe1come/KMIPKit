@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 PROTOCOL_CRATE = "kmipkit_protocol"
 PROTOCOL_REEXPORT_NAMESPACE = "kmipkit::protocol"
 PROTOCOL_REEXPORT_PREFIX = f"{PROTOCOL_REEXPORT_NAMESPACE}::"

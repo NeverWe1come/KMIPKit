@@ -10,7 +10,7 @@ from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CAPABILITY_ID = "generic_ttlv_model"
 OWNER = "specs/004-generic-ttlv-model/spec.md"
 EVIDENCE = "verification/api/tests/test_t102_open_value_model_mapping.py"
@@ -223,7 +223,7 @@ class T102OpenValueModelMappingTests(unittest.TestCase):
         self.assertEqual(T102_BLOCKED_CANDIDATES, blocked)
 
     def test_normative_sources_and_scalar_constructors_cover_the_mapping(self) -> None:
-        oasis = (ROOT / "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html").read_bytes()
+        oasis = (ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html").read_bytes()
         for section in (
             "7.9 Data",
             "11.12 Cryptographic Algorithm",

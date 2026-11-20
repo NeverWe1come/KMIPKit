@@ -1,0 +1,222 @@
+<KMIP>
+<!--
+     Key Management Interoperability Protocol Test Cases Version 2.1
+     Committee Note 01
+     07 May 2020
+     Copyright (c) OASIS Open 2020. All Rights Reserved.
+     Source: https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/cn01/test-cases/kmip-v2.1/
+     Latest version of the specification: https://docs.oasis-open.org/kmip/kmip-testcases/v2.1/kmip-testcases-v2.1.html
+     TC IPR Statement: https://www.oasis-open.org/committees/kmip/ipr.php
+-->
+<RequestMessage>
+  <RequestHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <BatchCount type="Integer" value="1"/>
+  </RequestHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Interop"/>
+    <RequestPayload>
+      <InteropFunction type="Enumeration" value="Begin"/>
+      <InteropIdentifier type="TextString" value="TC-LOGIN-1-21"/>
+    </RequestPayload>
+  </BatchItem>
+</RequestMessage>
+
+<ResponseMessage>
+  <ResponseHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <TimeStamp type="DateTime" value="$NOW"/>
+    <ServerCorrelationValue type="TextString" value="65182B56-B3C481A8-4"/>
+    <BatchCount type="Integer" value="1"/>
+  </ResponseHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Interop"/>
+    <ResultStatus type="Enumeration" value="Success"/>
+    <ResponsePayload>
+    </ResponsePayload>
+  </BatchItem>
+</ResponseMessage>
+
+<RequestMessage>
+  <RequestHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <BatchCount type="Integer" value="1"/>
+  </RequestHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Login"/>
+    <RequestPayload>
+      <LeaseTime type="Interval" value="0"/>
+      <RequestCount type="Integer" value="3"/>
+    </RequestPayload>
+  </BatchItem>
+</RequestMessage>
+
+<ResponseMessage>
+  <ResponseHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <TimeStamp type="DateTime" value="$NOW"/>
+    <ServerCorrelationValue type="TextString" value="65182B56-B3C481A8-5"/>
+    <BatchCount type="Integer" value="1"/>
+  </ResponseHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Login"/>
+    <ResultStatus type="Enumeration" value="Success"/>
+    <ResponsePayload>
+      <Ticket>
+        <TicketType type="Enumeration" value="Login"/>
+        <TicketValue type="ByteString" value="$TICKET_VALUE"/>
+      </Ticket>
+    </ResponsePayload>
+  </BatchItem>
+</ResponseMessage>
+
+<RequestMessage>
+  <RequestHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <Authentication>
+      <Credential>
+        <CredentialType type="Enumeration" value="Ticket"/>
+        <CredentialValue>
+          <Ticket>
+            <TicketType type="Enumeration" value="Login"/>
+            <TicketValue type="ByteString" value="$TICKET_VALUE"/>
+          </Ticket>
+        </CredentialValue>
+      </Credential>
+    </Authentication>
+    <BatchCount type="Integer" value="1"/>
+  </RequestHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Query"/>
+    <RequestPayload>
+      <QueryFunction type="Enumeration" value="QueryOperations"/>
+    </RequestPayload>
+  </BatchItem>
+</RequestMessage>
+
+<ResponseMessage>
+  <ResponseHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <TimeStamp type="DateTime" value="$NOW"/>
+    <ServerCorrelationValue type="TextString" value="65182B56-B3C481A8-6"/>
+    <BatchCount type="Integer" value="1"/>
+  </ResponseHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Query"/>
+    <ResultStatus type="Enumeration" value="Success"/>
+    <ResponsePayload>
+      <Operation type="Enumeration" value="Query"/>
+      <Operation type="Enumeration" value="Locate"/>
+      <Operation type="Enumeration" value="Destroy"/>
+      <Operation type="Enumeration" value="Get"/>
+      <Operation type="Enumeration" value="Create"/>
+      <Operation type="Enumeration" value="Register"/>
+      <Operation type="Enumeration" value="GetAttributes"/>
+      <Operation type="Enumeration" value="GetAttributeList"/>
+      <Operation type="Enumeration" value="AddAttribute"/>
+      <Operation type="Enumeration" value="ModifyAttribute"/>
+      <Operation type="Enumeration" value="DeleteAttribute"/>
+      <Operation type="Enumeration" value="Activate"/>
+      <Operation type="Enumeration" value="Revoke"/>
+      <Operation type="Enumeration" value="Poll"/>
+      <Operation type="Enumeration" value="Cancel"/>
+      <Operation type="Enumeration" value="Check"/>
+      <Operation type="Enumeration" value="GetUsageAllocation"/>
+      <Operation type="Enumeration" value="CreateKeyPair"/>
+      <Operation type="Enumeration" value="ReKey"/>
+      <Operation type="Enumeration" value="Archive"/>
+      <Operation type="Enumeration" value="Recover"/>
+      <Operation type="Enumeration" value="ObtainLease"/>
+      <Operation type="Enumeration" value="ReKeyKeyPair"/>
+      <Operation type="Enumeration" value="Certify"/>
+      <Operation type="Enumeration" value="ReCertify"/>
+      <Operation type="Enumeration" value="DiscoverVersions"/>
+      <Operation type="Enumeration" value="Notify"/>
+      <Operation type="Enumeration" value="Put"/>
+      <Operation type="Enumeration" value="RNGRetrieve"/>
+      <Operation type="Enumeration" value="RNGSeed"/>
+      <Operation type="Enumeration" value="Encrypt"/>
+      <Operation type="Enumeration" value="Decrypt"/>
+      <Operation type="Enumeration" value="Sign"/>
+      <Operation type="Enumeration" value="SignatureVerify"/>
+      <Operation type="Enumeration" value="MAC"/>
+      <Operation type="Enumeration" value="MACVerify"/>
+      <Operation type="Enumeration" value="Hash"/>
+      <Operation type="Enumeration" value="CreateSplitKey"/>
+      <Operation type="Enumeration" value="JoinSplitKey"/>
+      <Operation type="Enumeration" value="DeriveKey"/>
+      <Operation type="Enumeration" value="Validate"/>
+      <Operation type="Enumeration" value="Import"/>
+      <Operation type="Enumeration" value="Export"/>
+      <Operation type="Enumeration" value="Log"/>
+      <Operation type="Enumeration" value="Interop"/>
+      <Operation type="Enumeration" value="SetEndpointRole"/>
+    </ResponsePayload>
+  </BatchItem>
+</ResponseMessage>
+
+<RequestMessage>
+  <RequestHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <Authentication>
+      <Credential>
+        <CredentialType type="Enumeration" value="Ticket"/>
+        <CredentialValue>
+          <Ticket>
+            <TicketType type="Enumeration" value="Login"/>
+            <TicketValue type="ByteString" value="$TICKET_VALUE"/>
+          </Ticket>
+        </CredentialValue>
+      </Credential>
+    </Authentication>
+    <BatchCount type="Integer" value="1"/>
+  </RequestHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Interop"/>
+    <RequestPayload>
+      <InteropFunction type="Enumeration" value="End"/>
+      <InteropIdentifier type="TextString" value="TC-LOGIN-1-21"/>
+    </RequestPayload>
+  </BatchItem>
+</RequestMessage>
+
+<ResponseMessage>
+  <ResponseHeader>
+    <ProtocolVersion>
+      <ProtocolVersionMajor type="Integer" value="2"/>
+      <ProtocolVersionMinor type="Integer" value="1"/>
+    </ProtocolVersion>
+    <TimeStamp type="DateTime" value="$NOW"/>
+    <ServerCorrelationValue type="TextString" value="65182B56-B3C481A8-7"/>
+    <BatchCount type="Integer" value="1"/>
+  </ResponseHeader>
+  <BatchItem>
+    <Operation type="Enumeration" value="Interop"/>
+    <ResultStatus type="Enumeration" value="Success"/>
+    <ResponsePayload>
+    </ResponsePayload>
+  </BatchItem>
+</ResponseMessage>
+
+</KMIP>

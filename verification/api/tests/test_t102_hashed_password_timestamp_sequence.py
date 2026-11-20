@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CAPABILITY = "hashed_password_timestamp_sequence"
 DECLARATIONS = {
     "rust-observed-25f837c102304b00719a": {
@@ -123,7 +123,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         self.assertEqual(0, case["expectedOutput"]["credentialTransmissions"])
 
     def test_owner_traceability_does_not_contradict_approved_monotonicity(self) -> None:
-        traceability = ROOT / "specification" / "compliance" / "requirements" / "KMIPKIT-0008.csv"
+        traceability = ROOT / "verification" / "conformance" / "requirements" / "KMIPKIT-0008.csv"
         with traceability.open(encoding="utf-8", newline="") as stream:
             rows = list(csv.DictReader(stream))
         row = next(item for item in rows if item["requirement_id"] == "KMIPKIT-0008-FR-007")

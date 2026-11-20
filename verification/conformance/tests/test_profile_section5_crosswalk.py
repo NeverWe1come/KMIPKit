@@ -13,7 +13,7 @@ from verification.conformance.tests.test_validate import (
 
 
 SOURCE_ID = "KMIPKIT-SRC-profiles"
-SOURCE_PATH = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
 PROFILE_BY_SECTION = {
     "5.3.1": "KMIPKIT-PROFILE-HTTPS-CLIENT",
     "5.6.1": "KMIPKIT-PROFILE-SYMMETRIC-KEY-LIFECYCLE-CLIENT",
@@ -157,7 +157,7 @@ def _load_json(relative_path: str) -> dict[str, object]:
 
 class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
     def test_catalogued_section_five_atoms_have_reviewed_actor_and_scope_dispositions(self) -> None:
-        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        catalog = _load_json("verification/conformance/catalog/kmip-2.1.json")
         fixture = _load_json("verification/conformance/tests/fixtures/profile-closure-v2.1.json")
         clauses = {
             clause["clause_id"]: clause
@@ -277,7 +277,7 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
 
     def test_unresolved_profile_test_atoms_do_not_become_client_requirements(self) -> None:
         """Profiles test clauses without an endpoint stay outside the client requirement closure."""
-        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        catalog = _load_json("verification/conformance/catalog/kmip-2.1.json")
         fixture = _load_json("verification/conformance/tests/fixtures/profile-closure-v2.1.json")
         requirement_rows = {
             row["requirement_id"]: row for row in catalog["requirements"]
@@ -381,7 +381,7 @@ class ProfileSectionFiveCrosswalkTests(unittest.TestCase):
 
     def test_aes_xts_discrepant_may_keeps_literal_reference_and_stable_mapping(self) -> None:
         """Profiles §5.13.1 item 2 remains traceable without silently fixing its bad reference."""
-        catalog = _load_json("specification/catalog/kmip-2.1.json")
+        catalog = _load_json("verification/conformance/catalog/kmip-2.1.json")
         fixture = _load_json("verification/conformance/tests/fixtures/profile-closure-v2.1.json")
         requirement_id = "KMIPKIT-REQ-PROF-5.13.1-002"
         clause_id = "KMIPKIT-CLAUSE-PROF-5.13.1-002"

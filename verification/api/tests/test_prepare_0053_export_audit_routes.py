@@ -517,7 +517,7 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
                         "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedTtlvItem.field_item"},
                     },
                     "manifestMappingRef": {
-                        "path": "specification/api/public-api.json",
+                        "path": "bindings/shared/public-api.json",
                         "declarationId": "managed-value-reader-route",
                     },
                     "manifestCompositionDeclarationIds": ["managed-value-reader-route"],
@@ -815,7 +815,7 @@ class Prepare0053ExportAuditRoutesTests(unittest.TestCase):
                         "python": {"packageId": "python-kmipkit", "name": "kmipkit.managed_objects.ManagedFieldValue"},
                     },
                     "manifestMappingRef": {
-                        "path": "specification/api/public-api.json",
+                        "path": "bindings/shared/public-api.json",
                         "declarationId": "managed-field-value-route",
                     },
                     "manifestCompositionDeclarationIds": ["managed-field-value-route"],

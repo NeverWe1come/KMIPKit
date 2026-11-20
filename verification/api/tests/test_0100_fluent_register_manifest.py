@@ -18,7 +18,7 @@ class FluentRegisterManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_exact_public_paths_are_owned_and_blocked_for_binding_parity(self) -> None:

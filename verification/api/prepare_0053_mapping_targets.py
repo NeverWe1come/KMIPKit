@@ -201,7 +201,7 @@ def main() -> int:
     parser.add_argument("--write", action="store_true", help="write reviewed route inputs")
     arguments = parser.parse_args()
     root = arguments.repo_root.resolve()
-    manifest = json.loads((root / "specification/api/public-api.json").read_text(encoding="utf-8"))
+    manifest = json.loads((root / "bindings/shared/public-api.json").read_text(encoding="utf-8"))
     route_path = root / "specs/053-api-parity-facade/additional-api-routes.json"
     route_document = json.loads(route_path.read_text(encoding="utf-8"))
     observed = {

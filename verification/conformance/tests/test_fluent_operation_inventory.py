@@ -9,11 +9,11 @@ from pathlib import Path
 from verification.conformance.generate_fluent_operation_inventory import build_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
-BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
-VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
-MANIFEST = ROOT / "specification/api/public-api.json"
-MODEL_OWNERS = ROOT / "specification/catalog/fluent-operation-model-owners.json"
-OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
+BASE_CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_VALUES = ROOT / "verification/conformance/catalog/kmip-versioned-values.json"
+MANIFEST = ROOT / "bindings/shared/public-api.json"
+MODEL_OWNERS = ROOT / "verification/api/catalog/fluent-operation-model-owners.json"
+OUTPUT = ROOT / "verification/api/catalog/fluent-operation-inventory.json"
 
 
 class FluentOperationInventoryTests(unittest.TestCase):

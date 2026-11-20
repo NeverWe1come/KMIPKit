@@ -187,7 +187,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertIn("not a general server SHALL", document)
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
             _normalized_html_source_span(profiles_lines, [5190, 5197]),
@@ -198,7 +198,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
             _normalized_html_source_span(spec_lines, [56703, 56713]),
@@ -218,7 +218,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertNotIn("§13.1.4 Table 478", document)
 
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
             _normalized_html_source_span(spec_lines, [55918, 55920]),
@@ -231,9 +231,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_https_client_inherits_baseline_basic_authentication_root(self) -> None:
         """Profiles v2.1 §§6.4 and 6.1 make §3.1 inherited, not direct."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profile_id = "KMIPKIT-PROFILE-HTTPS-CLIENT"
         profile = next(item for item in catalog["profiles"] if item["profile_id"] == profile_id)
@@ -251,9 +251,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_foundry_intermediate_and_advanced_clients_inherit_basic_conditions(self) -> None:
         """Profiles v2.1 §§6.13–6.14 item 3 both incorporate §5.7.1 literally."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         source_clause_ids = {
             "KMIPKIT-CLAUSE-PROF-5.7.1-001",
@@ -374,12 +374,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_all_client_profiles_inherit_baseline_conditions_from_section_6_1_item_3(self) -> None:
         """Every profile dependency on Baseline also closes over §5.1.1 conditions."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profiles_html = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
         normalized_profiles_html = " ".join(profiles_html.split())
         inclusion_id = "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS"
@@ -437,14 +437,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_all_client_profiles_close_over_the_shared_batch_item_id_condition(self) -> None:
         """The Profiles §4.1.2 item that says 'for all profiles' belongs to every client closure."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(
                 encoding="utf-8"
             )
         )
         profiles_html = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
         normalized_profiles_text = " ".join(re.sub(r"<[^>]+>", " ", html.unescape(profiles_html)).split())
         clause_id = "KMIPKIT-CLAUSE-PROF-4.1.2-007"
@@ -484,10 +484,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_profile_condition_inventory_covers_the_complete_pinned_section(self) -> None:
         """The inclusion oracle accounts for every §5.1.1 condition without inventing REQ IDs."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profiles_html = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
         inventory = oracle["provenance"].get("profile_condition_inventories", [])
         baseline = next(
@@ -505,7 +505,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             baseline["inclusion_id"],
             "KMIPKIT-INCLUSION-PROF-BASELINE-CONDITIONS",
         )
-        self.assertEqual(baseline["source_path"], "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html")
+        self.assertEqual(baseline["source_path"], "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html")
         self.assertEqual(baseline["html_line_range"], [4529, 4636])
         self.assertEqual(baseline["governing_requirement_id"], "KMIPKIT-REQ-PROF-6.1-003")
         self.assertEqual(len(baseline["conditions"]), 8)
@@ -601,13 +601,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_conformance_condition_is_covered_by_whole_spec_inclusion(self) -> None:
         """Baseline item 1 adds no condition REQ beyond its existing whole-Spec closure."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profiles_html = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252")
         spec_html = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252")
         inventory = next(item for item in oracle["provenance"]["profile_condition_inventories"] if item["section"] == "5.1.1")
         condition = inventory["conditions"][0]
@@ -664,7 +664,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_open_ended_optional_clause_is_reviewed_without_inventing_scope(self) -> None:
         """Baseline item 7 is an open-ended optional capability, not a finite closure edge."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         inventories = oracle["provenance"]["profile_condition_inventories"]
         baseline = next(item for item in inventories if item["section"] == "5.1.1")
@@ -689,7 +689,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_out_of_standard_extensions_are_not_selected_for_1_0(self) -> None:
         """Optional vendor extensions stay distinct from the standard Message Extension mechanism."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         inventories = oracle["provenance"]["profile_condition_inventories"]
         baseline = next(item for item in inventories if item["section"] == "5.1.1")
@@ -737,13 +737,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_attributes_condition_has_exact_reviewed_capability_crosswalk(self) -> None:
         """Pin Profiles v2.1 §5.1.1 item 2 to Specification v2.1 §5.1 Table 157."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
-        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -870,7 +870,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("BL-M-4-21", fixture_html_text)
         self.assertIn("test-cases/kmip-v2.1/mandatory/BL-M-4-21.xml", fixture_html_text)
         self.assertNotIn("Attributes", fixture_html_text)
-        fixture_root = ElementTree.parse(ROOT / "specification/oasis/kmip-2.1/fixtures/BL-M-4-21.xml").getroot()
+        fixture_root = ElementTree.parse(ROOT / "verification/conformance/oasis/kmip-2.1/fixtures/BL-M-4-21.xml").getroot()
         locate_attributes = [
             attributes
             for batch_item in fixture_root.iter("BatchItem")
@@ -886,12 +886,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_object_attributes_condition_has_exact_element_crosswalk(self) -> None:
         """Baseline item labels map to elements without assigning unresolved §4 requirements."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -964,13 +964,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_query_operation_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """The four item mappings are source-backed; the parent is reviewed only as a crosswalk."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
-        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -1072,13 +1072,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_get_attributes_locate_conditions_have_exact_reviewed_client_crosswalks(self) -> None:
         """Baseline item labels map only to their reviewed client request clauses."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
-        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -1371,7 +1371,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_batch_item_client_scope_has_a_recorded_interpretation(self) -> None:
         """Client ownership of §9.7's actor-unspecified rule must be traceable."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.7-001")
         requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001")
 
@@ -1391,13 +1391,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_message_data_structures_condition_has_exact_reviewed_batch_crosswalk(self) -> None:
         """The fourteen reviewed Message Data Structure mappings stay structurally bounded."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
-        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -2250,13 +2250,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """Message Extension cites both placements while only reviewed client duties enter the mapping."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
-        profiles_path = "specification/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
-        spec_path = "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
+        profiles_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-profiles-v2.1-os.html"
+        spec_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         inventory = next(
             item
             for item in oracle["provenance"]["profile_condition_inventories"]
@@ -2532,9 +2532,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_operation_condition_has_exact_reviewed_structural_crosswalk(self) -> None:
         """Operation maps to §9.15; §8.3/§8.6 table placements are not normative source clauses."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -2569,8 +2569,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "reviewed")
 
-        profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
-        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        profiles_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        spec_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         profiles_lines = profiles_path.read_text(encoding="cp1252").splitlines()
         spec_lines = spec_path.read_text(encoding="cp1252").splitlines()
         self.assertEqual(_normalized_html_source_span(profiles_lines, [4597, 4598]), "Operation")
@@ -2704,9 +2704,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_protocol_version_condition_preserves_structure_and_unresolved_compatibility(self) -> None:
         """Protocol Version maps structurally while §9.16 compatibility remains unresolved."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -2739,8 +2739,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["scope_disposition"], "profile_conditional")
         self.assertEqual(condition["mapping_status"], "reviewed")
 
-        profiles_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
-        spec_path = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+        profiles_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+        spec_path = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         profiles_lines = profiles_path.read_text(encoding="cp1252").splitlines()
         spec_lines = spec_path.read_text(encoding="cp1252").splitlines()
         self.assertIn("Protocol Version", _normalized_html_source_span(profiles_lines, [4600, 4600]))
@@ -2814,9 +2814,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_result_reason_condition_preserves_response_structure(self) -> None:
         """Result Reason maps to its response-only field without inventing a client requirement."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -2845,10 +2845,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertIn("Result Reason", _normalized_html_source_span(profiles_lines, [4602, 4602]))
         result_reason_definition = _normalized_html_source_span(spec_lines, [45197, 45203])
@@ -2884,9 +2884,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_result_status_condition_maps_pending_client_duty(self) -> None:
         """Result Status maps its response structure and conditional Pending client duty."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -2916,10 +2916,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertIn("Result Status", _normalized_html_source_span(profiles_lines, [4604, 4604]))
         self.assertIn("Result Status Yes", _normalized_html_source_span(spec_lines, [43380, 43398]))
@@ -2989,9 +2989,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_server_correlation_value_condition_maps_server_response_metadata(self) -> None:
         """The Server Correlation Value is response metadata for client-initiated operations."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -3021,10 +3021,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["mapping_status"], "reviewed")
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertEqual(
             _normalized_html_source_span(profiles_lines, [4605, 4607]),
@@ -3079,9 +3079,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_time_stamp_condition_maps_client_capabilities_not_server_duties(self) -> None:
         """Time Stamp maps its optional request and conditional client capabilities only."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -3133,10 +3133,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertIn("Time Stamp", _normalized_html_source_span(profiles_lines, [4609, 4609]))
         time_stamp_definition = _normalized_html_source_span(spec_lines, [45309, 45316])
@@ -3169,9 +3169,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_unique_batch_item_id_maps_client_request_and_server_echo_separately(self) -> None:
         """Unique Batch Item ID maps client request use and server echo as separate duties."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -3239,10 +3239,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("MAY be specified", profile_may_review["source_excerpt"])
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         self.assertIn("Unique Batch Item ID", _normalized_html_source_span(profiles_lines, [4611, 4612]))
         self.assertIn("multiple batch items", _normalized_html_source_span(profiles_lines, [4488, 4493]))
@@ -3284,9 +3284,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_baseline_message_protocols_crosswalk_keeps_unresolved_and_server_duties_out(self) -> None:
         """Baseline Message Protocols excludes unresolved and server-only duties from client support mappings."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         inventory = next(
@@ -3455,10 +3455,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertNotIn("KMIPKIT-REQ-PROF-5.3.1-011", requirement_ids)
 
         profiles_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-profiles-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         spec_lines = (
-            ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
+            ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
         ).read_text(encoding="cp1252").splitlines()
         message_protocols = _normalized_html_source_span(profiles_lines, [4614, 4627])
         for item_name in ("Authentication", "Transport", "TTLV"):
@@ -3495,9 +3495,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_foundry_basic_condition_text_names_its_inheriting_profiles(self) -> None:
         """The catalog and source review describe the same normative inheritance."""
-        catalog = json.loads((ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
+        catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json")
             .read_text(encoding="utf-8")
         )
         clause_id = "KMIPKIT-CLAUSE-PROF-5.7.1-001"
@@ -3526,9 +3526,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_tape_library_includes_normatively_referenced_mandatory_test_cases(self) -> None:
         """Profiles v2.1 §6.28 item 6 incorporates the §5.12.6 test cases."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profile_id = "KMIPKIT-PROFILE-TAPE-LIBRARY-CLIENT"
         profile = next(item for item in catalog["profiles"] if item["profile_id"] == profile_id)
@@ -3612,9 +3612,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_server_scoped_actor_requirement_is_not_a_client_profile_obligation(self) -> None:
         """DEC-021 records a server-side interpretation without changing the source actor."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-003"
         requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
@@ -3643,7 +3643,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_oracle_audits_all_mapped_client_1_0_requirements_in_each_profile_closure(self) -> None:
         """Every source-reviewed client_1_0 requirement is represented in the profile audit subset."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         mappings = oracle["requirement_crosswalk"]
 
@@ -3669,9 +3669,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_absent_link_may_is_in_each_independently_computed_client_profile_closure(self) -> None:
         """The §4.31 client MAY is inherited by each profile through its source closure."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         requirement_id = "KMIPKIT-REQ-SPEC-4.31-002"
         clause_id = "KMIPKIT-CLAUSE-SPEC-4.31-002"
@@ -3706,7 +3706,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_oracle_audits_all_mapped_conditional_requirements_in_each_profile_closure(self) -> None:
         """Every source-reviewed conditional client requirement is scoped to its applicable profile."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         mappings = oracle["requirement_crosswalk"]
         applicable_scopes = {
@@ -3737,10 +3737,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
     def test_rng_parameters_preserve_shared_client_and_server_scope(self) -> None:
         """The §7.36 structure is usable in client requests and server-created responses."""
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         oracle = json.loads(
-            (ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         requirement_ids = {
             "KMIPKIT-REQ-SPEC-7.36-001",
@@ -3804,9 +3804,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_profile_oracle_requirement_arrays_match_independent_source_reviews(self) -> None:
         """Full profile requirement sets come from reviewed source records, not profile arrays."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         source_clauses = {row["clause_id"]: row for row in oracle["source_clause_crosswalk"]}
         requirement_ids_by_source_gap: dict[str, set[str]] = {}
@@ -4004,9 +4004,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_catalog_scopes_source_reviewed_conditional_requirements_to_profiles(self) -> None:
         """Catalog profile IDs and closures match source-reviewed conditional applicability."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"]}
         requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
@@ -4055,7 +4055,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_client_profiles_audit_the_inherited_baseline_authentication_requirement(self) -> None:
         """Client profile dependencies inherit Baseline Client's §3.1 requirement mapping."""
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         clause_id = "KMIPKIT-CLAUSE-PROF-3.1-001"
         requirement_id = "KMIPKIT-REQ-PROF-3.1-001"
@@ -4076,9 +4076,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_oracle_audits_the_required_derive_key_table_body_row(self) -> None:
         """Specification v2.1 Table 205's required Attributes row is in every client closure."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-007-001"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"
@@ -4111,9 +4111,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_oracle_crosswalks_the_attestation_indicator_client_requirement(self) -> None:
         """Specification v2.1 §9.3's client SHALL has one exact source mapping."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         requirement_id = "KMIPKIT-REQ-SPEC-9.3-001-001"
         clause_id = "KMIPKIT-CLAUSE-SPEC-9.3-001"
@@ -4159,7 +4159,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 )
 
     def test_source_oracle_covers_all_profiles_and_expected_scope_counts(self) -> None:
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         profiles = oracle["profiles"]
 
@@ -4186,7 +4186,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertTrue(all("-M-" in case["official_case_id"] for case in baseline["test_cases"]))
 
     def test_checked_in_client_profile_closures_match_current_scope(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
 
         violations = []
@@ -4214,9 +4214,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(violations, [], "client profile closures differ from current catalog scope")
 
     def test_client_profile_closure_keeps_split_client_obligations_without_server_obligations(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         baseline = next(
             profile for profile in catalog["profiles"]
@@ -4273,7 +4273,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(source_atoms[server_id]["scope_disposition"], "server_only")
 
     def test_generated_client_requirement_metadata_covers_profile_closures(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -4308,9 +4308,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     def test_profile_closure_generator_matches_the_pinned_source_oracle(self) -> None:
         """Compare closure expansion with static source-derived arrays for all 18 clients."""
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        oracle_path = ROOT / "tools" / "normative_catalog" / "tests" / "fixtures" / "profile-closure-v2.1.json"
+        oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
         oracle_profiles = {profile["profile_id"]: profile for profile in oracle["profiles"]}
         catalog_profiles = {
@@ -4658,7 +4658,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("rustc") and shutil.which("rustfmt"), "Rust toolchain is required")
     def test_generated_source_compiles_and_adversarial_metadata_round_trips(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         baseline = next(
             profile
@@ -4823,7 +4823,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
     def test_fixed_loader_rejects_a_symlinked_target_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory)
-            target = repository / "specification" / "catalog" / "profile-targets.json"
+            target = repository / "verification" / "conformance" / "catalog" / "profile-targets.json"
             target.parent.mkdir(parents=True)
             external = repository / "external-targets.json"
             external.write_text(json.dumps(self.manifest), encoding="utf-8")
@@ -4853,7 +4853,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
-            specification = repository / "specification"
+            specification = repository / "verification" / "conformance"
             specification.mkdir(parents=True)
             external = Path(directory) / "external-catalog"
             external.mkdir()
@@ -4882,19 +4882,19 @@ class ProfileTargetManifestTests(unittest.TestCase):
             "verification.conformance.generate_profiles.safe_read_bytes",
             side_effect=lambda _root, path, *, max_bytes: (
                 json.dumps(self.manifest).encode("utf-8")
-                if path == "specification/catalog/profile-targets.json"
+                if path == "verification/conformance/catalog/profile-targets.json"
                 else b"**FR-003**"
             ),
         ) as safe_read:
             load_profile_targets(ROOT, self.catalog)
 
         self.assertIn(
-            call(ROOT, "specification/catalog/profile-targets.json", max_bytes=65_536),
+            call(ROOT, "verification/conformance/catalog/profile-targets.json", max_bytes=65_536),
             safe_read.call_args_list,
         )
 
     def test_generated_metadata_preserves_closure_evidence_and_separate_target_state(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -4914,7 +4914,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_generated_normative_tables_use_shared_const_constructors(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -5047,7 +5047,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertEqual([json.loads(row[0]) for row in test_case_rows], expected_test_case_ids)
 
     def test_profile_clause_and_requirement_closures_use_compact_const_expansions(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -5106,7 +5106,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
                     self.assertRegex(generated, count_assertion)
 
     def test_profile_test_case_metadata_is_declared_once_and_referenced_by_each_profile(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -5194,7 +5194,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
             self.assertEqual(actual_indexes, [int(index) for index in expected_indexes], profile_id)
 
     def test_target_and_profile_prose_do_not_change_requirement_evidence_metadata(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         baseline_target = ProfileTargets(
             "1.0",
@@ -5249,7 +5249,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
             )
 
     def test_generated_requirement_metadata_preserves_exact_normative_keywords(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         targets = ProfileTargets(
             "1.0",
@@ -5307,7 +5307,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertNotIn("ProfileRuleMapping", generated)
 
     def test_generated_requirements_classify_keyword_specific_verification_categories(self) -> None:
-        catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+        catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         catalog = load_validated_catalog(catalog_path.read_bytes(), ROOT, require_complete=True)
         catalog = json.loads(json.dumps(catalog))
         targets = ProfileTargets(

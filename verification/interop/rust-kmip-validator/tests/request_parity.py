@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-ELEMENTS = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
+ELEMENTS = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text())["elements"]
 
 
 def name_key(value):

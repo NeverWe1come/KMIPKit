@@ -36,7 +36,7 @@ else:
     from safe_io import PathSecurityError, atomic_write_bytes, confined_path, safe_read_bytes
 
 
-REPORT_PATH = Path("specification/catalog/coverage-report.md")
+REPORT_PATH = Path("verification/conformance/catalog/coverage-report.md")
 PROFILE_RULE_SOURCE = "crates/kmipkit-protocol/src/profile.rs"
 _GITHUB_API_MAX_RESPONSE_BYTES = 1_048_576
 _GITHUB_API_BASE = "https://api.github.com/repos/NeverWe1come/KMIPKit"
@@ -2302,7 +2302,7 @@ def evaluate_current_readiness(
     from verification.conformance.validate import load_validated_catalog
     from verification.conformance.generate_profiles import load_profile_targets
 
-    raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
+    raw = safe_read_bytes(repository, "verification/conformance/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
     catalog = load_validated_catalog(raw, repository, require_complete=True)
     selected_profile_ids = set(load_profile_targets(repository, catalog).profile_ids)
     typed_rule_mappings = load_typed_rule_mappings(repository)
@@ -2398,7 +2398,7 @@ def main(argv: list[str] | None = None) -> int:
             _append_readiness_summary(os.environ.get("GITHUB_STEP_SUMMARY"), readiness)
             return 0
 
-        raw = safe_read_bytes(repository, "specification/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
+        raw = safe_read_bytes(repository, "verification/conformance/catalog/kmip-2.1.json", max_bytes=16 * 1024 * 1024)
         catalog = load_validated_catalog(raw, repository, require_complete=not arguments.structural_only)
         selected_profile_ids = None
         typed_rule_mappings = None

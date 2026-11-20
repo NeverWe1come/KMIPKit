@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 ENGLISH_GUIDE = ROOT / "docs" / "user-guide" / "en" / "language-packages.md"
 SPANISH_GUIDE = ROOT / "docs" / "user-guide" / "es" / "paquetes-de-idiomas.md"
 

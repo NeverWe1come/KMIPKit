@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 READINESS_SHA256 = "ce0632e2dadf8ed79064c88becc07cf3f1bc1cfba76ce4ce3f5cf8cc3c5dff06"
 CATALOG_SHA256 = "d876fc31f19b3b4b63a5b09765dfdac6925d97a2199aac6c88c10a9e5bcb47cb"
 LANGUAGE_MAPPING_SHA256 = {

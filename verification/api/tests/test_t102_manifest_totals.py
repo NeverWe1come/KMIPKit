@@ -33,7 +33,7 @@ CURRENT_REPORT = (
     / "reports"
     / "rust-export-report-2026-11-16.json"
 )
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 class T102ManifestTotalsTests(unittest.TestCase):

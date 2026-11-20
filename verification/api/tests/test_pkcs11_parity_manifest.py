@@ -16,7 +16,7 @@ from unittest.mock import patch
 from verification.api import audit_binding_exports
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 OWNER_SPEC = ROOT / "specs" / "026-pkcs11" / "spec.md"
@@ -51,7 +51,7 @@ PARITY_EVIDENCE = {
 
 
 def _public_jni_audit_module():
-    audit_path = ROOT / "tools" / "api_manifest" / "audit_jni_public_exports.py"
+    audit_path = ROOT / "verification" / "api" / "audit_jni_public_exports.py"
     with patch.object(sys, "path", [str(audit_path.parent), *sys.path]):
         specification = importlib.util.spec_from_file_location(
             "audit_jni_public_exports", audit_path
@@ -279,7 +279,7 @@ class Pkcs11ParityManifestTests(unittest.TestCase):
         internal_export = self.fixture["approvedInternalNativeExports"]["javaJni"][0]
         internal_bridge = internal_export["symbol"]
         manifest = json.loads(
-            (ROOT / "specification" / "api" / "public-api.json").read_text(
+            (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
             )
         )

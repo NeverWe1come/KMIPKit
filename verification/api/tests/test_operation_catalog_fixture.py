@@ -15,9 +15,9 @@ from verification.api.operation_catalog_fixture import (
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "tests" / "fixtures" / "api" / "operation_catalog_parity.tsv"
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 PYTHON_VALUES = ROOT / "bindings" / "python" / "src" / "kmipkit" / "protocol_values.py"
-NORMATIVE_CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+NORMATIVE_CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 C_OPERATION_MATRIX = ROOT / "bindings" / "c" / "tests" / "operation_parity_consumer.c"
 C_ABI_CONSUMER = ROOT / "bindings" / "c" / "tests" / "client_abi_consumer.c"
 

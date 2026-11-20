@@ -35,8 +35,8 @@ except ImportError:  # Direct execution as ``python verification/api/generate.py
     from kmip30_draft_api import DraftApiManifestError, validate_kmip30_draft_api
 
 MANIFEST_PATH = "bindings/shared/public-api.json"
-SCHEMA_PATH = "specification/api/public-api.schema.json"
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+SCHEMA_PATH = "bindings/shared/public-api.schema.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
 # Public API parity records include exact declarations in all four languages.
 # 72 MiB accommodates the approved assigned-tag export inventory and planned
 # declaration growth while retaining a strict upper bound on input allocation.
@@ -1796,11 +1796,11 @@ def _validate_standard_attribute_catalog_values(
         expected[c_name] = tag
 
     versioned_root = root or Path.cwd()
-    versioned_tags_path = versioned_root / "specification/catalog/kmip-versioned-tags.json"
+    versioned_tags_path = versioned_root / "verification/conformance/catalog/kmip-versioned-tags.json"
     if versioned_tags_path.exists():
         versioned_tags = _load_json(
             versioned_root,
-            "specification/catalog/kmip-versioned-tags.json",
+            "verification/conformance/catalog/kmip-versioned-tags.json",
             MAX_CATALOG_BYTES,
         )
         if isinstance(versioned_tags, dict):
@@ -2024,7 +2024,7 @@ def _validate_release_export_inventories(root: Path) -> None:
         command = [
             sys.executable,
             "-B",
-            str(root / "tools" / "api_manifest" / script_name),
+            str(root / "verification" / "api" / script_name),
             "--repo-root",
             str(root),
             "--check",
@@ -3919,11 +3919,7 @@ def _atomic_write(destination: Path, data: bytes, root: Path, relative: str) -> 
 def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int:
     try:
         root = root_path.resolve(strict=True)
-        manifest_rel = (
-            MANIFEST_PATH
-            if (root / MANIFEST_PATH).is_file()
-            else "specification/api/public-api.json"
-        )
+        manifest_rel = MANIFEST_PATH
         manifest = _load_json(root, manifest_rel, MAX_MANIFEST_BYTES)
         schema_path = root / SCHEMA_PATH
         schema = (
@@ -3953,11 +3949,11 @@ def _run(root_path: Path, write: bool, *, require_complete: bool = False) -> int
                 and capability.get("capabilityId") == "kmip30_draft_routes"
                 for capability in manifest.get("capabilities", [])
             )
-            draft_catalog_path = root / "specification/api/kmip-3.0-draft-api.json"
+            draft_catalog_path = root / "verification/api/catalog/kmip-3.0-draft-api.json"
             if draft_catalog_path.is_file():
                 draft_catalog = _load_json(
                     root,
-                    "specification/api/kmip-3.0-draft-api.json",
+                    "verification/api/catalog/kmip-3.0-draft-api.json",
                     MAX_DRAFT_API_CATALOG_BYTES,
                 )
                 if not isinstance(draft_catalog, dict):

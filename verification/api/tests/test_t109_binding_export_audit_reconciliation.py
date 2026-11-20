@@ -9,7 +9,7 @@ from pathlib import Path
 from verification.api.generate import ManifestError, _validate_unique_public_export_identities
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 PYTHON_PROFILE_FIELD_EXPORTS = {
     *(f"kmipkit.profile_catalog.ClientProfile.{name}" for name in (

@@ -58,7 +58,7 @@ def _numeric_enum_code(value: object) -> int | None:
 
 
 def _load_enum_codes() -> dict[str, dict[str, int]]:
-    source_path = Path(__file__).resolve().parents[4] / "specification" / "catalog" / "kmip-2.1.json"
+    source_path = Path(__file__).resolve().parents[4] / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
     try:
         catalog = json.loads(source_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):

@@ -29,7 +29,7 @@ from verification.conformance.validate import CatalogValidationError
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = ROOT / "tools" / "normative_catalog" / "generate_wire_names.py"
+SCRIPT = ROOT / "verification" / "conformance" / "generate_wire_names.py"
 OUTPUT_PATH = "crates/kmipkit-client/src/wire_names_generated.rs"
 
 
@@ -277,7 +277,7 @@ class WireNameRenderingTests(unittest.TestCase):
         import json
 
         catalog = json.loads(
-            (ROOT / "specification" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
+            (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         bitmask_families = [
             element for element in catalog["elements"] if element.get("kind") == "bitmask"
@@ -468,12 +468,12 @@ class WireNameGeneratorCliTests(unittest.TestCase):
     def test_write_check_stale_and_missing_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "specification").mkdir()
+            (root / "verification" / "conformance").mkdir(parents=True)
             shutil.copy2(ROOT / "AGENTS.md", root / "AGENTS.md")
-            shutil.copytree(ROOT / "specification" / "oasis", root / "specification" / "oasis")
-            shutil.copytree(ROOT / "specification" / "catalog", root / "specification" / "catalog")
+            shutil.copytree(ROOT / "verification" / "conformance" / "oasis", root / "verification" / "conformance" / "oasis")
+            shutil.copytree(ROOT / "verification" / "conformance" / "catalog", root / "verification" / "conformance" / "catalog")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-            subprocess.run(["git", "add", "specification/oasis"], cwd=root, check=True)
+            subprocess.run(["git", "add", "verification/conformance/oasis"], cwd=root, check=True)
             subprocess.run(
                 ["git", "-c", "user.name=Wire Name Tests", "-c", "user.email=wire-name-tests@example.invalid", "commit", "-qm", "test fixture sources"],
                 cwd=root,

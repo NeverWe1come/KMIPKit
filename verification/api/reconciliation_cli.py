@@ -32,7 +32,7 @@ def run_reconciliation_cli(
         help="update the reviewed manifest input",
     )
     args = parser.parse_args(argv)
-    manifest_path = args.repo_root / "specification/api/public-api.json"
+    manifest_path = args.repo_root / "bindings/shared/public-api.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         report = json.loads(args.report.read_text(encoding="utf-8"))

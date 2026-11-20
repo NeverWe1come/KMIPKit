@@ -376,7 +376,7 @@ class LiveContract(unittest.TestCase):
                         self.assertTrue(normalized == baseline, "full-catalog normalized KMIP request/result parity differs")
 
     def catalog_scenario(self, version, api="typed-protocol"):
-        elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
+        elements = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
         cipher = (ROOT / "verification/interop/rust-kmip-validator/tests/fixtures/aes256-cbc.bin").read_bytes()
         sequence = 0

@@ -48,7 +48,7 @@ from verification.api.tests.test_t102_certify_request_builder_mapping import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 
 
 @dataclass(frozen=True)

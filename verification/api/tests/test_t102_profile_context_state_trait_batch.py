@@ -14,8 +14,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
-CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
+CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 REPORT_PATH = (
     ROOT
     / "specs"

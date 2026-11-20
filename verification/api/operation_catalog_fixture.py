@@ -11,8 +11,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "tests" / "fixtures" / "api" / "operation_catalog_parity.tsv"
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
-NORMATIVE_CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
+NORMATIVE_CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 OPERATION_ENUMERATION_ID = "KMIPKIT-ELEM-ENUMERATION-OPERATION"
 OPERATION_VALUE_ID_PREFIX = "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-"
 _HEX_VALUE = re.compile(r"[0-9A-Fa-f]{8}")

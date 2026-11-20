@@ -26,7 +26,7 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(
-            (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
+            (ROOT / "bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
 
     def test_every_public_rust_path_is_traced_and_four_language_mapped(self) -> None:

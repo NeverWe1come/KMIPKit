@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MANIFEST = ROOT / "specification" / "api" / "public-api.json"
+MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/023-key-material-transfer/spec.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_derive_key_request_mapping.py"

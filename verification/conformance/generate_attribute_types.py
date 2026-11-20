@@ -19,8 +19,8 @@ else:
     from validate import MAX_BYTES, CatalogValidationError, load_validated_catalog
 
 
-CATALOG_PATH = "specification/catalog/kmip-2.1.json"
-VERSIONED_TAGS_PATH = "specification/catalog/kmip-versioned-tags.json"
+CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
+VERSIONED_TAGS_PATH = "verification/conformance/catalog/kmip-versioned-tags.json"
 OUTPUT_PATH = "crates/kmipkit-protocol/src/attribute_types_generated.rs"
 TYPED_OUTPUT_PATH = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
 TYPED_FFI_OUTPUT_PATH = "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs"
