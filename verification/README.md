@@ -8,6 +8,7 @@ This directory groups projects and tools used to examine KMIPKit from independen
 - `consumers/` contains small standalone applications that exercise the published language bindings against a local controlled responder, and a Rust single-dependency consumer.
 - `security/` contains bounded coverage-guided fuzz targets and the Miri, sanitizer, and negative-test campaign runner. Crate and binding regression tests remain next to the code they exercise.
 - `api/` audits and generates language API manifests and parity evidence.
+- `request_validation/` contains the audited KMIP v2.1 operation-field matrix, its deterministic Rust schema generator, and generator tests. The generated descriptors are compiled from `crates/kmipkit-protocol`; run `python verification/request_validation/generate.py --check` to detect stale output.
 - `conformance/` contains normative catalog validation and report tooling. Its normative catalogs, requirement matrices, and checksum-pinned OASIS documents are under `conformance/catalog/`, `conformance/requirements/`, and `conformance/oasis/`. The shared binding contract and schema are under `bindings/shared/`; draft API and fluent operation inventories are under `api/catalog/`.
 - `dependencies/` checks the repository dependency policy.
 - `coverage/` collects and evaluates Rust, C, and JNI coverage.

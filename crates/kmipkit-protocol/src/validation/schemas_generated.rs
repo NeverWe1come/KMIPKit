@@ -1,5 +1,5 @@
 //! Generated operation Request Payload schema identities and descriptors.
-//! Regenerate with `python tools/validation_schema/generate.py`.
+//! Regenerate with `python verification/request_validation/generate.py`.
 
 use super::{FieldDescriptor, FieldTag, NestedStructureSchema, RequestSchemaDescriptor};
 
