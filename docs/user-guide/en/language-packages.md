@@ -99,11 +99,18 @@ published artifact or platform test is complete.
 
 ## Building KMIPKit from source
 
-The Rust TLS provider builds against OpenSSL 3.5. CI compiles the official
-release from a checksum-pinned archive. For local builds, use an OpenSSL
-installation that includes the headers and libraries. Point `OPENSSL_DIR` at
-the installation if Cargo cannot find it. Set `OPENSSL_STATIC=1` when building
-self-contained C, Java, or Python artifacts and provide the static libraries.
+The Rust TLS provider uses OpenSSL 3.5 LTS. For local builds, install OpenSSL
+3.5 with its development headers and libraries, then set `OPENSSL_DIR` if
+Cargo cannot find it. To use the exact source release CI builds, run
+`python3 verification/security/openssl/build.py` on Linux or macOS (or
+`python verification/security/openssl/build.py` on Windows). The helper
+downloads the pinned upstream archive, verifies its SHA-256, builds it under
+the KMIPKit user cache, and prints the environment settings to use in the
+current shell. It requires Python 3.12+, Perl, and a native C build toolchain;
+NASM is optional. Set `OPENSSL_STATIC=1` when building self-contained C, Java,
+or Python artifacts against the static libraries. The pin, checksum, and
+update process are documented in
+[native OpenSSL maintenance](../../security/openssl.md).
 
 ## Native library loading
 

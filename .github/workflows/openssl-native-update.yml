@@ -1,0 +1,51 @@
+name: Native OpenSSL update
+
+on:
+  pull_request:
+    branches: [master, 'release/**']
+    paths:
+      - 'verification/security/openssl/**'
+      - '.github/actions/setup-static-openssl/**'
+      - '.github/workflows/openssl-native-update.yml'
+      - 'docs/security/openssl.md'
+      - 'docs/security/dependency-policy.md'
+      - 'docs/user-guide/en/language-packages.md'
+  schedule:
+    - cron: '29 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check_upstream:
+    name: Check the pinned OpenSSL release against upstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compare pinned version with upstream releases
+        run: python3 -B verification/security/openssl/check_upstream.py
+
+  report-update:
+    if: always() && github.event_name == 'schedule' && needs.check_upstream.result != 'cancelled'
+    name: Track an available OpenSSL update
+    runs-on: ubuntu-latest
+    needs: check_upstream
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Open, update, or close the OpenSSL tracking issue
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -B verification/security/openssl/check_upstream.py --report-issue
