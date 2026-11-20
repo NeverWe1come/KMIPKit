@@ -17,6 +17,7 @@ from urllib.parse import SplitResult, parse_qsl, urlsplit
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+FUZZ_WORKSPACE = Path("verification/security/fuzz")
 CRATES_IO_SOURCE = "registry+https://github.com/rust-lang/crates.io-index"
 ARCHITECTURE_BANNED_PACKAGES = frozenset({"native-tls", "aws-lc-rs", "aws-lc-sys", "openssl-src"})
 EXCEPTION_ID_PATTERN = re.compile(r"KMIPKIT-0011-EX-[0-9]{3,}")
@@ -729,7 +730,7 @@ def validate_workspace_metadata(
     if not isinstance(metadata_by_workspace, dict) or set(metadata_by_workspace) != {"root", "fuzz"}:
         raise PolicyError("metadata must contain exactly the root and fuzz workspaces")
 
-    expected_workspace_roots = {"root": root, "fuzz": root / "fuzz"}
+    expected_workspace_roots = {"root": root, "fuzz": root / FUZZ_WORKSPACE}
     member_manifests: set[Path] = set()
     parsed_workspaces: dict[str, tuple[dict[str, dict], set[str]]] = {}
 
@@ -1732,7 +1733,7 @@ def main(argv: list[str] | None = None) -> int:
                     baseline_config = tomllib.load(stream)
             except (OSError, tomllib.TOMLDecodeError):
                 raise PolicyError("waiver-free cargo-deny baseline cannot be read as valid TOML") from None
-        validate_no_local_exception_files((root / "Cargo.toml", root / "fuzz" / "Cargo.toml"))
+        validate_no_local_exception_files((root / "Cargo.toml", root / FUZZ_WORKSPACE / "Cargo.toml"))
         findings = validate_workspace_metadata(root, metadata, register)
         known_license_identifiers = _load_license_identifiers(arguments.license_identifiers)
         validate_exception_config(register, config, baseline_config=baseline_config)
