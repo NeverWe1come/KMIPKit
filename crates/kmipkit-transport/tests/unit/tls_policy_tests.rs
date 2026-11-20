@@ -18,10 +18,11 @@ use crate::config::{
     TlsVersionPolicy, TransportConfig, TransportConfigError, TrustSource,
 };
 use crate::tls::{self, MonotonicClock, TlsClientConfig};
+use kmipkit_test_support::FixtureSigningKey;
 use rcgen::{
     BasicConstraints, Certificate, CertificateParams, CertificateRevocationListParams, DnType,
-    ExtendedKeyUsagePurpose, IsCa, Issuer, KeyIdMethod, KeyPair, KeyUsagePurpose,
-    RevokedCertParams, SerialNumber, date_time_ymd,
+    ExtendedKeyUsagePurpose, IsCa, Issuer, KeyUsagePurpose, RevokedCertParams, SerialNumber,
+    date_time_ymd,
 };
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName};
@@ -612,22 +613,23 @@ fn default_tls_policy_rejects_tls12_only_server_and_opt_in_compat_connects_with_
 
 struct TestPki {
     ca_params: CertificateParams,
-    ca_key: KeyPair,
+    ca_key: FixtureSigningKey,
     ca: Certificate,
     server: Certificate,
-    server_key: KeyPair,
+    server_key: FixtureSigningKey,
     client: Certificate,
-    client_key: KeyPair,
+    client_key: FixtureSigningKey,
     server_serial: SerialNumber,
 }
 
 impl TestPki {
     fn generate(server_name: &str, expired: bool) -> Self {
-        let ca_key = KeyPair::generate().expect("test CA key generation succeeds");
+        let ca_key = FixtureSigningKey::generate().expect("test CA key generation succeeds");
         let mut ca_params = CertificateParams::default();
         ca_params
             .distinguished_name
             .push(DnType::CommonName, "KMIPKit TLS test CA");
+        ca_key.prepare_certificate(&mut ca_params);
         ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
         ca_params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
         ca_params.not_before = date_time_ymd(2020, 1, 1);
@@ -690,7 +692,7 @@ impl TestPki {
             crl_number: SerialNumber::from(1_u64),
             issuing_distribution_point: None,
             revoked_certs,
-            key_identifier_method: KeyIdMethod::Sha256,
+            key_identifier_method: self.ca_key.key_identifier_method(),
         }
         .signed_by(&issuer)
         .expect("test CRL signing succeeds");
@@ -703,9 +705,9 @@ fn leaf_certificate(
     usage: ExtendedKeyUsagePurpose,
     serial_number: SerialNumber,
     expired: bool,
-    issuer: &Issuer<'_, &KeyPair>,
-) -> (Certificate, KeyPair) {
-    let key = KeyPair::generate().expect("test leaf key generation succeeds");
+    issuer: &Issuer<'_, &FixtureSigningKey>,
+) -> (Certificate, FixtureSigningKey) {
+    let key = FixtureSigningKey::generate().expect("test leaf key generation succeeds");
     let mut params = CertificateParams::new(vec![name.to_owned()])
         .expect("test subject alternative name is valid");
     params.distinguished_name.push(DnType::CommonName, name);
@@ -719,6 +721,7 @@ fn leaf_certificate(
         params.not_before = date_time_ymd(2020, 1, 1);
         params.not_after = date_time_ymd(2099, 1, 1);
     }
+    key.prepare_certificate(&mut params);
     let certificate = params
         .signed_by(&key, issuer)
         .expect("test leaf certificate signing succeeds");

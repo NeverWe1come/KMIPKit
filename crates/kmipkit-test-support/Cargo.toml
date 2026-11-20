@@ -10,10 +10,11 @@ publish = false
 
 [features]
 default = ["fixtures"]
-fixtures = ["dep:rcgen"]
+fixtures = ["dep:rcgen", "dep:openssl"]
 scripted-transport = ["dep:kmipkit-transport"]
 
 [dependencies]
+openssl = { workspace = true, optional = true }
 kmipkit-protocol.workspace = true
 kmipkit-transport = { workspace = true, optional = true }
 kmipkit-ttlv.workspace = true

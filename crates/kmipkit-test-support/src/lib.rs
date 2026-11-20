@@ -6,6 +6,10 @@ mod local_transport;
 pub mod oasis_crypto_fixtures;
 #[cfg(feature = "fixtures")]
 mod pki;
+#[cfg(feature = "fixtures")]
+mod pki_key;
+#[cfg(feature = "fixtures")]
+pub use pki_key::FixtureSigningKey;
 #[cfg(feature = "scripted-transport")]
 mod transport;
 
