@@ -36,13 +36,13 @@ def get_json(url: str, token: str | None = None) -> object:
         return json.load(response)
 
 
-def latest_patch(pin: dict[str, str]) -> tuple[str, str]:
+def latest_patch(pin: dict[str, str], token: str | None = None) -> tuple[str, str]:
     latest = tuple(map(int, pin["version"].split(".")))
     latest_tag = f"openssl-{pin['version']}"
     major, minor = map(int, pin["series"].split("."))
     api_url = pin["release_api_url"]
     for page in range(1, 6):
-        releases = get_json(f"{api_url}?per_page=100&page={page}")
+        releases = get_json(f"{api_url}?per_page=100&page={page}", token)
         if not isinstance(releases, list):
             raise ValueError("OpenSSL release API returned an unexpected response")
         for release in releases:
@@ -138,7 +138,8 @@ def main() -> int:
     )
     args = parser.parse_args()
     pin = load_pin()
-    latest, release_url = latest_patch(pin)
+    token = os.environ.get("GITHUB_TOKEN")
+    latest, release_url = latest_patch(pin, token)
     newer = tuple(map(int, latest.split("."))) > tuple(map(int, pin["version"].split(".")))
     status = "update available" if newer else "up to date"
     message = f"OpenSSL {pin['series']} LTS: pinned {pin['version']}; latest stable patch {latest} ({status})."
@@ -157,7 +158,6 @@ def main() -> int:
             output.write(f"latest_version={latest}\n")
 
     if args.report_issue:
-        token = os.environ.get("GITHUB_TOKEN")
         repo = os.environ.get("GITHUB_REPOSITORY")
         if not token or not repo:
             parser.error("--report-issue requires GITHUB_TOKEN and GITHUB_REPOSITORY")
