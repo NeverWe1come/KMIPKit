@@ -17,7 +17,9 @@ from verification.api import audit_binding_exports
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-PARITY_FIXTURE = ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
+PARITY_FIXTURE = (
+    ROOT / "bindings" / "shared" / "fixtures" / "api" / "pkcs11-parity.json"
+)
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 OWNER_SPEC = ROOT / "specs" / "026-pkcs11" / "spec.md"
 OWNER_REQUIREMENTS = {

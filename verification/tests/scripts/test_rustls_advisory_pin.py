@@ -45,11 +45,16 @@ class RustlsAdvisoryPinTests(unittest.TestCase):
 
         self.assertEqual(resolved, [expected_version], "Cargo.lock must resolve only the exact workspace Rustls pin.")
 
-    def test_workspace_features_preserve_the_approved_backend(self) -> None:
+    def test_workspace_features_select_the_openssl_rustls_provider(self) -> None:
+        manifest = tomllib.loads(MANIFEST.read_text(encoding="utf-8"))
         rustls = workspace_rustls_dependency()
 
         self.assertIs(rustls["default-features"], False)
-        self.assertEqual(set(rustls["features"]), {"aws_lc_rs", "std"})
+        self.assertEqual(set(rustls["features"]), {"std"})
+        self.assertEqual(
+            manifest["workspace"]["dependencies"]["rustls-openssl"]["version"],
+            "=0.4.2",
+        )
 
     def test_traceability_covers_every_functional_requirement(self) -> None:
         with TRACEABILITY.open(encoding="utf-8", newline="") as source:

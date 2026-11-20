@@ -787,7 +787,14 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         )
         self.assertNotIn("blockedReason", pkcs11_operation)
         fixture = json.loads(
-            (ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json").read_text(
+            (
+                ROOT
+                / "bindings"
+                / "shared"
+                / "fixtures"
+                / "api"
+                / "pkcs11-parity.json"
+            ).read_text(
                 encoding="utf-8"
             )
         )

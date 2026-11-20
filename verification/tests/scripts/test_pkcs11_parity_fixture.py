@@ -8,7 +8,9 @@ from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-FIXTURE_PATH = REPOSITORY_ROOT / "tests" / "fixtures" / "api" / "pkcs11-parity.json"
+FIXTURE_PATH = (
+    REPOSITORY_ROOT / "bindings" / "shared" / "fixtures" / "api" / "pkcs11-parity.json"
+)
 
 
 class Pkcs11ParityFixtureTests(unittest.TestCase):

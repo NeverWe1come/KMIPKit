@@ -159,7 +159,11 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
         contents = self.require_workflow()
-        action_lines = [line for line in contents.splitlines() if " uses:" in line]
+        action_lines = [
+            line
+            for line in contents.splitlines()
+            if " uses:" in line and " uses: ./" not in line
+        ]
         self.assertTrue(action_lines, "The workflow must list its action dependencies.")
         for line in action_lines:
             with self.subTest(line=line):
@@ -717,7 +721,7 @@ class WorkflowContractTests(unittest.TestCase):
         for required in (
             "rustup toolchain install nightly --profile minimal",
             "cargo +nightly install cargo-fuzz --version 0.13.2 --locked",
-            "cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
+            "cargo +nightly fuzz run --fuzz-dir . extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
@@ -976,7 +980,7 @@ class WorkflowContractTests(unittest.TestCase):
             "verifyLoadSuccess",
             "verifyMissingBundle",
             "verifyUnsupportedArchitecture",
-            "verifyWrongAbi",
+            "verifyPublicPkcs11ApiPresent",
             "checkNetworkWasBlocked",
         ):
             with self.subTest(required=required):
@@ -990,18 +994,19 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(property_name=property_name):
                 self.assertGreaterEqual(int(properties.get(property_name, "0")), minimum)
 
-    def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
+    def test_python_binding_job_builds_package_runs_tests_and_example(self) -> None:
         contents = self.require_workflow()
         python_job = self.require_job(contents, "language-python")
         self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", python_job)
 
-        step = self.require_named_step(python_job, "Run isolated offline Python wheel smoke")
+        step = self.require_named_step(
+            python_job, "Build the Python Maturin CFFI package and run tests and example"
+        )
         for required in (
-            "maturin build --offline",
-            "uv venv --offline",
-            "uv pip install --offline --no-deps",
-            "python_smoke.py",
-            "wrong_abi.rs",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
+            "uv pip install --no-build-isolation bindings/python",
+            "python -m pytest -q bindings/python/tests",
+            "python bindings/python/examples/vendor_extension_registry.py",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, step.group(1))
