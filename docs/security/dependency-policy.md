@@ -36,10 +36,14 @@ fail. Cached advisory data alone is not a successful fresh scan. The check
 does not update manifests or lockfiles; it uses locked operations and compares
 lockfile hashes so an accidental change fails.
 
-Local dependencies must be canonical workspace members. The release CI builds
-OpenSSL from a checksum-pinned upstream source archive in the runner's temporary
-directory. The Rust dependency scan covers the OpenSSL bindings and TLS adapter;
-the version and provenance of the native library are checked by the build step.
+Local dependencies must be canonical workspace members. CI and local source
+builds use the version and SHA-256 recorded in
+`verification/security/openssl/native.json` to build OpenSSL from the upstream
+source archive. The native version and archive checksum are verified before
+compilation; the scheduled native OpenSSL tracker checks for newer stable
+patches in the selected LTS series. The Rust dependency scan covers the OpenSSL
+bindings and TLS adapter, while the native source version and provenance are
+checked separately by the build helper.
 
 On a cargo-deny failure, the runner requests its JSON diagnostic format and
 prints only validated package coordinates, rule codes, known advisory

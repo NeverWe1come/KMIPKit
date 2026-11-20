@@ -8,5 +8,5 @@ runs:
       run: |
         $python = Get-Command python3 -ErrorAction SilentlyContinue
         if (-not $python -or $IsWindows) { $python = Get-Command python }
-        & $python.Source "$env:GITHUB_ACTION_PATH/build.py"
+        & $python.Source "$env:GITHUB_WORKSPACE/verification/security/openssl/build.py"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
