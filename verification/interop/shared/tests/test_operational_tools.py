@@ -18,14 +18,14 @@ try:
 except ImportError:
     HAS_JSONSCHEMA = False
 
-from interop.shared.tools.live_discover_capabilities import (
+from verification.interop.shared.tools.live_discover_capabilities import (
     build_capabilities_from_query_data,
     discover_server_capabilities,
     parse_mock_response,
 )
-from interop.shared.tools.kms_garbage_collector import simulate_object_cleanup
+from verification.interop.shared.tools.kms_garbage_collector import simulate_object_cleanup
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html
-from interop.shared.tools.run_all import (
+from verification.interop.shared.tools.run_all import (
     build_command_for_language,
     check_toolchain_prerequisites,
     orchestrate_interop_run,
