@@ -142,11 +142,14 @@ impl TestServer {
             ))
             .map_err(|e| format!("CA cert error: {e}"))?;
 
-        let verifier = rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
-            .build()
-            .map_err(|e| format!("client verifier error: {e}"))?;
+        let verifier = rustls::server::WebPkiClientVerifier::builder_with_provider(
+            Arc::new(root_store),
+            Arc::new(rustls_openssl::default_provider()),
+        )
+        .build()
+        .map_err(|e| format!("client verifier error: {e}"))?;
 
-        let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+        let provider = Arc::new(rustls_openssl::default_provider());
         let builder = rustls::ServerConfig::builder_with_provider(provider)
             .with_protocol_versions(&[&rustls::version::TLS13])
             .map_err(|e| format!("TLS 1.3 config error: {e}"))?;

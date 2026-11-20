@@ -1,7 +1,12 @@
 //! C ABI implementation for the manifest-backed extension registry API.
 #![allow(clippy::missing_safety_doc, clippy::too_many_arguments)]
 
-use aws_lc_rs::{hmac, rand};
+use openssl::{
+    hash::MessageDigest,
+    pkey::{PKey, Private},
+    rand,
+    sign::Signer,
+};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::ptr;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -48,31 +53,33 @@ mod request_validation_0053_tests;
 mod typed_attributes_catalog_generated;
 
 use crate::{
-    kmipkit_add_attribute_builder_t, kmipkit_add_attribute_request_t,
-    kmipkit_adjust_attribute_request_t, kmipkit_attestation_credential_t,
-    kmipkit_attribute_reference_v1_t, kmipkit_attribute_set_t, kmipkit_authentication_t,
-    kmipkit_byte_span_v1_t, kmipkit_cancel_request_t, kmipkit_client_async_operation_metadata_v1_t,
-    kmipkit_client_async_operation_outcome_t, kmipkit_client_async_operation_response_v1_t,
-    kmipkit_client_batch_item_metadata_v1_t, kmipkit_client_batch_item_metadata_v2_t,
-    kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
-    kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
-    kmipkit_client_extension_registry_t, kmipkit_client_listener_connection_t,
-    kmipkit_client_listener_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
-    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT, kmipkit_add_attribute_builder_t,
+    kmipkit_add_attribute_request_t, kmipkit_adjust_attribute_request_t,
+    kmipkit_attestation_credential_t, kmipkit_attribute_reference_v1_t, kmipkit_attribute_set_t,
+    kmipkit_authentication_t, kmipkit_byte_span_v1_t, kmipkit_cancel_request_t,
+    kmipkit_client_async_operation_metadata_v1_t, kmipkit_client_async_operation_outcome_t,
+    kmipkit_client_async_operation_response_v1_t, kmipkit_client_batch_item_metadata_v1_t,
+    kmipkit_client_batch_item_metadata_v2_t, kmipkit_client_batch_item_response_t,
+    kmipkit_client_batch_item_t, kmipkit_client_batch_response_t, kmipkit_client_batch_t,
+    kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
+    kmipkit_client_listener_connection_t, kmipkit_client_listener_t,
+    kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
+    kmipkit_create_key_pair_builder_t, kmipkit_credential_t,
+    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_fields_v2_t,
-    kmipkit_cryptographic_parameters_t,
-    kmipkit_delete_attribute_builder_t, kmipkit_delete_attribute_request_t,
-    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_builder_t,
+    kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
+    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
     kmipkit_extension_registry_limits_v1_t, kmipkit_extension_schema_t,
     kmipkit_get_attribute_list_request_t, kmipkit_get_attributes_request_t,
     kmipkit_hashed_password_credential_t, kmipkit_hashed_password_timestamp_sequence_t,
-    kmipkit_incoming_server_batch_t, kmipkit_listener_transport_config_v1_t,
-    kmipkit_locate_builder_t, kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
+    kmipkit_incoming_server_batch_t, kmipkit_lease_context_t,
+    kmipkit_listener_transport_config_v1_t, kmipkit_locate_builder_t,
+    kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
     kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
     kmipkit_profile_readiness_t, kmipkit_profile_validation_context_v1_t,
@@ -89,17 +96,15 @@ use crate::{
     kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
     kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
     kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT,
     kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
     kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
     kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
     kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_lease_context_t,
     kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
     kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
-use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::LeaseContext;
+use kmipkit_client::UsageAllocationContext;
 use kmipkit_client::extension_registry as client_extension;
 use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientCauseCategory, ClientError,
@@ -217,11 +222,11 @@ mod coverage_guard_tests;
 #[path = "../tests/support/ffi_error_kind_mapping_tests.rs"]
 mod ffi_error_kind_mapping_tests;
 #[cfg(test)]
-#[path = "../tests/support/view_ownership_tests.rs"]
-mod view_ownership_tests;
-#[cfg(test)]
 #[path = "../tests/support/v3_parity_tests.rs"]
 mod v3_parity_tests;
+#[cfg(test)]
+#[path = "../tests/support/view_ownership_tests.rs"]
+mod view_ownership_tests;
 #[cfg(test)]
 use self::test_handle_helpers::make_handle;
 
@@ -1305,9 +1310,12 @@ const TOKEN_CYCLE_WALK_LIMIT: usize = 128;
 const TOKEN_DOMAIN: &[u8] = b"KMIPKit FFI opaque handle token v1";
 const RIGHT_BYTES_OFFSET: usize = std::mem::size_of::<usize>() - std::mem::size_of::<u32>();
 
-fn cycle_walk_token(mut token: usize, mut permute: impl FnMut(usize) -> usize) -> FfiResult<usize> {
+fn cycle_walk_token(
+    mut token: usize,
+    mut permute: impl FnMut(usize) -> FfiResult<usize>,
+) -> FfiResult<usize> {
     for _ in 0..TOKEN_CYCLE_WALK_LIMIT {
-        token = permute(token);
+        token = permute(token)?;
         if (1..=TOKEN_MAX).contains(&token) {
             return Ok(token);
         }
@@ -1317,18 +1325,19 @@ fn cycle_walk_token(mut token: usize, mut permute: impl FnMut(usize) -> usize) -
 
 struct HandleRegistry {
     next_sequence: AtomicUsize,
-    token_key: hmac::Key,
+    token_key: PKey<Private>,
     handles: Mutex<HashMap<usize, Arc<Handle>>>,
 }
 
 impl HandleRegistry {
     fn new() -> FfiResult<Self> {
-        let token_key = hmac::Key::generate(hmac::HMAC_SHA256, &rand::SystemRandom::new())
-            .map_err(|_| ERROR_INTERNAL)?;
+        let mut key = Zeroizing::new([0u8; 32]);
+        rand::rand_bytes(&mut *key).map_err(|_| ERROR_INTERNAL)?;
+        let token_key = PKey::hmac(&*key).map_err(|_| ERROR_INTERNAL)?;
         Ok(Self::with_token_key(token_key))
     }
 
-    fn with_token_key(token_key: hmac::Key) -> Self {
+    fn with_token_key(token_key: PKey<Private>) -> Self {
         Self {
             next_sequence: AtomicUsize::new(1),
             token_key,
@@ -1338,7 +1347,7 @@ impl HandleRegistry {
 
     #[cfg(test)]
     fn with_test_key(key: &[u8]) -> Self {
-        Self::with_token_key(hmac::Key::new(hmac::HMAC_SHA256, key))
+        Self::with_token_key(PKey::hmac(key).expect("valid test HMAC key"))
     }
 
     fn allocate_id(&self) -> FfiResult<usize> {
@@ -1367,25 +1376,30 @@ impl HandleRegistry {
 
     // A keyed Feistel permutation hides the monotonic sequence while preserving uniqueness.
     // Bounded cycle walking excludes null and high-bit pointer values without collisions.
-    fn permute(&self, input: usize) -> usize {
+    fn permute(&self, input: usize) -> FfiResult<usize> {
         let mut left = (input >> TOKEN_HALF_BITS) & TOKEN_HALF_MASK;
         let mut right = input & TOKEN_HALF_MASK;
 
         for round in 0..TOKEN_ROUNDS {
-            let mut context = hmac::Context::with_key(&self.token_key);
-            context.update(TOKEN_DOMAIN);
-            context.update(&[round]);
+            let mut signer = Signer::new(MessageDigest::sha256(), &self.token_key)
+                .map_err(|_| ERROR_INTERNAL)?;
+            signer.update(TOKEN_DOMAIN).map_err(|_| ERROR_INTERNAL)?;
+            signer.update(&[round]).map_err(|_| ERROR_INTERNAL)?;
             let right_bytes = right.to_be_bytes();
-            context.update(&right_bytes[RIGHT_BYTES_OFFSET..]);
-            let tag = context.sign();
-            let digest = tag.as_ref();
+            signer
+                .update(&right_bytes[RIGHT_BYTES_OFFSET..])
+                .map_err(|_| ERROR_INTERNAL)?;
+            let mut digest = Zeroizing::new([0u8; 32]);
+            if signer.sign(&mut *digest).map_err(|_| ERROR_INTERNAL)? != digest.len() {
+                return Err(ERROR_INTERNAL);
+            }
             let round_key = u32::from_be_bytes([digest[0], digest[1], digest[2], digest[3]])
                 as usize
                 & TOKEN_HALF_MASK;
             (left, right) = (right, (left ^ round_key) & TOKEN_HALF_MASK);
         }
 
-        (left << TOKEN_HALF_BITS) | right
+        Ok((left << TOKEN_HALF_BITS) | right)
     }
 }
 
@@ -11215,11 +11229,7 @@ pub extern "C" fn kmipkit_version_gate_validate_operation(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_version_gate_validate_tag(
-    major: i32,
-    minor: i32,
-    tag: u32,
-) -> i32 {
+pub extern "C" fn kmipkit_version_gate_validate_tag(major: i32, minor: i32, tag: u32) -> i32 {
     ffi_entrypoint(|| {
         let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
         match kmipkit_protocol::VersionGate::validate_tag(version, tag) {
@@ -11327,7 +11337,8 @@ pub extern "C" fn kmipkit_s2c_build_response_ttlv(
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
-        let mut builder = kmipkit_protocol::server_to_client::ServerResponseBuilder::with_version(version);
+        let mut builder =
+            kmipkit_protocol::server_to_client::ServerResponseBuilder::with_version(version);
         for i in 0..count {
             // SAFETY: items is non-null and valid for `count` pointers.
             let ptr = unsafe { items.add(i).read() };
@@ -11338,7 +11349,10 @@ pub extern "C" fn kmipkit_s2c_build_response_ttlv(
             Ok(msg) => msg,
             Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        *out = try_ffi!(try_make_handle(Kind::Structure, HandleValue::Structure(response_msg.into_ttlv())));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(response_msg.into_ttlv())
+        ));
         SUCCESS
     })
 }
@@ -11387,7 +11401,10 @@ pub extern "C" fn kmipkit_lease_context_unique_identifier(
             Ok(guard) => guard,
             Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
         };
-        try_ffi!(client_abi::write_unique_identifier_v1(out_unique_identifier, Some(context.unique_identifier())));
+        try_ffi!(client_abi::write_unique_identifier_v1(
+            out_unique_identifier,
+            Some(context.unique_identifier())
+        ));
         SUCCESS
     })
 }

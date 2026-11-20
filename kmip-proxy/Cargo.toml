@@ -71,6 +71,3 @@ zeroize = { version = "1.8", features = ["derive"] }
 [dev-dependencies]
 kmipkit-client = { path = "../crates/kmipkit-client" }
 tempfile = "3.16"
-
-[patch.crates-io]
-aws-lc-sys = { path = "../vendor/aws-lc-sys-0.45.0" }

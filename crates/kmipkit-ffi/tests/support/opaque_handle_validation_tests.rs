@@ -130,7 +130,7 @@ fn token_cycle_walking_stops_at_its_configured_limit() {
     assert_eq!(
         super::cycle_walk_token(1, |_| {
             calls += 1;
-            invalid_token
+            Ok(invalid_token)
         }),
         Err(super::ERROR_RESOURCE_LIMIT)
     );

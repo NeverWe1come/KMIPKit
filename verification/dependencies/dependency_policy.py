@@ -18,10 +18,7 @@ from urllib.parse import SplitResult, parse_qsl, urlsplit
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 CRATES_IO_SOURCE = "registry+https://github.com/rust-lang/crates.io-index"
-ADR_0005_BANNED_PACKAGES = frozenset({"native-tls", "openssl", "openssl-sys"})
-VENDORED_LOCAL_PACKAGES = {
-    "aws-lc-sys": ("0.45.0", "vendor/aws-lc-sys-0.45.0/Cargo.toml"),
-}
+ARCHITECTURE_BANNED_PACKAGES = frozenset({"native-tls", "aws-lc-rs", "aws-lc-sys", "openssl-src"})
 EXCEPTION_ID_PATTERN = re.compile(r"KMIPKIT-0011-EX-[0-9]{3,}")
 PACKAGE_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 VERSION_PATTERN = re.compile(
@@ -801,27 +798,8 @@ def validate_workspace_metadata(
             )
             if not manifest.is_file() or manifest.name != "Cargo.toml":
                 raise PolicyError(f"{label} manifest is invalid")
-            if manifest in member_manifests:
-                continue
-            vendor_record = VENDORED_LOCAL_PACKAGES.get(name)
-            if vendor_record is None or version != vendor_record[0]:
-                raise PolicyError(f"{label} is not a canonical member or approved vendored dependency")
-            expected_vendor_manifest = root / vendor_record[1]
-            try:
-                expected_vendor_manifest = expected_vendor_manifest.resolve(strict=True)
-            except (OSError, RuntimeError, ValueError):
-                raise PolicyError(f"approved vendored dependency {name} is unavailable") from None
-            if manifest != expected_vendor_manifest:
-                raise PolicyError(f"{label} does not resolve to its approved vendor manifest")
-            try:
-                vendor_metadata = tomllib.loads(manifest.read_text(encoding="utf-8"))
-            except (OSError, UnicodeError, tomllib.TOMLDecodeError):
-                raise PolicyError(f"approved vendored dependency {name} manifest is malformed") from None
-            vendor_package = vendor_metadata.get("package")
-            if not isinstance(vendor_package, dict) or (
-                vendor_package.get("name") != name or vendor_package.get("version") != version
-            ):
-                raise PolicyError(f"approved vendored dependency {name} package identity is inconsistent")
+            if manifest not in member_manifests:
+                raise PolicyError(f"{label} is not a canonical workspace member")
     return validate_metadata_sources(metadata_by_workspace, exception_register, today=today)
 
 
@@ -1188,8 +1166,8 @@ def validate_exceptions(
         package_name = item.get("package")
         version = item.get("version")
         if isinstance(kind, str) and kind in {"ban", "wildcard"}:
-            if package_name in ADR_0005_BANNED_PACKAGES:
-                raise PolicyError(f"ADR-0005 architecture ban for {package_name} cannot be excepted")
+            if package_name in ARCHITECTURE_BANNED_PACKAGES:
+                raise PolicyError(f"architecture ban for {package_name} cannot be excepted")
             raise PolicyError(f"{kind} dependency findings cannot be excepted")
         if not isinstance(kind, str) or kind not in {"advisory", "yanked", "license", "source", "duplicate"}:
             raise PolicyError("dependency finding rule is unsupported")
@@ -1546,8 +1524,8 @@ def validate_exception_config(
             raise PolicyError("cargo-deny duplicate exception entry is malformed")
         crate = item["crate"]
         reason = item["reason"]
-        if crate.rsplit("@", 1)[0] in ADR_0005_BANNED_PACKAGES:
-            raise PolicyError("ADR-0005 architecture bans cannot appear in cargo-deny duplicate exceptions")
+        if crate.rsplit("@", 1)[0] in ARCHITECTURE_BANNED_PACKAGES:
+            raise PolicyError("architecture bans cannot appear in cargo-deny duplicate exceptions")
         ids = [
             entry["id"]
             for entry in entries

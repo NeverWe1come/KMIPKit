@@ -244,7 +244,7 @@ impl ListenerTransportConfigBuilder {
             return Err(TransportConfigError::InvalidEndpoint);
         }
 
-        let provider = crate::tls::aws_lc_crypto_provider_for_policy(self.tls_version_policy);
+        let provider = crate::tls::openssl_crypto_provider_for_policy(self.tls_version_policy);
 
         // Load root certificates
         let root_store = match trust_input {
@@ -469,7 +469,10 @@ impl RawTlsListener {
     ///
     /// Returns [`TransportError`] if socket binding fails.
     pub fn bind(config: ListenerTransportConfig) -> Result<Self, TransportError> {
-        if config.wire_encoding().is_some_and(|encoding| encoding != WireEncoding::Ttlv) {
+        if config
+            .wire_encoding()
+            .is_some_and(|encoding| encoding != WireEncoding::Ttlv)
+        {
             return Err(TransportError::new(
                 RequestDeliveryState::NotSent,
                 TransportCauseCategory::Other,
@@ -854,11 +857,17 @@ impl HttpsServerConnection {
             _ => WireEncoding::Ttlv,
         };
 
-        if self.wire_encoding.is_some_and(|expected| expected != encoding) {
+        if self
+            .wire_encoding
+            .is_some_and(|expected| expected != encoding)
+        {
             return Err(TransportError::new(
                 RequestDeliveryState::NotSent,
                 TransportCauseCategory::Other,
-                io::Error::new(io::ErrorKind::InvalidData, "HTTP Content-Type does not match listener encoding"),
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "HTTP Content-Type does not match listener encoding",
+                ),
             ));
         }
         Ok((TransportResponse::new(body), encoding))

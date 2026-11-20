@@ -596,7 +596,7 @@ fn default_tls_policy_rejects_tls12_only_server_and_opt_in_compat_connects_with_
         .expect("client config with untrusted client cert builds");
     expect_tls_rejection(handshake(&bad_identity_client, tls12_peer));
 
-    let provider = tls::aws_lc_crypto_provider_for_policy(TlsVersionPolicy::Tls12And13Compat);
+    let provider = tls::openssl_crypto_provider_for_policy(TlsVersionPolicy::Tls12And13Compat);
     assert!(provider.cipher_suites.iter().all(|suite| {
         matches!(
             suite.suite(),
@@ -779,7 +779,7 @@ fn server_config_with_versions(
     tickets: usize,
     versions: &[&'static rustls::SupportedProtocolVersion],
 ) -> Arc<ServerConfig> {
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
         .with_protocol_versions(versions)
         .expect("the test server protocol versions are valid");
@@ -788,9 +788,12 @@ fn server_config_with_versions(
         roots
             .add(CertificateDer::from(pki.ca.der().as_ref().to_vec()))
             .expect("the client CA fixture is valid");
-        let verifier = WebPkiClientVerifier::builder(Arc::new(roots))
-            .build()
-            .expect("the server verifies required mTLS clients");
+        let verifier = WebPkiClientVerifier::builder_with_provider(
+            Arc::new(roots),
+            Arc::new(rustls_openssl::default_provider()),
+        )
+        .build()
+        .expect("the server verifies required mTLS clients");
         builder.with_client_cert_verifier(verifier)
     } else {
         builder.with_no_client_auth()
@@ -1039,3 +1042,156 @@ impl MonotonicClock for TestClock {
 }
 
 static TEMPORARY_FILE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+#[test]
+fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
+    use openssl::asn1::{Asn1Integer, Asn1Time};
+    use openssl::bn::BigNum;
+    use openssl::hash::MessageDigest;
+    use openssl::pkey::{KeyType, PKey, Private};
+    use openssl::x509::extension::{
+        AuthorityKeyIdentifier, BasicConstraints, CrlNumber, KeyUsage, SubjectAlternativeName,
+        SubjectKeyIdentifier,
+    };
+    use openssl::x509::{X509, X509CrlBuilder, X509NameBuilder, X509RevokedBuilder};
+
+    fn certificate(
+        name: &str,
+        serial: u32,
+        key: &PKey<Private>,
+        issuer: Option<(&X509, &PKey<Private>)>,
+    ) -> X509 {
+        let mut subject = X509NameBuilder::new().unwrap();
+        subject.append_entry_by_text("CN", name).unwrap();
+        let subject = subject.build();
+        let mut certificate = X509::builder().unwrap();
+        certificate.set_version(2).unwrap();
+        let serial = Asn1Integer::from_bn(&BigNum::from_u32(serial).unwrap()).unwrap();
+        certificate.set_serial_number(&serial).unwrap();
+        certificate.set_subject_name(&subject).unwrap();
+        certificate
+            .set_issuer_name(issuer.map_or(subject.as_ref(), |(cert, _)| cert.subject_name()))
+            .unwrap();
+        certificate.set_pubkey(key).unwrap();
+        let not_before = Asn1Time::from_unix(1_700_000_000).unwrap();
+        let not_after = Asn1Time::days_from_now(1).unwrap();
+        certificate.set_not_before(&not_before).unwrap();
+        certificate.set_not_after(&not_after).unwrap();
+        let mut limits = BasicConstraints::new();
+        let mut usage = KeyUsage::new();
+        if issuer.is_none() {
+            limits.ca();
+            usage.key_cert_sign().crl_sign();
+            let identifier = SubjectKeyIdentifier::new()
+                .build(&certificate.x509v3_context(None, None))
+                .unwrap();
+            certificate.append_extension(identifier).unwrap();
+        } else {
+            usage.digital_signature();
+            let san = SubjectAlternativeName::new()
+                .dns(name)
+                .build(&certificate.x509v3_context(issuer.map(|(cert, _)| cert.as_ref()), None))
+                .unwrap();
+            certificate.append_extension(san).unwrap();
+        }
+        certificate
+            .append_extension(limits.critical().build().unwrap())
+            .unwrap();
+        certificate
+            .append_extension(usage.critical().build().unwrap())
+            .unwrap();
+        certificate
+            .sign(issuer.map_or(key, |(_, key)| key), MessageDigest::null())
+            .unwrap();
+        certificate.build()
+    }
+
+    for key_type in [KeyType::ML_DSA_44, KeyType::ML_DSA_65, KeyType::ML_DSA_87] {
+        let key = |seed| PKey::private_key_from_seed(None, key_type, None, &[seed; 32]).unwrap();
+        let ca_key = key(1);
+        let client_key = key(2);
+        let server_key = key(3);
+        let ca = certificate("ML-DSA test CA", 1, &ca_key, None);
+        let signer = Some((&ca, &ca_key));
+        let client_leaf = certificate("client.kmipkit.test", 2, &client_key, signer);
+        let server_leaf = certificate(SERVER_NAME, 3, &server_key, signer);
+        let ca_der = ca.to_der().unwrap();
+
+        let client_config = |revocation_lists| {
+            let configuration = TransportConfig::builder(Endpoint::raw_tls(SERVER_NAME, 5696))
+                .trust_source(TrustSource::certificate_authorities(vec![
+                    CertificateInput::from_der(vec![ca_der.clone()]),
+                ]))
+                .client_identity(ClientIdentity::new(
+                    CertificateInput::from_der(vec![client_leaf.to_der().unwrap()]),
+                    PrivateKeyInput::from_der(client_key.private_key_to_pkcs8().unwrap()),
+                ))
+                .revocation_lists(revocation_lists)
+                .build()
+                .unwrap();
+            tls::build_client_config(&configuration).unwrap()
+        };
+        let client = client_config(Vec::new());
+
+        let mut crl = X509CrlBuilder::new().unwrap();
+        crl.set_issuer_name(ca.subject_name()).unwrap();
+        let last_update = Asn1Time::from_unix(1_700_000_000).unwrap();
+        let next_update = Asn1Time::days_from_now(1).unwrap();
+        crl.set_last_update(&last_update).unwrap();
+        crl.set_next_update(&next_update).unwrap();
+        let authority = AuthorityKeyIdentifier::new()
+            .keyid(true)
+            .build(&X509::builder().unwrap().x509v3_context(Some(&ca), None))
+            .unwrap();
+        crl.append_extension(authority).unwrap();
+        crl.append_extension(
+            CrlNumber::new(BigNum::from_u32(1).unwrap())
+                .unwrap()
+                .build()
+                .unwrap(),
+        )
+        .unwrap();
+        let mut entry = X509RevokedBuilder::new().unwrap();
+        entry
+            .set_serial_number(server_leaf.serial_number())
+            .unwrap();
+        entry.set_revocation_date(&last_update).unwrap();
+        crl.add_revoked(entry.build()).unwrap();
+        crl.sign(&ca_key, MessageDigest::null()).unwrap();
+        let revoked = client_config(vec![RevocationListInput::from_der(vec![
+            crl.build().unwrap().to_der().unwrap(),
+        ])]);
+
+        let provider = tls::openssl_crypto_provider();
+        let mut roots = RootCertStore::empty();
+        roots.add(CertificateDer::from(ca_der)).unwrap();
+        let verifier =
+            WebPkiClientVerifier::builder_with_provider(Arc::new(roots), Arc::clone(&provider))
+                .build()
+                .unwrap();
+        let server = Arc::new(
+            ServerConfig::builder_with_provider(provider)
+                .with_protocol_versions(&[&rustls::version::TLS13])
+                .unwrap()
+                .with_client_cert_verifier(verifier)
+                .with_single_cert(
+                    vec![CertificateDer::from(server_leaf.to_der().unwrap())],
+                    PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+                        server_key.private_key_to_pkcs8().unwrap(),
+                    )),
+                )
+                .unwrap(),
+        );
+
+        assert_eq!(
+            handshake(&client, Arc::clone(&server)),
+            Ok(HandshakeKind::Full)
+        );
+        expect_tls_rejection(handshake_with_server_name(
+            &client,
+            Arc::clone(&server),
+            dns_name("wrong.kmipkit.test"),
+        ));
+        expect_tls_rejection(handshake(&revoked, server));
+    }
+}

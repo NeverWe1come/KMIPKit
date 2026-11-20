@@ -6,7 +6,7 @@ use super::build_http1_tls_config;
 
 #[test]
 fn http1_tls_config_clears_nonempty_alpn_without_mutating_source() {
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let mut source_config = ClientConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("the test provider supports TLS 1.3")
