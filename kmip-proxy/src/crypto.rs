@@ -35,6 +35,12 @@ pub fn fill_random_bytes(buffer: &mut [u8]) -> Result<(), openssl::error::ErrorS
 }
 
 /// Generates a hex-encoded random identifier with the given prefix.
+#[cfg(any(
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba"
+))]
 pub fn random_identifier(prefix: &str) -> Result<String, ProxyError> {
     let mut random = [0u8; 16];
     fill_random_bytes(&mut random)
