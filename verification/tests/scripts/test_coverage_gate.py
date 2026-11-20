@@ -1,0 +1,1648 @@
+"""Executable contract tests for the strict three-platform coverage gate."""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+GATE_PATH = REPOSITORY_ROOT / "verification" / "coverage" / "coverage_gate.py"
+GATE = None
+GATE_LOAD_ERROR = None
+if GATE_PATH.is_file():
+    try:
+        SPEC = importlib.util.spec_from_file_location("coverage_gate", GATE_PATH)
+        if SPEC is None or SPEC.loader is None:
+            raise ImportError("coverage gate has no importable module loader")
+        GATE = importlib.util.module_from_spec(SPEC)
+        SPEC.loader.exec_module(GATE)
+    except Exception as error:  # The tests must run and explain the missing implementation in RED.
+        GATE_LOAD_ERROR = error
+
+
+def llvm_document(
+    regions: list[list[int]],
+    filename: str = "crates/kmipkit-ttlv/src/lib.rs",
+    *,
+    segments: list[list[object]] | None = None,
+    summary_lines: int | None = None,
+) -> str:
+    if segments is None:
+        segments = []
+        executable_lines: set[int] = set()
+        for region in regions:
+            if len(region) != 8 or region[7] != 0:
+                continue
+            start_line, start_column, end_line, end_column, count = region[:5]
+            segments.extend(
+                [
+                    [start_line, start_column, count, True, True, False],
+                    [end_line, end_column, 0, False, False, False],
+                ]
+            )
+            last_line = end_line - 1 if end_line > start_line and end_column == 1 else end_line
+            executable_lines.update(range(start_line, last_line + 1))
+        segments.sort(key=lambda segment: (segment[0], segment[1]))
+        segments.append([max((segment[0] for segment in segments), default=1) + 1, 1, 0, False, False, False])
+        if summary_lines is None:
+            summary_lines = len(executable_lines)
+    if summary_lines is None:
+        summary_lines = 0
+    segment_lines: dict[int, int] = {}
+    for index, segment in enumerate(segments[:-1]):
+        line, _, count, has_count, _, is_gap = segment
+        if not has_count or is_gap:
+            continue
+        end_line, end_column = segments[index + 1][:2]
+        last_line = end_line - 1 if end_line > line and end_column == 1 else end_line
+        for source_line in range(line, last_line + 1):
+            segment_lines[source_line] = max(segment_lines.get(source_line, 0), count)
+    summary_covered = sum(count > 0 for count in segment_lines.values())
+    return json.dumps(
+        {
+            "type": "llvm.coverage.json.export",
+            "version": "3.0.1",
+            "data": [
+                {
+                    "files": [
+                        {
+                            "filename": filename,
+                            "segments": segments,
+                            "summary": {"lines": {"count": summary_lines, "covered": summary_covered}},
+                        }
+                    ],
+                    "functions": [
+                        {
+                            "name": "_ZN7kmipkit4test",
+                            "count": 1,
+                            "filenames": [filename],
+                            "regions": regions,
+                        }
+                    ]
+                }
+            ]
+        }
+    )
+
+
+class CoverageGateTests(unittest.TestCase):
+    def require_gate(self) -> None:
+        self.assertIsNotNone(
+            GATE,
+            f"coverage_gate.py must provide the tested coverage contract; load error: {GATE_LOAD_ERROR}",
+        )
+
+    def test_rust_masker_matches_raw_string_prefix_without_copying_suffixes(self) -> None:
+        self.require_gate()
+
+        class NoSliceString(str):
+            def __getitem__(self, key: int | slice) -> str:
+                if isinstance(key, slice):
+                    raise AssertionError("Rust source scans must not copy source suffixes")
+                return super().__getitem__(key)
+
+        for raw_literal in ('r##"literal"##', 'br"literal"', 'cr###"literal"###'):
+            with self.subTest(raw_literal=raw_literal):
+                source = NoSliceString(f"let value = {raw_literal};\nfn visible() {{}}\n")
+
+                masked = GATE._mask_rust_non_code(source)
+
+                self.assertNotIn("literal", masked)
+                self.assertIn("fn visible() {}", masked)
+
+    def test_code_regions_produce_executable_lines_but_gap_regions_do_not(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("\n" * 11 + "           x\n", encoding="utf-8")
+            report = GATE.parse_llvm_export(
+                llvm_document(
+                    [
+                        [10, 1, 12, 2, 4, 0, 0, 0],
+                        [12, 2, 12, 8, 0, 0, 0, 3],
+                    ]
+                ),
+                root,
+            )
+        self.assertEqual({10: 4, 11: 4, 12: 4}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_file_segments_keep_unreported_function_lines_and_nested_zero_counts(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn first() {}\npub fn second() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [[1, 1, 1, 17, 1, 0, 0, 0]],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 17, 0, False, False, False],
+                    [2, 1, 0, True, True, False],
+                    [2, 18, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+            report = GATE.parse_llvm_export(document, root)
+        self.assertEqual({1: 1, 2: 0}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_file_summary_counts_same_source_line_once_per_function(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]]))
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(second_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_segment_union_overcoverage_is_demoted_to_match_grouped_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn first() {}\npub fn second() {}\n", encoding="utf-8")
+            filename = "crates/kmipkit-ttlv/src/lib.rs"
+            document = json.loads(
+                llvm_document(
+                    [[1, 1, 1, 17, 1, 0, 0, 0]],
+                    filename,
+                    segments=[
+                        [1, 1, 1, True, True, False],
+                        [1, 17, 0, False, False, False],
+                        [2, 1, 1, True, True, False],
+                        [2, 18, 0, False, False, False],
+                        [3, 1, 0, False, False, False],
+                    ],
+                    summary_lines=2,
+                )
+            )
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit6second"
+            second_function["regions"] = [[2, 1, 2, 18, 1, 0, 0, 0]]
+            data["functions"].append(second_function)
+            # LLVM's grouped summary can report fewer covered lines than the
+            # file-segment union. Ambiguous segment hits must remain uncovered.
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 1}
+
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+
+        self.assertEqual({1: 0, 2: 1}, report[filename])
+        self.assertEqual(0, report.summary_uncovered_excess[filename])
+
+    def test_repeated_source_across_export_mappings_fails_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            covered = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]]))
+            uncovered = json.loads(
+                llvm_document([[1, 1, 1, 19, 0, 0, 0, 0]], summary_lines=1)
+            )
+            covered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit7covered"
+            uncovered["data"][0]["functions"][0]["name"] = "_ZN7kmipkit9uncovered"
+            document = covered
+            document["data"].extend(uncovered["data"])
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "multiple coverage mappings"):
+                GATE.parse_llvm_export(json.dumps(document), root)
+
+    def test_distinct_sources_across_export_mappings_are_preserved(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first_filename = "crates/kmipkit-ttlv/src/lib.rs"
+            second_filename = "crates/kmipkit-protocol/src/lib.rs"
+            first_source = root / first_filename
+            second_source = root / second_filename
+            first_source.parent.mkdir(parents=True)
+            second_source.parent.mkdir(parents=True)
+            first_source.write_text("pub fn first() {}\n", encoding="utf-8")
+            second_source.write_text("pub fn second() {}\n", encoding="utf-8")
+
+            first = json.loads(llvm_document([[1, 1, 1, 18, 2, 0, 0, 0]], filename=first_filename))
+            second = json.loads(llvm_document([[1, 1, 1, 19, 3, 0, 0, 0]], filename=second_filename))
+            first["data"].extend(second["data"])
+
+            report = GATE.parse_llvm_export(json.dumps(first), root)
+
+        self.assertEqual({first_filename: {1: 2}, second_filename: {1: 3}}, report)
+
+    def test_function_region_line_missing_from_file_segments_fails_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\npub fn missing() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [
+                    [1, 1, 1, 19, 1, 0, 0, 0],
+                    [2, 1, 2, 19, 0, 0, 0, 0],
+                ],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 19, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "function code region.*file segments"):
+                GATE.parse_llvm_export(document, root)
+
+    def test_jointly_missing_region_and_segment_cannot_hide_summary_uncovered_line(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn covered() {}\npub fn omitted() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [[1, 1, 1, 19, 1, 0, 0, 0]],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 19, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+            reports = {
+                platform: GATE.parse_llvm_export(document, root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1 +1,2 @@\n"
+                " pub fn covered() {}\n"
+                "+pub fn omitted() {}\n"
+            )
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Changed Rust code coverage"):
+                GATE._evaluate_coverage(root, reports, diff)
+
+    def test_covered_summary_duplicates_do_not_fail_comment_only_changes(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n// new comment\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]], summary_lines=2))
+            data = document["data"][0]
+            repeated_function = json.loads(json.dumps(data["functions"][0]))
+            repeated_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(repeated_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1,1 +1,2 @@\n"
+                " pub fn shared() {}\n"
+                "+// new comment\n"
+            )
+
+            results = GATE._evaluate_coverage(root, reports, diff)
+
+        self.assertIn("Changed executable production lines: not applicable.", results)
+
+    def test_mixed_hit_shared_summary_line_does_not_reserve_uncovered_slot(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n// new comment\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 1, 0, 0, 0]], summary_lines=2))
+            data = document["data"][0]
+            uncovered_function = json.loads(json.dumps(data["functions"][0]))
+            uncovered_function["name"] = "_ZN7kmipkit4other"
+            uncovered_function["count"] = 0
+            uncovered_function["regions"][0][4] = 0
+            data["functions"].append(uncovered_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 1}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            diff = (
+                "diff --git a/crates/kmipkit-ttlv/src/lib.rs b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "--- a/crates/kmipkit-ttlv/src/lib.rs\n"
+                "+++ b/crates/kmipkit-ttlv/src/lib.rs\n"
+                "@@ -1,1 +1,2 @@\n"
+                " pub fn shared() {}\n"
+                "+// new comment\n"
+            )
+
+            results = GATE._evaluate_coverage(root, reports, diff)
+
+        self.assertIn("Changed executable production lines: not applicable.", results)
+
+    def test_platform_uncovered_summary_residuals_are_summed_for_package_coverage(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn f() {}\n" * 19, encoding="utf-8")
+            regions = [[line, 1, line, 14, 1, 0, 0, 0] for line in range(1, 20)]
+            document = json.loads(llvm_document(regions, summary_lines=20))
+            document["data"][0]["files"][0]["summary"]["lines"] = {"count": 20, "covered": 19}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage 19/22"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_platform_uncovered_summary_residuals_are_summed_for_workspace_coverage(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-client" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn f() {}\n" * 9, encoding="utf-8")
+            regions = [[line, 1, line, 14, 1, 0, 0, 0] for line in range(1, 10)]
+            document = json.loads(llvm_document(regions, filename="crates/kmipkit-client/src/lib.rs", summary_lines=10))
+            document["data"][0]["files"][0]["summary"]["lines"] = {"count": 10, "covered": 9}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Workspace coverage 9/12"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_inflated_file_summary_cannot_hide_uncovered_segment_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn shared() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 19, 0, 0, 0, 0]]))
+            data = document["data"][0]
+            second_function = json.loads(json.dumps(data["functions"][0]))
+            second_function["name"] = "_ZN7kmipkit4other"
+            data["functions"].append(second_function)
+            data["files"][0]["summary"]["lines"] = {"count": 2, "covered": 2}
+            reports = {
+                platform: GATE.parse_llvm_export(json.dumps(document), root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_missing_function_record_cannot_hide_an_uncovered_line_from_the_gate(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn first() {}\npub fn second() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [[1, 1, 1, 17, 1, 0, 0, 0]],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 17, 0, False, False, False],
+                    [2, 1, 0, True, True, False],
+                    [2, 18, 0, False, False, False],
+                    [3, 1, 0, False, False, False],
+                ],
+                summary_lines=2,
+            )
+            reports = {
+                platform: GATE.parse_llvm_export(document, root)
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            with self.assertRaisesRegex(GATE.CoverageDataError, "kmipkit-ttlv coverage"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_file_segments_override_outer_positive_region_for_nested_uncovered_code(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub fn choose(flag: bool) -> i32 {\n    if flag {\n        1\n    } else {\n        2\n    }\n}\n",
+                encoding="utf-8",
+            )
+            document = llvm_document(
+                [
+                    [1, 1, 7, 2, 1, 0, 0, 0],
+                    [5, 9, 5, 10, 0, 0, 0, 0],
+                ],
+                segments=[
+                    [1, 1, 1, True, True, False],
+                    [1, 33, 0, False, False, False],
+                    [2, 8, 1, True, True, False],
+                    [2, 12, 0, False, False, False],
+                    [3, 9, 1, True, True, False],
+                    [3, 10, 0, False, False, False],
+                    [5, 9, 0, True, True, False],
+                    [5, 10, 0, False, False, False],
+                    [7, 1, 1, True, True, False],
+                    [7, 2, 0, False, False, False],
+                    [8, 1, 0, False, False, False],
+                ],
+                summary_lines=5,
+            )
+            report = GATE.parse_llvm_export(document, root)
+        self.assertEqual(0, report["crates/kmipkit-ttlv/src/lib.rs"][5])
+
+    def test_pinned_cargo_llvm_cov_fixture_matches_its_real_line_summary(self) -> None:
+        self.require_gate()
+        fixtures = Path(__file__).parent / "fixtures"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "sample" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_bytes((fixtures / "cargo-llvm-cov-0.9.1-branch.rs").read_bytes())
+            report = GATE.parse_llvm_export(
+                (fixtures / "cargo-llvm-cov-0.9.1-branch.json").read_text(encoding="utf-8"),
+                root,
+            )
+        self.assertEqual({1: 1, 2: 1, 3: 1, 5: 0, 7: 1}, report["crates/sample/src/lib.rs"])
+
+    def test_file_segments_outside_source_line_bounds_fail_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {}\n", encoding="utf-8")
+            document = llvm_document(
+                [[2, 1, 2, 2, 1, 0, 0, 0]],
+                segments=[[2, 1, 1, True, True, False], [2, 2, 0, False, False, False], [3, 1, 0, False, False, False]],
+                summary_lines=1,
+            )
+            with self.assertRaisesRegex(GATE.CoverageDataError, "outside the source file"):
+                GATE.parse_llvm_export(document, root)
+
+    def test_overlapping_segment_mapping_never_exceeds_summary_covered_lines(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {\n    work();\n}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 3, 2, 1, 0, 0, 0]]))
+            document["data"][0]["files"][0]["summary"]["lines"] = {
+                "count": 2,
+                "covered": 1,
+                "percent": 50.0,
+            }
+
+            report = GATE.parse_llvm_export(document, root)
+
+        lines = report["crates/kmipkit-ttlv/src/lib.rs"]
+        self.assertEqual(3, len(lines))
+        self.assertEqual(1, sum(count > 0 for count in lines.values()))
+
+    def test_llvm_report_rejects_missing_schema_and_invalid_counts(self) -> None:
+        self.require_gate()
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.parse_llvm_export('{"data": []}', REPOSITORY_ROOT)
+        valid_report = json.loads(llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]]))
+        invalid_schemas = []
+        for key in ("type", "version"):
+            missing = json.loads(json.dumps(valid_report))
+            del missing[key]
+            invalid_schemas.append(missing)
+        wrong_type = json.loads(json.dumps(valid_report))
+        wrong_type["type"] = "other.export"
+        invalid_schemas.append(wrong_type)
+        for unsupported_version in ("2.1.0", "3.2.0", "3.x.1"):
+            unsupported = json.loads(json.dumps(valid_report))
+            unsupported["version"] = unsupported_version
+            invalid_schemas.append(unsupported)
+        for document in invalid_schemas:
+            with self.subTest(document=document):
+                with self.assertRaises(GATE.CoverageDataError):
+                    GATE.parse_llvm_export(document, REPOSITORY_ROOT)
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.parse_llvm_export(llvm_document([[10, 1, 10, 4, -1, 0, 0, 0]]), REPOSITORY_ROOT)
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.parse_llvm_export(llvm_document([[10, 1, 10, 4, 0, 0, 0, 99]]), REPOSITORY_ROOT)
+
+    def test_llvm_report_accepts_schema_version_31(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 16, 1, 0, 0, 0]]))
+            document["version"] = "3.1.0"
+            report = GATE.parse_llvm_export(json.dumps(document), root)
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_llvm_20_1_8_native_fixture_maps_the_jni_source_lines(self) -> None:
+        self.require_gate()
+        fixtures = Path(__file__).parent / "fixtures"
+        relative_source = "bindings/java/native/kmipkit_jni.cpp"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / relative_source
+            source.parent.mkdir(parents=True)
+            source.write_bytes((fixtures / "llvm-cov-20.1.8-native.cpp").read_bytes())
+            document = (fixtures / "llvm-cov-20.1.8-native.json").read_text(encoding="utf-8")
+            report = GATE.parse_llvm_export(document, root)
+
+        self.assertEqual(
+            {1: 2, 2: 2, 3: 1, 4: 1, 5: 2, 6: 2, 8: 2, 9: 2, 10: 2},
+            report[relative_source],
+        )
+
+    def test_report_paths_must_resolve_inside_the_checkout(self) -> None:
+        self.require_gate()
+        document = llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]], "../../outside.rs")
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.parse_llvm_export(document, REPOSITORY_ROOT)
+        with self.assertRaises(GATE.CoverageDataError):
+            GATE.normalize_llvm_export(document, REPOSITORY_ROOT)
+
+    def test_normalization_rewrites_absolute_platform_paths_to_repository_relative_paths(self) -> None:
+        self.require_gate()
+        absolute_source = (REPOSITORY_ROOT / "crates" / "kmipkit-ttlv" / "src" / "lib.rs").as_posix()
+        normalized = GATE.normalize_llvm_export(
+            llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]], absolute_source),
+            REPOSITORY_ROOT,
+        )
+        report = GATE.parse_llvm_export(normalized, REPOSITORY_ROOT)
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_normalization_anonymizes_external_macro_filename_references(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn run() {}\n", encoding="utf-8")
+            external_source = (root.parent / "cargo-registry" / "assert_impl.rs").as_posix()
+            document = json.loads(llvm_document([[1, 1, 1, 16, 1, 0, 0, 0]]))
+            function = document["data"][0]["functions"][0]
+            function["filenames"].append(external_source)
+            function["regions"].append([1, 1, 1, 10, 1, 1, 1, 0])
+
+            normalized = GATE.normalize_llvm_export(json.dumps(document), root)
+            report = GATE.parse_llvm_export(normalized, root)
+
+        parsed = json.loads(normalized)
+        self.assertEqual("__external_source__", parsed["data"][0]["functions"][0]["filenames"][1])
+        self.assertEqual({1: 1}, report["crates/kmipkit-ttlv/src/lib.rs"])
+
+    def test_rust_source_scanner_ignores_nested_comments_and_raw_strings(self) -> None:
+        self.require_gate()
+        source = r'''/* outer /* nested fn fake() {} */ still comment */
+const TEXT: &str = r###"fn also_fake() {}"###;
+trait Example { fn declaration(&self); }
+'''
+        self.assertFalse(GATE.rust_source_has_function_body(source))
+
+    def test_rust_source_scanner_detects_body_and_treats_ambiguous_syntax_as_eligible(self) -> None:
+        self.require_gate()
+        self.assertTrue(GATE.rust_source_has_function_body("fn implemented() { let value = 1; }"))
+        self.assertTrue(GATE.rust_source_has_function_body("fn incomplete("))
+
+    def test_only_external_test_directories_are_excluded_from_production_preflight(self) -> None:
+        self.require_gate()
+        for path in (
+            "crates/kmipkit/tests/integration.rs",
+            "crates/kmipkit/test/integration.rs",
+        ):
+            with self.subTest(path=path):
+                self.assertFalse(GATE.is_coverage_source_path(path))
+        for path in (
+            "crates/kmipkit/src/lib.rs",
+            "crates/kmipkit/src/tests.rs",
+            "crates/kmipkit/src/parser_tests.rs",
+            "crates/kmipkit/src/parser-tests.rs",
+            "crates/kmipkit/src/test/helpers.rs",
+            "crates/kmipkit/src/tests/integration.rs",
+        ):
+            with self.subTest(path=path):
+                self.assertTrue(GATE.is_coverage_source_path(path))
+        self.assertTrue(GATE.is_coverage_source_path("crates/kmipkit/src/test/helpers.rs"))
+
+    def test_non_executable_java_metadata_is_excluded_from_adapter_coverage(self) -> None:
+        self.require_gate()
+        metadata_sources = {
+            "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/credentials/CredentialValidationErrorKind.java",
+            "bindings/java/src/main/java/org/kmipkit/extensions/NativeAttributeRequests.java",
+            "bindings/java/src/main/java/org/kmipkit/ttlv/NativeTtlvCodec.java",
+            "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvDecodeErrorKind.java",
+        }
+
+        java_sources = GATE.scan_adapter_sources(REPOSITORY_ROOT)["Java adapters"]
+        self.assertTrue(metadata_sources.isdisjoint(java_sources))
+
+    def test_generated_profile_metadata_is_excluded_from_raw_coverage(self) -> None:
+        self.require_gate()
+        generated_metadata = "crates/kmipkit-protocol/src/profiles_generated.rs"
+        handwritten_validator = "crates/kmipkit-protocol/src/profile.rs"
+
+        self.assertFalse(GATE.is_coverage_source_path(generated_metadata))
+        self.assertTrue(GATE.is_coverage_source_path(handwritten_validator))
+
+        generated_diff = (
+            "diff --git a/crates/kmipkit-protocol/src/profiles_generated.rs "
+            "b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "+++ b/crates/kmipkit-protocol/src/profiles_generated.rs\n"
+            "@@ -1,0 +1,2 @@\n"
+            "+pub const GENERATED_PROFILE_COUNT: usize = 18;\n"
+            "+pub const GENERATED_RULE_COUNT: usize = 265;\n"
+        )
+        self.assertEqual({}, GATE.parse_added_production_lines(generated_diff))
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            generated_path = root / generated_metadata
+            generated_path.parent.mkdir(parents=True)
+            generated_path.write_text("pub const fn generated_metadata() -> usize { 18 }\n", encoding="utf-8")
+            validator_path = root / handwritten_validator
+            validator_path.write_text("pub fn validate_profile() {}\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+
+        self.assertEqual({handwritten_validator}, scan.eligible_files)
+
+    def test_catalog_generated_named_value_sources_are_excluded_from_raw_coverage(self) -> None:
+        self.require_gate()
+        c_header = "bindings/c/include/kmipkit_named_value_helpers_generated.h"
+        rust_source = "crates/kmipkit-protocol/src/named_values_generated.rs"
+        java_source = "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java"
+        python_source = "bindings/python/src/kmipkit/protocol_values.py"
+
+        self.assertIn(c_header, GATE._CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS)
+        self.assertFalse(GATE.is_coverage_source_path(rust_source))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in (java_source, python_source):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("generated source\n", encoding="utf-8")
+
+            sources = GATE.scan_adapter_sources(root)
+
+        self.assertNotIn(java_source, sources["Java adapters"])
+        self.assertNotIn(python_source, sources["Python adapters"])
+
+    def test_catalog_generated_typed_attribute_code_is_excluded_but_runtime_api_is_not(self) -> None:
+        self.require_gate()
+        generated = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
+        types_generated = "crates/kmipkit-protocol/src/attribute_types_generated.rs"
+        ffi_generated = "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs"
+        handwritten = "crates/kmipkit-protocol/src/typed_attributes.rs"
+
+        self.assertFalse(GATE.is_coverage_source_path(generated))
+        self.assertFalse(GATE.is_coverage_source_path(types_generated))
+        self.assertFalse(GATE.is_coverage_source_path(ffi_generated))
+        self.assertTrue(GATE.is_coverage_source_path(handwritten))
+
+    def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "sample" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b"\xff\xfe\xfa")
+            scan = GATE.scan_production_sources(root)
+            self.assertTrue(scan.eligible)
+            self.assertIn("read", scan.reason.lower())
+
+    def test_untraversed_symlink_source_directory_cannot_emit_unavailable_status(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text("trait Declaration { fn method(); }\n", encoding="utf-8")
+            external = root / "external-source"
+            external.mkdir()
+            (external / "hidden.rs").write_text("pub fn hidden() {}\n", encoding="utf-8")
+            try:
+                (source_dir / "linked").symlink_to(external, target_is_directory=True)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            scan = GATE.scan_production_sources(root)
+        self.assertTrue(scan.eligible)
+        self.assertFalse(scan.complete)
+        self.assertIn("symlink", scan.reason.lower())
+
+    def test_symlinked_crate_src_root_cannot_emit_unavailable_status(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            crate_dir = root / "crates" / "sample"
+            crate_dir.mkdir(parents=True)
+            external = root / "shared-source"
+            external.mkdir()
+            (external / "lib.rs").write_text("pub fn hidden() {}\n", encoding="utf-8")
+            try:
+                (crate_dir / "src").symlink_to(external, target_is_directory=True)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            scan = GATE.scan_production_sources(root)
+        self.assertTrue(scan.eligible)
+        self.assertFalse(scan.complete)
+        self.assertIn("symlink", scan.reason.lower())
+
+    def test_symlinked_crate_root_cannot_emit_unavailable_status(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            crates = root / "crates"
+            crates.mkdir()
+            external_crate = root / "external-crate"
+            source_dir = external_crate / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text("pub fn hidden() {}\n", encoding="utf-8")
+            try:
+                (crates / "sample").symlink_to(external_crate, target_is_directory=True)
+            except (OSError, NotImplementedError) as error:
+                self.skipTest(f"directory symlinks are unavailable: {error}")
+            scan = GATE.scan_production_sources(root)
+        self.assertTrue(scan.eligible)
+        self.assertFalse(scan.complete)
+        self.assertIn("symlink", scan.reason.lower())
+
+    def test_inline_cfg_test_module_fails_production_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "sample" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("#[cfg(test)] mod tests { fn check() {} }", encoding="utf-8")
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_inline_cfg_test_module_with_intervening_attribute_fails_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "sample" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "#[cfg(test)] #[allow(dead_code)] mod tests { fn check() {} }", encoding="utf-8"
+            )
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_cfg_test_module_with_path_into_excluded_test_tree_passes_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text(
+                'pub fn production() {}\n'
+                '#[cfg(test)]\n'
+                '#[path = "../tests/support/private_tests.rs"]\n'
+                'mod private_tests;\n',
+                encoding="utf-8",
+            )
+            test_source = root / "crates" / "sample" / "tests" / "support" / "private_tests.rs"
+            test_source.parent.mkdir(parents=True)
+            test_source.write_text("#[test] fn checks_private_behavior() {}\n", encoding="utf-8")
+
+            scan = GATE.scan_production_sources(root)
+            support_path_is_production = GATE.is_coverage_source_path(
+                "crates/sample/tests/support/private_tests.rs"
+            )
+
+        self.assertTrue(scan.eligible)
+        self.assertTrue(scan.complete)
+        self.assertEqual({"crates/sample/src/lib.rs"}, scan.eligible_files)
+        self.assertFalse(support_path_is_production)
+
+    def test_cfg_test_module_path_into_production_source_fails_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text(
+                '#[cfg(test)]\n#[path = "private_tests.rs"]\nmod private_tests;\n',
+                encoding="utf-8",
+            )
+            (source_dir / "private_tests.rs").write_text(
+                "#[test] fn checks_private_behavior() {}\n", encoding="utf-8"
+            )
+
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_cfg_test_module_with_excluded_path_and_inline_body_fails_preflight(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            test_dir = root / "crates" / "sample" / "tests"
+            test_dir.mkdir()
+            (test_dir / "private_tests.rs").write_text("", encoding="utf-8")
+            (source_dir / "lib.rs").write_text(
+                '#[cfg(test)]\n#[path = "../tests/private_tests.rs"]\n'
+                'mod private_tests { fn inline() {} }\n',
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_repository_production_preflight_excludes_message_validation_unit_tests(self) -> None:
+        self.require_gate()
+        scan = GATE.scan_production_sources(REPOSITORY_ROOT)
+        self.assertTrue(scan.eligible)
+        self.assertTrue(scan.complete)
+        self.assertGreater(scan.files_scanned, 0)
+        self.assertFalse(
+            GATE.is_coverage_source_path(
+                "crates/kmipkit-protocol/tests/support/message_validation_unit.rs"
+            )
+        )
+
+    def test_schema_contract_module_is_kept_outside_production_coverage(self) -> None:
+        self.require_gate()
+        relative_test_path = "crates/kmipkit-protocol/tests/support/schema_contract_tests.rs"
+        test_path = REPOSITORY_ROOT / relative_test_path
+
+        self.assertTrue(test_path.is_file())
+        self.assertFalse(GATE.is_coverage_source_path(relative_test_path))
+
+    def test_path_attribute_keeps_suffix_named_production_module_in_coverage(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "lib.rs").write_text(
+                '#[path = "parser_tests.rs"] mod parser;\n', encoding="utf-8"
+            )
+            (source_dir / "parser_tests.rs").write_text("pub fn parse() {}\n", encoding="utf-8")
+            scan = GATE.scan_production_sources(root)
+            self.assertTrue(scan.eligible)
+            self.assertIn("crates/sample/src/parser_tests.rs", scan.eligible_files)
+            document = llvm_document(
+                [[1, 1, 1, 18, 1, 0, 0, 0]],
+                "crates/sample/src/parser_tests.rs",
+            )
+            report = GATE.parse_llvm_export(document, root)
+        self.assertEqual({1: 1}, report["crates/sample/src/parser_tests.rs"])
+
+    def test_preflight_scans_later_source_files_after_finding_a_function_body(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "a.rs").write_text("pub fn production() {}", encoding="utf-8")
+            (source_dir / "z.rs").write_text("#[cfg(test)] mod tests { fn check() {} }", encoding="utf-8")
+            with self.assertRaises(GATE.InlineTestModuleError):
+                GATE.scan_production_sources(root)
+
+    def test_changed_rust_line_parser_uses_zero_context_hunks_and_ignores_removed_lines(self) -> None:
+        self.require_gate()
+        diff = """diff --git a/crates/kmipkit/src/lib.rs b/crates/kmipkit/src/lib.rs
+--- a/crates/kmipkit/src/lib.rs
++++ b/crates/kmipkit/src/lib.rs
+@@ -4,2 +4,3 @@
+-    old();
++    new();
++    extra();
+"""
+        self.assertEqual(
+            {"crates/kmipkit/src/lib.rs": {4, 5}},
+            GATE.parse_added_rust_lines(diff),
+        )
+
+    def test_changed_coverage_excludes_multiline_rust_function_declarations(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub extern \"C\" fn response(\n"
+                "    item: *mut Item,\n"
+                "    out_present: *mut u8,\n"
+                ") -> i32 {\n"
+                "    let present = scalar_out!(out_present);\n"
+                "    SUCCESS\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            declaration_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in range(1, 5)
+            ]
+            body_results = [
+                GATE._is_executable_changed_line(
+                    root, relative, line, source_lines
+                )
+                for line in (5, 6)
+            ]
+
+        self.assertEqual([False, False, False, False], declaration_results)
+        self.assertEqual([True, True], body_results)
+
+    def test_changed_coverage_keeps_inline_rust_function_bodies_executable(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn inline() { let answer = 42; answer }\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
+    def test_changed_coverage_keeps_inline_rust_body_before_multiline_function(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "pub fn inline() { let answer = 42; answer }\n"
+                "pub fn next(\n"
+                "    value: i32,\n"
+                ") -> i32 {\n"
+                "    value\n"
+                "}\n",
+                encoding="utf-8",
+            )
+
+            first_line_is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+            next_signature_lines_are_declarations = [
+                not GATE._is_executable_changed_line(root, relative, line, {})
+                for line in (2, 3, 4)
+            ]
+
+        self.assertTrue(first_line_is_executable)
+        self.assertEqual([True, True, True], next_signature_lines_are_declarations)
+
+    def test_changed_coverage_counts_an_empty_inline_rust_function_body(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn added() {}\n", encoding="utf-8")
+
+            is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+        self.assertTrue(is_executable)
+
+    def test_changed_summary_subtracts_only_the_audited_jni_baseline(self) -> None:
+        self.require_gate()
+        jni_source = "bindings/java/native/kmipkit_jni.cpp"
+        python_source = "bindings/python/src/kmipkit/fluent.py"
+
+        unchanged_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12}, {jni_source}
+        )
+        increased_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 15}, {jni_source}
+        )
+        unrelated_source = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12, python_source: 4}, {jni_source, python_source}
+        )
+
+        self.assertEqual(0, unchanged_baseline)
+        self.assertEqual(3, increased_baseline)
+        self.assertEqual(4, unrelated_source)
+
+    def test_fluent_ffi_unreachable_guards_have_exact_coverage_reasons(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
+            (
+                "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+                "fn kmipkit_symmetric_key_builder_insert_attribute_item(",
+                "let Ok(index) = usize::try_from(index) else {",
+                ("return record_ffi_error(ERROR_INVALID_INPUT);",),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jobject>(nullptr);"),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request_class == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (constructor == nullptr) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "env->DeleteLocalRef(request_class);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildRequest(",
+                "if (request == nullptr || env->ExceptionCheck()) {",
+                (
+                    "kmipkit_add_attribute_request_release(output);",
+                    "return static_cast<jobject>(nullptr);",
+                ),
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_fluent_NativeFluentRegistry_addAttributeBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
+        )
+        for relative, function, branch, statements in cases:
+            source = REPOSITORY_ROOT / relative
+            source_lines = source.read_text(encoding="utf-8").splitlines()
+            function_line = next(
+                index for index, line in enumerate(source_lines) if function in line
+            )
+            branch_line = next(
+                index
+                for index, line in enumerate(source_lines[function_line:], function_line)
+                if branch in line
+            )
+            for statement in statements:
+                with self.subTest(source=relative, statement=statement):
+                    line = next(
+                        index
+                        for index, source_line in enumerate(source_lines[branch_line:], branch_line)
+                        if statement in source_line
+                    )
+                    self.assertFalse(
+                        GATE._is_executable_changed_line(
+                            REPOSITORY_ROOT, relative, line + 1, {}
+                        ),
+                        f"{relative}:{line + 1} needs a documented unreachable-state reason",
+                    )
+
+
+    def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Successful FFI getters normalize this field.\n"
+                "    return nullptr;\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            source_lines: dict[str, list[str]] = {}
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, source_lines)
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, source_lines)
+
+            source.write_text(
+                "jobjectArray response() {\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE:\n"
+                "}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(GATE.CoverageDataError, "requires a reason"):
+                GATE._is_executable_changed_line(root, relative, 2, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_documented_coverage_exclusions_are_removed_from_scope_totals(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int unreachable() { return 0; } // COVERAGE-EXCLUDE: The ABI makes this state unreachable.\n"
+                "int exercised_but_marked() { return 1; } // COVERAGE-EXCLUDE: The state is invariant.\n"
+                "int exercised() { return 2; }\n",
+                encoding="utf-8",
+            )
+            report = GATE.CoverageReport(
+                {relative: {1: 0, 2: 1, 3: 1}},
+                {relative: 3},
+            )
+
+            filtered = GATE._exclude_documented_coverage_lines(report, root)
+
+        self.assertEqual({relative: {2: 1, 3: 1}}, filtered)
+        self.assertEqual({relative: 3}, filtered.summary_uncovered_excess)
+        self.assertEqual({relative: 1}, filtered.documented_exclusions)
+
+    def test_coverage_exclusion_markers_inside_literals_are_not_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "crates/kmipkit-ffi/src/client_abi.rs",
+                'let note = r#"// COVERAGE-EXCLUDE: string contents"#;\n',
+            ),
+            (
+                "bindings/python/src/kmipkit/client.py",
+                'note = "# COVERAGE-EXCLUDE: string contents"\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                'const char* note = R"tag(// COVERAGE-EXCLUDE: raw string contents)tag";\n',
+            ),
+            (
+                "bindings/java/src/main/java/org/kmipkit/extensions/Client.java",
+                'String note = "// COVERAGE-EXCLUDE: string contents";\n',
+            ),
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "int value = 1; /* // COVERAGE-EXCLUDE: block comment contents */\n",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative, source_text in cases:
+                with self.subTest(source=relative, text=source_text):
+                    source = root / relative
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertTrue(is_executable)
+
+    def test_cpp_digit_separators_do_not_hide_later_coverage_exclusions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "int maximum_port = 65'535;\n"
+                "    throw_invalid_input(env); // COVERAGE-EXCLUDE: Unreachable invalid-input fallback.\n"
+                "    return nullptr;\n",
+                encoding="utf-8",
+            )
+
+            excluded = GATE._is_executable_changed_line(root, relative, 2, {})
+            adjacent = GATE._is_executable_changed_line(root, relative, 3, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_cpp_prefixed_character_literals_do_not_hide_coverage_exclusions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "bindings/java/native/kmipkit_jni.cpp"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "const wchar_t letter = L'x'; // COVERAGE-EXCLUDE: Tested through API validation.\n"
+                "    return nullptr;\n",
+                encoding="utf-8",
+            )
+
+            excluded = GATE._is_executable_changed_line(root, relative, 1, {})
+            adjacent = GATE._is_executable_changed_line(root, relative, 2, {})
+
+        self.assertFalse(excluded)
+        self.assertTrue(adjacent)
+
+    def test_cpp_digit_separators_respect_numeric_base(self) -> None:
+        self.require_gate()
+        decimal_with_hex_letter = "int value = 1'B;"
+        apostrophe = decimal_with_hex_letter.index("'")
+
+        self.assertFalse(GATE._is_cpp_digit_separator(decimal_with_hex_letter, apostrophe))
+
+    def test_rust_coverage_markers_respect_lifetimes_and_nested_comments(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "fn process<'a>() { consume(); } // COVERAGE-EXCLUDE: test rationale\n",
+                False,
+            ),
+            (
+                "let value = 1; /* outer /* inner */ // COVERAGE-EXCLUDE: comment text */\n",
+                True,
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = "crates/kmipkit-ffi/src/client_abi.rs"
+            source = root / relative
+            source.parent.mkdir(parents=True)
+            for source_text, expected in cases:
+                with self.subTest(source_text=source_text):
+                    source.write_text(source_text, encoding="utf-8")
+
+                    is_executable = GATE._is_executable_changed_line(root, relative, 1, {})
+
+                    self.assertEqual(expected, is_executable)
+
+    def test_changed_rust_line_parser_decodes_git_quoted_unicode_paths(self) -> None:
+        self.require_gate()
+        diff = r'''diff --git "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs" "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
+--- "a/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
++++ "b/crates/kmipkit-ttlv/src/parser-\303\261 name.rs"
+@@ -0,0 +1 @@
++pub fn added() {}
+'''
+        self.assertEqual(
+            {"crates/kmipkit-ttlv/src/parser-ñ name.rs": {1}},
+            GATE.parse_added_rust_lines(diff),
+        )
+
+    def test_exact_git_diff_retains_changed_lines_for_quoted_unicode_paths(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "parser-ñ name.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn first() {}\n", encoding="utf-8")
+            commands = [
+                ["git", "init", "--quiet", str(root)],
+                ["git", "-C", str(root), "config", "user.name", "KMIPKit Test"],
+                ["git", "-C", str(root), "config", "user.email", "kmipkit-test@example.invalid"],
+                ["git", "-C", str(root), "config", "core.quotePath", "true"],
+                ["git", "-C", str(root), "add", "--all"],
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "base"],
+            ]
+            for command in commands:
+                subprocess.run(command, check=True, capture_output=True, text=True)
+            base = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            source.write_text("pub fn first() {}\npub fn second() {}\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--all"], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "change"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            merge = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            diff = GATE._run_git_diff(root, base, merge)
+        self.assertEqual(
+            {"crates/kmipkit-ttlv/src/parser-ñ name.rs": {2}},
+            GATE.parse_added_rust_lines(diff),
+        )
+
+    def test_scoped_llvm_export_ignores_unreported_dependency_functions(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            ffi_source = "crates/kmipkit-ffi/src/extension_registry.rs"
+            dependency_source = "crates/kmipkit-ttlv/src/value.rs"
+            for source in (ffi_source, dependency_source):
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("pub fn measured() {}\n", encoding="utf-8")
+            document = json.loads(llvm_document([[1, 1, 1, 20, 2, 0, 0, 0]], ffi_source))
+            document["data"][0]["functions"].append(
+                {
+                    "name": "dependency_function",
+                    "count": 1,
+                    "filenames": [dependency_source],
+                    "regions": [[1, 1, 1, 20, 1, 0, 0, 0]],
+                }
+            )
+
+            report = GATE.parse_llvm_export(
+                document,
+                root,
+                source_filter={ffi_source},
+            )
+
+        self.assertEqual({ffi_source: {1: 2}}, report)
+
+    def test_scoped_llvm_export_requires_every_requested_source(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            present = "crates/kmipkit-ffi/src/extension_registry.rs"
+            missing = "crates/kmipkit-ffi/src/limits.rs"
+            for source in (present, missing):
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("pub fn measured() {}\n", encoding="utf-8")
+            document = llvm_document([[1, 1, 1, 20, 2, 0, 0, 0]], present)
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "Requested source is missing"):
+                GATE.parse_llvm_export(document, root, source_filter={present, missing})
+
+    def test_coverage_report_union_counts_each_source_line_once(self) -> None:
+        self.require_gate()
+        source = "crates/kmipkit-ffi/src/extension_registry.rs"
+        merged = GATE.merge_coverage_reports(
+            {
+                "workspace": {source: {7: 2, 8: 0}},
+                "c-consumer": {source: {7: 3, 9: 4}},
+            }
+        )
+        self.assertEqual({7: 3, 8: 0, 9: 4}, merged[source])
+        self.assertEqual(2, sum(count > 0 for count in merged[source].values()))
+
+    def test_platform_reports_union_execution_counts_by_source_line(self) -> None:
+        self.require_gate()
+        merged = GATE.merge_platform_reports(
+            {
+                "ubuntu": {"crates/kmipkit/src/lib.rs": {7: 2, 8: 0}},
+                "windows": {"crates/kmipkit/src/lib.rs": {7: 3}},
+                "macos": {"crates/kmipkit/src/lib.rs": {8: 4}},
+            }
+        )
+        self.assertEqual({7: 3, 8: 4}, merged["crates/kmipkit/src/lib.rs"])
+
+    def test_ffi_c_consumer_artifact_is_required_when_ffi_has_product_code(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ffi" / "src" / "extension_registry.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("pub fn exported_entry() {}\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(GATE.CoverageDataError, "coverage-ffi.*coverage.json"):
+                GATE._load_ffi_c_consumer_artifact(root / "reports", root)
+
+    def test_ffi_c_consumer_artifact_measures_only_ffi_product_sources(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = "crates/kmipkit-ffi/src/extension_registry.rs"
+            source_path = root / source
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text("pub fn exported_entry() {}\n", encoding="utf-8")
+            report_path = root / "reports" / "coverage-ffi" / "coverage.json"
+            report_path.parent.mkdir(parents=True)
+            report_path.write_text(llvm_document([[1, 1, 1, 25, 1, 0, 0, 0]], source), encoding="utf-8")
+
+            report = GATE._load_ffi_c_consumer_artifact(root / "reports", root)
+
+        self.assertEqual({source: {1: 1}}, report)
+
+    def test_threshold_boundaries_and_not_applicable_changed_metric(self) -> None:
+        self.require_gate()
+        self.assertTrue(GATE.meets_threshold(95, 100, 95))
+        self.assertFalse(GATE.meets_threshold(94, 100, 95))
+        self.assertEqual("not applicable", GATE.changed_code_result(set(), {}))
+
+    def test_aggregation_fails_when_an_executable_production_file_is_absent_from_reports(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_dir = root / "crates" / "sample" / "src"
+            source_dir.mkdir(parents=True)
+            (source_dir / "covered.rs").write_text("pub fn covered() {}", encoding="utf-8")
+            (source_dir / "missing.rs").write_text("pub fn missing() {}", encoding="utf-8")
+            reports = {
+                platform: {"crates/sample/src/covered.rs": {1: 1}}
+                for platform in ("ubuntu", "windows", "macos")
+            }
+            with self.assertRaisesRegex(GATE.CoverageDataError, "missing from LLVM coverage reports"):
+                GATE._evaluate_coverage(root, reports, "")
+
+    def test_no_body_scan_is_unavailable_but_body_scan_requires_reports(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "sample" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("#![no_std]\ntrait Example { fn method(&self); }", encoding="utf-8")
+            self.assertFalse(GATE.scan_production_sources(root).eligible)
+            source.write_text("pub fn body() {}", encoding="utf-8")
+            self.assertTrue(GATE.scan_production_sources(root).eligible)
+
+    def test_three_unavailable_platform_sentinels_are_accepted_only_as_a_complete_set(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            reports = Path(directory)
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir()
+                (artifact / "coverage-status.json").write_text(
+                    '{"reason":"no production function bodies","status":"unavailable"}', encoding="utf-8"
+                )
+            self.assertEqual({"status": "unavailable"}, GATE._load_platform_artifacts(reports, REPOSITORY_ROOT))
+            (reports / "coverage-windows" / "coverage-status.json").unlink()
+            with self.assertRaises(GATE.CoverageDataError):
+                GATE._load_platform_artifacts(reports, REPOSITORY_ROOT)
+
+    def test_missing_or_mixed_platform_coverage_artifacts_fail_closed(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            reports = Path(directory)
+            for platform in ("ubuntu", "windows"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir()
+                (artifact / "coverage-status.json").write_text(
+                    '{"reason":"no production function bodies","status":"unavailable"}', encoding="utf-8"
+                )
+            with self.assertRaises(GATE.CoverageDataError):
+                GATE._load_platform_artifacts(reports, REPOSITORY_ROOT)
+
+            artifact = reports / "coverage-macos"
+            artifact.mkdir()
+            source = "crates/kmipkit/src/lib.rs"
+            self.assertTrue((REPOSITORY_ROOT / source).is_file())
+            (artifact / "coverage.json").write_text(
+                llvm_document([[1, 1, 1, 2, 1, 0, 0, 0]], source), encoding="utf-8"
+            )
+            with self.assertRaises(GATE.CoverageDataError):
+                GATE._load_platform_artifacts(reports, REPOSITORY_ROOT)
+
+    def test_aggregate_writes_unavailable_state_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir(parents=True)
+                (artifact / "coverage-status.json").write_text(
+                    '{"reason":"no production function bodies","status":"unavailable"}', encoding="utf-8"
+                )
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(0, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("UNAVAILABLE", markdown)
+            self.assertIn("no production function bodies", markdown)
+            self.assertNotIn("PASS", markdown)
+
+    def test_aggregate_writes_measured_percentages_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "crates" / "kmipkit-ttlv" / "src" / "lib.rs"
+            source.parent.mkdir(parents=True)
+            source.write_text("fn first() {}\n", encoding="utf-8")
+            commands = [
+                ["git", "init", "--quiet", str(root)],
+                ["git", "-C", str(root), "config", "user.name", "KMIPKit Test"],
+                ["git", "-C", str(root), "config", "user.email", "kmipkit-test@example.invalid"],
+                ["git", "-C", str(root), "add", "--all"],
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "base"],
+            ]
+            for command in commands:
+                subprocess.run(command, check=True, capture_output=True, text=True)
+            base = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            source.write_text("fn first() {}\nfn added() {}\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--all"], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "--quiet", "-m", "add function"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            merge = subprocess.run(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], check=True, capture_output=True, text=True
+            ).stdout.strip()
+            reports = root / "reports"
+            for platform in ("ubuntu", "windows", "macos"):
+                artifact = reports / f"coverage-{platform}"
+                artifact.mkdir(parents=True)
+                (artifact / "coverage.json").write_text(
+                    llvm_document(
+                        [[1, 1, 1, 14, 1, 0, 0, 0], [2, 1, 2, 14, 1, 0, 0, 0]],
+                        "crates/kmipkit-ttlv/src/lib.rs",
+                    ),
+                    encoding="utf-8",
+                )
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(root),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    base,
+                    "--merge",
+                    merge,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(0, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("PASS", markdown)
+            self.assertIn("Changed Rust coverage: 1/1 (100.00%)", markdown)
+            self.assertIn("kmipkit-ttlv coverage: 2/2 (100.00%)", markdown)
+            self.assertIn("Workspace coverage: 2/2 (100.00%)", markdown)
+
+    def test_aggregate_writes_failure_diagnostic_to_the_job_summary(self) -> None:
+        self.require_gate()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = root / "reports"
+            reports.mkdir()
+            summary = root / "summary.md"
+
+            exit_code = GATE.main(
+                [
+                    "aggregate",
+                    "--workspace",
+                    str(REPOSITORY_ROOT),
+                    "--report-dir",
+                    str(reports),
+                    "--base",
+                    "0" * 40,
+                    "--merge",
+                    "1" * 40,
+                    "--summary-file",
+                    str(summary),
+                ]
+            )
+
+            self.assertEqual(1, exit_code)
+            markdown = summary.read_text(encoding="utf-8")
+            self.assertIn("Coverage gate", markdown)
+            self.assertIn("FAIL", markdown)
+            self.assertIn("Required coverage artifact is missing", markdown)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

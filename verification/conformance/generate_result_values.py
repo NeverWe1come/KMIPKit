@@ -1,0 +1,187 @@
+"""Generate the protocol crate's Result Status and Result Reason tables."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Any
+
+if __package__:
+    from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
+else:
+    from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
+
+
+CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+VERSIONED_VALUES_PATH = "specification/catalog/kmip-versioned-values.json"
+OUTPUT_PATH = "crates/kmipkit-protocol/src/result_values_generated.rs"
+MAX_CATALOG_BYTES = 16 * 1024 * 1024
+_SAFE_VALUE_NAME = re.compile(r"[A-Za-z0-9 #()/'-]+\Z")
+_WIRE_VALUE = re.compile(r"[0-9A-Fa-f]{8}\Z")
+
+
+def _object_without_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("catalog contains duplicate object keys")
+        result[key] = value
+    return result
+
+
+def _result_enumerations(catalog: dict[str, Any]) -> dict[str, list[tuple[int, str]]]:
+    elements = catalog.get("elements")
+    if not isinstance(elements, list):
+        raise ValueError("catalog has no element list")
+
+    definitions: dict[str, dict[str, Any]] = {}
+    for element in elements:
+        if not isinstance(element, dict) or element.get("kind") != "enumeration":
+            continue
+        name = element.get("name")
+        if name in {"Result Status", "Result Reason"}:
+            if name in definitions or not isinstance(element.get("element_id"), str):
+                raise ValueError("catalog has an ambiguous result enumeration")
+            definitions[name] = element
+
+    if set(definitions) != {"Result Status", "Result Reason"}:
+        raise ValueError("catalog must define Result Status and Result Reason")
+
+    result: dict[str, list[tuple[int, str]]] = {}
+    for name, definition in definitions.items():
+        parent_id = definition["element_id"]
+        values: list[tuple[int, str]] = []
+        seen_numbers: set[int] = set()
+        seen_names: set[str] = set()
+        for element in elements:
+            if (
+                not isinstance(element, dict)
+                or element.get("kind") != "enumeration_value"
+                or parent_id not in element.get("parent_element_ids", [])
+                or element.get("allocation") != "assigned"
+            ):
+                continue
+            wire_value = element.get("wire_value")
+            value_name = element.get("name")
+            if not isinstance(wire_value, str) or not _WIRE_VALUE.fullmatch(wire_value):
+                raise ValueError("assigned result enumeration value has an invalid numeric value")
+            if not isinstance(value_name, str) or not _SAFE_VALUE_NAME.fullmatch(value_name):
+                raise ValueError("assigned result enumeration value has an unsafe name")
+            numeric_value = int(wire_value, 16)
+            if numeric_value in seen_numbers or value_name in seen_names:
+                raise ValueError("result enumeration contains a duplicate value or name")
+            seen_numbers.add(numeric_value)
+            seen_names.add(value_name)
+            values.append((numeric_value, value_name))
+        if not values:
+            raise ValueError("result enumeration has no assigned values")
+        result[name] = sorted(values)
+    return result
+
+
+def _merge_versioned_results(
+    enumerations: dict[str, list[tuple[int, str]]],
+    versioned_values: dict[str, Any] | None,
+) -> dict[str, list[tuple[int, str]]]:
+    if versioned_values is None:
+        return enumerations
+    merged: dict[str, dict[int, str]] = {
+        name: dict(values) for name, values in enumerations.items()
+    }
+    name_sets: dict[str, set[str]] = {
+        name: {label for _, label in values} for name, values in enumerations.items()
+    }
+    for _ver, groups in versioned_values.get("versions", {}).items():
+        for group in groups:
+            if group.get("kind") != "enumeration":
+                continue
+            name = group.get("name")
+            if name not in merged:
+                continue
+            for entry in group.get("values", []):
+                wire_value = entry.get("wire_value", "")
+                val_name = entry.get("name", "")
+                if not _SAFE_VALUE_NAME.fullmatch(val_name):
+                    raise ValueError("versioned result enumeration value has an unsafe name")
+                numeric_value = int(wire_value.removeprefix("0x").removeprefix("0X"), 16)
+                if numeric_value not in merged[name] and val_name not in name_sets[name]:
+                    merged[name][numeric_value] = val_name
+                    name_sets[name].add(val_name)
+    return {name: sorted(items.items()) for name, items in merged.items()}
+
+
+def render_rust(
+    catalog: dict[str, Any], *, versioned_values: dict[str, Any] | None = None
+) -> str:
+    """Render deterministic Rust lookup tables from assigned catalog values."""
+    enumerations = _merge_versioned_results(_result_enumerations(catalog), versioned_values)
+    lines = [
+        "// @generated by verification/conformance/generate_result_values.py; do not edit.",
+        "use super::{ResultReason, ResultStatus};",
+        "",
+        "pub(super) const RESULT_STATUSES: &[(ResultStatus, &str)] = &[",
+    ]
+    for value, name in enumerations["Result Status"]:
+        lines.append(
+            f'    (ResultStatus::from_raw(0x{value >> 16:04X}_{value & 0xFFFF:04X}), "{name}"),'
+        )
+    lines.extend([
+        "];",
+        "",
+        "pub(super) const RESULT_REASONS: &[(ResultReason, &str)] = &[",
+    ])
+    for value, name in enumerations["Result Reason"]:
+        lines.append(
+            f'    (ResultReason::from_raw(0x{value >> 16:04X}_{value & 0xFFFF:04X}), "{name}"),'
+        )
+    lines.extend(["];", ""])
+    return "\n".join(lines)
+
+
+def _load_catalog(root: Path) -> dict[str, Any]:
+    raw = safe_read_bytes(root, CATALOG_PATH, max_bytes=MAX_CATALOG_BYTES)
+    try:
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=_object_without_duplicates)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise ValueError("catalog is not valid bounded UTF-8 JSON") from error
+    if not isinstance(value, dict):
+        raise ValueError("catalog root must be an object")
+    return value
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--write", action="store_true", help="write the generated Rust source")
+    mode.add_argument("--check", action="store_true", help="fail if generated Rust source is stale")
+    arguments = parser.parse_args(argv)
+
+    try:
+        root = arguments.repo_root.resolve(strict=True)
+        raw_versioned = safe_read_bytes(root, VERSIONED_VALUES_PATH, max_bytes=MAX_CATALOG_BYTES)
+        versioned_values = json.loads(
+            raw_versioned.decode("utf-8"), object_pairs_hook=_object_without_duplicates
+        )
+        generated = render_rust(_load_catalog(root), versioned_values=versioned_values).encode("utf-8")
+        if arguments.write:
+            atomic_write_bytes(root, OUTPUT_PATH, generated)
+            print(f"generated result values: {root / OUTPUT_PATH}")
+            return 0
+        existing = safe_read_bytes(root, OUTPUT_PATH, max_bytes=MAX_CATALOG_BYTES)
+    except (OSError, PathSecurityError, ValueError) as error:
+        print(f"result-value generation failed: {error}", file=sys.stderr)
+        return 2
+
+    if existing != generated:
+        print("generated result values are stale; run generate_result_values.py --write", file=sys.stderr)
+        return 1
+    print(f"generated result values verified: {root / OUTPUT_PATH}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

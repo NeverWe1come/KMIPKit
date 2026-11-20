@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>example.kmipkit</groupId>
+  <artifactId>kmipkit-0053-java-consumer</artifactId>
+  <version>1.0.0</version>
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <kmipkit.nativeLibrary>${project.basedir}/../../../../bindings/java/target/native/kmipkit_jni.dll</kmipkit.nativeLibrary>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.kmipkit</groupId>
+      <artifactId>kmipkit-java</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <mainClass>Consumer</mainClass>
+          <classpathScope>compile</classpathScope>
+          <systemProperties>
+            <systemProperty>
+              <key>kmipkit.nativeLibrary</key>
+              <value>${kmipkit.nativeLibrary}</value>
+            </systemProperty>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -15,10 +15,10 @@ use serde_json::Value as JsonValue;
 
 use crate::asynchronous_execution_test_support::client_for;
 
-const COSMIAN_PROFILE: &str = include_str!("../../../../interop/shared/profiles/cosmian-kms.json");
+const COSMIAN_PROFILE: &str = include_str!("../../../../verification/interop/shared/profiles/cosmian-kms.json");
 const THALES_PROFILE: &str =
-    include_str!("../../../../interop/shared/profiles/thales-ciphertrust.json");
-const UTIMACO_PROFILE: &str = include_str!("../../../../interop/shared/profiles/utimaco-eskm.json");
+    include_str!("../../../../verification/interop/shared/profiles/thales-ciphertrust.json");
+const UTIMACO_PROFILE: &str = include_str!("../../../../verification/interop/shared/profiles/utimaco-eskm.json");
 
 #[test]
 fn test_cosmian_kms_profile_characteristics() {

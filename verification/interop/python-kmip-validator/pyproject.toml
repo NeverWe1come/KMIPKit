@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kmipkit-validator"
+version = "1.0.0"
+description = "Standalone Python KMIP 2.1 Multi-Vendor KMS Validator"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "KMIPKit Contributors" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+]
+
+[project.scripts]
+kmip-validator = "kmipkit_validator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

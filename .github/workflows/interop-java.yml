@@ -3,8 +3,8 @@ name: Interop Java Validator
 on:
   pull_request:
     paths:
-      - 'interop/java-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/java-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - 'bindings/java/**'
       - 'bindings/shared/fixtures/login-mtls/**'
       - 'crates/**'
@@ -15,8 +15,8 @@ on:
     branches:
       - release/1.0.0
     paths:
-      - 'interop/java-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/java-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - 'bindings/java/**'
       - 'bindings/shared/fixtures/login-mtls/**'
       - 'crates/**'
@@ -36,7 +36,7 @@ jobs:
       RUSTUP_TOOLCHAIN: '1.94'
     defaults:
       run:
-        working-directory: interop/java-kmip-validator
+        working-directory: verification/interop/java-kmip-validator
     steps:
       - name: Checkout complete repository history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
@@ -75,7 +75,7 @@ jobs:
       - name: Test Java 17 consumer against the installed artifact
         run: |
           bash ../../bindings/java/gradlew \
-            -PkmipkitMavenRepo="$GITHUB_WORKSPACE/interop/java-kmip-validator/build/maven-repository" \
+            -PkmipkitMavenRepo="$GITHUB_WORKSPACE/verification/interop/java-kmip-validator/build/maven-repository" \
             test
 
       - name: Validate generated Java report against the shared schema
@@ -92,4 +92,4 @@ jobs:
 
       - name: Run shared catalog, profile, and report contract tests
         working-directory: .
-        run: python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v
+        run: python3 -B -m unittest discover -s verification/interop/shared/tests -p 'test_*.py' -v

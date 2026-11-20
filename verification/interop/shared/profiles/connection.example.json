@@ -1,0 +1,45 @@
+{
+  "server_id": "example-kms",
+  "server_configuration_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "server_product": "Unspecified KMIP server",
+  "server_version": "not-recorded",
+  "description": "Example connection configuration for a dedicated KMIP 2.0 or 2.1 test server",
+  "protocol_version": "2.1",
+  "transport": "raw_tls",
+  "encoding": "TTLV",
+  "api_level": "high-level",
+  "endpoints": {
+    "raw_tls": {
+      "host": "127.0.0.1",
+      "port": 5696
+    },
+    "https": {
+      "url": "https://127.0.0.1:5696/kmip/2_1"
+    }
+  },
+  "tls": {
+    "ca_cert_path": "/path/to/ca-cert.pem",
+    "client_cert_path": "/path/to/client-cert.pem",
+    "client_key_path": "/path/to/client-key.pem",
+    "server_name_override": "localhost",
+    "connect_timeout_seconds": 10,
+    "read_timeout_seconds": 30
+  },
+  "authentication": {
+    "username_password": {
+      "username_env": "KMIPKIT_USERNAME",
+      "password_env": "KMIPKIT_PASSWORD"
+    }
+  },
+  "environment": {
+    "kind": "dedicated_test",
+    "dedicated_test_environment_confirmed": true
+  },
+  "execution_policy": {
+    "probe_unsupported": true,
+    "allow_mutations": false,
+    "encodings": ["TTLV"],
+    "api_levels": ["high-level", "typed-protocol", "generic-ttlv"],
+    "cleanup_on_failure": true
+  }
+}

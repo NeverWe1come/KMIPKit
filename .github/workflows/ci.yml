@@ -39,7 +39,7 @@ jobs:
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_MERGE_SHA: ${{ github.sha }}
-        run: python3 -B scripts/ci_impact.py classify --repo . --base "$PR_BASE_SHA" --merge "$PR_MERGE_SHA" --output "$RUNNER_TEMP/ci-impact-plan.json" --github-output "$GITHUB_OUTPUT"
+        run: python3 -B verification/ci/ci_impact.py classify --repo . --base "$PR_BASE_SHA" --merge "$PR_MERGE_SHA" --output "$RUNNER_TEMP/ci-impact-plan.json" --github-output "$GITHUB_OUTPUT"
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -50,7 +50,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -87,11 +87,11 @@ jobs:
 
       - name: Validate compliance requirement traceability
         id: validate-compliance-requirement-traceability
-        run: python3 -B -m unittest scripts.tests.test_requirement_traceability -v
+        run: python3 -B -m unittest verification.tests.scripts.test_requirement_traceability -v
 
       - name: Validate feature traceability contracts
         id: validate-feature-traceability-contracts
-        run: python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v
+        run: python3 -B -m unittest discover -s verification/conformance/tests -p 'test_feature_traceability.py' -v
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -102,7 +102,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -140,10 +140,10 @@ jobs:
         id: run-focused-classifier-and-normative-catalog-checks
         run: >-
           python3 -B -m unittest --failfast -v
-          scripts.tests.test_ci_impact.CiImpactTests.test_ci_shared_manifest_generator_normative_and_unknown_paths_force_full
-          tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must
-          tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_source_clause_requires_valid_role_direction_scope_and_condition
-          tools.normative_catalog.tests.test_validate.CatalogValidationTests.test_checked_in_catalog_reconciles_profile_and_official_test_evidence
+          verification.tests.scripts.test_ci_impact.CiImpactTests.test_ci_shared_manifest_generator_normative_and_unknown_paths_force_full
+          verification.conformance.tests.test_validate.CatalogValidationTests.test_checked_in_authentication_catalog_preserves_mixed_scope_and_lowercase_must
+          verification.conformance.tests.test_validate.CatalogValidationTests.test_source_clause_requires_valid_role_direction_scope_and_condition
+          verification.conformance.tests.test_validate.CatalogValidationTests.test_checked_in_catalog_reconciles_profile_and_official_test_evidence
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -154,7 +154,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -221,7 +221,7 @@ jobs:
 
       - name: Check the external single-dependency Rust consumer
         id: check-single-dependency-rust-consumer
-        run: cargo check --locked --manifest-path tests/fixtures/rust-single-dependency/Cargo.toml
+        run: cargo check --locked --manifest-path verification/consumers/rust-single-dependency/Cargo.toml
 
       - name: Build documentation
         id: build-documentation
@@ -229,7 +229,7 @@ jobs:
 
       - name: Compile bilingual client-guide examples
         id: compile-bilingual-client-guide-examples
-        run: python scripts/test_user_guide_examples.py
+        run: python verification/examples/test_user_guide_examples.py
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -240,7 +240,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -300,7 +300,7 @@ jobs:
 
       - name: Install pinned Python contract dependencies
         id: install-pinned-python-contract-dependencies
-        run: uv pip install --requirement tools/api_manifest/requirements-test.txt
+        run: uv pip install --requirement verification/api/requirements-test.txt
 
       - name: Fetch locked Cargo dependencies for offline ABI audit
         id: fetch-locked-cargo-dependencies-for-offline-abi-audit
@@ -324,94 +324,94 @@ jobs:
           $pythonRelativePath = if ($IsWindows) { 'Scripts/python.exe' } else { 'bin/python' }
           $python = Join-Path $env:VIRTUAL_ENV $pythonRelativePath
           if (-not (Test-Path -LiteralPath $python -PathType Leaf)) { throw 'The uv Python executable is missing.' }
-          & $python -B -m unittest discover -s tools/normative_catalog/tests -p 'test_validate.py' -k active_state_source_predicates_have_four_distinct_requirement_labels -v
+          & $python -B -m unittest discover -s verification/conformance/tests -p 'test_validate.py' -k active_state_source_predicates_have_four_distinct_requirement_labels -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -m unittest discover --failfast -s scripts/tests -p 'test_*.py' -v
+          & $python -m unittest discover --failfast -s verification/tests/scripts -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest discover --failfast -s tools/normative_catalog/tests -p 'test_*.py' -v
+          & $python -B -m unittest discover --failfast -s verification/conformance/tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest discover --failfast -s tools/api_manifest/tests -p 'test_extension_fixtures.py' -v
+          & $python -B -m unittest discover --failfast -s verification/api/tests -p 'test_extension_fixtures.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_parity tools.api_manifest.tests.test_t076_client_mapping tools.api_manifest.tests.test_t071_parity_runner -v
+          & $python -B -m unittest verification.api.tests.test_parity verification.api.tests.test_t076_client_mapping verification.api.tests.test_t071_parity_runner -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t100_query_ping_declaration_mapping tools.api_manifest.tests.test_ping_query_parity_manifest tools.api_manifest.tests.test_t101_hash_mac_signature_declaration_mapping tools.api_manifest.tests.test_hash_mac_signature_parity_manifest -v
+          & $python -B -m unittest verification.api.tests.test_t100_query_ping_declaration_mapping verification.api.tests.test_ping_query_parity_manifest verification.api.tests.test_t101_hash_mac_signature_declaration_mapping verification.api.tests.test_hash_mac_signature_parity_manifest -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_java_ttlv_bridge_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_java_ttlv_bridge_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_transport_response_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_transport_response_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_runtime_version_component_mapping -v
+          & $python -B -m unittest verification.api.tests.test_t102_runtime_version_component_mapping -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_runtime_version_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_runtime_version_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_get_constraints_response_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_get_constraints_response_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_log_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_log_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_join_split_key_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_join_split_key_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_import_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_import_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_interop_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_interop_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_pkcs11_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_client_root_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_pkcs11_client_root_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_set_constraints_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_set_constraints_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_protocol_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_protocol_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_lifecycle_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_lifecycle_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_request_trait_batch_two -v
+          & $python -B -m unittest verification.api.tests.test_t102_request_trait_batch_two -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_ticket_login_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_ticket_login_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_rng_retrieve_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_rng_retrieve_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_export_get_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_export_get_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_revocation_register_request_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_revocation_register_request_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_profile_validation_error_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_profile_validation_error_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_profile_model_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_profile_model_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_profile_debug_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_profile_debug_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_cryptographic_value_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_cryptographic_value_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_locate_value_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_locate_value_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_get_locate_error_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_get_locate_error_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_runtime_metadata_error_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_runtime_metadata_error_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_secret_bytes_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_secret_bytes_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_key_value_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_key_value_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_usage_allocation_context_trait_exclusions -v
+          & $python -B -m unittest verification.api.tests.test_t102_usage_allocation_context_trait_exclusions -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_client_extension_registry_namespace tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping tools.api_manifest.tests.test_log_parity_manifest tools.api_manifest.tests.test_t102_response_parser_mapping tools.api_manifest.tests.test_t102_profile_transport_parity tools.api_manifest.tests.test_t102_profile_model_reexport_mapping -v
+          & $python -B -m unittest verification.api.tests.test_t102_certify_request_builder_mapping verification.api.tests.test_t102_client_extension_registry_namespace verification.api.tests.test_t102_recertify_rekey_key_pair_builder_mapping verification.api.tests.test_log_parity_manifest verification.api.tests.test_t102_response_parser_mapping verification.api.tests.test_t102_profile_transport_parity verification.api.tests.test_t102_profile_model_reexport_mapping -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
+          & $python -B -m unittest verification.api.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_0095_response_view_bindings -v
+          & $python -B -m unittest verification.api.tests.test_0095_response_view_bindings -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
+          & $python -B -m unittest verification.api.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B -m unittest tools.api_manifest.tests.test_0053_operation_binding_matrix tools.api_manifest.tests.test_0053_validation_routes tools.api_manifest.tests.test_0053_kmip30_draft_api_catalog tools.api_manifest.tests.test_t102_macro_lot_partition -v
+          & $python -B -m unittest verification.api.tests.test_0053_operation_binding_matrix verification.api.tests.test_0053_validation_routes verification.api.tests.test_0053_kmip30_draft_api_catalog verification.api.tests.test_t102_macro_lot_partition -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B tools/api_manifest/generate.py --check
+          & $python -B verification/api/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B tools/extension_fixtures/generate.py --check
+          & $python -B verification/api/extension_fixtures/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run PowerShell contracts
         id: run-powershell-contracts
-        run: pwsh -File scripts/tests/Test-Wsl.ps1
+        run: pwsh -File verification/ci/Test-Wsl.ps1
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -422,7 +422,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -514,7 +514,7 @@ jobs:
             Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
             Select-Object -First 1
           if (-not $nativeLibrary) { throw 'The C ABI shared library was not built.' }
-          & $python.Source -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
+          & $python.Source -B verification/api/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure the C consumer with MSVC
@@ -552,7 +552,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -654,7 +654,7 @@ jobs:
             Where-Object { $_.Name -like '*kmipkit_jni.*' } |
             Select-Object -First 1
           if (-not $nativeLibrary) { throw 'The default JNI library was not built for the package smoke.' }
-          & $python.Source -B tools/api_manifest/audit_jni_public_exports.py --binary $nativeLibrary.FullName
+          & $python.Source -B verification/api/audit_jni_public_exports.py --binary $nativeLibrary.FullName
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Diagnose job result
@@ -666,7 +666,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -742,7 +742,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -809,7 +809,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -876,7 +876,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -921,6 +921,7 @@ jobs:
 
       - name: Fuzz the bounded extension schema target
         id: fuzz-the-bounded-extension-schema-target
+        working-directory: verification/security/fuzz
         run: |
           cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
           cargo +nightly fuzz run ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
@@ -937,7 +938,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -985,53 +986,53 @@ jobs:
 
       - name: Check pinned OASIS tree against exact PR base
         id: check-pinned-oasis-tree-against-exact-pr-base
-        run: python3 -B tools/normative_catalog/check_immutable_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA"
+        run: python3 -B verification/conformance/check_immutable_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA"
 
       - name: Compare source candidates with reviewed clause ledger
         id: compare-source-candidates-with-reviewed-clause-ledger
-        run: python3 -B tools/normative_catalog/audit_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA" --check
+        run: python3 -B verification/conformance/audit_sources.py --repo-root . --base-sha "$CI_EVENT_BASE_SHA" --check
 
       - name: Validate complete normative catalog
         id: validate-complete-normative-catalog
-        run: python3 -B tools/normative_catalog/validate.py --repo-root .
+        run: python3 -B verification/conformance/validate.py --repo-root .
 
       - name: Verify generated client profiles
         id: verify-generated-client-profiles
-        run: python3 -B tools/normative_catalog/generate_profiles.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_profiles.py --repo-root . --check
 
       - name: Verify generated coverage report
         id: verify-generated-coverage-report
-        run: python3 -B tools/normative_catalog/report.py --repo-root . --check
+        run: python3 -B verification/conformance/report.py --repo-root . --check
 
       - name: Verify generated TTLV tag allocations
         id: verify-generated-ttlv-tag-allocations
-        run: python3 -B tools/normative_catalog/generate_ttlv_tags.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_ttlv_tags.py --repo-root . --check
 
       - name: Verify generated wire-name metadata
         id: verify-generated-wire-name-metadata
-        run: python3 -B tools/normative_catalog/generate_wire_names.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_wire_names.py --repo-root . --check
 
       - name: Verify generated result mappings
         id: verify-generated-result-mappings
-        run: python3 -B tools/normative_catalog/generate_result_values.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_result_values.py --repo-root . --check
 
       - name: Verify generated attribute TTLV types
         id: verify-generated-attribute-ttlv-types
-        run: python3 -B tools/normative_catalog/generate_attribute_types.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_attribute_types.py --repo-root . --check
 
       - name: Verify generated attribute policy lookup
         id: verify-generated-attribute-policy-lookup
-        run: python3 -B tools/normative_catalog/generate_attribute_policy.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_attribute_policy.py --repo-root . --check
 
       - name: Verify generated named protocol values
         id: verify-generated-named-protocol-values
-        run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
+        run: python3 -B verification/conformance/generate_named_values.py --repo-root . --check
 
       - name: Verify fluent operation inventory
         id: verify-fluent-operation-inventory
         run: |
-          python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
-          python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
+          python3 -B verification/conformance/generate_fluent_operation_inventory.py --repo-root . --check
+          python3 -B -m unittest verification.conformance.tests.test_fluent_operation_inventory -v
 
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage
@@ -1052,15 +1053,15 @@ jobs:
         shell: bash
         run: |
           mkdir -p coverage-normative
-          python -m coverage run --data-file=coverage-normative/.coverage --source=tools.normative_catalog.generate_attribute_types -m unittest tools.normative_catalog.tests.test_generate_attribute_types
-          python -m coverage report --data-file=coverage-normative/.coverage --include=tools/normative_catalog/generate_attribute_types.py --fail-under=90
+          python -m coverage run --data-file=coverage-normative/.coverage --source=verification.conformance.generate_attribute_types -m unittest verification.conformance.tests.test_generate_attribute_types
+          python -m coverage report --data-file=coverage-normative/.coverage --include=verification/conformance/generate_attribute_types.py --fail-under=90
 
       - name: Verify wire-name generator line coverage
         id: verify-wire-name-generator-line-coverage
         shell: bash
         run: |
-          python -m coverage run --data-file=coverage-normative/.coverage-wire-names --source=tools.normative_catalog.generate_wire_names -m unittest tools.normative_catalog.tests.test_generate_wire_names
-          python -m coverage report --data-file=coverage-normative/.coverage-wire-names --include=tools/normative_catalog/generate_wire_names.py --fail-under=95
+          python -m coverage run --data-file=coverage-normative/.coverage-wire-names --source=verification.conformance.generate_wire_names -m unittest verification.conformance.tests.test_generate_wire_names
+          python -m coverage report --data-file=coverage-normative/.coverage-wire-names --include=verification/conformance/generate_wire_names.py --fail-under=95
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1071,7 +1072,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1146,7 +1147,7 @@ jobs:
         run: |
           $python = Get-Command -Name 'python3' -ErrorAction SilentlyContinue
           if (-not $python) { $python = Get-Command -Name 'python' -ErrorAction Stop }
-          & $python.Source scripts/coverage_gate.py preflight --workspace . --status-out coverage-status.json --github-output $env:GITHUB_OUTPUT
+          & $python.Source verification/coverage/coverage_gate.py preflight --workspace . --status-out coverage-status.json --github-output $env:GITHUB_OUTPUT
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Export LLVM JSON coverage
@@ -1161,14 +1162,14 @@ jobs:
         run: |
           $python = Get-Command -Name 'python3' -ErrorAction SilentlyContinue
           if (-not $python) { $python = Get-Command -Name 'python' -ErrorAction Stop }
-          & $python.Source scripts/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
+          & $python.Source verification/coverage/coverage_gate.py normalize --workspace . --input coverage-raw.json --output coverage.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Collect C consumer FFI coverage
         id: collect-c-consumer-ffi-coverage
         if: steps.source.outputs.eligible == 'true' && matrix.platform == 'ubuntu'
         shell: bash
-        run: bash scripts/collect_ffi_coverage.sh coverage-ffi
+        run: bash verification/coverage/collect_ffi_coverage.sh coverage-ffi
 
       - name: Upload platform coverage report
         id: upload-platform-coverage-report
@@ -1206,7 +1207,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1306,7 +1307,7 @@ jobs:
         env:
           COVERAGE_SCOPES_JSON: ${{ github.event_name == 'push' && '["rust","ffi-c","java","python","jni"]' || needs.impact-plan.outputs.coverage_scopes }}
           CI_EVENT_BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
-        run: python scripts/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "$CI_EVENT_BASE_SHA" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY" --scopes-json "$COVERAGE_SCOPES_JSON"
+        run: python verification/coverage/coverage_gate.py aggregate --workspace . --report-dir coverage-reports --base "$CI_EVENT_BASE_SHA" --merge "${{ github.sha }}" --summary-file "$GITHUB_STEP_SUMMARY" --scopes-json "$COVERAGE_SCOPES_JSON"
 
       - name: Summarize skipped coverage aggregation
         id: summarize-skipped-coverage-aggregation
@@ -1328,7 +1329,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1425,7 +1426,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1518,7 +1519,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1605,7 +1606,7 @@ jobs:
         id: run-jni-coverage-suite
         shell: bash
         run: |
-          bash scripts/collect_jni_coverage.sh target/coverage-jni
+          bash verification/coverage/collect_jni_coverage.sh target/coverage-jni
           mkdir -p coverage-jni
           cp target/coverage-jni/coverage.json coverage-jni/coverage.json
 
@@ -1625,7 +1626,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1671,7 +1672,7 @@ jobs:
       - name: Run root and fuzz dependency policy
         id: run-root-and-fuzz-dependency-policy
         shell: pwsh
-        run: ./scripts/Test-DependencyPolicy.ps1
+        run: ./verification/dependencies/Test-DependencyPolicy.ps1
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1682,7 +1683,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1737,7 +1738,7 @@ jobs:
       - name: Run root and fuzz dependency policy
         id: run-root-and-fuzz-dependency-policy
         shell: pwsh
-        run: ./scripts/Test-DependencyPolicy.ps1
+        run: ./verification/dependencies/Test-DependencyPolicy.ps1
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1748,7 +1749,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1796,7 +1797,7 @@ jobs:
       - name: Check production source eligibility
         id: source
         shell: bash
-        run: python scripts/coverage_gate.py preflight --workspace . --github-output "$GITHUB_OUTPUT"
+        run: python verification/coverage/coverage_gate.py preflight --workspace . --github-output "$GITHUB_OUTPUT"
 
       - name: Install pinned coverage tool
         id: install-coverage-tool
@@ -1840,7 +1841,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1902,14 +1903,14 @@ jobs:
         env:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
           CI_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: python3 scripts/ci_summary.py
+        run: python3 verification/ci/ci_summary.py
 
       - name: Evaluate ephemeral profile readiness
         id: profile-readiness
         if: always() && steps.checkout.outcome == 'success'
         env:
           PROFILE_EVIDENCE_MANIFEST: ${{ steps.write-summary.outputs.profile_evidence_manifest }}
-        run: python3 -B tools/normative_catalog/report.py --repo-root . --readiness
+        run: python3 -B verification/conformance/report.py --repo-root . --readiness
 
       - name: Fallback summary when checkout or rendering fails
         id: fallback-summary
@@ -1931,7 +1932,7 @@ jobs:
           CI_MATRIX_JSON: ${{ toJSON(matrix) }}
           CI_STEPS_JSON: ${{ toJSON(steps) }}
         run: |
-          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'scripts/ci_diagnostics.py'
+          $diagnosticScript = Join-Path $env:GITHUB_WORKSPACE 'verification/ci/ci_diagnostics.py'
           if (-not (Test-Path -LiteralPath $diagnosticScript -PathType Leaf)) {
             '### ❌ Job diagnosis could not run' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
             'Checkout did not make the diagnostic script available. Open the failed checkout step log for the native error.' | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
@@ -1998,7 +1999,7 @@ jobs:
           gh api repos/NeverWe1come/KMIPKit/branches/release%2F1.0.0/protection \
             --header 'Accept: application/vnd.github+json' \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
-            | python3 -B scripts/branch_protection.py >> "$GITHUB_OUTPUT"
+            | python3 -B verification/ci/branch_protection.py >> "$GITHUB_OUTPUT"
 
       - name: Write protected release summary
         id: write-summary
@@ -2006,7 +2007,7 @@ jobs:
         env:
           CI_NEEDS_JSON: ${{ toJSON(needs) }}
           CI_BRANCH_PROTECTION_JSON: ${{ steps.branch-protection.outputs.policy_json }}
-        run: python3 scripts/ci_summary.py
+        run: python3 verification/ci/ci_summary.py
 
       - name: Evaluate ephemeral profile readiness
         id: profile-readiness
@@ -2015,7 +2016,7 @@ jobs:
           PROFILE_EVIDENCE_MANIFEST: ${{ steps.write-summary.outputs.profile_evidence_manifest }}
           PROFILE_EVIDENCE_GITHUB_TOKEN: ${{ github.token }}
           PROFILE_EVIDENCE_BRANCH_PROTECTION_TOKEN: ${{ steps.branch-protection-token.outputs.token }}
-        run: python3 -B tools/normative_catalog/report.py --repo-root . --readiness
+        run: python3 -B verification/conformance/report.py --repo-root . --readiness
 
       - name: Fallback summary when checkout or rendering fails
         id: fallback-summary

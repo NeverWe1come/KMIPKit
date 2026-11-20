@@ -3,15 +3,15 @@ name: Interop C Validator
 on:
   pull_request:
     paths:
-      - 'interop/c-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/c-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - '.github/workflows/interop-c.yml'
   push:
     branches:
       - release/1.0.0
     paths:
-      - 'interop/c-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/c-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - '.github/workflows/interop-c.yml'
 
 permissions:
@@ -31,10 +31,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cmake build-essential
 
       - name: Configure CMake
-        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build
+        run: cmake -S verification/interop/c-kmip-validator -B verification/interop/c-kmip-validator/build
 
       - name: Build C validator
-        run: cmake --build interop/c-kmip-validator/build
+        run: cmake --build verification/interop/c-kmip-validator/build
 
       - name: Run C unit tests
-        run: ctest --test-dir interop/c-kmip-validator/build --output-on-failure
+        run: ctest --test-dir verification/interop/c-kmip-validator/build --output-on-failure

@@ -3,8 +3,8 @@ name: Interop Common Foundation
 on:
   pull_request:
     paths:
-      - 'interop/shared/**'
-      - 'interop/README.md'
+      - 'verification/interop/shared/**'
+      - 'verification/interop/README.md'
       - 'specs/088-interop-contract-version-matrix/**'
       - 'docs/superpowers/plans/2026-11-10-interop-contract-version-matrix.md'
       - '.github/workflows/interop-common.yml'
@@ -13,8 +13,8 @@ on:
       - release/1.0.0
       - feature/KMIPKIT-0088-interop-contract-matrix
     paths:
-      - 'interop/shared/**'
-      - 'interop/README.md'
+      - 'verification/interop/shared/**'
+      - 'verification/interop/README.md'
       - 'specs/088-interop-contract-version-matrix/**'
       - 'docs/superpowers/plans/2026-11-10-interop-contract-version-matrix.md'
       - '.github/workflows/interop-common.yml'
@@ -41,10 +41,10 @@ jobs:
         run: pip install --only-binary ":all:" jsonschema==4.23.0
 
       - name: Verify test catalog generation check
-        run: python3 interop/shared/catalog/generate_test_catalog.py --check
+        run: python3 verification/interop/shared/catalog/generate_test_catalog.py --check
 
       - name: Verify canonical vectors generation check
-        run: python3 interop/shared/vectors/generate_vectors.py --check
+        run: python3 verification/interop/shared/vectors/generate_vectors.py --check
 
       - name: Run interop shared tests
-        run: python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v
+        run: python3 -B -m unittest discover -s verification/interop/shared/tests -p 'test_*.py' -v

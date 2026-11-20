@@ -6,7 +6,7 @@
 //! §11.44 Table 476; §11.56 tag allocations; KMIPKIT-0012-FR-009 and
 //! KMIPKIT-0012-FR-012.
 
-#[path = "../../../tests/fixtures/extensions/oasis/mod.rs"]
+#[path = "../../../bindings/shared/fixtures/extensions/oasis/mod.rs"]
 mod oasis;
 
 use kmipkit_protocol::extension::{self, ExtensionDefinition};
@@ -124,7 +124,7 @@ fn table_476_query_extension_functions_are_enumeration_values_five_and_six() {
 
 #[test]
 fn schema_fuzz_corpus_seed_decodes_and_reaches_complete_validation() {
-    const SEED: &[u8] = include_bytes!("../../../fuzz/corpus/extension_schema/valid_nested.ttlv");
+    const SEED: &[u8] = include_bytes!("../../../verification/security/fuzz/corpus/extension_schema/valid_nested.ttlv");
     let codec_limits = CodecLimits::new(4 * 1024, 64, 512)
         .expect("the fuzz target uses supported bounded decoder limits");
     let decoded = decode_with_limits(SEED, &codec_limits)

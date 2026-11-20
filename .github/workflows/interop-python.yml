@@ -7,13 +7,13 @@ on:
       - 'release/**'
       - 'feature/**'
     paths:
-      - 'interop/python-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/python-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - '.github/workflows/interop-python.yml'
   pull_request:
     paths:
-      - 'interop/python-kmip-validator/**'
-      - 'interop/shared/**'
+      - 'verification/interop/python-kmip-validator/**'
+      - 'verification/interop/shared/**'
       - '.github/workflows/interop-python.yml'
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: interop/python-kmip-validator
+        working-directory: verification/interop/python-kmip-validator
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:

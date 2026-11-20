@@ -1,0 +1,222 @@
+# C, Java, and Python public export audit
+
+`audit_binding_exports.py` supplies the non-Rust evidence required by
+KMIPKIT-0043-FR-021 and T011. It independently discovers declarations from the
+published C header and ABI library, compiled Java 17 classes, and Python source
+exports, then compares exact package ID, export path, and kind with manifest v2.
+It does not add manifest rows, approve owners, or make excluded-scope decisions.
+
+## Reproduce
+
+Run from the repository root with Python 3, Cargo, a C build toolchain, JDK 17 or
+later, and the platform's native symbol reader (`nm` on Unix):
+
+```text
+python -B -m unittest verification.api.tests.test_binding_exports -v
+python -B verification/api/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
+```
+
+The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
+temporary target directory. It reads named exports directly from the PE export
+table on Windows, or from the platform shared library with `nm` on Unix. An
+exported symbol without the `kmipkit_` prefix, a binary/header mismatch, an
+ordinal-only PE export, or an unsupported PE image prevents a complete C audit.
+The audit inventories header macros, types, fields, and function prototypes as
+well as binary symbols. Temporary files are removed automatically.
+
+Java sources compile with `javac --release 17` into a separate temporary
+directory; `javap -protected` inventories public and protected types and members,
+including compiler-created record and enum members. Python is parsed without
+importing or executing package code. The scanner follows explicit `__all__`,
+visible module definitions, imported names, class members, and inherited
+members from private helper bases. Unsupported dynamic export expressions,
+unresolved imports, duplicate paths, or ambiguous overloads remain issues.
+
+For Python dataclasses, the scanner resolves only statically imported
+`dataclasses.dataclass` decorators and literal boolean options. It inventories
+generated constructors, representation/equality/order/hash methods, frozen
+assignment guards, and dataclass metadata fields. It records the constructor
+signature from field annotations and literal defaults without executing class
+code or decorators. A dynamic dataclass option produces an issue instead of a
+partial inventory.
+
+The scanner's class-member boundary is intentionally narrower than Python's
+entire runtime object model. It inventories package-facing constructors,
+ordinary public members, context-manager methods, and the implemented public
+special-method protocols in `_PYTHON_PUBLIC_DUNDER_METHODS`; it does not
+enumerate methods inherited from `object`. The dataclass `__post_init__` hook
+is an initialization-time validation/normalization callback, not a package
+operation. The private handle base's `__del__` is best-effort cleanup; explicit
+`close` and context-manager methods remain the supported lifecycle surface.
+The private handle base's `__repr__` is a handle-state diagnostic, not a
+public value representation; dataclass-generated public value representations
+remain inventoried. Their sensitive inputs are hidden by `repr=False` fields
+and are covered by `bindings/python/tests/test_client.py` tests
+`test_secret_bearing_client_records_redact_repr` and
+`test_endpoint_direct_constructor_enforces_text_shape_and_repr_redaction`.
+Public constructors inherited from package-private bases are still observed
+and must be reconciled. Observing an inherited raw-handle constructor does not
+approve it as a product construction path. At the current T076 checkpoint,
+native wrapper constructors require a private identity token supplied by the
+internal handle factory; calls that try to adopt a raw CFFI handle directly
+fail before the wrapper is initialized. The 29 exact observed `.__init__`
+paths are individually excluded as internal ownership plumbing; each wrapper
+type and public construction/factory operation remains separately inventoried
+and mapped or explicitly blocked.
+
+The report is deterministic and omits timestamps and temporary paths. Exit code
+0 from `--check` means every package exactly matches the manifest and every
+scanner completed; exit code 1 means a completed report has discrepancies or
+incomplete inventory; exit code 2 means an input, build, or tool failure. A
+manifest row in state `blocked` still counts as an exact inventory match, but
+does not satisfy readiness or parity. T011 requires complete scans and exact
+matching; a blocked row cannot compensate for a missing manifest record, stale
+record, kind mismatch, duplicate, unsupported export, or traversal issue.
+
+## Historical snapshot
+
+The earlier Windows x86-64 snapshot is checked in at
+`specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`.
+The prior C/Java/Python audit command produced exit code 0 at that checkpoint:
+
+| Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| C | yes | 182 | 178 | 178 | 0 | 0 | 0 | 0 |
+| Java | yes | 351 | 351 | 351 | 0 | 0 | 0 | 0 |
+| Python | yes | 274 | 274 | 274 | 0 | 0 | 0 | 0 |
+
+The C count observes 182 exported paths: 178 manifest declarations and four
+approved C-specific exclusions. These include the `struct_size` and
+`abi_version` fields of the versioned limits structure plus the diagnostic
+functions `kmipkit_last_error_clear` and `kmipkit_last_error_get`. The
+diagnostic functions remain in the public C header and native ABI; their
+exclusions apply only to the shared cross-language capability inventory. The patched
+`aws-lc-sys@0.45.0` vendor source prevents the nine transitive
+`aws_lc_0_45_0_jent_*` functions from becoming public ABI symbols while
+preserving jitterentropy. CI repeats a C-only header/binary/manifest audit on
+Windows, Linux, and macOS using the library already built by the C job.
+
+This snapshot predates the T076 mapping and expanded Python source inventory.
+It is historical evidence only and is not the current binding-export gate.
+T011 is open while the refreshed report and all current declarations are
+reconciled; the Rust export crawler also requires its own exhaustive audit and
+QA review before T011 is complete.
+
+The scanner does not decide whether an unexpected native export should be
+removed or represented as an API, whether a public declaration needs an
+approved owner, or how overload signatures should be keyed. Those decisions
+must be made under the approved 0043 contract; until reconciled, the report is
+evidence of an open gate and does not close T011.
+
+## Current reconciliation status (2026-11-09)
+
+The current report at
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json`
+was refreshed by the pinned audit tool on Linux on 2026-11-11 during
+KMIPKIT-0097 documentation and audit reconciliation. The Rust-only builder
+declarations stay blocked and do not add foreign-language exports.
+The 2026-11-05 report and earlier dated reports remain historical snapshots.
+All three scanners are complete, and every observed binding export has an
+exact declaration or approved exact exclusion. The separate whole-tree Rust
+export audit remains an open manifest gate; see KMIPKIT-0050's report README.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,124 | 2,064 | 2,064 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+The Java scanner records public inherited members from package-private helper
+bases under each concrete public facade, while members inherited from an
+independently public base remain inventoried at that base. This makes the
+standalone attribute request facade methods auditable without duplicating the
+shared `ClientOperationException` methods. The 17 new `NativeExtensionRegistry`
+entries are exact internal JNI bridge exclusions; the five typed request models
+remain the supported Java API.
+
+The Java audit accounts for the exact JNI bridge method
+`NativeExtensionRegistry.clientExecuteWithOptions` and the generated record
+methods `RequestOptions.equals`, `hashCode`, and `toString`. The bridge method
+is excluded as minimal raw-handle plumbing; the typed `Client.executeWithOptions`
+capability remains mapped. Record boilerplate exclusions apply only to those
+three exact paths. New exact JNI bridge exclusions cover the T062–T069
+operations; operation-specific typed facades remain inventoried. Exact
+response `toString` exclusions are limited to redacted diagnostic methods, and
+the Validate overload signatures are listed explicitly. Six Python declaration
+kinds now match the source scanner's function/field classification. The 29 Python
+native-wrapper initializers remain exact
+exclusions because a mandatory private identity token restricts them to the
+internal handle factory; wrapper types and public factories remain separately
+reconciled. T055 and T078 add exact exclusions for the Java `NativeExtensionRegistry`
+handle-kind discriminator and raw-handle methods; their typed Logout and Usage
+Allocation facades remain inventoried as product mappings. The exact
+`UsageAllocationContext.toString` exclusion is limited to its fixed
+`identifier=redacted` diagnostic summary, which the TLS integration test checks.
+
+The semantic transport review maps per-exchange timeout `DEFAULT` to the Rust
+default policy while preserving bounded zero and unbounded as distinct values.
+Certificate chains, private keys, and trust certificates cover PEM/DER from
+memory or selected files; CRLs cover PEM/DER from memory only. C `encoding`,
+`source_kind`, nested byte-span `data`, slice counts, and the exact versioned
+configuration carrier are classified as ABI representations while the parent
+configuration fields retain the semantic mappings and generated C layout.
+`endpoint_port` is conditional on RAW_TLS; HTTPS carries its optional port in
+the endpoint URI. The current C/Java/Python binding scan is structurally exact:
+all three scans are complete with zero missing, stale, kind-mismatched, or
+otherwise unclassified exports. This evidence closes the binding-export part
+of T011 for this Linux snapshot. The Rust export audit and manifest
+generator checks are tracked in their own T011 evidence; end-to-end language
+parity and offline package-loading gates remain assigned to T029/T071 and
+T028/T072. Regenerate the current report after each binding-export
+reconciliation batch.
+
+## Parameters and Authentication synchronization snapshot (2026-11-07)
+
+The 0049 binding report remains a historical predecessor snapshot. The new
+combined 0050 report is
+`specs/050-parameters-auth-client/reports/binding-export-report-post-sync-2026-11-07.json`.
+Its official `--check` run completed with 1,708 exact C manifest matches,
+1,881 Java matches, and 2,000 Python matches. All three packages are complete
+and match the manifest, with no missing or unobserved routes, kind mismatches,
+or inventory issues. No binding capability is promoted by this audit; typed
+parameters and Authentication execution parity remain assigned to KMIPKIT-0053.
+
+
+## Versioned catalog binding delivery snapshot (2026-11-15)
+
+The current audit report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-versioned-catalogs.json`.
+It was generated from the built C DSO and complete Java/Python inventories
+after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,124 | 2,064 | 2,064 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,168 | 2,468 | 2,468 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,688 | 2,679 | 2,679 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Historical KMIP 3.0 and asynchronous binding delivery snapshot (2026-11-15)
+
+This historical report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json`.
+It includes the KMIPKIT-0122 versioned catalog base and the KMIPKIT-0124
+KMIP 3.0 operation and asynchronous batch binding declarations.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,158 | 2,098 | 2,098 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,214 | 2,503 | 2,503 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,726 | 2,717 | 2,717 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Fluent tag API binding delivery snapshot (2026-11-16)
+
+The current report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json`.
+It includes the prior KMIP 3.0 and asynchronous bindings plus the 2,077
+catalog-backed fluent tag declarations delivered by KMIPKIT-0093.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,704 | 2,643 | 2,643 | 61 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,766 | 3,055 | 3,055 | 711 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 4,328 | 3,319 | 3,319 | 1,009 | 0 | 0 | 0 | 0 | yes |

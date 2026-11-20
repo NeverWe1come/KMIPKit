@@ -1,0 +1,60 @@
+# Rust
+/target/
+target/
+**/target/
+**/*.rs.bk
+*.pdb
+rustc-ice-*.txt
+**/mutants.out*/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+
+# Java / Gradle
+.gradle/
+**/build/
+
+# Coverage and fuzzing
+coverage/
+*.profraw
+*.profdata
+verification/security/fuzz/artifacts/
+verification/security/fuzz/corpus-generated/
+verification/security/fuzz/target/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local secrets and certificates
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+.env
+.env.*
+
+# Test PKI is generated ephemerally.
+test-pki/
+
+# Interoperability test suites local artifacts
+verification/interop/.local/
+verification/interop/**/results/
+verification/interop/**/target/
+**/docker-compose.local.yml
+
+# Local verification campaign outputs
+target/verification/
+verification/interop/.local/
