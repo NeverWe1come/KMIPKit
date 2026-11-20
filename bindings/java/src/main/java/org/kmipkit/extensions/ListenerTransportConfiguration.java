@@ -143,16 +143,25 @@ public final class ListenerTransportConfiguration implements AutoCloseable {
         }
 
         public Builder readTimeout(Duration timeout) {
+            if (timeout == null || timeout.isNegative()) {
+                throw new InvalidInputException("readTimeout must be non-negative");
+            }
             this.readTimeout = timeout;
             return this;
         }
 
         public Builder writeTimeout(Duration timeout) {
+            if (timeout == null || timeout.isNegative()) {
+                throw new InvalidInputException("writeTimeout must be non-negative");
+            }
             this.writeTimeout = timeout;
             return this;
         }
 
         public Builder maxRequestBytes(long bytes) {
+            if (bytes <= 0) {
+                throw new InvalidInputException("maxRequestBytes must be positive");
+            }
             this.maxRequestBytes = bytes;
             return this;
         }

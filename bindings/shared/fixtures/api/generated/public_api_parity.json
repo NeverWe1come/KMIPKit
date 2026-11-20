@@ -333556,8 +333556,14 @@
           "kmipkit_server_request_item_view_v1_t"
         ],
         "java": [
-          "org.kmipkit.ClientListener",
-          "org.kmipkit.ServerRequestHandler"
+          "org.kmipkit.extensions.ClientListener",
+          "org.kmipkit.extensions.ClientListenerConnection",
+          "org.kmipkit.extensions.IncomingServerBatch",
+          "org.kmipkit.extensions.ListenerTransportConfiguration",
+          "org.kmipkit.extensions.RoleReversedSession",
+          "org.kmipkit.extensions.S2cCapabilities",
+          "org.kmipkit.extensions.ServerRequestDispatcher",
+          "org.kmipkit.extensions.ServerRequestHandler"
         ],
         "python": [
           "kmipkit.server_to_client.ClientListener",

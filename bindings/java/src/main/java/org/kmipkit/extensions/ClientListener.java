@@ -43,7 +43,9 @@ public final class ClientListener implements AutoCloseable {
     }
 
     public ClientListenerConnection accept(Duration timeout) {
-        Objects.requireNonNull(timeout, "timeout");
+        if (timeout == null || timeout.isNegative()) {
+            throw new InvalidInputException("timeout must be non-negative");
+        }
         long connHandle = handle.withValue(raw ->
                 NativeExtensionRegistry.clientListenerAccept(raw, timeout.toMillis()));
         return ClientListenerConnection.fromNativeHandle(connHandle);

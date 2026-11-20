@@ -7,41 +7,30 @@ import org.kmipkit.protocol.VersionGate.ProtocolVersion;
 public interface ServerRequestHandler {
     public record ItemView(long operation, byte[] uniqueBatchItemId) {}
 
-    default long handleDiscoverVersions(
+    long handleDiscoverVersions(
             ItemView item,
             ProtocolVersion clientVersion,
-            List<ProtocolVersion> supportedVersionsOut) {
-        supportedVersionsOut.add(new ProtocolVersion(2, 1));
-        return 0; // success (KMIP ResultStatus.Success)
-    }
+            List<ProtocolVersion> supportedVersionsOut);
 
-    default long handleNotify(
+    long handleNotify(
             ItemView item,
             byte[] uniqueIdentifier,
-            byte[] attributesTtlv) {
-        return 0;
-    }
+            byte[] attributesTtlv);
 
-    default long handlePut(
+    long handlePut(
             ItemView item,
             long putFunction,
             byte[] uniqueIdentifier,
             byte[] replacedUniqueIdentifier,
             byte[] objectTtlv,
-            byte[] attributesTtlv) {
-        return 0;
-    }
+            byte[] attributesTtlv);
 
-    default long handleQuery(
+    long handleQuery(
             ItemView item,
             long queryFunctionFlags,
-            S2cCapabilities outCapabilities) {
-        return 0;
-    }
+            S2cCapabilities outCapabilities);
 
-    default long handleSetEndpointRole(
+    long handleSetEndpointRole(
             ItemView item,
-            long targetRole) {
-        return 0;
-    }
+            long targetRole);
 }

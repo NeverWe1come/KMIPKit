@@ -22,7 +22,9 @@ public final class ClientListenerConnection implements AutoCloseable {
 
     public IncomingServerBatch recvBatch(CodecLimits limits, Duration timeout) {
         Objects.requireNonNull(limits, "limits");
-        Objects.requireNonNull(timeout, "timeout");
+        if (timeout == null || timeout.isNegative()) {
+            throw new InvalidInputException("timeout must be non-negative");
+        }
         NativeExtensionRegistry.ensureLoaded();
         long[] nativeLimits = NativeExtensionRegistry.codecLimitValues(limits);
         long batchHandle = handle.withValue(raw ->
@@ -32,7 +34,9 @@ public final class ClientListenerConnection implements AutoCloseable {
 
     public void sendResponse(ResponseMessage response, Duration timeout) {
         Objects.requireNonNull(response, "response");
-        Objects.requireNonNull(timeout, "timeout");
+        if (timeout == null || timeout.isNegative()) {
+            throw new InvalidInputException("timeout must be non-negative");
+        }
         NativeExtensionRegistry.ensureLoaded();
         handle.withValue(raw -> {
             long respHandle = response.nativeHandleOwner().get();
