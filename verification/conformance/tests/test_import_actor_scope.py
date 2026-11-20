@@ -25,8 +25,8 @@ class ImportActorScopeTests(unittest.TestCase):
         cls.oracle = json.loads(
             (
                 ROOT
-                / "tools"
-                / "normative_catalog"
+                / "verification"
+                / "conformance"
                 / "tests"
                 / "fixtures"
                 / "profile-closure-v2.1.json"
