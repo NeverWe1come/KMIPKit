@@ -6,7 +6,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.message.ResponseMessage;
 
-/** Dispatches IncomingServerBatch items to a ServerRequestHandler using C ABI dispatch_v3. */
+/** Dispatches IncomingServerBatch items to a ServerRequestHandler using C ABI dispatch_v4. */
 public final class ServerRequestDispatcher implements AutoCloseable {
     private final NativeHandle handle;
 

@@ -15640,6 +15640,7 @@ struct S2cCallbackContext {
     std::vector<uint32_t> custom_exts;
     std::vector<uint8_t> custom_vendor;
     std::vector<uint8_t> result_message_buf;
+    std::vector<uint32_t> supported_versions;
 };
 
 static uint32_t populate_s2c_operation_result(
@@ -15647,6 +15648,7 @@ static uint32_t populate_s2c_operation_result(
         S2cCallbackContext* ctx,
         jobject jResult,
         kmipkit_s2c_operation_result_v1_t* out_result) {
+    ctx->result_message_buf.clear();
     if (out_result != nullptr) {
         out_result->struct_size = static_cast<uint32_t>(sizeof(kmipkit_s2c_operation_result_v1_t));
         out_result->abi_version = 1;
@@ -15758,8 +15760,9 @@ static uint32_t populate_s2c_operation_result(
             jstring jMsg = static_cast<jstring>(env->CallObjectMethod(jMsgOpt, get_mid));
             if (jMsg != nullptr) {
                 if (java_string_to_utf8(env, jMsg, ctx->result_message_buf)) {
+                    static const uint8_t empty_message = 0;
                     out_result->result_message_data = ctx->result_message_buf.empty()
-                            ? nullptr : ctx->result_message_buf.data();
+                            ? &empty_message : ctx->result_message_buf.data();
                     out_result->result_message_length = static_cast<uint64_t>(ctx->result_message_buf.size());
                 } else if (env->ExceptionCheck()) {
                     env->ExceptionClear();
@@ -15781,11 +15784,11 @@ static uint32_t populate_s2c_operation_result(
     return status == 0U ? 0U : 1U;
 }
 
-static uint32_t s2c_handle_discover_versions_v3(
+static uint32_t s2c_handle_discover_versions_v4(
         void* user_data,
         const kmipkit_server_request_item_view_v1_t* item_view,
         const uint32_t* requested_versions_packed, uint32_t requested_versions_count,
-        uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
+        const uint32_t** supported_versions_out,
         uint32_t* supported_versions_count_out,
         kmipkit_s2c_operation_result_v1_t* out_result) {
     auto* ctx = static_cast<S2cCallbackContext*>(user_data);
@@ -15847,8 +15850,8 @@ static uint32_t s2c_handle_discover_versions_v3(
             env->ExceptionClear();
             status = 1U;
         } else {
-            uint32_t count = 0;
-            for (jint i = 0; i < size && count < supported_versions_capacity; ++i) {
+            ctx->supported_versions.clear();
+            for (jint i = 0; i < size; ++i) {
                 jobject elem = env->CallObjectMethod(list_obj, list_get, i);
                 if (env->ExceptionCheck()) {
                     env->ExceptionClear();
@@ -15864,12 +15867,18 @@ static uint32_t s2c_handle_discover_versions_v3(
                         status = 1U;
                         break;
                     }
-                    supported_versions_out[count++] = (static_cast<uint32_t>(maj) << 16) | static_cast<uint32_t>(min);
+                    if (maj < 0 || maj > 0xFFFF || min < 0 || min > 0xFFFF) {
+                        env->DeleteLocalRef(elem);
+                        status = 1U;
+                        break;
+                    }
+                    ctx->supported_versions.push_back((static_cast<uint32_t>(maj) << 16) | static_cast<uint32_t>(min));
                     env->DeleteLocalRef(elem);
                 }
             }
             if (status == 0) {
-                *supported_versions_count_out = count;
+                *supported_versions_out = ctx->supported_versions.data();
+                *supported_versions_count_out = static_cast<uint32_t>(ctx->supported_versions.size());
             }
         }
     }
@@ -15892,8 +15901,14 @@ static uint32_t s2c_handle_discover_versions(
         uint32_t* supported_versions_out, uint32_t supported_versions_capacity,
         uint32_t* supported_versions_count_out) {
     const uint32_t packed_version = (protocol_version_major << 16) | (protocol_version_minor & 0xFFFFU);
-    return s2c_handle_discover_versions_v3(user_data, item_view, &packed_version, 1,
-            supported_versions_out, supported_versions_capacity, supported_versions_count_out, nullptr);
+    const uint32_t* borrowed = nullptr;
+    uint32_t count = 0;
+    uint32_t status = s2c_handle_discover_versions_v4(user_data, item_view, &packed_version, 1,
+            &borrowed, &count, nullptr);
+    if (status != 0 || count > supported_versions_capacity) return 1U;
+    if (count != 0) std::copy(borrowed, borrowed + count, supported_versions_out);
+    *supported_versions_count_out = count;
+    return 0U;
 }
 
 static uint32_t s2c_handle_notify_v3(
@@ -16218,7 +16233,7 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}};
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}};
         kmipkit_server_request_handler_v2_t handler_v2{};
         handler_v2.struct_size = static_cast<uint32_t>(sizeof(handler_v2));
         handler_v2.abi_version = 2;
@@ -16245,22 +16260,22 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_serverRequestDi
             throw_invalid_input(env);
             return static_cast<jlong>(0);
         }
-        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}};
-        kmipkit_server_request_handler_v3_t handler_v3{};
-        handler_v3.struct_size = static_cast<uint32_t>(sizeof(handler_v3));
-        handler_v3.abi_version = 3;
-        handler_v3.user_data = &ctx;
-        handler_v3.handle_discover_versions = s2c_handle_discover_versions_v3;
-        handler_v3.handle_notify = s2c_handle_notify_v3;
-        handler_v3.handle_put = s2c_handle_put_v3;
-        handler_v3.handle_query = s2c_handle_query_v3;
-        handler_v3.handle_set_endpoint_role = s2c_handle_set_endpoint_role_v3;
+        S2cCallbackContext ctx{env, handler, {}, {}, {}, {}, {}, {}};
+        kmipkit_server_request_handler_v4_t handler_v4{};
+        handler_v4.struct_size = static_cast<uint32_t>(sizeof(handler_v4));
+        handler_v4.abi_version = 4;
+        handler_v4.user_data = &ctx;
+        handler_v4.handle_discover_versions = s2c_handle_discover_versions_v4;
+        handler_v4.handle_notify = s2c_handle_notify_v3;
+        handler_v4.handle_put = s2c_handle_put_v3;
+        handler_v4.handle_query = s2c_handle_query_v3;
+        handler_v4.handle_set_endpoint_role = s2c_handle_set_endpoint_role_v3;
 
         return return_handle<kmipkit_response_message_t>(env, [&](auto output) {
-            return kmipkit_server_request_dispatcher_dispatch_v3(
+            return kmipkit_server_request_dispatcher_dispatch_v4(
                     from_java_handle<kmipkit_server_request_dispatcher_t>(raw_dispatcher),
                     from_java_handle<kmipkit_incoming_server_batch_t>(raw_batch),
-                    &handler_v3, output);
+                    &handler_v4, output);
         });
     });
 }
