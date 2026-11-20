@@ -132,20 +132,24 @@ fn create_ca(key: &PKey<Private>) -> Result<X509, PkiError> {
     Ok(builder.build())
 }
 
+struct LeafCertificate<'a> {
+    common_name: &'a str,
+    dns_names: &'a [&'a str],
+    ip_addresses: &'a [&'a str],
+    serial: u32,
+    server_auth: bool,
+}
+
 fn create_leaf(
     key: &PKey<Private>,
     ca: &X509,
     ca_key: &PKey<Private>,
-    common_name_value: &str,
-    dns_names: &[&str],
-    ip_addresses: &[&str],
-    serial: u32,
-    server_auth: bool,
+    certificate: LeafCertificate<'_>,
 ) -> Result<X509, PkiError> {
-    let name = common_name(common_name_value)?;
+    let name = common_name(certificate.common_name)?;
     let mut builder = X509::builder().map_err(|_| PkiError)?;
     builder.set_version(2).map_err(|_| PkiError)?;
-    let serial_number = serial_number(serial)?;
+    let serial_number = serial_number(certificate.serial)?;
     builder
         .set_serial_number(&serial_number)
         .map_err(|_| PkiError)?;
@@ -159,10 +163,10 @@ fn create_leaf(
     let subject_alt_name = {
         let context = builder.x509v3_context(Some(ca), None);
         let mut names = SubjectAlternativeName::new();
-        for name in dns_names {
+        for name in certificate.dns_names {
             names.dns(name);
         }
-        for address in ip_addresses {
+        for address in certificate.ip_addresses {
             names.ip(address);
         }
         names.build(&context).map_err(|_| PkiError)?
@@ -178,7 +182,7 @@ fn create_leaf(
         .build()
         .map_err(|_| PkiError)?;
     builder.append_extension(key_usage).map_err(|_| PkiError)?;
-    let extended_key_usage = if server_auth {
+    let extended_key_usage = if certificate.server_auth {
         ExtendedKeyUsage::new().server_auth().build()
     } else {
         ExtendedKeyUsage::new().client_auth().build()
@@ -225,11 +229,13 @@ impl AutoPki {
             &server_key,
             &ca_cert,
             &ca_key,
-            "localhost",
-            &["localhost", "server.kmipkit.test"],
-            &["127.0.0.1"],
-            2,
-            true,
+            LeafCertificate {
+                common_name: "localhost",
+                dns_names: &["localhost", "server.kmipkit.test"],
+                ip_addresses: &["127.0.0.1"],
+                serial: 2,
+                server_auth: true,
+            },
         )?;
         let server_cert_der = server_cert.to_der().map_err(|_| PkiError)?;
         let server_key_der =
@@ -248,11 +254,13 @@ impl AutoPki {
             &client_key,
             &ca_cert,
             &ca_key,
-            "kmipkit-test-client",
-            &["client.kmipkit.test"],
-            &[],
-            3,
-            false,
+            LeafCertificate {
+                common_name: "kmipkit-test-client",
+                dns_names: &["client.kmipkit.test"],
+                ip_addresses: &[],
+                serial: 3,
+                server_auth: false,
+            },
         )?;
         let client_cert_der = client_cert.to_der().map_err(|_| PkiError)?;
         let client_key_der =

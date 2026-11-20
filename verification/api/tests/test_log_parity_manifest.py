@@ -11,13 +11,11 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
+GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OPERATION_REQUIREMENTS = {
-    "KMIPKIT-0093-FR-005",
-    "KMIPKIT-0093-FR-008",
     *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
 }
@@ -176,14 +174,14 @@ class LogParityManifestTests(unittest.TestCase):
             self.assertTrue(expected <= actual_mappings[language], language)
         self.assertEqual(OPERATION_REQUIREMENTS, linked_requirements)
 
-        traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
+        traceability = (ROOT / "verification/api/diagnostics-interop/traceability.md").read_text(
             encoding="utf-8"
         )
         self.assertTrue(TRACEABILITY_IDS <= set(
             token for token in traceability.replace("|", " ").split()
             if token.startswith("KMIPKIT-028-")
         ))
-        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+        mapping_traceability = (ROOT / "verification/api/public-api-bindings/traceability.md").read_text(
             encoding="utf-8"
         )
         t053_row = next(line for line in mapping_traceability.splitlines() if line.startswith("| T053 |"))

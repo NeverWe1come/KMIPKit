@@ -157,7 +157,7 @@ class RegisterParityManifestTests(unittest.TestCase):
         owner_traceability = (ROOT / "specs/022-object-lifecycle/traceability.md").read_text(
             encoding="utf-8"
         )
-        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+        mapping_traceability = (ROOT / "verification/api/public-api-bindings/traceability.md").read_text(
             encoding="utf-8"
         )
         t062_row = next(

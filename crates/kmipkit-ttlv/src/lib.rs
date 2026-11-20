@@ -40,6 +40,13 @@
 
 mod error;
 mod item;
+// Generated tag names, lookup functions, and invariant conversions are kept
+// aligned with the normative catalog rather than hand-edited for Clippy.
+#[allow(
+    clippy::doc_markdown,
+    clippy::missing_panics_doc,
+    clippy::too_many_lines
+)]
 pub mod kmip_tag;
 mod structure;
 mod tag;

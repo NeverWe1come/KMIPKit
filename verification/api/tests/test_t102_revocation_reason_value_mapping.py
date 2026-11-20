@@ -202,7 +202,7 @@ class T102RevocationReasonValueMappingTests(unittest.TestCase):
                     self.assertIn(marker, content)
 
     def test_traceability_records_distinct_java_and_python_factory_paths(self) -> None:
-        traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+        traceability = (ROOT / "verification/api/public-api-bindings/traceability.md").read_text(
             encoding="utf-8"
         )
         section = traceability.split(

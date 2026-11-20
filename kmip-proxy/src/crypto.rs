@@ -1,6 +1,17 @@
 //! OpenSSL-backed cryptographic primitives shared by the proxy.
 #![forbid(unsafe_code)]
 
+#[cfg(any(
+    feature = "azure",
+    feature = "gcp",
+    feature = "oci",
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba",
+    feature = "scaleway",
+    feature = "otc"
+))]
 use std::sync::OnceLock;
 
 use openssl::pkey::PKey;
@@ -11,6 +22,17 @@ use zeroize::Zeroizing;
 
 use crate::ProxyError;
 
+#[cfg(any(
+    feature = "azure",
+    feature = "gcp",
+    feature = "oci",
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba",
+    feature = "scaleway",
+    feature = "otc"
+))]
 static RUSTLS_PROVIDER: OnceLock<Result<(), String>> = OnceLock::new();
 
 /// Installs OpenSSL as the process-wide rustls crypto provider.
@@ -18,6 +40,17 @@ static RUSTLS_PROVIDER: OnceLock<Result<(), String>> = OnceLock::new();
 /// This is required by Azure's rustls client, which is built without a
 /// provider so it can use the same OpenSSL-backed implementation as the
 /// proxy listener.
+#[cfg(any(
+    feature = "azure",
+    feature = "gcp",
+    feature = "oci",
+    feature = "vault",
+    feature = "infisical",
+    feature = "ibm",
+    feature = "alibaba",
+    feature = "scaleway",
+    feature = "otc"
+))]
 pub fn install_rustls_openssl_provider() -> Result<(), ProxyError> {
     RUSTLS_PROVIDER
         .get_or_init(|| {
@@ -34,7 +67,15 @@ pub fn fill_random_bytes(buffer: &mut [u8]) -> Result<(), openssl::error::ErrorS
     rand_bytes(buffer)
 }
 
+/// Generates a fresh AES-GCM nonce using OpenSSL's cryptographic RNG.
+pub fn generate_gcm_nonce() -> Result<[u8; 12], openssl::error::ErrorStack> {
+    let mut nonce = [0u8; 12];
+    rand_bytes(&mut nonce)?;
+    Ok(nonce)
+}
+
 /// Generates a hex-encoded random identifier with the given prefix.
+#[cfg(any(feature = "vault", feature = "infisical", feature = "ibm", feature = "alibaba"))]
 pub fn random_identifier(prefix: &str) -> Result<String, ProxyError> {
     let mut random = [0u8; 16];
     fill_random_bytes(&mut random)
@@ -64,6 +105,7 @@ pub fn verify_hmac_sha256(
 
 /// Computes a SHA-256 digest.
 #[must_use]
+#[cfg(feature = "gcp")]
 pub fn sha256_digest(data: &[u8]) -> [u8; 32] {
     sha256(data)
 }

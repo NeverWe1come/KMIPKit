@@ -450,6 +450,9 @@ pub(super) fn test_checked_end(start: usize, extent: usize) -> Result<usize, Dec
     checked_end_offset(start, extent, DecodeErrorKind::TruncatedValue, 0)
 }
 
+// Keep the exhaustive representation dispatch together so each wire type's
+// validation and construction remain auditable in one place.
+#[allow(clippy::too_many_lines)]
 fn decode_value(
     bytes: &[u8],
     value_start: usize,

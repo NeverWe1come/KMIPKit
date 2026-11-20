@@ -175,7 +175,7 @@ $compiler += ' /I' + '"' + $PSScriptRoot + '"'
 $compiler += ' /Fo' + '"' + $objectPath + '"'
 $compiler += ' ' + '"' + $jniSource + '"'
 $compiler += ' ' + '"' + $rustLibrary + '"'
-$compiler += ' /link kernel32.lib ntdll.lib userenv.lib ws2_32.lib dbghelp.lib'
+$compiler += ' /link kernel32.lib ntdll.lib userenv.lib ws2_32.lib dbghelp.lib advapi32.lib user32.lib'
 $compiler += ' /OUT:' + '"' + $dllPath + '"' + ' /IMPLIB:' + '"' + $importPath + '"'
 $commandLine = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && ' + $compiler
 & $env:ComSpec /d /s /c $commandLine

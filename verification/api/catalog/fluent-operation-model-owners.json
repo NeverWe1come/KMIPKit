@@ -1412,7 +1412,7 @@
         "crates/kmipkit-client/tests/unit/validate_execution_tests.rs",
         "crates/kmipkit-ffi/tests/support/validate_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",
-        "specs/028-diagnostics-interop/traceability.md",
+        "verification/api/diagnostics-interop/traceability.md",
         "crates/kmipkit-protocol/tests/unit/cryptographic_operation_contract_tests.rs",
         "verification/api/tests/test_validate_parity_manifest.py"
       ]

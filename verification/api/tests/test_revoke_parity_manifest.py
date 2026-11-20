@@ -158,7 +158,7 @@ class RevokeParityManifestTests(unittest.TestCase):
         self.assertTrue(OWNER_REQUIREMENTS | API_REQUIREMENTS <= linked_requirements)
 
     def test_revoke_traceability_names_the_nested_reason_contract(self) -> None:
-        traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+        traceability = (ROOT / "verification/api/public-api-bindings/traceability.md").read_text(
             encoding="utf-8"
         )
         rows = [line for line in traceability.splitlines() if line.startswith("| T063 |")]
