@@ -39,9 +39,12 @@ T102_BLOCKED_CANDIDATES = 0
 # adds or removes declarations.
 # The combined manifest includes all KMIPKIT-0093 tag declarations and
 # KMIPKIT-0126 additions.
-T102_PUBLIC_DECLARATIONS = 20_294
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 23_510
+# These totals pin bindings/shared/public-api.json, the canonical input used by
+# the T102 mapping tests. They are distinct from the historical parity and Rust
+# audit report totals below. Update them only with a reviewed manifest change.
+T102_PUBLIC_DECLARATIONS = 18_152
+T102_APPROVED_EXCLUSIONS = 18_896
 # The current totals correspond to the November 16 report.
 T102_RUST_AUDIT_MANIFEST = 10_380
 T102_RUST_AUDIT_EXCLUDED = 21_649
