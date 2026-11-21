@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE_PATH = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+FIXTURE_PATH = ROOT / "bindings" / "shared" / "fixtures" / "api" / "shared-capability-parity.json"
 DISCOVER_VERSIONS_CASE = "discover-versions.supported-versions.v1"
 MIXED_BATCH_OUTCOMES_CASE = "batch.ordered-completed-pending-failed.v1"
 REGISTRY_ISOLATION_CASE = "client-configuration.registry-isolation.v1"
