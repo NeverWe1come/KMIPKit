@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t101-hash-mac-signature-baseline.json"
+BASELINE_INVENTORY = ROOT / "verification" / "api" / "fixtures" / "t101-hash-mac-signature-baseline.json"
 OWNER_SPEC = "specs/021-hash-mac-signature-operations/spec.md"
 T101_TEST = "verification/api/tests/test_t101_hash_mac_signature_declaration_mapping.py"
 BASE_CANDIDATE_COUNT = 377
@@ -327,7 +327,11 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertIn("T101", row["evidence"])
 
     def test_error_response_ttlv_remains_limited_to_the_approved_fr015_accessors(self) -> None:
-        rows = [r for r in self.manifest["publicDeclarations"] if r["capabilityId"] == "crypto_response_ttlv"]
+        rows = [
+            r
+            for r in self.manifest["publicDeclarations"]
+            if r.get("capabilityId") == "crypto_response_ttlv"
+        ]
         expected_rust = {
             ("rust-kmipkit-client", "kmipkit_client::ClientError::response_ttlv"),
             ("rust-kmipkit-client", "kmipkit_client::ClientError::ProtocolResponse::response_ttlv"),
