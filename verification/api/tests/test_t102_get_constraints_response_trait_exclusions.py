@@ -26,10 +26,15 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
+    / "verification"
+    / "api"
+    / "fixtures"
     / "reports"
+    / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
+)
+APPROVAL_SOURCES = (
+    ROOT / "verification" / "api" / "fixtures" / "approval-sources.json"
 )
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
@@ -3417,11 +3422,14 @@ class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
         }
         self.assertEqual(audited_exclusions, expected_paths)
 
-        owner_spec = (ROOT / "specs" / "025-policy-controls" / "spec.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("**Status**: Approved for implementation", owner_spec)
-        self.assertIn(case["owner_test_case_note"], owner_spec)
+        approval_sources = json.loads(APPROVAL_SOURCES.read_text(encoding="utf-8"))
+        owner_source = approval_sources["documents"][
+            "specs/025-policy-controls/spec.md"
+        ]
+        owner_evidence = "\n".join(owner_source["evidence"])
+        self.assertEqual(owner_source["status"], "Approved")
+        self.assertIn("**Status**: Approved for implementation", owner_evidence)
+        self.assertIn(case["owner_test_case_note"], owner_evidence)
         for path, row in exclusions.items():
             with self.subTest(export_name=path):
                 for requirement in case["requirements"]:

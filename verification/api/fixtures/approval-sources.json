@@ -1,0 +1,942 @@
+{
+  "documents": {
+    "docs/adr/0003-layered-cargo-workspace.md": {
+      "evidence": [
+        "Status: Accepted"
+      ],
+      "kind": "accepted-adr",
+      "sha256": "e451b8c708c866f2f6830c196b213a3bc51e959253c9e6b1f08e564cd744e09f",
+      "status": "Accepted"
+    },
+    "docs/adr/0006-public-api-and-bindings.md": {
+      "evidence": [
+        "Status: Accepted"
+      ],
+      "kind": "accepted-adr",
+      "sha256": "d5f75c3531e57b0ab8e3c754f7fecb5b426792710ecddb3a96b2de75e8fae5dd",
+      "status": "Accepted"
+    },
+    "docs/adr/0014-public-transport-exchange-contract.md": {
+      "evidence": [
+        "**Status**: Accepted under delegated maintainer authorization on 2026-10-06."
+      ],
+      "kind": "accepted-adr",
+      "sha256": "88841df7250e77a6660b8e0ef3a7e29741e64a494d455a549c23d7f2c06dd85c",
+      "status": "Accepted"
+    },
+    "docs/adr/0017-single-dependency-rust-facade.md": {
+      "evidence": [
+        "The `kmipkit` crate re-exports the complete protocol and TTLV public namespaces and exposes the client and transport configuration types needed to construct its supported client."
+      ],
+      "kind": "accepted-adr",
+      "sha256": "1a7a88f468789e56d2ab6c0b4e661bb4f9a8de9eeb311b25bb0d6ad7b9ee82a4",
+      "status": "Accepted"
+    },
+    "specs/003-core-types-errors/spec.md": {
+      "evidence": [
+        "**Status**: Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
+      ],
+      "kind": "feature-specification",
+      "sha256": "c5d38171b3c26583efca7bd97284e5f58e43bb6fd8e71a1b94c1fd5ce955e2fe",
+      "status": "Approved"
+    },
+    "specs/004-generic-ttlv-model/spec.md": {
+      "evidence": [
+        "**Status**: Approved",
+        "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
+        "Because `kmipkit-ttlv` is below protocol/client crates, its model error type MUST remain local and MUST NOT introduce a dependency cycle; higher layers may map or wrap it through the shared error model."
+      ],
+      "kind": "feature-specification",
+      "sha256": "0ae66a18bf94ae2c42eb39a4d2dded325c5b4bda4495ff7ea3a0e9028920b0a5",
+      "status": "Approved"
+    },
+    "specs/005-ttlv-wire-codec/spec.md": {
+      "evidence": [
+        "**Created**: 2026-10-04",
+        "**Status**: Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md). The first client feature PR must include the sole production callsite and its owner-through-transport integration test together. CI must pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must have neither the callsite nor a secret-bearing send."
+      ],
+      "kind": "feature-specification",
+      "sha256": "48f65ffe7c946f6ebf9b57ac551232f66037d1677eb4207cf17ef0d5d50a7243",
+      "status": "Approved"
+    },
+    "specs/006-message-batch-model/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md)."
+      ],
+      "kind": "feature-specification",
+      "sha256": "48135958cab68c594218b9f986510009adfce68e79af2c1c9a5e45d99d5cffe4",
+      "status": "Approved"
+    },
+    "specs/007-client-execution/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+      ],
+      "kind": "feature-specification",
+      "sha256": "a54393d97e8e01087862f0623ba8d2b0383c0787a5bf02315f70b1fb274e9845",
+      "status": "Approved"
+    },
+    "specs/008-credentials-attestation/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md)."
+      ],
+      "kind": "feature-specification",
+      "sha256": "41a0afbe5ced0e9cb4b06dc97370a7454a11eedde6eba7b8926a47d48ab3fcab",
+      "status": "Approved"
+    },
+    "specs/009-asynchronous-operations/spec.md": {
+      "evidence": [
+        "Approved for implementation by the repository maintainer on 2026-10-29"
+      ],
+      "kind": "feature-specification",
+      "sha256": "e1128bf97a873e18ff6fb1374e88a8e184b41381f4dd2f23a43df3deb06fd22b",
+      "status": "Approved"
+    },
+    "specs/010-profile-conformance/spec.md": {
+      "evidence": [
+        "**Status**: Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+      ],
+      "kind": "feature-specification",
+      "sha256": "3b1c306df9aff212d6ee87796e35f454b5c6f681e7f1bef2a327df685979c9f9",
+      "status": "Accepted"
+    },
+    "specs/0108-fluent-attribute-reads/spec.md": {
+      "evidence": [
+        "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+      ],
+      "kind": "feature-specification",
+      "sha256": "69fb846747fb06296d7ddd0e1ce8166273c69e291679988ff922142b9a687988",
+      "status": "Approved"
+    },
+    "specs/0109-fluent-attribute-read-bindings/spec.md": {
+      "evidence": [
+        "**Status**: Approved."
+      ],
+      "kind": "feature-specification",
+      "sha256": "daffe5124cd4bf7bef5f7e585dc660a8d6b0765bc2a01dcc3dee24e578c11810",
+      "status": "Approved"
+    },
+    "specs/012-vendor-extension-registry/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests."
+      ],
+      "kind": "feature-specification",
+      "sha256": "3439bfe7213b6115055c40a0cc79619072b092190f85d162a682c1d5cbea36e0",
+      "status": "Approved"
+    },
+    "specs/012-vendor-extension-registry/verification.md": {
+      "evidence": [],
+      "kind": "parity-evidence",
+      "sha256": "8f71904773b8d55787b291e5cfa58ae056458f79ed84bec3cd5442ca7d92c8de",
+      "status": ""
+    },
+    "specs/013-production-transport/spec.md": {
+      "evidence": [
+        "**Status**: Accepted"
+      ],
+      "kind": "feature-specification",
+      "sha256": "655424e30f2b546c7c7b0fc4e76b9038ee38d8cd91ce4b01cb276a083e04f393",
+      "status": "Accepted"
+    },
+    "specs/014-server-generated-creation/spec.md": {
+      "evidence": [
+        "**Status**: Accepted for implementation."
+      ],
+      "kind": "feature-specification",
+      "sha256": "5993195ef62b051637581ff9e231b0d7406c4a4f17f8002bf2698f14a96d90aa",
+      "status": "Accepted"
+    },
+    "specs/016-attribute-operations/spec.md": {
+      "evidence": [
+        "**Status**: Approved"
+      ],
+      "kind": "feature-specification",
+      "sha256": "dba662a6f0dc0b74df8a55560d5031e986f94208729b7fed23f17364e90306a1",
+      "status": "Approved"
+    },
+    "specs/016-attribute-operations/traceability.md": {
+      "evidence": [
+        "KMIPKIT-0016 was approved by the merge of [specification PR #58](https://github.com/NeverWe1come/KMIPKit/pull/58), merge commit `0fa129e1248e735343704fb662926a401585ed7c`"
+      ],
+      "kind": "feature-specification",
+      "sha256": "272a5ec62fa4a755495c4653dc52e3a8614d1e44986058caf5ee6f9134a532f8",
+      "status": "Approved"
+    },
+    "specs/017-managed-object-retrieval/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`"
+      ],
+      "kind": "feature-specification",
+      "sha256": "1f81013ee84b34a5eb7afbe827b6ae36a6b2a39009337c22f8052f62f6787d30",
+      "status": "Approved"
+    },
+    "specs/018-managed-object-lifecycle/approval-record.md": {
+      "evidence": [
+        "- **Decision:** Approved for implementation and T098 manifest reconciliation only."
+      ],
+      "kind": "feature-specification",
+      "sha256": "d3c0491dcfa7ff43a36395b9ff04f43df2f2e996ea6f18ca5fe6d48930c037e1",
+      "status": "Approved"
+    },
+    "specs/018-managed-object-lifecycle/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation; independent review remains pending"
+      ],
+      "kind": "feature-specification",
+      "sha256": "f541d1ff87ab60a83f819f8df39d6fa814c504e8db1f9b7e022dd9b50ae74095",
+      "status": "Approved"
+    },
+    "specs/019-cryptographic-operations/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19)."
+      ],
+      "kind": "feature-specification",
+      "sha256": "a3b5b0dfeaf0790565e3da0389fc8d9c045179b4206cd5b0ee536fb698a44a7e",
+      "status": "Approved"
+    },
+    "specs/020-query-ping/spec.md": {
+      "evidence": [
+        "**Status**: Approved for autonomous implementation under the maintainer's standing direct instruction (reaffirmed 2026-10-19);"
+      ],
+      "kind": "feature-specification",
+      "sha256": "161ce6d5169c9fa99951c96acc400d67cb398dcce2bc6d3f86993cb03aa9f241",
+      "status": "Approved"
+    },
+    "specs/021-hash-mac-signature-operations/spec.md": {
+      "evidence": [
+        "**Status**: Approved",
+        "**Status**: Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+      ],
+      "kind": "feature-specification",
+      "sha256": "30c4659af14bf04b1f03771616d3b9436458e5abe98ddcbfed530662798d9783",
+      "status": "Approved"
+    },
+    "specs/022-object-lifecycle/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "07358ffcbb7d37a607a1f68125b6567519d95a630eb45a4a0a17c7052ebdb17a",
+      "status": "Approved"
+    },
+    "specs/023-key-material-transfer/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "1f02d173c515c1721898a3836dfdbb9dcfbe96d2e09362eea0fd51cb11c7034a",
+      "status": "Approved"
+    },
+    "specs/024-credential-sessions/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "d927291fe625d930bba544d6158386179add64ac1191f7ed18fa795edcf08fd3",
+      "status": "Approved"
+    },
+    "specs/025-policy-controls/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11",
+        "| Get Usage Allocation | No direct catalog case ID |",
+        "| Set Defaults | No direct catalog case ID |"
+      ],
+      "kind": "feature-specification",
+      "sha256": "71720f227616eb92907a7dedcd1647c2731d36fb120c1036c768854ff184fec9",
+      "status": "Approved"
+    },
+    "specs/026-pkcs11/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "2e8f9c27c599f07228ac8041089e7897515e9afa44d5e50b63ee3b05aa7f1380",
+      "status": "Approved"
+    },
+    "specs/027-rng-operations/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "629814d022a35fea2496a836248445e3226b5bc81bde12c7998c06165397ffd7",
+      "status": "Approved"
+    },
+    "specs/028-diagnostics-interop/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation",
+        "**Status**: Approved for implementation — 2026-10-11"
+      ],
+      "kind": "feature-specification",
+      "sha256": "4a261e59c8e7ab1a8a3c6066806deed3ecd51e6462be90af0a6d75c57a3e5d63",
+      "status": "Approved"
+    },
+    "specs/028-diagnostics-interop/traceability.md": {
+      "evidence": [],
+      "kind": "parity-evidence",
+      "sha256": "d6ee3d21f891bc6401943cb6538c82393c2fb0b3c6e7081db0bd1d082eb55b97",
+      "status": ""
+    },
+    "specs/029-opaque-object-context/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+      ],
+      "kind": "feature-specification",
+      "sha256": "f9d11d3f3110b34e8da25f77257e715a5f0de57b9e315ddb8277dc14451c06ec",
+      "status": "Approved"
+    },
+    "specs/043-public-api-bindings/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation"
+      ],
+      "kind": "feature-specification",
+      "sha256": "b3e10885fc97e86fe835659b31ecb31a7fb8b48fddb79b28522227c8ab601e6c",
+      "status": "Approved"
+    },
+    "specs/047-named-protocol-values/spec.md": {
+      "evidence": [
+        "**Status**: Approved"
+      ],
+      "kind": "feature-specification",
+      "sha256": "fa80a2ec036850b3d52af7b9c2d873c7308640b6ceecc0e03b5ce0579ac3dd76",
+      "status": "Approved"
+    },
+    "specs/048-typed-attributes/spec.md": {
+      "evidence": [
+        "**Status**: Approved by maintainer plan authorization"
+      ],
+      "kind": "feature-specification",
+      "sha256": "2063ca4a3f517a364486d5dc98b4ed80d4fc20c92a242e240bd65924db5ab643",
+      "status": "Approved"
+    },
+    "specs/049-managed-objects/spec.md": {
+      "evidence": [
+        "**Status**: Approved by maintainer plan authorization"
+      ],
+      "kind": "feature-specification",
+      "sha256": "a9f940d35be6dee58af07b5e07d9390a9afb5e3741b3eb4261f04ca332da94df",
+      "status": "Approved"
+    },
+    "specs/050-parameters-auth-client/spec.md": {
+      "evidence": [
+        "Approved for implementation by the maintainer's direct approval of the Phase 5 plan"
+      ],
+      "kind": "feature-specification",
+      "sha256": "880b8820a20ae9be2c780f862cb353c21017822ac60fea94502e41c25dbb4ab0",
+      "status": "Approved"
+    },
+    "specs/051-pre-send-validation/spec.md": {
+      "evidence": [],
+      "kind": "parity-evidence",
+      "sha256": "191f8f59e9387f4a82935ddea50026c84b0d4b8be867480d432eebf7d861524e",
+      "status": ""
+    },
+    "specs/052-response-navigation/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+      ],
+      "kind": "feature-specification",
+      "sha256": "3ca7adbe95060fb43aef4e2d3b7d0acc5d1a13224b37b19585b8028fda33b740",
+      "status": "Approved"
+    },
+    "specs/053-api-parity-facade/additional-api-routes.json": {
+      "evidence": [],
+      "kind": "parity-evidence",
+      "sha256": "60d2102a3d10b07a4725fbee90af9d8d4b6258e28d7f8f3f37eb07976d7feea2",
+      "status": ""
+    },
+    "specs/053-api-parity-facade/approval-record.md": {
+      "evidence": [
+        "Direct maintainer instruction approving the complete Phase 5 plan and autonomous implementation."
+      ],
+      "kind": "feature-specification",
+      "sha256": "4b65e7b6512f56f59ecc9ed52227b8b16a917355eb3f9892edef96421069538e",
+      "status": "Approved"
+    },
+    "specs/053-api-parity-facade/gap-matrix.md": {
+      "evidence": [],
+      "kind": "parity-evidence",
+      "sha256": "8177d7c229dae5c1c62351c090c24d51ad1a561d341033943bfc922033ff18be",
+      "status": ""
+    },
+    "specs/053-api-parity-facade/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation by the maintainer's Phase 5 plan."
+      ],
+      "kind": "feature-specification",
+      "sha256": "1167115ee9c175c59c324061e332ebaa064a5511ec643cdbd66e96b21bf5463d",
+      "status": "Approved"
+    },
+    "specs/057-multi-encoding-client-integration/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+      ],
+      "kind": "feature-specification",
+      "sha256": "da274214aede568eabd176cf49da06e6567c4eee6b3a68af791e682469157783",
+      "status": "Approved"
+    },
+    "specs/091-fluent-dx-foundation/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+      ],
+      "kind": "feature-specification",
+      "sha256": "fa68a462eaf4d437aea146381571e59023804638048558c633d8dbd0bbeeaa84",
+      "status": "Approved"
+    },
+    "specs/093-fluent-complete-api/spec.md": {
+      "evidence": [
+        "**Status**: Approved",
+        "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review.",
+        "Approved in scope by the maintainer's direct 2026-11-11 instruction",
+        "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      ],
+      "kind": "feature-specification",
+      "sha256": "4a5ba5b17b1402edf7f80dea350cb09917c745338d8d1adf97a588300cdbc57f",
+      "status": "Approved"
+    },
+    "specs/095-fluent-response-views/spec.md": {
+      "evidence": [
+        "**Status**: Approved for implementation.",
+        "Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities."
+      ],
+      "kind": "feature-specification",
+      "sha256": "d3cd1d0c5e41c3fb03e139f6eb7b7f84ac98fc1a7d94032f70ec5b768989b717",
+      "status": "Approved"
+    },
+    "specs/096-fluent-expert-attributes/spec.md": {
+      "evidence": [
+        "Approved for implementation by the maintainer's direct"
+      ],
+      "kind": "feature-specification",
+      "sha256": "d344720fee5c4b8cd0ded0748b73fe318385028a6bf90b81f889fce7070b755f",
+      "status": "Approved"
+    },
+    "specs/097-fluent-create-key-pair/spec.md": {
+      "evidence": [
+        "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
+      ],
+      "kind": "feature-specification",
+      "sha256": "8222713aeb084e9aa66f3d9facf62746d5616d9c34252b88002d316752db3601",
+      "status": "Approved"
+    },
+    "specs/099-fluent-create-split-key/spec.md": {
+      "evidence": [
+        "language-level behavior, not separate KMIPKit product capabilities."
+      ],
+      "kind": "feature-specification",
+      "sha256": "d30ff6e3399480ab5dec88159c134262aa1ba888c17b190a63a9a9e4b69a8413",
+      "status": "Approved"
+    },
+    "specs/100-fluent-register/spec.md": {
+      "evidence": [
+        "language-level behavior, not separate KMIPKit product capabilities."
+      ],
+      "kind": "feature-specification",
+      "sha256": "d8bfdd5851a9bc8e43f1bfc26561cfad5e227a1c7ae28931b4991a23867bc090",
+      "status": "Approved"
+    },
+    "specs/102-fluent-cryptographic-operations/spec.md": {
+      "evidence": [
+        "**Status**: Approved implementation slice of KMIPKIT-0093 under the\nmaintainer's 2026-11-11 instruction to implement the complete plan."
+      ],
+      "kind": "feature-specification",
+      "sha256": "25ebbb990208c29a07562ba92396302cbb87e28a392b8d82a0145ca9bd033e9b",
+      "status": "Approved"
+    },
+    "specs/103-fluent-c-crypto-api/spec.md": {
+      "evidence": [
+        "Approved implementation slice of KMIPKIT-0093"
+      ],
+      "kind": "feature-specification",
+      "sha256": "77099c84f820b0b759621a78ce984df09a1e8bfa34e9ad183b2bef3765d5dad3",
+      "status": "Approved"
+    },
+    "specs/104-fluent-java-crypto-api/spec.md": {
+      "evidence": [
+        "**Status**: Approved delivery slice of KMIPKIT-0093 under the maintainer's\n2026-11-11 instruction to complete the fluent API plan."
+      ],
+      "kind": "feature-specification",
+      "sha256": "396545b647dcd34d4f824d9f3cfe1b3e1ea4278076ad604d45389f31538ef131",
+      "status": "Approved"
+    },
+    "specs/105-fluent-python-crypto-api/spec.md": {
+      "evidence": [
+        "**Status**: Approved delivery slice under the maintainer's 2026-11-11\nauthorization to complete KMIPKIT-0093."
+      ],
+      "kind": "feature-specification",
+      "sha256": "cb4c5e6f7f46998305173eef28148f4da352d26bf42bdfab3f6f331d35cfd528",
+      "status": "Approved"
+    }
+  },
+  "features": {
+    "KMIPKIT-0001": {
+      "directory": "001-cross-platform-ci",
+      "path": "specs/001-cross-platform-ci/spec.md",
+      "sha256": "642300a65542af222ca9587e7faea20af5991e17a33c451ae68a238cf037fc6e",
+      "status": "Authorized for autonomous execution by direct user instruction (2026-10-04)"
+    },
+    "KMIPKIT-0002": {
+      "directory": "002-normative-inventory",
+      "path": "specs/002-normative-inventory/spec.md",
+      "sha256": "993305c89a35d83566f92bc9de21aca2002e0ed00c34014f917adb8e6d9531fb",
+      "status": "Approved"
+    },
+    "KMIPKIT-0003": {
+      "directory": "003-core-types-errors",
+      "path": "specs/003-core-types-errors/spec.md",
+      "sha256": "c5d38171b3c26583efca7bd97284e5f58e43bb6fd8e71a1b94c1fd5ce955e2fe",
+      "status": "Approved — scope preauthorized by the maintainer's direct instruction to execute the roadmap autonomously."
+    },
+    "KMIPKIT-0004": {
+      "directory": "004-generic-ttlv-model",
+      "path": "specs/004-generic-ttlv-model/spec.md",
+      "sha256": "0ae66a18bf94ae2c42eb39a4d2dded325c5b4bda4495ff7ea3a0e9028920b0a5",
+      "status": "Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
+    },
+    "KMIPKIT-0005": {
+      "directory": "005-ttlv-wire-codec",
+      "path": "specs/005-ttlv-wire-codec/spec.md",
+      "sha256": "48f65ffe7c946f6ebf9b57ac551232f66037d1677eb4207cf17ef0d5d50a7243",
+      "status": "Approved — the maintainer delegated execution and approval of this plan without further manual intervention in the 2026-10-05 Codex conversation. The exact approved specification and boundary revisions, decisions, and limits of that authorization are recorded in [approval-record.md](approval-record.md). The first client feature PR must include the sole production callsite and its owner-through-transport integration test together. CI must pass that test against the candidate callsite before merge, enablement, or release; until then, the release branch must have neither the callsite nor a secret-bearing send."
+    },
+    "KMIPKIT-0006": {
+      "directory": "006-message-batch-model",
+      "path": "specs/006-message-batch-model/spec.md",
+      "sha256": "48135958cab68c594218b9f986510009adfce68e79af2c1c9a5e45d99d5cffe4",
+      "status": "Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md). This specification depends on the accepted generic TTLV model in KMIPKIT-0004. It is an in-memory protocol-model feature; wire encoding remains assigned to KMIPKIT-0005."
+    },
+    "KMIPKIT-0007": {
+      "directory": "007-client-execution",
+      "path": "specs/007-client-execution/spec.md",
+      "sha256": "a54393d97e8e01087862f0623ba8d2b0383c0787a5bf02315f70b1fb274e9845",
+      "status": "Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`."
+    },
+    "KMIPKIT-0008": {
+      "directory": "008-credentials-attestation",
+      "path": "specs/008-credentials-attestation/spec.md",
+      "sha256": "41a0afbe5ced0e9cb4b06dc97370a7454a11eedde6eba7b8926a47d48ab3fcab",
+      "status": "Approved for implementation under the delegated authorization recorded in [approval-record.md](approval-record.md). Independent QA reviewed the exact specification and checklist at `7943d090c129482c022e1b9a5197ac2e3433aa3a` against release base `ae87b89d43957e4fc028e785dc181e69b0165dac`; T004 is complete. The accepted KMIPKIT-0005/0006/0007 foundations and ADR-0012 lifecycle boundary have been verified. OD-001 preserves open DISC-041; OD-002 records the conservative typed Device identifier-presence interpretation; OD-003 is resolved by the KMIPKIT-0010 T056 caller-owned timestamp sequence policy; OD-005 applies only to future Authentication selection and does not block these in-memory models. OD-004 is resolved by scope; OD-006 is resolved by the catalog's informative classification.<br>"
+    },
+    "KMIPKIT-0009": {
+      "directory": "009-asynchronous-operations",
+      "path": "specs/009-asynchronous-operations/spec.md",
+      "sha256": "e1128bf97a873e18ff6fb1374e88a8e184b41381f4dd2f23a43df3deb06fd22b",
+      "status": "Approved for implementation by the repository maintainer on 2026-10-29; see [approval-record.md](approval-record.md). Reviewer-owned requirements, protocol, and readiness checklists remain open. `KMIPKIT-DEC-015` resolves the Table 286 context discrepancy for project modeling: §6.1.41 names an optional, repeatable Asynchronous Request response item, whose structure is defined in §7.2. This feature keeps generic TTLV response access; typed mapping is tracked separately by KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal conformance claim is made."
+    },
+    "KMIPKIT-0010": {
+      "directory": "010-profile-conformance",
+      "path": "specs/010-profile-conformance/spec.md",
+      "sha256": "3b1c306df9aff212d6ee87796e35f454b5c6f681e7f1bef2a327df685979c9f9",
+      "status": "Accepted for implementation by merge of [PR #49](https://github.com/NeverWe1come/KMIPKit/pull/49) into `release/1.0.0` (merge commit `045b97dde40e54efbc264d95c1d827c4f7d40415`, 2026-10-07). No separate GitHub review event is claimed."
+    },
+    "KMIPKIT-0011": {
+      "directory": "011-dependency-policy",
+      "path": "specs/011-dependency-policy/spec.md",
+      "sha256": "ab462b8e5912da35569b2df85b0fc22df2493e5813bcee3dbc0ede9ea3a9b168",
+      "status": "Approved"
+    },
+    "KMIPKIT-0012": {
+      "directory": "012-vendor-extension-registry",
+      "path": "specs/012-vendor-extension-registry/spec.md",
+      "sha256": "3439bfe7213b6115055c40a0cc79619072b092190f85d162a682c1d5cbea36e0",
+      "status": "Approved for implementation under the maintainer's standing direct authorization to execute the complete KMIPKit plan without further approval requests. This authorizes the defined feature scope for implementation; it does not claim line-by-line human review of this revision or waive PR approval and merge rules."
+    },
+    "KMIPKIT-0013": {
+      "directory": "013-production-transport",
+      "path": "specs/013-production-transport/spec.md",
+      "sha256": "655424e30f2b546c7c7b0fc4e76b9038ee38d8cd91ce4b01cb276a083e04f393",
+      "status": "Accepted"
+    },
+    "KMIPKIT-0014": {
+      "directory": "014-server-generated-creation",
+      "path": "specs/014-server-generated-creation/spec.md",
+      "sha256": "5993195ef62b051637581ff9e231b0d7406c4a4f17f8002bf2698f14a96d90aa",
+      "status": "Accepted for implementation. Human maintainer acceptance is recorded by the merge of [PR #53](https://github.com/NeverWe1come/KMIPKit/pull/53) into `release/1.0.0` (merge commit `a2572084d3d6f42019bed13234598e6d77478796`). Source and catalog corrections were merged in [PR #57](https://github.com/NeverWe1come/KMIPKit/pull/57) (merge commit `55c0c0cc42a6422cee72183a3532fc1e169f297c`). The implementation base contains both commits. No separate GitHub review event is claimed."
+    },
+    "KMIPKIT-0015": {
+      "directory": "015-selective-ci",
+      "path": "specs/015-selective-ci/spec.md",
+      "sha256": "8909a645600909834c689f4c785fa3ea2a6b614487ece6f7bdce79ac765e35da",
+      "status": "Approved for implementation — 2026-10-09"
+    },
+    "KMIPKIT-0016": {
+      "directory": "016-attribute-operations",
+      "path": "specs/016-attribute-operations/spec.md",
+      "sha256": "dba662a6f0dc0b74df8a55560d5031e986f94208729b7fed23f17364e90306a1",
+      "status": "Approved"
+    },
+    "KMIPKIT-0017": {
+      "directory": "017-managed-object-retrieval",
+      "path": "specs/017-managed-object-retrieval/spec.md",
+      "sha256": "1f81013ee84b34a5eb7afbe827b6ae36a6b2a39009337c22f8052f62f6787d30",
+      "status": "Approved for implementation; original scope and inventory dispositions were human-merged in PRs #63 and #79; release-contract refresh merged in PR #81 at `fd6b7782`<br>"
+    },
+    "KMIPKIT-0018": {
+      "directory": "018-managed-object-lifecycle",
+      "path": "specs/018-managed-object-lifecycle/spec.md",
+      "sha256": "f541d1ff87ab60a83f819f8df39d6fa814c504e8db1f9b7e022dd9b50ae74095",
+      "status": "Approved for implementation; independent review remains pending"
+    },
+    "KMIPKIT-0019": {
+      "directory": "019-cryptographic-operations",
+      "path": "specs/019-cryptographic-operations/spec.md",
+      "sha256": "a3b5b0dfeaf0790565e3da0389fc8d9c045179b4206cd5b0ee536fb698a44a7e",
+      "status": "Approved for implementation under the maintainer's standing direct instruction to execute the complete KMIPKit plan autonomously (reaffirmed 2026-10-19). This records implementation authorization, not a claim of separate line-by-line review. KMIPKIT-DISC-045 and KMIPKIT-DISC-046 remain open and bounded as specified below."
+    },
+    "KMIPKIT-0020": {
+      "directory": "020-query-ping",
+      "path": "specs/020-query-ping/spec.md",
+      "sha256": "161ce6d5169c9fa99951c96acc400d67cb398dcce2bc6d3f86993cb03aa9f241",
+      "status": "Approved for autonomous implementation under the maintainer's standing direct instruction (reaffirmed 2026-10-19); implementation PR [#73](https://github.com/NeverWe1come/KMIPKit/pull/73) was merged on 2026-10-09. This records scope authorization, not formal acceptance or a claim of separate line-by-line review of this revision."
+    },
+    "KMIPKIT-0021": {
+      "directory": "021-hash-mac-signature-operations",
+      "path": "specs/021-hash-mac-signature-operations/spec.md",
+      "sha256": "30c4659af14bf04b1f03771616d3b9436458e5abe98ddcbfed530662798d9783",
+      "status": "Approved (PR #70 merged into `release/1.0.0` on 2026-10-09; merge commit `be5c73c2198daab4b6877dc319f728f927399feb`)"
+    },
+    "KMIPKIT-0022": {
+      "directory": "022-object-lifecycle",
+      "path": "specs/022-object-lifecycle/spec.md",
+      "sha256": "07358ffcbb7d37a607a1f68125b6567519d95a630eb45a4a0a17c7052ebdb17a",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0023": {
+      "directory": "023-key-material-transfer",
+      "path": "specs/023-key-material-transfer/spec.md",
+      "sha256": "1f02d173c515c1721898a3836dfdbb9dcfbe96d2e09362eea0fd51cb11c7034a",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0024": {
+      "directory": "024-credential-sessions",
+      "path": "specs/024-credential-sessions/spec.md",
+      "sha256": "d927291fe625d930bba544d6158386179add64ac1191f7ed18fa795edcf08fd3",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0025": {
+      "directory": "025-policy-controls",
+      "path": "specs/025-policy-controls/spec.md",
+      "sha256": "71720f227616eb92907a7dedcd1647c2731d36fb120c1036c768854ff184fec9",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0026": {
+      "directory": "026-pkcs11",
+      "path": "specs/026-pkcs11/spec.md",
+      "sha256": "2e8f9c27c599f07228ac8041089e7897515e9afa44d5e50b63ee3b05aa7f1380",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0027": {
+      "directory": "027-rng-operations",
+      "path": "specs/027-rng-operations/spec.md",
+      "sha256": "629814d022a35fea2496a836248445e3226b5bc81bde12c7998c06165397ffd7",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0028": {
+      "directory": "028-diagnostics-interop",
+      "path": "specs/028-diagnostics-interop/spec.md",
+      "sha256": "4a261e59c8e7ab1a8a3c6066806deed3ecd51e6462be90af0a6d75c57a3e5d63",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0029": {
+      "directory": "029-opaque-object-context",
+      "path": "specs/029-opaque-object-context/spec.md",
+      "sha256": "f9d11d3f3110b34e8da25f77257e715a5f0de57b9e315ddb8277dc14451c06ec",
+      "status": "Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+    },
+    "KMIPKIT-0036": {
+      "directory": "022-object-lifecycle",
+      "path": "specs/022-object-lifecycle/spec.md",
+      "sha256": "07358ffcbb7d37a607a1f68125b6567519d95a630eb45a4a0a17c7052ebdb17a",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0037": {
+      "directory": "023-key-material-transfer",
+      "path": "specs/023-key-material-transfer/spec.md",
+      "sha256": "1f02d173c515c1721898a3836dfdbb9dcfbe96d2e09362eea0fd51cb11c7034a",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0038": {
+      "directory": "024-credential-sessions",
+      "path": "specs/024-credential-sessions/spec.md",
+      "sha256": "d927291fe625d930bba544d6158386179add64ac1191f7ed18fa795edcf08fd3",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0039": {
+      "directory": "025-policy-controls",
+      "path": "specs/025-policy-controls/spec.md",
+      "sha256": "71720f227616eb92907a7dedcd1647c2731d36fb120c1036c768854ff184fec9",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0040": {
+      "directory": "026-pkcs11",
+      "path": "specs/026-pkcs11/spec.md",
+      "sha256": "2e8f9c27c599f07228ac8041089e7897515e9afa44d5e50b63ee3b05aa7f1380",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0041": {
+      "directory": "027-rng-operations",
+      "path": "specs/027-rng-operations/spec.md",
+      "sha256": "629814d022a35fea2496a836248445e3226b5bc81bde12c7998c06165397ffd7",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0042": {
+      "directory": "028-diagnostics-interop",
+      "path": "specs/028-diagnostics-interop/spec.md",
+      "sha256": "4a261e59c8e7ab1a8a3c6066806deed3ecd51e6462be90af0a6d75c57a3e5d63",
+      "status": "Approved for implementation — 2026-10-11"
+    },
+    "KMIPKIT-0043": {
+      "directory": "043-public-api-bindings",
+      "path": "specs/043-public-api-bindings/spec.md",
+      "sha256": "b3e10885fc97e86fe835659b31ecb31a7fb8b48fddb79b28522227c8ab601e6c",
+      "status": "Approved for implementation"
+    },
+    "KMIPKIT-0044": {
+      "directory": "029-opaque-object-context",
+      "path": "specs/029-opaque-object-context/spec.md",
+      "sha256": "f9d11d3f3110b34e8da25f77257e715a5f0de57b9e315ddb8277dc14451c06ec",
+      "status": "Approved for implementation under the maintainer's autonomous roadmap instruction dated 2026-10-13"
+    },
+    "KMIPKIT-0045": {
+      "directory": "045-rustls-advisory-remediation",
+      "path": "specs/045-rustls-advisory-remediation/spec.md",
+      "sha256": "a096214a99cce7a348b6df2fd13ed396e60c5d1337ef005e76396b45ee85103f",
+      "status": "Approved"
+    },
+    "KMIPKIT-0046": {
+      "directory": "046-rust-single-dependency",
+      "path": "specs/046-rust-single-dependency/spec.md",
+      "sha256": "cc94ccb87bc0bea4160cbeed82f2c313f3e9d69267fe1b70f76939257b2dc83a",
+      "status": "Approved — scope authorized by the maintainer's direct instruction to implement KMIPKIT-0046."
+    },
+    "KMIPKIT-0047": {
+      "directory": "047-named-protocol-values",
+      "path": "specs/047-named-protocol-values/spec.md",
+      "sha256": "fa80a2ec036850b3d52af7b9c2d873c7308640b6ceecc0e03b5ce0579ac3dd76",
+      "status": "Approved"
+    },
+    "KMIPKIT-0048": {
+      "directory": "048-typed-attributes",
+      "path": "specs/048-typed-attributes/spec.md",
+      "sha256": "2063ca4a3f517a364486d5dc98b4ed80d4fc20c92a242e240bd65924db5ab643",
+      "status": "Approved by maintainer plan authorization"
+    },
+    "KMIPKIT-0049": {
+      "directory": "049-managed-objects",
+      "path": "specs/049-managed-objects/spec.md",
+      "sha256": "a9f940d35be6dee58af07b5e07d9390a9afb5e3741b3eb4261f04ca332da94df",
+      "status": "Approved by maintainer plan authorization"
+    },
+    "KMIPKIT-0050": {
+      "directory": "050-parameters-auth-client",
+      "path": "specs/050-parameters-auth-client/spec.md",
+      "sha256": "880b8820a20ae9be2c780f862cb353c21017822ac60fea94502e41c25dbb4ab0",
+      "status": "Approved for implementation by the maintainer's direct approval of the Phase 5 plan"
+    },
+    "KMIPKIT-0051": {
+      "directory": "051-pre-send-validation",
+      "path": "specs/051-pre-send-validation/spec.md",
+      "sha256": "191f8f59e9387f4a82935ddea50026c84b0d4b8be867480d432eebf7d861524e",
+      "status": "Approved for implementation under the maintainer-approved Phase 5 plan"
+    },
+    "KMIPKIT-0052": {
+      "directory": "052-response-navigation",
+      "path": "specs/052-response-navigation/spec.md",
+      "sha256": "3ca7adbe95060fb43aef4e2d3b7d0acc5d1a13224b37b19585b8028fda33b740",
+      "status": "Approved for implementation by the maintainer's KMIPKIT-0047–0053 plan."
+    },
+    "KMIPKIT-0053": {
+      "directory": "053-api-parity-facade",
+      "path": "specs/053-api-parity-facade/spec.md",
+      "sha256": "1167115ee9c175c59c324061e332ebaa064a5511ec643cdbd66e96b21bf5463d",
+      "status": "Approved for implementation by the maintainer's Phase 5 plan."
+    },
+    "KMIPKIT-0054": {
+      "directory": "054-multi-encoding-governance",
+      "path": "specs/054-multi-encoding-governance/spec.md",
+      "sha256": "f1819454054160388fbe81a0c7c4ef654722971dd02f0dcd694ebd9b2c8989c7",
+      "status": "Approved for implementation by direct maintainer instruction on 2026-11-05"
+    },
+    "KMIPKIT-0055": {
+      "directory": "055-json-encoding",
+      "path": "specs/055-json-encoding/spec.md",
+      "sha256": "8a6bea22210e104e2fc6951e54300b9bcc35676fb97081a628557b3f36529444",
+      "status": "Approved for implementation by direct maintainer instruction on 2026-11-05; depends on the KMIPKIT-0054 common codec contract."
+    },
+    "KMIPKIT-0056": {
+      "directory": "056-xml-encoding",
+      "path": "specs/056-xml-encoding/spec.md",
+      "sha256": "a2716986fca45066acd8e8e20097a7be9d567b127d2fed30bfbce63cb5936aeb",
+      "status": "Approved for implementation by direct maintainer instruction on 2026-11-05; depends on the KMIPKIT-0054 common codec contract."
+    },
+    "KMIPKIT-0057": {
+      "directory": "057-multi-encoding-client-integration",
+      "path": "specs/057-multi-encoding-client-integration/spec.md",
+      "sha256": "da274214aede568eabd176cf49da06e6567c4eee6b3a68af791e682469157783",
+      "status": "Approved for implementation by direct maintainer instruction on 2026-11-05; requires KMIPKIT-0054 and implemented KMIPKIT-0055 and -0056."
+    },
+    "KMIPKIT-0058": {
+      "directory": "058-interop-common-foundation",
+      "path": "specs/058-interop-common-foundation/spec.md",
+      "sha256": "ac46339682dc4eccaf961fc96ea147635a4c31742b45cd556211a0bda249afd9",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0059": {
+      "directory": "059-interop-rust-validator",
+      "path": "specs/059-interop-rust-validator/spec.md",
+      "sha256": "04be5ca00205e33fa4f0f470934a8fe854fc0457c8e4dead012016fa75f1f551",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0060": {
+      "directory": "060-interop-c-validator",
+      "path": "specs/060-interop-c-validator/spec.md",
+      "sha256": "ca27a6364a5261cc01dc1e48fe327915b56eacaefc74eb6532882a2c2cdf621c",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0061": {
+      "directory": "061-interop-java-validator",
+      "path": "specs/061-interop-java-validator/spec.md",
+      "sha256": "c0be90bd99d6dbf60dcf8ca53ad4900f4c8f678b021d96988e223f3ece9994e7",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0063": {
+      "directory": "063-tls-hot-reload",
+      "path": "specs/063-tls-hot-reload/spec.md",
+      "sha256": "a90e5b6b79780dc73cdc2bee3a5330bc02b898ebf45c5a717f39a51d089bcd8c",
+      "status": "Approved (Feature KMIPKIT-0063)"
+    },
+    "KMIPKIT-0083": {
+      "directory": "083-interop-executable-contract",
+      "path": "specs/083-interop-executable-contract/spec.md",
+      "sha256": "c7a302c65c888af491973c44e4075e3c6093b205faa910e2fa6f6ebf5e58e4c4",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0084": {
+      "directory": "084-interop-rust-live",
+      "path": "specs/084-interop-rust-live/spec.md",
+      "sha256": "990a33c98b01dd76eb22cdfe5f704b6570f0818ba9a72af77f76cc1f46e2f6da",
+      "status": "Approved for implementation by explicit maintainer plan authorization"
+    },
+    "KMIPKIT-0086": {
+      "directory": "086-interop-java-live",
+      "path": "specs/086-interop-java-live/spec.md",
+      "sha256": "be4a33d0fe25bea7d000f18b3389adfd2f9d256f27e49f46c4e5cccabd80899e",
+      "status": "Approved for implementation by explicit authorization of the interoperability plan"
+    },
+    "KMIPKIT-0088": {
+      "directory": "088-interop-contract-version-matrix",
+      "path": "specs/088-interop-contract-version-matrix/spec.md",
+      "sha256": "87c650903bfb3a6ac0be5c8a134b6a1735f8ad2e4505a5f18c89354feb1155d7",
+      "status": "Approved for implementation by maintainer plan authorization"
+    },
+    "KMIPKIT-0091": {
+      "directory": "091-fluent-dx-foundation",
+      "path": "specs/091-fluent-dx-foundation/spec.md",
+      "sha256": "fa68a462eaf4d437aea146381571e59023804638048558c633d8dbd0bbeeaa84",
+      "status": "Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)"
+    },
+    "KMIPKIT-0092": {
+      "directory": "092-fluent-object-creation",
+      "path": "specs/092-fluent-object-creation/spec.md",
+      "sha256": "40c00a03fdd888f9779d182383703e982f19cd22b8c0fe8a40f196e0457dd417",
+      "status": "Draft; implementation is gated on human approval of this specification."
+    },
+    "KMIPKIT-0093": {
+      "directory": "093-fluent-complete-api",
+      "path": "specs/093-fluent-complete-api/spec.md",
+      "sha256": "4a5ba5b17b1402edf7f80dea350cb09917c745338d8d1adf97a588300cdbc57f",
+      "status": "Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+    },
+    "KMIPKIT-0095": {
+      "directory": "095-fluent-response-views",
+      "path": "specs/095-fluent-response-views/spec.md",
+      "sha256": "d3cd1d0c5e41c3fb03e139f6eb7b7f84ac98fc1a7d94032f70ec5b768989b717",
+      "status": "Approved for implementation."
+    },
+    "KMIPKIT-0096": {
+      "directory": "096-fluent-expert-attributes",
+      "path": "specs/096-fluent-expert-attributes/spec.md",
+      "sha256": "d344720fee5c4b8cd0ded0748b73fe318385028a6bf90b81f889fce7070b755f",
+      "status": "Approved for implementation by the maintainer's direct"
+    },
+    "KMIPKIT-0097": {
+      "directory": "097-fluent-create-key-pair",
+      "path": "specs/097-fluent-create-key-pair/spec.md",
+      "sha256": "8222713aeb084e9aa66f3d9facf62746d5616d9c34252b88002d316752db3601",
+      "status": "Approved for implementation by the maintainer's direct request to implement the complete KMIPKIT-0093 plan."
+    },
+    "KMIPKIT-0099": {
+      "directory": "099-fluent-create-split-key",
+      "path": "specs/099-fluent-create-split-key/spec.md",
+      "sha256": "d30ff6e3399480ab5dec88159c134262aa1ba888c17b190a63a9a9e4b69a8413",
+      "status": "Approved for implementation by the maintainer's direct request to"
+    },
+    "KMIPKIT-0100": {
+      "directory": "100-fluent-register",
+      "path": "specs/100-fluent-register/spec.md",
+      "sha256": "d8bfdd5851a9bc8e43f1bfc26561cfad5e227a1c7ae28931b4991a23867bc090",
+      "status": "Approved in scope by the maintainer's direct 2026-11-11 authorization of the complete KMIPKIT-0093 plan."
+    },
+    "KMIPKIT-0101": {
+      "directory": "101-fluent-lifecycle-operations",
+      "path": "specs/101-fluent-lifecycle-operations/spec.md",
+      "sha256": "c3d36df0a36d20606f6ef7cefce28148b9c2a023ff94af697be557967bcbe4cd",
+      "status": "Approved within the maintainer's direct authorization of the complete KMIPKIT-0093 plan."
+    },
+    "KMIPKIT-0102": {
+      "directory": "102-fluent-cryptographic-operations",
+      "path": "specs/102-fluent-cryptographic-operations/spec.md",
+      "sha256": "25ebbb990208c29a07562ba92396302cbb87e28a392b8d82a0145ca9bd033e9b",
+      "status": "Approved implementation slice of KMIPKIT-0093 under the"
+    },
+    "KMIPKIT-0103": {
+      "directory": "103-fluent-c-crypto-api",
+      "path": "specs/103-fluent-c-crypto-api/spec.md",
+      "sha256": "77099c84f820b0b759621a78ce984df09a1e8bfa34e9ad183b2bef3765d5dad3",
+      "status": "Approved implementation slice of KMIPKIT-0093 under the"
+    },
+    "KMIPKIT-0104": {
+      "directory": "104-fluent-java-crypto-api",
+      "path": "specs/104-fluent-java-crypto-api/spec.md",
+      "sha256": "396545b647dcd34d4f824d9f3cfe1b3e1ea4278076ad604d45389f31538ef131",
+      "status": "Approved delivery slice of KMIPKIT-0093 under the maintainer's"
+    },
+    "KMIPKIT-0105": {
+      "directory": "105-fluent-python-crypto-api",
+      "path": "specs/105-fluent-python-crypto-api/spec.md",
+      "sha256": "cb4c5e6f7f46998305173eef28148f4da352d26bf42bdfab3f6f331d35cfd528",
+      "status": "Approved delivery slice under the maintainer's 2026-11-11"
+    },
+    "KMIPKIT-0108": {
+      "directory": "0108-fluent-attribute-reads",
+      "path": "specs/0108-fluent-attribute-reads/spec.md",
+      "sha256": "69fb846747fb06296d7ddd0e1ce8166273c69e291679988ff922142b9a687988",
+      "status": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+    },
+    "KMIPKIT-0109": {
+      "directory": "0109-fluent-attribute-read-bindings",
+      "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
+      "sha256": "daffe5124cd4bf7bef5f7e585dc660a8d6b0765bc2a01dcc3dee24e578c11810",
+      "status": "Approved."
+    },
+    "KMIPKIT-0113": {
+      "directory": "113-discover-versions-offers",
+      "path": "specs/113-discover-versions-offers/spec.md",
+      "sha256": "28ebcb9ed565e87d5d411f91b53cc0c889e12ad9edc53cb2f6cb0f40287b1168",
+      "status": "Draft for maintainer review; implementation is not yet authorized"
+    },
+    "KMIPKIT-0120": {
+      "directory": "0120-partial-batch-responses",
+      "path": "specs/0120-partial-batch-responses/spec.md",
+      "sha256": "94e7c2e016d0a562ec03541af4cabc63decfbb8931b1134ae97a9291ccde9025",
+      "status": "Approved for implementation by the maintainer's autonomous interoperability directive"
+    }
+  },
+  "formatVersion": 1,
+  "sourceCommit": "1f84a00d6f453c2ec09c36ca0622f289521e137e"
+}
