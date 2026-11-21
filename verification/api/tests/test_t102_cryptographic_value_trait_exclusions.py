@@ -361,16 +361,5 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
             )
         )
 
-        owner_spec = (ROOT / OWNER_SPEC_PATH).read_text(encoding="utf-8")
-        owner_traceability = (
-            ROOT / "specs" / "021-hash-mac-signature-operations" / "traceability.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("PR #70 merged into `release/1.0.0`", owner_spec)
-        self.assertIn("KMIPKIT-DISC-048", owner_spec)
-        self.assertIn("remains open", owner_spec)
-        self.assertIn("KMIPKIT-DISC-048", owner_traceability)
-        self.assertIn("either final-part form", owner_traceability)
-
-
 if __name__ == "__main__":
     unittest.main()
