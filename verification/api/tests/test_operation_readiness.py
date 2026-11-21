@@ -36,7 +36,6 @@ ASYNC_OWNER_STATUS = (
     "KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal "
     "conformance claim is made."
 )
-ASYNC_OWNER_SPEC_PATH = "specs/009-asynchronous-operations/spec.md"
 DELEGATED_OWNER_STATUS_CASES = (
     (
         "KMIPKIT-0005",
@@ -869,13 +868,18 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         }
 
         self.assertEqual(asynchronous_names, set(operations))
-        owner_spec = (ROOT / ASYNC_OWNER_SPEC_PATH).read_text(encoding="utf-8")
-        approval_record = ROOT / "specs" / "009-asynchronous-operations" / "approval-record.md"
-        approval_text = approval_record.read_text(encoding="utf-8")
-        self.assertIn("**Status**: Approved for implementation", owner_spec)
-        self.assertIn("MUST NOT claim profile support", owner_spec)
-        self.assertIn("No formal conformance claim is made", owner_spec)
-        self.assertIn("profile support, or formal conformance", approval_text)
+        traceability = (
+            ROOT / "verification" / "api" / "public-api-bindings" / "traceability.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("### T093 — KMIPKIT-0009 asynchronous declaration mapping", traceability)
+        self.assertIn(
+            "No OASIS conformance, profile support, interoperability, or certification claim is made.",
+            traceability,
+        )
+        self.assertIn(
+            "This inventory reconciliation adds no wire behavior and makes no profile, certification, interoperability, or server-support claim.",
+            traceability,
+        )
         for operation in operations.values():
             with self.subTest(operation=operation["name"]):
                 self.assertEqual("verified", operation["apiState"])
