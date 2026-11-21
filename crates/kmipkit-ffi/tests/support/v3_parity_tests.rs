@@ -1767,7 +1767,6 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
 #[test]
 fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
     let message = s2c_test_discover_notify_role_batch();
-
     let mut limits = ptr::null_mut();
     assert_eq!(kmipkit_codec_limits_defaults(&raw mut limits), SUCCESS);
     let mut batch = ptr::null_mut();
@@ -1781,6 +1780,15 @@ fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
         SUCCESS
     );
 
+    assert_discover_versions_getter(batch);
+    assert_notify_uid_getter(batch);
+    assert_endpoint_role_getter(batch);
+
+    client_abi::kmipkit_incoming_server_batch_release(batch);
+    kmipkit_codec_limits_release(limits);
+}
+
+fn assert_discover_versions_getter(batch: *mut kmipkit_incoming_server_batch_t) {
     let mut version_count = 0u32;
     assert_eq!(
         client_abi::kmipkit_incoming_server_batch_item_discover_versions(
@@ -1835,7 +1843,9 @@ fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
         ),
         ERROR_INVALID_INPUT
     );
+}
 
+fn assert_notify_uid_getter(batch: *mut kmipkit_incoming_server_batch_t) {
     let mut uid_length = 0u64;
     assert_eq!(
         client_abi::kmipkit_incoming_server_batch_item_notify(
@@ -1881,7 +1891,9 @@ fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
         ),
         ERROR_INVALID_INPUT
     );
+}
 
+fn assert_endpoint_role_getter(batch: *mut kmipkit_incoming_server_batch_t) {
     let mut endpoint_role = 0u32;
     assert_eq!(
         client_abi::kmipkit_incoming_server_batch_item_set_endpoint_role(
@@ -1908,9 +1920,6 @@ fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
         ),
         ERROR_INVALID_INPUT
     );
-
-    client_abi::kmipkit_incoming_server_batch_release(batch);
-    kmipkit_codec_limits_release(limits);
 }
 
 fn assert_s2c_response_items_succeeded(response: *mut kmipkit_response_message_t) {
