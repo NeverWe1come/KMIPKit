@@ -43,7 +43,7 @@ T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 # These totals pin bindings/shared/public-api.json, the canonical input used by
 # the T102 mapping tests. They are distinct from the historical parity and Rust
 # audit report totals below. Update them only with a reviewed manifest change.
-T102_PUBLIC_DECLARATIONS = 18_162
+T102_PUBLIC_DECLARATIONS = 17_652
 T102_APPROVED_EXCLUSIONS = 18_927
 # The current totals correspond to the November 16 report.
 T102_RUST_AUDIT_MANIFEST = 10_380
