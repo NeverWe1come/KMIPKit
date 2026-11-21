@@ -94,7 +94,7 @@ fn every_exact_assigned_tag_roundtrips_through_the_typed_catalog() {
                 let tag = KmipTag::from_u32(raw)
                     .unwrap_or_else(|| panic!("assigned tag 0x{raw:06X} has no typed mapping"));
                 assert_eq!(tag.as_u32(), raw);
-                assert!(!tag.name().is_empty());
+                assert_ne!(tag.name(), "");
             }
             TagAllocationKind::Reserved => assert_eq!(KmipTag::from_u32(raw), None),
             TagAllocationKind::Unused | TagAllocationKind::Extension => {
