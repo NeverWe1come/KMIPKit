@@ -215,7 +215,13 @@
     "specs/022-object-lifecycle/spec.md": {
       "evidence": [
         "**Status**: Approved for implementation",
-        "**Status**: Approved for implementation — 2026-10-11"
+        "**Status**: Approved for implementation — 2026-10-11",
+        "| Re-key | KMIPKIT-TEST-CN01-2-76, KMIPKIT-TEST-CN01-2-77, KMIPKIT-TEST-CN01-2-78, KMIPKIT-TEST-CN01-2-79, KMIPKIT-TEST-CN01-2-80, KMIPKIT-TEST-CN01-2-81, KMIPKIT-TEST-CN01-2-82, KMIPKIT-TEST-CN01-2-83, KMIPKIT-TEST-CN01-2-84, KMIPKIT-TEST-CN01-2-85, KMIPKIT-TEST-CN01-2-86, KMIPKIT-TEST-CN01-2-87 |",
+        "| Re-certify | No direct catalog case ID |",
+        "| Register | No direct catalog case ID |",
+        "| Revoke | No direct catalog case ID |",
+        "| Re-Provision | No direct catalog case ID |",
+        "| Re-Provision response | KMIPKIT-DISC-051 | §6.1.48 prose says the server SHALL return Unique Identifier for CSR/certificate forms, while Table 314 says the field is not required. Follow Table 314 for client parsing: allow absence for all three forms and preserve a present identifier. The prose SHALL remains a server-side obligation. Decision: KMIPKIT-DEC-014. |"
       ],
       "kind": "feature-specification",
       "sha256": "07358ffcbb7d37a607a1f68125b6567519d95a630eb45a4a0a17c7052ebdb17a",
@@ -261,7 +267,11 @@
     },
     "specs/027-rng-operations/spec.md": {
       "evidence": [
-        "**Status**: Approved for implementation — 2026-10-11"
+        "**Status**: Approved for implementation — 2026-10-11",
+        "**Independent Test**: A fake transport captures one Table 316 request and returns a Table 317 success and Table 318 failure; it checks field presence, order, result metadata, and no retry.",
+        "**Independent Test**: A fake transport captures one Table 319 request and returns a Table 320 success and Table 321 failure; it checks field presence, order, result metadata, and no retry.",
+        "**Specific rules**: Input Data is secret; returned Data Length can be zero without automatically treating the response as failure.",
+        "| KMIPKIT-REQ-SPEC-6.1.50-001 | §6.1.50 | SHALL NOT | Do not treat a response indicating that the server did not use supplied seed data as an error. |"
       ],
       "kind": "feature-specification",
       "sha256": "629814d022a35fea2496a836248445e3226b5bc81bde12c7998c06165397ffd7",
@@ -471,6 +481,14 @@
       "kind": "feature-specification",
       "sha256": "cb4c5e6f7f46998305173eef28148f4da352d26bf42bdfab3f6f331d35cfd528",
       "status": "Approved"
+    },
+    "specs/027-rng-operations/research.md": {
+      "evidence": [
+        "Pinned OASIS Specification v2.1 §§6.1.49–6.1.50, Tables 316–321, §11.36, approved spec 027, and current client/protocol/secret contracts. The catalog links no direct official test case for either operation."
+      ],
+      "kind": "research-note",
+      "sha256": "7d813cf1f407255e99690b68964899765e0f9b793db831271de42cab8bd36269",
+      "status": "Reference"
     }
   },
   "features": {
