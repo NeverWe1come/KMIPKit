@@ -207,8 +207,8 @@ def _write_approved_feature(root: Path) -> None:
 
 def _complete_readiness_manifest(root: Path) -> dict[str, object]:
     _write_approved_feature(root)
-    evidence = root / "tests" / "fixtures" / "api" / "parity.json"
-    evidence.parent.mkdir(parents=True)
+    evidence = root / "bindings" / "shared" / "fixtures" / "api" / "parity.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
     evidence.write_text("{}\n", encoding="utf-8")
     manifest = _contract_manifest()
     language_packages = {
@@ -366,8 +366,18 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         return list(self.validator.iter_errors(manifest))
 
     def test_feature_owner_id_resolves_through_spec_feature_branch(self) -> None:
-        feature = generate._feature_directory(ROOT, "KMIPKIT-0036")
-        self.assertEqual(feature.name, "022-object-lifecycle")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _write_feature_spec(
+                root,
+                "022-object-lifecycle",
+                "Approved",
+                feature_branch="feature/KMIPKIT-0036-lifecycle-implementation",
+            )
+            _write_feature_spec(root, "036-test-owner", "Approved")
+
+            feature = generate._feature_directory(root, "KMIPKIT-0036")
+            self.assertEqual(feature.name, "022-object-lifecycle")
 
     def test_merged_spec_pr_approval_evidence_resolves_stale_owner_status(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -744,22 +754,17 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             )
 
     def test_pkcs11_dependency_matrix_preserves_implementation_only_approval(self) -> None:
-        matrix_path = (
-            ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "contracts"
-            / "operation-dependencies.md"
+        inventory = json.loads(
+            (ROOT / "verification" / "api" / "catalog" / "fluent-operation-inventory.json").read_text(
+                encoding="utf-8"
+            )
         )
-        matrix = matrix_path.read_text(encoding="utf-8")
-        pkcs11_row = next(
-            line
-            for line in matrix.splitlines()
-            if line.startswith("| §6.1.37 | PKCS#11 |")
+        pkcs11_inventory = next(
+            operation
+            for operation in inventory["operations"]
+            if operation["name"] == "PKCS#11"
+            and operation["scopeState"] == "client_1_0"
         )
-        owner_spec = (
-            ROOT / "specs" / "026-pkcs11" / "spec.md"
-        ).read_text(encoding="utf-8")
         manifest = json.loads(
             (ROOT / "bindings" / "shared" / "public-api.json").read_text(
                 encoding="utf-8"
@@ -771,8 +776,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             if operation["section"] == "6.1.37"
         )
 
-        self.assertIn("Approved for implementation", owner_spec)
-        self.assertIn("does not start implementation", owner_spec)
+        self.assertEqual(pkcs11_inventory["featureSpec"], "KMIPKIT-0040")
         self.assertEqual(pkcs11_operation["apiState"], "verified")
         self.assertEqual(
             pkcs11_operation["ownerDependency"],
@@ -782,10 +786,6 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             pkcs11_operation["approvalEvidence"]["status"], "Approved"
         )
         self.assertNotIn("blockedReason", pkcs11_operation)
-        self.assertIn("Approved for implementation", pkcs11_row)
-        self.assertIn("not formal acceptance", pkcs11_row)
-        self.assertNotIn("Approved owner", pkcs11_row)
-
         fixture = json.loads(
             (
                 ROOT
@@ -806,46 +806,41 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         self.assertFalse(fixture["authorization"]["formalAcceptance"])
 
     def test_dependency_matrix_matches_current_owner_and_api_readiness(self) -> None:
-        matrix_path = (
-            ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "contracts"
-            / "operation-dependencies.md"
-        )
-        matrix = matrix_path.read_text(encoding="utf-8")
-        operation_rows = {
-            fields[1]: fields[3]
-            for line in matrix.splitlines()
-            if line.startswith("| §6.1.")
-            for fields in [[field.strip() for field in line.strip("|").split("|")]]
-        }
-        owner_counts = {
-            state: sum(
-                operation["ownerDependency"]["state"] == state
-                for operation in self._release_manifest()["operations"]
-            )
-            for state in ("approved", "candidate", "unassigned")
-        }
         manifest = self._release_manifest()
-
-        self.assertEqual(56, len(operation_rows))
-        self.assertEqual(56, owner_counts["approved"])
-        self.assertEqual(0, owner_counts["candidate"])
-        self.assertEqual(0, owner_counts["unassigned"])
-        self.assertIn(
-            f"Linked to an approved/accepted owner: **{owner_counts['approved']} operations**.",
-            matrix,
+        inventory = json.loads(
+            (ROOT / "verification" / "api" / "catalog" / "fluent-operation-inventory.json").read_text(
+                encoding="utf-8"
+            )
         )
-        self.assertIn(
-            f"Linked to an unapproved candidate owner: **{owner_counts['candidate']} operations**.",
-            matrix,
-        )
+        expected = {
+            source["section"]: operation
+            for operation in inventory["operations"]
+            if operation["scopeState"] == "client_1_0"
+            for source in operation["sourceRefs"]
+            if source["sourceId"] == "KMIPKIT-SRC-spec"
+        }
+        actual = {operation["section"]: operation for operation in manifest["operations"]}
 
-        for operation in manifest["operations"]:
-            if operation["apiState"] == "verified":
-                with self.subTest(operation=operation["name"]):
-                    self.assertNotIn("binding remains blocked", operation_rows[operation["name"]])
+        self.assertEqual(56, len(expected))
+        self.assertEqual(set(expected), set(actual))
+        for section, operation in actual.items():
+            with self.subTest(section=section):
+                self.assertEqual(operation["name"], expected[section]["name"])
+                if expected[section]["featureSpec"] is not None:
+                    self.assertEqual(
+                        operation["featureSpecId"], expected[section]["featureSpec"]
+                    )
+                self.assertEqual(
+                    operation["apiState"], expected[section]["publicApiState"]
+                )
+                self.assertEqual(
+                    operation["ownerDependency"]["state"], "approved"
+                )
+                self.assertEqual(
+                    operation["ownerDependency"]["specId"],
+                    operation["featureSpecId"],
+                )
+
 
     def _release_manifest(self) -> dict[str, object]:
         return json.loads(
@@ -956,13 +951,25 @@ class OperationReadinessSchemaTests(unittest.TestCase):
                 dependency = operation_by_section[section]["ownerDependency"]
                 self.assertEqual(dependency, {"state": "approved", "specId": spec_id})
 
-    def test_checked_in_operation_dependencies_resolve_against_dependency_matrix(self) -> None:
-        manifest = json.loads((ROOT / "bindings" / "shared" / "public-api.json").read_text(encoding="utf-8"))
-        _validate_v2_readiness(self, manifest, ROOT)
-        operation = manifest["operations"][0]
-        operation["ownerDependency"]["specId"] = "KMIPKIT-9999"
-        with self.assertRaises(ManifestError):
-            _validate_v2_readiness(self, manifest, ROOT)
+    def test_operation_dependency_validator_rejects_owner_mismatch(self) -> None:
+        manifest = self._release_manifest()
+        operations = json.loads(json.dumps(manifest["operations"]))
+        for operation in operations:
+            operation["ownerDependency"] = {
+                "state": "approved",
+                "specId": "KMIPKIT-0007",
+            }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _write_dependency_matrix_fixture_if_missing(
+                {"operations": operations}, root
+            )
+            generate._validate_operation_dependencies(operations, root)
+
+            operations[0]["ownerDependency"]["specId"] = "KMIPKIT-9999"
+            with self.assertRaises(ManifestError):
+                generate._validate_operation_dependencies(operations, root)
 
     def test_declared_operation_requires_approved_owner_and_all_language_mappings(self) -> None:
         manifest = _contract_manifest()
