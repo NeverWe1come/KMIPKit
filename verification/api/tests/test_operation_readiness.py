@@ -36,6 +36,7 @@ ASYNC_OWNER_STATUS = (
     "KMIPKIT-0043 T035. The pinned caption remains unchanged, and no formal "
     "conformance claim is made."
 )
+ASYNC_OWNER_SPEC_PATH = "specs/009-asynchronous-operations/spec.md"
 DELEGATED_OWNER_STATUS_CASES = (
     (
         "KMIPKIT-0005",
