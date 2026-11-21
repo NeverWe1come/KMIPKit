@@ -31,8 +31,9 @@ impl WrappedEnvelopeKey {
                 "wrapped key blob is too short".to_string(),
             ));
         }
-        let mut nonce = [0u8; 12];
-        nonce.copy_from_slice(&bytes[..12]);
+        let nonce: [u8; 12] = bytes[..12]
+            .try_into()
+            .map_err(|_| ProxyError::EnvelopeError("wrapped key blob is too short".to_string()))?;
         let ciphertext_and_tag = bytes[12..].to_vec();
         Ok(Self {
             nonce,
@@ -63,8 +64,7 @@ impl AutoEnvelope {
             ));
         }
 
-        let mut nonce = [0u8; 12];
-        crate::crypto::fill_random_bytes(&mut nonce)
+        let nonce = crate::crypto::generate_gcm_nonce()
             .map_err(|e| ProxyError::Internal(format!("RNG failure: {e}")))?;
         let in_out = crate::crypto::aes_256_gcm_encrypt(kek, &nonce, raw_key.as_slice())
             .map_err(|e| ProxyError::EnvelopeError(format!("encryption failed: {e}")))?;

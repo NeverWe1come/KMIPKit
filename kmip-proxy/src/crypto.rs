@@ -16,9 +16,8 @@ static RUSTLS_PROVIDER: OnceLock<Result<(), String>> = OnceLock::new();
 
 /// Installs OpenSSL as the process-wide rustls crypto provider.
 ///
-/// This installs the provider needed by the listener and by rustls clients
-/// Azure's rustls client is one such client; it uses the same OpenSSL-backed
-/// implementation as the proxy listener.
+/// Installs the provider needed by the listener and rustls clients that use
+/// rustls' process-wide default provider. Azure's client is one such client.
 pub fn install_rustls_openssl_provider() -> Result<(), ProxyError> {
     RUSTLS_PROVIDER
         .get_or_init(|| {
@@ -33,6 +32,13 @@ pub fn install_rustls_openssl_provider() -> Result<(), ProxyError> {
 /// Fills a buffer with cryptographically secure random bytes from OpenSSL.
 pub fn fill_random_bytes(buffer: &mut [u8]) -> Result<(), openssl::error::ErrorStack> {
     rand_bytes(buffer)
+}
+
+/// Generates a fresh AES-GCM nonce using OpenSSL's cryptographic RNG.
+pub fn generate_gcm_nonce() -> Result<[u8; 12], openssl::error::ErrorStack> {
+    let mut nonce = [0u8; 12];
+    rand_bytes(&mut nonce)?;
+    Ok(nonce)
 }
 
 /// Generates a hex-encoded random identifier with the given prefix.
@@ -72,6 +78,7 @@ pub fn verify_hmac_sha256(
 
 /// Computes a SHA-256 digest.
 #[must_use]
+#[cfg(feature = "gcp")]
 pub fn sha256_digest(data: &[u8]) -> [u8; 32] {
     sha256(data)
 }
