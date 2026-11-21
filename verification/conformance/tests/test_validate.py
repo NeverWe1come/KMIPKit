@@ -19823,10 +19823,18 @@ class CatalogValidationTests(unittest.TestCase):
             if contract["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-REPLACE-EXISTING-OPTIONAL"
         )
         import_contract["functional_requirement_ids"] = ["FR-999"]
+        # The review checkout omits feature spec documents, so provide the
+        # declared IDs explicitly while testing rejection of an unknown FR.
+        with patch.object(
+            catalog_validate,
+            "_profile_oracle_feature_spec_requirement_ids",
+            return_value={"FR-001", "FR-002", "FR-008"},
+        ):
+            diagnostics = validate_source_table_contracts(broken, ROOT)
         self.assertTrue(
             any(
                 "functional_requirement_ids" in diagnostic
-                for diagnostic in validate_source_table_contracts(broken, ROOT)
+                for diagnostic in diagnostics
             ),
         )
 
