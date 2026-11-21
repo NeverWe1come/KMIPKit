@@ -254,3 +254,56 @@ fn test_enums_completeness() {
     assert_eq!(AttributeTag::CryptographicAlgorithm.as_u32(), 0x0042_0028);
     assert_eq!(ProtocolVersion::V3_0.major(), 3);
 }
+
+#[test]
+fn test_numeric_enum_codes_roundtrip_all_declared_values() {
+    for raw in 1..=0x3D {
+        let decoded = OperationCode::from_u32(raw);
+        if raw == 0x33 {
+            assert_eq!(decoded, None);
+        } else {
+            assert_eq!(decoded.map(OperationCode::as_u32), Some(raw));
+        }
+    }
+    for raw in [0x41, 0x42] {
+        assert_eq!(
+            OperationCode::from_u32(raw).map(OperationCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(OperationCode::from_u32(0), None);
+    assert_eq!(OperationCode::from_u32(0x43), None);
+
+    for raw in 1..=12 {
+        assert_eq!(
+            ObjectTypeCode::from_u32(raw).map(ObjectTypeCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(ObjectTypeCode::from_u32(0), None);
+    assert_eq!(ObjectTypeCode::from_u32(13), None);
+
+    for raw in 1..=6 {
+        assert_eq!(
+            KeyLifecycleState::from_u32(raw).map(KeyLifecycleState::as_u32),
+            Some(raw)
+        );
+        assert_eq!(
+            KemAlgorithmCode::from_u32(raw).map(KemAlgorithmCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(KeyLifecycleState::from_u32(0), None);
+    assert_eq!(KeyLifecycleState::from_u32(7), None);
+    assert_eq!(KemAlgorithmCode::from_u32(0), None);
+    assert_eq!(KemAlgorithmCode::from_u32(7), None);
+
+    for raw in 1..=3 {
+        assert_eq!(
+            EphemeralMode::from_u32(raw).map(EphemeralMode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(EphemeralMode::from_u32(0), None);
+    assert_eq!(EphemeralMode::from_u32(4), None);
+}

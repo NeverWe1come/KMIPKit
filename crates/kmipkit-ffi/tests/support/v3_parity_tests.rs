@@ -1,9 +1,9 @@
 use super::*;
 use crate::{
     KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER, KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
-    kmipkit_s2c_capabilities_v1_t, kmipkit_s2c_operation_result_v1_t,
-    kmipkit_server_request_handler_v1_t, kmipkit_server_request_handler_v2_t,
-    kmipkit_server_request_handler_v3_t,
+    kmipkit_listener_options_v1_t, kmipkit_s2c_capabilities_v1_t,
+    kmipkit_s2c_operation_result_v1_t, kmipkit_server_request_handler_v1_t,
+    kmipkit_server_request_handler_v2_t, kmipkit_server_request_handler_v3_t,
 };
 use std::ptr;
 
@@ -484,6 +484,376 @@ fn ttlv_test_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
     encoded
 }
 
+fn s2c_test_query_request_ttlv() -> Vec<u8> {
+    let mut query_payload = Vec::new();
+    query_payload.extend_from_slice(&ttlv_test_item(0x0042_0074, 0x05, &1u32.to_be_bytes()));
+    query_payload.extend_from_slice(&ttlv_test_item(0x0042_0074, 0x05, &3u32.to_be_bytes()));
+
+    let mut batch_item = Vec::new();
+    batch_item.extend_from_slice(&ttlv_test_item(0x0042_005C, 0x05, &0x18u32.to_be_bytes()));
+    batch_item.extend_from_slice(&ttlv_test_item(0x0042_0093, 0x08, b"listener-item"));
+    batch_item.extend_from_slice(&ttlv_test_item(0x0042_0079, 0x01, &query_payload));
+
+    let mut protocol_version = Vec::new();
+    protocol_version.extend_from_slice(&ttlv_test_item(0x0042_006A, 0x02, &2i32.to_be_bytes()));
+    protocol_version.extend_from_slice(&ttlv_test_item(0x0042_006B, 0x02, &1i32.to_be_bytes()));
+    let mut request_header = Vec::new();
+    request_header.extend_from_slice(&ttlv_test_item(0x0042_0069, 0x01, &protocol_version));
+    request_header.extend_from_slice(&ttlv_test_item(0x0042_000D, 0x02, &1i32.to_be_bytes()));
+
+    let mut request = Vec::new();
+    request.extend_from_slice(&ttlv_test_item(0x0042_0077, 0x01, &request_header));
+    request.extend_from_slice(&ttlv_test_item(0x0042_000F, 0x01, &batch_item));
+    ttlv_test_item(0x0042_0078, 0x01, &request)
+}
+
+#[test]
+#[allow(clippy::too_many_lines)] // One local TLS exchange exercises the C listener lifecycle end to end.
+fn test_client_listener_ffi_raw_tls_exchange_and_role_reversal() {
+    use kmipkit_test_support::EphemeralPki;
+    use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let server = pki.server_identity();
+    let client = pki.client_identity();
+    let server_certificate = server.certificate_der();
+    let server_private_key = server.private_key_der();
+    let authority = pki.authority_certificate_der();
+    let client_certificate = client.certificate_der();
+    let client_private_key = client.private_key_der();
+
+    let certificates = [kmipkit_transport_input_v1_t {
+        source_kind: TRANSPORT_SOURCE_MEMORY,
+        encoding: TRANSPORT_ENCODING_DER,
+        data: kmipkit_byte_span_v1_t {
+            data: server_certificate.as_ptr(),
+            length: server_certificate.len() as u64,
+        },
+    }];
+    let trust_certificates = [kmipkit_transport_input_v1_t {
+        source_kind: TRANSPORT_SOURCE_MEMORY,
+        encoding: TRANSPORT_ENCODING_DER,
+        data: kmipkit_byte_span_v1_t {
+            data: authority.as_ptr(),
+            length: authority.len() as u64,
+        },
+    }];
+    let make_timeout = || kmipkit_timeout_limit_v1_t {
+        kind: TRANSPORT_TIMEOUT_BOUNDED,
+        reserved: 0,
+        seconds: 5,
+        nanoseconds: 0,
+        reserved2: 0,
+    };
+    let make_config = || kmipkit_listener_transport_config_v1_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_listener_transport_config_v1_t>()),
+        abi_version: 1,
+        flags: KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT,
+        bind_port: 0,
+        reserved: 0,
+        bind_host: kmipkit_byte_span_v1_t {
+            data: ptr::null(),
+            length: 0,
+        },
+        server_certificates: certificates.as_ptr(),
+        server_certificate_count: certificates.len() as u64,
+        server_private_key: kmipkit_transport_input_v1_t {
+            source_kind: TRANSPORT_SOURCE_MEMORY,
+            encoding: TRANSPORT_ENCODING_DER,
+            data: kmipkit_byte_span_v1_t {
+                data: server_private_key.as_ptr(),
+                length: server_private_key.len() as u64,
+            },
+        },
+        trust_certificates: trust_certificates.as_ptr(),
+        trust_certificate_count: trust_certificates.len() as u64,
+        read_timeout: make_timeout(),
+        write_timeout: make_timeout(),
+        max_request_bytes: 65_536,
+    };
+    let config = make_config();
+    let target_path = b"/kmip";
+    let make_options = || kmipkit_listener_options_v1_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_listener_options_v1_t>()),
+        abi_version: 1,
+        target_path: kmipkit_byte_span_v1_t {
+            data: target_path.as_ptr(),
+            length: target_path.len() as u64,
+        },
+        revocation_lists: ptr::null(),
+        revocation_list_count: 0,
+        wire_encoding: 0,
+        reserved: 0,
+    };
+    let options = make_options();
+
+    let mut roots = rustls::RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(authority.to_vec()))
+        .expect("authority certificate is valid");
+    let tls_provider = std::sync::Arc::new(rustls_openssl::default_provider());
+    let client_config = rustls::ClientConfig::builder_with_provider(tls_provider)
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("TLS 1.3 is supported")
+        .with_root_certificates(roots)
+        .with_client_auth_cert(
+            vec![CertificateDer::from(client_certificate.to_vec())],
+            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(client_private_key.to_vec())),
+        )
+        .expect("client identity is valid");
+
+    let mut listener = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const config,
+            &raw const options,
+            &raw mut listener,
+        ),
+        SUCCESS
+    );
+    assert!(!listener.is_null());
+    let mut port = 0u16;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_get_port(listener, &raw mut port),
+        SUCCESS
+    );
+    assert_ne!(port, 0);
+
+    let request = s2c_test_query_request_ttlv();
+    let client_request = request.clone();
+    let client_thread = std::thread::spawn(move || {
+        use std::io::{Read, Write};
+
+        let socket =
+            std::net::TcpStream::connect(("127.0.0.1", port)).expect("connect to listener");
+        let server_name = rustls::pki_types::ServerName::try_from("server.kmipkit.test")
+            .expect("server name is valid");
+        let tls_connection =
+            rustls::ClientConnection::new(std::sync::Arc::new(client_config), server_name)
+                .expect("TLS client connection builds");
+        let mut tls = rustls::StreamOwned::new(tls_connection, socket);
+        for _ in 0..2 {
+            tls.write_all(&client_request).expect("send request batch");
+            tls.flush().expect("flush request batch");
+            let mut response_header = [0u8; 8];
+            tls.read_exact(&mut response_header)
+                .expect("read response header");
+            let payload_length =
+                u32::from_be_bytes(response_header[4..8].try_into().unwrap()) as usize;
+            let padding = (8 - (payload_length % 8)) % 8;
+            let mut response_body = vec![0u8; payload_length + padding];
+            tls.read_exact(&mut response_body)
+                .expect("read response body");
+            assert_eq!(&response_header[..3], &[0x42, 0x00, 0x7B]);
+        }
+    });
+
+    let mut connection = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_accept(listener, 5_000, &raw mut connection),
+        SUCCESS
+    );
+    assert!(!connection.is_null());
+    let mut limits = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&raw mut limits), SUCCESS);
+    let mut dispatcher = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_create(&raw mut dispatcher),
+        SUCCESS
+    );
+    let handler = kmipkit_server_request_handler_v1_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_server_request_handler_v1_t>()),
+        abi_version: 1,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: None,
+        handle_query: Some(test_query_callback_v1),
+        handle_set_endpoint_role: None,
+    };
+
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_connection_recv_batch(
+            connection,
+            limits,
+            5_000,
+            &raw mut batch,
+        ),
+        SUCCESS
+    );
+    let mut response = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            batch,
+            &raw const handler,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        client_abi::kmipkit_client_listener_connection_send_response(connection, response, 5_000),
+        SUCCESS
+    );
+    client_abi::kmipkit_incoming_server_batch_release(batch);
+    kmipkit_response_message_release(response);
+
+    let mut session = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_connection_into_role_reversed(
+            connection,
+            &raw mut session,
+        ),
+        SUCCESS
+    );
+    assert!(!session.is_null());
+    client_abi::kmipkit_client_listener_connection_release(connection);
+
+    let mut second_batch = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_role_reversed_session_recv_batch(
+            session,
+            limits,
+            5_000,
+            &raw mut second_batch,
+        ),
+        SUCCESS
+    );
+    let mut second_response = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            second_batch,
+            &raw const handler,
+            &raw mut second_response,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        client_abi::kmipkit_role_reversed_session_send_response(session, second_response, 5_000),
+        SUCCESS
+    );
+    assert_eq!(
+        client_abi::kmipkit_role_reversed_session_close(session),
+        SUCCESS
+    );
+
+    client_abi::kmipkit_incoming_server_batch_release(second_batch);
+    kmipkit_response_message_release(second_response);
+    client_abi::kmipkit_role_reversed_session_release(session);
+    client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+    kmipkit_codec_limits_release(limits);
+    client_abi::kmipkit_client_listener_release(listener);
+    client_thread.join().expect("client TLS exchange completes");
+
+    let mut legacy_listener = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls(
+            &raw const config,
+            &raw mut legacy_listener
+        ),
+        SUCCESS
+    );
+    client_abi::kmipkit_client_listener_release(legacy_listener);
+
+    let mut https_options = make_options();
+    for encoding in 0..=3 {
+        https_options.wire_encoding = encoding;
+        let mut https_listener = ptr::null_mut();
+        assert_eq!(
+            client_abi::kmipkit_client_listener_bind_https_with_options_v1(
+                &raw const config,
+                &raw const https_options,
+                &raw mut https_listener,
+            ),
+            SUCCESS
+        );
+        assert!(!https_listener.is_null());
+        client_abi::kmipkit_client_listener_release(https_listener);
+    }
+    let mut default_https_listener = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_https(
+            &raw const config,
+            &raw mut default_https_listener,
+        ),
+        SUCCESS
+    );
+    client_abi::kmipkit_client_listener_release(default_https_listener);
+
+    let mut invalid_listener = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            ptr::null(),
+            ptr::null(),
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    let mut invalid_config = make_config();
+    invalid_config.abi_version = 2;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const invalid_config,
+            ptr::null(),
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    invalid_config = make_config();
+    invalid_config.flags = 0x2;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const invalid_config,
+            ptr::null(),
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    invalid_config = make_config();
+    invalid_config.server_certificate_count = 0;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const invalid_config,
+            ptr::null(),
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    invalid_config = make_config();
+    invalid_config.write_timeout.nanoseconds = 1_000_000_000;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const invalid_config,
+            ptr::null(),
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut invalid_options = make_options();
+    invalid_options.reserved = 1;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_raw_tls_with_options_v1(
+            &raw const config,
+            &raw const invalid_options,
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    invalid_options = make_options();
+    invalid_options.wire_encoding = 4;
+    assert_eq!(
+        client_abi::kmipkit_client_listener_bind_https_with_options_v1(
+            &raw const config,
+            &raw const invalid_options,
+            &raw mut invalid_listener,
+        ),
+        ERROR_INVALID_INPUT
+    );
+}
+
 static PUT_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static QUERY_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static PUT_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -726,6 +1096,81 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     );
     assert!(!batch.is_null());
 
+    // Exercise the incoming-batch inspection API before dispatching callbacks.
+    let mut major = 0u32;
+    let mut minor = 0u32;
+    let mut item_count = 0u32;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_protocol_version(
+            batch,
+            &raw mut major,
+            &raw mut minor,
+        ),
+        SUCCESS
+    );
+    assert_eq!((major, minor), (2, 1));
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_count(batch, &raw mut item_count),
+        SUCCESS
+    );
+    assert_eq!(item_count, 2);
+
+    let mut operation = 0u32;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_operation(batch, 0, &raw mut operation,),
+        SUCCESS
+    );
+    assert_eq!(operation, 0x1C); // Put
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_operation(batch, 1, &raw mut operation,),
+        SUCCESS
+    );
+    assert_eq!(operation, 0x18); // Query
+
+    let mut batch_id_len = 0u64;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            0,
+            ptr::null_mut(),
+            0,
+            &raw mut batch_id_len,
+        ),
+        SUCCESS
+    );
+    assert_eq!(batch_id_len, 6);
+    let mut batch_id = [0u8; 6];
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            0,
+            batch_id.as_mut_ptr(),
+            batch_id.len() as u64,
+            &raw mut batch_id_len,
+        ),
+        SUCCESS
+    );
+    assert_eq!(&batch_id, b"item-1");
+
+    let mut query_flags = 0u32;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_query(batch, 1, &raw mut query_flags,),
+        SUCCESS
+    );
+    assert_eq!(query_flags, 0b101); // Operations and ServerInformation.
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_query(batch, 0, &raw mut query_flags,),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_operation(
+            batch,
+            item_count,
+            &raw mut operation,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
     // Test item_put_v2 getters directly
     let mut put_fn = 0u32;
     let mut uid_buf = [0u8; 32];
@@ -768,6 +1213,44 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     assert!(!attr_st.is_null());
     kmipkit_ttlv_item_release(obj_item);
     kmipkit_ttlv_structure_release(attr_st);
+
+    let mut short_uid = [0u8; 1];
+    assert_eq!(
+        unsafe {
+            client_abi::kmipkit_incoming_server_batch_item_put_v2(
+                batch,
+                0,
+                ptr::null_mut(),
+                short_uid.as_mut_ptr(),
+                short_uid.len() as u64,
+                &raw mut uid_len,
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+
+    let mut legacy_uid = [0u8; 32];
+    let mut legacy_uid_len = 0u64;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_put(
+            batch,
+            0,
+            legacy_uid.as_mut_ptr(),
+            legacy_uid.len() as u64,
+            &raw mut legacy_uid_len,
+            ptr::null_mut(),
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        &legacy_uid[..usize::try_from(legacy_uid_len).expect("test ABI length fits in usize")],
+        b"sym-key-uid"
+    );
 
     let mut dispatcher = ptr::null_mut();
     assert_eq!(

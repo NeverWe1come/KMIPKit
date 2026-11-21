@@ -2,3 +2,13 @@
 # These upstream artifacts are reviewed through source inventories and checksums.
 verification/conformance/oasis/**/upstream/* -text -diff
 verification/conformance/oasis/**/fixtures/*.xml -text -diff
+
+# Generated attribute sources are compared byte-for-byte by their generator.
+# Keep LF in Windows working trees so --check has identical input on every OS.
+crates/kmipkit-protocol/src/attribute_types_generated.rs text eol=lf
+crates/kmipkit-protocol/src/typed_attributes_generated.rs text eol=lf
+crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs text eol=lf
+bindings/c/include/kmipkit_standard_attributes_generated.h text eol=lf
+bindings/java/src/main/java/org/kmipkit/ttlv/StandardAttribute.java text eol=lf
+bindings/python/src/kmipkit/_generated/standard_attribute.py text eol=lf
+crates/kmipkit-client/src/attribute_tags_generated.rs text eol=lf
