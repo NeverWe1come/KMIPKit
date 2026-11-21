@@ -25,9 +25,9 @@ use kmipkit_transport::{
     RequestDeliveryState, TransportCauseCategory, TransportError, WireEncoding,
 };
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
-use kmipkit_ttlv::{Item, StructureView};
 
 use crate::error::ClientError;
+pub(crate) use crate::s2c_encoding::encode_structure_view;
 
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001E;
 const NOTIFY_OPERATION: u32 = 0x0000_001B;
@@ -336,13 +336,13 @@ impl IncomingServerBatch {
 pub trait ServerRequestHandler {
     /// Supplies the optional ID of the batch item currently being dispatched.
     ///
-    /// The default [Self::set_current_batch_item] implementation calls this hook.
+    /// The default [`Self::set_current_batch_item`] implementation calls this hook.
     fn set_current_batch_item_id(&mut self, _unique_batch_item_id: Option<&[u8]>) {}
 
     /// Supplies metadata before dispatching each batch item.
     ///
     /// Override this hook to receive the full item view. The default forwards
-    /// the optional ID to [Self::set_current_batch_item_id].
+    /// the optional ID to [`Self::set_current_batch_item_id`].
     fn set_current_batch_item(&mut self, item: &ServerRequestItemView<'_>) {
         self.set_current_batch_item_id(item.unique_batch_item_id());
     }
@@ -486,38 +486,39 @@ impl ServerRequestDispatcher {
                             .map_err(map_protocol_err)?;
                     }
                 },
-                ServerRequestItemPayload::Query(req) => {
-                    let result = handler.handle_query(req).and_then(|response| {
-                        response
-                            .to_ttlv_payload_for_version(batch.protocol_version())
-                            .map_err(|_| {
-                                KmipOperationResult::new(
-                                    ResultStatus::from_raw(1),
-                                    Some(ResultReason::from_raw(0x07)),
-                                    None,
-                                )
-                                .expect("valid Invalid Field result")
-                            })
-                    });
-                    match result {
-                        Ok(payload) => {
-                            builder
-                                .add_success_item(QUERY_OPERATION, unique_id, payload)
-                                .map_err(map_protocol_err)?;
-                        }
-                        Err(result) => {
-                            builder
-                                .add_failure_item(
-                                    QUERY_OPERATION,
-                                    unique_id,
-                                    result.status(),
-                                    result.reason(),
-                                    result.message().map(|m| m.as_str().to_owned()),
-                                )
-                                .map_err(map_protocol_err)?;
+                ServerRequestItemPayload::Query(req) => match handler.handle_query(req) {
+                    Ok(response) => {
+                        match response.to_ttlv_payload_for_version(batch.protocol_version()) {
+                            Ok(payload) => {
+                                builder
+                                    .add_success_item(QUERY_OPERATION, unique_id, payload)
+                                    .map_err(map_protocol_err)?;
+                            }
+                            Err(_) => {
+                                builder
+                                    .add_failure_item(
+                                        QUERY_OPERATION,
+                                        unique_id,
+                                        ResultStatus::from_raw(1),
+                                        Some(ResultReason::from_raw(0x07)),
+                                        None,
+                                    )
+                                    .map_err(map_protocol_err)?;
+                            }
                         }
                     }
-                }
+                    Err(result) => {
+                        builder
+                            .add_failure_item(
+                                QUERY_OPERATION,
+                                unique_id,
+                                result.status(),
+                                result.reason(),
+                                result.message().map(|m| m.as_str().to_owned()),
+                            )
+                            .map_err(map_protocol_err)?;
+                    }
+                },
                 ServerRequestItemPayload::SetEndpointRole(req) => {
                     match handler.handle_set_endpoint_role(req) {
                         Ok(resp) => {
@@ -780,7 +781,9 @@ impl ClientListenerConnection {
                     &CodecLimits::defaults(),
                     *encoding,
                 )
-                .map_err(|error| ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent))?;
+                .map_err(|error| {
+                    ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent)
+                })?;
                 conn.send_response(text.as_bytes(), *encoding, timeout)
                     .map_err(ClientError::transport)
             }
@@ -818,113 +821,5 @@ impl ClientListenerConnection {
             ConnectionInner::RawTls(conn) => conn.close().map_err(ClientError::transport),
             ConnectionInner::Https(conn, _) => conn.close().map_err(ClientError::transport),
         }
-    }
-}
-
-pub(crate) fn encode_structure_view(tag: u32, view: &StructureView<'_>, out: &mut Vec<u8>) {
-    let raw_tag = tag.to_be_bytes();
-    let tag_bytes = [raw_tag[1], raw_tag[2], raw_tag[3]];
-    let mut children_bytes = Vec::new();
-    for child in view.children() {
-        encode_ttlv_item(child, &mut children_bytes);
-    }
-    write_ttlv_header(out, tag_bytes, 0x01, children_bytes.len());
-    out.extend_from_slice(&children_bytes);
-}
-
-fn encode_ttlv_item(item: &Item, out: &mut Vec<u8>) {
-    let raw_tag = item.tag().raw().to_be_bytes();
-    let tag_bytes = [raw_tag[1], raw_tag[2], raw_tag[3]];
-
-    item.with_value(|view| match view {
-        kmipkit_ttlv::ValueView::Structure(structure) => {
-            let mut children_bytes = Vec::new();
-            for child in structure.children() {
-                encode_ttlv_item(child, &mut children_bytes);
-            }
-            write_ttlv_header(out, tag_bytes, 0x01, children_bytes.len());
-            out.extend_from_slice(&children_bytes);
-        }
-        kmipkit_ttlv::ValueView::Integer(val) => {
-            write_ttlv_header(out, tag_bytes, 0x02, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::LongInteger(val) => {
-            write_ttlv_header(out, tag_bytes, 0x03, 8);
-            out.extend_from_slice(&val.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::BigInteger(bytes) => {
-            write_ttlv_header(out, tag_bytes, 0x04, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::Enumeration(val) => {
-            write_ttlv_header(out, tag_bytes, 0x05, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::Boolean(val) => {
-            write_ttlv_header(out, tag_bytes, 0x06, 8);
-            let byte_val = u8::from(*val);
-            out.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, byte_val]);
-        }
-        kmipkit_ttlv::ValueView::TextString(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x07, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::ByteString(bytes) => {
-            write_ttlv_header(out, tag_bytes, 0x08, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::DateTime(dt) => {
-            write_ttlv_header(out, tag_bytes, 0x09, 8);
-            out.extend_from_slice(&dt.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::Interval(val) => {
-            write_ttlv_header(out, tag_bytes, 0x0A, 4);
-            out.extend_from_slice(&val.to_be_bytes());
-            out.extend_from_slice(&[0u8; 4]);
-        }
-        kmipkit_ttlv::ValueView::DateTimeExtended(dt) => {
-            write_ttlv_header(out, tag_bytes, 0x0B, 8);
-            out.extend_from_slice(&dt.to_be_bytes());
-        }
-        kmipkit_ttlv::ValueView::Identifier(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0C, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::Reference(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0D, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        kmipkit_ttlv::ValueView::NameReference(s) => {
-            let bytes = s.as_bytes();
-            write_ttlv_header(out, tag_bytes, 0x0E, bytes.len());
-            out.extend_from_slice(bytes);
-            write_ttlv_padding(out, bytes.len());
-        }
-        _ => {}
-    });
-}
-
-fn write_ttlv_header(out: &mut Vec<u8>, tag_bytes: [u8; 3], item_type: u8, len: usize) {
-    out.extend_from_slice(&tag_bytes);
-    out.push(item_type);
-    out.extend_from_slice(&u32::try_from(len).unwrap_or(0).to_be_bytes());
-}
-
-fn write_ttlv_padding(out: &mut Vec<u8>, len: usize) {
-    let rem = len % 8;
-    if rem > 0 {
-        let pad = 8 - rem;
-        out.extend(std::iter::repeat_n(0u8, pad));
     }
 }

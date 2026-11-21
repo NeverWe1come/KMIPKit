@@ -16,7 +16,7 @@ from verification.api.tests.t102_manifest_totals import (
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-PARTITION = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t102-macro-lot-partition.json"
+PARTITION = ROOT / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings" / "t102-macro-lot-partition.json"
 
 
 class T102MacroLotPartitionTests(unittest.TestCase):

@@ -67,17 +67,20 @@ def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
 
 
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
-    archive = subprocess.run(
-        ["git", "-C", str(repository), "archive", "--format=tar", commit],
-        check=True,
-        capture_output=True,
-    )
-    with tarfile.open(fileobj=__import__("io").BytesIO(archive.stdout), mode="r:") as source:
-        for entry in source.getmembers():
-            parts = Path(entry.name).parts
-            if Path(entry.name).is_absolute() or ".." in parts:
-                raise ValueError("Git archive contains an unsafe path")
-        source.extractall(destination, filter="data")
+    # The pinned release archive is larger than 1 GiB. Keep it off the heap.
+    with tempfile.TemporaryFile() as archive:
+        subprocess.run(
+            ["git", "-C", str(repository), "archive", "--format=tar", commit],
+            check=True,
+            stdout=archive,
+        )
+        archive.seek(0)
+        with tarfile.open(fileobj=archive, mode="r:") as source:
+            for entry in source.getmembers():
+                parts = Path(entry.name).parts
+                if Path(entry.name).is_absolute() or ".." in parts:
+                    raise ValueError("Git archive contains an unsafe path")
+            source.extractall(destination, filter="data")
 
 
 def install(repository: Path, commit: str, release_ref: str, maven_repository: Path,

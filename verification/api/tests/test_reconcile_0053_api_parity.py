@@ -224,7 +224,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
     def test_kmip30_system_credential_models_have_exact_generic_routes_in_all_languages(self) -> None:
         manifest = json.loads(Path("bindings/shared/public-api.json").read_text(encoding="utf-8"))
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -317,7 +317,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
     def test_reconciles_only_executable_table59_field_getters_and_builder_setters(self) -> None:
         manifest = json.loads(Path("bindings/shared/public-api.json").read_text(encoding="utf-8"))
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -443,7 +443,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -489,7 +489,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             Path("bindings/shared/public-api.json").read_text(encoding="utf-8")
         )
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -536,7 +536,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             encoding="utf-8"
         )
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -645,7 +645,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
 
     def test_managed_object_java_routes_match_exported_camel_case_methods(self) -> None:
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
@@ -704,7 +704,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
                 )
 
     def test_additional_foreign_route_is_added_once_with_its_requirement_trace(self) -> None:
-        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        route_path = Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json")
         additions = json.loads(route_path.read_text(encoding="utf-8"))["functions"]
 
         first = reconcile_0053_api_parity.add_additional_functions(self.manifest, additions)
@@ -936,7 +936,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             reconcile_0053_api_parity.add_additional_types(manifest, [addition])
 
     def test_real_typed_attribute_from_item_route_unblocks_generated_c_surface(self) -> None:
-        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        route_path = Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json")
         route_data = json.loads(route_path.read_text(encoding="utf-8"))
         validation_export = next(
             row for row in route_data["publicDeclarations"]
@@ -1027,13 +1027,13 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
     def test_latest_validation_exports_have_exact_routes_or_exclusions(self) -> None:
         manifest = self.manifest_for_repository()
         route_data = json.loads(
-            Path("specs/053-api-parity-facade/additional-api-routes.json").read_text(
+            Path("verification/api/fixtures/053-api-parity-facade/additional-api-routes.json").read_text(
                 encoding="utf-8"
             )
         )
         inventory = json.loads(
             Path(
-                "specs/053-api-parity-facade/candidate-resolutions/"
+                "verification/api/fixtures/053-api-parity-facade/candidate-resolutions/"
                 "validation-export-candidates.json"
             ).read_text(encoding="utf-8")
         )

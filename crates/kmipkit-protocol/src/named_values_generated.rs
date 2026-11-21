@@ -4643,6 +4643,25 @@ pub mod values {
                         }
                     }
                 }
+                /// KMIPKit-defined v3.0 compatibility values for Ephemeral Mode.
+                pub mod ephemeral_mode {
+                    /// `No`; KMIPKit project-defined compatibility mapping; not an OASIS allocation.
+                    pub const NO: u32 = 0x0000_0001;
+                    /// `Immediate`; KMIPKit project-defined compatibility mapping; not an OASIS allocation.
+                    pub const IMMEDIATE: u32 = 0x0000_0002;
+                    /// `Retain on Failure`; KMIPKit project-defined compatibility mapping; not an OASIS allocation.
+                    pub const RETAIN_ON_FAILURE: u32 = 0x0000_0003;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("No"),
+                            0x0000_0002 => Some("Immediate"),
+                            0x0000_0003 => Some("Retain on Failure"),
+                            _ => None,
+                        }
+                    }
+                }
             }
             pub mod bitmask {
                 /// KMIP Object Class Mask bits from §12.2, Table 616.

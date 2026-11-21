@@ -30,7 +30,7 @@ async fn build_raw_tls_stream(
         rustls::pki_types::PrivatePkcs8KeyDer::from(pki.client_key_der.to_vec()),
     );
 
-    let provider = std::sync::Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = std::sync::Arc::new(rustls_openssl::default_provider());
     let client_config = rustls::ClientConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .unwrap()

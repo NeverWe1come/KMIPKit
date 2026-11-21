@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
-REPORTS_PATH = ROOT / "specs" / "043-public-api-bindings" / "reports"
+REPORTS_PATH = ROOT / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
 REPORT_PATH = REPORTS_PATH / "rust-export-report-2026-11-01.json"
 
 TYPE_CASES = (

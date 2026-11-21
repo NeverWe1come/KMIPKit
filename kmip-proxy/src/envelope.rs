@@ -1,21 +1,9 @@
 //! Auto-Envelope key wrapping and memory zeroization engine.
 #![forbid(unsafe_code)]
 
-use aws_lc_rs::aead::{
-    AES_256_GCM, Aad, BoundKey, Nonce, NonceSequence, OpeningKey, SealingKey, UnboundKey,
-};
 use zeroize::Zeroizing;
 
 use crate::ProxyError;
-
-struct OneNonce(Option<[u8; 12]>);
-
-impl NonceSequence for OneNonce {
-    fn advance(&mut self) -> Result<Nonce, aws_lc_rs::error::Unspecified> {
-        let bytes = self.0.take().ok_or(aws_lc_rs::error::Unspecified)?;
-        Nonce::try_assume_unique_for_key(&bytes)
-    }
-}
 
 /// Structure holding an envelope-wrapped key blob.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,8 +31,9 @@ impl WrappedEnvelopeKey {
                 "wrapped key blob is too short".to_string(),
             ));
         }
-        let mut nonce = [0u8; 12];
-        nonce.copy_from_slice(&bytes[..12]);
+        let nonce: [u8; 12] = bytes[..12]
+            .try_into()
+            .map_err(|_| ProxyError::EnvelopeError("wrapped key blob is too short".to_string()))?;
         let ciphertext_and_tag = bytes[12..].to_vec();
         Ok(Self {
             nonce,
@@ -59,7 +48,7 @@ impl AutoEnvelope {
     /// Generates cryptographically secure random bytes in a zeroized buffer.
     pub fn generate_random_bytes(len: usize) -> Result<Zeroizing<Vec<u8>>, ProxyError> {
         let mut buf = vec![0u8; len];
-        aws_lc_rs::rand::fill(&mut buf)
+        crate::crypto::fill_random_bytes(&mut buf)
             .map_err(|e| ProxyError::Internal(format!("RNG failure: {e}")))?;
         Ok(Zeroizing::new(buf))
     }
@@ -75,17 +64,9 @@ impl AutoEnvelope {
             ));
         }
 
-        let mut nonce = [0u8; 12];
-        aws_lc_rs::rand::fill(&mut nonce)
+        let nonce = crate::crypto::generate_gcm_nonce()
             .map_err(|e| ProxyError::Internal(format!("RNG failure: {e}")))?;
-
-        let unbound = UnboundKey::new(&AES_256_GCM, kek)
-            .map_err(|e| ProxyError::EnvelopeError(format!("invalid KEK: {e}")))?;
-        let mut sealing_key = SealingKey::new(unbound, OneNonce(Some(nonce)));
-
-        let mut in_out = raw_key.as_slice().to_vec();
-        sealing_key
-            .seal_in_place_append_tag(Aad::empty(), &mut in_out)
+        let in_out = crate::crypto::aes_256_gcm_encrypt(kek, &nonce, raw_key.as_slice())
             .map_err(|e| ProxyError::EnvelopeError(format!("encryption failed: {e}")))?;
 
         Ok(WrappedEnvelopeKey {
@@ -106,18 +87,13 @@ impl AutoEnvelope {
             ));
         }
 
-        let unbound = UnboundKey::new(&AES_256_GCM, kek)
-            .map_err(|e| ProxyError::EnvelopeError(format!("invalid KEK: {e}")))?;
-        let mut opening_key = OpeningKey::new(unbound, OneNonce(Some(wrapped.nonce)));
-
-        let mut in_out = wrapped.ciphertext_and_tag.clone();
-        let decrypted = opening_key
-            .open_in_place(Aad::empty(), &mut in_out)
-            .map_err(|e| {
-                ProxyError::EnvelopeError(format!("decryption/integrity check failed: {e}"))
-            })?;
-
-        Ok(Zeroizing::new(decrypted.to_vec()))
+        if wrapped.ciphertext_and_tag.len() < 16 {
+            return Err(ProxyError::EnvelopeError(
+                "wrapped key blob is too short".to_string(),
+            ));
+        }
+        crate::crypto::aes_256_gcm_decrypt(kek, &wrapped.nonce, &wrapped.ciphertext_and_tag)
+            .map_err(|_| ProxyError::EnvelopeError("decryption/integrity check failed".into()))
     }
 }
 

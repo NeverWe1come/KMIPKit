@@ -549,7 +549,7 @@ impl fmt::Debug for CryptographicParametersBuilder {
             .debug_struct("CryptographicParametersBuilder")
             .field("member_count", &member_count)
             .field("extension_count", &self.extensions.len())
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -734,6 +734,8 @@ pub(crate) fn validate_cryptographic_parameters_view(
 
 /// Validates Table 59 member types, singleton cardinality, and known-member
 /// order while retaining the original Structure and every unknown member.
+// Keep the table-ordered dispatch together so it can be audited against Table 59.
+#[allow(clippy::too_many_lines)]
 pub(super) fn validate_known_cryptographic_parameters_view(
     parameters: &StructureView<'_>,
 ) -> Result<(), ProtocolError> {

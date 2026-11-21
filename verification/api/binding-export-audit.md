@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest verification.api.tests.test_binding_exports -v
-python -B verification/api/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
+python -B verification/api/audit_binding_exports.py --repo-root . --report verification/api/fixtures/reports/043-public-api-bindings/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new

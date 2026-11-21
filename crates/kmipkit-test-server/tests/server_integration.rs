@@ -275,7 +275,7 @@ async fn connect_tls(
     );
 
     let client_config = rustls::ClientConfig::builder_with_provider(std::sync::Arc::new(
-        rustls::crypto::aws_lc_rs::default_provider(),
+        rustls_openssl::default_provider(),
     ))
     .with_protocol_versions(&[&rustls::version::TLS13])
     .unwrap()

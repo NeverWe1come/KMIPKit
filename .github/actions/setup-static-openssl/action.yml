@@ -1,0 +1,12 @@
+name: Set up static OpenSSL
+description: Build the pinned upstream OpenSSL for the runner
+runs:
+  using: composite
+  steps:
+    - name: Build OpenSSL and export Cargo settings
+      shell: pwsh
+      run: |
+        $python = Get-Command python3 -ErrorAction SilentlyContinue
+        if (-not $python -or $IsWindows) { $python = Get-Command python }
+        & $python.Source "$env:GITHUB_WORKSPACE/verification/security/openssl/build.py"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

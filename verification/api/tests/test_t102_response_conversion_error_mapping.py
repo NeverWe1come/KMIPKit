@@ -12,7 +12,7 @@ from verification.api import generate
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
-PARTITION_PATH = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t102-macro-lot-partition.json"
+PARTITION_PATH = ROOT / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings" / "t102-macro-lot-partition.json"
 MAPPING_SEMANTICS = "normalized-client-protocol-error"
 
 FAMILY_COUNTS = {

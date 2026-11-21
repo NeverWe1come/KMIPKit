@@ -1,5 +1,3 @@
-// Requires repository assets intentionally absent from the code-only review branch.
-#![cfg(any())]
 //! Fixture-derived client execution contracts from OASIS KMIP Specification
 //! v2.1 §6.1.11 Tables 196–197 (Decrypt) and §6.1.17 Tables 214–215
 //! (Encrypt), plus OASIS Test Cases v2.1 CN01 §§2.99–2.101. Traceability:
@@ -38,12 +36,15 @@ const TC_ENC_1_21_ID: &str = "TC-STREAM-ENC-1-21";
 const TC_ENC_2_21_ID: &str = "TC-STREAM-ENC-2-21";
 const TC_ENCDEC_1_21_ID: &str = "TC-STREAM-ENCDEC-1-21";
 
-const TC_ENC_1_21_XML: &str =
-    include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml");
-const TC_ENC_2_21_XML: &str =
-    include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml");
-const TC_ENCDEC_1_21_XML: &str =
-    include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml");
+const TC_ENC_1_21_XML: &str = include_str!(
+    "../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-1-21.xml"
+);
+const TC_ENC_2_21_XML: &str = include_str!(
+    "../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENC-2-21.xml"
+);
+const TC_ENCDEC_1_21_XML: &str = include_str!(
+    "../../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml"
+);
 
 const REQUEST_HEADER: u32 = 0x0042_0077;
 const BATCH_COUNT: u32 = 0x0042_000D;

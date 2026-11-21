@@ -19,19 +19,14 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 REPORT_PATH = (
     ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "053-api-parity-facade"
     / "rust-export-report-2026-11-07.json"
 )
 ROUTES_PATH = (
-    ROOT / "specs" / "053-api-parity-facade" / "additional-api-routes.json"
+    ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "additional-api-routes.json"
 )
 CANDIDATES_PATH = (
-    ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "candidate-resolutions"
+    ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "candidate-resolutions"
     / "validation-export-candidates.json"
 )
 

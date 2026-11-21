@@ -12391,7 +12391,10 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
 
     let multi_item_request_without_option =
         request_message_with_batch_error_continuation_option(None);
-    assert_eq!(multi_item_request_without_option.header().batch_count(), Some(2));
+    assert_eq!(
+        multi_item_request_without_option.header().batch_count(),
+        Some(2)
+    );
     assert_eq!(
         multi_item_request_without_option
             .header()
@@ -12405,7 +12408,10 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
 
     let multi_item_request_with_option =
         request_message_with_batch_error_continuation_option(Some(1));
-    assert_eq!(multi_item_request_with_option.header().batch_count(), Some(2));
+    assert_eq!(
+        multi_item_request_with_option.header().batch_count(),
+        Some(2)
+    );
     assert_eq!(
         multi_item_request_with_option
             .header()

@@ -177,9 +177,7 @@ SECRET_WRAPPER_REQUIREMENTS = {
 }
 RUST_EXPORT_INVENTORY = (
     ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "053-api-parity-facade"
     / "rust-export-report-2026-11-07-final.json"
 )
 

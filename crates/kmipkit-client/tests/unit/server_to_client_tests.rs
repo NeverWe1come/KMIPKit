@@ -38,6 +38,14 @@ fn tag(raw: u32) -> Tag {
     RawTag::new(raw).unwrap().try_checked().unwrap()
 }
 
+fn structure(items: impl IntoIterator<Item = Item>) -> Structure {
+    let mut structure = Structure::new();
+    for item in items {
+        structure.try_push(item).unwrap();
+    }
+    structure
+}
+
 #[allow(clippy::too_many_lines)]
 fn make_test_request_batch_ttlv() -> Vec<u8> {
     let mut header = Structure::new();
@@ -215,6 +223,36 @@ fn encode_item(item: &Item, out: &mut Vec<u8>) {
     });
 }
 
+fn make_query_request_ttlv(query_function: u32) -> Vec<u8> {
+    let header = structure([
+        Item::new(
+            tag(PROTOCOL_VERSION_TAG),
+            Value::structure(structure([
+                Item::new(tag(PROTOCOL_VERSION_MAJOR_TAG), Value::integer(2)).unwrap(),
+                Item::new(tag(PROTOCOL_VERSION_MINOR_TAG), Value::integer(1)).unwrap(),
+            ])),
+        )
+        .unwrap(),
+        Item::new(tag(MAXIMUM_RESPONSE_SIZE_TAG), Value::integer(65_536)).unwrap(),
+        Item::new(tag(BATCH_COUNT_TAG), Value::integer(1)).unwrap(),
+    ]);
+    let payload =
+        structure([Item::new(tag(0x0042_0074), Value::enumeration(query_function)).unwrap()]);
+    let batch_item = structure([
+        Item::new(tag(OPERATION_TAG), Value::enumeration(0x18)).unwrap(),
+        Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![1])).unwrap(),
+        Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(payload)).unwrap(),
+    ]);
+    let message = structure([
+        Item::new(tag(REQUEST_HEADER_TAG), Value::structure(header)).unwrap(),
+        Item::new(tag(BATCH_ITEM_TAG), Value::structure(batch_item)).unwrap(),
+    ]);
+    let item = Item::new(tag(REQUEST_MESSAGE_TAG), Value::structure(message)).unwrap();
+    let mut out = Vec::new();
+    encode_item(&item, &mut out);
+    out
+}
+
 fn write_header(out: &mut Vec<u8>, tag: [u8; 3], typ: u8, len: usize) {
     out.extend_from_slice(&tag);
     out.push(typ);
@@ -229,6 +267,7 @@ struct TestHandler {
     notify_called: bool,
     put_called: bool,
     query_called: bool,
+    query_response_has_invalid_extension_metadata: bool,
     set_endpoint_role_called: bool,
 }
 
@@ -269,6 +308,10 @@ impl ServerRequestHandler for TestHandler {
     ) -> Result<ServerQueryResponse, KmipOperationResult> {
         self.query_called = true;
         let mut caps = ServerCapabilities::new();
+        if self.query_response_has_invalid_extension_metadata {
+            #[allow(deprecated)]
+            caps.set_extension_tags(vec![0x0054_0001]);
+        }
         caps.set_operations(vec![0x18, 0x1E]);
         Ok(ServerQueryResponse::respond(request, &caps))
     }
@@ -329,7 +372,32 @@ fn incoming_server_batch_decoding_and_dispatch() {
     assert!(handler.set_endpoint_role_called);
 
     assert_eq!(response.header().effective_batch_count(), 5);
-    assert_eq!(handler.batch_item_ids, (1..=5).map(|id| Some(vec![id])).collect::<Vec<_>>());
+    assert_eq!(
+        handler.batch_item_ids,
+        (1..=5).map(|id| Some(vec![id])).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn dispatcher_returns_invalid_field_result_when_query_response_cannot_encode() {
+    let limits = CodecLimits::defaults();
+    let request = make_query_request_ttlv(5);
+    let batch = IncomingServerBatch::from_ttlv_bytes(&request, &limits)
+        .expect("Query Extension List request should decode");
+    let mut handler = TestHandler {
+        query_response_has_invalid_extension_metadata: true,
+        ..TestHandler::default()
+    };
+    let response = ServerRequestDispatcher::new()
+        .dispatch(&batch, &mut handler)
+        .expect("an invalid handler response should become a batch failure");
+    let item = response
+        .batch_items()
+        .next()
+        .expect("the query response item is present");
+
+    assert_eq!(item.result_status(), Some(ResultStatus::from_raw(1)));
+    assert_eq!(item.result_reason(), Some(ResultReason::from_raw(0x07)));
 }
 
 struct FailingHandler;
@@ -671,7 +739,7 @@ fn client_tls_config(pki: &kmipkit_test_support::EphemeralPki) -> Arc<rustls::Cl
         ))
         .expect("authority cert is valid");
 
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let config = rustls::ClientConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("TLS 1.3 only")
@@ -801,11 +869,11 @@ fn client_listener_https_full_exchange_and_rejections() {
 }
 
 fn check_https_exchange(encoding: WireEncoding) {
-    use std::io::{BufRead, BufReader};
     use crate::server_to_client::ClientListener;
     use kmipkit_test_support::EphemeralPki;
     use kmipkit_transport::listener::ListenerTransportConfig;
     use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+    use std::io::{BufRead, BufReader};
 
     let pki = EphemeralPki::generate().expect("pki generation succeeds");
     let server = pki.server_identity();
@@ -830,8 +898,18 @@ fn check_https_exchange(encoding: WireEncoding) {
     let request = kmipkit_ttlv::codec::decode_with_limits(&ttlv_req, &limits).unwrap();
     let (content_type, request_bytes) = match encoding {
         WireEncoding::Ttlv => ("application/octet-stream", ttlv_req),
-        WireEncoding::Json => ("application/json", crate::json_encoding::encode(&request, &limits).unwrap().to_vec()),
-        WireEncoding::Xml => ("text/xml", crate::xml_codec::encode(&request, &limits).unwrap().to_vec()),
+        WireEncoding::Json => (
+            "application/json",
+            crate::json_encoding::encode(&request, &limits)
+                .unwrap()
+                .to_vec(),
+        ),
+        WireEncoding::Xml => (
+            "text/xml",
+            crate::xml_codec::encode(&request, &limits)
+                .unwrap()
+                .to_vec(),
+        ),
         _ => unreachable!(),
     };
 
@@ -864,9 +942,12 @@ fn check_https_exchange(encoding: WireEncoding) {
         }
         assert!(headers.starts_with("HTTP/1.1 200 OK"));
         assert!(headers.contains(&format!("Content-Type: {content_type}\r\n")));
-        let content_length: usize = headers.lines()
+        let content_length: usize = headers
+            .lines()
             .find_map(|line| line.strip_prefix("Content-Length: "))
-            .unwrap().parse().unwrap();
+            .unwrap()
+            .parse()
+            .unwrap();
         let mut body = vec![0; content_length];
         reader.read_exact(&mut body).unwrap();
         let decoded = match encoding {
@@ -876,7 +957,6 @@ fn check_https_exchange(encoding: WireEncoding) {
             _ => unreachable!(),
         };
         assert_eq!(decoded.tag().raw(), 0x0042_007B);
-
     });
 
     let limits = CodecLimits::defaults();

@@ -18,6 +18,12 @@ const SERVER_CORRELATION_VALUE: u32 = 0x0042_0106;
 const SERVER_HASHED_PASSWORD: u32 = 0x0042_0155;
 const TIME_STAMP: u32 = 0x0042_0092;
 
+fn batch_item_count_as_i32(count: usize) -> i32 {
+    // The KMIP integer field is signed; saturate instead of wrapping for an
+    // oversized locally constructed message (transport limits keep this rare).
+    i32::try_from(count).unwrap_or(i32::MAX)
+}
+
 /// Read-only typed access to a validated KMIP Request Header.
 #[derive(Clone, Copy)]
 pub struct RequestHeaderView<'a> {
@@ -68,7 +74,7 @@ impl<'a> RequestHeaderView<'a> {
     #[must_use]
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
-            .unwrap_or_else(|| self.message.batch_items().len() as i32)
+            .unwrap_or_else(|| batch_item_count_as_i32(self.message.batch_items().len()))
     }
 
     /// Returns the optional Maximum Response Size Integer.
@@ -229,7 +235,7 @@ impl<'a> ResponseHeaderView<'a> {
     #[must_use]
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
-            .unwrap_or_else(|| self.message.batch_items().len() as i32)
+            .unwrap_or_else(|| batch_item_count_as_i32(self.message.batch_items().len()))
     }
 
     /// Lends the optional Nonce Structure for callback-scoped access.

@@ -203,7 +203,9 @@ impl LinkNormalizer {
                         ValueView::Enumeration(raw) => link_type = Some(*raw),
                         _ => invalid_child = true,
                     });
-                } else if tag_raw == KmipTag::LinkedObjectIdentifier.as_u32() && linked_identifier.is_none() {
+                } else if tag_raw == KmipTag::LinkedObjectIdentifier.as_u32()
+                    && linked_identifier.is_none()
+                {
                     child.with_value(|value| match copy_identifier(&value) {
                         Ok(identifier) => linked_identifier = Some(identifier),
                         Err(()) => invalid_child = true,

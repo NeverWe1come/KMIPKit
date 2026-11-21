@@ -446,10 +446,9 @@ impl CloudKmsProvider for InMemoryMockProvider {
         match &entry.material {
             KeyMaterialPayload::Symmetric(key) => {
                 // Mock HMAC-SHA256 signature
-                use aws_lc_rs::hmac;
-                let s_key = hmac::Key::new(hmac::HMAC_SHA256, key);
-                let tag = hmac::sign(&s_key, data);
-                Ok(tag.as_ref().to_vec())
+                crate::crypto::hmac_sha256(key, data).map_err(|error| {
+                    ProxyError::CryptoError(format!("HMAC-SHA256 failed: {error}"))
+                })
             }
             _ => Err(ProxyError::Unsupported("asymmetric mock sign".to_string())),
         }
@@ -468,9 +467,9 @@ impl CloudKmsProvider for InMemoryMockProvider {
             .ok_or_else(|| ProxyError::ItemNotFound(unique_id.to_string()))?;
         match &entry.material {
             KeyMaterialPayload::Symmetric(key) => {
-                use aws_lc_rs::hmac;
-                let s_key = hmac::Key::new(hmac::HMAC_SHA256, key);
-                Ok(hmac::verify(&s_key, data, signature).is_ok())
+                crate::crypto::verify_hmac_sha256(key, data, signature).map_err(|error| {
+                    ProxyError::CryptoError(format!("HMAC-SHA256 verification failed: {error}"))
+                })
             }
             _ => Err(ProxyError::Unsupported(
                 "asymmetric mock verify".to_string(),

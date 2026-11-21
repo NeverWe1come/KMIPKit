@@ -424,6 +424,17 @@ class BindingExportAuditTests(unittest.TestCase):
         })
         self.assertTrue(result["complete"])
 
+    def test_c_header_inventory_accounts_for_handler_callback_fields(self):
+        result = AUDIT.inventory_c_header(
+            "typedef struct { int (*query)(void *context, int value); } kmipkit_handler_t;"
+        )
+        actual = {(row["kind"], row["exportName"]) for row in result["declarations"]}
+        self.assertEqual(actual, {
+            ("type", "kmipkit_handler_t"),
+            ("field", "kmipkit_handler_t.query"),
+        })
+        self.assertTrue(result["complete"])
+
     def test_c_binary_export_audit_reconciles_header_and_dll_symbols(self):
         header = "int32_t kmipkit_client_create(void);\n"
         result = AUDIT.audit_c_surface(header, ["kmipkit_client_create", "kmipkit_client_destroy"])
@@ -1607,7 +1618,7 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
-        report_dir = repo_root / "specs/043-public-api-bindings/reports"
+        report_dir = repo_root / "verification/api/fixtures/reports/043-public-api-bindings"
         report_path = max(report_dir.glob("binding-export-report-*.json"))
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(

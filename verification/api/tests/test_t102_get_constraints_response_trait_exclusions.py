@@ -26,11 +26,27 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
+    / "verification"
+    / "api"
+    / "fixtures"
     / "reports"
+    / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
+APPROVAL_SOURCES = (
+    ROOT / "verification" / "api" / "fixtures" / "approval-sources.json"
+)
+
+
+def _approval_source_record(path: str) -> dict[str, object]:
+    snapshot = json.loads(APPROVAL_SOURCES.read_text(encoding="utf-8"))
+    return snapshot["documents"][path]
+
+
+def _approval_source_evidence(path: str) -> str:
+    return "\n".join(_approval_source_record(path)["evidence"])
+
+
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/043-public-api-bindings/spec.md",
@@ -2383,10 +2399,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RekeyResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        owner_evidence = _approval_source_evidence("specs/022-object-lifecycle/spec.md")
         case_rows = [
             line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            for line in owner_evidence.splitlines()
             if line.startswith("| Re-key |") and "KMIPKIT-TEST-CN01-2-76" in line
         ]
         self.assertEqual(len(case_rows), 1)
@@ -2517,10 +2533,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RecertifyResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        owner_evidence = _approval_source_evidence("specs/022-object-lifecycle/spec.md")
         case_rows = [
             line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            for line in owner_evidence.splitlines()
             if line.startswith("| Re-certify | No direct catalog case ID |")
         ]
         self.assertEqual(len(case_rows), 1)
@@ -2649,10 +2665,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RegisterResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        owner_evidence = _approval_source_evidence("specs/022-object-lifecycle/spec.md")
         case_rows = [
             line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            for line in owner_evidence.splitlines()
             if line.startswith("| Register | No direct catalog case ID |")
         ]
         self.assertEqual(len(case_rows), 1)
@@ -2782,10 +2798,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RevokeResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        owner_evidence = _approval_source_evidence("specs/022-object-lifecycle/spec.md")
         case_rows = [
             line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            for line in owner_evidence.splitlines()
             if line.startswith("| Revoke | No direct catalog case ID |")
         ]
         self.assertEqual(len(case_rows), 1)
@@ -2915,17 +2931,17 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::ReProvisionResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
+        owner_evidence = _approval_source_evidence("specs/022-object-lifecycle/spec.md")
         case_rows = [
             line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            for line in owner_evidence.splitlines()
             if line.startswith("| Re-Provision | No direct catalog case ID |")
         ]
         self.assertEqual(len(case_rows), 1)
         unique_identifier = rows["kmipkit_protocol::ReProvisionResponse::unique_identifier"]
         self.assertEqual(set(unique_identifier["languageMappings"]), {"c", "java", "python", "rust"})
         decision_rows = [
-            line for line in owner_spec.read_text(encoding="utf-8").splitlines()
+            line for line in owner_evidence.splitlines()
             if line.startswith("| Re-Provision response | KMIPKIT-DISC-051 |")
         ]
         self.assertEqual(len(decision_rows), 1)
@@ -3085,10 +3101,12 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(operation["section"], "6.1.49")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
-        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
-        self.assertIn("Table 317", owner_spec.read_text(encoding="utf-8"))
-        research = ROOT / "specs" / "027-rng-operations" / "research.md"
-        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
+        owner_evidence = _approval_source_evidence("specs/027-rng-operations/spec.md")
+        self.assertIn("Table 317", owner_evidence)
+        research_evidence = _approval_source_evidence(
+            "specs/027-rng-operations/research.md"
+        )
+        self.assertIn("catalog links no direct official test case", research_evidence)
 
     def test_rng_retrieve_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -3243,13 +3261,14 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(operation["section"], "6.1.50")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
-        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
-        owner_text = owner_spec.read_text(encoding="utf-8")
-        self.assertIn("Table 320", owner_text)
-        self.assertIn("returned Data Length can be zero", owner_text)
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", owner_text)
-        research = ROOT / "specs" / "027-rng-operations" / "research.md"
-        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
+        owner_evidence = _approval_source_evidence("specs/027-rng-operations/spec.md")
+        self.assertIn("Table 320", owner_evidence)
+        self.assertIn("returned Data Length can be zero", owner_evidence)
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", owner_evidence)
+        research_evidence = _approval_source_evidence(
+            "specs/027-rng-operations/research.md"
+        )
+        self.assertIn("catalog links no direct official test case", research_evidence)
 
     def test_rng_seed_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -3417,11 +3436,11 @@ class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
         }
         self.assertEqual(audited_exclusions, expected_paths)
 
-        owner_spec = (ROOT / "specs" / "025-policy-controls" / "spec.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("**Status**: Approved for implementation", owner_spec)
-        self.assertIn(case["owner_test_case_note"], owner_spec)
+        owner_source = _approval_source_record("specs/025-policy-controls/spec.md")
+        self.assertEqual(owner_source["status"], "Approved")
+        owner_source_evidence = "\n".join(owner_source["evidence"])
+        self.assertIn("**Status**: Approved for implementation", owner_source_evidence)
+        self.assertIn(case["owner_test_case_note"], owner_source_evidence)
         for path, row in exclusions.items():
             with self.subTest(export_name=path):
                 for requirement in case["requirements"]:

@@ -245,7 +245,8 @@ impl LeaseContext {
     /// Returns the absolute expiry Unix timestamp in seconds.
     #[must_use]
     pub const fn expires_at_unix_secs(&self) -> i64 {
-        self.obtained_at_unix_secs.saturating_add(self.lease_time_secs)
+        self.obtained_at_unix_secs
+            .saturating_add(self.lease_time_secs)
     }
 
     /// Checks if the lease has expired given current time.

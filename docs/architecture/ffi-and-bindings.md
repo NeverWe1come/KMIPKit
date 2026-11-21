@@ -154,6 +154,18 @@ publishes a claim, or establishes KMIP conformance.
 
 ## Generated and manual portions
 
+The private `kmipkit-client::s2c_encoding` module owns TTLV serialization shared
+by server-initiated response delivery and native callback payloads. The hidden
+Rust `kmipkit-client::binding_support` module gives native adapters typed
+`Put` and `Notify` entry points for object, attribute, and deleted-reference
+bytes. These functions are cross-crate implementation support, outside the
+facade API; the generic encoder stays private. They preserve the callback's
+Structure wrappers, optional-field presence, order, unknown values and padding.
+Encoded callback owners and temporary Structure buffers clear their current
+allocations on drop. The synchronous callback may borrow them until it returns.
+Copies made by foreign code remain caller owned. This extraction does not
+change C signatures or the private request writer used by `Client::execute`.
+
 Manually reviewed code owns lifecycle, configuration, execution, errors,
 memory, and panic containment. A reviewed public API manifest generates the
 repetitive operation builders, accessors, constants, and declarations.
@@ -167,7 +179,7 @@ The v2 [public API manifest](../../bindings/shared/public-api.json) owns the
 C declaration inventory. Its generated [public C header](../../bindings/c/include/kmipkit.h)
 contains only C mappings in the manifest's `declared` or `verified` state;
 blocked rows remain inventory records and do not create callable declarations.
-The binding export report
+The [binding export report](../../verification/api/fixtures/reports/043-public-api-bindings/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json)
 records the observed C, Java, and Python exports and their reconciliation with
 the manifest. Regenerate or validate that inventory with the pinned commands
 in [the export audit guide](../../verification/api/binding-export-audit.md).

@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.message.RequestBatchItemView;
 import org.kmipkit.message.RequestMessage;
 import org.kmipkit.message.ResponseBatchItemView;
@@ -576,6 +577,101 @@ class V3AndS2cParityTest {
     }
 
     @Test
+    void incomingServerBatchNativeAccessorsCoverAllS2cPayloads() throws Exception {
+        try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(
+                buildFullS2cBatchBytes(), CodecLimits.defaults())) {
+            assertEquals(new ProtocolVersion(2, 1), batch.protocolVersion());
+            assertEquals(5, batch.itemCount());
+            assertEquals(0x1CL, batch.itemOperation(0));
+            assertEquals("item-put", new String(
+                    batch.itemUniqueBatchItemId(0), StandardCharsets.UTF_8));
+
+            IncomingServerBatch.PutItemDetails put = batch.itemPutV2(0);
+            assertEquals(2L, put.putFunction());
+            assertEquals("sym-key-uid", new String(put.uniqueIdentifier(), StandardCharsets.UTF_8));
+            assertEquals("replaced-sym-uid", new String(
+                    put.replacedUniqueIdentifier(), StandardCharsets.UTF_8));
+            assertNotNull(put.objectItem());
+            assertNotNull(put.attributes());
+            put.objectItem().close();
+            put.attributes().close();
+
+            assertEquals(5L, batch.itemQueryFlags(1));
+            assertEquals(List.of(new ProtocolVersion(2, 1)), batch.itemDiscoverVersions(2));
+            assertEquals("notify-uid", new String(batch.itemNotifyUid(3), StandardCharsets.UTF_8));
+            assertEquals(2L, batch.itemSetEndpointRole(4));
+        }
+    }
+
+    @Test
+    void legacyJniDispatcherV2StillDispatchesAllS2cOperations() throws Exception {
+        ServerRequestHandler handler = new ServerRequestHandler() {
+            @Override
+            public S2cOperationResult handleDiscoverVersions(
+                    ItemView item, List<ProtocolVersion> clientVersions,
+                    List<ProtocolVersion> supportedVersionsOut) {
+                assertTrue(clientVersions.contains(new ProtocolVersion(2, 1)));
+                supportedVersionsOut.add(new ProtocolVersion(2, 1));
+                return S2cOperationResult.success();
+            }
+
+            @Override
+            public S2cOperationResult handleNotify(
+                    ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                assertEquals("notify-uid", new String(uniqueIdentifier, StandardCharsets.UTF_8));
+                return S2cOperationResult.success();
+            }
+
+            @Override
+            public S2cOperationResult handlePut(
+                    ItemView item, long putFunction, byte[] uniqueIdentifier,
+                    byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                assertEquals(2L, putFunction);
+                assertEquals("sym-key-uid", new String(uniqueIdentifier, StandardCharsets.UTF_8));
+                assertNotNull(objectTtlv);
+                return S2cOperationResult.success();
+            }
+
+            @Override
+            public S2cOperationResult handleQuery(
+                    ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                assertEquals(5L, queryFunctionFlags);
+                outCapabilities.operations(List.of(0x1CL)).objectTypes(List.of(0x02L))
+                        .vendorIdentification("KMIPKit Java v2");
+                return S2cOperationResult.success();
+            }
+
+            @Override
+            public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                assertEquals(2L, targetRole);
+                return S2cOperationResult.success();
+            }
+        };
+
+        NativeHandle dispatcher = NativeHandle.owned(
+                NativeExtensionRegistry.serverRequestDispatcherCreate(),
+                NativeExtensionRegistry.SERVER_REQUEST_DISPATCHER);
+        try {
+            try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(
+                         buildFullS2cBatchBytes(), CodecLimits.defaults());
+                 ResponseMessage response = NativeHandle.withValues(
+                         new NativeHandle[] {dispatcher, batch.nativeHandleOwner()},
+                         handles -> ResponseMessage.fromNative(
+                                 NativeExtensionRegistry.serverRequestDispatcherDispatchV2(
+                                         handles[0], handles[1], handler)))) {
+                assertEquals(5L, response.batchItemCount());
+                for (int index = 0; index < response.batchItemCount(); index++) {
+                    try (ResponseBatchItemView item = response.batchItemAt(index)) {
+                        assertEquals(0L, item.resultStatus().orElseThrow());
+                    }
+                }
+            }
+        } finally {
+            dispatcher.close();
+        }
+    }
+
+    @Test
     void serverRequestDispatcherEmptyCapabilitiesQuery() throws Exception {
         byte[] batchBytes = buildFullS2cBatchBytes();
         CodecLimits limits = CodecLimits.defaults();
@@ -851,8 +947,55 @@ class V3AndS2cParityTest {
 
     @Test
     void clientListenerRawTlsLoopbackRoundTrip() throws Exception {
-        checkRawTlsRoundTrip("TLSv1.3", false);
-        checkRawTlsRoundTrip("TLSv1.2", true);
+        checkRawTlsRoundTrip("TLSv1.3", false, false);
+        checkRawTlsRoundTrip("TLSv1.2", true, false);
+    }
+
+    @Test
+    void clientListenerRoleReversedSessionLoopbackRoundTrip() throws Exception {
+        checkRawTlsRoundTrip("TLSv1.3", false, true);
+    }
+
+    @Test
+    void legacyJniListenerBindMethodsAcceptPemMutualTlsIdentity() throws Exception {
+        byte[][] serverCertificates = {testFixture("server-cert.pem")};
+        byte[] serverKey = testFixture("server-key.pem");
+        byte[][] clientCertificates = {testFixture("client-cert.pem")};
+        NativeExtensionRegistry.ensureLoaded();
+        try {
+            long rawTls = NativeExtensionRegistry.clientListenerBindRawTls(
+                    "127.0.0.1", 0, 0, serverCertificates, 1, serverKey, 1,
+                    clientCertificates, 1, 10_000, 10_000, 65_536);
+            assertBoundLegacyListener(rawTls);
+
+            long https = NativeExtensionRegistry.clientListenerBindHttps(
+                    "127.0.0.1", 0, 0, serverCertificates, 1, serverKey, 1,
+                    clientCertificates, 1, 10_000, 10_000, 65_536);
+            assertBoundLegacyListener(https);
+        } finally {
+            java.util.Arrays.fill(serverKey, (byte) 0);
+        }
+    }
+
+    @Test
+    void legacyJniSetEndpointRoleFactoryCreatesTheExpectedOperation() {
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] vendor = "KMIPKit Java compatibility".getBytes(StandardCharsets.UTF_8);
+        long item = NativeExtensionRegistry.clientBatchItemSetEndpointRole(2, vendor);
+        try {
+            assertEquals(0x32L, NativeExtensionRegistry.clientBatchItemOperation(item));
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.BATCH_ITEM, item);
+        }
+    }
+
+    private static void assertBoundLegacyListener(long listener) {
+        try {
+            assertTrue(listener != 0);
+            assertTrue(NativeExtensionRegistry.clientListenerGetPort(listener) > 0);
+        } finally {
+            NativeExtensionRegistry.release(NativeExtensionRegistry.CLIENT_LISTENER, listener);
+        }
     }
 
     @Test
@@ -873,7 +1016,8 @@ class V3AndS2cParityTest {
         }
     }
 
-    private static void checkRawTlsRoundTrip(String protocol, boolean compatibility) throws Exception {
+    private static void checkRawTlsRoundTrip(
+            String protocol, boolean compatibility, boolean roleReversed) throws Exception {
         byte[] serverCert = testFixture("server-cert.pem");
         byte[] serverKey = testFixture("server-key.pem");
         byte[] clientCert = testFixture("client-cert.pem");
@@ -931,7 +1075,11 @@ class V3AndS2cParityTest {
                     CodecLimits limits = CodecLimits.defaults();
                     assertThrows(InvalidInputException.class, () -> conn.recvBatch(limits, Duration.ofMillis(-1)));
 
-                    try (IncomingServerBatch batch = conn.recvBatch(limits, Duration.ofSeconds(10));
+                    RoleReversedSession session = roleReversed ? conn.intoRoleReversed() : null;
+                    try (session;
+                         IncomingServerBatch batch = session == null
+                                 ? conn.recvBatch(limits, Duration.ofSeconds(10))
+                                 : session.recvBatch(limits, Duration.ofSeconds(10));
                          ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
                         assertEquals(5, batch.itemCount());
 
@@ -965,8 +1113,15 @@ class V3AndS2cParityTest {
 
                         try (ResponseMessage resp = dispatcher.dispatch(batch, handler)) {
                             // Test negative duration rejection on sendResponse
-                            assertThrows(InvalidInputException.class, () -> conn.sendResponse(resp, Duration.ofMillis(-1)));
-                            conn.sendResponse(resp, Duration.ofSeconds(10));
+                            if (session == null) {
+                                assertThrows(InvalidInputException.class,
+                                        () -> conn.sendResponse(resp, Duration.ofMillis(-1)));
+                                conn.sendResponse(resp, Duration.ofSeconds(10));
+                            } else {
+                                assertThrows(InvalidInputException.class,
+                                        () -> session.sendResponse(resp, Duration.ofMillis(-1)));
+                                session.sendResponse(resp, Duration.ofSeconds(10));
+                            }
                         }
                     }
                 }

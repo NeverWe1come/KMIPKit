@@ -1057,6 +1057,8 @@ pub struct kmipkit_server_request_handler_v1_t {
 }
 
 /// C callback dispatch table for Server-to-Client operations (ABI version 2).
+// Keep callback signatures inline: Maturin's CFFI generator cannot resolve Rust
+// function-pointer type aliases when it lays out these public ABI structs.
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct kmipkit_server_request_handler_v2_t {
@@ -1084,6 +1086,7 @@ pub struct kmipkit_server_request_handler_v2_t {
             attributes_ttlv_length: u64,
         ) -> u32,
     >,
+    #[allow(clippy::type_complexity)]
     pub handle_put: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1117,7 +1120,7 @@ pub struct kmipkit_server_request_handler_v2_t {
 }
 
 /// C callback dispatch table for Server-to-Client operations (ABI version 3),
-/// supporting granular KmipOperationResult (status, reason, message) error returns.
+/// supporting granular `KmipOperationResult` (status, reason, message) error returns.
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct kmipkit_server_request_handler_v3_t {
@@ -1147,6 +1150,7 @@ pub struct kmipkit_server_request_handler_v3_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
+    #[allow(clippy::type_complexity)]
     pub handle_put: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1214,6 +1218,7 @@ pub struct kmipkit_server_request_handler_v4_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
+    #[allow(clippy::type_complexity)]
     pub handle_put: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,
@@ -1285,6 +1290,7 @@ pub struct kmipkit_server_request_handler_v5_t {
             out_result: *mut kmipkit_s2c_operation_result_v1_t,
         ) -> u32,
     >,
+    #[allow(clippy::type_complexity)]
     pub handle_put: Option<
         unsafe extern "C" fn(
             user_data: *mut core::ffi::c_void,

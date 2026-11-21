@@ -48,7 +48,7 @@ Response Size` retains its TTLV-equivalent meaning.
   explicit opt-in `TlsVersionPolicy::Tls12And13Compat` enables TLS 1.2
   interoperability restricted to OASIS KMIP Profiles v2.0/v2.1 ECDHE-GCM
   cipher suites with mandatory mutual TLS.
-- rustls with aws-lc-rs.
+- Rustls with the OpenSSL cryptographic provider.
 - Mutual TLS.
 - Certificate and private key input from PEM or DER files and in-memory
   buffers.

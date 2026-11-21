@@ -112,7 +112,7 @@ class CoverageReportTests(unittest.TestCase):
         str,
         str,
     ]:
-        from scripts import ci_summary
+        from verification.ci import ci_summary
 
         catalog = report_catalog()
         requirement = catalog["requirements"][0]

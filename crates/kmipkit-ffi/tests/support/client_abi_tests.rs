@@ -25,6 +25,7 @@ use kmipkit_protocol::{
     SplitKeyReference, StorageStatusMask, Ticket, TicketType, UniqueIdentifier, ValidateRequest,
 };
 use kmipkit_test_support::EphemeralPki;
+use kmipkit_test_support::FixtureSigningKey;
 use kmipkit_transport::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestDeliveryState,
     RequestOptions, TimeoutLimit, TimeoutPolicy, TransportConfig, TrustSource,
@@ -32,7 +33,7 @@ use kmipkit_transport::{
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 use rcgen::{
     BasicConstraints, CertificateParams, CertificateRevocationListParams, IsCa, Issuer,
-    KeyIdMethod, KeyPair, KeyUsagePurpose, SerialNumber, date_time_ymd,
+    KeyUsagePurpose, SerialNumber, date_time_ymd,
 };
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use rustls::server::WebPkiClientVerifier;
@@ -406,7 +407,9 @@ fn crl_der() -> Vec<u8> {
         .expect("test CRL issuer name is valid");
     issuer_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
     issuer_params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
-    let issuer_key = KeyPair::generate().expect("test CRL issuer key generation succeeds");
+    let issuer_key =
+        FixtureSigningKey::generate().expect("test CRL issuer key generation succeeds");
+    issuer_key.prepare_certificate(&mut issuer_params);
     let issuer = Issuer::from_params(&issuer_params, &issuer_key);
     let crl = CertificateRevocationListParams {
         this_update: date_time_ymd(2020, 1, 1),
@@ -414,7 +417,7 @@ fn crl_der() -> Vec<u8> {
         crl_number: SerialNumber::from(1_u64),
         issuing_distribution_point: None,
         revoked_certs: Vec::new(),
-        key_identifier_method: KeyIdMethod::Sha256,
+        key_identifier_method: issuer_key.key_identifier_method(),
     }
     .signed_by(&issuer)
     .expect("test CRL signing succeeds");
@@ -821,10 +824,7 @@ fn successful_cryptographic_response(
             ttlv_integer(0x0042_006b, minor),
         ],
     );
-    let mut header_children = vec![
-        protocol_version,
-        ttlv_datetime(0x0042_0092, 1),
-    ];
+    let mut header_children = vec![protocol_version, ttlv_datetime(0x0042_0092, 1)];
     if major != 3 {
         header_children.push(ttlv_integer(0x0042_000d, 1));
     }
@@ -3701,10 +3701,13 @@ fn tls13_mtls_server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
             pki.authority_certificate_der().to_vec(),
         ))
         .expect("the local test authority is valid");
-    let verifier = WebPkiClientVerifier::builder(Arc::new(roots))
-        .build()
-        .expect("the local server requires the client's test certificate");
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let verifier = WebPkiClientVerifier::builder_with_provider(
+        Arc::new(roots),
+        Arc::new(rustls_openssl::default_provider()),
+    )
+    .build()
+    .expect("the local server requires the client's test certificate");
+    let provider = Arc::new(rustls_openssl::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("the local peer only enables TLS 1.3");

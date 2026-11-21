@@ -106,11 +106,64 @@ fn test_all_twenty_kmip30_link_attribute_tags() {
         (LinkAttributeTag::CertificateRequestLink, 0x0042_01BC),
     ];
 
-    assert_eq!(links.len(), 20, "Must contain exactly 20 KMIP 3.0 link types");
+    assert_eq!(
+        links.len(),
+        20,
+        "Must contain exactly 20 KMIP 3.0 link types"
+    );
     for (link, expected_tag) in links {
         assert_eq!(link.as_u32(), expected_tag);
         assert_eq!(link.into_tag().raw(), expected_tag);
+        assert_eq!(LinkAttributeTag::from_u32(expected_tag), Some(link));
     }
+}
+
+#[test]
+fn test_attribute_tag_raw_values_resolve_to_their_typed_variants() {
+    let attributes = [
+        (
+            KmipTag::ApplicationSpecificInformation,
+            AttributeTag::ApplicationSpecificInformation,
+        ),
+        (
+            KmipTag::CompromiseOccurrenceDate,
+            AttributeTag::CompromiseOccurrenceDate,
+        ),
+        (
+            KmipTag::CryptographicDomainParameters,
+            AttributeTag::CryptographicDomainParameters,
+        ),
+        (
+            KmipTag::CryptographicParameters,
+            AttributeTag::CryptographicParameters,
+        ),
+        (
+            KmipTag::DigitalSignatureAlgorithm,
+            AttributeTag::DigitalSignatureAlgorithm,
+        ),
+        (
+            KmipTag::X509CertificateIdentifier,
+            AttributeTag::X509CertificateIdentifier,
+        ),
+        (
+            KmipTag::DerivationBaseObjectLink,
+            AttributeTag::DerivationBaseObjectLink,
+        ),
+        (
+            KmipTag::JoinedSplitKeyPartsLink,
+            AttributeTag::JoinedSplitKeyPartsLink,
+        ),
+    ];
+
+    for (tag, expected_attribute) in attributes {
+        assert_eq!(
+            AttributeTag::from_u32(tag.as_u32()),
+            Some(expected_attribute)
+        );
+    }
+
+    assert_eq!(AttributeTag::from_u32(0), None);
+    assert_eq!(LinkAttributeTag::from_u32(0), None);
 }
 
 #[test]
@@ -177,8 +230,16 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
     ]);
 
     let req = RequestMessage::try_from_ttlv(full_msg).expect("KMIP 3.0 valid message");
-    assert_eq!(req.header().batch_count(), None, "Batch Count is None on wire in 3.0");
-    assert_eq!(req.header().effective_batch_count(), 1, "Effective batch count is 1");
+    assert_eq!(
+        req.header().batch_count(),
+        None,
+        "Batch Count is None on wire in 3.0"
+    );
+    assert_eq!(
+        req.header().effective_batch_count(),
+        1,
+        "Effective batch count is 1"
+    );
     let batch_item = req.batch_items().next().unwrap();
     assert_eq!(batch_item.ephemeral_mode(), Some(1));
     assert!(batch_item.is_ephemeral());
@@ -186,23 +247,47 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
 
 #[test]
 fn test_nist_key_lifecycle_guard_rules() {
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::PreActive));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::PreActive));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::PreActive
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::PreActive
+    ));
 
-    assert!(NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Active));
-    assert!(NistKeyLifecycleGuard::can_process(KeyLifecycleState::Active));
+    assert!(NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Active
+    ));
+    assert!(NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Active
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Deactivated));
-    assert!(NistKeyLifecycleGuard::can_process(KeyLifecycleState::Deactivated));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Deactivated
+    ));
+    assert!(NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Deactivated
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Compromised));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::Compromised));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Compromised
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Compromised
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Destroyed));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::Destroyed));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Destroyed
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Destroyed
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::DestroyedCompromised));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::DestroyedCompromised));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::DestroyedCompromised
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::DestroyedCompromised
+    ));
 }
 
 #[test]
@@ -217,4 +302,57 @@ fn test_enums_completeness() {
     assert_eq!(ObjectTypeCode::Certificate.as_u32(), 1);
     assert_eq!(AttributeTag::CryptographicAlgorithm.as_u32(), 0x0042_0028);
     assert_eq!(ProtocolVersion::V3_0.major(), 3);
+}
+
+#[test]
+fn test_numeric_enum_codes_roundtrip_all_declared_values() {
+    for raw in 1..=0x3D {
+        let decoded = OperationCode::from_u32(raw);
+        if raw == 0x33 {
+            assert_eq!(decoded, None);
+        } else {
+            assert_eq!(decoded.map(OperationCode::as_u32), Some(raw));
+        }
+    }
+    for raw in [0x41, 0x42] {
+        assert_eq!(
+            OperationCode::from_u32(raw).map(OperationCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(OperationCode::from_u32(0), None);
+    assert_eq!(OperationCode::from_u32(0x43), None);
+
+    for raw in 1..=12 {
+        assert_eq!(
+            ObjectTypeCode::from_u32(raw).map(ObjectTypeCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(ObjectTypeCode::from_u32(0), None);
+    assert_eq!(ObjectTypeCode::from_u32(13), None);
+
+    for raw in 1..=6 {
+        assert_eq!(
+            KeyLifecycleState::from_u32(raw).map(KeyLifecycleState::as_u32),
+            Some(raw)
+        );
+        assert_eq!(
+            KemAlgorithmCode::from_u32(raw).map(KemAlgorithmCode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(KeyLifecycleState::from_u32(0), None);
+    assert_eq!(KeyLifecycleState::from_u32(7), None);
+    assert_eq!(KemAlgorithmCode::from_u32(0), None);
+    assert_eq!(KemAlgorithmCode::from_u32(7), None);
+
+    for raw in 1..=3 {
+        assert_eq!(
+            EphemeralMode::from_u32(raw).map(EphemeralMode::as_u32),
+            Some(raw)
+        );
+    }
+    assert_eq!(EphemeralMode::from_u32(0), None);
+    assert_eq!(EphemeralMode::from_u32(4), None);
 }

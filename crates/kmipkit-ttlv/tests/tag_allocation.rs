@@ -9,7 +9,7 @@
 #[path = "../src/generated/tag_allocations.rs"]
 mod tag_allocations;
 
-use kmipkit_ttlv::{RawTag, Tag};
+use kmipkit_ttlv::{KmipTag, RawTag, Tag};
 use tag_allocations::{EXACT_TAG_ALLOCATIONS, TAG_ALLOCATION_RANGES, TagAllocationKind};
 
 fn catalog_kind(raw: u32) -> Option<TagAllocationKind> {
@@ -84,6 +84,24 @@ fn every_exact_catalog_record_matches_public_allocation_check() {
     assert_eq!(EXACT_TAG_ALLOCATIONS.len(), 434);
     assert_eq!(assigned, 414);
     assert_eq!(reserved, 20);
+}
+
+#[test]
+fn every_exact_assigned_tag_roundtrips_through_the_typed_catalog() {
+    for &(raw, kind) in EXACT_TAG_ALLOCATIONS {
+        match kind {
+            TagAllocationKind::Assigned => {
+                let tag = KmipTag::from_u32(raw)
+                    .unwrap_or_else(|| panic!("assigned tag 0x{raw:06X} has no typed mapping"));
+                assert_eq!(tag.as_u32(), raw);
+                assert_ne!(tag.name(), "");
+            }
+            TagAllocationKind::Reserved => assert_eq!(KmipTag::from_u32(raw), None),
+            TagAllocationKind::Unused | TagAllocationKind::Extension => {
+                panic!("exact tag 0x{raw:06X} has a range-only allocation kind")
+            }
+        }
+    }
 }
 
 #[test]

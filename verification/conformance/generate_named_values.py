@@ -34,6 +34,7 @@ else:
 
 CATALOG_PATH = "verification/conformance/catalog/kmip-2.1.json"
 VERSIONED_CATALOG_PATH = "verification/conformance/catalog/kmip-versioned-values.json"
+SUPPLEMENTAL_CATALOG_PATH = "verification/conformance/catalog/kmipkit-supplemental-values.json"
 VERSIONED_SOURCE_MAX_BYTES = 24 * 1024 * 1024
 PINNED_VERSION_SOURCES = {
     "kmip-2.0": (
@@ -54,7 +55,7 @@ OUTPUTS = {
     "c": "bindings/c/include/kmipkit_named_value_helpers_generated.h",
     "java": "bindings/java/src/main/java/org/kmipkit/protocol/KmipValues.java",
     "python": "bindings/python/src/kmipkit/protocol_values.py",
-    "traceability": "specs/047-named-protocol-values/reports/named-value-traceability.json",
+    "traceability": "verification/conformance/catalog/named-value-traceability.json",
 }
 EXPECTED_CATALOG_COUNTS = (64, 723, 3, 44)
 EXPECTED_ASSIGNED_COUNTS = (644, 33)
@@ -266,7 +267,73 @@ def load_versioned_values(root: Path) -> VersionedCatalog:
                 )
             )
     groups.append(_load_versioned_tag_group(root))
+    groups.extend(_load_supplemental_value_groups(root))
     return VersionedCatalog(tuple(groups))
+
+
+def _load_supplemental_value_groups(root: Path) -> tuple[VersionedNamedGroup, ...]:
+    """Load project-defined compatibility values without claiming OASIS allocation."""
+    raw = safe_read_bytes(root, SUPPLEMENTAL_CATALOG_PATH, max_bytes=MAX_BYTES)
+    document = json.loads(raw)
+    if not isinstance(document, dict) or document.get("formatVersion") != 1:
+        raise ValueError("supplemental values catalog has an unsupported format")
+    raw_groups = document.get("groups")
+    if not isinstance(raw_groups, list):
+        raise ValueError("supplemental values catalog has no groups")
+
+    groups: list[VersionedNamedGroup] = []
+    seen_groups: set[tuple[str, str]] = set()
+    for raw_group in raw_groups:
+        if not isinstance(raw_group, dict):
+            raise ValueError("supplemental values group must be an object")
+        version = raw_group.get("version")
+        kind = raw_group.get("kind")
+        name = raw_group.get("name")
+        raw_values = raw_group.get("values")
+        if (
+            version not in ("v2_0", "v2_1", "v3_0")
+            or kind not in ("enumeration", "bitmask")
+            or not isinstance(name, str)
+            or not name
+            or not isinstance(raw_values, list)
+            or not raw_values
+        ):
+            raise ValueError("supplemental values group metadata is malformed")
+        identity = (version, name)
+        if identity in seen_groups:
+            raise ValueError(f"supplemental catalog contains a duplicate {name} group")
+        seen_groups.add(identity)
+
+        values: list[VersionedNamedValue] = []
+        seen_names: set[str] = set()
+        seen_numbers: set[int] = set()
+        for raw_value in raw_values:
+            if not isinstance(raw_value, dict):
+                raise ValueError(f"supplemental {name} entry must be an object")
+            value_name = raw_value.get("name")
+            if not isinstance(value_name, str) or not value_name:
+                raise ValueError(f"supplemental {name} value has no name")
+            identifier = _identifier(value_name)
+            numeric = _wire_integer(raw_value)
+            if identifier in seen_names or numeric in seen_numbers:
+                raise ValueError(f"supplemental {name} has a duplicate value name or assignment")
+            seen_names.add(identifier)
+            seen_numbers.add(numeric)
+            values.append(VersionedNamedValue(value_name, identifier, numeric))
+        values.sort(key=lambda item: (item.value, item.identifier))
+        groups.append(
+            VersionedNamedGroup(
+                version,
+                kind,
+                name,
+                _snake_identifier(name),
+                "KMIPKit supplemental catalog",
+                "project-defined compatibility values",
+                "not applicable",
+                tuple(values),
+            )
+        )
+    return tuple(groups)
 
 
 def _load_versioned_tag_group(root: Path) -> VersionedNamedGroup:
@@ -761,11 +828,20 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
         if enum_groups:
             rust.append("            pub mod enumeration {")
             for group in enum_groups:
-                rust.extend([f"                /// KMIP {group.name} values from §{group.section}, Table {group.table}.", f"                pub mod {group.identifier} {{"])
+                is_supplemental = group.source_id == "KMIPKit supplemental catalog"
+                source = (
+                    "KMIPKit project-defined compatibility mapping; not an OASIS allocation"
+                    if is_supplemental
+                    else f"{group.source_id} §{group.section}, Table {group.table}"
+                )
+                description = (
+                    f"KMIPKit-defined {version.replace('_', '.')} compatibility values for {group.name}."
+                    if is_supplemental
+                    else f"KMIP {group.name} values from §{group.section}, Table {group.table}."
+                )
+                rust.extend([f"                /// {description}", f"                pub mod {group.identifier} {{"])
                 for value in group.values:
-                    rust.append(
-                        f"                    /// `{value.name}`; {group.source_id} §{group.section}, Table {group.table}."
-                    )
+                    rust.append(f"                    /// `{value.name}`; {source}.")
                     rust.append(
                         f"                    pub const {value.identifier}: u32 = {_rust_u32_literal(value.value)};"
                     )
@@ -797,6 +873,14 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
         rust.append("        }")
         for group in groups:
             prefix = f"{version.upper()}_{group.identifier.upper()}"
+            is_supplemental = group.source_id == "KMIPKit supplemental catalog"
+            source = (
+                "KMIPKit project-defined compatibility mapping; not an OASIS allocation"
+                if is_supplemental
+                else f"{group.source_id} §{group.section}, Table {group.table}"
+            )
+            if is_supplemental:
+                c.append("/* KMIPKit-defined compatibility values; not an OASIS allocation. */")
             c.extend(
                 [
                     f"static inline const char *KMIPKIT_{prefix}_name(uint32_t raw) {{",
@@ -811,12 +895,16 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
 
             java_prefix = f"{version.upper()}_{group.identifier.upper()}"
             java.extend(
-                f"    /** {value.name}; {group.source_id} §{group.section}, Table {group.table}. */\n    public static final long {java_prefix}_{value.identifier} = 0x{value.value:08X}L;"
+                f"    /** {value.name}; {source}. */\n    public static final long {java_prefix}_{value.identifier} = 0x{value.value:08X}L;"
                 for value in group.values
             )
             java.extend(
                 [
-                    f"    /** Returns the KMIP {version.replace('_', '.')} {group.name} name, or null for an unassigned value. */",
+                    (
+                        f"    /** Returns the KMIPKit {version.replace('_', '.')} compatibility name for {group.name}, or null for an unknown value. */"
+                        if is_supplemental
+                        else f"    /** Returns the KMIP {version.replace('_', '.')} {group.name} name, or null for an unassigned value. */"
+                    ),
                     f"    public static String {version}{_type_identifier(group.name)}Name(long raw) {{",
                     "        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;",
                     "        return switch ((int) raw) {",
@@ -830,14 +918,18 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
 
             python_prefix = f"{version.upper()}_{group.identifier.upper()}"
             python.extend(
-                f"{python_prefix}_{value.identifier} = 0x{value.value:08X}  # {group.source_id} §{group.section}, Table {group.table}"
+                f"{python_prefix}_{value.identifier} = 0x{value.value:08X}  # {source}"
                 for value in group.values
             )
             python.extend(
                 [
                     "",
                     f"def {version}_{group.identifier}_name(raw: int) -> str | None:",
-                    f'    """Return the assigned KMIP {version.replace("_", ".")} {group.name} name."""',
+                    (
+                        f'    """Return the KMIPKit {version.replace("_", ".")} compatibility name for {group.name}."""'
+                        if is_supplemental
+                        else f'    """Return the assigned KMIP {version.replace("_", ".")} {group.name} name."""'
+                    ),
                     "    return {",
                 ]
             )
@@ -845,6 +937,26 @@ def render_versioned_outputs(versioned: VersionedCatalog) -> dict[str, str]:
                 f"        0x{value.value:08X}: {value.name!r}," for value in group.values
             )
             python.extend(["    }.get(raw)", ""])
+            if is_supplemental and group.name == "Ephemeral Mode":
+                python.extend(["", "class EphemeralMode:", '    """KMIPKit compatibility values for the Ephemeral Mode property."""'])
+                python.extend(
+                    f"    {value.identifier} = 0x{value.value:08X}"
+                    for value in group.values
+                )
+                python.extend(
+                    [
+                        "",
+                        "    @staticmethod",
+                        "    def name(raw: int) -> str | None:",
+                        '        """Return the compatibility name, or None for an unknown value."""',
+                        "        return {",
+                    ]
+                )
+                python.extend(
+                    f"            0x{value.value:08X}: {value.name!r},"
+                    for value in group.values
+                )
+                python.extend(["        }.get(raw)", ""])
     rust.append("    }")
     return {
         "rust": "\n".join(rust) + "\n",
@@ -864,6 +976,7 @@ def render_outputs(
         "specId": "KMIPKIT-0047",
         "catalogPath": CATALOG_PATH,
         "versionedCatalogPath": VERSIONED_CATALOG_PATH,
+        "supplementalCatalogPath": SUPPLEMENTAL_CATALOG_PATH,
         "versionedGroups": [
             {
                 "version": group.version,

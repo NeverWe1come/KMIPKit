@@ -326,11 +326,9 @@ pub(super) fn validate_request_message(
                 let is_v3 = header
                     .as_ref()
                     .is_some_and(|(_, h)| h.protocol_version.major() == 3);
-                let multi_item_request = header
-                    .as_ref()
-                    .is_some_and(|(_, validated_header)| {
-                        validated_header.batch_count.is_some_and(|count| count > 1)
-                    });
+                let multi_item_request = header.as_ref().is_some_and(|(_, validated_header)| {
+                    validated_header.batch_count.is_some_and(|count| count > 1)
+                });
                 let item_id = with_structure(child, index, None, |view| {
                     validate_request_batch_item(&view, index, multi_item_request, is_v3)
                 })?;
@@ -363,14 +361,14 @@ pub(super) fn validate_request_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedRequestMessage {
@@ -442,14 +440,14 @@ pub(super) fn validate_response_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedResponseMessage {
@@ -582,12 +580,12 @@ fn validate_response_header(
         )?;
         let batch_count = integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
             .ok_or_else(|| {
-                error(
-                    MessageValidationErrorKind::WrongItemType,
-                    Some(top_index),
-                    None,
-                )
-            })?;
+            error(
+                MessageValidationErrorKind::WrongItemType,
+                Some(top_index),
+                None,
+            )
+        })?;
         if batch_count < 1 {
             return Err(error(
                 MessageValidationErrorKind::InvalidBatchCount,
@@ -681,35 +679,36 @@ fn validate_request_batch_item(
     }
 }
 
+// Keep the response status and cross-field rules together for protocol review.
+#[allow(clippy::too_many_lines)]
 fn validate_response_batch_item(
     view: &StructureView<'_>,
     top_index: usize,
     is_v3: bool,
 ) -> Result<(), MessageValidationError> {
-    if is_v3 {
-        for child in view.children() {
-            if child.tag().raw() == UNIQUE_BATCH_ITEM_ID {
-                return Err(error(
-                    MessageValidationErrorKind::InvalidFieldValue,
-                    Some(top_index),
-                    None,
-                ));
-            }
-        }
-        validate_fields(
-            view.children(),
-            RESPONSE_BATCH_FIELDS_V3,
-            &[RESULT_STATUS],
+    if is_v3
+        && view
+            .children()
+            .iter()
+            .any(|child| child.tag().raw() == UNIQUE_BATCH_ITEM_ID)
+    {
+        return Err(error(
+            MessageValidationErrorKind::InvalidFieldValue,
             Some(top_index),
-        )?;
-    } else {
-        validate_fields(
-            view.children(),
-            RESPONSE_BATCH_FIELDS,
-            &[RESULT_STATUS],
-            Some(top_index),
-        )?;
+            None,
+        ));
     }
+    let allowed_fields = if is_v3 {
+        RESPONSE_BATCH_FIELDS_V3
+    } else {
+        RESPONSE_BATCH_FIELDS
+    };
+    validate_fields(
+        view.children(),
+        allowed_fields,
+        &[RESULT_STATUS],
+        Some(top_index),
+    )?;
     let status_value =
         enumeration_value(required_child(view.children(), RESULT_STATUS, top_index)?).ok_or_else(
             || {

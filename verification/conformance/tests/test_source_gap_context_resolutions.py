@@ -217,6 +217,10 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
 
 
 class SourceGapContextResolutionTests(unittest.TestCase):
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_result_message_research_states_validator_scope_boundary(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
 
@@ -231,6 +235,13 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             research,
         )
 
+    @unittest.skipUnless(
+        HASH_MAC_SIGNATURE_SPEC_PATH.is_file()
+        and HASH_MAC_SIGNATURE_TRACEABILITY_PATH.is_file()
+        and ENCRYPT_DECRYPT_SPEC_PATH.is_file()
+        and ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH.is_file(),
+        "Spec Kit operation contracts are excluded from the code-only review branch",
+    )
     def test_encrypt_decrypt_correlation_request_rows_have_optional_feature_contracts(self) -> None:
         """Tables 196 and 214 map only their optional Correlation Value request rows."""
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -424,6 +435,13 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                     f"{gap_id} is treated as closed by procedure_context without linked executable evidence or an explicit blocker",
                 )
 
+    @unittest.skipUnless(
+        HASH_MAC_SIGNATURE_SPEC_PATH.is_file()
+        and HASH_MAC_SIGNATURE_TRACEABILITY_PATH.is_file()
+        and ENCRYPT_DECRYPT_SPEC_PATH.is_file()
+        and ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH.is_file(),
+        "Spec Kit operation contracts are excluded from the code-only review branch",
+    )
     def test_generic_parameter_context_links_operation_contract_evidence(self) -> None:
         """KMIP Specification v2.1 §6.1 generic instructions need request contracts."""
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -827,6 +845,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             len(catalog["source_clauses"]),
         )
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_t002_research_describes_current_paragraph_009_source_force_and_context(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
@@ -855,6 +877,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("request-parameter direction", summary)
         self.assertNotIn("actor/direction/scope unclear", summary)
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_research_inventory_table_matches_paragraph_006_to_008_scope(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
         rows = {}
@@ -873,6 +899,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(rows[gap_id][3], "reviewed_generic_parameter_context")
                 self.assertEqual(rows[gap_id][4], "—")
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_t002_research_bounds_procedure_evidence_to_verified_request_contracts(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
@@ -958,6 +988,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("response Data consumption remains unmapped", summary)
         self.assertNotIn("operation-specific request and response evidence is assigned", summary)
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_t002_research_index_matches_procedure_scope_dispositions(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
@@ -976,6 +1010,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 self.assertEqual(rows[gap_id][2].strip("`").strip(), gaps[gap_id]["scope_disposition"])
                 self.assertEqual(rows[gap_id][3].strip("`").strip(), "reviewed_procedure_context")
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
         lines = research.splitlines()
@@ -995,6 +1033,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertIn("already encoded in the catalog and independent oracle", summary)
         self.assertNotIn("edges still need to encode", summary)
 
+    @unittest.skipUnless(
+        PROFILE_RESEARCH_PATH.is_file(),
+        "Spec Kit research files are excluded from the code-only review branch",
+    )
     def test_t002_reconciles_profile_source_gap_actor_and_scope_dispositions(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}

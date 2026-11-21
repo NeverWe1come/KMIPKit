@@ -22,12 +22,10 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
-PKCS11_RESEARCH = ROOT / "specs" / "026-pkcs11" / "research.md"
+PKCS11_RESEARCH = ROOT / "verification" / "api" / "fixtures" / "approval-sources" / "026-pkcs11-research.md"
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/026-pkcs11/spec.md",

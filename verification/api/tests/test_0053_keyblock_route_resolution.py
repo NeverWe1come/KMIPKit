@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-AUDIT = ROOT / "specs/053-api-parity-facade/candidate-resolutions/python-export-audit.json"
+AUDIT = ROOT / "verification/api/fixtures/053-api-parity-facade/candidate-resolutions/python-export-audit.json"
 
 
 class KeyBlockRouteResolutionTests(unittest.TestCase):

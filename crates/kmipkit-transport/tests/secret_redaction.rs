@@ -10,7 +10,7 @@
 mod config;
 #[path = "../src/secret.rs"]
 mod secret;
-// `config.rs` references the AWS-LC provider; TLS behavior is covered elsewhere.
+// `config.rs` references the OpenSSL provider; TLS behavior is covered elsewhere.
 #[allow(dead_code)]
 #[path = "../src/tls.rs"]
 mod tls;

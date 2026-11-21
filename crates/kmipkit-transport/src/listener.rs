@@ -244,7 +244,7 @@ impl ListenerTransportConfigBuilder {
             return Err(TransportConfigError::InvalidEndpoint);
         }
 
-        let provider = crate::tls::aws_lc_crypto_provider_for_policy(self.tls_version_policy);
+        let provider = crate::tls::openssl_crypto_provider_for_policy(self.tls_version_policy);
 
         // Load root certificates
         let root_store = match trust_input {
@@ -469,7 +469,10 @@ impl RawTlsListener {
     ///
     /// Returns [`TransportError`] if socket binding fails.
     pub fn bind(config: ListenerTransportConfig) -> Result<Self, TransportError> {
-        if config.wire_encoding().is_some_and(|encoding| encoding != WireEncoding::Ttlv) {
+        if config
+            .wire_encoding()
+            .is_some_and(|encoding| encoding != WireEncoding::Ttlv)
+        {
             return Err(TransportError::new(
                 RequestDeliveryState::NotSent,
                 TransportCauseCategory::Other,
@@ -726,6 +729,35 @@ pub struct HttpsServerConnection {
     max_request_bytes: usize,
 }
 
+fn read_https_request_headers(
+    stream: &mut StreamOwned<ServerConnection, TcpStream>,
+) -> Result<String, TransportError> {
+    let mut header_buf = Vec::with_capacity(1024);
+    let mut matched_end = false;
+    let mut byte = [0_u8; 1];
+    while !matched_end && header_buf.len() < 16 * 1024 {
+        stream.read_exact(&mut byte).map_err(|err| {
+            TransportError::new(
+                RequestDeliveryState::NotSent,
+                TransportCauseCategory::Other,
+                err,
+            )
+        })?;
+        header_buf.push(byte[0]);
+        matched_end = header_buf.ends_with(b"\r\n\r\n");
+    }
+
+    if !matched_end {
+        return Err(TransportError::new(
+            RequestDeliveryState::NotSent,
+            TransportCauseCategory::Other,
+            io::Error::other("HTTP header too large or truncated"),
+        ));
+    }
+
+    Ok(String::from_utf8_lossy(&header_buf).into_owned())
+}
+
 impl HttpsServerConnection {
     /// Returns the remote peer address.
     #[must_use]
@@ -758,33 +790,7 @@ impl HttpsServerConnection {
             let _ = stream.sock.set_read_timeout(Some(t));
         }
 
-        // Read headers until \r\n\r\n
-        let mut header_buf = Vec::with_capacity(1024);
-        let mut matched_end = false;
-        let mut byte = [0_u8; 1];
-        while !matched_end && header_buf.len() < 16 * 1024 {
-            stream.read_exact(&mut byte).map_err(|err| {
-                TransportError::new(
-                    RequestDeliveryState::NotSent,
-                    TransportCauseCategory::Other,
-                    err,
-                )
-            })?;
-            header_buf.push(byte[0]);
-            if header_buf.ends_with(b"\r\n\r\n") {
-                matched_end = true;
-            }
-        }
-
-        if !matched_end {
-            return Err(TransportError::new(
-                RequestDeliveryState::NotSent,
-                TransportCauseCategory::Other,
-                io::Error::other("HTTP header too large or truncated"),
-            ));
-        }
-
-        let header_str = String::from_utf8_lossy(&header_buf);
+        let header_str = read_https_request_headers(stream)?;
         let mut lines = header_str.lines();
         let request_line = lines.next().ok_or_else(|| {
             TransportError::new(
@@ -854,11 +860,17 @@ impl HttpsServerConnection {
             _ => WireEncoding::Ttlv,
         };
 
-        if self.wire_encoding.is_some_and(|expected| expected != encoding) {
+        if self
+            .wire_encoding
+            .is_some_and(|expected| expected != encoding)
+        {
             return Err(TransportError::new(
                 RequestDeliveryState::NotSent,
                 TransportCauseCategory::Other,
-                io::Error::new(io::ErrorKind::InvalidData, "HTTP Content-Type does not match listener encoding"),
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "HTTP Content-Type does not match listener encoding",
+                ),
             ));
         }
         Ok((TransportResponse::new(body), encoding))

@@ -80198,7 +80198,7 @@
         "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
         "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
-        "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"
+        "crates/kmipkit-transport/src/tls.rs::openssl_crypto_provider"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_tls13_cipher_suite_support",
@@ -80238,7 +80238,7 @@
         "crates/kmipkit-protocol/src/profile.rs::ProfileTransport::satisfies_tls13_cipher_suite_policy",
         "crates/kmipkit-protocol/src/profile.rs::ProfileValidationResult::validate_transport",
         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
-        "crates/kmipkit-transport/src/tls.rs::aws_lc_crypto_provider"
+        "crates/kmipkit-transport/src/tls.rs::openssl_crypto_provider"
       ],
       "verification_refs": [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_prohibited_tls13_cipher_suites",

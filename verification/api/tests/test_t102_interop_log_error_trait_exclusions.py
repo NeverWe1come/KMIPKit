@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings/shared/public-api.json"
-REPORT = ROOT / "specs/043-public-api-bindings/reports/rust-export-report-2026-11-01.json"
+REPORT = ROOT / "verification/api/fixtures/reports/043-public-api-bindings/rust-export-report-2026-11-01.json"
 PROTOCOL, ROOT_PACKAGE, CLIENT = "rust-kmipkit-protocol", "rust-kmipkit", "rust-kmipkit-client"
 OWNER_APPROVAL = {
     "kind": "feature-specification", "path": "specs/028-diagnostics-interop/spec.md",

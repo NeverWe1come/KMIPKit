@@ -185,10 +185,7 @@ fn validate_https_endpoint(value: &str) -> Result<(), TransportConfigError> {
 }
 
 pub(crate) fn compute_sha256(bytes: &[u8]) -> [u8; 32] {
-    let digest = aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, bytes);
-    let mut out = [0u8; 32];
-    out.copy_from_slice(digest.as_ref());
-    out
+    openssl::sha::sha256(bytes)
 }
 
 #[derive(Clone)]
@@ -1078,7 +1075,7 @@ impl TransportConfigBuilder {
         let (tracked_cert, tracked_key) = identity_input.take_tracked();
         let (tls_server_name, enable_sni) = self.endpoint.server_name(self.tls_server_name)?;
         let crypto_provider =
-            crate::tls::aws_lc_crypto_provider_for_policy(self.tls_version_policy);
+            crate::tls::openssl_crypto_provider_for_policy(self.tls_version_policy);
         let identity = Arc::new(identity_input.parse(&crypto_provider)?);
         let trust = Arc::new(trust_source.load()?);
         let mut revocation_lists = Vec::new();

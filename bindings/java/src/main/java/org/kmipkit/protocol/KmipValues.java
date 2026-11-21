@@ -4529,14 +4529,20 @@ public final class KmipValues {
             default -> null;
         };
     }
-
-    /** Named KMIP 3.0 values for Ephemeral Mode. */
-    public static final long V3_0_EPHEMERAL_MODE_NO = EphemeralMode.NO;
-    public static final long V3_0_EPHEMERAL_MODE_IMMEDIATE = EphemeralMode.IMMEDIATE;
-    public static final long V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = EphemeralMode.RETAIN_ON_FAILURE;
-
-    /** Returns the assigned KMIP 3.0 Ephemeral Mode catalog name, or null for an unknown raw value. */
+    /** No; KMIPKit project-defined compatibility mapping; not an OASIS allocation. */
+    public static final long V3_0_EPHEMERAL_MODE_NO = 0x00000001L;
+    /** Immediate; KMIPKit project-defined compatibility mapping; not an OASIS allocation. */
+    public static final long V3_0_EPHEMERAL_MODE_IMMEDIATE = 0x00000002L;
+    /** Retain on Failure; KMIPKit project-defined compatibility mapping; not an OASIS allocation. */
+    public static final long V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = 0x00000003L;
+    /** Returns the KMIPKit v3.0 compatibility name for Ephemeral Mode, or null for an unknown value. */
     public static String v3_0EphemeralModeName(long raw) {
-        return EphemeralMode.name(raw);
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "No";
+            case 0x00000002 -> "Immediate";
+            case 0x00000003 -> "Retain on Failure";
+            default -> null;
+        };
     }
 }

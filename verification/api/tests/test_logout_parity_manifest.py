@@ -134,7 +134,7 @@ class LogoutParityManifestTests(unittest.TestCase):
         )
         for trace_id in TRACEABILITY_IDS:
             self.assertIn(trace_id, owner_traceability)
-        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
+        mapping_traceability = (ROOT / "verification/api/public-api-bindings/traceability.md").read_text(
             encoding="utf-8"
         )
         t055_row = next(

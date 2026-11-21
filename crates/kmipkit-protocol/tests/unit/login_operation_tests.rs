@@ -1,5 +1,3 @@
-// Requires repository assets intentionally absent from the code-only review branch.
-#![cfg(any())]
 //! Login contracts from OASIS KMIP v2.1 §6.1.30, Tables 253–255, and
 //! §7.39/Table 391. The fixture case is pinned as KMIPKIT-TEST-CN01-2-48.
 //! These assertions do not claim that a KMIP server was run.

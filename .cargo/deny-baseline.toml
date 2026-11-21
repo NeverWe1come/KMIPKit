@@ -14,8 +14,9 @@ wildcards = "deny"
 allow-wildcard-paths = false
 deny = [
     "native-tls",
-    "openssl",
-    "openssl-sys",
+    "aws-lc-rs",
+    "aws-lc-sys",
+    "openssl-src",
 ]
 skip = []
 

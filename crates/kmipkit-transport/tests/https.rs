@@ -1609,7 +1609,7 @@ fn server_config(pki: &EphemeralPki) -> Arc<ServerConfig> {
 }
 
 fn server_config_with_alpn(pki: &EphemeralPki, alpn_protocols: &[&[u8]]) -> Arc<ServerConfig> {
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let builder = ServerConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("the local server uses TLS 1.3 only");
@@ -1619,9 +1619,12 @@ fn server_config_with_alpn(pki: &EphemeralPki, alpn_protocols: &[&[u8]]) -> Arc<
             pki.authority_certificate_der().to_vec(),
         ))
         .expect("the client test CA is valid");
-    let verifier = WebPkiClientVerifier::builder(Arc::new(client_roots))
-        .build()
-        .expect("the peer requires a verified client certificate");
+    let verifier = WebPkiClientVerifier::builder_with_provider(
+        Arc::new(client_roots),
+        Arc::new(rustls_openssl::default_provider()),
+    )
+    .build()
+    .expect("the peer requires a verified client certificate");
     let mut config = builder
         .with_client_cert_verifier(verifier)
         .with_single_cert(

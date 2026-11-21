@@ -13,8 +13,8 @@ from verification.api.tests.pre_send_validation_routes import (
 from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
-REPORT = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
-PREDECESSOR_REPORT = ROOT / "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json"
+REPORT = ROOT / "verification/api/fixtures/reports/051-pre-send-validation/rust-export-report-2026-11-07.json"
+PREDECESSOR_REPORT = ROOT / "verification/api/fixtures/reports/050-parameters-auth-client/rust-export-report-post-sync-2026-11-07.json"
 
 
 class PreSendValidationRouteInventoryTests(unittest.TestCase):

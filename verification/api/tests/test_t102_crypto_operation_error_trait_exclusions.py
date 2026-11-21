@@ -17,9 +17,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 REPORT_PATH = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
 

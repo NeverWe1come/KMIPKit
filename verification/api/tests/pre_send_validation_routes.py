@@ -48,8 +48,8 @@ def validation_stack_routes() -> frozenset[tuple[str, str]]:
     """Read the exact added routes from the two independently audited snapshots."""
     root = Path(__file__).resolve().parents[3]
     reports = (
-        "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json",
-        "specs/050-parameters-auth-client/reports/rust-export-report-post-sync-2026-11-07.json",
+        "verification/api/fixtures/reports/051-pre-send-validation/rust-export-report-2026-11-07.json",
+        "verification/api/fixtures/reports/050-parameters-auth-client/rust-export-report-post-sync-2026-11-07.json",
     )
     inventories = []
     for path in reports:

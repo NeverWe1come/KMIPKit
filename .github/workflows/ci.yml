@@ -12,6 +12,10 @@ on:
   schedule:
     - cron: '17 3 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
@@ -136,6 +140,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Run focused classifier and normative catalog checks
         id: run-focused-classifier-and-normative-catalog-checks
         run: >-
@@ -198,6 +206,10 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust toolchain and components
         id: install-rust-toolchain-and-components
@@ -288,6 +300,10 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Set up Python 3.12
         id: set-up-python-3-12
@@ -479,6 +495,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -514,7 +534,7 @@ jobs:
             Where-Object { $_.Name -like '*kmipkit_ffi*' -and $_.Extension -in @('.dll', '.dylib', '.so') } |
             Select-Object -First 1
           if (-not $nativeLibrary) { throw 'The C ABI shared library was not built.' }
-          & $python.Source -B verification/api/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check
+          & $python.Source -B verification/api/audit_binding_exports.py --repo-root . --c-only --c-binary $nativeLibrary.FullName --check-c-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Configure the C consumer with MSVC
@@ -598,6 +618,10 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
         id: install-rust-1-94
@@ -707,6 +731,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -783,6 +811,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install nightly Rust
         id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
@@ -854,6 +886,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Run the JNI zeroization owner test under native sanitizers
         id: run-native-sanitizers
         run: |
@@ -911,6 +947,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install nightly Rust
         id: install-nightly-rust
         run: rustup toolchain install nightly --profile minimal
@@ -923,11 +963,11 @@ jobs:
         id: fuzz-the-bounded-extension-schema-target
         working-directory: verification/security/fuzz
         run: |
-          cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run json_codec -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . json_codec -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1127,6 +1167,10 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install stable Rust
         id: install-stable-rust
@@ -1384,6 +1428,10 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
+
       - name: Install Rust 1.94
         id: install-rust-1-94
         run: rustup toolchain install 1.94 --profile minimal
@@ -1473,6 +1521,10 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
         id: install-rust-1-94
@@ -1566,6 +1618,10 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install Rust 1.94
         id: install-rust-1-94
@@ -1789,6 +1845,10 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Build pinned static OpenSSL
+        id: build-pinned-static-openssl
+        uses: ./.github/actions/setup-static-openssl
 
       - name: Install nightly Rust
         id: install-nightly

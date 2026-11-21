@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t100-query-ping-baseline.json"
+BASELINE_INVENTORY = ROOT / "verification" / "api" / "fixtures" / "t100-query-ping-baseline.json"
 OWNER_SPEC = "specs/020-query-ping/spec.md"
 BASE_CANDIDATE_COUNT = 262
 BASE_CANDIDATE_SHA256 = "a525c1d1f8af9eb4d76ef7c243f0ab780bdb2fbbe8a486865de933059cf6a48a"

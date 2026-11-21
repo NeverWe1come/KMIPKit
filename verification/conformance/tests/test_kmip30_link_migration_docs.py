@@ -11,6 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 
 
+@unittest.skipUnless(
+    (ROOT / "specs/071-kmip-3-0-draft-support/spec.md").is_file(),
+    "Spec Kit documents are excluded from the code-only review branch",
+)
 class Kmip30LinkMigrationDocsTests(unittest.TestCase):
     def test_link_migration_note_points_to_the_exact_approved_mapping(self) -> None:
         migration_note = (

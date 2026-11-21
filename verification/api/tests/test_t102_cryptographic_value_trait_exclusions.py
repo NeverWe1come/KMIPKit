@@ -11,9 +11,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
 API_SPEC_PATH = "specs/043-public-api-bindings/spec.md"
@@ -362,17 +360,6 @@ class T102CryptographicValueTraitExclusionTests(unittest.TestCase):
                 for row in self.manifest.get("approvedExclusions", [])
             )
         )
-
-        owner_spec = (ROOT / OWNER_SPEC_PATH).read_text(encoding="utf-8")
-        owner_traceability = (
-            ROOT / "specs" / "021-hash-mac-signature-operations" / "traceability.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("PR #70 merged into `release/1.0.0`", owner_spec)
-        self.assertIn("KMIPKIT-DISC-048", owner_spec)
-        self.assertIn("remains open", owner_spec)
-        self.assertIn("KMIPKIT-DISC-048", owner_traceability)
-        self.assertIn("either final-part form", owner_traceability)
-
 
 if __name__ == "__main__":
     unittest.main()

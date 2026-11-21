@@ -108,7 +108,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         )
         self.assertEqual("ready", invalid_input["mappingState"])
 
-        fixture_path = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+        fixture_path = ROOT / "bindings" / "shared" / "fixtures" / "api" / "shared-capability-parity.json"
         fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
         cases = {case["id"]: case for case in fixture["cases"]}
         case = cases["credentials.hashed-password-timestamp-sequence.v1"]
@@ -135,9 +135,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         report_path = (
             ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "reports"
+            / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
             / "rust-export-report-2026-11-01.json"
         )
         report = json.loads(report_path.read_text(encoding="utf-8"))

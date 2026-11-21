@@ -85,7 +85,7 @@ files readable only by the service account. In-memory inputs are also
 available for applications that obtain credentials from another secure
 source.
 
-TLS is fixed to TLS 1.3 with mutual authentication, rustls, and AWS-LC. The
+TLS is fixed to TLS 1.3 with mutual authentication, rustls, and OpenSSL. The
 server certificate chain, validity period, and endpoint name are verified.
 There is no production switch to accept an arbitrary certificate. A TLS
 server-name override is available for IP endpoints; it does not disable

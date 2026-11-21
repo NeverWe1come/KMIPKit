@@ -160,8 +160,20 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             field_names = []
             if balanced:
                 for declarator in declarators:
-                    field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", declarator)
-                    if not field_name or "(" in declarator:
+                    if "(" in declarator:
+                        # Handler records contain C function-pointer fields. The
+                        # name lives inside (*name), rather than after the type.
+                        field_name = re.fullmatch(
+                            r"[^()]+\(\s*\*\s*([A-Za-z_]\w*)\s*\)\s*\(.*\)",
+                            declarator,
+                            re.S,
+                        )
+                    else:
+                        field_name = re.search(
+                            r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$",
+                            declarator,
+                        )
+                    if not field_name:
                         field_names = []
                         break
                     field_names.append(field_name.group(1))
@@ -323,6 +335,11 @@ def audit_c_surface(header: str, binary_exports: list[str], package: str = "c-km
     issues.extend({"packageId": package, "exportName": name, "reason": "header-symbol-not-exported"}
                   for name in sorted(set(header_symbols) - export_names))
     return _report(records, issues)
+
+
+def c_abi_matches_header(report: dict[str, Any]) -> bool:
+    """Check native exports against the C header without requiring manifest parity."""
+    return report["complete"] and not report["issues"]
 
 
 def read_native_exports(binary: Path) -> list[str]:
@@ -1227,13 +1244,15 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         and row.get("kind") == "c-symbol"
         and row.get("declarationState") == "blocked"
     }
-    c = audit_c_surface(
+    c_surface = audit_c_surface(
         c_header,
         native_exports,
         approved_exclusions=c_exclusions,
         blocked_exports=blocked_c_exports,
     )
-    return compare(c, manifest, "c-kmipkit")
+    result = compare(c_surface, manifest, "c-kmipkit")
+    result["abiMatchesHeader"] = c_abi_matches_header(c_surface)
+    return result
 
 
 def expand_local_c_header_includes(root: Path, header_path: Path) -> str:
@@ -1348,10 +1367,19 @@ def main() -> int:
     parser.add_argument("--c-binary", type=Path,
                         help="read C ABI exports from this library instead of building a temporary copy")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument(
+        "--check-c-abi",
+        action="store_true",
+        help="check native C exports against the public C header, independently of manifest parity",
+    )
     args = parser.parse_args()
     try:
         if args.c_binary is not None and not args.c_only:
             parser.error("--c-binary requires --c-only")
+        if args.check_c_abi and (not args.c_only or args.c_binary is None):
+            parser.error("--check-c-abi requires --c-only and --c-binary")
+        if args.check and args.check_c_abi:
+            parser.error("--check and --check-c-abi cannot be combined")
         result = run(args.repo_root.resolve(), c_only=args.c_only,
                      c_binary=args.c_binary.resolve(strict=True) if args.c_binary is not None else None)
         data = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
@@ -1359,6 +1387,8 @@ def main() -> int:
             args.report.write_text(data, encoding="utf-8", newline="\n")
         else:
             print(data, end="")
+        if args.check_c_abi:
+            return 0 if all(p["abiMatchesHeader"] for p in result["packages"]) else 1
         return 0 if not args.check or all(p["matchesManifest"] for p in result["packages"]) else 1
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(f"Binding export audit failed: {error}", file=sys.stderr)

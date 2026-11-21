@@ -12,7 +12,7 @@ from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "verification" / "api" / "audit_shared_rust_inventory.py"
-REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
+REPORTS_DIR = REPO_ROOT / "verification" / "api" / "fixtures" / "reports" / "051-pre-send-validation"
 RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-16.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
@@ -147,7 +147,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-16.json"
+            "verification/api/fixtures/reports/051-pre-send-validation/rust-export-report-2026-11-16.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
