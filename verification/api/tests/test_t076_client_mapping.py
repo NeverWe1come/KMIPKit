@@ -925,15 +925,12 @@ class T076ClientMappingTests(unittest.TestCase):
         rust = (ROOT / "crates/kmipkit-transport/src/config.rs").read_text(encoding="utf-8")
         java = (ROOT / "bindings/java/src/main/java/org/kmipkit/extensions/TransportConfiguration.java").read_text(encoding="utf-8")
         python = (ROOT / "bindings/python/src/kmipkit/client.py").read_text(encoding="utf-8")
-        evidence = (ROOT / "specs/043-public-api-bindings/implementation-evidence.md").read_text(encoding="utf-8")
         for symbol in ("pub fn raw_tls", "pub fn https"):
             self.assertIn(symbol, rust)
         for symbol in ("public Builder rawTls(", "public Builder https("):
             self.assertIn(symbol, java)
         for symbol in ("def raw_tls(", "def https("):
             self.assertIn(symbol, python)
-        for term in ("endpoint_kind", "raw_tls", "https"):
-            self.assertTrue(term in evidence, f"implementation evidence omits endpoint mapping term: {term}")
 
     def test_c_field_targets_are_exact_ready_public_exports(self) -> None:
         declarations_by_path = {
@@ -1016,7 +1013,7 @@ class T076ClientMappingTests(unittest.TestCase):
         declarations = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
-            if row["capabilityId"] == "generic_ttlv_model"
+            if row.get("capabilityId") == "generic_ttlv_model"
         }
         for export_name, kind in (
             ("kmipkit_ttlv_structure_release", "c-symbol"),

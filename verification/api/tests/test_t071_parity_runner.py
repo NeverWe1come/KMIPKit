@@ -65,14 +65,14 @@ class T071ParityRunnerTests(unittest.TestCase):
 
         self.assertRegex(
             workflow,
-            r"& \$python -B -m unittest tools\.api_manifest\.tests\.test_parity "
-            r"tools\.api_manifest\.tests\.test_t076_client_mapping "
-            r"tools\.api_manifest\.tests\.test_t071_parity_runner -v",
+            r"& \$python -B -m unittest verification\.api\.tests\.test_parity "
+            r"verification\.api\.tests\.test_t076_client_mapping "
+            r"verification\.api\.tests\.test_t071_parity_runner -v",
         )
         self.assertRegex(
             workflow,
-            r"tools\.api_manifest\.tests\.test_t101_hash_mac_signature_declaration_mapping "
-            r"tools\.api_manifest\.tests\.test_hash_mac_signature_parity_manifest -v",
+            r"verification\.api\.tests\.test_t101_hash_mac_signature_declaration_mapping "
+            r"verification\.api\.tests\.test_hash_mac_signature_parity_manifest -v",
         )
 
     def test_discover_versions_plan_selects_all_four_runtime_consumers(self) -> None:
