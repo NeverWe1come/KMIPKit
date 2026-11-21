@@ -32,12 +32,10 @@ SCHEMA_PATH = ROOT / "bindings" / "shared" / "public-api.schema.json"
 CHECKED_IN_MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
-RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
+RUST_EXPORT_REPORT_DIR = ROOT / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
 RUST_EXPORT_REPORT_PATH = (
     ROOT
-    / "specs"
-    / "051-pre-send-validation"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "051-pre-send-validation"
     / "rust-export-report-2026-11-16.json"
 )
 

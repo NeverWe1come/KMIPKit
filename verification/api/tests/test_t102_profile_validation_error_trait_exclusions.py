@@ -18,9 +18,7 @@ MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 REPORT_PATH = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
 OWNER_APPROVAL = {

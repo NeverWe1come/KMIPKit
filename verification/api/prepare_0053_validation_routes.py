@@ -195,7 +195,7 @@ def _validate_candidate_provenance(
             [
                 "git",
                 "show",
-                f"{source_commit}:bindings/shared/public-api.json",
+                f"{source_commit}:specification/api/public-api.json",
             ],
             cwd=repo_root,
             check=True,
@@ -536,19 +536,14 @@ def main() -> int:
     manifest_path = root / "bindings" / "shared" / "public-api.json"
     report_path = (
         root
-        / "specs"
-        / "053-api-parity-facade"
-        / "reports"
+        / "verification" / "api" / "fixtures" / "reports" / "053-api-parity-facade"
         / "rust-export-report-2026-11-07.json"
     )
     candidate_path = (
-        root
-        / "specs"
-        / "053-api-parity-facade"
-        / "candidate-resolutions"
+        root / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "candidate-resolutions"
         / "validation-export-candidates.json"
     )
-    routes_path = root / "specs" / "053-api-parity-facade" / "additional-api-routes.json"
+    routes_path = root / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "additional-api-routes.json"
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         report = json.loads(report_path.read_text(encoding="utf-8"))

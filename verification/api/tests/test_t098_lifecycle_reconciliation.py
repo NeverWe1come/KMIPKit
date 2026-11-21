@@ -15,9 +15,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 BASELINE_PATH = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "t098-lifecycle-candidate-baseline-2026-11-05.json"
 )
 OWNER_SPEC = "specs/018-managed-object-lifecycle/spec.md"

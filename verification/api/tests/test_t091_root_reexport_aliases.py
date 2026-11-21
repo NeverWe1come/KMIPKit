@@ -13,7 +13,7 @@ from verification.api import generate
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
-    ROOT / "specs" / "053-api-parity-facade" / "reports"
+    ROOT / "verification" / "api" / "fixtures" / "reports" / "053-api-parity-facade"
     / "rust-export-report-2026-11-07-final.json"
 )
 CASES_PATH = Path(__file__).parent / "fixtures" / "t091_root_reexport_alias_cases.json"

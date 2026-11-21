@@ -1618,7 +1618,7 @@ class BindingExportAuditTests(unittest.TestCase):
 
     def test_checked_in_binding_export_report_reconciles_every_package(self):
         repo_root = Path(__file__).resolve().parents[3]
-        report_dir = repo_root / "specs/043-public-api-bindings/reports"
+        report_dir = repo_root / "verification/api/fixtures/reports/043-public-api-bindings"
         report_path = max(report_dir.glob("binding-export-report-*.json"))
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(

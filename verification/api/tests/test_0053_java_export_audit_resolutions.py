@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RESOLUTIONS = ROOT / "specs" / "053-api-parity-facade" / "candidate-resolutions" / "java-export-audit.json"
+RESOLUTIONS = ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "candidate-resolutions" / "java-export-audit.json"
 EXPECTED_EXPORT_COUNT = 170
 EXPECTED_EXPORT_NAMES_SHA256 = "52b606fa78f969ab38381a5e9cffd17f6c57b6cccd2af1aca155072638c0bea5"
 EXPECTED_STALE_NAMES = {
@@ -161,7 +161,7 @@ class JavaExportAuditResolutionTests(unittest.TestCase):
 
     def test_batch_validation_python_route_change_has_an_exact_manifest_correction(self) -> None:
         routes = json.loads(
-            (ROOT / "specs" / "053-api-parity-facade" / "additional-api-routes.json")
+            (ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "additional-api-routes.json")
             .read_text(encoding="utf-8")
         )
         matches = [
@@ -210,7 +210,7 @@ class JavaExportAuditResolutionTests(unittest.TestCase):
             "python": "python-kmipkit",
         }
         route_data = json.loads(
-            (ROOT / "specs" / "053-api-parity-facade" / "additional-api-routes.json")
+            (ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "additional-api-routes.json")
             .read_text(encoding="utf-8")
         )
         corrections = {

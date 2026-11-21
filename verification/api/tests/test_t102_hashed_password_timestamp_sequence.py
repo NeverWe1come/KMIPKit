@@ -135,9 +135,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         report_path = (
             ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "reports"
+            / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
             / "rust-export-report-2026-11-01.json"
         )
         report = json.loads(report_path.read_text(encoding="utf-8"))

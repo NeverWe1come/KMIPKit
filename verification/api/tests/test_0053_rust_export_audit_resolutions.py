@@ -10,10 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 AUDIT_RESOLUTIONS = (
-    ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "candidate-resolutions"
+    ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "candidate-resolutions"
     / "rust-export-audit.json"
 )
 

@@ -179,7 +179,7 @@ The v2 [public API manifest](../../bindings/shared/public-api.json) owns the
 C declaration inventory. Its generated [public C header](../../bindings/c/include/kmipkit.h)
 contains only C mappings in the manifest's `declared` or `verified` state;
 blocked rows remain inventory records and do not create callable declarations.
-The binding export report
+The [binding export report](../../verification/api/fixtures/reports/043-public-api-bindings/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json)
 records the observed C, Java, and Python exports and their reconciliation with
 the manifest. Regenerate or validate that inventory with the pinned commands
 in [the export audit guide](../../verification/api/binding-export-audit.md).

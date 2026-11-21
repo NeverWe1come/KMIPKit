@@ -12,10 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PYTHON_PACKAGE = ROOT / "bindings" / "python" / "src" / "kmipkit"
 RESOLUTIONS = (
-    ROOT
-    / "specs"
-    / "053-api-parity-facade"
-    / "candidate-resolutions"
+    ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "candidate-resolutions"
     / "python-export-audit.json"
 )
 
@@ -100,7 +97,7 @@ class PythonExportAuditResolutionTests(unittest.TestCase):
             .read_text(encoding="utf-8")
         )
         route_data = json.loads(
-            (ROOT / "specs" / "053-api-parity-facade" / "additional-api-routes.json")
+            (ROOT / "verification" / "api" / "fixtures" / "053-api-parity-facade" / "additional-api-routes.json")
             .read_text(encoding="utf-8")
         )
         declarations = {

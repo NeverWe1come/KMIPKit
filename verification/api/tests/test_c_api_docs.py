@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "verification" / "api" / "binding-export-audit.md"
 AUDIT_REPORT_PATH = Path(
-    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json"
+    "verification/api/fixtures/reports/043-public-api-bindings/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json"
 )
 AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
 JAVA_CLIENT_BATCH_ITEM = ROOT / "bindings" / "java" / "src" / "main" / "java" / "org" / "kmipkit" / "extensions" / "ClientBatchItem.java"

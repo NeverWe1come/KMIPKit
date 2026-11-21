@@ -21,16 +21,12 @@ from verification.api.tests.t102_manifest_totals import (
 ROOT = Path(__file__).resolve().parents[3]
 HISTORICAL_REPORT = (
     ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
 CURRENT_REPORT = (
     ROOT
-    / "specs"
-    / "051-pre-send-validation"
-    / "reports"
+    / "verification" / "api" / "fixtures" / "reports" / "051-pre-send-validation"
     / "rust-export-report-2026-11-16.json"
 )
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"

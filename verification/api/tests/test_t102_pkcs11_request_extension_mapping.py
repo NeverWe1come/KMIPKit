@@ -144,7 +144,7 @@ class T102Pkcs11RequestExtensionMappingTests(unittest.TestCase):
 
     def test_macro_lot_two_has_no_blocked_declarations(self) -> None:
         partition = json.loads((
-            ROOT / "specs/043-public-api-bindings/reports/t102-macro-lot-partition.json"
+            ROOT / "verification/api/fixtures/reports/043-public-api-bindings/t102-macro-lot-partition.json"
         ).read_text(encoding="utf-8"))
         lot_two_ids = {
             row["declarationId"] for row in partition["macroLots"]["2"]["declarations"]
