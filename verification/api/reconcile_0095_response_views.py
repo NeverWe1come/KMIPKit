@@ -62,7 +62,11 @@ def reconcile(manifest: dict) -> dict:
                 identities.append(("rust-kmipkit", "kmipkit::ClientBatchItemResponse::" + method))
             for package, name in identities:
                 existing = next((row for row in declarations if row["packageId"] == package and row["exportName"] == name), None)
-                row = {"declarationId": existing["declarationId"] if existing else "kmipkit-0095-" + method + "-" + language,
+                fallback_id = "kmipkit-0095-" + method + "-" + (package if language == "rust" else language)
+                declaration_id = existing["declarationId"] if existing else fallback_id
+                if language == "rust" and declaration_id == "kmipkit-0095-" + method + "-rust":
+                    declaration_id = fallback_id
+                row = {"declarationId": declaration_id,
                     "packageId": package, "kind": kind, "exportName": name, "capabilityId": "client_execution",
                     "requirementIds": REQUIREMENTS, "declarationState": "verified", "parityScope": "four-language",
                     "approvalSource": APPROVAL, "candidateSpecId": "KMIPKIT-0095", "languageMappings": mappings, "parityEvidenceIds": EVIDENCE}
@@ -90,7 +94,7 @@ def reconcile(manifest: dict) -> dict:
         })
         row.pop("blockedReason", None);row.pop("featureSpecId", None)
     capability = next(row for row in result["capabilities"] if row["capabilityId"] == "client_execution")
-    ready = [row for row in declarations if row["capabilityId"] == "client_execution" and row["declarationState"] in {"declared", "verified"}]
+    ready = [row for row in declarations if row.get("capabilityId") == "client_execution" and row["declarationState"] in {"declared", "verified"}]
     for language in ("rust", "c", "java", "python"):
         capability["mappings"][language] = sorted({row["languageMappings"][language]["name"] for row in ready})
     return result
