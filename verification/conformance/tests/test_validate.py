@@ -20879,6 +20879,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
+    @unittest.skipUnless(
+        (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").is_file(),
+        "Spec Kit traceability files are excluded from the code-only review branch",
+    )
     def test_interop_feature_traceability_uses_approved_feature_id(self) -> None:
         """The Interop feature traceability row names the owning approved spec."""
         traceability = (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").read_text(encoding="utf-8")
