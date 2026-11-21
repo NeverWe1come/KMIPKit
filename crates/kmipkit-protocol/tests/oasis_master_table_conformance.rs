@@ -114,7 +114,56 @@ fn test_all_twenty_kmip30_link_attribute_tags() {
     for (link, expected_tag) in links {
         assert_eq!(link.as_u32(), expected_tag);
         assert_eq!(link.into_tag().raw(), expected_tag);
+        assert_eq!(LinkAttributeTag::from_u32(expected_tag), Some(link));
     }
+}
+
+#[test]
+fn test_attribute_tag_raw_values_resolve_to_their_typed_variants() {
+    let attributes = [
+        (
+            KmipTag::ApplicationSpecificInformation,
+            AttributeTag::ApplicationSpecificInformation,
+        ),
+        (
+            KmipTag::CompromiseOccurrenceDate,
+            AttributeTag::CompromiseOccurrenceDate,
+        ),
+        (
+            KmipTag::CryptographicDomainParameters,
+            AttributeTag::CryptographicDomainParameters,
+        ),
+        (
+            KmipTag::CryptographicParameters,
+            AttributeTag::CryptographicParameters,
+        ),
+        (
+            KmipTag::DigitalSignatureAlgorithm,
+            AttributeTag::DigitalSignatureAlgorithm,
+        ),
+        (
+            KmipTag::X509CertificateIdentifier,
+            AttributeTag::X509CertificateIdentifier,
+        ),
+        (
+            KmipTag::DerivationBaseObjectLink,
+            AttributeTag::DerivationBaseObjectLink,
+        ),
+        (
+            KmipTag::JoinedSplitKeyPartsLink,
+            AttributeTag::JoinedSplitKeyPartsLink,
+        ),
+    ];
+
+    for (tag, expected_attribute) in attributes {
+        assert_eq!(
+            AttributeTag::from_u32(tag.as_u32()),
+            Some(expected_attribute)
+        );
+    }
+
+    assert_eq!(AttributeTag::from_u32(0), None);
+    assert_eq!(LinkAttributeTag::from_u32(0), None);
 }
 
 #[test]

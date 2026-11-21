@@ -1,12 +1,54 @@
 package org.kmipkit;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.protocol.CryptographicParameters;
 
 final class JniBoundaryCoverageTest {
+    @Test
+    void legacyCryptographicParametersReadFieldsMatchesTypedModel() {
+        byte[] pSource = new byte[] {0x01, 0x23, (byte) 0xFE};
+        try (CryptographicParameters parameters = CryptographicParameters.builder()
+                .blockCipherMode(2)
+                .paddingMethod(3)
+                .hashingAlgorithm(4)
+                .keyRoleType(5)
+                .digitalSignatureAlgorithm(6)
+                .cryptographicAlgorithm(7)
+                .randomIv(true)
+                .ivLength(12)
+                .tagLength(16)
+                .fixedFieldLength(8)
+                .invocationFieldLength(4)
+                .counterLength(8)
+                .initialCounterValue(1)
+                .saltLength(16)
+                .maskGenerator(2)
+                .maskGeneratorHashingAlgorithm(4)
+                .pSource(pSource)
+                .trailerField(1)
+                .build()) {
+            boolean[] present = new boolean[18];
+            long[] values = new long[18];
+            byte[] actualPSource = parameters.nativeHandleOwner().withValue(raw ->
+                    NativeExtensionRegistry.cryptographicParametersReadFields(
+                            raw, present, values));
+
+            assertEquals(18, present.length);
+            for (boolean fieldPresent : present) assertTrue(fieldPresent);
+            assertArrayEquals(pSource, actualPSource);
+            assertArrayEquals(new long[] {
+                    2, 3, 4, 5, 6, 7, 1, 12, 16, 8, 4, 8, 1, 16, 2, 4,
+                    pSource.length, 1
+            }, values);
+        }
+    }
+
     @Test
     void nativeBridgeRejectsInvalidTypedInputsAndHandles() {
         assertThrows(RuntimeException.class,

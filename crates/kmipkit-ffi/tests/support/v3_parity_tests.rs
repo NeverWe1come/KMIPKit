@@ -507,6 +507,50 @@ fn s2c_test_query_request_ttlv() -> Vec<u8> {
     ttlv_test_item(0x0042_0078, 0x01, &request)
 }
 
+fn s2c_test_batch_request_ttlv(items: &[Vec<u8>]) -> Vec<u8> {
+    let mut protocol_version = Vec::new();
+    protocol_version.extend_from_slice(&ttlv_test_item(0x0042_006A, 0x02, &2i32.to_be_bytes()));
+    protocol_version.extend_from_slice(&ttlv_test_item(0x0042_006B, 0x02, &1i32.to_be_bytes()));
+    let mut header = ttlv_test_item(0x0042_0069, 0x01, &protocol_version);
+    header.extend_from_slice(&ttlv_test_item(0x0042_000D, 0x02, &3i32.to_be_bytes()));
+    let request_header = ttlv_test_item(0x0042_0077, 0x01, &header);
+    let mut request = request_header;
+    for item in items {
+        request.extend_from_slice(item);
+    }
+    ttlv_test_item(0x0042_0078, 0x01, &request)
+}
+
+fn s2c_test_operation_item_ttlv(operation: u32, id: &[u8], payload: &[u8]) -> Vec<u8> {
+    let mut item = Vec::new();
+    item.extend_from_slice(&ttlv_test_item(0x0042_005C, 0x05, &operation.to_be_bytes()));
+    item.extend_from_slice(&ttlv_test_item(0x0042_0093, 0x08, id));
+    item.extend_from_slice(&ttlv_test_item(0x0042_0079, 0x01, payload));
+    ttlv_test_item(0x0042_000F, 0x01, &item)
+}
+
+fn s2c_test_discover_notify_role_batch() -> Vec<u8> {
+    let offered_version = ttlv_test_item(
+        0x0042_0069,
+        0x01,
+        &[
+            ttlv_test_item(0x0042_006A, 0x02, &2i32.to_be_bytes()),
+            ttlv_test_item(0x0042_006B, 0x02, &1i32.to_be_bytes()),
+        ]
+        .concat(),
+    );
+    let discover_item = s2c_test_operation_item_ttlv(0x1E, b"discover", &offered_version);
+    let notify_payload = ttlv_test_item(0x0042_0094, 0x07, b"notify-id");
+    let notify_item = s2c_test_operation_item_ttlv(0x1B, b"notify", &notify_payload);
+    let role_payload = [
+        ttlv_test_item(0x0042_0151, 0x05, &2u32.to_be_bytes()),
+        ttlv_test_item(0x0042_009D, 0x07, b"KMIPKitTestVendor"),
+    ]
+    .concat();
+    let role_item = s2c_test_operation_item_ttlv(0x32, b"role", &role_payload);
+    s2c_test_batch_request_ttlv(&[discover_item, notify_item, role_item])
+}
+
 #[test]
 #[allow(clippy::too_many_lines)] // One local TLS exchange exercises the C listener lifecycle end to end.
 fn test_client_listener_ffi_raw_tls_exchange_and_role_reversal() {
@@ -992,6 +1036,208 @@ unsafe extern "C" fn test_put_callback_v1(
 static CUSTOM_QUERY_OPS: [u32; 3] = [0x0000_001E, 0x0000_001B, 0x0000_001C];
 static CUSTOM_QUERY_OTS: [u32; 2] = [1, 2];
 static CUSTOM_QUERY_VENDOR: &[u8] = b"CustomVendorFromC";
+static S2C_SUPPORTED_VERSIONS: [u32; 1] = [0x0002_0001];
+static S2C_RESPONSE_VENDOR: &[u8] = b"KMIPKitResponseVendor";
+
+unsafe extern "C" fn test_s2c_discover_versions_legacy(
+    _user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    major: u32,
+    minor: u32,
+    supported_out: *mut u32,
+    capacity: u32,
+    count_out: *mut u32,
+) -> u32 {
+    assert!(!item_view.is_null());
+    assert_eq!((major, minor), (2, 1));
+    if supported_out.is_null() || count_out.is_null() || capacity == 0 {
+        return 1;
+    }
+    unsafe {
+        *supported_out = S2C_SUPPORTED_VERSIONS[0];
+        *count_out = 1;
+    }
+    0
+}
+
+#[allow(clippy::too_many_arguments)]
+unsafe extern "C" fn test_s2c_discover_versions_v3(
+    _user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    major: u32,
+    minor: u32,
+    supported_out: *mut u32,
+    capacity: u32,
+    count_out: *mut u32,
+    _out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    unsafe {
+        test_s2c_discover_versions_legacy(
+            ptr::null_mut(),
+            item_view,
+            major,
+            minor,
+            supported_out,
+            capacity,
+            count_out,
+        )
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+unsafe extern "C" fn test_s2c_discover_versions_v4(
+    _user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    requested: *const u32,
+    requested_count: u32,
+    supported_out: *mut *const u32,
+    supported_count_out: *mut u32,
+    _out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert!(!item_view.is_null());
+    assert!(!requested.is_null());
+    assert_eq!(requested_count, 1);
+    assert!(!supported_out.is_null());
+    assert!(!supported_count_out.is_null());
+    unsafe {
+        *supported_out = S2C_SUPPORTED_VERSIONS.as_ptr();
+        *supported_count_out = abi_u32(S2C_SUPPORTED_VERSIONS.len());
+    }
+    0
+}
+
+unsafe extern "C" fn test_s2c_notify_v1(
+    _user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    uid_data: *const u8,
+    uid_length: u64,
+) -> u32 {
+    assert!(!item_view.is_null());
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                uid_data,
+                usize::try_from(uid_length).expect("test UID length fits in usize"),
+            )
+        },
+        b"notify-id"
+    );
+    0
+}
+
+unsafe extern "C" fn test_s2c_notify_v2(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    uid_data: *const u8,
+    uid_length: u64,
+    attributes_data: *const u8,
+    attributes_length: u64,
+) -> u32 {
+    assert!(attributes_data.is_null());
+    assert_eq!(attributes_length, 0);
+    unsafe { test_s2c_notify_v1(user_data, item_view, uid_data, uid_length) }
+}
+
+#[allow(clippy::too_many_arguments)]
+unsafe extern "C" fn test_s2c_notify_v3(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    uid_data: *const u8,
+    uid_length: u64,
+    attributes_data: *const u8,
+    attributes_length: u64,
+    _out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    unsafe {
+        test_s2c_notify_v2(
+            user_data,
+            item_view,
+            uid_data,
+            uid_length,
+            attributes_data,
+            attributes_length,
+        )
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+unsafe extern "C" fn test_s2c_notify_v5(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    uid_data: *const u8,
+    uid_length: u64,
+    attributes_data: *const u8,
+    attributes_length: u64,
+    deleted_data: *const u8,
+    deleted_length: u64,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert!(!deleted_data.is_null());
+    assert!(deleted_length > 0);
+    unsafe {
+        test_s2c_notify_v3(
+            user_data,
+            item_view,
+            uid_data,
+            uid_length,
+            attributes_data,
+            attributes_length,
+            out_result,
+        )
+    }
+}
+
+unsafe extern "C" fn test_s2c_set_endpoint_role_legacy(
+    _user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    role: u32,
+) -> u32 {
+    assert!(!item_view.is_null());
+    assert_eq!(role, 2);
+    0
+}
+
+unsafe extern "C" fn test_s2c_set_endpoint_role_v3(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    role: u32,
+    _out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    unsafe { test_s2c_set_endpoint_role_legacy(user_data, item_view, role) }
+}
+
+#[allow(clippy::too_many_arguments)]
+unsafe extern "C" fn test_s2c_set_endpoint_role_v5(
+    user_data: *mut core::ffi::c_void,
+    item_view: *const kmipkit_server_request_item_view_v1_t,
+    role: u32,
+    vendor_data: *const u8,
+    vendor_length: u64,
+    response_role: *mut u32,
+    response_vendor: *mut crate::kmipkit_byte_span_v1_t,
+    out_result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    assert_eq!(
+        unsafe {
+            std::slice::from_raw_parts(
+                vendor_data,
+                usize::try_from(vendor_length).expect("test vendor length fits in usize"),
+            )
+        },
+        b"KMIPKitTestVendor"
+    );
+    if response_role.is_null() || response_vendor.is_null() {
+        return 1;
+    }
+    unsafe {
+        *response_role = role;
+        *response_vendor = crate::kmipkit_byte_span_v1_t {
+            data: S2C_RESPONSE_VENDOR.as_ptr(),
+            length: S2C_RESPONSE_VENDOR.len() as u64,
+        };
+    }
+    unsafe { test_s2c_set_endpoint_role_v3(user_data, item_view, role, out_result) }
+}
 
 unsafe extern "C" fn test_query_callback(
     _user_data: *mut core::ffi::c_void,
@@ -1389,6 +1635,57 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     items[0].with_result_message(|msg| assert_eq!(msg, "Custom Failure From C Handler"));
     kmipkit_response_message_release(fail_resp);
 
+    // Exercise the v4 and v5 dispatch entrypoints with absent callbacks.
+    let handler_v4 = crate::kmipkit_server_request_handler_v4_t {
+        struct_size: abi_u32(std::mem::size_of::<
+            crate::kmipkit_server_request_handler_v4_t,
+        >()),
+        abi_version: 4,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: None,
+    };
+    let mut response_v4 = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v4(
+            dispatcher,
+            batch,
+            &raw const handler_v4,
+            &raw mut response_v4,
+        ),
+        SUCCESS
+    );
+    assert!(!response_v4.is_null());
+    kmipkit_response_message_release(response_v4);
+
+    let handler_v5 = crate::kmipkit_server_request_handler_v5_t {
+        struct_size: abi_u32(std::mem::size_of::<
+            crate::kmipkit_server_request_handler_v5_t,
+        >()),
+        abi_version: 5,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: None,
+    };
+    let mut response_v5 = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v5(
+            dispatcher,
+            batch,
+            &raw const handler_v5,
+            &raw mut response_v5,
+        ),
+        SUCCESS
+    );
+    assert!(!response_v5.is_null());
+    kmipkit_response_message_release(response_v5);
+
     // 5. Test ABI validation and version mismatch
     let mut invalid_handler_v1 = handler_v1;
     invalid_handler_v1.abi_version = 2;
@@ -1438,6 +1735,335 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
         ),
         ERROR_INVALID_INPUT
     );
+
+    let mut invalid_handler_v4 = handler_v4;
+    invalid_handler_v4.abi_version = 3;
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v4(
+            dispatcher,
+            batch,
+            &raw const invalid_handler_v4,
+            &raw mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    let mut invalid_handler_v5 = handler_v5;
+    invalid_handler_v5.struct_size = 0;
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v5(
+            dispatcher,
+            batch,
+            &raw const invalid_handler_v5,
+            &raw mut resp,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
+    client_abi::kmipkit_incoming_server_batch_release(batch);
+    kmipkit_codec_limits_release(limits);
+}
+
+#[test]
+fn test_s2c_batch_discover_notify_and_endpoint_role_getters() {
+    let message = s2c_test_discover_notify_role_batch();
+
+    let mut limits = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&raw mut limits), SUCCESS);
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_decode_ttlv(
+            message.as_ptr(),
+            message.len() as u64,
+            limits,
+            &raw mut batch,
+        ),
+        SUCCESS
+    );
+
+    let mut version_count = 0u32;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_discover_versions(
+            batch,
+            0,
+            ptr::null_mut(),
+            0,
+            &raw mut version_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(version_count, 1);
+    let mut versions = [0u32; 1];
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_discover_versions(
+            batch,
+            0,
+            versions.as_mut_ptr(),
+            1,
+            &raw mut version_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(versions, [0x0002_0001]);
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_discover_versions(
+            batch,
+            1,
+            versions.as_mut_ptr(),
+            1,
+            &raw mut version_count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_discover_versions(
+            batch,
+            0,
+            versions.as_mut_ptr(),
+            0,
+            &raw mut version_count,
+        ),
+        SUCCESS
+    );
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_discover_versions(
+            batch,
+            3,
+            versions.as_mut_ptr(),
+            1,
+            &raw mut version_count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut uid_length = 0u64;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_notify(
+            batch,
+            1,
+            ptr::null_mut(),
+            0,
+            &raw mut uid_length,
+        ),
+        SUCCESS
+    );
+    assert_eq!(uid_length, 9);
+    let mut uid = [0u8; 9];
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_notify(
+            batch,
+            1,
+            uid.as_mut_ptr(),
+            uid.len() as u64,
+            &raw mut uid_length,
+        ),
+        SUCCESS
+    );
+    assert_eq!(&uid, b"notify-id");
+    let mut short_uid = [0u8; 1];
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_notify(
+            batch,
+            1,
+            short_uid.as_mut_ptr(),
+            short_uid.len() as u64,
+            &raw mut uid_length,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_notify(
+            batch,
+            0,
+            uid.as_mut_ptr(),
+            uid.len() as u64,
+            &raw mut uid_length,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let mut endpoint_role = 0u32;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_set_endpoint_role(
+            batch,
+            2,
+            &raw mut endpoint_role,
+        ),
+        SUCCESS
+    );
+    assert_eq!(endpoint_role, 2);
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_set_endpoint_role(
+            batch,
+            1,
+            &raw mut endpoint_role,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_set_endpoint_role(
+            batch,
+            3,
+            &raw mut endpoint_role,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    client_abi::kmipkit_incoming_server_batch_release(batch);
+    kmipkit_codec_limits_release(limits);
+}
+
+fn assert_s2c_response_items_succeeded(response: *mut kmipkit_response_message_t) {
+    let owner = reference_handle(response, Kind::ResponseMessage).expect("response message handle");
+    let HandleValue::ResponseMessage(message) = &owner.value else {
+        panic!("expected ResponseMessage");
+    };
+    let items: Vec<_> = message.batch_items().collect();
+    assert_eq!(items.len(), 3);
+    for item in items {
+        assert_eq!(
+            item.result_status(),
+            Some(kmipkit_protocol::ResultStatus::from_raw(0))
+        );
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)] // Each ABI version exercises the same S2C request through its callback layout.
+fn test_s2c_dispatcher_callbacks_across_legacy_and_current_abis() {
+    let message = s2c_test_discover_notify_role_batch();
+    let mut limits = ptr::null_mut();
+    assert_eq!(kmipkit_codec_limits_defaults(&raw mut limits), SUCCESS);
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_decode_ttlv(
+            message.as_ptr(),
+            message.len() as u64,
+            limits,
+            &raw mut batch,
+        ),
+        SUCCESS
+    );
+    let mut dispatcher = ptr::null_mut();
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_create(&raw mut dispatcher),
+        SUCCESS
+    );
+    let mut response = ptr::null_mut();
+
+    let handler_v1 = kmipkit_server_request_handler_v1_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_server_request_handler_v1_t>()),
+        abi_version: 1,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(test_s2c_discover_versions_legacy),
+        handle_notify: Some(test_s2c_notify_v1),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(test_s2c_set_endpoint_role_legacy),
+    };
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v1(
+            dispatcher,
+            batch,
+            &raw const handler_v1,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_s2c_response_items_succeeded(response);
+    kmipkit_response_message_release(response);
+
+    let handler_v2 = kmipkit_server_request_handler_v2_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_server_request_handler_v2_t>()),
+        abi_version: 2,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(test_s2c_discover_versions_legacy),
+        handle_notify: Some(test_s2c_notify_v2),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(test_s2c_set_endpoint_role_legacy),
+    };
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v2(
+            dispatcher,
+            batch,
+            &raw const handler_v2,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_s2c_response_items_succeeded(response);
+    kmipkit_response_message_release(response);
+
+    let handler_v3 = kmipkit_server_request_handler_v3_t {
+        struct_size: abi_u32(std::mem::size_of::<kmipkit_server_request_handler_v3_t>()),
+        abi_version: 3,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(test_s2c_discover_versions_v3),
+        handle_notify: Some(test_s2c_notify_v3),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(test_s2c_set_endpoint_role_v3),
+    };
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v3(
+            dispatcher,
+            batch,
+            &raw const handler_v3,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_s2c_response_items_succeeded(response);
+    kmipkit_response_message_release(response);
+
+    let handler_v4 = crate::kmipkit_server_request_handler_v4_t {
+        struct_size: abi_u32(std::mem::size_of::<
+            crate::kmipkit_server_request_handler_v4_t,
+        >()),
+        abi_version: 4,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(test_s2c_discover_versions_v4),
+        handle_notify: Some(test_s2c_notify_v3),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(test_s2c_set_endpoint_role_v3),
+    };
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v4(
+            dispatcher,
+            batch,
+            &raw const handler_v4,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_s2c_response_items_succeeded(response);
+    kmipkit_response_message_release(response);
+
+    let handler_v5 = crate::kmipkit_server_request_handler_v5_t {
+        struct_size: abi_u32(std::mem::size_of::<
+            crate::kmipkit_server_request_handler_v5_t,
+        >()),
+        abi_version: 5,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(test_s2c_discover_versions_v4),
+        handle_notify: Some(test_s2c_notify_v5),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(test_s2c_set_endpoint_role_v5),
+    };
+    assert_eq!(
+        client_abi::kmipkit_server_request_dispatcher_dispatch_v5(
+            dispatcher,
+            batch,
+            &raw const handler_v5,
+            &raw mut response,
+        ),
+        SUCCESS
+    );
+    assert_s2c_response_items_succeeded(response);
+    kmipkit_response_message_release(response);
 
     client_abi::kmipkit_server_request_dispatcher_release(dispatcher);
     client_abi::kmipkit_incoming_server_batch_release(batch);

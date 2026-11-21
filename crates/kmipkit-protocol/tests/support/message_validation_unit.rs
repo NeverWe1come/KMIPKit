@@ -785,6 +785,15 @@ mod tests {
             validate_response_message(&wrong_response_batch.view()),
             MessageValidationErrorKind::WrongItemType,
         );
+        let wrong_response_batch_count = structure([
+            version(),
+            item(TIME_STAMP, Value::date_time(1)),
+            item(BATCH_COUNT, Value::text_string("one".to_owned())),
+        ]);
+        assert_kind(
+            validate_response_header(&wrong_response_batch_count.view(), 0),
+            MessageValidationErrorKind::WrongItemType,
+        );
         let mismatch_request = structure([
             item(REQUEST_HEADER, Value::structure(request_header(2))),
             item(BATCH_ITEM, Value::structure(request_batch())),
@@ -871,6 +880,17 @@ mod tests {
         ]);
         assert_kind(
             validate_request_batch_item(&v3_batch_with_id.view(), 1, false, true),
+            MessageValidationErrorKind::InvalidFieldValue,
+        );
+
+        // KMIP 3.0 response batch: Unique Batch Item ID must be rejected
+        let v3_response_batch_with_id = structure([
+            item(RESULT_STATUS, Value::enumeration(0)),
+            item(UNIQUE_BATCH_ITEM_ID, Value::byte_string(vec![1])),
+            item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+        ]);
+        assert_kind(
+            validate_response_batch_item(&v3_response_batch_with_id.view(), 1, true),
             MessageValidationErrorKind::InvalidFieldValue,
         );
 
