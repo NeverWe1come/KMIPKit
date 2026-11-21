@@ -2239,14 +2239,32 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_feature_spec_requirement_lookup_accepts_qualified_and_short_fr_ids(self) -> None:
         """Resolve prefixed feature FR IDs while preserving legacy short IDs."""
-        self.assertEqual(
-            catalog_validate._profile_oracle_feature_spec_requirement_ids(ROOT, "KMIPKIT-0017"),
-            {f"FR-{number:03}" for number in range(1, 14)},
-        )
-        self.assertEqual(
-            catalog_validate._profile_oracle_feature_spec_requirement_ids(ROOT, "KMIPKIT-0036"),
-            {f"FR-{number:03}" for number in range(1, 9)},
-        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            fixture_root = Path(temporary_directory)
+            for feature_id, requirement_count in (("KMIPKIT-0017", 13), ("KMIPKIT-0036", 8)):
+                spec_path = fixture_root / "specs" / feature_id / "spec.md"
+                spec_path.parent.mkdir(parents=True, exist_ok=True)
+                requirement_lines = [
+                    (
+                        f"- **{feature_id}-FR-{number:03}**: requirement"
+                        if number % 2 == 0
+                        else f"- **FR-{number:03}**: requirement"
+                    )
+                    for number in range(1, requirement_count + 1)
+                ]
+                spec_path.write_text(
+                    "**Feature Branch**: `feature/" + feature_id + "-fixture`\n\n"
+                    + "\n".join(requirement_lines)
+                    + "\n",
+                    encoding="utf-8",
+                )
+
+                self.assertEqual(
+                    catalog_validate._profile_oracle_feature_spec_requirement_ids(
+                        fixture_root, feature_id
+                    ),
+                    {f"FR-{number:03}" for number in range(1, requirement_count + 1)},
+                )
 
     def test_baseline_tracks_optional_tls12_source_without_claiming_it_in_scope(self) -> None:
         """Preserve the TLS 1.2 MAY clause while keeping it outside the 1.0 client requirement closure."""
