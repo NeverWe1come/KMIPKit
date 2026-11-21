@@ -828980,6 +828980,20 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-272289c6441b4817051b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::extension_registry::ClientConfiguration::with_kmip_version",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0043-FR-021"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
@@ -1090182,6 +1090196,378 @@
         "specs/053-api-parity-facade/spec.md"
       ],
       "candidateSpecId": "KMIPKIT-0053"
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseObliterate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecapsulateFromFields",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeactivateFromFields",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncapsulateFromFields",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCancelFromRequest",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPollFromRequest",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemProcessFromRequest",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDecapsulate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDeactivate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseEncapsulate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateUser",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateGroup",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateCredential",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+      "reason": "This public static member is JNI plumbing for the AutoCloseable Java response view; it does not expose an independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0095-FR-003 and KMIPKIT-0043-FR-021. The AutoCloseable response view uses this method for JNI plumbing; the typed Java response view remains the public API. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+      "reason": "This public static member is JNI plumbing for the AutoCloseable Java response view; it does not expose an independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0095-FR-003 and KMIPKIT-0043-FR-021. The AutoCloseable response view uses this method for JNI plumbing; the typed Java response view remains the public API. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+      "reason": "This public static member is JNI plumbing for the AutoCloseable Java response view; it does not expose an independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0095-FR-003 and KMIPKIT-0043-FR-021. The AutoCloseable response view uses this method for JNI plumbing; the typed Java response view remains the public API. docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderCreate",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetAlgorithm",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetLength",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetUsageMask",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetName",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderBuildBatchItem",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddAttributeItem",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddCataloguedAttribute",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddVendorAttribute",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SYMMETRIC_KEY_BUILDER",
+      "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facade, which already maps the operation capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. The NativeExtensionRegistry class is the internal JNI bridge, and docs/architecture/ffi-and-bindings.md describes the supported Java-to-C boundary as a minimal JNI bridge. The typed creation operation or response value is independently mapped in the API manifest. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
     },
     {
       "packageId": "python-kmipkit",
