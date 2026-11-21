@@ -22,7 +22,7 @@ RUST_REPORT = (
     / "verification" / "api" / "fixtures" / "reports" / "043-public-api-bindings"
     / "rust-export-report-2026-11-01.json"
 )
-OWNER_SPEC = ROOT / "specs" / "026-pkcs11" / "spec.md"
+OWNER_STATE = ROOT / "verification" / "api" / "fixtures" / "approval-sources" / "026-pkcs11-owner-state.md"
 OWNER_APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/026-pkcs11/spec.md",
@@ -74,6 +74,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         cls.rust_report = json.loads(RUST_REPORT.read_text(encoding="utf-8"))
+        cls.owner_state = OWNER_STATE.read_text(encoding="utf-8")
 
     def test_rust_1_94_report_observes_exact_direct_and_conditional_paths(self) -> None:
         self.assertTrue(self.rust_report["complete"])
@@ -127,8 +128,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         self.assertEqual(declarations, set())
         self.assertEqual(set(exclusions), EXPECTED_TRAITS)
         self.assertEqual(len(exclusions), 20)
-        approval = OWNER_SPEC.read_text(encoding="utf-8")
-        self.assertIn("**Status**: Approved for implementation — 2026-10-11", approval)
+        self.assertIn("**Status**: Approved for implementation — 2026-10-11", self.owner_state)
 
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
@@ -202,10 +202,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         self.assertEqual(self.rust_report["counts"]["manifest"], T102_HISTORICAL_RUST_AUDIT_MANIFEST)
         self.assertEqual(self.rust_report["counts"]["excluded"], T102_HISTORICAL_RUST_AUDIT_EXCLUDED)
 
-        pkcs11_tasks = (ROOT / "specs" / "026-pkcs11" / "tasks.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("- [ ] T022 ", pkcs11_tasks)
+        self.assertIn("- [ ] T022 ", self.owner_state)
 
 
 if __name__ == "__main__":
