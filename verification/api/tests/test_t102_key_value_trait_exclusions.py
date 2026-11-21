@@ -25,7 +25,7 @@ RUST_REPORT_PATH = (
     / "rust-export-report-2026-11-01.json"
 )
 API_SPEC_PATH = "specs/043-public-api-bindings/spec.md"
-TRACEABILITY_PATH = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
+TRACEABILITY_PATH = ROOT / "verification" / "api" / "public-api-bindings" / "traceability.md"
 
 KEY_VALUE_TYPES = {
     "KeyFormatType": {
