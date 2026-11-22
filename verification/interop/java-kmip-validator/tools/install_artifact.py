@@ -25,6 +25,7 @@ JAVA_BUILD_ARCHIVE_PATHS = (
     "crates",
     "bindings/java",
     "bindings/c",
+    "tests/fixtures/api/generated",
 )
 
 

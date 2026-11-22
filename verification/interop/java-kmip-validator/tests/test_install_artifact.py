@@ -31,6 +31,7 @@ class InstallArtifactPathTests(unittest.TestCase):
                 "crates/kmipkit-ffi/Cargo.toml": "[package]\nname = 'kmipkit-ffi'\n",
                 "bindings/java/build.gradle.kts": "plugins {}\n",
                 "bindings/c/include/kmipkit.h": "/* native ABI */\n",
+                "tests/fixtures/api/generated/kmipkit_internal.h": "/* internal ABI */\n",
                 "specs/README.md": "excluded design source\n",
             }
             for relative_path, contents in source_files.items():
@@ -53,6 +54,9 @@ class InstallArtifactPathTests(unittest.TestCase):
             self.assertEqual(
                 (destination / "bindings/java/build.gradle.kts").read_text(encoding="utf-8"),
                 "plugins {}\n",
+            )
+            self.assertTrue(
+                (destination / "tests/fixtures/api/generated/kmipkit_internal.h").is_file()
             )
             self.assertFalse((destination / "specs").exists())
 
