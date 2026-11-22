@@ -12057,7 +12057,10 @@ unsafe extern "C" fn coverage_discover_versions_v4(
     }
     unsafe {
         output.write(COVERAGE_SUPPORTED_VERSIONS.as_ptr());
-        count.write(COVERAGE_SUPPORTED_VERSIONS.len() as u32);
+        count.write(
+            u32::try_from(COVERAGE_SUPPORTED_VERSIONS.len())
+                .expect("supported-version test fixture fits in u32"),
+        );
     }
     0
 }
@@ -12145,6 +12148,7 @@ unsafe extern "C" fn coverage_set_role_v5(
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn server_request_handler_adapter_v3_exercises_v4_and_v5_callbacks() {
     use kmipkit_client::ServerRequestHandler;
     use kmipkit_protocol::{

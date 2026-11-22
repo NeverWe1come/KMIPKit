@@ -4,6 +4,7 @@ use kmipkit_protocol::*;
 mod enum_mapping_tests {
     use super::*;
 
+    #[allow(clippy::too_many_lines)]
     #[test]
     fn all_declared_codes_round_trip_through_raw_mappings() {
         for value in [
