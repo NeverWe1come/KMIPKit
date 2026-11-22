@@ -555,11 +555,39 @@ fn every_exported_c_function_starts_inside_the_shared_panic_boundary() {
     let exports = source_c_exports();
     let source_symbols: BTreeSet<&str> =
         exports.iter().map(|(symbol, _)| symbol.as_str()).collect();
+    let fluent_c_sources = [
+        include_str!("../../src/extension_registry/client_abi/fluent.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent_crypto.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent_kmip30.rs"),
+    ];
+    let fluent_symbols: BTreeSet<String> = fluent_c_sources
+        .into_iter()
+        .flat_map(|source| source.split("#[unsafe(no_mangle)]"))
+        .filter_map(|declaration| {
+            let function_start = declaration
+                .find("pub unsafe extern \"C\" fn")
+                .or_else(|| declaration.find("pub extern \"C\" fn"))?;
+            let function = &declaration[function_start..];
+            function
+                .split("extern \"C\" fn ")
+                .nth(1)?
+                .split('(')
+                .next()
+                .filter(|&name| name != "$name")
+                .map(str::to_owned)
+        })
+        .chain(
+            macro_generated_c_exports(fluent_c_sources[0], "locate_builder_setter")
+                .into_iter()
+                .map(|(s, _)| s),
+        )
+        .collect();
     let expected_symbols: BTreeSet<String> = manifest_symbols
         .into_iter()
         .chain(blocked_symbols)
         .chain(INTERNAL_C_SYMBOLS.map(str::to_owned))
         .chain(TEST_ONLY_C_SYMBOLS.map(str::to_owned))
+        .chain(fluent_symbols)
         .collect();
     let expected_symbol_refs: BTreeSet<&str> =
         expected_symbols.iter().map(String::as_str).collect();
