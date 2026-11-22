@@ -261526,6 +261526,528 @@
       "exportName": "kmipkit.ProfileValidationDetails.source_gap_locator",
       "packageId": "python-kmipkit",
       "reason": "This root-package alias exposes the same ProfileValidationDetails.source_gap_locator field already inventoried under kmipkit.errors.ProfileValidationDetails; it adds no separate field or KMIP capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.SYMMETRIC_KEY_BUILDER",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Cancel bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCancelFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateCredential bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateCredentialFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateGroup bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateUser bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Deactivate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDeactivateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Decapsulate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemDecapsulateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Encapsulate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemEncapsulateFromFields",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Obliterate bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Poll bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemPollFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Process bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemProcessFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact QueryAsyncRequests bridge dispatches a typed KMIPKit batch item through JNI; callers use the separately inventoried ClientBatchItem facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateCredential response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateCredential",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateGroup response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateGroup",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact CreateUser response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseCreateUser",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Deactivate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDeactivate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Decapsulate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseDecapsulate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Encapsulate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseEncapsulate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation",
+        "kind": "feature-specification",
+        "path": "specs/043-public-api-bindings/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-008/021 and KMIPKIT-0093-FR-011. This exact Obliterate response bridge reads a typed KMIPKit batch item response through JNI; callers use the separately inventoried ClientBatchItemResult facade.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItemResult.java",
+        "specs/093-fluent-complete-api/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseObliterate",
+      "packageId": "java-kmipkit",
+      "reason": "This exact public static native member is JNI handle plumbing used by the typed client batch facade; it provides no independent Java product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddAttributeItem",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddCataloguedAttribute",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderAddVendorAttribute",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderBuildBatchItem",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderCreate",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetAlgorithm",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetLength",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetName",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
+        "kind": "feature-specification",
+        "path": "specs/091-fluent-dx-foundation/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0091",
+      "evidence": "The approved fluent foundation spec routes Java builders through Rust-backed opaque handles. These raw JNI members only dispatch builder operations or transfer a native batch-item handle; Java applications use org.kmipkit.client and org.kmipkit.fluent.",
+      "evidencePaths": [
+        "bindings/java/src/main/java/org/kmipkit/NativeExtensionRegistry.java",
+        "bindings/java/src/main/java/org/kmipkit/extensions/FluentBatchItemAdapter.java",
+        "specs/091-fluent-dx-foundation/spec.md"
+      ],
+      "exportName": "org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetUsageMask",
+      "packageId": "java-kmipkit",
+      "reason": "Internal fluent JNI bridge plumbing used by the typed Java facade; it has no independent application-level KMIP behavior."
     }
   ],
   "capabilities": [
