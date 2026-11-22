@@ -190,24 +190,16 @@ final class MessageModelTest {
                 nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 3), integer(PROTOCOL_VERSION_MINOR, 0))));
         TtlvStructure v3Item1 = structure(
                 enumeration(OPERATION, RAW_UNKNOWN),
-                enumeration(EPHEMERAL_MODE, 2),
                 nested(REQUEST_PAYLOAD, structure(integer(0x540002, 1))));
         TtlvStructure v3Item2 = structure(
                 enumeration(OPERATION, RAW_UNKNOWN),
-                enumeration(EPHEMERAL_MODE, 1),
                 nested(REQUEST_PAYLOAD, structure(integer(0x540002, 2))));
 
         try (RequestMessage req30 = RequestMessage.fromTtlv(multiItemMessage(REQUEST_HEADER, header30, v3Item1, v3Item2));
-             RequestHeaderView reqHeader30 = req30.header();
-             RequestBatchItemView ephemeralItem = req30.batchItemAt(0);
-             RequestBatchItemView nonEphemeralItem = req30.batchItemAt(1)) {
+             RequestHeaderView reqHeader30 = req30.header()) {
             assertEquals(2, req30.batchItemCount());
             assertEquals(2, reqHeader30.batchCount());
             assertEquals(0, reqHeader30.wireBatchCount());
-            assertEquals(OptionalLong.of(2), ephemeralItem.ephemeralMode());
-            assertTrue(ephemeralItem.isEphemeral());
-            assertEquals(OptionalLong.of(1), nonEphemeralItem.ephemeralMode());
-            assertFalse(nonEphemeralItem.isEphemeral());
         }
 
         TtlvStructure respHeader21 = structure(
@@ -249,6 +241,30 @@ final class MessageModelTest {
             assertEquals(2, resp30.batchItemCount());
             assertEquals(2, respHeader30View.batchCount());
             assertEquals(0, respHeader30View.wireBatchCount());
+        }
+    }
+
+    @Test
+    void requestBatchItemsExposeKmip30EphemeralMode() {
+        TtlvStructure header30 = structure(
+                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 3), integer(PROTOCOL_VERSION_MINOR, 0))));
+        TtlvStructure ephemeralItemTtlv = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                enumeration(EPHEMERAL_MODE, 1),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 1))));
+        TtlvStructure nonEphemeralItemTtlv = structure(
+                enumeration(OPERATION, RAW_UNKNOWN),
+                enumeration(EPHEMERAL_MODE, 2),
+                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 2))));
+
+        try (RequestMessage request = RequestMessage.fromTtlv(
+                     multiItemMessage(REQUEST_HEADER, header30, ephemeralItemTtlv, nonEphemeralItemTtlv));
+             RequestBatchItemView ephemeralItem = request.batchItemAt(0);
+             RequestBatchItemView nonEphemeralItem = request.batchItemAt(1)) {
+            assertEquals(OptionalLong.of(1), ephemeralItem.ephemeralMode());
+            assertTrue(ephemeralItem.isEphemeral());
+            assertEquals(OptionalLong.of(2), nonEphemeralItem.ephemeralMode());
+            assertFalse(nonEphemeralItem.isEphemeral());
         }
     }
 
