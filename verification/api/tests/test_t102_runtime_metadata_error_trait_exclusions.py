@@ -10,11 +10,7 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = REPOSITORY_ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
-    REPOSITORY_ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    REPOSITORY_ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 APPROVAL_SOURCE = {
     "kind": "feature-specification",

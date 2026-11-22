@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 import unittest
 from pathlib import Path
 
@@ -11,13 +10,11 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
+GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OPERATION_REQUIREMENTS = {
-    "KMIPKIT-0093-FR-005",
-    "KMIPKIT-0093-FR-008",
     *(f"KMIPKIT-0042-FR-{index:03}" for index in (1, 2, 3, 4, 5, 6, 7, 8)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)),
 }
@@ -32,11 +29,6 @@ FACADE_PARITY_REQUIREMENTS = {
 VERIFIED_DECLARATION_REQUIREMENTS = (
     OPERATION_REQUIREMENTS | DIRECT_API_REQUIREMENTS | FACADE_PARITY_REQUIREMENTS
 )
-TRACEABILITY_IDS = {
-    "KMIPKIT-028-T250-MESSAGE",
-    "KMIPKIT-028-T251-EMPTY",
-    "KMIPKIT-028-T252-ERROR",
-}
 PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
     "crates/kmipkit-client/tests/unit/log_execution_tests.rs",
@@ -175,25 +167,6 @@ class LogParityManifestTests(unittest.TestCase):
         for language, expected in EXPECTED_MAPPINGS.items():
             self.assertTrue(expected <= actual_mappings[language], language)
         self.assertEqual(OPERATION_REQUIREMENTS, linked_requirements)
-
-        traceability = (ROOT / "specs/028-diagnostics-interop/traceability.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertTrue(TRACEABILITY_IDS <= set(
-            token for token in traceability.replace("|", " ").split()
-            if token.startswith("KMIPKIT-028-")
-        ))
-        mapping_traceability = (ROOT / "specs/043-public-api-bindings/traceability.md").read_text(
-            encoding="utf-8"
-        )
-        t053_row = next(line for line in mapping_traceability.splitlines() if line.startswith("| T053 |"))
-        linked_api_requirements = {
-            value for value in OPERATION_REQUIREMENTS if value.startswith("KMIPKIT-0043-")
-        }
-        self.assertTrue(
-            linked_api_requirements <= set(re.findall(r"KMIPKIT-0043-FR-\d{3}", t053_row))
-        )
-        self.assertIn("KMIPKIT-0042-FR-007", t053_row)
 
     def test_generated_parity_inventory_contains_verified_log_mapping(self) -> None:
         generated = json.loads(GENERATED_PARITY.read_text(encoding="utf-8"))

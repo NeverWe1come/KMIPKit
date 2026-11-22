@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-REPORT = ROOT / "specs" / "043-public-api-bindings" / "reports" / "rust-export-report-2026-11-01.json"
+REPORT = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 OWNER_APPROVAL = {
     "kind": "feature-specification",
     "path": "specs/027-rng-operations/spec.md",

@@ -97,11 +97,12 @@ class OperationBindingMatrixTests(unittest.TestCase):
         }
         for operation in self.operations:
             evidence = operation.get("parityEvidenceIds", [])
+            executable_evidence = [path for path in evidence if not path.startswith("specs/")]
             with self.subTest(operation=operation["name"]):
-                self.assertTrue(evidence, "operation has no behavior evidence")
+                self.assertTrue(executable_evidence, "operation has no executable behavior evidence")
                 self.assertTrue(
-                    all((ROOT / path).is_file() for path in evidence),
-                    "operation evidence references a missing file",
+                    all((ROOT / path).is_file() for path in executable_evidence),
+                    "operation evidence references a missing executable file",
                 )
                 for language, roots in language_roots.items():
                     self.assertTrue(

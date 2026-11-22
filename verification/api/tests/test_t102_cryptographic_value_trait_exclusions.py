@@ -10,11 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 API_SPEC_PATH = "specs/043-public-api-bindings/spec.md"
 OWNER_SPEC_PATH = "specs/021-hash-mac-signature-operations/spec.md"

@@ -17,8 +17,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG_PATH = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
-REPORTS_PATH = ROOT / "specs" / "043-public-api-bindings" / "reports"
-REPORT_PATH = REPORTS_PATH / "rust-export-report-2026-11-01.json"
+REPORTS_PATH = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api"
+REPORT_PATH = REPORTS_PATH / "rust-export-inventory.json"
 
 TYPE_CASES = (
     ("rust-kmipkit", "kmipkit::ProfileTransport", "kmipkit_protocol::profile::ProfileTransport", "declared", 14),

@@ -20,11 +20,7 @@ from verification.api.tests.t102_manifest_totals import (
 
 ROOT = Path(__file__).resolve().parents[3]
 HISTORICAL_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 CURRENT_REPORT = (
     ROOT

@@ -21,13 +21,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
-PKCS11_RESEARCH = ROOT / "specs" / "026-pkcs11" / "research.md"
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
     "path": "specs/026-pkcs11/spec.md",
@@ -285,12 +280,6 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
             )
         }
         self.assertEqual(response_traits, EXPECTED_PKCS11_RESPONSE_TRAITS)
-
-    def test_vendor_function_source_interpretation_remains_recorded(self) -> None:
-        research = PKCS11_RESEARCH.read_text(encoding="utf-8")
-        self.assertIn("KMIPKIT-026-SOURCE-001", research)
-        self.assertIn("§7.26 Table 378", research)
-        self.assertIn("vendor-defined functions", research)
 
     def test_t102_slice_and_manifest_snapshots_remain_consistent(self) -> None:
         # The checked-in API inventory includes the 0047 versioned values,

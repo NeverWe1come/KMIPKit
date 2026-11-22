@@ -11796,3 +11796,463 @@ fn response_view_error_categories_are_stable_and_payload_free() {
         assert!(std::error::Error::source(&error).is_none());
     }
 }
+
+#[test]
+fn listener_transport_config_v1_parses_default_and_optional_settings() {
+    let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
+    let identity = pki.server_identity();
+    let chain = identity.certificate_chain_der();
+    let certificates = [
+        input(INPUT_MEMORY, ENCODING_DER, chain[0]),
+        input(INPUT_MEMORY, ENCODING_DER, chain[1]),
+    ];
+    let private_key = input(INPUT_MEMORY, ENCODING_DER, identity.private_key_der());
+    let roots = [input(
+        INPUT_MEMORY,
+        ENCODING_DER,
+        pki.authority_certificate_der(),
+    )];
+    let size = u32::try_from(std::mem::size_of::<kmipkit_listener_transport_config_v1_t>())
+        .expect("listener record size fits the ABI");
+    let config = kmipkit_listener_transport_config_v1_t {
+        struct_size: size,
+        abi_version: 1,
+        flags: KMIPKIT_TRANSPORT_CONFIG_FLAG_TLS12_COMPAT,
+        bind_port: 0,
+        reserved: 0,
+        bind_host: byte_span(b"127.0.0.1"),
+        server_certificates: certificates.as_ptr(),
+        server_certificate_count: certificates.len() as u64,
+        server_private_key: private_key,
+        trust_certificates: roots.as_ptr(),
+        trust_certificate_count: roots.len() as u64,
+        read_timeout: timeout(0, 0, 0),
+        write_timeout: timeout(0, 0, 0),
+        max_request_bytes: 1_048_576,
+    };
+    let options = kmipkit_listener_options_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_listener_options_v1_t>())
+            .expect("listener options size fits the ABI"),
+        abi_version: 1,
+        target_path: byte_span(b"/kmip"),
+        revocation_lists: ptr::null(),
+        revocation_list_count: 0,
+        wire_encoding: 1,
+        reserved: 0,
+    };
+    let configured = listener_transport_config_from_v1(&raw const config, &raw const options)
+        .expect("valid listener v1 settings parse");
+    assert_eq!(configured.bind_host(), "127.0.0.1");
+
+    let defaults = kmipkit_listener_transport_config_v1_t {
+        flags: 0,
+        bind_host: byte_span(&[]),
+        trust_certificates: ptr::null(),
+        trust_certificate_count: 0,
+        max_request_bytes: 0,
+        ..config
+    };
+    let configured = listener_transport_config_from_v1(&raw const defaults, ptr::null())
+        .expect("platform trust and default listener settings parse");
+    assert_eq!(configured.bind_host(), "127.0.0.1");
+}
+
+unsafe extern "C" fn coverage_discover_versions_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _major: u32,
+    _minor: u32,
+    output: *mut u32,
+    capacity: u32,
+    count: *mut u32,
+) -> u32 {
+    if output.is_null() || capacity == 0 || count.is_null() {
+        return 1;
+    }
+    unsafe {
+        output.write(0x0002_0001);
+        count.write(1);
+    }
+    0
+}
+
+unsafe extern "C" fn coverage_notify_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _uid: *const u8,
+    _uid_len: u64,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_put_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _uid: *const u8,
+    _uid_len: u64,
+    _object: *const u8,
+    _object_len: u64,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_query_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _flags: u32,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_set_role_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _role: u32,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_notify_v2(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _uid: *const u8,
+    _uid_len: u64,
+    _attributes: *const u8,
+    _attributes_len: u64,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_put_v2(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _put_function: u32,
+    _uid: *const u8,
+    _uid_len: u64,
+    _replaced_uid: *const u8,
+    _replaced_uid_len: u64,
+    _object: *const u8,
+    _object_len: u64,
+    _attributes: *const u8,
+    _attributes_len: u64,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_query_v2(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _flags: u32,
+    output: *mut kmipkit_s2c_capabilities_v1_t,
+) -> u32 {
+    if output.is_null() {
+        return 1;
+    }
+    unsafe {
+        output.write(kmipkit_s2c_capabilities_v1_t {
+            struct_size: c_abi_struct_size::<kmipkit_s2c_capabilities_v1_t>(),
+            abi_version: 1,
+            operations: ptr::null(),
+            operations_count: 0,
+            object_types: ptr::null(),
+            object_types_count: 0,
+            vendor_identification_data: ptr::null(),
+            vendor_identification_length: 0,
+            extension_tags: ptr::null(),
+            extension_tags_count: 0,
+            reserved: 0,
+        });
+    }
+    0
+}
+
+#[test]
+fn server_request_handler_adapters_v1_and_v2_cover_all_operations() {
+    use kmipkit_client::ServerRequestHandler;
+    use kmipkit_protocol::{
+        EndpointRole, ProtocolVersion, PutFunction, QueryFunction, ServerDiscoverVersionsRequest,
+        ServerNotifyRequest, ServerPutRequest, ServerQueryRequest, SetEndpointRoleRequest,
+    };
+
+    let object = Item::new(
+        RawTag::new(0x0042_008F).unwrap().try_checked().unwrap(),
+        Value::structure(Structure::new()),
+    )
+    .unwrap();
+    let discover = ServerDiscoverVersionsRequest::new(vec![ProtocolVersion::V2_1]);
+    let notify = ServerNotifyRequest::new("object-1".into(), Some(Structure::new()), vec![]);
+    let put = ServerPutRequest::new(
+        PutFunction::REPLACE,
+        "object-1".into(),
+        Some("old-object".into()),
+        object,
+        Some(Structure::new()),
+    );
+    let query = ServerQueryRequest::new(vec![QueryFunction::from_raw(1)]);
+    let role = SetEndpointRoleRequest::new(EndpointRole::CLIENT);
+
+    let mut v1 = CServerRequestHandlerAdapterV1 {
+        handler: kmipkit_server_request_handler_v1_t {
+            struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v1_t>(),
+            abi_version: 1,
+            user_data: ptr::null_mut(),
+            handle_discover_versions: Some(coverage_discover_versions_v1),
+            handle_notify: Some(coverage_notify_v1),
+            handle_put: Some(coverage_put_v1),
+            handle_query: Some(coverage_query_v1),
+            handle_set_endpoint_role: Some(coverage_set_role_v1),
+        },
+        current_batch_item_id: None,
+    };
+    assert_eq!(
+        v1.handle_discover_versions(&discover)
+            .unwrap()
+            .protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+    assert!(v1.handle_notify(&notify).is_ok());
+    assert!(v1.handle_put(&put).is_ok());
+    assert!(v1.handle_query(&query).is_ok());
+    assert!(v1.handle_set_endpoint_role(&role).is_ok());
+
+    let mut v2 = CServerRequestHandlerAdapterV2 {
+        handler: kmipkit_server_request_handler_v2_t {
+            struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v2_t>(),
+            abi_version: 2,
+            user_data: ptr::null_mut(),
+            handle_discover_versions: Some(coverage_discover_versions_v1),
+            handle_notify: Some(coverage_notify_v2),
+            handle_put: Some(coverage_put_v2),
+            handle_query: Some(coverage_query_v2),
+            handle_set_endpoint_role: Some(coverage_set_role_v1),
+        },
+        current_batch_item_id: None,
+    };
+    assert_eq!(
+        v2.handle_discover_versions(&discover)
+            .unwrap()
+            .protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+    assert!(v2.handle_notify(&notify).is_ok());
+    assert!(v2.handle_put(&put).is_ok());
+    assert!(v2.handle_query(&query).is_ok());
+    assert!(v2.handle_set_endpoint_role(&role).is_ok());
+}
+
+static COVERAGE_SUPPORTED_VERSIONS: [u32; 1] = [0x0002_0001];
+static COVERAGE_VENDOR_IDENTIFICATION: &[u8] = b"KMIPKit";
+
+unsafe extern "C" fn coverage_discover_versions_v4(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _requested: *const u32,
+    _requested_count: u32,
+    output: *mut *const u32,
+    count: *mut u32,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    if output.is_null() || count.is_null() {
+        return 1;
+    }
+    unsafe {
+        output.write(COVERAGE_SUPPORTED_VERSIONS.as_ptr());
+        count.write(COVERAGE_SUPPORTED_VERSIONS.len() as u32);
+    }
+    0
+}
+
+unsafe extern "C" fn coverage_notify_v5(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _uid: *const u8,
+    _uid_len: u64,
+    _attributes: *const u8,
+    _attributes_len: u64,
+    _deleted: *const u8,
+    _deleted_len: u64,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_put_v3(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _put_function: u32,
+    _uid: *const u8,
+    _uid_len: u64,
+    _replaced_uid: *const u8,
+    _replaced_uid_len: u64,
+    _object: *const u8,
+    _object_len: u64,
+    _attributes: *const u8,
+    _attributes_len: u64,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    0
+}
+
+unsafe extern "C" fn coverage_query_v3(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _flags: u32,
+    output: *mut kmipkit_s2c_capabilities_v1_t,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    if output.is_null() {
+        return 1;
+    }
+    unsafe {
+        output.write(kmipkit_s2c_capabilities_v1_t {
+            struct_size: c_abi_struct_size::<kmipkit_s2c_capabilities_v1_t>(),
+            abi_version: 1,
+            operations: ptr::null(),
+            operations_count: 0,
+            object_types: ptr::null(),
+            object_types_count: 0,
+            vendor_identification_data: ptr::null(),
+            vendor_identification_length: 0,
+            extension_tags: ptr::null(),
+            extension_tags_count: 0,
+            reserved: 0,
+        });
+    }
+    0
+}
+
+unsafe extern "C" fn coverage_set_role_v5(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    target_role: u32,
+    _vendor: *const u8,
+    _vendor_len: u64,
+    output_role: *mut u32,
+    output_vendor: *mut kmipkit_byte_span_v1_t,
+    _result: *mut kmipkit_s2c_operation_result_v1_t,
+) -> u32 {
+    if output_role.is_null() || output_vendor.is_null() {
+        return 1;
+    }
+    unsafe {
+        output_role.write(target_role);
+        output_vendor.write(kmipkit_byte_span_v1_t {
+            data: COVERAGE_VENDOR_IDENTIFICATION.as_ptr(),
+            length: COVERAGE_VENDOR_IDENTIFICATION.len() as u64,
+        });
+    }
+    0
+}
+
+#[test]
+fn server_request_handler_adapter_v3_exercises_v4_and_v5_callbacks() {
+    use kmipkit_client::ServerRequestHandler;
+    use kmipkit_protocol::{
+        EndpointRole, ProtocolVersion, PutFunction, QueryFunction, ServerDiscoverVersionsRequest,
+        ServerNotifyRequest, ServerPutRequest, ServerQueryRequest, SetEndpointRoleRequest,
+    };
+
+    let object = Item::new(
+        RawTag::new(0x0042_008F).unwrap().try_checked().unwrap(),
+        Value::structure(Structure::new()),
+    )
+    .unwrap();
+    let mut attributes = Structure::new();
+    attributes
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::text_string("object-1".into()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let mut notify_attributes = Structure::new();
+    notify_attributes
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::text_string("object-1".into()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let notify = ServerNotifyRequest::new(
+        "object-1".into(),
+        Some(notify_attributes),
+        vec![Structure::new()],
+    );
+    let mut put_attributes = Structure::new();
+    put_attributes
+        .try_push(
+            Item::new(
+                RawTag::new(0x0042_0094).unwrap().try_checked().unwrap(),
+                Value::text_string("object-1".into()),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let put = ServerPutRequest::new(
+        PutFunction::REPLACE,
+        "object-1".into(),
+        Some("old-object".into()),
+        object,
+        Some(put_attributes),
+    );
+    let discover = ServerDiscoverVersionsRequest::new(vec![ProtocolVersion::V2_1]);
+    let query = ServerQueryRequest::new(vec![QueryFunction::from_raw(1)]);
+    let role = SetEndpointRoleRequest::new(EndpointRole::CLIENT)
+        .with_vendor_identification("request-vendor");
+
+    let v3 = kmipkit_server_request_handler_v3_t {
+        struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v3_t>(),
+        abi_version: 3,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: None,
+        handle_put: Some(coverage_put_v3),
+        handle_query: Some(coverage_query_v3),
+        handle_set_endpoint_role: None,
+    };
+    let v4 = kmipkit_server_request_handler_v4_t {
+        struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v4_t>(),
+        abi_version: 4,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: Some(coverage_discover_versions_v4),
+        handle_notify: None,
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: None,
+    };
+    let v5 = kmipkit_server_request_handler_v5_t {
+        struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v5_t>(),
+        abi_version: 5,
+        user_data: ptr::null_mut(),
+        handle_discover_versions: None,
+        handle_notify: Some(coverage_notify_v5),
+        handle_put: None,
+        handle_query: None,
+        handle_set_endpoint_role: Some(coverage_set_role_v5),
+    };
+    let mut adapter = CServerRequestHandlerAdapterV3 {
+        handler: v3,
+        handler_v4: Some(v4),
+        handler_v5: Some(v5),
+        handler_v6: None,
+        current_batch_item_id: None,
+    };
+
+    assert_eq!(
+        adapter
+            .handle_discover_versions(&discover)
+            .unwrap()
+            .protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+    assert!(adapter.handle_notify(&notify).is_ok());
+    assert!(adapter.handle_put(&put).is_ok());
+    assert!(adapter.handle_query(&query).is_ok());
+    let response = adapter.handle_set_endpoint_role(&role).unwrap();
+    assert_eq!(response.endpoint_role(), Some(EndpointRole::CLIENT));
+    assert_eq!(response.vendor_identification(), Some("KMIPKit"));
+}

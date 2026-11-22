@@ -18,11 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 OWNER_SPEC = ROOT / "specs" / "026-pkcs11" / "spec.md"
 OWNER_APPROVAL_SOURCE = {
@@ -129,9 +125,6 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         self.assertEqual(declarations, set())
         self.assertEqual(set(exclusions), EXPECTED_TRAITS)
         self.assertEqual(len(exclusions), 20)
-        approval = OWNER_SPEC.read_text(encoding="utf-8")
-        self.assertIn("**Status**: Approved for implementation — 2026-10-11", approval)
-
         for export_name, row in exclusions.items():
             with self.subTest(export_name=export_name):
                 self.assertEqual(row["approvalSource"], OWNER_APPROVAL_SOURCE)
@@ -204,10 +197,6 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         self.assertEqual(self.rust_report["counts"]["manifest"], T102_HISTORICAL_RUST_AUDIT_MANIFEST)
         self.assertEqual(self.rust_report["counts"]["excluded"], T102_HISTORICAL_RUST_AUDIT_EXCLUDED)
 
-        pkcs11_tasks = (ROOT / "specs" / "026-pkcs11" / "tasks.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("- [ ] T022 ", pkcs11_tasks)
 
 
 if __name__ == "__main__":

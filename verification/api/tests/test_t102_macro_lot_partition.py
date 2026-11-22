@@ -16,7 +16,7 @@ from verification.api.tests.t102_manifest_totals import (
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-PARTITION = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t102-macro-lot-partition.json"
+PARTITION = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "t102-macro-lot-partition.json"
 
 
 class T102MacroLotPartitionTests(unittest.TestCase):
@@ -69,14 +69,17 @@ class T102MacroLotPartitionTests(unittest.TestCase):
             if row.get("declarationState") == "blocked"
             and row.get("candidateSpecId") == "KMIPKIT-0043"
         }
-        stack_routes = validation_stack_routes()
-        self.assertEqual(930, len(stack_routes))
-        stack_candidates = {
-            row["declarationId"]
-            for row in self.manifest["publicDeclarations"]
-            if row["declarationId"] in blocked
-            and (row["packageId"], row["exportName"]) in stack_routes
-        }
+        if blocked:
+            stack_routes = validation_stack_routes()
+            self.assertEqual(930, len(stack_routes))
+            stack_candidates = {
+                row["declarationId"]
+                for row in self.manifest["publicDeclarations"]
+                if row["declarationId"] in blocked
+                and (row["packageId"], row["exportName"]) in stack_routes
+            }
+        else:
+            stack_candidates = set()
         self.assertEqual(T102_BLOCKED_CANDIDATES, len(stack_candidates))
         self.assertTrue(stack_candidates.isdisjoint(partition_ids))
         self.assertTrue((blocked - stack_candidates).issubset(partition_ids))

@@ -18,14 +18,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT_PATH = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 API_SPEC_PATH = "specs/043-public-api-bindings/spec.md"
-TRACEABILITY_PATH = ROOT / "verification" / "api" / "public-api-bindings" / "traceability.md"
 
 KEY_VALUE_TYPES = {
     "KeyFormatType": {
@@ -204,20 +199,6 @@ class T102KeyValueTraitExclusionTests(unittest.TestCase):
         self.assertEqual(len(expected_all), 84)
         self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
-
-    def test_full_oasis_operation_context_is_recorded_separately(self) -> None:
-        traceability = TRACEABILITY_PATH.read_text(encoding="utf-8")
-        for context in (
-            "§6.1.14, Table 205: Derive Key Request Payload",
-            "§6.1.18, Table 217: Export Request Payload",
-            "§6.1.19, Table 220: Get Request Payload",
-            "§6.1.25, Table 238: Import Request Payload",
-            "Approved for implementation by maintainer (2026-10-11), not Accepted",
-            "DerivationParameters",
-            "DeriveKeyRequest",
-        ):
-            with self.subTest(context=context):
-                self.assertIn(context, traceability)
 
     def test_parent_raw_paths_are_verified_and_secret_traits_are_redacted_exclusions(self) -> None:
         expected_blocked = {

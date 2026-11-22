@@ -134,11 +134,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
     def test_exact_sequence_trait_artifacts_are_excluded_by_the_credential_owner(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         report_path = (
-            ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "reports"
-            / "rust-export-report-2026-11-01.json"
+            ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
         )
         report = json.loads(report_path.read_text(encoding="utf-8"))
         expected = {
