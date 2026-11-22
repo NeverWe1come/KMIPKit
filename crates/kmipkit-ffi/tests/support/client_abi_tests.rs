@@ -12098,19 +12098,60 @@ fn server_request_handler_adapters_v1_and_v2_cover_all_operations() {
     assert!(v2.handle_query(&query).is_ok());
     assert!(v2.handle_set_endpoint_role(&role).is_ok());
 
+    assert_v1_v2_missing_callbacks_are_rejected(
+        &mut v1,
+        &mut v2,
+        (&discover, &notify, &put, &query, &role),
+    );
+    assert_empty_discover_versions_defaults_to_v21();
+}
+
+static COVERAGE_SUPPORTED_VERSIONS: [u32; 1] = [0x0002_0001];
+static COVERAGE_VENDOR_IDENTIFICATION: &[u8] = b"KMIPKit";
+
+fn assert_v1_v2_missing_callbacks_are_rejected(
+    v1: &mut CServerRequestHandlerAdapterV1,
+    v2: &mut CServerRequestHandlerAdapterV2,
+    requests: (
+        &kmipkit_protocol::ServerDiscoverVersionsRequest,
+        &kmipkit_protocol::ServerNotifyRequest,
+        &kmipkit_protocol::ServerPutRequest,
+        &kmipkit_protocol::ServerQueryRequest,
+        &kmipkit_protocol::SetEndpointRoleRequest,
+    ),
+) {
+    use kmipkit_client::ServerRequestHandler;
+
+    let (discover, notify, put, query, role) = requests;
     v1.handler.handle_discover_versions = None;
     v1.handler.handle_notify = None;
     v1.handler.handle_put = None;
     v1.handler.handle_query = None;
     v1.handler.handle_set_endpoint_role = None;
-    assert!(v1.handle_discover_versions(&discover).is_err());
-    assert!(v1.handle_notify(&notify).is_err());
-    assert!(v1.handle_put(&put).is_err());
-    assert!(v1.handle_query(&query).is_err());
-    assert!(v1.handle_set_endpoint_role(&role).is_err());
+    assert!(v1.handle_discover_versions(discover).is_err());
+    assert!(v1.handle_notify(notify).is_err());
+    assert!(v1.handle_put(put).is_err());
+    assert!(v1.handle_query(query).is_err());
+    assert!(v1.handle_set_endpoint_role(role).is_err());
+
+    v2.handler.handle_discover_versions = None;
+    v2.handler.handle_notify = None;
+    v2.handler.handle_put = None;
+    v2.handler.handle_query = None;
+    v2.handler.handle_set_endpoint_role = None;
+    assert!(v2.handle_discover_versions(discover).is_err());
+    assert!(v2.handle_notify(notify).is_err());
+    assert!(v2.handle_put(put).is_err());
+    assert!(v2.handle_query(query).is_err());
+    assert!(v2.handle_set_endpoint_role(role).is_err());
+}
+
+fn assert_empty_discover_versions_defaults_to_v21() {
+    use kmipkit_client::ServerRequestHandler;
+    use kmipkit_protocol::{ProtocolVersion, ServerDiscoverVersionsRequest};
 
     let empty_discover = ServerDiscoverVersionsRequest::new(Vec::new());
-    let mut empty_version_adapter = CServerRequestHandlerAdapterV1 {
+    let mut adapter = CServerRequestHandlerAdapterV1 {
         handler: kmipkit_server_request_handler_v1_t {
             struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v1_t>(),
             abi_version: 1,
@@ -12124,27 +12165,13 @@ fn server_request_handler_adapters_v1_and_v2_cover_all_operations() {
         current_batch_item_id: None,
     };
     assert_eq!(
-        empty_version_adapter
+        adapter
             .handle_discover_versions(&empty_discover)
             .unwrap()
             .protocol_versions(),
         &[ProtocolVersion::V2_1]
     );
-
-    v2.handler.handle_discover_versions = None;
-    v2.handler.handle_notify = None;
-    v2.handler.handle_put = None;
-    v2.handler.handle_query = None;
-    v2.handler.handle_set_endpoint_role = None;
-    assert!(v2.handle_discover_versions(&discover).is_err());
-    assert!(v2.handle_notify(&notify).is_err());
-    assert!(v2.handle_put(&put).is_err());
-    assert!(v2.handle_query(&query).is_err());
-    assert!(v2.handle_set_endpoint_role(&role).is_err());
 }
-
-static COVERAGE_SUPPORTED_VERSIONS: [u32; 1] = [0x0002_0001];
-static COVERAGE_VENDOR_IDENTIFICATION: &[u8] = b"KMIPKit";
 
 unsafe extern "C" fn coverage_discover_versions_v4(
     _user_data: *mut core::ffi::c_void,
