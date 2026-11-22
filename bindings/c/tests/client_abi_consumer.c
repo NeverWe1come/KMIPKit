@@ -11568,3 +11568,74 @@ int kmipkit_client_abi_c_consumer_response_views(kmipkit_client_batch_item_respo
     kmipkit_codec_limits_release(restricted);
     return valid;
 }
+
+int kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item(void) {
+    kmipkit_ping_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = UINT32_C(0);
+    if (kmipkit_client_ping_v1(NULL, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
+        return 0;
+    }
+    int32_t status = kmipkit_ping_builder_create(&builder);
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_set_asynchronous_indicator(
+            builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_validate(builder);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_ping_builder_build_batch_item(builder, &item);
+    }
+    if (status == INT32_C(0)) {
+        status = kmipkit_client_batch_item_operation(item, &operation);
+    }
+    if (status == INT32_C(0) && operation != KMIPKIT_ENUMERATION_OPERATION_PING) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_ping_builder_release(builder);
+    return status == INT32_C(0);
+}
+
+int kmipkit_client_abi_c_consumer_checks_fluent_create_builder(void) {
+    kmipkit_create_builder_t *builder = 0;
+    kmipkit_ttlv_structure_t *attributes = 0;
+    kmipkit_ttlv_structure_t *protection_masks = 0;
+    kmipkit_client_batch_item_t *item = 0;
+    uint32_t operation = 0;
+    int result = 0;
+
+    if (kmipkit_create_builder_create(&builder) != 0 || builder == 0 ||
+        kmipkit_create_builder_validate(builder) == 0) {
+        goto cleanup;
+    }
+    if (kmipkit_ttlv_structure_create(&attributes) != 0 || attributes == 0 ||
+        kmipkit_ttlv_structure_create(&protection_masks) != 0 || protection_masks == 0 ||
+        kmipkit_create_builder_set_attributes(builder, attributes) != 0 ||
+        kmipkit_create_builder_set_protection_storage_masks(builder, protection_masks) != 0) {
+        goto cleanup;
+    }
+    kmipkit_ttlv_structure_release(attributes);
+    attributes = 0;
+    kmipkit_ttlv_structure_release(protection_masks);
+    protection_masks = 0;
+    if (kmipkit_create_builder_set_object_type(
+            builder, KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY) != 0 ||
+        kmipkit_create_builder_set_asynchronous_indicator(
+            builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_MANDATORY) != 0 ||
+        kmipkit_create_builder_validate(builder) != 0 ||
+        kmipkit_create_builder_build_batch_item(builder, &item) != 0 || item == 0 ||
+        kmipkit_client_batch_item_operation(item, &operation) != 0 ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_ttlv_structure_release(protection_masks);
+    kmipkit_client_batch_item_release(item);
+    kmipkit_create_builder_release(builder);
+    return result;
+}

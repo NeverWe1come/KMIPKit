@@ -1,6 +1,7 @@
 //! C ABI implementation for the manifest-backed extension registry API.
 #![allow(clippy::missing_safety_doc, clippy::too_many_arguments)]
 
+use kmipkit_protocol::ValidateKmipRequest;
 use openssl::{
     hash::MessageDigest,
     pkey::{PKey, Private},
@@ -64,7 +65,8 @@ use crate::{
     kmipkit_client_configuration_t, kmipkit_client_extension_registry_t,
     kmipkit_client_listener_connection_t, kmipkit_client_listener_t,
     kmipkit_client_request_message_extension_t, kmipkit_client_t, kmipkit_codec_limits_t,
-    kmipkit_create_key_pair_builder_t, kmipkit_credential_t,
+    kmipkit_create_builder_t, kmipkit_create_key_pair_builder_t,
+    kmipkit_create_key_pair_request_v1_t, kmipkit_credential_t,
     kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_fields_v2_t,
@@ -81,27 +83,28 @@ use crate::{
     kmipkit_listener_transport_config_v1_t, kmipkit_locate_builder_t,
     kmipkit_message_extension_view_t, kmipkit_message_validation_error_t,
     kmipkit_modify_attribute_request_t, kmipkit_mtls_client_config_v1_t, kmipkit_nonce_t,
-    kmipkit_poll_request_t, kmipkit_process_request_t, kmipkit_profile_object_state_v1_t,
-    kmipkit_profile_readiness_t, kmipkit_profile_validation_context_v1_t,
-    kmipkit_profile_validation_error_t, kmipkit_profile_validation_error_view_v1_t,
-    kmipkit_profile_validation_result_t, kmipkit_profile_validation_selection_v1_t,
-    kmipkit_query_async_requests_request_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
-    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
-    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
-    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
-    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
-    kmipkit_role_reversed_session_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
-    kmipkit_server_request_dispatcher_t, kmipkit_server_request_handler_v1_t,
-    kmipkit_server_request_item_view_v1_t, kmipkit_set_attribute_builder_t,
-    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
-    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
-    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
-    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
-    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
-    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
-    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
-    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
-    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
+    kmipkit_ping_builder_t, kmipkit_poll_request_t, kmipkit_process_request_t,
+    kmipkit_profile_object_state_v1_t, kmipkit_profile_readiness_t,
+    kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
+    kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
+    kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
+    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
+    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
+    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
+    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
+    kmipkit_revoke_builder_t, kmipkit_revoke_request_t, kmipkit_role_reversed_session_t,
+    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_server_request_dispatcher_t,
+    kmipkit_server_request_handler_v1_t, kmipkit_server_request_item_view_v1_t,
+    kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
+    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
+    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
+    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
+    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
+    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
+    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
+    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
+    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
+    kmipkit_validation_report_t,
 };
 use kmipkit_client::LeaseContext;
 use kmipkit_client::UsageAllocationContext;
@@ -597,6 +600,10 @@ enum Kind {
     LocateBuilder,
     RevokeBuilder,
     CryptoOperationBuilder,
+    PingBuilder,
+    CreateBuilder,
+    Kmip30OperationBuilder,
+    CreateCredentialObject,
     ClientListener,
     ClientListenerConnection,
     RoleReversedSession,
@@ -675,6 +682,41 @@ struct RevokeBuilderState {
     asynchronous_indicator: Option<u32>,
 }
 
+struct CreateBuilderState {
+    object_type: Option<ObjectType>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl CreateBuilderState {
+    fn build_request(&self) -> FfiResult<CreateRequest> {
+        let object_type = self.object_type.ok_or(ERROR_INVALID_INPUT)?;
+        let mut items = Vec::new();
+        items
+            .try_reserve_exact(self.attributes.len())
+            .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+        for item in self.attributes.as_items() {
+            items.push(item.try_clone().map_err(model_status)?);
+        }
+        let attributes = AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)?;
+        let mut request = CreateRequest::new(object_type, attributes);
+        if let Some(masks) = &self.protection_storage_masks {
+            request = request
+                .with_protection_storage_masks(masks.view().try_clone().map_err(model_status)?);
+        }
+        if !request.validate().is_valid() {
+            return Err(ERROR_INVALID_INPUT);
+        }
+        Ok(request)
+    }
+}
+
+#[derive(Default)]
+struct PingBuilderState {
+    asynchronous_indicator: Option<u32>,
+}
+
 impl CryptoOperationBuilder {
     fn new(operation: CryptoOperationKind) -> Self {
         Self {
@@ -725,6 +767,10 @@ enum HandleValue {
     LocateBuilder(Mutex<LocateBuilderState>),
     RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
+    PingBuilder(Mutex<PingBuilderState>),
+    CreateBuilder(Mutex<CreateBuilderState>),
+    Kmip30OperationBuilder(Mutex<client_abi::fluent_kmip30::Kmip30OperationBuilder>),
+    CreateCredentialObject(Item),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),

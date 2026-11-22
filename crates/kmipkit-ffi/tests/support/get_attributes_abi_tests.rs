@@ -24,6 +24,7 @@ fn response_fixture_request() -> ClientRequest {
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attributes_request() -> i32;
     fn kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints() -> i32;
+    fn kmipkit_client_abi_c_consumer_checks_fluent_create_builder() -> i32;
     fn kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(
         client: *mut kmipkit_client_t,
         limits: *mut kmipkit_codec_limits_t,
@@ -38,6 +39,15 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+}
+
+#[test]
+fn c_consumer_builds_a_typed_create_item_with_the_fluent_builder() {
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_checks_fluent_create_builder() },
+        1,
+        "the C Create builder validates inputs, copies structures, and builds a typed item"
+    );
 }
 
 #[test]
