@@ -510,8 +510,7 @@ fn query_credential_information_is_rejected_in_both_older_editions() {
             ClientRequest::Query(QueryRequest::new([QueryFunction::CREDENTIAL_INFORMATION]));
         let batch = ClientBatch::new(ClientBatchItem::new(request)).with_protocol_version(version);
         let validation = super::validate_batch(&batch, version)
-            .err()
-            .expect("Query Credential Information is unavailable before KMIP 3.0");
+            .expect_err("Query Credential Information is unavailable before KMIP 3.0");
         assert_eq!(
             validation.to_string(),
             "Query Credential Information requires KMIP 3.0"
@@ -564,8 +563,7 @@ fn kmip30_rejects_explicit_batch_item_ids_before_transport() {
     )
     .with_protocol_version(ProtocolVersion::V3_0);
     let validation = super::validate_batch(&batch, ProtocolVersion::V3_0)
-        .err()
-        .expect("KMIP 3.0 reserves Unique Batch Item ID");
+        .expect_err("KMIP 3.0 reserves Unique Batch Item ID");
     assert_eq!(
         validation.to_string(),
         "Unique Batch Item ID is reserved in KMIP 3.0"
