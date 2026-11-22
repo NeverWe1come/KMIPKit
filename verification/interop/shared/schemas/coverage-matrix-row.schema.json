@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/coverage-matrix-row.schema.json",
+  "title": "KMIPKit Interoperability Coverage Obligation",
+  "if": {
+    "properties": {
+      "protocol_version": {
+        "const": "3.0"
+      }
+    },
+    "required": [
+      "protocol_version"
+    ]
+  },
+  "then": {
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "protocol_version",
+          "kind",
+          "origin",
+          "case_id",
+          "execution_status",
+          "evidence_collected",
+          "target",
+          "xml_presence_observed"
+        ],
+        "properties": {
+          "protocol_version": {
+            "const": "3.0"
+          },
+          "kind": {
+            "const": "inventory"
+          },
+          "origin": {
+            "const": "normative"
+          },
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "execution_status": {
+            "const": "required"
+          },
+          "evidence_collected": {
+            "const": false
+          },
+          "target": {
+            "type": "object",
+            "required": [
+              "target_id",
+              "kind",
+              "heading",
+              "source"
+            ]
+          },
+          "xml_presence_observed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "protocol_version",
+          "kind",
+          "origin",
+          "case_id",
+          "execution_status",
+          "evidence_collected",
+          "language",
+          "operation",
+          "public_api_symbol",
+          "artifact_commit",
+          "action"
+        ],
+        "properties": {
+          "protocol_version": {
+            "const": "3.0"
+          },
+          "kind": {
+            "const": "public_route"
+          },
+          "origin": {
+            "const": "normative"
+          },
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "execution_status": {
+            "const": "required"
+          },
+          "evidence_collected": {
+            "const": false
+          },
+          "language": {
+            "enum": [
+              "rust",
+              "c",
+              "java",
+              "python"
+            ]
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "public_api_symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "action": {
+            "const": "construct"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "protocol_version",
+          "kind",
+          "origin",
+          "case_id",
+          "execution_status",
+          "evidence_collected",
+          "step_index",
+          "item_index",
+          "operation",
+          "result_status",
+          "result_reason",
+          "fixture",
+          "encoding",
+          "transport",
+          "observed_fields"
+        ],
+        "properties": {
+          "protocol_version": {
+            "const": "3.0"
+          },
+          "kind": {
+            "const": "scenario_item"
+          },
+          "origin": {
+            "const": "xml"
+          },
+          "case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "execution_status": {
+            "const": "required"
+          },
+          "evidence_collected": {
+            "const": false
+          },
+          "step_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "item_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fixture": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256",
+              "category"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "category": {
+                "enum": [
+                  "mandatory",
+                  "optional"
+                ]
+              }
+            }
+          },
+          "encoding": {
+            "enum": [
+              null,
+              "TTLV",
+              "XML",
+              "JSON"
+            ]
+          },
+          "transport": {
+            "enum": [
+              null,
+              "raw_tls",
+              "https"
+            ]
+          },
+          "observed_fields": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "request": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "response": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "else": {
+    "type": "object",
+    "required": [
+      "case_id",
+      "language",
+      "route_id",
+      "target_id",
+      "protocol_version",
+      "encoding",
+      "transport",
+      "mode",
+      "public_api_symbol",
+      "artifact_commit",
+      "execution_status",
+      "evidence_collected",
+      "action",
+      "execution_route_id",
+      "execution_api_symbol"
+    ],
+    "properties": {
+      "case_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "language": {
+        "enum": [
+          "rust",
+          "c",
+          "java",
+          "python"
+        ]
+      },
+      "route_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "target_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "workflow_step_index": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "workflow_operation": {
+        "type": "string",
+        "minLength": 1
+      },
+      "workflow_item_index": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "protocol_version": {
+        "enum": [
+          "2.0",
+          "2.1"
+        ]
+      },
+      "encoding": {
+        "enum": [
+          "TTLV",
+          "JSON",
+          "XML"
+        ]
+      },
+      "transport": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "enum": [
+              "raw_tls",
+              "https"
+            ]
+          }
+        ]
+      },
+      "mode": {
+        "enum": [
+          "local",
+          "network"
+        ]
+      },
+      "public_api_symbol": {
+        "type": "string",
+        "minLength": 1
+      },
+      "artifact_commit": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{40}$"
+      },
+      "execution_status": {
+        "enum": [
+          "required",
+          "not_applicable"
+        ]
+      },
+      "not_applicable_reason": {
+        "enum": [
+          "stop_unprocessed_response_omitted"
+        ]
+      },
+      "evidence_collected": {
+        "const": false
+      },
+      "action": {
+        "enum": [
+          "construct",
+          "encode",
+          "send",
+          "decode"
+        ]
+      },
+      "execution_route_id": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          }
+        ]
+      },
+      "execution_api_symbol": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "minLength": 1
+          }
+        ]
+      },
+      "origin": {
+        "const": "normative"
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "execution_status": {
+              "const": "not_applicable"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "not_applicable_reason"
+          ]
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "execution_status": {
+              "const": "required"
+            }
+          }
+        },
+        "then": {
+          "not": {
+            "required": [
+              "not_applicable_reason"
+            ]
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "mode": {
+              "const": "local"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "encoding": {
+              "const": "TTLV"
+            },
+            "transport": {
+              "type": "null"
+            },
+            "execution_route_id": {
+              "type": "null"
+            },
+            "execution_api_symbol": {
+              "type": "null"
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "mode": {
+              "const": "network"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "transport": {
+              "enum": [
+                "raw_tls",
+                "https"
+              ]
+            },
+            "execution_route_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "execution_api_symbol": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "required": [
+            "workflow_step_index"
+          ]
+        },
+        "then": {
+          "required": [
+            "workflow_operation"
+          ]
+        }
+      }
+    ],
+    "additionalProperties": false
+  }
+}
