@@ -1235,9 +1235,11 @@ def build_c_binary_exports(root: Path) -> list[str]:
 
 
 def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = None) -> dict[str, Any]:
-    c_header = expand_local_c_header_includes(
-        root, root / "bindings/c/include/kmipkit.h"
-    )
+    include_dir = root / "bindings/c/include"
+    entry_header = include_dir / "kmipkit_fluent.h"
+    if not entry_header.is_file():
+        entry_header = include_dir / "kmipkit.h"
+    c_header = expand_local_c_header_includes(root, entry_header)
     native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]
