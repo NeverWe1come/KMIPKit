@@ -520,6 +520,7 @@ impl Default for CryptographicParametersBuilder {
     }
 }
 
+#[allow(clippy::missing_fields_in_debug)] // Redact parameter values that may include keying material.
 impl fmt::Debug for CryptographicParametersBuilder {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let member_count = [
@@ -734,6 +735,7 @@ pub(crate) fn validate_cryptographic_parameters_view(
 
 /// Validates Table 59 member types, singleton cardinality, and known-member
 /// order while retaining the original Structure and every unknown member.
+#[allow(clippy::too_many_lines)] // Keep the ordered Table 59 field/type mapping in one validation pass.
 pub(super) fn validate_known_cryptographic_parameters_view(
     parameters: &StructureView<'_>,
 ) -> Result<(), ProtocolError> {

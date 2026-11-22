@@ -53,6 +53,10 @@ pub mod codec;
 #[path = "../tests/support/codec_red_tests.rs"]
 mod codec_red_tests;
 
+#[cfg(test)]
+#[path = "../tests/support/encoder_tests.rs"]
+mod encoder_tests;
+
 pub use error::ModelError;
 pub use item::Item;
 pub use kmip_tag::KmipTag;

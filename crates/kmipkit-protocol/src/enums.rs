@@ -230,6 +230,7 @@ impl AttributeTag {
 
     /// Resolves a 24-bit raw tag integer to an `AttributeTag` if it is an attribute tag.
     #[must_use]
+    #[allow(clippy::too_many_lines)] // Keep the exhaustive standard tag-to-variant mapping together.
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
             x if x == KmipTag::ActivationDate as u32 => Some(Self::ActivationDate),
@@ -469,130 +470,130 @@ impl LinkAttributeTag {
 #[repr(u32)]
 #[non_exhaustive]
 pub enum OperationCode {
-    /// `CREATE` (`0x00000001`)
-    Create = 0x00000001,
-    /// `CREATE_KEY_PAIR` (`0x00000002`)
-    CreateKeyPair = 0x00000002,
-    /// `REGISTER` (`0x00000003`)
-    Register = 0x00000003,
-    /// `RE_KEY` (`0x00000004`)
-    ReKey = 0x00000004,
-    /// `DERIVE_KEY` (`0x00000005`)
-    DeriveKey = 0x00000005,
-    /// `CERTIFY` (`0x00000006`)
-    Certify = 0x00000006,
-    /// `RE_CERTIFY` (`0x00000007`)
-    ReCertify = 0x00000007,
-    /// `LOCATE` (`0x00000008`)
-    Locate = 0x00000008,
-    /// `CHECK` (`0x00000009`)
-    Check = 0x00000009,
-    /// `GET` (`0x0000000A`)
-    Get = 0x0000000A,
-    /// `GET_ATTRIBUTES` (`0x0000000B`)
-    GetAttributes = 0x0000000B,
-    /// `GET_ATTRIBUTE_LIST` (`0x0000000C`)
-    GetAttributeList = 0x0000000C,
-    /// `ADD_ATTRIBUTE` (`0x0000000D`)
-    AddAttribute = 0x0000000D,
-    /// `MODIFY_ATTRIBUTE` (`0x0000000E`)
-    ModifyAttribute = 0x0000000E,
-    /// `DELETE_ATTRIBUTE` (`0x0000000F`)
-    DeleteAttribute = 0x0000000F,
-    /// `OBTAIN_LEASE` (`0x00000010`)
-    ObtainLease = 0x00000010,
-    /// `GET_USAGE_ALLOCATION` (`0x00000011`)
-    GetUsageAllocation = 0x00000011,
-    /// `ACTIVATE` (`0x00000012`)
-    Activate = 0x00000012,
-    /// `REVOKE` (`0x00000013`)
-    Revoke = 0x00000013,
-    /// `DESTROY` (`0x00000014`)
-    Destroy = 0x00000014,
-    /// `ARCHIVE` (`0x00000015`)
-    Archive = 0x00000015,
-    /// `RECOVER` (`0x00000016`)
-    Recover = 0x00000016,
-    /// `VALIDATE` (`0x00000017`)
-    Validate = 0x00000017,
-    /// `QUERY` (`0x00000018`)
-    Query = 0x00000018,
-    /// `CANCEL` (`0x00000019`)
-    Cancel = 0x00000019,
-    /// `POLL` (`0x0000001A`)
-    Poll = 0x0000001A,
-    /// `NOTIFY` (`0x0000001B`)
-    Notify = 0x0000001B,
-    /// `PUT` (`0x0000001C`)
-    Put = 0x0000001C,
-    /// `RE_KEY_KEY_PAIR` (`0x0000001D`)
-    ReKeyKeyPair = 0x0000001D,
-    /// `DISCOVER_VERSIONS` (`0x0000001E`)
-    DiscoverVersions = 0x0000001E,
-    /// `ENCRYPT` (`0x0000001F`)
-    Encrypt = 0x0000001F,
-    /// `DECRYPT` (`0x00000020`)
-    Decrypt = 0x00000020,
-    /// `SIGN` (`0x00000021`)
-    Sign = 0x00000021,
-    /// `SIGNATURE_VERIFY` (`0x00000022`)
-    SignatureVerify = 0x00000022,
-    /// `MAC` (`0x00000023`)
-    Mac = 0x00000023,
-    /// `MAC_VERIFY` (`0x00000024`)
-    MacVerify = 0x00000024,
-    /// `RNG_RETRIEVE` (`0x00000025`)
-    RngRetrieve = 0x00000025,
-    /// `RNG_SEED` (`0x00000026`)
-    RngSeed = 0x00000026,
-    /// `HASH` (`0x00000027`)
-    Hash = 0x00000027,
-    /// `CREATE_SPLIT_KEY` (`0x00000028`)
-    CreateSplitKey = 0x00000028,
-    /// `JOIN_SPLIT_KEY` (`0x00000029`)
-    JoinSplitKey = 0x00000029,
-    /// `IMPORT` (`0x0000002A`)
-    Import = 0x0000002A,
-    /// `EXPORT` (`0x0000002B`)
-    Export = 0x0000002B,
-    /// `LOG` (`0x0000002C`)
-    Log = 0x0000002C,
-    /// `LOGIN` (`0x0000002D`)
-    Login = 0x0000002D,
-    /// `LOGOUT` (`0x0000002E`)
-    Logout = 0x0000002E,
-    /// `DELEGATED_LOGIN` (`0x0000002F`)
-    DelegatedLogin = 0x0000002F,
-    /// `ADJUST_ATTRIBUTE` (`0x00000030`)
-    AdjustAttribute = 0x00000030,
-    /// `SET_ATTRIBUTE` (`0x00000031`)
-    SetAttribute = 0x00000031,
-    /// `SET_ENDPOINT_ROLE` (`0x00000032`)
-    SetEndpointRole = 0x00000032,
-    /// `INTEROP` (`0x00000034`)
-    Interop = 0x00000034,
-    /// `RE_PROVISION` (`0x00000035`)
-    ReProvision = 0x00000035,
-    /// `SET_DEFAULTS` (`0x00000036`)
-    SetDefaults = 0x00000036,
-    /// `SET_CONSTRAINTS` (`0x00000037`)
-    SetConstraints = 0x00000037,
-    /// `GET_CONSTRAINTS` (`0x00000038`)
-    GetConstraints = 0x00000038,
-    /// `QUERY_ASYNCHRONOUS_REQUESTS` (`0x00000039`)
-    QueryAsynchronousRequests = 0x00000039,
-    /// `PROCESS` (`0x0000003A`)
-    Process = 0x0000003A,
-    /// `PING` (`0x0000003B`)
-    Ping = 0x0000003B,
-    /// `KEM_ENCRYPT` (`0x0000003C`)
-    KemEncrypt = 0x0000003C,
-    /// `KEM_DECRYPT` (`0x0000003D`)
-    KemDecrypt = 0x0000003D,
-    /// `ENCAPSULATE` (`0x00000041`, KMIP 3.0)
-    Encapsulate = 0x00000041,
-    /// `DECAPSULATE` (`0x00000042`, KMIP 3.0)
-    Decapsulate = 0x00000042,
+    /// `CREATE` (`0x0000_0001`)
+    Create = 0x0000_0001,
+    /// `CREATE_KEY_PAIR` (`0x0000_0002`)
+    CreateKeyPair = 0x0000_0002,
+    /// `REGISTER` (`0x0000_0003`)
+    Register = 0x0000_0003,
+    /// `RE_KEY` (`0x0000_0004`)
+    ReKey = 0x0000_0004,
+    /// `DERIVE_KEY` (`0x0000_0005`)
+    DeriveKey = 0x0000_0005,
+    /// `CERTIFY` (`0x0000_0006`)
+    Certify = 0x0000_0006,
+    /// `RE_CERTIFY` (`0x0000_0007`)
+    ReCertify = 0x0000_0007,
+    /// `LOCATE` (`0x0000_0008`)
+    Locate = 0x0000_0008,
+    /// `CHECK` (`0x0000_0009`)
+    Check = 0x0000_0009,
+    /// `GET` (`0x0000_000A`)
+    Get = 0x0000_000A,
+    /// `GET_ATTRIBUTES` (`0x0000_000B`)
+    GetAttributes = 0x0000_000B,
+    /// `GET_ATTRIBUTE_LIST` (`0x0000_000C`)
+    GetAttributeList = 0x0000_000C,
+    /// `ADD_ATTRIBUTE` (`0x0000_000D`)
+    AddAttribute = 0x0000_000D,
+    /// `MODIFY_ATTRIBUTE` (`0x0000_000E`)
+    ModifyAttribute = 0x0000_000E,
+    /// `DELETE_ATTRIBUTE` (`0x0000_000F`)
+    DeleteAttribute = 0x0000_000F,
+    /// `OBTAIN_LEASE` (`0x0000_0010`)
+    ObtainLease = 0x0000_0010,
+    /// `GET_USAGE_ALLOCATION` (`0x0000_0011`)
+    GetUsageAllocation = 0x0000_0011,
+    /// `ACTIVATE` (`0x0000_0012`)
+    Activate = 0x0000_0012,
+    /// `REVOKE` (`0x0000_0013`)
+    Revoke = 0x0000_0013,
+    /// `DESTROY` (`0x0000_0014`)
+    Destroy = 0x0000_0014,
+    /// `ARCHIVE` (`0x0000_0015`)
+    Archive = 0x0000_0015,
+    /// `RECOVER` (`0x0000_0016`)
+    Recover = 0x0000_0016,
+    /// `VALIDATE` (`0x0000_0017`)
+    Validate = 0x0000_0017,
+    /// `QUERY` (`0x0000_0018`)
+    Query = 0x0000_0018,
+    /// `CANCEL` (`0x0000_0019`)
+    Cancel = 0x0000_0019,
+    /// `POLL` (`0x0000_001A`)
+    Poll = 0x0000_001A,
+    /// `NOTIFY` (`0x0000_001B`)
+    Notify = 0x0000_001B,
+    /// `PUT` (`0x0000_001C`)
+    Put = 0x0000_001C,
+    /// `RE_KEY_KEY_PAIR` (`0x0000_001D`)
+    ReKeyKeyPair = 0x0000_001D,
+    /// `DISCOVER_VERSIONS` (`0x0000_001E`)
+    DiscoverVersions = 0x0000_001E,
+    /// `ENCRYPT` (`0x0000_001F`)
+    Encrypt = 0x0000_001F,
+    /// `DECRYPT` (`0x0000_0020`)
+    Decrypt = 0x0000_0020,
+    /// `SIGN` (`0x0000_0021`)
+    Sign = 0x0000_0021,
+    /// `SIGNATURE_VERIFY` (`0x0000_0022`)
+    SignatureVerify = 0x0000_0022,
+    /// `MAC` (`0x0000_0023`)
+    Mac = 0x0000_0023,
+    /// `MAC_VERIFY` (`0x0000_0024`)
+    MacVerify = 0x0000_0024,
+    /// `RNG_RETRIEVE` (`0x0000_0025`)
+    RngRetrieve = 0x0000_0025,
+    /// `RNG_SEED` (`0x0000_0026`)
+    RngSeed = 0x0000_0026,
+    /// `HASH` (`0x0000_0027`)
+    Hash = 0x0000_0027,
+    /// `CREATE_SPLIT_KEY` (`0x0000_0028`)
+    CreateSplitKey = 0x0000_0028,
+    /// `JOIN_SPLIT_KEY` (`0x0000_0029`)
+    JoinSplitKey = 0x0000_0029,
+    /// `IMPORT` (`0x0000_002A`)
+    Import = 0x0000_002A,
+    /// `EXPORT` (`0x0000_002B`)
+    Export = 0x0000_002B,
+    /// `LOG` (`0x0000_002C`)
+    Log = 0x0000_002C,
+    /// `LOGIN` (`0x0000_002D`)
+    Login = 0x0000_002D,
+    /// `LOGOUT` (`0x0000_002E`)
+    Logout = 0x0000_002E,
+    /// `DELEGATED_LOGIN` (`0x0000_002F`)
+    DelegatedLogin = 0x0000_002F,
+    /// `ADJUST_ATTRIBUTE` (`0x0000_0030`)
+    AdjustAttribute = 0x0000_0030,
+    /// `SET_ATTRIBUTE` (`0x0000_0031`)
+    SetAttribute = 0x0000_0031,
+    /// `SET_ENDPOINT_ROLE` (`0x0000_0032`)
+    SetEndpointRole = 0x0000_0032,
+    /// `INTEROP` (`0x0000_0034`)
+    Interop = 0x0000_0034,
+    /// `RE_PROVISION` (`0x0000_0035`)
+    ReProvision = 0x0000_0035,
+    /// `SET_DEFAULTS` (`0x0000_0036`)
+    SetDefaults = 0x0000_0036,
+    /// `SET_CONSTRAINTS` (`0x0000_0037`)
+    SetConstraints = 0x0000_0037,
+    /// `GET_CONSTRAINTS` (`0x0000_0038`)
+    GetConstraints = 0x0000_0038,
+    /// `QUERY_ASYNCHRONOUS_REQUESTS` (`0x0000_0039`)
+    QueryAsynchronousRequests = 0x0000_0039,
+    /// `PROCESS` (`0x0000_003A`)
+    Process = 0x0000_003A,
+    /// `PING` (`0x0000_003B`)
+    Ping = 0x0000_003B,
+    /// `KEM_ENCRYPT` (`0x0000_003C`)
+    KemEncrypt = 0x0000_003C,
+    /// `KEM_DECRYPT` (`0x0000_003D`)
+    KemDecrypt = 0x0000_003D,
+    /// `ENCAPSULATE` (`0x0000_0041`, KMIP 3.0)
+    Encapsulate = 0x0000_0041,
+    /// `DECAPSULATE` (`0x0000_0042`, KMIP 3.0)
+    Decapsulate = 0x0000_0042,
 }
 
 impl OperationCode {
@@ -607,68 +608,68 @@ impl OperationCode {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x00000041 => Some(Self::Encapsulate),
-            0x00000042 => Some(Self::Decapsulate),
-            0x00000001 => Some(Self::Create),
-            0x00000002 => Some(Self::CreateKeyPair),
-            0x00000003 => Some(Self::Register),
-            0x00000004 => Some(Self::ReKey),
-            0x00000005 => Some(Self::DeriveKey),
-            0x00000006 => Some(Self::Certify),
-            0x00000007 => Some(Self::ReCertify),
-            0x00000008 => Some(Self::Locate),
-            0x00000009 => Some(Self::Check),
-            0x0000000A => Some(Self::Get),
-            0x0000000B => Some(Self::GetAttributes),
-            0x0000000C => Some(Self::GetAttributeList),
-            0x0000000D => Some(Self::AddAttribute),
-            0x0000000E => Some(Self::ModifyAttribute),
-            0x0000000F => Some(Self::DeleteAttribute),
-            0x00000010 => Some(Self::ObtainLease),
-            0x00000011 => Some(Self::GetUsageAllocation),
-            0x00000012 => Some(Self::Activate),
-            0x00000013 => Some(Self::Revoke),
-            0x00000014 => Some(Self::Destroy),
-            0x00000015 => Some(Self::Archive),
-            0x00000016 => Some(Self::Recover),
-            0x00000017 => Some(Self::Validate),
-            0x00000018 => Some(Self::Query),
-            0x00000019 => Some(Self::Cancel),
-            0x0000001A => Some(Self::Poll),
-            0x0000001B => Some(Self::Notify),
-            0x0000001C => Some(Self::Put),
-            0x0000001D => Some(Self::ReKeyKeyPair),
-            0x0000001E => Some(Self::DiscoverVersions),
-            0x0000001F => Some(Self::Encrypt),
-            0x00000020 => Some(Self::Decrypt),
-            0x00000021 => Some(Self::Sign),
-            0x00000022 => Some(Self::SignatureVerify),
-            0x00000023 => Some(Self::Mac),
-            0x00000024 => Some(Self::MacVerify),
-            0x00000025 => Some(Self::RngRetrieve),
-            0x00000026 => Some(Self::RngSeed),
-            0x00000027 => Some(Self::Hash),
-            0x00000028 => Some(Self::CreateSplitKey),
-            0x00000029 => Some(Self::JoinSplitKey),
-            0x0000002A => Some(Self::Import),
-            0x0000002B => Some(Self::Export),
-            0x0000002C => Some(Self::Log),
-            0x0000002D => Some(Self::Login),
-            0x0000002E => Some(Self::Logout),
-            0x0000002F => Some(Self::DelegatedLogin),
-            0x00000030 => Some(Self::AdjustAttribute),
-            0x00000031 => Some(Self::SetAttribute),
-            0x00000032 => Some(Self::SetEndpointRole),
-            0x00000034 => Some(Self::Interop),
-            0x00000035 => Some(Self::ReProvision),
-            0x00000036 => Some(Self::SetDefaults),
-            0x00000037 => Some(Self::SetConstraints),
-            0x00000038 => Some(Self::GetConstraints),
-            0x00000039 => Some(Self::QueryAsynchronousRequests),
-            0x0000003A => Some(Self::Process),
-            0x0000003B => Some(Self::Ping),
-            0x0000003C => Some(Self::KemEncrypt),
-            0x0000003D => Some(Self::KemDecrypt),
+            0x0000_0041 => Some(Self::Encapsulate),
+            0x0000_0042 => Some(Self::Decapsulate),
+            0x0000_0001 => Some(Self::Create),
+            0x0000_0002 => Some(Self::CreateKeyPair),
+            0x0000_0003 => Some(Self::Register),
+            0x0000_0004 => Some(Self::ReKey),
+            0x0000_0005 => Some(Self::DeriveKey),
+            0x0000_0006 => Some(Self::Certify),
+            0x0000_0007 => Some(Self::ReCertify),
+            0x0000_0008 => Some(Self::Locate),
+            0x0000_0009 => Some(Self::Check),
+            0x0000_000A => Some(Self::Get),
+            0x0000_000B => Some(Self::GetAttributes),
+            0x0000_000C => Some(Self::GetAttributeList),
+            0x0000_000D => Some(Self::AddAttribute),
+            0x0000_000E => Some(Self::ModifyAttribute),
+            0x0000_000F => Some(Self::DeleteAttribute),
+            0x0000_0010 => Some(Self::ObtainLease),
+            0x0000_0011 => Some(Self::GetUsageAllocation),
+            0x0000_0012 => Some(Self::Activate),
+            0x0000_0013 => Some(Self::Revoke),
+            0x0000_0014 => Some(Self::Destroy),
+            0x0000_0015 => Some(Self::Archive),
+            0x0000_0016 => Some(Self::Recover),
+            0x0000_0017 => Some(Self::Validate),
+            0x0000_0018 => Some(Self::Query),
+            0x0000_0019 => Some(Self::Cancel),
+            0x0000_001A => Some(Self::Poll),
+            0x0000_001B => Some(Self::Notify),
+            0x0000_001C => Some(Self::Put),
+            0x0000_001D => Some(Self::ReKeyKeyPair),
+            0x0000_001E => Some(Self::DiscoverVersions),
+            0x0000_001F => Some(Self::Encrypt),
+            0x0000_0020 => Some(Self::Decrypt),
+            0x0000_0021 => Some(Self::Sign),
+            0x0000_0022 => Some(Self::SignatureVerify),
+            0x0000_0023 => Some(Self::Mac),
+            0x0000_0024 => Some(Self::MacVerify),
+            0x0000_0025 => Some(Self::RngRetrieve),
+            0x0000_0026 => Some(Self::RngSeed),
+            0x0000_0027 => Some(Self::Hash),
+            0x0000_0028 => Some(Self::CreateSplitKey),
+            0x0000_0029 => Some(Self::JoinSplitKey),
+            0x0000_002A => Some(Self::Import),
+            0x0000_002B => Some(Self::Export),
+            0x0000_002C => Some(Self::Log),
+            0x0000_002D => Some(Self::Login),
+            0x0000_002E => Some(Self::Logout),
+            0x0000_002F => Some(Self::DelegatedLogin),
+            0x0000_0030 => Some(Self::AdjustAttribute),
+            0x0000_0031 => Some(Self::SetAttribute),
+            0x0000_0032 => Some(Self::SetEndpointRole),
+            0x0000_0034 => Some(Self::Interop),
+            0x0000_0035 => Some(Self::ReProvision),
+            0x0000_0036 => Some(Self::SetDefaults),
+            0x0000_0037 => Some(Self::SetConstraints),
+            0x0000_0038 => Some(Self::GetConstraints),
+            0x0000_0039 => Some(Self::QueryAsynchronousRequests),
+            0x0000_003A => Some(Self::Process),
+            0x0000_003B => Some(Self::Ping),
+            0x0000_003C => Some(Self::KemEncrypt),
+            0x0000_003D => Some(Self::KemDecrypt),
             _ => None,
         }
     }
@@ -679,30 +680,30 @@ impl OperationCode {
 #[repr(u32)]
 #[non_exhaustive]
 pub enum ObjectTypeCode {
-    /// `Certificate` (`0x00000001`)
-    Certificate = 0x00000001,
-    /// `Symmetric Key` (`0x00000002`)
-    SymmetricKey = 0x00000002,
-    /// `Public Key` (`0x00000003`)
-    PublicKey = 0x00000003,
-    /// `Private Key` (`0x00000004`)
-    PrivateKey = 0x00000004,
-    /// `Split Key` (`0x00000005`)
-    SplitKey = 0x00000005,
-    /// `Template` (`0x00000006`)
-    Template = 0x00000006,
-    /// `Secret Data` (`0x00000007`)
-    SecretData = 0x00000007,
-    /// `Opaque Object` (`0x00000008`)
-    OpaqueObject = 0x00000008,
-    /// `PGP Key` (`0x00000009`)
-    PgpKey = 0x00000009,
-    /// `Certificate Request` (`0x0000000A`)
-    CertificateRequest = 0x0000000A,
-    /// `User Object (KMIP 3.0+)` (`0x0000000B`)
-    UserObject = 0x0000000B,
-    /// `Group Object (KMIP 3.0+)` (`0x0000000C`)
-    GroupObject = 0x0000000C,
+    /// `Certificate` (`0x0000_0001`)
+    Certificate = 0x0000_0001,
+    /// `Symmetric Key` (`0x0000_0002`)
+    SymmetricKey = 0x0000_0002,
+    /// `Public Key` (`0x0000_0003`)
+    PublicKey = 0x0000_0003,
+    /// `Private Key` (`0x0000_0004`)
+    PrivateKey = 0x0000_0004,
+    /// `Split Key` (`0x0000_0005`)
+    SplitKey = 0x0000_0005,
+    /// `Template` (`0x0000_0006`)
+    Template = 0x0000_0006,
+    /// `Secret Data` (`0x0000_0007`)
+    SecretData = 0x0000_0007,
+    /// `Opaque Object` (`0x0000_0008`)
+    OpaqueObject = 0x0000_0008,
+    /// `PGP Key` (`0x0000_0009`)
+    PgpKey = 0x0000_0009,
+    /// `Certificate Request` (`0x0000_000A`)
+    CertificateRequest = 0x0000_000A,
+    /// `User Object (KMIP 3.0+)` (`0x0000_000B`)
+    UserObject = 0x0000_000B,
+    /// `Group Object (KMIP 3.0+)` (`0x0000_000C`)
+    GroupObject = 0x0000_000C,
 }
 
 impl ObjectTypeCode {
@@ -717,18 +718,18 @@ impl ObjectTypeCode {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x00000001 => Some(Self::Certificate),
-            0x00000002 => Some(Self::SymmetricKey),
-            0x00000003 => Some(Self::PublicKey),
-            0x00000004 => Some(Self::PrivateKey),
-            0x00000005 => Some(Self::SplitKey),
-            0x00000006 => Some(Self::Template),
-            0x00000007 => Some(Self::SecretData),
-            0x00000008 => Some(Self::OpaqueObject),
-            0x00000009 => Some(Self::PgpKey),
-            0x0000000A => Some(Self::CertificateRequest),
-            0x0000000B => Some(Self::UserObject),
-            0x0000000C => Some(Self::GroupObject),
+            0x0000_0001 => Some(Self::Certificate),
+            0x0000_0002 => Some(Self::SymmetricKey),
+            0x0000_0003 => Some(Self::PublicKey),
+            0x0000_0004 => Some(Self::PrivateKey),
+            0x0000_0005 => Some(Self::SplitKey),
+            0x0000_0006 => Some(Self::Template),
+            0x0000_0007 => Some(Self::SecretData),
+            0x0000_0008 => Some(Self::OpaqueObject),
+            0x0000_0009 => Some(Self::PgpKey),
+            0x0000_000A => Some(Self::CertificateRequest),
+            0x0000_000B => Some(Self::UserObject),
+            0x0000_000C => Some(Self::GroupObject),
             _ => None,
         }
     }
@@ -738,18 +739,18 @@ impl ObjectTypeCode {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 pub enum KeyLifecycleState {
-    /// `Pre-Active` (`0x00000001`)
-    PreActive = 0x00000001,
-    /// `Active` (`0x00000002`)
-    Active = 0x00000002,
-    /// `Deactivated` (`0x00000003`)
-    Deactivated = 0x00000003,
-    /// `Compromised` (`0x00000004`)
-    Compromised = 0x00000004,
-    /// `Destroyed` (`0x00000005`)
-    Destroyed = 0x00000005,
-    /// `Destroyed Compromised` (`0x00000006`)
-    DestroyedCompromised = 0x00000006,
+    /// `Pre-Active` (`0x0000_0001`)
+    PreActive = 0x0000_0001,
+    /// `Active` (`0x0000_0002`)
+    Active = 0x0000_0002,
+    /// `Deactivated` (`0x0000_0003`)
+    Deactivated = 0x0000_0003,
+    /// `Compromised` (`0x0000_0004`)
+    Compromised = 0x0000_0004,
+    /// `Destroyed` (`0x0000_0005`)
+    Destroyed = 0x0000_0005,
+    /// `Destroyed Compromised` (`0x0000_0006`)
+    DestroyedCompromised = 0x0000_0006,
 }
 
 impl KeyLifecycleState {
@@ -764,12 +765,12 @@ impl KeyLifecycleState {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x00000001 => Some(Self::PreActive),
-            0x00000002 => Some(Self::Active),
-            0x00000003 => Some(Self::Deactivated),
-            0x00000004 => Some(Self::Compromised),
-            0x00000005 => Some(Self::Destroyed),
-            0x00000006 => Some(Self::DestroyedCompromised),
+            0x0000_0001 => Some(Self::PreActive),
+            0x0000_0002 => Some(Self::Active),
+            0x0000_0003 => Some(Self::Deactivated),
+            0x0000_0004 => Some(Self::Compromised),
+            0x0000_0005 => Some(Self::Destroyed),
+            0x0000_0006 => Some(Self::DestroyedCompromised),
             _ => None,
         }
     }
@@ -779,18 +780,18 @@ impl KeyLifecycleState {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 pub enum KemAlgorithmCode {
-    /// `RSASVE` (`0x00000001`)
-    Rsasve = 0x00000001,
-    /// `DHKEM` (`0x00000002`)
-    Dhkem = 0x00000002,
-    /// `ML-KEM` (`0x00000003`)
-    Mlkem = 0x00000003,
-    /// `ML-KEM-512 (FIPS 203)` (`0x00000004`)
-    MlKem512 = 0x00000004,
-    /// `ML-KEM-768 (FIPS 203)` (`0x00000005`)
-    MlKem768 = 0x00000005,
-    /// `ML-KEM-1024 (FIPS 203)` (`0x00000006`)
-    MlKem1024 = 0x00000006,
+    /// `RSASVE` (`0x0000_0001`)
+    Rsasve = 0x0000_0001,
+    /// `DHKEM` (`0x0000_0002`)
+    Dhkem = 0x0000_0002,
+    /// `ML-KEM` (`0x0000_0003`)
+    Mlkem = 0x0000_0003,
+    /// `ML-KEM-512 (FIPS 203)` (`0x0000_0004`)
+    MlKem512 = 0x0000_0004,
+    /// `ML-KEM-768 (FIPS 203)` (`0x0000_0005`)
+    MlKem768 = 0x0000_0005,
+    /// `ML-KEM-1024 (FIPS 203)` (`0x0000_0006`)
+    MlKem1024 = 0x0000_0006,
 }
 
 impl KemAlgorithmCode {
@@ -805,12 +806,12 @@ impl KemAlgorithmCode {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x00000001 => Some(Self::Rsasve),
-            0x00000002 => Some(Self::Dhkem),
-            0x00000003 => Some(Self::Mlkem),
-            0x00000004 => Some(Self::MlKem512),
-            0x00000005 => Some(Self::MlKem768),
-            0x00000006 => Some(Self::MlKem1024),
+            0x0000_0001 => Some(Self::Rsasve),
+            0x0000_0002 => Some(Self::Dhkem),
+            0x0000_0003 => Some(Self::Mlkem),
+            0x0000_0004 => Some(Self::MlKem512),
+            0x0000_0005 => Some(Self::MlKem768),
+            0x0000_0006 => Some(Self::MlKem1024),
             _ => None,
         }
     }
@@ -820,12 +821,12 @@ impl KemAlgorithmCode {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 pub enum EphemeralMode {
-    /// `No ephemeral handling` (`0x00000001`)
-    No = 0x00000001,
-    /// `Destroy immediately after request completes` (`0x00000002`)
-    Immediate = 0x00000002,
-    /// `Destroy on success; retain on failure for diagnostics` (`0x00000003`)
-    RetainOnFailure = 0x00000003,
+    /// `No ephemeral handling` (`0x0000_0001`)
+    No = 0x0000_0001,
+    /// `Destroy immediately after request completes` (`0x0000_0002`)
+    Immediate = 0x0000_0002,
+    /// `Destroy on success; retain on failure for diagnostics` (`0x0000_0003`)
+    RetainOnFailure = 0x0000_0003,
 }
 
 impl EphemeralMode {
@@ -840,9 +841,9 @@ impl EphemeralMode {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x00000001 => Some(Self::No),
-            0x00000002 => Some(Self::Immediate),
-            0x00000003 => Some(Self::RetainOnFailure),
+            0x0000_0001 => Some(Self::No),
+            0x0000_0002 => Some(Self::Immediate),
+            0x0000_0003 => Some(Self::RetainOnFailure),
             _ => None,
         }
     }

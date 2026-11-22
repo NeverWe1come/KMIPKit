@@ -744,6 +744,7 @@ impl HttpsServerConnection {
     ///
     /// Returns [`TransportError`] if HTTP parsing fails, method is not POST,
     /// path does not match, or payload exceeds `max_bytes`.
+    #[allow(clippy::too_many_lines)] // Keep parsing, bounds checks, and encoding validation in one request path.
     pub fn recv_request(
         &mut self,
         max_bytes: usize,

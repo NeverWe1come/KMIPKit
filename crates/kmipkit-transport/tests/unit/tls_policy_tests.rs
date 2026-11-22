@@ -1047,6 +1047,7 @@ impl MonotonicClock for TestClock {
 static TEMPORARY_FILE_COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 #[test]
+#[allow(clippy::too_many_lines)] // One integration scenario covers OpenSSL ML-DSA TLS and certificate policy.
 fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
     use openssl::asn1::{Asn1Integer, Asn1Time};
     use openssl::bn::BigNum;

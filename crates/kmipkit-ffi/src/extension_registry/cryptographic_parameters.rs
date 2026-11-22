@@ -494,6 +494,7 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v2(
 
 /// Copies every present Cryptographic Parameters field into a version 2 output record.
 #[unsafe(no_mangle)]
+#[allow(clippy::too_many_lines)] // Copies the complete versioned C record atomically from one validated model.
 pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v2(
     parameters: *mut kmipkit_cryptographic_parameters_t,
     out_fields: *mut kmipkit_cryptographic_parameters_fields_v2_t,

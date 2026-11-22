@@ -12,833 +12,833 @@ use crate::tag::{RawTag, Tag};
 #[repr(u32)]
 #[non_exhaustive]
 pub enum KmipTag {
-    /// `Activation Date` (0x0042_0001)
+    /// `Activation Date` (`0x0042_0001`)
     ActivationDate = 0x0042_0001,
-    /// `Application Data` (0x0042_0002)
+    /// `Application Data` (`0x0042_0002`)
     ApplicationData = 0x0042_0002,
-    /// `Application Namespace` (0x0042_0003)
+    /// `Application Namespace` (`0x0042_0003`)
     ApplicationNamespace = 0x0042_0003,
-    /// `Application Specific Information` (0x0042_0004)
+    /// `Application Specific Information` (`0x0042_0004`)
     ApplicationSpecificInformation = 0x0042_0004,
-    /// `Archive Date` (0x0042_0005)
+    /// `Archive Date` (`0x0042_0005`)
     ArchiveDate = 0x0042_0005,
-    /// `Asynchronous Correlation Value` (0x0042_0006)
+    /// `Asynchronous Correlation Value` (`0x0042_0006`)
     AsynchronousCorrelationValue = 0x0042_0006,
-    /// `Asynchronous Indicator` (0x0042_0007)
+    /// `Asynchronous Indicator` (`0x0042_0007`)
     AsynchronousIndicator = 0x0042_0007,
-    /// `Attribute` (0x0042_0008)
+    /// `Attribute` (`0x0042_0008`)
     Attribute = 0x0042_0008,
-    /// `Attribute Name` (0x0042_000A)
+    /// `Attribute Name` (`0x0042_000A`)
     AttributeName = 0x0042_000A,
-    /// `Attribute Value` (0x0042_000B)
+    /// `Attribute Value` (`0x0042_000B`)
     AttributeValue = 0x0042_000B,
-    /// `Authentication` (0x0042_000C)
+    /// `Authentication` (`0x0042_000C`)
     Authentication = 0x0042_000C,
-    /// `Batch Count` (0x0042_000D)
+    /// `Batch Count` (`0x0042_000D`)
     BatchCount = 0x0042_000D,
-    /// `Batch Error Continuation Option` (0x0042_000E)
+    /// `Batch Error Continuation Option` (`0x0042_000E`)
     BatchErrorContinuationOption = 0x0042_000E,
-    /// `Batch Item` (0x0042_000F)
+    /// `Batch Item` (`0x0042_000F`)
     BatchItem = 0x0042_000F,
-    /// `Batch Order Option` (0x0042_0010)
+    /// `Batch Order Option` (`0x0042_0010`)
     BatchOrderOption = 0x0042_0010,
-    /// `Block Cipher Mode` (0x0042_0011)
+    /// `Block Cipher Mode` (`0x0042_0011`)
     BlockCipherMode = 0x0042_0011,
-    /// `Cancellation Result` (0x0042_0012)
+    /// `Cancellation Result` (`0x0042_0012`)
     CancellationResult = 0x0042_0012,
-    /// `Certificate` (0x0042_0013)
+    /// `Certificate` (`0x0042_0013`)
     Certificate = 0x0042_0013,
-    /// `Certificate Request` (0x0042_0018)
+    /// `Certificate Request` (`0x0042_0018`)
     CertificateRequest = 0x0042_0018,
-    /// `Certificate Request Type` (0x0042_0019)
+    /// `Certificate Request Type` (`0x0042_0019`)
     CertificateRequestType = 0x0042_0019,
-    /// `Certificate Type` (0x0042_001D)
+    /// `Certificate Type` (`0x0042_001D`)
     CertificateType = 0x0042_001D,
-    /// `Certificate Value` (0x0042_001E)
+    /// `Certificate Value` (`0x0042_001E`)
     CertificateValue = 0x0042_001E,
-    /// `Compromise Date` (0x0042_0020)
+    /// `Compromise Date` (`0x0042_0020`)
     CompromiseDate = 0x0042_0020,
-    /// `Compromise Occurrence Date` (0x0042_0021)
+    /// `Compromise Occurrence Date` (`0x0042_0021`)
     CompromiseOccurrenceDate = 0x0042_0021,
-    /// `Contact Information` (0x0042_0022)
+    /// `Contact Information` (`0x0042_0022`)
     ContactInformation = 0x0042_0022,
-    /// `Credential` (0x0042_0023)
+    /// `Credential` (`0x0042_0023`)
     Credential = 0x0042_0023,
-    /// `Credential Type` (0x0042_0024)
+    /// `Credential Type` (`0x0042_0024`)
     CredentialType = 0x0042_0024,
-    /// `Credential Value` (0x0042_0025)
+    /// `Credential Value` (`0x0042_0025`)
     CredentialValue = 0x0042_0025,
-    /// `Criticality Indicator` (0x0042_0026)
+    /// `Criticality Indicator` (`0x0042_0026`)
     CriticalityIndicator = 0x0042_0026,
-    /// `CRT Coefficient` (0x0042_0027)
+    /// `CRT Coefficient` (`0x0042_0027`)
     CRTCoefficient = 0x0042_0027,
-    /// `Cryptographic Algorithm` (0x0042_0028)
+    /// `Cryptographic Algorithm` (`0x0042_0028`)
     CryptographicAlgorithm = 0x0042_0028,
-    /// `Cryptographic Domain Parameters` (0x0042_0029)
+    /// `Cryptographic Domain Parameters` (`0x0042_0029`)
     CryptographicDomainParameters = 0x0042_0029,
-    /// `Cryptographic Length` (0x0042_002A)
+    /// `Cryptographic Length` (`0x0042_002A`)
     CryptographicLength = 0x0042_002A,
-    /// `Cryptographic Parameters` (0x0042_002B)
+    /// `Cryptographic Parameters` (`0x0042_002B`)
     CryptographicParameters = 0x0042_002B,
-    /// `Cryptographic Usage Mask` (0x0042_002C)
+    /// `Cryptographic Usage Mask` (`0x0042_002C`)
     CryptographicUsageMask = 0x0042_002C,
-    /// `D` (0x0042_002E)
+    /// `D` (`0x0042_002E`)
     D = 0x0042_002E,
-    /// `Deactivation Date` (0x0042_002F)
+    /// `Deactivation Date` (`0x0042_002F`)
     DeactivationDate = 0x0042_002F,
-    /// `Derivation Data` (0x0042_0030)
+    /// `Derivation Data` (`0x0042_0030`)
     DerivationData = 0x0042_0030,
-    /// `Derivation Method` (0x0042_0031)
+    /// `Derivation Method` (`0x0042_0031`)
     DerivationMethod = 0x0042_0031,
-    /// `Derivation Parameters` (0x0042_0032)
+    /// `Derivation Parameters` (`0x0042_0032`)
     DerivationParameters = 0x0042_0032,
-    /// `Destroy Date` (0x0042_0033)
+    /// `Destroy Date` (`0x0042_0033`)
     DestroyDate = 0x0042_0033,
-    /// `Digest` (0x0042_0034)
+    /// `Digest` (`0x0042_0034`)
     Digest = 0x0042_0034,
-    /// `Digest Value` (0x0042_0035)
+    /// `Digest Value` (`0x0042_0035`)
     DigestValue = 0x0042_0035,
-    /// `Encryption Key Information` (0x0042_0036)
+    /// `Encryption Key Information` (`0x0042_0036`)
     EncryptionKeyInformation = 0x0042_0036,
-    /// `G` (0x0042_0037)
+    /// `G` (`0x0042_0037`)
     G = 0x0042_0037,
-    /// `Hashing Algorithm` (0x0042_0038)
+    /// `Hashing Algorithm` (`0x0042_0038`)
     HashingAlgorithm = 0x0042_0038,
-    /// `Initial Date` (0x0042_0039)
+    /// `Initial Date` (`0x0042_0039`)
     InitialDate = 0x0042_0039,
-    /// `Initialization Vector` (0x0042_003A)
+    /// `Initialization Vector` (`0x0042_003A`)
     InitializationVector = 0x0042_003A,
-    /// `Iteration Count` (0x0042_003C)
+    /// `Iteration Count` (`0x0042_003C`)
     IterationCount = 0x0042_003C,
-    /// `IV/Counter/Nonce` (0x0042_003D)
+    /// `IV/Counter/Nonce` (`0x0042_003D`)
     IVCounterNonce = 0x0042_003D,
-    /// `J` (0x0042_003E)
+    /// `J` (`0x0042_003E`)
     J = 0x0042_003E,
-    /// `Key` (0x0042_003F)
+    /// `Key` (`0x0042_003F`)
     Key = 0x0042_003F,
-    /// `Key Block` (0x0042_0040)
+    /// `Key Block` (`0x0042_0040`)
     KeyBlock = 0x0042_0040,
-    /// `Key Compression Type` (0x0042_0041)
+    /// `Key Compression Type` (`0x0042_0041`)
     KeyCompressionType = 0x0042_0041,
-    /// `Key Format Type` (0x0042_0042)
+    /// `Key Format Type` (`0x0042_0042`)
     KeyFormatType = 0x0042_0042,
-    /// `Key Material` (0x0042_0043)
+    /// `Key Material` (`0x0042_0043`)
     KeyMaterial = 0x0042_0043,
-    /// `Key Part Identifier` (0x0042_0044)
+    /// `Key Part Identifier` (`0x0042_0044`)
     KeyPartIdentifier = 0x0042_0044,
-    /// `Key Value` (0x0042_0045)
+    /// `Key Value` (`0x0042_0045`)
     KeyValue = 0x0042_0045,
-    /// `Key Wrapping Data` (0x0042_0046)
+    /// `Key Wrapping Data` (`0x0042_0046`)
     KeyWrappingData = 0x0042_0046,
-    /// `Key Wrapping Specification` (0x0042_0047)
+    /// `Key Wrapping Specification` (`0x0042_0047`)
     KeyWrappingSpecification = 0x0042_0047,
-    /// `Last Change Date` (0x0042_0048)
+    /// `Last Change Date` (`0x0042_0048`)
     LastChangeDate = 0x0042_0048,
-    /// `Lease Time` (0x0042_0049)
+    /// `Lease Time` (`0x0042_0049`)
     LeaseTime = 0x0042_0049,
-    /// `Link` (0x0042_004A)
+    /// `Link` (`0x0042_004A`)
     Link = 0x0042_004A,
-    /// `Link Type` (0x0042_004B)
+    /// `Link Type` (`0x0042_004B`)
     LinkType = 0x0042_004B,
-    /// `Linked Object Identifier` (0x0042_004C)
+    /// `Linked Object Identifier` (`0x0042_004C`)
     LinkedObjectIdentifier = 0x0042_004C,
-    /// `MAC/Signature` (0x0042_004D)
+    /// `MAC/Signature` (`0x0042_004D`)
     MACSignature = 0x0042_004D,
-    /// `MAC/Signature Key Information` (0x0042_004E)
+    /// `MAC/Signature Key Information` (`0x0042_004E`)
     MACSignatureKeyInformation = 0x0042_004E,
-    /// `Maximum Items` (0x0042_004F)
+    /// `Maximum Items` (`0x0042_004F`)
     MaximumItems = 0x0042_004F,
-    /// `Maximum Response Size` (0x0042_0050)
+    /// `Maximum Response Size` (`0x0042_0050`)
     MaximumResponseSize = 0x0042_0050,
-    /// `Message Extension` (0x0042_0051)
+    /// `Message Extension` (`0x0042_0051`)
     MessageExtension = 0x0042_0051,
-    /// `Modulus` (0x0042_0052)
+    /// `Modulus` (`0x0042_0052`)
     Modulus = 0x0042_0052,
-    /// `Name` (0x0042_0053)
+    /// `Name` (`0x0042_0053`)
     Name = 0x0042_0053,
-    /// `Name Type` (0x0042_0054)
+    /// `Name Type` (`0x0042_0054`)
     NameType = 0x0042_0054,
-    /// `Name Value` (0x0042_0055)
+    /// `Name Value` (`0x0042_0055`)
     NameValue = 0x0042_0055,
-    /// `Object Group` (0x0042_0056)
+    /// `Object Group` (`0x0042_0056`)
     ObjectGroup = 0x0042_0056,
-    /// `Object Type` (0x0042_0057)
+    /// `Object Type` (`0x0042_0057`)
     ObjectType = 0x0042_0057,
-    /// `Offset` (0x0042_0058)
+    /// `Offset` (`0x0042_0058`)
     Offset = 0x0042_0058,
-    /// `Opaque Data Type` (0x0042_0059)
+    /// `Opaque Data Type` (`0x0042_0059`)
     OpaqueDataType = 0x0042_0059,
-    /// `Opaque Data Value` (0x0042_005A)
+    /// `Opaque Data Value` (`0x0042_005A`)
     OpaqueDataValue = 0x0042_005A,
-    /// `Opaque Object` (0x0042_005B)
+    /// `Opaque Object` (`0x0042_005B`)
     OpaqueObject = 0x0042_005B,
-    /// `Operation` (0x0042_005C)
+    /// `Operation` (`0x0042_005C`)
     Operation = 0x0042_005C,
-    /// `P` (0x0042_005E)
+    /// `P` (`0x0042_005E`)
     P = 0x0042_005E,
-    /// `Padding Method` (0x0042_005F)
+    /// `Padding Method` (`0x0042_005F`)
     PaddingMethod = 0x0042_005F,
-    /// `Prime Exponent P` (0x0042_0060)
+    /// `Prime Exponent P` (`0x0042_0060`)
     PrimeExponentP = 0x0042_0060,
-    /// `Prime Exponent Q` (0x0042_0061)
+    /// `Prime Exponent Q` (`0x0042_0061`)
     PrimeExponentQ = 0x0042_0061,
-    /// `Prime Field Size` (0x0042_0062)
+    /// `Prime Field Size` (`0x0042_0062`)
     PrimeFieldSize = 0x0042_0062,
-    /// `Private Exponent` (0x0042_0063)
+    /// `Private Exponent` (`0x0042_0063`)
     PrivateExponent = 0x0042_0063,
-    /// `Private Key` (0x0042_0064)
+    /// `Private Key` (`0x0042_0064`)
     PrivateKey = 0x0042_0064,
-    /// `Private Key Unique Identifier` (0x0042_0066)
+    /// `Private Key Unique Identifier` (`0x0042_0066`)
     PrivateKeyUniqueIdentifier = 0x0042_0066,
-    /// `Process Start Date` (0x0042_0067)
+    /// `Process Start Date` (`0x0042_0067`)
     ProcessStartDate = 0x0042_0067,
-    /// `Protect Stop Date` (0x0042_0068)
+    /// `Protect Stop Date` (`0x0042_0068`)
     ProtectStopDate = 0x0042_0068,
-    /// `Protocol Version` (0x0042_0069)
+    /// `Protocol Version` (`0x0042_0069`)
     ProtocolVersion = 0x0042_0069,
-    /// `Protocol Version Major` (0x0042_006A)
+    /// `Protocol Version Major` (`0x0042_006A`)
     ProtocolVersionMajor = 0x0042_006A,
-    /// `Protocol Version Minor` (0x0042_006B)
+    /// `Protocol Version Minor` (`0x0042_006B`)
     ProtocolVersionMinor = 0x0042_006B,
-    /// `Public Exponent` (0x0042_006C)
+    /// `Public Exponent` (`0x0042_006C`)
     PublicExponent = 0x0042_006C,
-    /// `Public Key` (0x0042_006D)
+    /// `Public Key` (`0x0042_006D`)
     PublicKey = 0x0042_006D,
-    /// `Public Key Unique Identifier` (0x0042_006F)
+    /// `Public Key Unique Identifier` (`0x0042_006F`)
     PublicKeyUniqueIdentifier = 0x0042_006F,
-    /// `Put Function` (0x0042_0070)
+    /// `Put Function` (`0x0042_0070`)
     PutFunction = 0x0042_0070,
-    /// `Q` (0x0042_0071)
+    /// `Q` (`0x0042_0071`)
     Q = 0x0042_0071,
-    /// `Q String` (0x0042_0072)
+    /// `Q String` (`0x0042_0072`)
     QString = 0x0042_0072,
-    /// `Qlength` (0x0042_0073)
+    /// `Qlength` (`0x0042_0073`)
     Qlength = 0x0042_0073,
-    /// `Query Function` (0x0042_0074)
+    /// `Query Function` (`0x0042_0074`)
     QueryFunction = 0x0042_0074,
-    /// `Recommended Curve` (0x0042_0075)
+    /// `Recommended Curve` (`0x0042_0075`)
     RecommendedCurve = 0x0042_0075,
-    /// `Replaced Unique Identifier` (0x0042_0076)
+    /// `Replaced Unique Identifier` (`0x0042_0076`)
     ReplacedUniqueIdentifier = 0x0042_0076,
-    /// `Request Header` (0x0042_0077)
+    /// `Request Header` (`0x0042_0077`)
     RequestHeader = 0x0042_0077,
-    /// `Request Message` (0x0042_0078)
+    /// `Request Message` (`0x0042_0078`)
     RequestMessage = 0x0042_0078,
-    /// `Request Payload` (0x0042_0079)
+    /// `Request Payload` (`0x0042_0079`)
     RequestPayload = 0x0042_0079,
-    /// `Response Header` (0x0042_007A)
+    /// `Response Header` (`0x0042_007A`)
     ResponseHeader = 0x0042_007A,
-    /// `Response Message` (0x0042_007B)
+    /// `Response Message` (`0x0042_007B`)
     ResponseMessage = 0x0042_007B,
-    /// `Response Payload` (0x0042_007C)
+    /// `Response Payload` (`0x0042_007C`)
     ResponsePayload = 0x0042_007C,
-    /// `Result Message` (0x0042_007D)
+    /// `Result Message` (`0x0042_007D`)
     ResultMessage = 0x0042_007D,
-    /// `Result Reason` (0x0042_007E)
+    /// `Result Reason` (`0x0042_007E`)
     ResultReason = 0x0042_007E,
-    /// `Result Status` (0x0042_007F)
+    /// `Result Status` (`0x0042_007F`)
     ResultStatus = 0x0042_007F,
-    /// `Revocation Message` (0x0042_0080)
+    /// `Revocation Message` (`0x0042_0080`)
     RevocationMessage = 0x0042_0080,
-    /// `Revocation Reason` (0x0042_0081)
+    /// `Revocation Reason` (`0x0042_0081`)
     RevocationReason = 0x0042_0081,
-    /// `Revocation Reason Code` (0x0042_0082)
+    /// `Revocation Reason Code` (`0x0042_0082`)
     RevocationReasonCode = 0x0042_0082,
-    /// `Key Role Type` (0x0042_0083)
+    /// `Key Role Type` (`0x0042_0083`)
     KeyRoleType = 0x0042_0083,
-    /// `Salt` (0x0042_0084)
+    /// `Salt` (`0x0042_0084`)
     Salt = 0x0042_0084,
-    /// `Secret Data` (0x0042_0085)
+    /// `Secret Data` (`0x0042_0085`)
     SecretData = 0x0042_0085,
-    /// `Secret Data Type` (0x0042_0086)
+    /// `Secret Data Type` (`0x0042_0086`)
     SecretDataType = 0x0042_0086,
-    /// `Server Information` (0x0042_0088)
+    /// `Server Information` (`0x0042_0088`)
     ServerInformation = 0x0042_0088,
-    /// `Split Key` (0x0042_0089)
+    /// `Split Key` (`0x0042_0089`)
     SplitKey = 0x0042_0089,
-    /// `Split Key Method` (0x0042_008A)
+    /// `Split Key Method` (`0x0042_008A`)
     SplitKeyMethod = 0x0042_008A,
-    /// `Split Key Parts` (0x0042_008B)
+    /// `Split Key Parts` (`0x0042_008B`)
     SplitKeyParts = 0x0042_008B,
-    /// `Split Key Threshold` (0x0042_008C)
+    /// `Split Key Threshold` (`0x0042_008C`)
     SplitKeyThreshold = 0x0042_008C,
-    /// `State` (0x0042_008D)
+    /// `State` (`0x0042_008D`)
     State = 0x0042_008D,
-    /// `Storage Status Mask` (0x0042_008E)
+    /// `Storage Status Mask` (`0x0042_008E`)
     StorageStatusMask = 0x0042_008E,
-    /// `Symmetric Key` (0x0042_008F)
+    /// `Symmetric Key` (`0x0042_008F`)
     SymmetricKey = 0x0042_008F,
-    /// `Time Stamp` (0x0042_0092)
+    /// `Time Stamp` (`0x0042_0092`)
     TimeStamp = 0x0042_0092,
-    /// `Unique Batch Item ID` (0x0042_0093)
+    /// `Unique Batch Item ID` (`0x0042_0093`)
     UniqueBatchItemID = 0x0042_0093,
-    /// `Unique Identifier` (0x0042_0094)
+    /// `Unique Identifier` (`0x0042_0094`)
     UniqueIdentifier = 0x0042_0094,
-    /// `Usage Limits` (0x0042_0095)
+    /// `Usage Limits` (`0x0042_0095`)
     UsageLimits = 0x0042_0095,
-    /// `Usage Limits Count` (0x0042_0096)
+    /// `Usage Limits Count` (`0x0042_0096`)
     UsageLimitsCount = 0x0042_0096,
-    /// `Usage Limits Total` (0x0042_0097)
+    /// `Usage Limits Total` (`0x0042_0097`)
     UsageLimitsTotal = 0x0042_0097,
-    /// `Usage Limits Unit` (0x0042_0098)
+    /// `Usage Limits Unit` (`0x0042_0098`)
     UsageLimitsUnit = 0x0042_0098,
-    /// `Username` (0x0042_0099)
+    /// `Username` (`0x0042_0099`)
     Username = 0x0042_0099,
-    /// `Validity Date` (0x0042_009A)
+    /// `Validity Date` (`0x0042_009A`)
     ValidityDate = 0x0042_009A,
-    /// `Validity Indicator` (0x0042_009B)
+    /// `Validity Indicator` (`0x0042_009B`)
     ValidityIndicator = 0x0042_009B,
-    /// `Vendor Extension` (0x0042_009C)
+    /// `Vendor Extension` (`0x0042_009C`)
     VendorExtension = 0x0042_009C,
-    /// `Vendor Identification` (0x0042_009D)
+    /// `Vendor Identification` (`0x0042_009D`)
     VendorIdentification = 0x0042_009D,
-    /// `Wrapping Method` (0x0042_009E)
+    /// `Wrapping Method` (`0x0042_009E`)
     WrappingMethod = 0x0042_009E,
-    /// `X` (0x0042_009F)
+    /// `X` (`0x0042_009F`)
     X = 0x0042_009F,
-    /// `Y` (0x0042_00A0)
+    /// `Y` (`0x0042_00A0`)
     Y = 0x0042_00A0,
-    /// `Password` (0x0042_00A1)
+    /// `Password` (`0x0042_00A1`)
     Password = 0x0042_00A1,
-    /// `Device Identifier` (0x0042_00A2)
+    /// `Device Identifier` (`0x0042_00A2`)
     DeviceIdentifier = 0x0042_00A2,
-    /// `Encoding Option` (0x0042_00A3)
+    /// `Encoding Option` (`0x0042_00A3`)
     EncodingOption = 0x0042_00A3,
-    /// `Extension Information` (0x0042_00A4)
+    /// `Extension Information` (`0x0042_00A4`)
     ExtensionInformation = 0x0042_00A4,
-    /// `Extension Name` (0x0042_00A5)
+    /// `Extension Name` (`0x0042_00A5`)
     ExtensionName = 0x0042_00A5,
-    /// `Extension Tag` (0x0042_00A6)
+    /// `Extension Tag` (`0x0042_00A6`)
     ExtensionTag = 0x0042_00A6,
-    /// `Extension Type` (0x0042_00A7)
+    /// `Extension Type` (`0x0042_00A7`)
     ExtensionType = 0x0042_00A7,
-    /// `Fresh` (0x0042_00A8)
+    /// `Fresh` (`0x0042_00A8`)
     Fresh = 0x0042_00A8,
-    /// `Machine Identifier` (0x0042_00A9)
+    /// `Machine Identifier` (`0x0042_00A9`)
     MachineIdentifier = 0x0042_00A9,
-    /// `Media Identifier` (0x0042_00AA)
+    /// `Media Identifier` (`0x0042_00AA`)
     MediaIdentifier = 0x0042_00AA,
-    /// `Network Identifier` (0x0042_00AB)
+    /// `Network Identifier` (`0x0042_00AB`)
     NetworkIdentifier = 0x0042_00AB,
-    /// `Object Group Member` (0x0042_00AC)
+    /// `Object Group Member` (`0x0042_00AC`)
     ObjectGroupMember = 0x0042_00AC,
-    /// `Certificate Length` (0x0042_00AD)
+    /// `Certificate Length` (`0x0042_00AD`)
     CertificateLength = 0x0042_00AD,
-    /// `Digital Signature Algorithm` (0x0042_00AE)
+    /// `Digital Signature Algorithm` (`0x0042_00AE`)
     DigitalSignatureAlgorithm = 0x0042_00AE,
-    /// `Certificate Serial Number` (0x0042_00AF)
+    /// `Certificate Serial Number` (`0x0042_00AF`)
     CertificateSerialNumber = 0x0042_00AF,
-    /// `Device Serial Number` (0x0042_00B0)
+    /// `Device Serial Number` (`0x0042_00B0`)
     DeviceSerialNumber = 0x0042_00B0,
-    /// `Issuer Alternative Name` (0x0042_00B1)
+    /// `Issuer Alternative Name` (`0x0042_00B1`)
     IssuerAlternativeName = 0x0042_00B1,
-    /// `Issuer Distinguished Name` (0x0042_00B2)
+    /// `Issuer Distinguished Name` (`0x0042_00B2`)
     IssuerDistinguishedName = 0x0042_00B2,
-    /// `Subject Alternative Name` (0x0042_00B3)
+    /// `Subject Alternative Name` (`0x0042_00B3`)
     SubjectAlternativeName = 0x0042_00B3,
-    /// `Subject Distinguished Name` (0x0042_00B4)
+    /// `Subject Distinguished Name` (`0x0042_00B4`)
     SubjectDistinguishedName = 0x0042_00B4,
-    /// `X.509 Certificate Identifier` (0x0042_00B5)
+    /// `X.509 Certificate Identifier` (`0x0042_00B5`)
     X509CertificateIdentifier = 0x0042_00B5,
-    /// `X.509 Certificate Issuer` (0x0042_00B6)
+    /// `X.509 Certificate Issuer` (`0x0042_00B6`)
     X509CertificateIssuer = 0x0042_00B6,
-    /// `X.509 Certificate Subject` (0x0042_00B7)
+    /// `X.509 Certificate Subject` (`0x0042_00B7`)
     X509CertificateSubject = 0x0042_00B7,
-    /// `Key Value Location` (0x0042_00B8)
+    /// `Key Value Location` (`0x0042_00B8`)
     KeyValueLocation = 0x0042_00B8,
-    /// `Key Value Location Value` (0x0042_00B9)
+    /// `Key Value Location Value` (`0x0042_00B9`)
     KeyValueLocationValue = 0x0042_00B9,
-    /// `Key Value Location Type` (0x0042_00BA)
+    /// `Key Value Location Type` (`0x0042_00BA`)
     KeyValueLocationType = 0x0042_00BA,
-    /// `Key Value Present` (0x0042_00BB)
+    /// `Key Value Present` (`0x0042_00BB`)
     KeyValuePresent = 0x0042_00BB,
-    /// `Original Creation Date` (0x0042_00BC)
+    /// `Original Creation Date` (`0x0042_00BC`)
     OriginalCreationDate = 0x0042_00BC,
-    /// `PGP Key` (0x0042_00BD)
+    /// `PGP Key` (`0x0042_00BD`)
     PGPKey = 0x0042_00BD,
-    /// `PGP Key Version` (0x0042_00BE)
+    /// `PGP Key Version` (`0x0042_00BE`)
     PGPKeyVersion = 0x0042_00BE,
-    /// `Alternative Name` (0x0042_00BF)
+    /// `Alternative Name` (`0x0042_00BF`)
     AlternativeName = 0x0042_00BF,
-    /// `Alternative Name Value` (0x0042_00C0)
+    /// `Alternative Name Value` (`0x0042_00C0`)
     AlternativeNameValue = 0x0042_00C0,
-    /// `Alternative Name Type` (0x0042_00C1)
+    /// `Alternative Name Type` (`0x0042_00C1`)
     AlternativeNameType = 0x0042_00C1,
-    /// `Data` (0x0042_00C2)
+    /// `Data` (`0x0042_00C2`)
     Data = 0x0042_00C2,
-    /// `Signature Data` (0x0042_00C3)
+    /// `Signature Data` (`0x0042_00C3`)
     SignatureData = 0x0042_00C3,
-    /// `Data Length` (0x0042_00C4)
+    /// `Data Length` (`0x0042_00C4`)
     DataLength = 0x0042_00C4,
-    /// `Random IV` (0x0042_00C5)
+    /// `Random IV` (`0x0042_00C5`)
     RandomIV = 0x0042_00C5,
-    /// `MAC Data` (0x0042_00C6)
+    /// `MAC Data` (`0x0042_00C6`)
     MACData = 0x0042_00C6,
-    /// `Attestation Type` (0x0042_00C7)
+    /// `Attestation Type` (`0x0042_00C7`)
     AttestationType = 0x0042_00C7,
-    /// `Nonce` (0x0042_00C8)
+    /// `Nonce` (`0x0042_00C8`)
     Nonce = 0x0042_00C8,
-    /// `Nonce ID` (0x0042_00C9)
+    /// `Nonce ID` (`0x0042_00C9`)
     NonceID = 0x0042_00C9,
-    /// `Nonce Value` (0x0042_00CA)
+    /// `Nonce Value` (`0x0042_00CA`)
     NonceValue = 0x0042_00CA,
-    /// `Attestation Measurement` (0x0042_00CB)
+    /// `Attestation Measurement` (`0x0042_00CB`)
     AttestationMeasurement = 0x0042_00CB,
-    /// `Attestation Assertion` (0x0042_00CC)
+    /// `Attestation Assertion` (`0x0042_00CC`)
     AttestationAssertion = 0x0042_00CC,
-    /// `IV Length` (0x0042_00CD)
+    /// `IV Length` (`0x0042_00CD`)
     IVLength = 0x0042_00CD,
-    /// `Tag Length` (0x0042_00CE)
+    /// `Tag Length` (`0x0042_00CE`)
     TagLength = 0x0042_00CE,
-    /// `Fixed Field Length` (0x0042_00CF)
+    /// `Fixed Field Length` (`0x0042_00CF`)
     FixedFieldLength = 0x0042_00CF,
-    /// `Counter Length` (0x0042_00D0)
+    /// `Counter Length` (`0x0042_00D0`)
     CounterLength = 0x0042_00D0,
-    /// `Initial Counter Value` (0x0042_00D1)
+    /// `Initial Counter Value` (`0x0042_00D1`)
     InitialCounterValue = 0x0042_00D1,
-    /// `Invocation Field Length` (0x0042_00D2)
+    /// `Invocation Field Length` (`0x0042_00D2`)
     InvocationFieldLength = 0x0042_00D2,
-    /// `Attestation Capable Indicator` (0x0042_00D3)
+    /// `Attestation Capable Indicator` (`0x0042_00D3`)
     AttestationCapableIndicator = 0x0042_00D3,
-    /// `Offset Items` (0x0042_00D4)
+    /// `Offset Items` (`0x0042_00D4`)
     OffsetItems = 0x0042_00D4,
-    /// `Located Items` (0x0042_00D5)
+    /// `Located Items` (`0x0042_00D5`)
     LocatedItems = 0x0042_00D5,
-    /// `Correlation Value` (0x0042_00D6)
+    /// `Correlation Value` (`0x0042_00D6`)
     CorrelationValue = 0x0042_00D6,
-    /// `Init Indicator` (0x0042_00D7)
+    /// `Init Indicator` (`0x0042_00D7`)
     InitIndicator = 0x0042_00D7,
-    /// `Final Indicator` (0x0042_00D8)
+    /// `Final Indicator` (`0x0042_00D8`)
     FinalIndicator = 0x0042_00D8,
-    /// `RNG Parameters` (0x0042_00D9)
+    /// `RNG Parameters` (`0x0042_00D9`)
     RNGParameters = 0x0042_00D9,
-    /// `RNG Algorithm` (0x0042_00DA)
+    /// `RNG Algorithm` (`0x0042_00DA`)
     RNGAlgorithm = 0x0042_00DA,
-    /// `DRBG Algorithm` (0x0042_00DB)
+    /// `DRBG Algorithm` (`0x0042_00DB`)
     DRBGAlgorithm = 0x0042_00DB,
-    /// `FIPS186 Variation` (0x0042_00DC)
+    /// `FIPS186 Variation` (`0x0042_00DC`)
     FIPS186Variation = 0x0042_00DC,
-    /// `Prediction Resistance` (0x0042_00DD)
+    /// `Prediction Resistance` (`0x0042_00DD`)
     PredictionResistance = 0x0042_00DD,
-    /// `Random Number Generator` (0x0042_00DE)
+    /// `Random Number Generator` (`0x0042_00DE`)
     RandomNumberGenerator = 0x0042_00DE,
-    /// `Validation Information` (0x0042_00DF)
+    /// `Validation Information` (`0x0042_00DF`)
     ValidationInformation = 0x0042_00DF,
-    /// `Validation Authority Type` (0x0042_00E0)
+    /// `Validation Authority Type` (`0x0042_00E0`)
     ValidationAuthorityType = 0x0042_00E0,
-    /// `Validation Authority Country` (0x0042_00E1)
+    /// `Validation Authority Country` (`0x0042_00E1`)
     ValidationAuthorityCountry = 0x0042_00E1,
-    /// `Validation Authority URI` (0x0042_00E2)
+    /// `Validation Authority URI` (`0x0042_00E2`)
     ValidationAuthorityURI = 0x0042_00E2,
-    /// `Validation Version Major` (0x0042_00E3)
+    /// `Validation Version Major` (`0x0042_00E3`)
     ValidationVersionMajor = 0x0042_00E3,
-    /// `Validation Version Minor` (0x0042_00E4)
+    /// `Validation Version Minor` (`0x0042_00E4`)
     ValidationVersionMinor = 0x0042_00E4,
-    /// `Validation Type` (0x0042_00E5)
+    /// `Validation Type` (`0x0042_00E5`)
     ValidationType = 0x0042_00E5,
-    /// `Validation Level` (0x0042_00E6)
+    /// `Validation Level` (`0x0042_00E6`)
     ValidationLevel = 0x0042_00E6,
-    /// `Validation Certificate Identifier` (0x0042_00E7)
+    /// `Validation Certificate Identifier` (`0x0042_00E7`)
     ValidationCertificateIdentifier = 0x0042_00E7,
-    /// `Validation Certificate URI` (0x0042_00E8)
+    /// `Validation Certificate URI` (`0x0042_00E8`)
     ValidationCertificateURI = 0x0042_00E8,
-    /// `Validation Vendor URI` (0x0042_00E9)
+    /// `Validation Vendor URI` (`0x0042_00E9`)
     ValidationVendorURI = 0x0042_00E9,
-    /// `Validation Profile` (0x0042_00EA)
+    /// `Validation Profile` (`0x0042_00EA`)
     ValidationProfile = 0x0042_00EA,
-    /// `Profile Information` (0x0042_00EB)
+    /// `Profile Information` (`0x0042_00EB`)
     ProfileInformation = 0x0042_00EB,
-    /// `Profile Name` (0x0042_00EC)
+    /// `Profile Name` (`0x0042_00EC`)
     ProfileName = 0x0042_00EC,
-    /// `Server URI` (0x0042_00ED)
+    /// `Server URI` (`0x0042_00ED`)
     ServerURI = 0x0042_00ED,
-    /// `Server Port` (0x0042_00EE)
+    /// `Server Port` (`0x0042_00EE`)
     ServerPort = 0x0042_00EE,
-    /// `Streaming Capability` (0x0042_00EF)
+    /// `Streaming Capability` (`0x0042_00EF`)
     StreamingCapability = 0x0042_00EF,
-    /// `Asynchronous Capability` (0x0042_00F0)
+    /// `Asynchronous Capability` (`0x0042_00F0`)
     AsynchronousCapability = 0x0042_00F0,
-    /// `Attestation Capability` (0x0042_00F1)
+    /// `Attestation Capability` (`0x0042_00F1`)
     AttestationCapability = 0x0042_00F1,
-    /// `Unwrap Mode` (0x0042_00F2)
+    /// `Unwrap Mode` (`0x0042_00F2`)
     UnwrapMode = 0x0042_00F2,
-    /// `Destroy Action` (0x0042_00F3)
+    /// `Destroy Action` (`0x0042_00F3`)
     DestroyAction = 0x0042_00F3,
-    /// `Shredding Algorithm` (0x0042_00F4)
+    /// `Shredding Algorithm` (`0x0042_00F4`)
     ShreddingAlgorithm = 0x0042_00F4,
-    /// `RNG Mode` (0x0042_00F5)
+    /// `RNG Mode` (`0x0042_00F5`)
     RNGMode = 0x0042_00F5,
-    /// `Client Registration Method` (0x0042_00F6)
+    /// `Client Registration Method` (`0x0042_00F6`)
     ClientRegistrationMethod = 0x0042_00F6,
-    /// `Capability Information` (0x0042_00F7)
+    /// `Capability Information` (`0x0042_00F7`)
     CapabilityInformation = 0x0042_00F7,
-    /// `Key Wrap Type` (0x0042_00F8)
+    /// `Key Wrap Type` (`0x0042_00F8`)
     KeyWrapType = 0x0042_00F8,
-    /// `Batch Undo Capability` (0x0042_00F9)
+    /// `Batch Undo Capability` (`0x0042_00F9`)
     BatchUndoCapability = 0x0042_00F9,
-    /// `Batch Continue Capability` (0x0042_00FA)
+    /// `Batch Continue Capability` (`0x0042_00FA`)
     BatchContinueCapability = 0x0042_00FA,
-    /// `PKCS#12 Friendly Name` (0x0042_00FB)
+    /// `PKCS#12 Friendly Name` (`0x0042_00FB`)
     PKCS12FriendlyName = 0x0042_00FB,
-    /// `Description` (0x0042_00FC)
+    /// `Description` (`0x0042_00FC`)
     Description = 0x0042_00FC,
-    /// `Comment` (0x0042_00FD)
+    /// `Comment` (`0x0042_00FD`)
     Comment = 0x0042_00FD,
-    /// `Authenticated Encryption Additional Data` (0x0042_00FE)
+    /// `Authenticated Encryption Additional Data` (`0x0042_00FE`)
     AuthenticatedEncryptionAdditionalData = 0x0042_00FE,
-    /// `Authenticated Encryption Tag` (0x0042_00FF)
+    /// `Authenticated Encryption Tag` (`0x0042_00FF`)
     AuthenticatedEncryptionTag = 0x0042_00FF,
-    /// `Salt Length` (0x0042_0100)
+    /// `Salt Length` (`0x0042_0100`)
     SaltLength = 0x0042_0100,
-    /// `Mask Generator` (0x0042_0101)
+    /// `Mask Generator` (`0x0042_0101`)
     MaskGenerator = 0x0042_0101,
-    /// `Mask Generator Hashing Algorithm` (0x0042_0102)
+    /// `Mask Generator Hashing Algorithm` (`0x0042_0102`)
     MaskGeneratorHashingAlgorithm = 0x0042_0102,
-    /// `P Source` (0x0042_0103)
+    /// `P Source` (`0x0042_0103`)
     PSource = 0x0042_0103,
-    /// `Trailer Field` (0x0042_0104)
+    /// `Trailer Field` (`0x0042_0104`)
     TrailerField = 0x0042_0104,
-    /// `Client Correlation Value` (0x0042_0105)
+    /// `Client Correlation Value` (`0x0042_0105`)
     ClientCorrelationValue = 0x0042_0105,
-    /// `Server Correlation Value` (0x0042_0106)
+    /// `Server Correlation Value` (`0x0042_0106`)
     ServerCorrelationValue = 0x0042_0106,
-    /// `Digested Data` (0x0042_0107)
+    /// `Digested Data` (`0x0042_0107`)
     DigestedData = 0x0042_0107,
-    /// `Certificate Subject CN` (0x0042_0108)
+    /// `Certificate Subject CN` (`0x0042_0108`)
     CertificateSubjectCN = 0x0042_0108,
-    /// `Certificate Subject O` (0x0042_0109)
+    /// `Certificate Subject O` (`0x0042_0109`)
     CertificateSubjectO = 0x0042_0109,
-    /// `Certificate Subject OU` (0x0042_010A)
+    /// `Certificate Subject OU` (`0x0042_010A`)
     CertificateSubjectOU = 0x0042_010A,
-    /// `Certificate Subject Email` (0x0042_010B)
+    /// `Certificate Subject Email` (`0x0042_010B`)
     CertificateSubjectEmail = 0x0042_010B,
-    /// `Certificate Subject C` (0x0042_010C)
+    /// `Certificate Subject C` (`0x0042_010C`)
     CertificateSubjectC = 0x0042_010C,
-    /// `Certificate Subject ST` (0x0042_010D)
+    /// `Certificate Subject ST` (`0x0042_010D`)
     CertificateSubjectST = 0x0042_010D,
-    /// `Certificate Subject L` (0x0042_010E)
+    /// `Certificate Subject L` (`0x0042_010E`)
     CertificateSubjectL = 0x0042_010E,
-    /// `Certificate Subject UID` (0x0042_010F)
+    /// `Certificate Subject UID` (`0x0042_010F`)
     CertificateSubjectUID = 0x0042_010F,
-    /// `Certificate Subject Serial Number` (0x0042_0110)
+    /// `Certificate Subject Serial Number` (`0x0042_0110`)
     CertificateSubjectSerialNumber = 0x0042_0110,
-    /// `Certificate Subject Title` (0x0042_0111)
+    /// `Certificate Subject Title` (`0x0042_0111`)
     CertificateSubjectTitle = 0x0042_0111,
-    /// `Certificate Subject DC` (0x0042_0112)
+    /// `Certificate Subject DC` (`0x0042_0112`)
     CertificateSubjectDC = 0x0042_0112,
-    /// `Certificate Subject DN Qualifier` (0x0042_0113)
+    /// `Certificate Subject DN Qualifier` (`0x0042_0113`)
     CertificateSubjectDNQualifier = 0x0042_0113,
-    /// `Certificate Issuer CN` (0x0042_0114)
+    /// `Certificate Issuer CN` (`0x0042_0114`)
     CertificateIssuerCN = 0x0042_0114,
-    /// `Certificate Issuer O` (0x0042_0115)
+    /// `Certificate Issuer O` (`0x0042_0115`)
     CertificateIssuerO = 0x0042_0115,
-    /// `Certificate Issuer OU` (0x0042_0116)
+    /// `Certificate Issuer OU` (`0x0042_0116`)
     CertificateIssuerOU = 0x0042_0116,
-    /// `Certificate Issuer Email` (0x0042_0117)
+    /// `Certificate Issuer Email` (`0x0042_0117`)
     CertificateIssuerEmail = 0x0042_0117,
-    /// `Certificate Issuer C` (0x0042_0118)
+    /// `Certificate Issuer C` (`0x0042_0118`)
     CertificateIssuerC = 0x0042_0118,
-    /// `Certificate Issuer ST` (0x0042_0119)
+    /// `Certificate Issuer ST` (`0x0042_0119`)
     CertificateIssuerST = 0x0042_0119,
-    /// `Certificate Issuer L` (0x0042_011A)
+    /// `Certificate Issuer L` (`0x0042_011A`)
     CertificateIssuerL = 0x0042_011A,
-    /// `Certificate Issuer UID` (0x0042_011B)
+    /// `Certificate Issuer UID` (`0x0042_011B`)
     CertificateIssuerUID = 0x0042_011B,
-    /// `Certificate Issuer Serial Number` (0x0042_011C)
+    /// `Certificate Issuer Serial Number` (`0x0042_011C`)
     CertificateIssuerSerialNumber = 0x0042_011C,
-    /// `Certificate Issuer Title` (0x0042_011D)
+    /// `Certificate Issuer Title` (`0x0042_011D`)
     CertificateIssuerTitle = 0x0042_011D,
-    /// `Certificate Issuer DC` (0x0042_011E)
+    /// `Certificate Issuer DC` (`0x0042_011E`)
     CertificateIssuerDC = 0x0042_011E,
-    /// `Certificate Issuer DN Qualifier` (0x0042_011F)
+    /// `Certificate Issuer DN Qualifier` (`0x0042_011F`)
     CertificateIssuerDNQualifier = 0x0042_011F,
-    /// `Sensitive` (0x0042_0120)
+    /// `Sensitive` (`0x0042_0120`)
     Sensitive = 0x0042_0120,
-    /// `Always Sensitive` (0x0042_0121)
+    /// `Always Sensitive` (`0x0042_0121`)
     AlwaysSensitive = 0x0042_0121,
-    /// `Extractable` (0x0042_0122)
+    /// `Extractable` (`0x0042_0122`)
     Extractable = 0x0042_0122,
-    /// `Never Extractable` (0x0042_0123)
+    /// `Never Extractable` (`0x0042_0123`)
     NeverExtractable = 0x0042_0123,
-    /// `Replace Existing` (0x0042_0124)
+    /// `Replace Existing` (`0x0042_0124`)
     ReplaceExisting = 0x0042_0124,
-    /// `Attributes` (0x0042_0125)
+    /// `Attributes` (`0x0042_0125`)
     Attributes = 0x0042_0125,
-    /// `Common Attributes` (0x0042_0126)
+    /// `Common Attributes` (`0x0042_0126`)
     CommonAttributes = 0x0042_0126,
-    /// `Private Key Attributes` (0x0042_0127)
+    /// `Private Key Attributes` (`0x0042_0127`)
     PrivateKeyAttributes = 0x0042_0127,
-    /// `Public Key Attributes` (0x0042_0128)
+    /// `Public Key Attributes` (`0x0042_0128`)
     PublicKeyAttributes = 0x0042_0128,
-    /// `Extension Enumeration` (0x0042_0129)
+    /// `Extension Enumeration` (`0x0042_0129`)
     ExtensionEnumeration = 0x0042_0129,
-    /// `Extension Attribute` (0x0042_012A)
+    /// `Extension Attribute` (`0x0042_012A`)
     ExtensionAttribute = 0x0042_012A,
-    /// `Extension Parent Structure Tag` (0x0042_012B)
+    /// `Extension Parent Structure Tag` (`0x0042_012B`)
     ExtensionParentStructureTag = 0x0042_012B,
-    /// `Extension Description` (0x0042_012C)
+    /// `Extension Description` (`0x0042_012C`)
     ExtensionDescription = 0x0042_012C,
-    /// `Server Name` (0x0042_012D)
+    /// `Server Name` (`0x0042_012D`)
     ServerName = 0x0042_012D,
-    /// `Server Serial Number` (0x0042_012E)
+    /// `Server Serial Number` (`0x0042_012E`)
     ServerSerialNumber = 0x0042_012E,
-    /// `Server Version` (0x0042_012F)
+    /// `Server Version` (`0x0042_012F`)
     ServerVersion = 0x0042_012F,
-    /// `Server Load` (0x0042_0130)
+    /// `Server Load` (`0x0042_0130`)
     ServerLoad = 0x0042_0130,
-    /// `Product Name` (0x0042_0131)
+    /// `Product Name` (`0x0042_0131`)
     ProductName = 0x0042_0131,
-    /// `Build Level` (0x0042_0132)
+    /// `Build Level` (`0x0042_0132`)
     BuildLevel = 0x0042_0132,
-    /// `Build Date` (0x0042_0133)
+    /// `Build Date` (`0x0042_0133`)
     BuildDate = 0x0042_0133,
-    /// `Cluster Info` (0x0042_0134)
+    /// `Cluster Info` (`0x0042_0134`)
     ClusterInfo = 0x0042_0134,
-    /// `Alternate Failover Endpoints` (0x0042_0135)
+    /// `Alternate Failover Endpoints` (`0x0042_0135`)
     AlternateFailoverEndpoints = 0x0042_0135,
-    /// `Short Unique Identifier` (0x0042_0136)
+    /// `Short Unique Identifier` (`0x0042_0136`)
     ShortUniqueIdentifier = 0x0042_0136,
-    /// `Tag` (0x0042_0138)
+    /// `Tag` (`0x0042_0138`)
     Tag = 0x0042_0138,
-    /// `Certificate Request Unique Identifier` (0x0042_0139)
+    /// `Certificate Request Unique Identifier` (`0x0042_0139`)
     CertificateRequestUniqueIdentifier = 0x0042_0139,
-    /// `NIST Key Type` (0x0042_013A)
+    /// `NIST Key Type` (`0x0042_013A`)
     NISTKeyType = 0x0042_013A,
-    /// `Attribute Reference` (0x0042_013B)
+    /// `Attribute Reference` (`0x0042_013B`)
     AttributeReference = 0x0042_013B,
-    /// `Current Attribute` (0x0042_013C)
+    /// `Current Attribute` (`0x0042_013C`)
     CurrentAttribute = 0x0042_013C,
-    /// `New Attribute` (0x0042_013D)
+    /// `New Attribute` (`0x0042_013D`)
     NewAttribute = 0x0042_013D,
-    /// `Certificate Request Value` (0x0042_0140)
+    /// `Certificate Request Value` (`0x0042_0140`)
     CertificateRequestValue = 0x0042_0140,
-    /// `Log Message` (0x0042_0141)
+    /// `Log Message` (`0x0042_0141`)
     LogMessage = 0x0042_0141,
-    /// `Profile Version` (0x0042_0142)
+    /// `Profile Version` (`0x0042_0142`)
     ProfileVersion = 0x0042_0142,
-    /// `Profile Version Major` (0x0042_0143)
+    /// `Profile Version Major` (`0x0042_0143`)
     ProfileVersionMajor = 0x0042_0143,
-    /// `Profile Version Minor` (0x0042_0144)
+    /// `Profile Version Minor` (`0x0042_0144`)
     ProfileVersionMinor = 0x0042_0144,
-    /// `Protection Level` (0x0042_0145)
+    /// `Protection Level` (`0x0042_0145`)
     ProtectionLevel = 0x0042_0145,
-    /// `Protection Period` (0x0042_0146)
+    /// `Protection Period` (`0x0042_0146`)
     ProtectionPeriod = 0x0042_0146,
-    /// `Quantum Safe` (0x0042_0147)
+    /// `Quantum Safe` (`0x0042_0147`)
     QuantumSafe = 0x0042_0147,
-    /// `Quantum Safe Capability` (0x0042_0148)
+    /// `Quantum Safe Capability` (`0x0042_0148`)
     QuantumSafeCapability = 0x0042_0148,
-    /// `Ticket` (0x0042_0149)
+    /// `Ticket` (`0x0042_0149`)
     Ticket = 0x0042_0149,
-    /// `Ticket Type` (0x0042_014A)
+    /// `Ticket Type` (`0x0042_014A`)
     TicketType = 0x0042_014A,
-    /// `Ticket Value` (0x0042_014B)
+    /// `Ticket Value` (`0x0042_014B`)
     TicketValue = 0x0042_014B,
-    /// `Request Count` (0x0042_014C)
+    /// `Request Count` (`0x0042_014C`)
     RequestCount = 0x0042_014C,
-    /// `Rights` (0x0042_014D)
+    /// `Rights` (`0x0042_014D`)
     Rights = 0x0042_014D,
-    /// `Objects` (0x0042_014E)
+    /// `Objects` (`0x0042_014E`)
     Objects = 0x0042_014E,
-    /// `Operations` (0x0042_014F)
+    /// `Operations` (`0x0042_014F`)
     Operations = 0x0042_014F,
-    /// `Right` (0x0042_0150)
+    /// `Right` (`0x0042_0150`)
     Right = 0x0042_0150,
-    /// `Endpoint Role` (0x0042_0151)
+    /// `Endpoint Role` (`0x0042_0151`)
     EndpointRole = 0x0042_0151,
-    /// `Defaults Information` (0x0042_0152)
+    /// `Defaults Information` (`0x0042_0152`)
     DefaultsInformation = 0x0042_0152,
-    /// `Object Defaults` (0x0042_0153)
+    /// `Object Defaults` (`0x0042_0153`)
     ObjectDefaults = 0x0042_0153,
-    /// `Ephemeral` (0x0042_0154)
+    /// `Ephemeral` (`0x0042_0154`)
     Ephemeral = 0x0042_0154,
-    /// `Server Hashed Password` (0x0042_0155)
+    /// `Server Hashed Password` (`0x0042_0155`)
     ServerHashedPassword = 0x0042_0155,
-    /// `One Time Password` (0x0042_0156)
+    /// `One Time Password` (`0x0042_0156`)
     OneTimePassword = 0x0042_0156,
-    /// `Hashed Password` (0x0042_0157)
+    /// `Hashed Password` (`0x0042_0157`)
     HashedPassword = 0x0042_0157,
-    /// `Adjustment Type` (0x0042_0158)
+    /// `Adjustment Type` (`0x0042_0158`)
     AdjustmentType = 0x0042_0158,
-    /// `PKCS#11 Interface` (0x0042_0159)
+    /// `PKCS#11 Interface` (`0x0042_0159`)
     PKCS11Interface = 0x0042_0159,
-    /// `PKCS#11 Function` (0x0042_015A)
+    /// `PKCS#11 Function` (`0x0042_015A`)
     PKCS11Function = 0x0042_015A,
-    /// `PKCS#11 Input Parameters` (0x0042_015B)
+    /// `PKCS#11 Input Parameters` (`0x0042_015B`)
     PKCS11InputParameters = 0x0042_015B,
-    /// `PKCS#11 Output Parameters` (0x0042_015C)
+    /// `PKCS#11 Output Parameters` (`0x0042_015C`)
     PKCS11OutputParameters = 0x0042_015C,
-    /// `PKCS#11 Return Code` (0x0042_015D)
+    /// `PKCS#11 Return Code` (`0x0042_015D`)
     PKCS11ReturnCode = 0x0042_015D,
-    /// `Protection Storage Mask` (0x0042_015E)
+    /// `Protection Storage Mask` (`0x0042_015E`)
     ProtectionStorageMask = 0x0042_015E,
-    /// `Protection Storage Masks` (0x0042_015F)
+    /// `Protection Storage Masks` (`0x0042_015F`)
     ProtectionStorageMasks = 0x0042_015F,
-    /// `Interop Function` (0x0042_0160)
+    /// `Interop Function` (`0x0042_0160`)
     InteropFunction = 0x0042_0160,
-    /// `Interop Identifier` (0x0042_0161)
+    /// `Interop Identifier` (`0x0042_0161`)
     InteropIdentifier = 0x0042_0161,
-    /// `Adjustment Value` (0x0042_0162)
+    /// `Adjustment Value` (`0x0042_0162`)
     AdjustmentValue = 0x0042_0162,
-    /// `Common Protection Storage Masks` (0x0042_0163)
+    /// `Common Protection Storage Masks` (`0x0042_0163`)
     CommonProtectionStorageMasks = 0x0042_0163,
-    /// `Private Protection Storage Masks` (0x0042_0164)
+    /// `Private Protection Storage Masks` (`0x0042_0164`)
     PrivateProtectionStorageMasks = 0x0042_0164,
-    /// `Public Protection Storage Masks` (0x0042_0165)
+    /// `Public Protection Storage Masks` (`0x0042_0165`)
     PublicProtectionStorageMasks = 0x0042_0165,
-    /// `Object Groups` (0x0042_0166)
+    /// `Object Groups` (`0x0042_0166`)
     ObjectGroups = 0x0042_0166,
-    /// `Object Types` (0x0042_0167)
+    /// `Object Types` (`0x0042_0167`)
     ObjectTypes = 0x0042_0167,
-    /// `Constraints` (0x0042_0168)
+    /// `Constraints` (`0x0042_0168`)
     Constraints = 0x0042_0168,
-    /// `Constraint` (0x0042_0169)
+    /// `Constraint` (`0x0042_0169`)
     Constraint = 0x0042_0169,
-    /// `Rotate Interval` (0x0042_016A)
+    /// `Rotate Interval` (`0x0042_016A`)
     RotateInterval = 0x0042_016A,
-    /// `Rotate Automatic` (0x0042_016B)
+    /// `Rotate Automatic` (`0x0042_016B`)
     RotateAutomatic = 0x0042_016B,
-    /// `Rotate Offset` (0x0042_016C)
+    /// `Rotate Offset` (`0x0042_016C`)
     RotateOffset = 0x0042_016C,
-    /// `Rotate Date` (0x0042_016D)
+    /// `Rotate Date` (`0x0042_016D`)
     RotateDate = 0x0042_016D,
-    /// `Rotate Generation` (0x0042_016E)
+    /// `Rotate Generation` (`0x0042_016E`)
     RotateGeneration = 0x0042_016E,
-    /// `Rotate Name` (0x0042_016F)
+    /// `Rotate Name` (`0x0042_016F`)
     RotateName = 0x0042_016F,
-    /// `Rotate Name Value` (0x0042_0170)
+    /// `Rotate Name Value` (`0x0042_0170`)
     RotateNameValue = 0x0042_0170,
-    /// `Rotate Name Type` (0x0042_0171)
+    /// `Rotate Name Type` (`0x0042_0171`)
     RotateNameType = 0x0042_0171,
-    /// `Rotate Latest` (0x0042_0172)
+    /// `Rotate Latest` (`0x0042_0172`)
     RotateLatest = 0x0042_0172,
-    /// `Asynchronous Request` (0x0042_0173)
+    /// `Asynchronous Request` (`0x0042_0173`)
     AsynchronousRequest = 0x0042_0173,
-    /// `Submission Date` (0x0042_0174)
+    /// `Submission Date` (`0x0042_0174`)
     SubmissionDate = 0x0042_0174,
-    /// `Processing Stage` (0x0042_0175)
+    /// `Processing Stage` (`0x0042_0175`)
     ProcessingStage = 0x0042_0175,
-    /// `Asynchronous Correlation Values` (0x0042_0176)
+    /// `Asynchronous Correlation Values` (`0x0042_0176`)
     AsynchronousCorrelationValues = 0x0042_0176,
-    /// `Certificate Link` (0x0042_0190)
+    /// `Certificate Link` (`0x0042_0190`)
     CertificateLink = 0x0042_0190,
-    /// `Child Link` (0x0042_0191)
+    /// `Child Link` (`0x0042_0191`)
     ChildLink = 0x0042_0191,
-    /// `Derivation Base Object Link` (0x0042_0192)
+    /// `Derivation Base Object Link` (`0x0042_0192`)
     DerivationBaseObjectLink = 0x0042_0192,
-    /// `Derived Object Link` (0x0042_0193)
+    /// `Derived Object Link` (`0x0042_0193`)
     DerivedObjectLink = 0x0042_0193,
-    /// `Next Link` (0x0042_0194)
+    /// `Next Link` (`0x0042_0194`)
     NextLink = 0x0042_0194,
-    /// `Parent Link` (0x0042_0195)
+    /// `Parent Link` (`0x0042_0195`)
     ParentLink = 0x0042_0195,
-    /// `PKCS#12 Certificate Link` (0x0042_0196)
+    /// `PKCS#12 Certificate Link` (`0x0042_0196`)
     PKCS12CertificateLink = 0x0042_0196,
-    /// `PKCS#12 Password Link` (0x0042_0197)
+    /// `PKCS#12 Password Link` (`0x0042_0197`)
     PKCS12PasswordLink = 0x0042_0197,
-    /// `Previous Link` (0x0042_0198)
+    /// `Previous Link` (`0x0042_0198`)
     PreviousLink = 0x0042_0198,
-    /// `Private Key Link` (0x0042_0199)
+    /// `Private Key Link` (`0x0042_0199`)
     PrivateKeyLink = 0x0042_0199,
-    /// `Public Key Link` (0x0042_019A)
+    /// `Public Key Link` (`0x0042_019A`)
     PublicKeyLink = 0x0042_019A,
-    /// `Replaced Object Link` (0x0042_019B)
+    /// `Replaced Object Link` (`0x0042_019B`)
     ReplacedObjectLink = 0x0042_019B,
-    /// `Replacement Object Link` (0x0042_019C)
+    /// `Replacement Object Link` (`0x0042_019C`)
     ReplacementObjectLink = 0x0042_019C,
-    /// `Wrapping Key Link` (0x0042_019D)
+    /// `Wrapping Key Link` (`0x0042_019D`)
     WrappingKeyLink = 0x0042_019D,
-    /// `Object Class` (0x0042_019E)
+    /// `Object Class` (`0x0042_019E`)
     ObjectClass = 0x0042_019E,
-    /// `Object Class Mask` (0x0042_019F)
+    /// `Object Class Mask` (`0x0042_019F`)
     ObjectClassMask = 0x0042_019F,
-    /// `Credential Link` (0x0042_01A0)
+    /// `Credential Link` (`0x0042_01A0`)
     CredentialLink = 0x0042_01A0,
-    /// `Password Credential` (0x0042_01A1)
+    /// `Password Credential` (`0x0042_01A1`)
     PasswordCredential = 0x0042_01A1,
-    /// `Password Salt` (0x0042_01A2)
+    /// `Password Salt` (`0x0042_01A2`)
     PasswordSalt = 0x0042_01A2,
-    /// `Password Salt Algorithm` (0x0042_01A3)
+    /// `Password Salt Algorithm` (`0x0042_01A3`)
     PasswordSaltAlgorithm = 0x0042_01A3,
-    /// `Salted Password` (0x0042_01A4)
+    /// `Salted Password` (`0x0042_01A4`)
     SaltedPassword = 0x0042_01A4,
-    /// `Password Link` (0x0042_01A5)
+    /// `Password Link` (`0x0042_01A5`)
     PasswordLink = 0x0042_01A5,
-    /// `Device Credential` (0x0042_01A6)
+    /// `Device Credential` (`0x0042_01A6`)
     DeviceCredential = 0x0042_01A6,
-    /// `OTP Credential` (0x0042_01A7)
+    /// `OTP Credential` (`0x0042_01A7`)
     OTPCredential = 0x0042_01A7,
-    /// `OTP Algorithm` (0x0042_01A8)
+    /// `OTP Algorithm` (`0x0042_01A8`)
     OTPAlgorithm = 0x0042_01A8,
-    /// `OTP Digest` (0x0042_01A9)
+    /// `OTP Digest` (`0x0042_01A9`)
     OTPDigest = 0x0042_01A9,
-    /// `OTP Serial` (0x0042_01AA)
+    /// `OTP Serial` (`0x0042_01AA`)
     OTPSerial = 0x0042_01AA,
-    /// `OTP Seed` (0x0042_01AB)
+    /// `OTP Seed` (`0x0042_01AB`)
     OTPSeed = 0x0042_01AB,
-    /// `OTP Interval` (0x0042_01AC)
+    /// `OTP Interval` (`0x0042_01AC`)
     OTPInterval = 0x0042_01AC,
-    /// `OTP Digits` (0x0042_01AD)
+    /// `OTP Digits` (`0x0042_01AD`)
     OTPDigits = 0x0042_01AD,
-    /// `OTP Counter` (0x0042_01AE)
+    /// `OTP Counter` (`0x0042_01AE`)
     OTPCounter = 0x0042_01AE,
-    /// `Hashed Password Credential` (0x0042_01AF)
+    /// `Hashed Password Credential` (`0x0042_01AF`)
     HashedPasswordCredential = 0x0042_01AF,
-    /// `Hashed Username Password` (0x0042_01B0)
+    /// `Hashed Username Password` (`0x0042_01B0`)
     HashedUsernamePassword = 0x0042_01B0,
-    /// `Hashed Password Username` (0x0042_01B1)
+    /// `Hashed Password Username` (`0x0042_01B1`)
     HashedPasswordUsername = 0x0042_01B1,
-    /// `Credential Information` (0x0042_01B2)
+    /// `Credential Information` (`0x0042_01B2`)
     CredentialInformation = 0x0042_01B2,
-    /// `Group Link` (0x0042_01B3)
+    /// `Group Link` (`0x0042_01B3`)
     GroupLink = 0x0042_01B3,
-    /// `Split Key Base Link` (0x0042_01B4)
+    /// `Split Key Base Link` (`0x0042_01B4`)
     SplitKeyBaseLink = 0x0042_01B4,
-    /// `Joined Split Key Parts Link` (0x0042_01B5)
+    /// `Joined Split Key Parts Link` (`0x0042_01B5`)
     JoinedSplitKeyPartsLink = 0x0042_01B5,
-    /// `Split Key Polynomial` (0x0042_01B6)
+    /// `Split Key Polynomial` (`0x0042_01B6`)
     SplitKeyPolynomial = 0x0042_01B6,
-    /// `Deactivation Message` (0x0042_01B7)
+    /// `Deactivation Message` (`0x0042_01B7`)
     DeactivationMessage = 0x0042_01B7,
-    /// `Deactivation Reason` (0x0042_01B8)
+    /// `Deactivation Reason` (`0x0042_01B8`)
     DeactivationReason = 0x0042_01B8,
-    /// `Deactivation Reason Code` (0x0042_01B9)
+    /// `Deactivation Reason Code` (`0x0042_01B9`)
     DeactivationReasonCode = 0x0042_01B9,
-    /// `Certificate Subject DN` (0x0042_01BA)
+    /// `Certificate Subject DN` (`0x0042_01BA`)
     CertificateSubjectDN = 0x0042_01BA,
-    /// `Certificate Issuer DN` (0x0042_01BB)
+    /// `Certificate Issuer DN` (`0x0042_01BB`)
     CertificateIssuerDN = 0x0042_01BB,
-    /// `Certificate Request Link` (0x0042_01BC)
+    /// `Certificate Request Link` (`0x0042_01BC`)
     CertificateRequestLink = 0x0042_01BC,
-    /// `Certify Counter` (0x0042_01BD)
+    /// `Certify Counter` (`0x0042_01BD`)
     CertifyCounter = 0x0042_01BD,
-    /// `Decrypt Counter` (0x0042_01BE)
+    /// `Decrypt Counter` (`0x0042_01BE`)
     DecryptCounter = 0x0042_01BE,
-    /// `Encrypt Counter` (0x0042_01BF)
+    /// `Encrypt Counter` (`0x0042_01BF`)
     EncryptCounter = 0x0042_01BF,
-    /// `Sign Counter` (0x0042_01C0)
+    /// `Sign Counter` (`0x0042_01C0`)
     SignCounter = 0x0042_01C0,
-    /// `Signature Verify Counter` (0x0042_01C1)
+    /// `Signature Verify Counter` (`0x0042_01C1`)
     SignatureVerifyCounter = 0x0042_01C1,
-    /// `NIST Security Category` (0x0042_01C2)
+    /// `NIST Security Category` (`0x0042_01C2`)
     NISTSecurityCategory = 0x0042_01C2,
-    /// `KEM Algorithm` (0x0042_01C3)
+    /// `KEM Algorithm` (`0x0042_01C3`)
     KEMAlgorithm = 0x0042_01C3,
-    /// `Deterministic` (0x0042_01C4)
+    /// `Deterministic` (`0x0042_01C4`)
     Deterministic = 0x0042_01C4,
-    /// `Context String` (0x0042_01C5)
+    /// `Context String` (`0x0042_01C5`)
     ContextString = 0x0042_01C5,
-    /// `Seed` (0x0042_01C6)
+    /// `Seed` (`0x0042_01C6`)
     Seed = 0x0042_01C6,
-    /// `Input Key Material` (0x0042_01C7)
+    /// `Input Key Material` (`0x0042_01C7`)
     InputKeyMaterial = 0x0042_01C7,
-    /// `Internal` (0x0042_01C8)
+    /// `Internal` (`0x0042_01C8`)
     Internal = 0x0042_01C8,
-    /// `External Mu` (0x0042_01C9)
+    /// `External Mu` (`0x0042_01C9`)
     ExternalMu = 0x0042_01C9,
-    /// `Random` (0x0042_01CA)
+    /// `Random` (`0x0042_01CA`)
     Random = 0x0042_01CA,
-    /// `Performs CRL Checks` (0x0042_01CB)
+    /// `Performs CRL Checks` (`0x0042_01CB`)
     PerformsCRLChecks = 0x0042_01CB,
 }
 
@@ -858,6 +858,7 @@ impl KmipTag {
     }
 
     /// Returns the official normative OASIS name for this tag.
+    #[allow(clippy::too_many_lines)]
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -1281,6 +1282,7 @@ impl KmipTag {
     }
 
     /// Resolves a 24-bit raw integer tag to a known official `KmipTag` if catalogued.
+    #[allow(clippy::too_many_lines)]
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
@@ -1706,6 +1708,12 @@ impl KmipTag {
     ///
     /// Because every variant of `KmipTag` is an allocated OASIS standard tag,
     /// this conversion is guaranteed to succeed.
+    ///
+    /// # Panics
+    ///
+    /// Panics only if a `KmipTag` variant has a value outside the 24-bit tag
+    /// range or is not assigned by OASIS. Every declared variant satisfies
+    /// both conditions by construction.
     #[inline]
     #[must_use]
     pub fn into_tag(self) -> Tag {
@@ -1716,6 +1724,11 @@ impl KmipTag {
     }
 
     /// Converts this known tag into a [`RawTag`].
+    ///
+    /// # Panics
+    ///
+    /// Panics only if a `KmipTag` variant has a value outside the 24-bit tag
+    /// range. Every declared variant satisfies this condition by construction.
     #[inline]
     #[must_use]
     pub fn into_raw_tag(self) -> RawTag {

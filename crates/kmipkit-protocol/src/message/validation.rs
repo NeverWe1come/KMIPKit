@@ -361,14 +361,14 @@ pub(super) fn validate_request_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedRequestMessage {
@@ -440,14 +440,14 @@ pub(super) fn validate_response_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedResponseMessage {
@@ -679,6 +679,7 @@ fn validate_request_batch_item(
     }
 }
 
+#[allow(clippy::too_many_lines)] // Keep response status and payload rules together for one batch item.
 fn validate_response_batch_item(
     view: &StructureView<'_>,
     top_index: usize,

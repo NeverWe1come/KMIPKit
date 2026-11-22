@@ -685,14 +685,6 @@ fn parse_message(
     parse_message_with_get_test_symbols(node, catalog, false)
 }
 
-#[cfg(test)]
-fn parse_get_message_with_test_symbols(
-    node: Node<'_, '_>,
-    catalog: &CatalogMaps,
-) -> Result<Structure, OasisCryptoFixtureError> {
-    parse_message_with_get_test_symbols(node, catalog, true)
-}
-
 fn parse_message_with_get_test_symbols(
     node: Node<'_, '_>,
     catalog: &CatalogMaps,

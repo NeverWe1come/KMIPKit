@@ -450,6 +450,7 @@ pub(super) fn test_checked_end(start: usize, extent: usize) -> Result<usize, Dec
     checked_end_offset(start, extent, DecodeErrorKind::TruncatedValue, 0)
 }
 
+#[allow(clippy::too_many_lines)]
 fn decode_value(
     bytes: &[u8],
     value_start: usize,

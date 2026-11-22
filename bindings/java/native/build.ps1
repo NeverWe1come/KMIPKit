@@ -17,7 +17,7 @@ $responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifi
 $responseBridgeTestSource = Join-Path $PSScriptRoot 'tests\response_bridge_test.cpp'
 $responseSecretArrayScopeTestSource = Join-Path $PSScriptRoot 'tests\response_secret_array_scope_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
-$internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
+$internalHeader = Join-Path $repositoryRoot 'bindings\shared\fixtures\api\generated'
 
 if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) {
     throw 'Visual Studio C++ build tools are required to build the Windows JNI bridge.'

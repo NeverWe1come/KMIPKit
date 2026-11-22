@@ -298,24 +298,24 @@ fn extension_query_encodes_the_kmip_structure_for_each_version() {
                     };
                     assert_eq!(fields[0].tag(), KmipTag::ExtensionName.into());
                     fields[0].with_value(|v| {
-                        assert!(matches!(v, ValueView::TextString(value) if value == name))
+                        assert!(matches!(v, ValueView::TextString(value) if value == name));
                     });
                     if map {
                         assert_eq!(fields.len(), if index == 0 { 4 } else { 3 });
                         assert_eq!(fields[1].tag(), KmipTag::ExtensionTag.into());
                         fields[1].with_value(|v| {
-                            assert!(matches!(v, ValueView::Integer(value) if *value == tag))
+                            assert!(matches!(v, ValueView::Integer(value) if *value == tag));
                         });
                         assert_eq!(fields[2].tag(), KmipTag::ExtensionType.into());
                         fields[2].with_value(|v| {
                             assert!(
                                 matches!(v, ValueView::Enumeration(value) if *value == item_type)
-                            )
+                            );
                         });
                         if index == 0 {
                             assert_eq!(fields[3].tag(), KmipTag::ExtensionDescription.into());
                             fields[3].with_value(|v| {
-                                assert!(matches!(v, ValueView::TextString("optional")))
+                                assert!(matches!(v, ValueView::TextString("optional")));
                             });
                         }
                     } else {
