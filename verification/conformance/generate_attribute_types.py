@@ -870,7 +870,10 @@ def main(argv: list[str] | None = None) -> int:
 
     stale = False
     for path, contents in generated.items():
-        if existing[path] != contents:
+        # Git may check out text files with CRLF on Windows (core.autocrlf).
+        # Compare generated text with normalized line endings so --check reports
+        # content drift, not the checkout platform's newline convention.
+        if existing[path].replace(b"\r\n", b"\n") != contents:
             print(
                 f"generated attribute TTLV types are stale at {path}; "
                 "run generate_attribute_types.py --write",
