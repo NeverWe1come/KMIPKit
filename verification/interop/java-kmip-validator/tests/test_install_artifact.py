@@ -32,6 +32,7 @@ class InstallArtifactPathTests(unittest.TestCase):
                 "bindings/java/build.gradle.kts": "plugins {}\n",
                 "bindings/c/include/kmipkit.h": "/* native ABI */\n",
                 "tests/fixtures/api/generated/kmipkit_internal.h": "/* internal ABI */\n",
+                "vendor/aws-lc-sys-0.45.0/Cargo.toml": "[package]\nname = 'aws-lc-sys'\n",
                 "specs/README.md": "excluded design source\n",
             }
             for relative_path, contents in source_files.items():
@@ -58,6 +59,7 @@ class InstallArtifactPathTests(unittest.TestCase):
             self.assertTrue(
                 (destination / "tests/fixtures/api/generated/kmipkit_internal.h").is_file()
             )
+            self.assertTrue((destination / "vendor/aws-lc-sys-0.45.0/Cargo.toml").is_file())
             self.assertFalse((destination / "specs").exists())
 
     def test_pin_file_must_be_inside_consumer_project(self):

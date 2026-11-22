@@ -26,6 +26,7 @@ JAVA_BUILD_ARCHIVE_PATHS = (
     "bindings/java",
     "bindings/c",
     "tests/fixtures/api/generated",
+    "vendor/aws-lc-sys-0.45.0",
 )
 
 
