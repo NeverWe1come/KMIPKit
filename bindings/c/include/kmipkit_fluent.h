@@ -2,7 +2,9 @@
 #ifndef KMIPKIT_FLUENT_H
 #define KMIPKIT_FLUENT_H
 
+#if !defined(KMIPKIT_H) && !defined(KMIPKIT_INTERNAL_H)
 #include "kmipkit.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
