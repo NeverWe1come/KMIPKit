@@ -60,6 +60,7 @@ const RESPONSE_BODY: &[u8] = b"response";
 const PEER_TIMEOUT: Duration = Duration::from_secs(6);
 const ACCEPT_TIMEOUT: Duration = Duration::from_secs(2);
 const CLEANUP_GATE_OBSERVATION_WINDOW: Duration = Duration::from_millis(250);
+const RETRY_PROBE_OBSERVATION_WINDOW: Duration = Duration::from_millis(750);
 const MAX_CAPTURED_REQUEST: usize = 1024 * 1024;
 
 #[test]
@@ -1866,7 +1867,7 @@ fn spawn_retry_probe_peer_with_response(
 ) -> JoinHandle<RetryPeerObservation> {
     thread::spawn(move || {
         let _ = listener.set_nonblocking(true);
-        let accept_deadline = Instant::now() + Duration::from_millis(750);
+        let mut accept_deadline = Instant::now() + PEER_TIMEOUT;
         let mut observation = RetryPeerObservation::default();
         while Instant::now() < accept_deadline && observation.accepted_connections < 2 {
             let (stream, _) = match listener.accept() {
@@ -1909,6 +1910,10 @@ fn spawn_retry_probe_peer_with_response(
                 let _ = tls.write_all(&response);
                 tls.conn.send_close_notify();
                 let _ = tls.flush();
+                // Give the initial connection the normal peer timeout above.
+                // Start the shorter observation window only after the first
+                // response, where it detects an unintended retry.
+                accept_deadline = Instant::now() + RETRY_PROBE_OBSERVATION_WINDOW;
             }
         }
         observation
