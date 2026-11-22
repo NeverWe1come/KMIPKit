@@ -509,8 +509,68 @@ fn query_credential_information_is_rejected_in_both_older_editions() {
         let request =
             ClientRequest::Query(QueryRequest::new([QueryFunction::CREDENTIAL_INFORMATION]));
         let batch = ClientBatch::new(ClientBatchItem::new(request)).with_protocol_version(version);
+        let validation = super::validate_batch(&batch, version)
+            .err()
+            .expect("Query Credential Information is unavailable before KMIP 3.0");
+        assert_eq!(
+            validation.to_string(),
+            "Query Credential Information requires KMIP 3.0"
+        );
         let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     }
     assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffix() {
+    use super::{BatchIdentity, ResponseAssociationError, associate_v3_batch_items};
+
+    let identity = |operation: ClientOperation| BatchIdentity {
+        operation: operation.raw(),
+        unique_batch_item_id: None,
+        response_context: None,
+    };
+    let requests = [
+        identity(ClientOperation::Ping),
+        identity(ClientOperation::Query),
+    ];
+    let prefix = [identity(ClientOperation::Ping)];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, true),
+        Ok(vec![Some(0), None])
+    );
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, false),
+        Err(ResponseAssociationError::ItemCountMismatch)
+    );
+    let reordered = [
+        identity(ClientOperation::Query),
+        identity(ClientOperation::Ping),
+    ];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &reordered, false),
+        Err(ResponseAssociationError::ItemOperationMismatch)
+    );
+}
+
+#[test]
+fn kmip30_rejects_explicit_batch_item_ids_before_transport() {
+    let (mut client, transport, _) =
+        crate::asynchronous_execution_test_support::client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::Ping(kmipkit_protocol::PingRequest::new()))
+            .with_unique_batch_item_id(vec![1]),
+    )
+    .with_protocol_version(ProtocolVersion::V3_0);
+    let validation = super::validate_batch(&batch, ProtocolVersion::V3_0)
+        .err()
+        .expect("KMIP 3.0 reserves Unique Batch Item ID");
+    assert_eq!(
+        validation.to_string(),
+        "Unique Batch Item ID is reserved in KMIP 3.0"
+    );
+    let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }

@@ -344,37 +344,40 @@ async fn the_absolute_total_deadline_does_not_reset_after_write_progress() {
     assert_eq!(control.cancel(), RequestDeliveryState::PossiblySent);
 }
 
-#[tokio::test]
-async fn each_wait_uses_the_earlier_phase_or_total_deadline() {
-    for (phase, total, maximum_elapsed) in [
-        (
-            Duration::from_millis(500),
-            Duration::from_millis(1_500),
-            Duration::from_millis(1_000),
-        ),
-        (
-            Duration::from_millis(1_500),
-            Duration::from_millis(500),
-            Duration::from_millis(1_000),
-        ),
-    ] {
-        let control = dispatched_control();
-        let mut io = deadline_io(
-            ScriptIo::manual(),
-            Some(Duration::from_secs(1)),
-            Some(phase),
-            Some(Instant::now() + total),
-            control,
-        );
-        let started = Instant::now();
+#[tokio::test(start_paused = true)]
+async fn write_wait_uses_the_phase_deadline_when_it_is_earlier() {
+    assert_write_wait_uses_earlier_deadline(
+        Duration::from_millis(500),
+        Duration::from_millis(1_500),
+    )
+    .await;
+}
 
-        let error = write_all(&mut io, b"request")
-            .await
-            .expect_err("one of the two deadlines must expire");
+#[tokio::test(start_paused = true)]
+async fn write_wait_uses_the_total_deadline_when_it_is_earlier() {
+    assert_write_wait_uses_earlier_deadline(
+        Duration::from_millis(1_500),
+        Duration::from_millis(500),
+    )
+    .await;
+}
 
-        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
-        assert!(started.elapsed() < maximum_elapsed);
-    }
+async fn assert_write_wait_uses_earlier_deadline(phase: Duration, total: Duration) {
+    let control = dispatched_control();
+    let mut io = deadline_io(
+        ScriptIo::manual(),
+        Some(Duration::from_secs(1)),
+        Some(phase),
+        Some(Instant::now() + total),
+        control,
+    );
+
+    let error = tokio::time::timeout(Duration::from_secs(1), write_all(&mut io, b"request"))
+        .await
+        .expect("the earlier deadline expires before the test's virtual deadline")
+        .expect_err("a stalled write must time out");
+
+    assert_eq!(error.kind(), io::ErrorKind::TimedOut);
 }
 
 #[tokio::test]
