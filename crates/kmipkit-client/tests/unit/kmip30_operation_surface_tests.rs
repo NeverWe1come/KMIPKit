@@ -509,6 +509,13 @@ fn query_credential_information_is_rejected_in_both_older_editions() {
         let request =
             ClientRequest::Query(QueryRequest::new([QueryFunction::CREDENTIAL_INFORMATION]));
         let batch = ClientBatch::new(ClientBatchItem::new(request)).with_protocol_version(version);
+        let validation = super::validate_batch(&batch, version)
+            .err()
+            .expect("Query Credential Information is unavailable before KMIP 3.0");
+        assert_eq!(
+            validation.to_string(),
+            "Query Credential Information requires KMIP 3.0"
+        );
         let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     }
@@ -524,6 +531,7 @@ fn kmip30_locate_object_class_mask_survives_fluent_attribute_replacement() {
         ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
     );
     let mask = ObjectClassMask::USER | ObjectClassMask::SYSTEM;
+    let mask = mask | ObjectClassMask::from_raw(0x8000_0000);
     let request = client
         .request()
         .locate(AttributeSet::new())
@@ -535,7 +543,7 @@ fn kmip30_locate_object_class_mask_survives_fluent_attribute_replacement() {
     let payload = request.to_ttlv_payload().unwrap();
     assert!(payload.view().children().iter().any(|field| {
         field.tag().raw() == KmipTag::ObjectClassMask.as_u32()
-            && field.with_value(|value| matches!(value, ValueView::Integer(3)))
+            && field.with_value(|value| matches!(value, ValueView::Integer(bits) if bits.cast_unsigned() == 0x8000_0003))
     }));
 }
 
@@ -544,9 +552,22 @@ fn kmip30_create_key_pair_seed_is_encoded_and_rejected_in_older_editions() {
     use kmipkit_protocol::{CreateKeyPairRequest, SecretBytes};
     use kmipkit_ttlv::KmipTag;
 
+    use crate::fluent::CreateKeyPairBuilder;
+    use kmipkit_protocol::CryptographicAlgorithm;
+    use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::RSA;
+
     let seed = b"fixture-seed";
+    let built = CreateKeyPairBuilder::detached()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .seed(SecretBytes::new(seed.to_vec()))
+        .build()
+        .unwrap();
+    let debug = format!("{built:?}");
+    assert!(debug.contains("has_seed: true"));
+    assert!(!debug.contains("fixture-seed"));
     let request = || CreateKeyPairRequest::new().with_seed(SecretBytes::new(seed.to_vec()));
-    let payload = request().into_ttlv_payload().unwrap();
+    let payload = built.into_ttlv_payload().unwrap();
     assert!(payload.view().children().iter().any(|field| {
         field.tag().raw() == KmipTag::Seed.as_u32()
             && field
@@ -564,4 +585,57 @@ fn kmip30_create_key_pair_seed_is_encoded_and_rejected_in_older_editions() {
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     }
     assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffix() {
+    use super::{BatchIdentity, ResponseAssociationError, associate_v3_batch_items};
+
+    let identity = |operation: ClientOperation| BatchIdentity {
+        operation: operation.raw(),
+        unique_batch_item_id: None,
+        response_context: None,
+    };
+    let requests = [
+        identity(ClientOperation::Ping),
+        identity(ClientOperation::Query),
+    ];
+    let prefix = [identity(ClientOperation::Ping)];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, true),
+        Ok(vec![Some(0), None])
+    );
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, false),
+        Err(ResponseAssociationError::ItemCountMismatch)
+    );
+    let reordered = [
+        identity(ClientOperation::Query),
+        identity(ClientOperation::Ping),
+    ];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &reordered, false),
+        Err(ResponseAssociationError::ItemOperationMismatch)
+    );
+}
+
+#[test]
+fn kmip30_rejects_explicit_batch_item_ids_before_transport() {
+    let (mut client, transport, _) =
+        crate::asynchronous_execution_test_support::client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::Ping(kmipkit_protocol::PingRequest::new()))
+            .with_unique_batch_item_id(vec![1]),
+    )
+    .with_protocol_version(ProtocolVersion::V3_0);
+    let validation = super::validate_batch(&batch, ProtocolVersion::V3_0)
+        .err()
+        .expect("KMIP 3.0 reserves Unique Batch Item ID");
+    assert_eq!(
+        validation.to_string(),
+        "Unique Batch Item ID is reserved in KMIP 3.0"
+    );
+    let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
