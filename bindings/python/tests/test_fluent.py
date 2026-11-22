@@ -15,6 +15,7 @@ from _test_support import (
     start_tls13_mtls_peer,
 )
 from kmipkit import attribute_operations, client, errors, extensions, fluent, protocol_values, ttlv
+from kmipkit.key_usage import KeyUsage
 from kmipkit.typed_attributes import StandardAttribute
 
 _FIXTURES = Path(__file__).resolve().parents[3] / "bindings" / "shared" / "fixtures" / "login-mtls"
@@ -903,7 +904,7 @@ def test_operation_async_indicator_is_encoded_in_request_header() -> None:
 
 def test_builder_builds_existing_typed_batch_item() -> None:
     with fluent.SymmetricKeyBuilder() as builder:
-        item = builder.aes_256().usage_mask(12).name("test-key").build()
+        item = builder.aes_256().usage_mask(KeyUsage.ENCRYPT | KeyUsage.DECRYPT).name("test-key").build()
     batch = client.Batch.create()
     try:
         batch.add_item(item)

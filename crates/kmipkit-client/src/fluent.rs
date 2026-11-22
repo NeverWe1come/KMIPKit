@@ -5,6 +5,7 @@ use std::fmt;
 use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::named_values_generated::values::bitmask::cryptographic_usage_mask;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
@@ -80,22 +81,39 @@ const ATTRIBUTE_VALUE_TAG: u32 = KmipTag::AttributeValue.as_u32();
 pub struct CryptographicUsageMask(i32);
 
 impl CryptographicUsageMask {
-    /// Permit signing operations.
-    pub const SIGN: Self = Self(0x0000_0001);
-    /// Permit signature verification operations.
-    pub const VERIFY: Self = Self(0x0000_0002);
-    /// Permit encryption operations.
-    pub const ENCRYPT: Self = Self(0x0000_0004);
-    /// Permit decryption operations.
-    pub const DECRYPT: Self = Self(0x0000_0008);
-    /// Permit MAC generation operations.
-    pub const MAC_GENERATE: Self = Self(0x0000_0080);
-    /// Permit MAC verification operations.
-    pub const MAC_VERIFY: Self = Self(0x0000_0100);
-    /// Permit key derivation operations.
-    pub const DERIVE_KEY: Self = Self(0x0000_0200);
-    /// Permit key agreement operations.
-    pub const KEY_AGREEMENT: Self = Self(0x0000_0800);
+    /// KMIP Sign usage flag.
+    pub const SIGN: Self = Self(cryptographic_usage_mask::SIGN.cast_signed());
+    /// KMIP Verify usage flag.
+    pub const VERIFY: Self = Self(cryptographic_usage_mask::VERIFY.cast_signed());
+    /// KMIP Encrypt usage flag.
+    pub const ENCRYPT: Self = Self(cryptographic_usage_mask::ENCRYPT.cast_signed());
+    /// KMIP Decrypt usage flag.
+    pub const DECRYPT: Self = Self(cryptographic_usage_mask::DECRYPT.cast_signed());
+    /// KMIP Wrap Key usage flag.
+    pub const WRAP_KEY: Self = Self(cryptographic_usage_mask::WRAP_KEY.cast_signed());
+    /// KMIP Unwrap Key usage flag.
+    pub const UNWRAP_KEY: Self = Self(cryptographic_usage_mask::UNWRAP_KEY.cast_signed());
+    /// KMIP Mac Generate usage flag.
+    pub const MAC_GENERATE: Self = Self(cryptographic_usage_mask::MAC_GENERATE.cast_signed());
+    /// KMIP Mac Verify usage flag.
+    pub const MAC_VERIFY: Self = Self(cryptographic_usage_mask::MAC_VERIFY.cast_signed());
+    /// KMIP Derive Key usage flag.
+    pub const DERIVE_KEY: Self = Self(cryptographic_usage_mask::DERIVE_KEY.cast_signed());
+    /// KMIP Key Agreement usage flag.
+    pub const KEY_AGREEMENT: Self = Self(cryptographic_usage_mask::KEY_AGREEMENT.cast_signed());
+    /// KMIP Certificate Sign usage flag.
+    pub const CERTIFICATE_SIGN: Self =
+        Self(cryptographic_usage_mask::CERTIFICATE_SIGN.cast_signed());
+    /// KMIP Crl Sign usage flag.
+    pub const CRL_SIGN: Self = Self(cryptographic_usage_mask::CRL_SIGN.cast_signed());
+    /// KMIP Authenticate usage flag.
+    pub const AUTHENTICATE: Self = Self(cryptographic_usage_mask::AUTHENTICATE.cast_signed());
+    /// KMIP Unrestricted usage flag.
+    pub const UNRESTRICTED: Self = Self(cryptographic_usage_mask::UNRESTRICTED.cast_signed());
+    /// KMIP Fpe Encrypt usage flag.
+    pub const FPE_ENCRYPT: Self = Self(cryptographic_usage_mask::FPE_ENCRYPT.cast_signed());
+    /// KMIP Fpe Decrypt usage flag.
+    pub const FPE_DECRYPT: Self = Self(cryptographic_usage_mask::FPE_DECRYPT.cast_signed());
 
     /// Preserves an exact signed TTLV Integer bit pattern.
     #[must_use]
@@ -3072,6 +3090,12 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         self
     }
 
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn usage_mask_bits(self, bits: i32) -> Self {
+        self.usage_mask(CryptographicUsageMask::from_raw(bits))
+    }
+
     /// Selects AES with a 128-bit key; usage policy remains explicit.
     #[must_use]
     pub const fn aes_128(self) -> Self {
@@ -3664,11 +3688,23 @@ impl<'a> CreateKeyPairBuilder<'a> {
         self
     }
 
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn private_usage_mask_bits(self, bits: i32) -> Self {
+        self.private_usage_mask(CryptographicUsageMask::from_raw(bits))
+    }
+
     /// Selects an explicit public key Cryptographic Usage Mask.
     #[must_use]
     pub const fn public_usage_mask(mut self, usage_mask: CryptographicUsageMask) -> Self {
         self.public_usage_mask = Some(usage_mask);
         self
+    }
+
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn public_usage_mask_bits(self, bits: i32) -> Self {
+        self.public_usage_mask(CryptographicUsageMask::from_raw(bits))
     }
 
     /// Adds a private key Name using Uninterpreted Text String.

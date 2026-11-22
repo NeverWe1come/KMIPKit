@@ -56,6 +56,7 @@ import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.protocol.KeyUsage;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
@@ -278,7 +279,7 @@ final class FluentFacadeShapeTest {
         }
         try (SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
             builder.aes256()
-                    .usageMask((int) (CryptographicUsageMask.ENCRYPT | CryptographicUsageMask.DECRYPT))
+                    .usageMask(KeyUsage.ENCRYPT, KeyUsage.DECRYPT)
                     .name("payments-key");
             try (ClientBatchItem item = builder.toBatchItem()) {
                 assertNotNull(item);
