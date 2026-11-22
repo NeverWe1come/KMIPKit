@@ -36,7 +36,7 @@ class ArtifactProvenanceTest {
     @Test
     void executesPublicApiFromTheInstalledJar() throws Exception {
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.loadForCheckout(manifest);
         Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .toAbsolutePath().normalize();
         assertEquals(provenance.artifactPath(), loadedJar);

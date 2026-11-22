@@ -68,9 +68,7 @@ class ControlledTlsPeerTest {
                 .filter(value -> value.caseId().equals("test-op-discover-versions"))
                 .findFirst().orElseThrow();
 
-        var pin = new ObjectMapper().readTree(
-                manifestPath.resolveSibling("library-pin.json").toFile());
-        ArtifactProvenance.load(manifestPath, pin.path("commit").asText());
+        ArtifactProvenance.loadForCheckout(manifestPath);
         JavaKmipDriver.CaseOutcome outcome;
         try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
             outcome = driver.execute(testCase);
