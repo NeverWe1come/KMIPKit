@@ -1,4 +1,5 @@
 #include "kmipkit.h"
+#include "kmipkit_fluent.h"
 
 #include <stdint.h>
 #include <stdlib.h>
