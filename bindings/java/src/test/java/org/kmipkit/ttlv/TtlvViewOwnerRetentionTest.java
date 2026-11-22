@@ -12,6 +12,19 @@ final class TtlvViewOwnerRetentionTest {
     private static final int PRIVATE_TAG = 0x420001;
 
     @Test
+    void structureCopyOwnsAnIndependentTtlvValue() {
+        TtlvStructure original = createStructureWithInteger();
+        try (original;
+                TtlvStructure copy = original.copy();
+                TtlvStructureView view = copy.view();
+                TtlvItemView item = view.itemAt(0);
+                TtlvValueView value = item.value()) {
+            assertEquals(1, view.itemCount());
+            assertEquals(47, value.integer());
+        }
+    }
+
+    @Test
     void liveValueViewRetainsEveryOwnerInItsBorrowedViewChain() throws ReflectiveOperationException {
         ViewOwnerChain chain = createBorrowedValueView();
 
@@ -55,6 +68,16 @@ final class TtlvViewOwnerRetentionTest {
                 structureView,
                 itemView,
                 valueView);
+    }
+
+    private static TtlvStructure createStructureWithInteger() {
+        try (RawTag rawTag = RawTag.fromRaw(PRIVATE_TAG);
+                Tag tag = rawTag.checked();
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvValue value = TtlvValue.Integer(47);
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+            return TtlvStructure.withItem(empty, item, CodecLimits.defaults());
+        }
     }
 
     private record ViewOwnerChain(
