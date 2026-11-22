@@ -86,7 +86,7 @@
                 "uniqueItems": true
               },
               "wire_value": { "type": "string", "minLength": 1 },
-              "boundary_vector_file": { "const": "interop/shared/vectors/ttlv-boundaries.json" },
+              "boundary_vector_file": { "const": "verification/interop/shared/vectors/ttlv-boundaries.json" },
               "attribute_policy": { "$ref": "#/$defs/attributePolicy" },
               "source_encoding": { "type": "string", "minLength": 1 },
               "source_requiredness": { "type": "string" },
