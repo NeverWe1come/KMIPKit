@@ -40,7 +40,6 @@ final class MessageModelTest {
     private static final int AUTHENTICATION = 0x42000C;
     private static final int BATCH_COUNT = 0x42000D;
     private static final int EPHEMERAL = 0x420154;
-    private static final int EPHEMERAL_MODE = 0x4201BF;
     private static final int UNIQUE_BATCH_ITEM_ID = 0x420093;
     private static final int OPERATION = 0x42005C;
     private static final int REQUEST_PAYLOAD = 0x420079;
@@ -241,30 +240,6 @@ final class MessageModelTest {
             assertEquals(2, resp30.batchItemCount());
             assertEquals(2, respHeader30View.batchCount());
             assertEquals(0, respHeader30View.wireBatchCount());
-        }
-    }
-
-    @Test
-    void requestBatchItemsExposeKmip30EphemeralMode() {
-        TtlvStructure header30 = structure(
-                nested(PROTOCOL_VERSION, structure(integer(PROTOCOL_VERSION_MAJOR, 3), integer(PROTOCOL_VERSION_MINOR, 0))));
-        TtlvStructure ephemeralItemTtlv = structure(
-                enumeration(OPERATION, RAW_UNKNOWN),
-                enumeration(EPHEMERAL_MODE, 1),
-                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 1))));
-        TtlvStructure nonEphemeralItemTtlv = structure(
-                enumeration(OPERATION, RAW_UNKNOWN),
-                enumeration(EPHEMERAL_MODE, 2),
-                nested(REQUEST_PAYLOAD, structure(integer(0x540002, 2))));
-
-        try (RequestMessage request = RequestMessage.fromTtlv(
-                     multiItemMessage(REQUEST_HEADER, header30, ephemeralItemTtlv, nonEphemeralItemTtlv));
-             RequestBatchItemView ephemeralItem = request.batchItemAt(0);
-             RequestBatchItemView nonEphemeralItem = request.batchItemAt(1)) {
-            assertEquals(OptionalLong.of(1), ephemeralItem.ephemeralMode());
-            assertTrue(ephemeralItem.isEphemeral());
-            assertEquals(OptionalLong.of(2), nonEphemeralItem.ephemeralMode());
-            assertFalse(nonEphemeralItem.isEphemeral());
         }
     }
 

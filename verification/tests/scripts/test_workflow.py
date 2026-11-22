@@ -1152,7 +1152,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("bash verification/coverage/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
         self.assertIn("downloads all eight coverage artifacts", normalized_guide)
 
-    def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
+    def test_nightly_schedule_keeps_branch_coverage_and_cross_platform_script_contracts(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^on:\s*\n(?:(?!^jobs:).)*?^\s+schedule:")
         self.assertIn("cron: '17 3 * * *'", contents)
@@ -1161,6 +1161,10 @@ class WorkflowContractTests(unittest.TestCase):
                 body = self.require_job(contents, job)
                 self.assertIn("github.event_name == 'pull_request'", body)
                 self.assertIn("needs.impact-plan", body)
+
+        scripts = self.require_job(contents, "script-contracts")
+        self.assertIn("github.event_name == 'schedule'", scripts)
+        self.assertIn("needs.impact-plan.outputs.script_platforms", scripts)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")

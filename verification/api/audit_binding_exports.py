@@ -1254,7 +1254,19 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         approved_exclusions=c_exclusions,
         blocked_exports=blocked_c_exports,
     )
-    return compare(c, manifest, "c-kmipkit", c_abi_exports_only=True)
+    binary_report = compare(c, manifest, "c-kmipkit", c_abi_exports_only=True)
+    header = compare(c, manifest, "c-kmipkit")
+    # The C manifest does not yet inventory all header-only declarations. Report
+    # omissions from the manifest separately, while requiring every declared
+    # public item to exist with the expected kind.
+    binary_report["header"] = header
+    binary_report["matchesManifest"] = (
+        binary_report["matchesManifest"]
+        and header["complete"]
+        and not header["notObserved"]
+        and not header["kindMismatches"]
+    )
+    return binary_report
 
 
 def expand_local_c_header_includes(root: Path, header_path: Path) -> str:

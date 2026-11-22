@@ -1199,3 +1199,44 @@ fn openssl_provider_keeps_ml_dsa_mutual_tls_and_certificate_validation() {
         expect_tls_rejection(handshake(&revoked, server));
     }
 }
+
+#[test]
+fn openssl_provider_keeps_rsa_modulus_limits_for_certificates_and_tls_signatures() {
+    use openssl::hash::MessageDigest;
+    use openssl::pkey::PKey;
+    use openssl::rsa::Rsa;
+    use openssl::sign::Signer;
+    use rustls::SignatureScheme;
+    use rustls::pki_types::alg_id;
+
+    let provider = tls::openssl_crypto_provider();
+    let algorithms = provider.signature_verification_algorithms;
+    let chain_algorithm = algorithms
+        .all
+        .iter()
+        .find(|algorithm| algorithm.signature_alg_id() == alg_id::RSA_PKCS1_SHA256)
+        .unwrap();
+    let (_, tls_algorithms) = algorithms
+        .mapping
+        .iter()
+        .find(|(scheme, _)| *scheme == SignatureScheme::RSA_PKCS1_SHA256)
+        .unwrap();
+    let message = b"certificate signature policy";
+    for (bits, expected) in [(1024, false), (2048, true)] {
+        let rsa = Rsa::generate(bits).unwrap();
+        let public_key = rsa.public_key_to_der_pkcs1().unwrap();
+        let private_key = PKey::from_rsa(rsa).unwrap();
+        let mut signer = Signer::new(MessageDigest::sha256(), &private_key).unwrap();
+        signer.update(message).unwrap();
+        let signature = signer.sign_to_vec().unwrap();
+        for algorithm in [*chain_algorithm, tls_algorithms[0]] {
+            assert_eq!(
+                algorithm
+                    .verify_signature(&public_key, message, &signature)
+                    .is_ok(),
+                expected,
+                "RSA modulus size: {bits}"
+            );
+        }
+    }
+}

@@ -138,8 +138,12 @@ class BindingExportAuditTests(unittest.TestCase):
             }
             with patch.object(AUDIT, "read_native_exports", return_value=["kmipkit_probe"]):
                 report = AUDIT.audit_c_package(root, manifest, binary)
+                (include / "kmipkit_standard_attributes_generated.h").write_text("", encoding="utf-8")
+                missing_macro = AUDIT.audit_c_package(root, manifest, binary)
 
         self.assertTrue(report["matchesManifest"], report)
+        self.assertFalse(missing_macro["matchesManifest"])
+        self.assertEqual(missing_macro["header"]["counts"]["notObserved"], 1)
 
     def test_java_classpath_resolution_uses_bash_for_posix_gradle_wrapper(self):
         with tempfile.TemporaryDirectory() as directory:

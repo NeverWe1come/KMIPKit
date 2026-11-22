@@ -64,12 +64,12 @@ impl<'a> RequestHeaderView<'a> {
     /// Returns the effective positive Batch Count for the request message.
     ///
     /// If encoded on the wire (KMIP 2.x), returns the validated header count.
-    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items,
-    /// capped at the largest signed KMIP Integer for an oversized in-memory batch.
+    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
     #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)] // Preserve the established conversion.
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
-            .unwrap_or_else(|| i32::try_from(self.message.batch_items().len()).unwrap_or(i32::MAX))
+            .unwrap_or_else(|| self.message.batch_items().len() as i32)
     }
 
     /// Returns the optional Maximum Response Size Integer.
@@ -226,12 +226,12 @@ impl<'a> ResponseHeaderView<'a> {
     /// Returns the effective positive Batch Count for the request message.
     ///
     /// If encoded on the wire (KMIP 2.x), returns the validated header count.
-    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items,
-    /// capped at the largest signed KMIP Integer for an oversized in-memory batch.
+    /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
     #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)] // Preserve the established conversion.
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
-            .unwrap_or_else(|| i32::try_from(self.message.batch_items().len()).unwrap_or(i32::MAX))
+            .unwrap_or_else(|| self.message.batch_items().len() as i32)
     }
 
     /// Lends the optional Nonce Structure for callback-scoped access.

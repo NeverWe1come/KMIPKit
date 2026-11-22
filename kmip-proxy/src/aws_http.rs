@@ -14,10 +14,6 @@ use aws_smithy_runtime_api::client::orchestrator::{HttpRequest, HttpResponse};
 use aws_smithy_runtime_api::client::result::ConnectorError;
 use aws_smithy_runtime_api::client::runtime_components::RuntimeComponents;
 use aws_smithy_types::body::SdkBody;
-use hyper_rustls::HttpsConnector;
-use hyper_util::client::legacy::Client;
-use hyper_util::client::legacy::connect::HttpConnector as TcpConnector;
-use hyper_util::rt::TokioExecutor;
 use rustls::crypto::CryptoProvider;
 use rustls::{ClientConfig, RootCertStore};
 
@@ -38,8 +34,7 @@ impl From<&HttpConnectorSettings> for ConnectorSettingsKey {
 
 #[derive(Debug, Clone)]
 struct OpenSslConnector {
-    client: Client<HttpsConnector<TcpConnector>, SdkBody>,
-    read_timeout: Option<Duration>,
+    client: reqwest::Client,
 }
 
 impl HttpConnector for OpenSslConnector {
@@ -50,31 +45,29 @@ impl HttpConnector for OpenSslConnector {
                 return HttpConnectorFuture::ready(Err(ConnectorError::user(error.into())));
             }
         };
-        HttpConnectorFuture::new(send_request(
-            self.client.clone(),
-            request,
-            self.read_timeout,
-        ))
+        let request = match reqwest::Request::try_from(request.map(reqwest::Body::wrap)) {
+            Ok(request) => request,
+            Err(error) => {
+                return HttpConnectorFuture::ready(Err(ConnectorError::user(error.into())));
+            }
+        };
+        let client = self.client.clone();
+        HttpConnectorFuture::new(async move {
+            let response = client.execute(request).await.map_err(|error| {
+                let error = error.without_url();
+                if error.is_timeout() {
+                    ConnectorError::timeout(error.into())
+                } else if error.is_request() || error.is_body() {
+                    ConnectorError::io(error.into())
+                } else {
+                    ConnectorError::other(error.into(), None)
+                }
+            })?;
+            let response: http::Response<reqwest::Body> = response.into();
+            HttpResponse::try_from(response.map(SdkBody::from_body_1_x))
+                .map_err(|error| ConnectorError::other(error.into(), None))
+        })
     }
-}
-
-async fn send_request(
-    client: Client<HttpsConnector<TcpConnector>, SdkBody>,
-    request: hyper::Request<SdkBody>,
-    read_timeout: Option<Duration>,
-) -> Result<HttpResponse, ConnectorError> {
-    let request_future = client.request(request);
-    let response = if let Some(timeout) = read_timeout {
-        tokio::time::timeout(timeout, request_future)
-            .await
-            .map_err(|error| ConnectorError::timeout(Box::new(error)))?
-    } else {
-        request_future.await
-    }
-    .map_err(|error| ConnectorError::other(Box::new(error), None))?;
-
-    HttpResponse::try_from(response.map(SdkBody::from_body_1_x))
-        .map_err(|error| ConnectorError::other(Box::new(error), None))
 }
 
 #[derive(Debug)]
@@ -129,22 +122,27 @@ fn build_connector(
     settings: ConnectorSettingsKey,
 ) -> Result<OpenSslConnector, String> {
     let mut roots = RootCertStore::empty();
-    roots.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+    let native_certs = rustls_native_certs::load_native_certs();
+    roots.add_parsable_certificates(native_certs.certs);
     let mut tls_config = ClientConfig::builder_with_provider(provider)
         .with_safe_default_protocol_versions()
         .map_err(|error| format!("could not configure TLS versions for AWS HTTPS: {error}"))?
         .with_root_certificates(roots)
         .with_no_client_auth();
     tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-
-    let mut tcp = TcpConnector::new();
-    tcp.enforce_http(false);
-    tcp.set_connect_timeout(settings.connect_timeout);
-    let https = HttpsConnector::from((tcp, tls_config));
-    let client = Client::builder(TokioExecutor::new()).build::<_, SdkBody>(https);
-
-    Ok(OpenSslConnector {
-        client,
-        read_timeout: settings.read_timeout,
-    })
+    // Keep AWS signatures scoped to the original URL and let Smithy own retries.
+    let mut builder = reqwest::Client::builder()
+        .use_preconfigured_tls(tls_config)
+        .redirect(reqwest::redirect::Policy::none())
+        .retry(reqwest::retry::never());
+    if let Some(timeout) = settings.connect_timeout {
+        builder = builder.connect_timeout(timeout);
+    }
+    if let Some(timeout) = settings.read_timeout {
+        builder = builder.read_timeout(timeout);
+    }
+    builder
+        .build()
+        .map(|client| OpenSslConnector { client })
+        .map_err(|error| format!("could not configure AWS HTTP client: {error}"))
 }

@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       plan_json: ${{ steps.classify.outputs.plan_json }}
+      script_platforms: ${{ steps.classify.outputs.script_platforms }}
       full: ${{ steps.classify.outputs.full }}
       selected_jobs: ${{ steps.classify.outputs.selected_jobs }}
       coverage_scopes: ${{ steps.classify.outputs.coverage_scopes }}
@@ -282,7 +283,8 @@ jobs:
       ((github.event_name == 'pull_request' &&
         (needs.impact-plan.result != 'success' || needs.impact-plan.outputs.full == 'true') &&
         needs.fast-preflight.result == 'success') ||
-       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0'))
+       (github.event_name == 'push' && github.ref == 'refs/heads/release/1.0.0') ||
+       github.event_name == 'schedule')
     name: Script contracts / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs:
@@ -291,7 +293,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ fromJSON((github.event_name == 'pull_request' && needs.impact-plan.outputs.script_platforms) || '["ubuntu-latest","windows-latest","macos-latest"]') }}
     steps:
       - name: Checkout pull request merge commit
         id: checkout-pull-request-merge-commit

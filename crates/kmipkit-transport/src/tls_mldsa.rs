@@ -1,4 +1,4 @@
-//! ML-DSA support for the OpenSSL provider while Rustls continues to validate peer certificates.
+//! Certificate signature policy for the OpenSSL provider, including ML-DSA.
 
 use std::sync::{Arc, OnceLock};
 
@@ -18,8 +18,17 @@ pub(super) fn extend(provider: &mut CryptoProvider) {
     static KEY_PROVIDER: OnceLock<MlDsaKeyProvider> = OnceLock::new();
 
     provider.signature_verification_algorithms = *SIGNATURES.get_or_init(|| {
-        let mut all = provider.signature_verification_algorithms.all.to_vec();
-        let mut mapping = provider.signature_verification_algorithms.mapping.to_vec();
+        let mut all = preserve_rsa_key_limits(provider.signature_verification_algorithms.all);
+        let mut mapping: Vec<_> = provider
+            .signature_verification_algorithms
+            .mapping
+            .iter()
+            .map(|&(scheme, algorithms)| {
+                let guarded: &'static [&'static dyn SignatureVerificationAlgorithm] =
+                    preserve_rsa_key_limits(algorithms).leak();
+                (scheme, guarded)
+            })
+            .collect();
         all.extend(
             [&ML_DSA_44, &ML_DSA_65, &ML_DSA_87]
                 .map(|alg| alg as &dyn SignatureVerificationAlgorithm),
@@ -35,6 +44,53 @@ pub(super) fn extend(provider: &mut CryptoProvider) {
         }
     });
     provider.key_provider = KEY_PROVIDER.get_or_init(|| MlDsaKeyProvider(provider.key_provider));
+}
+
+fn preserve_rsa_key_limits(
+    algorithms: &[&'static dyn SignatureVerificationAlgorithm],
+) -> Vec<&'static dyn SignatureVerificationAlgorithm> {
+    algorithms
+        .iter()
+        .map(|&algorithm| {
+            if algorithm.public_key_alg_id() == alg_id::RSA_ENCRYPTION {
+                Box::leak(Box::new(RsaKeyLimits(algorithm))) as &dyn SignatureVerificationAlgorithm
+            } else {
+                algorithm
+            }
+        })
+        .collect()
+}
+
+#[derive(Debug)]
+struct RsaKeyLimits(&'static dyn SignatureVerificationAlgorithm);
+
+impl SignatureVerificationAlgorithm for RsaKeyLimits {
+    fn verify_signature(
+        &self,
+        public_key: &[u8],
+        message: &[u8],
+        signature: &[u8],
+    ) -> Result<(), InvalidSignature> {
+        let key = openssl::rsa::Rsa::public_key_from_der_pkcs1(public_key)
+            .map_err(|_| InvalidSignature)?;
+        // Match the RSA modulus range of Rustls' AWS-LC signature algorithms.
+        if !(2048..=8192).contains(&key.n().num_bits()) {
+            return Err(InvalidSignature);
+        }
+        self.0.verify_signature(public_key, message, signature)
+    }
+
+    fn public_key_alg_id(&self) -> AlgorithmIdentifier {
+        self.0.public_key_alg_id()
+    }
+
+    fn signature_alg_id(&self) -> AlgorithmIdentifier {
+        self.0.signature_alg_id()
+    }
+
+    fn fips(&self) -> bool {
+        self.0.fips()
+    }
 }
 
 #[derive(Debug)]
