@@ -19,6 +19,9 @@ mod fluent;
 #[path = "client_abi/fluent_crypto.rs"]
 mod fluent_crypto;
 
+#[path = "client_abi/fluent_kmip30.rs"]
+pub(super) mod fluent_kmip30;
+
 fn c_abi_struct_size<T>() -> u32 {
     u32::try_from(std::mem::size_of::<T>()).unwrap_or(u32::MAX)
 }
