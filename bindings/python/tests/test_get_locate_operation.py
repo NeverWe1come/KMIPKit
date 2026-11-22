@@ -423,15 +423,17 @@ def test_locate_response_preserves_identifiers_beyond_default_decoder_limit(monk
 
 
 def test_fluent_get_reuses_native_validation_and_accepts_named_selectors() -> None:
-    from kmipkit.fluent import GetBuilder
+    from kmipkit.fluent import Request
     from kmipkit.protocol_values import KeyFormatType, Operation
 
-    with GetBuilder().key_format_type(KeyFormatType.RAW).key_wrap_type(0x80000000) as builder:
+    with Request().get_request() as builder, ttlv.ttlv_structure_create() as empty:
+        builder.unique_identifier(extensions.UniqueIdentifier.text_string("fluent-id"))
+        builder.key_format_type(KeyFormatType.RAW).key_wrap_type(0x80000000)
+        builder.key_compression_type(1)
         builder.validate()
         with builder.build() as item:
             assert item.operation == Operation.GET
 
-    with ttlv.ttlv_structure_create() as empty, GetBuilder() as builder:
         builder.key_wrapping_specification(empty)
         with pytest.raises(InvalidInputError):
             builder.validate()
