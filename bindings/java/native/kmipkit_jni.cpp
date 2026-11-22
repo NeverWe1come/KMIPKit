@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "kmipkit_internal.h"
+#include "kmipkit_fluent.h"
 #include "native_handle_transfer_guard.hpp"
 #include "unique_batch_item_id_validation.hpp"
 #include "response_identifier_validation.hpp"
