@@ -162,7 +162,7 @@ mod tests {
     #[test]
     fn aes_256_gcm_roundtrip_authenticates_ciphertext_and_tag() {
         let key = [0x42_u8; 32];
-        let nonce = [0x24_u8; 12];
+        let nonce = generate_gcm_nonce().expect("OpenSSL generates a fresh GCM nonce");
         let plaintext = b"OpenSSL protects this proxy key";
         let encrypted = aes_256_gcm_encrypt(&key, &nonce, plaintext).expect("encryption succeeds");
 
