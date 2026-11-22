@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and install the Java JNI package from one exact KMIPKit git commit."""
+"""Build and install the Java JNI package from the current KMIPKit checkout."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import hashlib
 import json
 import os
 import platform
-import re
 import shutil
 import subprocess
 import sys
@@ -27,8 +26,7 @@ JAVA_BUILD_ARCHIVE_PATHS = (
     "bindings/c",
     "docs/user-guide/en",
     "docs/user-guide/es",
-    "tests/fixtures/api/generated",
-    "vendor/aws-lc-sys-0.45.0",
+    "bindings/shared/fixtures/api/generated",
 )
 
 
@@ -65,19 +63,6 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
-    """Resolve the consumer's pin file and reject traversal and symlink escapes."""
-    root = project_root.resolve(strict=True)
-    resolved = pin_file.resolve(strict=True)
-    try:
-        resolved.relative_to(root)
-    except ValueError as error:
-        raise ValueError("--pin-file must resolve inside the Java validator project") from error
-    if not resolved.is_file():
-        raise ValueError("--pin-file must identify a regular file")
-    return resolved
-
-
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
     with tempfile.TemporaryFile(prefix="kmipkit-git-archive-") as archive_file:
         subprocess.run(
@@ -103,20 +88,10 @@ def extract_git_archive(repository: Path, commit: str, destination: Path) -> Non
             source.extractall(destination, filter="data")
 
 
-def install(repository: Path, commit: str, release_ref: str, maven_repository: Path,
-            manifest_path: Path) -> dict[str, object]:
-    if release_ref != "release/1.0.0":
-        raise ValueError("The Java consumer artifact must come from release/1.0.0")
-    if not re.fullmatch(r"[0-9a-f]{40}", commit):
-        raise ValueError("--commit must be a full lowercase git commit id")
-    resolved = subprocess.run(
-        ["git", "-C", str(repository), "rev-parse", "--verify", f"{commit}^{{commit}}"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    if resolved != commit:
-        raise ValueError("Resolved commit differs from the requested exact commit")
+def install(repository: Path, maven_repository: Path, manifest_path: Path) -> dict[str, object]:
+    commit = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"], text=True,
+    ).strip()
 
     classifier = host_classifier()
     artifact_name = f"kmipkit-java-{PACKAGE_VERSION}-{classifier}.jar"
@@ -156,7 +131,7 @@ def install(repository: Path, commit: str, release_ref: str, maven_repository: P
     )
     manifest: dict[str, object] = {
         "schema_version": "1.0",
-        "release_ref": release_ref,
+        "release_ref": "HEAD",
         "library_commit": commit,
         "maven_coordinate": f"org.kmipkit:kmipkit-java:{PACKAGE_VERSION}:{classifier}",
         "native_classifier": classifier,
@@ -165,22 +140,19 @@ def install(repository: Path, commit: str, release_ref: str, maven_repository: P
     }
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    pin = {"release_ref": "HEAD", "commit": commit}
+    (manifest_path.parent / "library-pin.json").write_text(json.dumps(pin, indent=2) + "\n", encoding="utf-8")
     return manifest
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository", type=Path, required=True)
-    parser.add_argument("--pin-file", type=Path, required=True)
     parser.add_argument("--maven-repository", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     args = parser.parse_args()
     try:
-        project_root = Path(__file__).resolve().parents[1]
-        pin_path = resolve_pin_file(args.pin_file, project_root)
-        pin = json.loads(pin_path.read_text(encoding="utf-8"))
-        result = install(args.repository.resolve(), pin["commit"], pin["release_ref"],
-                         args.maven_repository.resolve(), args.manifest.resolve())
+        result = install(args.repository.resolve(), args.maven_repository.resolve(), args.manifest.resolve())
     except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
         print(f"artifact installation failed: {error}", file=sys.stderr)
         return 1

@@ -1,10 +1,11 @@
 # KMIPKit Java interoperability validator
 
 This project is an external Java 17 consumer of the installed KMIPKit JNI JAR.
-It does not compile the library sources from this checkout. The artifact pin is
-in `library-pin.json`; the installer extracts that exact `release/1.0.0`
-commit, builds the platform JAR in an isolated source tree, installs it into a
-local Maven repository, and writes a SHA-256 provenance manifest.
+The installer archives the checked-out Git commit, builds the platform JAR in
+an isolated source tree, and installs it into a local Maven repository. It
+records the source commit and the artifact's SHA-256 alongside the generated
+`library-pin.json`. Configure OpenSSL 3.5 before building as described in the
+[build guide](../../../docs/user-guide/en/language-packages.md#building-kmipkit-from-source).
 
 Run commands from this directory. `plan` is offline, `preflight` checks local
 files and provenance without DNS or sockets, and `run` executes enabled test
@@ -13,7 +14,6 @@ routes against the endpoint in the connection file:
 ```sh
 python3 tools/install_artifact.py \
   --repository ../../.. \
-  --pin-file library-pin.json \
   --maven-repository build/maven-repository \
   --manifest build/artifact-manifest.json
 
@@ -63,9 +63,9 @@ public client request route carry separate API limitation reasons. The
 validator also constructs and decodes generic TTLV values locally. It does not
 send arbitrary generic TTLV requests, and the Java package has no distinct
 high-level API route. The KMIP 2.0 live route remains disabled while
-protocol-version preservation is outside the pinned release artifact.
+protocol-version preservation is outside the installed validator routes.
 
-CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
+CI builds the JNI JAR from the revision under test and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
 and request/response handling; it is not evidence for a commercial or other
 deployed KMS.

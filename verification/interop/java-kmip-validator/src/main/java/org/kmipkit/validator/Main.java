@@ -199,10 +199,10 @@ public final class Main {
     }
 
     private static ArtifactProvenance loadArtifact(Path manifestPath) throws Exception {
-        Path pinPath = Path.of(PIN_FILE);
+        Path pinPath = manifestPath.resolveSibling(PIN_FILE);
         JsonNode pin = JSON.readTree(pinPath.toFile());
-        if (pin == null || !"release/1.0.0".equals(pin.path("release_ref").asText())) {
-            throw new IllegalArgumentException("The Java package pin must refer to release/1.0.0");
+        if (pin == null || !"HEAD".equals(pin.path("release_ref").asText())) {
+            throw new IllegalArgumentException("The Java package pin must refer to HEAD");
         }
         return ArtifactProvenance.load(manifestPath, pin.path("commit").asText());
     }

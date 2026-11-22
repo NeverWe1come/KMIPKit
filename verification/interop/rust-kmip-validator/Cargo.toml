@@ -28,7 +28,6 @@ kmipkit-ttlv = { path = "../.local/rust-live/install/crates/kmipkit-ttlv-1.0.0" 
 kmipkit-protocol = { path = "../.local/rust-live/install/crates/kmipkit-protocol-1.0.0" }
 kmipkit-transport = { path = "../.local/rust-live/install/crates/kmipkit-transport-1.0.0" }
 kmipkit-client = { path = "../.local/rust-live/install/crates/kmipkit-client-1.0.0" }
-aws-lc-sys = { path = "../.local/rust-live/install/vendor/aws-lc-sys-0.45.0" }
 
 [lints.clippy]
 all = { level = "warn", priority = -1 }

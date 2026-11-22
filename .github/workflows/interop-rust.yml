@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'verification/interop/rust-kmip-validator/**'
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'verification/security/openssl/**'
+      - '.github/actions/setup-static-openssl/**'
       - 'verification/interop/shared/**'
       - 'specs/084-interop-rust-live/**'
       - '.github/workflows/interop-rust.yml'
@@ -13,6 +18,11 @@ on:
       - feature/KMIPKIT-0084-interop-rust-live
     paths:
       - 'verification/interop/rust-kmip-validator/**'
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'verification/security/openssl/**'
+      - '.github/actions/setup-static-openssl/**'
       - 'verification/interop/shared/**'
       - 'specs/084-interop-rust-live/**'
       - '.github/workflows/interop-rust.yml'
@@ -27,16 +37,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout repository and pinned release history
+      - name: Checkout the revision under test
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Install Rust 1.94
         run: rustup toolchain install 1.94 --profile minimal --component rustfmt --component clippy --component llvm-tools
 
-      - name: Build and install immutable release packages
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
+      - name: Build and install packages from this revision
         run: python3 verification/interop/rust-kmip-validator/tools/install_artifact.py
 
       - name: Verify installed bytes and package provenance
@@ -58,7 +70,7 @@ jobs:
           cargo +1.94 test --locked --manifest-path verification/interop/rust-kmip-validator/Cargo.toml --all-features
           cargo +1.94 build --locked --manifest-path verification/interop/rust-kmip-validator/Cargo.toml
 
-      - name: Build isolated local test-server harness from pinned release
+      - name: Build isolated local test-server harness from this revision
         run: python3 verification/interop/rust-kmip-validator/tools/build_test_server.py
 
       - name: Create isolated fixture-test environment

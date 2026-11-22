@@ -33,9 +33,6 @@ pub(crate) fn structure(_tag: u32, children: Vec<Item>) -> Result<Structure> {
 }
 pub(crate) fn client(connection: &Connection) -> Result<Client> {
     connection.validate()?;
-    if env!("KMIPKIT_LIBRARY_COMMIT") != crate::models::PIN {
-        return Err("library release provenance mismatch");
-    }
     if let Some(credentials) = connection
         .authentication
         .as_ref()

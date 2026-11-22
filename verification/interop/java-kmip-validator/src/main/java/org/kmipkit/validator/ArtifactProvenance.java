@@ -14,7 +14,7 @@ import java.util.HexFormat;
 /** Verified provenance for the independently installed native Java package. */
 public record ArtifactProvenance(String libraryCommit, String artifactSha256,
                                  String mavenCoordinate, String nativeClassifier, Path artifactPath) {
-    private static final String RELEASE_REF = "release/1.0.0";
+    private static final String RELEASE_REF = "HEAD";
     private static final String PACKAGE_VERSION = "1.0.0";
     private static final ObjectMapper JSON = new ObjectMapper(
             com.fasterxml.jackson.core.JsonFactory.builder()
@@ -28,7 +28,7 @@ public record ArtifactProvenance(String libraryCommit, String artifactSha256,
         JsonNode manifest = JSON.readTree(manifestPath.toFile());
         require(manifest != null && manifest.isObject(), "Artifact manifest must be an object");
         require("1.0".equals(text(manifest, "schema_version")), "Artifact manifest schema is unsupported");
-        require(RELEASE_REF.equals(text(manifest, "release_ref")), "Artifact was not built from release/1.0.0");
+        require(RELEASE_REF.equals(text(manifest, "release_ref")), "Artifact was not built from the checkout under test");
         String commit = text(manifest, "library_commit");
         require(expectedCommit.equals(commit), "Installed artifact commit differs from the exact release pin");
         String classifier = text(manifest, "native_classifier");
