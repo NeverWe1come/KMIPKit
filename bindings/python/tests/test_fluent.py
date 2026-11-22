@@ -35,6 +35,44 @@ def test_fluent_request_exposes_locate_and_revoke_builders():
     assert "RevokeBuilder" in fluent.__all__
 
 
+def test_fluent_request_exposes_a_ping_builder():
+    assert callable(getattr(fluent.Request, "ping", None))
+    assert hasattr(fluent, "PingBuilder")
+    assert "PingBuilder" in fluent.__all__
+    builder = fluent.Request(None).ping()
+    builder.validate()
+    with builder.to_batch_item() as item:
+        assert item.operation == protocol_values.V2_1_OPERATION_PING
+
+
+def test_create_builder_requires_object_type_and_builds_a_typed_create_item():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            builder = fluent.Request(None).create()
+            with pytest.raises(errors.InvalidInputError):
+                builder.validate()
+            with pytest.raises(errors.InvalidInputError):
+                builder.with_asynchronous_indicator(1 << 32)
+            builder.close()
+
+            builder = (
+                fluent.Request(None).create()
+                .object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+                .attributes(attributes)
+                .protection_storage_masks(empty_items)
+                .with_asynchronous_indicator(protocol_values.AsynchronousIndicator.PROHIBITED)
+                .with_options(client.RequestOptions())
+            )
+            attributes.close()
+            empty_items.close()
+            item = builder.to_batch_item()
+            try:
+                assert item.operation == protocol_values.Operation.CREATE
+            finally:
+                item.close()
+                builder.close()
+
+
 def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
     with ttlv.ttlv_structure_create() as empty_items:
         with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
@@ -358,6 +396,13 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation in (0x12, 0x15, 0x16, 0x13):
+        payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation == 0x08:
+        payload_fields = [
+            _item(0x4200D5, 2, struct.pack(">i", 1)),
+            _item(0x420094, 7, identifier),
+        ]
     elif operation == 11:
         payload_fields = [
             _item(0x420094, 7, identifier),
@@ -373,6 +418,8 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
                 _item(0x42000A, 7, b"Comment"),
             ),
         ]
+    elif operation == protocol_values.V2_1_OPERATION_PING:
+        payload_fields = []
     else:
         raise AssertionError(f"unexpected fluent operation {operation}")
     response_item = _structure(
@@ -389,6 +436,7 @@ def _start_lifecycle_peer(
     *,
     expected_asynchronous_indicator: int | None = None,
     expected_indicators_by_operation: dict[int, int] | None = None,
+    response_identifier: bytes | None = None,
 ) -> tuple[int, list[tuple[int, bytes | None, bytes]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
@@ -411,6 +459,10 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
+                    if response_identifier is not None:
+                        stream.sendall(
+                            _lifecycle_response(expected_operation, response_identifier)
+                        )
                     expected_indicator = (expected_indicators_by_operation or {}).get(
                         expected_operation, expected_asynchronous_indicator
                     )
@@ -425,8 +477,12 @@ def _start_lifecycle_peer(
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
                     observations.append((operation, request_identifier, request))
-                    response_identifier = request_identifier or b"fluent-created-id"
-                    stream.sendall(_lifecycle_response(operation, response_identifier))
+                    if response_identifier is None:
+                        stream.sendall(
+                            _lifecycle_response(
+                                operation, request_identifier or b"fluent-created-id"
+                            )
+                        )
         except BaseException as error:  # noqa: BLE001 - make peer failures visible in the test.
             failures.put(error)
         finally:
@@ -493,6 +549,39 @@ def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options
         assert [operation for operation, _, _ in observations] == [10, 20, 1, 1]
     finally:
         for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_fluent_ping_builder_executes_one_tls_exchange() -> None:
+    assert callable(getattr(fluent.Request, "ping", None))
+    port, observations, peer_failures, peer = _start_lifecycle_peer(
+        (protocol_values.V2_1_OPERATION_PING,), expected_asynchronous_indicator=2
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result: client.BatchResult | None = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                result = kmip_client.request().ping().asynchronous_indicator(2).execute(limits)
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [item.operation for item in result.items] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+        assert [operation for operation, _, _ in observations] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+    finally:
+        if result is not None:
             result.close()
         peer.join(timeout=12)
         if not peer_failures.empty():

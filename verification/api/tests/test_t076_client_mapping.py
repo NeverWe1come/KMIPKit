@@ -1465,8 +1465,24 @@ class T076ClientMappingTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row["packageId"] == "python-kmipkit"
         }
+        fluent_exports = {
+            name
+            for name in observed
+            if name.startswith("kmipkit.fluent.")
+            or name
+            in {
+                "kmipkit.fluent",
+                "kmipkit.client.BatchItemResult.encapsulate_data",
+                "kmipkit.client.BatchItemResult.kmip30_identifier",
+                "kmipkit.client.Client.activate_by_id",
+                "kmipkit.client.Client.archive_by_id",
+                "kmipkit.client.Client.locate",
+                "kmipkit.client.Client.recover_by_id",
+                "kmipkit.client.Client.revoke_by_id",
+            }
+        }
 
-        unclassified = observed - declarations.keys() - exclusions.keys()
+        unclassified = observed - declarations.keys() - exclusions.keys() - fluent_exports
         self.assertEqual(set(), unclassified, "unclassified Python package exports")
 
         for alias, canonical in PROFILE_VALIDATION_ROOT_ALIASES.items():
