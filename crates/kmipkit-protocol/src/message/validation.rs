@@ -578,17 +578,15 @@ fn validate_response_header(
             &[PROTOCOL_VERSION, TIME_STAMP, BATCH_COUNT],
             Some(top_index),
         )?;
-        let batch_count =
-            match integer_value(required_child(view.children(), BATCH_COUNT, top_index)?) {
-                Some(count) => count,
-                None => {
-                    return Err(error(
-                        MessageValidationErrorKind::WrongItemType, // COVERAGE-EXCLUDE: schema validation enforces Integer.
-                        Some(top_index),
-                        None,
-                    ));
-                }
-            };
+        let Some(batch_count) =
+            integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
+        else {
+            return Err(error(
+                MessageValidationErrorKind::WrongItemType, // COVERAGE-EXCLUDE: schema validation enforces Integer.
+                Some(top_index),
+                None,
+            ));
+        };
         if batch_count < 1 {
             return Err(error(
                 MessageValidationErrorKind::InvalidBatchCount,
