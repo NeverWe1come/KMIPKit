@@ -830,3 +830,14 @@ fn key_pair_prebuilt_private_attributes_preserve_extension_items() {
 fn key_pair_prebuilt_public_attributes_preserve_extension_items() {
     assert_key_pair_prebuilt_extension_items_are_preserved(PUBLIC_KEY_ATTRIBUTES);
 }
+
+#[test]
+fn raw_key_pair_usage_mask_conveniences_remain_available() {
+    CreateKeyPairBuilder::detached()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .private_usage_mask_bits(CryptographicUsageMask::SIGN.raw())
+        .public_usage_mask_bits(CryptographicUsageMask::VERIFY.raw())
+        .build_request()
+        .expect("raw private and public usage bits remain available to expert callers");
+}
