@@ -578,14 +578,11 @@ fn validate_response_header(
             &[PROTOCOL_VERSION, TIME_STAMP, BATCH_COUNT],
             Some(top_index),
         )?;
+        let wrong_type = MessageValidationErrorKind::WrongItemType;
         let Some(batch_count) =
             integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
         else {
-            return Err(error(
-                MessageValidationErrorKind::WrongItemType, // COVERAGE-EXCLUDE: schema validation enforces Integer.
-                Some(top_index),
-                None,
-            ));
+            return Err(error(wrong_type, Some(top_index), None)); // COVERAGE-EXCLUDE: validate_fields checks the type first.
         };
         if batch_count < 1 {
             return Err(error(

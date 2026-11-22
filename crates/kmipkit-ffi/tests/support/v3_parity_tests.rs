@@ -520,6 +520,60 @@ fn ttlv_test_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
     encoded
 }
 
+#[test]
+fn test_link_normalizers_reject_unrepresentable_links_ffi() {
+    let invalid_v2_link = ttlv_test_item(
+        0x0042_004A,
+        0x01,
+        &[
+            ttlv_test_item(0x0042_004B, 0x05, &u32::MAX.to_be_bytes()),
+            ttlv_test_item(0x0042_0094, 0x07, b"link-target"),
+        ]
+        .concat(),
+    );
+    let v3_only_link = ttlv_test_item(0x0042_01A0, 0x07, b"credential-link-target");
+
+    for (wire, normalize) in [
+        (
+            invalid_v2_link,
+            kmipkit_link_normalizer_v2_to_v3
+                as extern "C" fn(*mut kmipkit_ttlv_item_t, *mut *mut kmipkit_ttlv_item_t) -> i32,
+        ),
+        (v3_only_link, kmipkit_link_normalizer_v3_to_v2),
+    ] {
+        let mut error = kmipkit_ttlv_decode_error_v1_t {
+            struct_size: test_c_abi_struct_size::<kmipkit_ttlv_decode_error_v1_t>(),
+            abi_version: 1,
+            kind: 0,
+            byte_offset: 0,
+        };
+        let mut item = ptr::null_mut();
+        assert_eq!(
+            kmipkit_ttlv_decode(
+                wire.as_ptr(),
+                wire.len() as u64,
+                &raw mut error,
+                &raw mut item,
+            ),
+            SUCCESS
+        );
+        let mut normalized = ptr::null_mut();
+        assert_eq!(normalize(item, &raw mut normalized), ERROR_INVALID_INPUT);
+        assert!(normalized.is_null());
+        kmipkit_ttlv_item_release(item);
+    }
+}
+
+#[test]
+fn test_s2c_response_builder_rejects_an_empty_batch_ffi() {
+    let mut response = ptr::null_mut();
+    assert_eq!(
+        kmipkit_s2c_build_response_ttlv(2, 1, ptr::null(), 0, &raw mut response),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+}
+
 static PUT_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static QUERY_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 static PUT_V1_CALLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
