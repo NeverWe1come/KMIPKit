@@ -2,7 +2,7 @@
 
 use kmipkit_protocol::{
     AttributeSet, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
-    CreateUserRequest, CredentialType, DeactivateRequest, DecapsulateRequest, EncapsulateRequest,
+    CreateUserRequest, DeactivateRequest, DecapsulateRequest, EncapsulateRequest,
     ObliterateRequest, PasswordCredentialObject, PasswordCredentialObjectFields, ProtocolVersion,
     SecretText,
 };
@@ -134,7 +134,6 @@ fn all_seven_kmip30_direct_client_methods_follow_the_configured_version() {
     assert_direct_calls!(
         0x3F,
         CreateCredentialRequest::new(
-            CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             CreateCredentialObject::PasswordCredential(
                 PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
@@ -232,7 +231,6 @@ fn kmip30_requests() -> [ClientRequest; 7] {
         )),
         ClientRequest::create_user(CreateUserRequest::new(AttributeSet::new())),
         ClientRequest::create_credential(CreateCredentialRequest::new(
-            CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             CreateCredentialObject::PasswordCredential(password),
         )),
@@ -397,34 +395,14 @@ fn response_with_result(
     payload: Option<Structure>,
     correlation: Option<&[u8]>,
 ) -> Vec<u8> {
-    let version = test_structure([
-        test_item(0x0042_006A, Value::integer(3)),
-        test_item(0x0042_006B, Value::integer(0)),
-    ]);
-    let header = test_structure([
-        test_item(0x0042_0069, Value::structure(version)),
-        test_item(0x0042_0092, Value::date_time(1)),
-    ]);
-    let mut batch_items = vec![
-        test_item(0x0042_005C, Value::enumeration(operation)),
-        test_item(0x0042_007F, Value::enumeration(status)),
-    ];
-    if let Some(correlation) = correlation {
-        batch_items.push(test_item(
-            0x0042_0006,
-            Value::byte_string(correlation.to_vec()),
-        ));
-    }
-    if let Some(payload) = payload {
-        batch_items.push(test_item(0x0042_007C, Value::structure(payload)));
-    }
-    let batch = test_structure(batch_items);
-    let message = test_structure([
-        test_item(0x0042_007A, Value::structure(header)),
-        test_item(0x0042_000F, Value::structure(batch)),
-    ]);
-    super::encode_message_for_test(message, &CodecLimits::defaults())
-        .expect("KMIP 3.0 response fixture is encodable")
+    crate::execute_test_support::asynchronous_response_bytes_with_version(
+        ProtocolVersion::V3_0,
+        operation,
+        status,
+        None,
+        correlation,
+        payload,
+    )
 }
 
 fn test_structure(items: impl IntoIterator<Item = Item>) -> Structure {

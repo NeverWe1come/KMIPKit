@@ -4,7 +4,7 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 use crate::{
     AttributeSet, CreateCredentialObject, CreateCredentialRequest, CreateCredentialResponse,
-    CreateGroupRequest, CreateGroupResponse, CreateUserRequest, CreateUserResponse, CredentialType,
+    CreateGroupRequest, CreateGroupResponse, CreateUserRequest, CreateUserResponse,
     DeactivateRequest, DecapsulateRequest, EncapsulateRequest, ObliterateRequest,
     ObliterateResponse, PasswordCredentialObject, PasswordCredentialObjectFields, SecretText,
     UniqueIdentifier,
@@ -125,7 +125,6 @@ fn create_credential_uses_table_277_order_and_redacts_credential_material() {
     };
     let password = PasswordCredentialObject::try_new(fields).expect("valid credential object");
     let request = CreateCredentialRequest::new(
-        CredentialType::UsernameAndPassword,
         AttributeSet::new(),
         CreateCredentialObject::PasswordCredential(password),
     );

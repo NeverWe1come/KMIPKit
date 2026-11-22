@@ -202,7 +202,6 @@ fn lifecycle_response_accessors_return_identifier_only_for_success() {
     .expect("valid password credential");
     assert_successful_lifecycle_response!(
         ClientRequest::CreateCredential(kmipkit_protocol::CreateCredentialRequest::new(
-            kmipkit_protocol::CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             kmipkit_protocol::CreateCredentialObject::PasswordCredential(password),
         )),
@@ -312,7 +311,6 @@ fn lifecycle_response_accessors_clear_identifier_for_failure() {
     .expect("valid password credential");
     assert_failed_lifecycle_response!(
         ClientRequest::CreateCredential(kmipkit_protocol::CreateCredentialRequest::new(
-            kmipkit_protocol::CredentialType::UsernameAndPassword,
             AttributeSet::new(),
             kmipkit_protocol::CreateCredentialObject::PasswordCredential(password),
         )),

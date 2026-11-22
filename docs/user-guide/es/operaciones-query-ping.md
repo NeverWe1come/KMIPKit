@@ -104,11 +104,23 @@ fn comprobar_ping(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    client.ping(limits)
+    client.request().ping().execute(limits)
 }
 
 fn main() {}
 ```
+
+El builder fluido Rust `PingBuilder` construye el `PingRequest` vacío existente
+con `.build()`, comprueba el payload localmente con `.validate()` o lo convierte
+en un elemento de lote tipado con `.to_batch_item()`. KMIP 2.1 §6.1.36,
+tablas 271–272 define la petición y la respuesta correcta vacías. La ejecución
+rechaza KMIP 2.0 antes del envío. `.with_options(...)` configura opciones del
+intercambio; `.with_asynchronous_indicator(1)` permite Pending explícitamente y
+conserva su correlación tipada sin ejecutar Poll. La conversión al elemento de
+lote conserva solo la petición; configura las opciones y el comportamiento
+asíncrono en el lote. `Client::ping` sigue disponible. Los builders fluidos de
+Ping para C, Java y Python están pendientes; sus rutas tipadas existentes siguen
+disponibles.
 
 ## Resultados, errores y reintentos
 
