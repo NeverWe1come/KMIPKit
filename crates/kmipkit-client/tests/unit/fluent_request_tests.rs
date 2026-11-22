@@ -3240,3 +3240,41 @@ fn get_builder_preserves_symbolic_and_raw_selectors_and_validates_locally() {
         .key_wrapping_specification(Structure::new());
     assert!(!builder.validate().is_valid());
 }
+
+#[test]
+fn get_builder_supports_batch_items_and_exchange_options() {
+    use kmipkit_protocol::{KeyCompressionType, KeyFormatType, KeyWrapType};
+
+    let identifier = UniqueIdentifier::TextString("get-key".to_owned());
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let item = client
+        .request()
+        .get_request()
+        .unique_identifier(identifier.clone())
+        .key_format_type(KeyFormatType::from(1))
+        .key_wrap_type(KeyWrapType::from(0x8000_0000))
+        .key_compression_type(KeyCompressionType::from(1))
+        .to_batch_item();
+    let ClientRequest::Get(request) = item.request() else {
+        panic!("expected a Get request");
+    };
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    assert_eq!(request.key_format_type().unwrap().raw(), 1);
+    assert_eq!(request.key_wrap_type().unwrap().raw(), 0x8000_0000);
+    assert_eq!(request.key_compression_type().unwrap().raw(), 1);
+    assert!(request.key_wrapping_specification().is_none());
+
+    let error = client
+        .request()
+        .get_request()
+        .unique_identifier(identifier)
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
