@@ -30,3 +30,22 @@ their public routes and executable recipes are mapped.
 
 The matrix expresses planned coverage. Results from running the scenarios
 against installed packages belong in execution reports.
+
+## Reference counts
+
+| KMIP version | Origin | Cases or inventory entries | Planned rows |
+| --- | --- | ---: | ---: |
+| 2.0 | Normative | 2,289 | 154,004 |
+| 2.1 | Normative | 2,346 | 159,328 |
+| 3.0 | Normative | 5,206 | 5,234 |
+| 3.0 | OASIS XML | 102 | 654 |
+
+The 2.x portion retains the 2,689 cases from PR #180 and adds eight cases
+for Date Time and Interval forms of Login and Delegated Login lease time. The
+review API exposes seven additional routes. The port also applies the
+version-specific payload and partial Stop response corrections from the
+dependent PRs.
+
+The 3.0 XML cases contain 617 request/response exchanges and show 94 distinct
+payload fields. The 28 additional 3.0 normative rows are constructor routes
+for the seven draft operations mapped across the four languages.
