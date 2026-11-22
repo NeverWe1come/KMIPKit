@@ -43,6 +43,49 @@ use super::*;
 use crate::extension_registry::credential_secrets::kmipkit_secret_bytes_release;
 use crate::kmipkit_byte_span_v1_t;
 
+#[test]
+fn version_gate_abi_reports_catalogued_spans_and_rejects_invalid_versions() {
+    let (mut introduced_major, mut introduced_minor) = (0u32, 0u32);
+    let (mut deprecated_major, mut deprecated_minor) = (u32::MAX, u32::MAX);
+    let (mut removed_major, mut removed_minor) = (u32::MAX, u32::MAX);
+    assert_eq!(
+        super::kmipkit_version_gate_tag_span(
+            0x0042_0166,
+            &raw mut introduced_major,
+            &raw mut introduced_minor,
+            &raw mut deprecated_major,
+            &raw mut deprecated_minor,
+            &raw mut removed_major,
+            &raw mut removed_minor,
+        ),
+        SUCCESS
+    );
+    assert_eq!((introduced_major, introduced_minor), (2, 1));
+    assert_eq!((deprecated_major, deprecated_minor), (0, 0));
+    assert_eq!((removed_major, removed_minor), (0, 0));
+    assert_ne!(
+        super::kmipkit_version_gate_tag_span(
+            0x0042_FFFF,
+            &raw mut introduced_major,
+            &raw mut introduced_minor,
+            &raw mut deprecated_major,
+            &raw mut deprecated_minor,
+            &raw mut removed_major,
+            &raw mut removed_minor,
+        ),
+        SUCCESS
+    );
+
+    assert_ne!(
+        super::kmipkit_version_gate_validate_attribute_mutation(u32::MAX, 0, 0x0042_0028),
+        SUCCESS
+    );
+    assert_ne!(
+        super::kmipkit_version_gate_validate_attribute_mutation(2, u32::MAX, 0x0042_0028),
+        SUCCESS
+    );
+}
+
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
     let mut tree = Structure::new();
     tree.try_push(
@@ -11876,6 +11919,22 @@ unsafe extern "C" fn coverage_discover_versions_v1(
     0
 }
 
+unsafe extern "C" fn coverage_discover_versions_empty_v1(
+    _user_data: *mut core::ffi::c_void,
+    _item: *const kmipkit_server_request_item_view_v1_t,
+    _major: u32,
+    _minor: u32,
+    output: *mut u32,
+    capacity: u32,
+    count: *mut u32,
+) -> u32 {
+    if output.is_null() || capacity == 0 || count.is_null() {
+        return 1;
+    }
+    unsafe { count.write(0) };
+    0
+}
+
 unsafe extern "C" fn coverage_notify_v1(
     _user_data: *mut core::ffi::c_void,
     _item: *const kmipkit_server_request_item_view_v1_t,
@@ -12038,6 +12097,50 @@ fn server_request_handler_adapters_v1_and_v2_cover_all_operations() {
     assert!(v2.handle_put(&put).is_ok());
     assert!(v2.handle_query(&query).is_ok());
     assert!(v2.handle_set_endpoint_role(&role).is_ok());
+
+    v1.handler.handle_discover_versions = None;
+    v1.handler.handle_notify = None;
+    v1.handler.handle_put = None;
+    v1.handler.handle_query = None;
+    v1.handler.handle_set_endpoint_role = None;
+    assert!(v1.handle_discover_versions(&discover).is_err());
+    assert!(v1.handle_notify(&notify).is_err());
+    assert!(v1.handle_put(&put).is_err());
+    assert!(v1.handle_query(&query).is_err());
+    assert!(v1.handle_set_endpoint_role(&role).is_err());
+
+    let empty_discover = ServerDiscoverVersionsRequest::new(Vec::new());
+    let mut empty_version_adapter = CServerRequestHandlerAdapterV1 {
+        handler: kmipkit_server_request_handler_v1_t {
+            struct_size: c_abi_struct_size::<kmipkit_server_request_handler_v1_t>(),
+            abi_version: 1,
+            user_data: ptr::null_mut(),
+            handle_discover_versions: Some(coverage_discover_versions_empty_v1),
+            handle_notify: None,
+            handle_put: None,
+            handle_query: None,
+            handle_set_endpoint_role: None,
+        },
+        current_batch_item_id: None,
+    };
+    assert_eq!(
+        empty_version_adapter
+            .handle_discover_versions(&empty_discover)
+            .unwrap()
+            .protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+
+    v2.handler.handle_discover_versions = None;
+    v2.handler.handle_notify = None;
+    v2.handler.handle_put = None;
+    v2.handler.handle_query = None;
+    v2.handler.handle_set_endpoint_role = None;
+    assert!(v2.handle_discover_versions(&discover).is_err());
+    assert!(v2.handle_notify(&notify).is_err());
+    assert!(v2.handle_put(&put).is_err());
+    assert!(v2.handle_query(&query).is_err());
+    assert!(v2.handle_set_endpoint_role(&role).is_err());
 }
 
 static COVERAGE_SUPPORTED_VERSIONS: [u32; 1] = [0x0002_0001];
@@ -12259,4 +12362,24 @@ fn server_request_handler_adapter_v3_exercises_v4_and_v5_callbacks() {
     let response = adapter.handle_set_endpoint_role(&role).unwrap();
     assert_eq!(response.endpoint_role(), Some(EndpointRole::CLIENT));
     assert_eq!(response.vendor_identification(), Some("KMIPKit"));
+
+    adapter
+        .handler_v4
+        .as_mut()
+        .unwrap()
+        .handle_discover_versions = None;
+    adapter.handler_v5.as_mut().unwrap().handle_notify = None;
+    adapter.handler_v5.as_mut().unwrap().handle_put = None;
+    adapter.handler.handle_put = None;
+    adapter.handler.handle_query = None;
+    adapter
+        .handler_v5
+        .as_mut()
+        .unwrap()
+        .handle_set_endpoint_role = None;
+    assert!(adapter.handle_discover_versions(&discover).is_err());
+    assert!(adapter.handle_notify(&notify).is_err());
+    assert!(adapter.handle_put(&put).is_err());
+    assert!(adapter.handle_query(&query).is_err());
+    assert!(adapter.handle_set_endpoint_role(&role).is_err());
 }

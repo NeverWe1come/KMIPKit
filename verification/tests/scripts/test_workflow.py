@@ -282,6 +282,15 @@ class WorkflowContractTests(unittest.TestCase):
             "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
         )
 
+    def test_wsl_cargo_contract_runs_only_on_windows_runner(self) -> None:
+        job = self.require_job(self.require_workflow(), "script-contracts")
+        step = self.require_named_step(job, "Run PowerShell contracts")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^        if: runner\.os == 'Windows'$",
+            "The WSL integration contract requires a Windows runner; Linux and macOS run Cargo natively.",
+        )
+
     def test_script_contract_job_fetches_history_for_pinned_git_provenance(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "script-contracts")

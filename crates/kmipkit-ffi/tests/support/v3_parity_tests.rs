@@ -730,6 +730,55 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     );
     assert!(!batch.is_null());
 
+    // The optional Unique Batch Item ID getter supports a size query, rejects
+    // undersized buffers, copies a complete ID, and reports absence as length 0.
+    let mut item_id_len = 0u64;
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            0,
+            ptr::null_mut(),
+            0,
+            &raw mut item_id_len,
+        ),
+        SUCCESS
+    );
+    assert_eq!(item_id_len, 6);
+    let mut undersized_id = [0u8; 2];
+    assert_ne!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            0,
+            undersized_id.as_mut_ptr(),
+            undersized_id.len() as u64,
+            &raw mut item_id_len,
+        ),
+        SUCCESS
+    );
+    let mut item_id = [0u8; 8];
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            0,
+            item_id.as_mut_ptr(),
+            item_id.len() as u64,
+            &raw mut item_id_len,
+        ),
+        SUCCESS
+    );
+    assert_eq!(&item_id[..test_c_abi_usize(item_id_len)], b"item-1");
+    assert_eq!(
+        client_abi::kmipkit_incoming_server_batch_item_unique_batch_item_id(
+            batch,
+            1,
+            item_id.as_mut_ptr(),
+            item_id.len() as u64,
+            &raw mut item_id_len,
+        ),
+        SUCCESS
+    );
+    assert_eq!(&item_id[..test_c_abi_usize(item_id_len)], b"item-2");
+
     // Test item_put_v2 getters directly
     let mut put_fn = 0u32;
     let mut uid_buf = [0u8; 32];
@@ -764,6 +813,27 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     assert_eq!(&rep_buf[..test_c_abi_usize(rep_len)], b"replaced-sym-uid");
     assert!(!obj_item.is_null());
     assert!(!attr_st.is_null());
+
+    let mut too_small_replaced_uid = [0u8; 2];
+    assert_ne!(
+        // SAFETY: every non-null output pointer references live, disjoint writable storage.
+        unsafe {
+            client_abi::kmipkit_incoming_server_batch_item_put_v2(
+                batch,
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                0,
+                ptr::null_mut(),
+                too_small_replaced_uid.as_mut_ptr(),
+                too_small_replaced_uid.len() as u64,
+                ptr::null_mut(),
+                ptr::null_mut(),
+                ptr::null_mut(),
+            )
+        },
+        SUCCESS
+    );
     kmipkit_ttlv_item_release(obj_item);
     kmipkit_ttlv_structure_release(attr_st);
 
@@ -1194,6 +1264,44 @@ fn s2c_discover_versions_v2_preserves_order_and_signed_components() {
     );
     assert_eq!(count, 2);
     assert_eq!(output, [large, v21]);
+
+    assert_eq!(
+        client_abi::kmipkit_s2c_discover_versions_negotiate_v2(
+            ptr::null(),
+            1,
+            supported.as_ptr(),
+            3,
+            output.as_mut_ptr(),
+            2,
+            &raw mut count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(
+        client_abi::kmipkit_s2c_discover_versions_negotiate_v2(
+            ptr::null(),
+            0,
+            supported.as_ptr(),
+            u32::MAX,
+            output.as_mut_ptr(),
+            2,
+            &raw mut count,
+        ),
+        ERROR_RESOURCE_LIMIT
+    );
+    assert_eq!(
+        client_abi::kmipkit_s2c_discover_versions_negotiate_v2(
+            requested.as_ptr(),
+            2,
+            supported.as_ptr(),
+            3,
+            output.as_mut_ptr(),
+            1,
+            &raw mut count,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert_eq!(count, 2);
 }
 
 fn assert_query_extension_payload(payload: &kmipkit_ttlv::StructureView<'_>, map: bool) {
