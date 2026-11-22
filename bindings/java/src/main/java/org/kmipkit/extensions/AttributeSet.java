@@ -19,7 +19,8 @@ public final class AttributeSet implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.ATTRIBUTE_SET);
     }
 
-    NativeHandle nativeHandleOwner() {
+    /** Internal lifecycle bridge for typed KMIP request builders. */
+    public NativeHandle nativeHandleOwner() {
         return handle;
     }
 

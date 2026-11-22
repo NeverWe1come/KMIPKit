@@ -103,6 +103,8 @@ public final class NativeExtensionRegistry {
     public static final int ROLE_REVERSED_SESSION = 80;
     public static final int INCOMING_SERVER_BATCH = 81;
     public static final int SERVER_REQUEST_DISPATCHER = 82;
+    public static final int KMIP30_OPERATION_BUILDER = 84;
+    public static final int CREATE_CREDENTIAL_OBJECT = 85;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -270,6 +272,30 @@ public final class NativeExtensionRegistry {
     public static native void symmetricKeyBuilderSetUsageMask(long builder, int usageMask);
     public static native void symmetricKeyBuilderSetName(long builder, String name);
     public static native long symmetricKeyBuilderBuildBatchItem(long builder);
+    public static native long kmip30OperationBuilderCreate(int operation, long attributes,
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            @Nullable byte[] ciphertext);
+    public static native long kmip30CreateCredentialBuilderCreate(long attributes, long credentialObject);
+    public static native long createCredentialObjectCertificate(long certificateItem);
+    public static native long createCredentialObjectPassword(@Nullable byte[] password,
+            @Nullable byte[] passwordSalt, boolean hasSaltAlgorithm, long saltAlgorithm,
+            @Nullable byte[] saltedPassword, boolean hasIterationCount, int iterationCount);
+    public static native long createCredentialObjectDevice(@Nullable byte[] serial,
+            @Nullable byte[] identifier, @Nullable byte[] network, @Nullable byte[] machine,
+            @Nullable byte[] media);
+    public static native long createCredentialObjectHashedPassword(boolean hasHashingAlgorithm,
+            long hashingAlgorithm, byte[] hashedUsernamePassword, byte[] hashedPasswordUsername);
+    public static native long createCredentialObjectOneTimePassword(long algorithm,
+            boolean hasDigest, long digest, @Nullable byte[] serial, @Nullable byte[] seed,
+            boolean hasInterval, long interval, boolean hasDigits, int digits);
+    public static native void kmip30OperationBuilderSetAttributes(long builder, long attributes);
+    public static native void kmip30OperationBuilderSetCryptographicParameters(
+            long builder, long parameters);
+    public static native void kmip30OperationBuilderSetDeactivationReason(long builder, long reason);
+    public static native void kmip30OperationBuilderSetDeactivationDate(long builder, long unixSeconds);
+    public static native void kmip30OperationBuilderSetAsynchronousIndicator(long builder, long value);
+    public static native void kmip30OperationBuilderValidate(long builder);
+    public static native long kmip30OperationBuilderBuildBatchItem(long builder);
     public static native void symmetricKeyBuilderAddAttributeItem(long builder, long item);
     public static native void symmetricKeyBuilderAddCataloguedAttribute(long builder, int tag, long value);
     public static native void symmetricKeyBuilderAddVendorAttribute(
@@ -589,6 +615,8 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemResponseExtensionCount(long itemResponse);
     public static native long clientBatchItemResponseExtensionTtlvAt(long itemResponse, long index);
     public static native @Nullable byte[] clientBatchItemResponsePendingCorrelationValue(long itemResponse);
+    public static native Object[] clientBatchItemResponseKmip30Identifier(long itemResponse);
+    public static native @Nullable byte[] clientBatchItemResponseEncapsulateData(long itemResponse);
     public static native @Nullable long[] clientBatchItemResponseDiscoverVersionsSupportedVersions(
             long itemResponse);
     public static native Object[] clientBatchItemResponseCreate(long itemResponse);
