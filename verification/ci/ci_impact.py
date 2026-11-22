@@ -45,7 +45,6 @@ FULL_PREFIXES = (
     ".github/",
     ".cargo/",
     "crates/",
-    "bindings/",
     "vendor/",
 )
 FULL_FILES = {
@@ -346,6 +345,21 @@ def validate_plan(
     return True, ""
 
 
+def script_contract_platforms(plan: Mapping[str, Any]) -> list[str]:
+    """Keep all hosts for changes that can affect build or verification scripts."""
+    all_platforms = ["ubuntu-latest", "windows-latest", "macos-latest"]
+    prefixes = (".github/", ".cargo/", "verification/", "vendor/")
+    native_files = {"CMakeLists.txt", "build.rs", "build.sh", "build.ps1"}
+    if plan["fallback"] or any(
+        item["path"].startswith(prefixes)
+        or item["path"] in FULL_FILES
+        or PurePosixPath(item["path"]).name in native_files
+        for item in plan["paths"]
+    ):
+        return all_platforms
+    return all_platforms[:1]
+
+
 def _write_plan(plan: Mapping[str, Any], output_path: str | None, github_output: str | None) -> None:
     serialized = json.dumps(plan, ensure_ascii=True, separators=(",", ":"))
     if output_path:
@@ -355,6 +369,7 @@ def _write_plan(plan: Mapping[str, Any], output_path: str | None, github_output:
             output.write(f"plan_json={serialized}\n")
             output.write(f"full={'true' if plan['full'] else 'false'}\n")
             output.write("selected_jobs=" + ",".join(plan["selected_jobs"]) + "\n")
+            output.write("script_platforms=" + json.dumps(script_contract_platforms(plan)) + "\n")
             output.write("coverage_scopes=" + json.dumps(plan["coverage_scopes"], separators=(",", ":")) + "\n")
 
 

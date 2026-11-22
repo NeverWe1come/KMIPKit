@@ -4,8 +4,8 @@ use std::{error::Error, fmt};
 
 use kmipkit_ttlv::{KmipTag, Structure, ValueView};
 
-use crate::{ProtocolError, RequestBatchItemView};
 use crate::enums::OperationCode;
+use crate::{ProtocolError, RequestBatchItemView};
 
 /// The KMIP operation code for Notify (`0x0000_001B`).
 pub const NOTIFY_OPERATION: u32 = OperationCode::Notify.as_u32();

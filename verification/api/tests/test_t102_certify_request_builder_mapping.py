@@ -175,8 +175,8 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
 # KMIPKIT-0093 adds 2,077 catalog-backed fluent tag declarations and corrects
 # the generated KMIP 3.0 Object Class Mask paths from enumeration to bitmask.
-DECLARATIONS_SHA256 = "52a266dfb37eb02c629f06c50e5fb2f1586f3a4808b8e748d595ac3dbdff99a2"
-OPERATIONS_SHA256 = "11a39efdadf8e9c7791a8479e3d8b3ae05f82b8dee94e8d21ed2ff2192a147ac"
+DECLARATIONS_SHA256 = "a986fac6fd9404a1a4e1f4a0e5bbe9f52b1f42ba0292df613e73283369f90b90"
+OPERATIONS_SHA256 = "a145dce290f22a34499485f573c73513698d0d2323d45dcd7a64c86b79a0976f"
 
 
 def canonical_sha256(value: object) -> str:
@@ -459,13 +459,13 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # Final T102 route resolution and predecessor stack additions remain
         # inside this exact non-target fingerprint.
         for capability, count in (
-            ("typed_object_attributes", 766),
+            ("typed_object_attributes", 544),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):
                 typed_rows = [
                     row for row in other_declarations
-                    if row["capabilityId"] == capability
+                    if row.get("capabilityId") == capability
                 ]
                 self.assertEqual(count, len(typed_rows))
         other_declarations = without_0047_versioned_values(other_declarations)

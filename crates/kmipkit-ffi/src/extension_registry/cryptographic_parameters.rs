@@ -465,17 +465,18 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v2(
                 && (!fields.p_source.is_null() || fields.p_source_length != 0))
             || (fields.context_string_present == 0
                 && (!fields.context_string.is_null() || fields.context_string_length != 0))
-            || (fields.seed_present == 0
-                && (!fields.seed.is_null() || fields.seed_length != 0))
+            || (fields.seed_present == 0 && (!fields.seed.is_null() || fields.seed_length != 0))
             || (fields.input_key_material_present == 0
                 && (!fields.input_key_material.is_null() || fields.input_key_material_length != 0))
         {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         if (fields.p_source_present != 0 && fields.p_source_length > MAX_TRANSPORT_MATERIAL_BYTES)
-            || (fields.context_string_present != 0 && fields.context_string_length > MAX_TRANSPORT_MATERIAL_BYTES)
+            || (fields.context_string_present != 0
+                && fields.context_string_length > MAX_TRANSPORT_MATERIAL_BYTES)
             || (fields.seed_present != 0 && fields.seed_length > MAX_TRANSPORT_MATERIAL_BYTES)
-            || (fields.input_key_material_present != 0 && fields.input_key_material_length > MAX_TRANSPORT_MATERIAL_BYTES)
+            || (fields.input_key_material_present != 0
+                && fields.input_key_material_length > MAX_TRANSPORT_MATERIAL_BYTES)
         {
             return record_ffi_error(ERROR_RESOURCE_LIMIT);
         }
@@ -493,6 +494,7 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_from_fields_v2(
 
 /// Copies every present Cryptographic Parameters field into a version 2 output record.
 #[unsafe(no_mangle)]
+#[allow(clippy::too_many_lines)] // Copies the complete versioned C record atomically from one validated model.
 pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v2(
     parameters: *mut kmipkit_cryptographic_parameters_t,
     out_fields: *mut kmipkit_cryptographic_parameters_fields_v2_t,
@@ -670,7 +672,9 @@ pub unsafe extern "C" fn kmipkit_cryptographic_parameters_read_fields_v2(
                 Err(_) => return record_ffi_error(ERROR_RESOURCE_LIMIT),
             };
         }
-        if let Some(value) = parameters.with_input_key_material(|bytes| (bytes.as_ptr(), bytes.len())) {
+        if let Some(value) =
+            parameters.with_input_key_material(|bytes| (bytes.as_ptr(), bytes.len()))
+        {
             fields.input_key_material_present = 1;
             fields.input_key_material = value.0;
             fields.input_key_material_length = match u64::try_from(value.1) {

@@ -14,6 +14,10 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    @unittest.skipUnless(
+        (ROOT / "specs").is_dir(),
+        "public API declaration provenance is intentionally excluded from this code-only branch",
+    )
     def test_assigned_tag_exports_are_reconciled_into_the_public_api_manifest(self) -> None:
         catalog = generate_named_values.load_validated_catalog(
             generate_named_values.safe_read_bytes(

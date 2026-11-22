@@ -12,15 +12,15 @@ routes against the endpoint in the connection file:
 
 ```sh
 python3 tools/install_artifact.py \
-  --repository ../.. \
+  --repository ../../.. \
   --pin-file library-pin.json \
   --maven-repository build/maven-repository \
   --manifest build/artifact-manifest.json
 
-bash ../../bindings/java/gradlew \
+bash ../../../bindings/java/gradlew \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test
 
-bash ../../bindings/java/gradlew \
+bash ../../../bindings/java/gradlew \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" run \
   --args='plan --connection ../shared/profiles/connection.example.json'
 ```

@@ -11,7 +11,8 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 use roxmltree::{Document, Error as XmlError, Node, NodeType, ParsingOptions};
 use serde_json::Value as JsonValue;
 
-const NORMATIVE_CATALOG: &str = include_str!("../../../verification/conformance/catalog/kmip-2.1.json");
+const NORMATIVE_CATALOG: &str =
+    include_str!("../../../verification/conformance/catalog/kmip-2.1.json");
 const MAX_XML_BYTES: usize = 16 * 1024 * 1024;
 // Leaves room above the 100,000 TTLV-item limit for message envelopes,
 // formatting whitespace, and other XML nodes before TTLV conversion.
@@ -682,14 +683,6 @@ fn parse_message(
     catalog: &CatalogMaps,
 ) -> Result<Structure, OasisCryptoFixtureError> {
     parse_message_with_get_test_symbols(node, catalog, false)
-}
-
-#[cfg(test)]
-fn parse_get_message_with_test_symbols(
-    node: Node<'_, '_>,
-    catalog: &CatalogMaps,
-) -> Result<Structure, OasisCryptoFixtureError> {
-    parse_message_with_get_test_symbols(node, catalog, true)
 }
 
 fn parse_message_with_get_test_symbols(

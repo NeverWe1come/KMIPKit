@@ -142,7 +142,8 @@ def _assert_source_literal(testcase: unittest.TestCase, record: str, value: str)
 def _copy_validated_catalog_repo(destination: Path) -> None:
     """Create the minimal committed input tree required by catalog validation."""
     (destination / "verification" / "conformance").mkdir(parents=True)
-    shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
+    if (ROOT / "AGENTS.md").is_file():
+        shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
     shutil.copytree(ROOT / "verification" / "conformance" / "oasis", destination / "verification" / "conformance" / "oasis")
     shutil.copytree(ROOT / "verification" / "conformance" / "catalog", destination / "verification" / "conformance" / "catalog")
     subprocess.run(["git", "init", "-q"], cwd=destination, check=True)

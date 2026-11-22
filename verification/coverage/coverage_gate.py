@@ -259,6 +259,11 @@ def rust_source_has_function_body(source: str) -> bool:
         return True
 
     for match in re.finditer(r"\bfn\b", masked):
+        # A function-pointer type (for example, a C ABI callback field) only
+        # declares a callable signature. It has no executable body to cover.
+        if re.match(r"\s*\(", masked[match.end():]):
+            continue
+
         depth = {"(": 0, "[": 0, "<": 0}
         index = match.end()
         while index < len(masked):

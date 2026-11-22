@@ -1,7 +1,7 @@
 use std::process::Command;
 
 #[test]
-fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() {
+fn transport_feature_graph_uses_http1_and_openssl_without_proxy_or_compression() {
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../Cargo.toml");
     let cargo = std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
     let output = Command::new(cargo)
@@ -16,7 +16,7 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
             "-p",
             "kmipkit-transport",
             "-e",
-            "features",
+            "features,no-dev",
             "--prefix",
             "none",
         ])
@@ -31,8 +31,7 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
     let graph = String::from_utf8(output.stdout).expect("cargo tree output is UTF-8");
     assert!(graph.contains("hyper feature \"http1\""));
     assert!(graph.contains("hyper feature \"client\""));
-    assert!(graph.contains("rustls feature \"aws_lc_rs\""));
-    assert!(graph.contains("tokio-rustls feature \"aws_lc_rs\""));
+    assert!(graph.contains("rustls-openssl v"));
 
     for forbidden in [
         "hyper feature \"http2\"",
@@ -43,6 +42,9 @@ fn transport_feature_graph_uses_http1_and_aws_lc_without_proxy_or_compression() 
         "feature \"compression\"",
         "rustls feature \"ring\"",
         "tokio-rustls feature \"ring\"",
+        "aws-lc-rs v",
+        "aws-lc-sys v",
+        "openssl-src v",
         "reqwest v",
         "hyper-util v",
         "async-compression v",

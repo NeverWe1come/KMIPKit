@@ -336,13 +336,13 @@ impl IncomingServerBatch {
 pub trait ServerRequestHandler {
     /// Supplies the optional ID of the batch item currently being dispatched.
     ///
-    /// The default [Self::set_current_batch_item] implementation calls this hook.
+    /// The default [`Self::set_current_batch_item`] implementation calls this hook.
     fn set_current_batch_item_id(&mut self, _unique_batch_item_id: Option<&[u8]>) {}
 
     /// Supplies metadata before dispatching each batch item.
     ///
     /// Override this hook to receive the full item view. The default forwards
-    /// the optional ID to [Self::set_current_batch_item_id].
+    /// the optional ID to [`Self::set_current_batch_item_id`].
     fn set_current_batch_item(&mut self, item: &ServerRequestItemView<'_>) {
         self.set_current_batch_item_id(item.unique_batch_item_id());
     }
@@ -414,6 +414,11 @@ impl ServerRequestDispatcher {
     /// # Errors
     ///
     /// Returns [`ClientError`] if response construction fails.
+    ///
+    /// # Panics
+    ///
+    /// Panics only if the statically defined KMIP Invalid Field result is rejected by
+    /// [`KmipOperationResult::new`].
     #[allow(clippy::too_many_lines)]
     pub fn dispatch(
         &mut self,
@@ -780,7 +785,9 @@ impl ClientListenerConnection {
                     &CodecLimits::defaults(),
                     *encoding,
                 )
-                .map_err(|error| ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent))?;
+                .map_err(|error| {
+                    ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent)
+                })?;
                 conn.send_response(text.as_bytes(), *encoding, timeout)
                     .map_err(ClientError::transport)
             }

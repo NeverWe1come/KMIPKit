@@ -469,7 +469,8 @@ class WireNameGeneratorCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "verification" / "conformance").mkdir(parents=True)
-            shutil.copy2(ROOT / "AGENTS.md", root / "AGENTS.md")
+            if (ROOT / "AGENTS.md").is_file():
+                shutil.copy2(ROOT / "AGENTS.md", root / "AGENTS.md")
             shutil.copytree(ROOT / "verification" / "conformance" / "oasis", root / "verification" / "conformance" / "oasis")
             shutil.copytree(ROOT / "verification" / "conformance" / "catalog", root / "verification" / "conformance" / "catalog")
             subprocess.run(["git", "init", "-q"], cwd=root, check=True)

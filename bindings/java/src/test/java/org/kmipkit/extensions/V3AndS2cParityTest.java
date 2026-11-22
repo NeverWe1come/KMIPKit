@@ -3,6 +3,7 @@ package org.kmipkit.extensions;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
+import org.kmipkit.internal.NativeHandle;
 import org.kmipkit.message.RequestBatchItemView;
 import org.kmipkit.message.RequestMessage;
 import org.kmipkit.message.ResponseBatchItemView;
@@ -146,6 +147,8 @@ class V3AndS2cParityTest {
 
         // Activation Date tag (0x00420001) is valid
         assertTrue(VersionGate.validateTag(2, 1, 0x00420001));
+        assertFalse(VersionGate.validateAttributeMutation(2, 0, 0x00420028));
+        assertTrue(VersionGate.validateAttributeMutation(2, 1, 0x00420028));
 
         // Operation span for Create (1): base catalog in KMIP 2.0
         VersionGate.VersionSpan opSpan = VersionGate.operationSpan(1).orElseThrow();
@@ -856,6 +859,117 @@ class V3AndS2cParityTest {
     }
 
     @Test
+    void legacyClientEndpointRoleBridgeRejectsInvalidClientHandles() {
+        try (ClientBatchItem item = ClientBatchItem.setEndpointRole(2, "KMIPKit")) {
+            assertEquals(0x32, item.operation());
+        }
+
+        long[] limits = NativeExtensionRegistry.codecLimitValues(CodecLimits.defaults());
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientSetEndpointRole(0, 2, null, limits));
+        assertThrows(InvalidInputException.class,
+                () -> NativeExtensionRegistry.clientSetEndpointRoleWithOptions(0, 2, null, limits, new long[12]));
+    }
+
+    @Test
+    void legacyServerDispatcherV2ProcessesEachSupportedS2cOperation() throws Exception {
+        NativeExtensionRegistry.ensureLoaded();
+        try (IncomingServerBatch batch = IncomingServerBatch.decodeTtlv(
+                buildFullS2cBatchBytes(), CodecLimits.defaults())) {
+            NativeHandle dispatcher = NativeHandle.owned(
+                    NativeExtensionRegistry.serverRequestDispatcherCreate(),
+                    NativeExtensionRegistry.SERVER_REQUEST_DISPATCHER);
+            try {
+                ServerRequestHandler handler = new ServerRequestHandler() {
+                    @Override
+                    public S2cOperationResult handleDiscoverVersions(
+                            ItemView item, List<ProtocolVersion> clientVersions,
+                            List<ProtocolVersion> supportedVersionsOut) {
+                        supportedVersionsOut.add(new ProtocolVersion(2, 1));
+                        return S2cOperationResult.success();
+                    }
+
+                    @Override
+                    public S2cOperationResult handleNotify(
+                            ItemView item, byte[] uniqueIdentifier, byte[] attributesTtlv) {
+                        return S2cOperationResult.success();
+                    }
+
+                    @Override
+                    public S2cOperationResult handlePut(
+                            ItemView item, long putFunction, byte[] uniqueIdentifier,
+                            byte[] replacedUniqueIdentifier, byte[] objectTtlv, byte[] attributesTtlv) {
+                        return S2cOperationResult.success();
+                    }
+
+                    @Override
+                    public S2cOperationResult handleQuery(
+                            ItemView item, long queryFunctionFlags, S2cCapabilities outCapabilities) {
+                        outCapabilities.operations(List.of(1L, 3L)).objectTypes(List.of(2L));
+                        return S2cOperationResult.success();
+                    }
+
+                    @Override
+                    public S2cOperationResult handleSetEndpointRole(ItemView item, long targetRole) {
+                        return S2cOperationResult.success();
+                    }
+                };
+                long responseHandle = NativeExtensionRegistry.serverRequestDispatcherDispatchV2(
+                        dispatcher.get(), batch.nativeHandleOwner().get(), handler);
+                try (ResponseMessage response = ResponseMessage.fromNative(responseHandle)) {
+                    assertEquals(5, response.batchItemCount());
+                }
+            } finally {
+                dispatcher.close();
+            }
+        }
+    }
+
+    @Test
+    void legacyQueryCapabilityBridgeBuildsOwnedPayload() {
+        NativeExtensionRegistry.ensureLoaded();
+        long responseHandle = NativeExtensionRegistry.s2cQueryRespondWithCapabilities(
+                0x07L, new long[] {1L, 3L}, new long[] {2L},
+                "KMIPKitVendor".getBytes(StandardCharsets.UTF_8), new long[] {0x00540001L});
+        try (TtlvStructure response = TtlvStructure.fromNative(responseHandle, null);
+                TtlvStructureView view = response.view()) {
+            assertTrue(view.itemCount() > 0);
+        }
+    }
+
+    @Test
+    void legacyListenerBindersAcceptValidPemConfiguration() throws Exception {
+        byte[][] serverCertificates = {testFixture("server-cert.pem")};
+        byte[] serverKey = testFixture("server-key.pem");
+        byte[][] trustCertificates = {testFixture("client-cert.pem")};
+        NativeExtensionRegistry.ensureLoaded();
+        try {
+            long rawTls = NativeExtensionRegistry.clientListenerBindRawTls(
+                    "127.0.0.1", 0, 0, serverCertificates, 1, serverKey, 1,
+                    trustCertificates, 1, 1000, 1000, 65536);
+            assertTrue(rawTls != 0);
+            closeListenerAndAssertBound(rawTls);
+
+            long https = NativeExtensionRegistry.clientListenerBindHttps(
+                    "127.0.0.1", 0, 0, serverCertificates, 1, serverKey, 1,
+                    trustCertificates, 1, 1000, 1000, 65536);
+            assertTrue(https != 0);
+            closeListenerAndAssertBound(https);
+        } finally {
+            java.util.Arrays.fill(serverKey, (byte) 0);
+        }
+    }
+
+    private static void closeListenerAndAssertBound(long rawListener) {
+        NativeHandle listener = NativeHandle.owned(rawListener, NativeExtensionRegistry.CLIENT_LISTENER);
+        try {
+            assertTrue(NativeExtensionRegistry.clientListenerGetPort(listener.get()) > 0);
+        } finally {
+            listener.close();
+        }
+    }
+
+    @Test
     void listenerRejectsInvalidRevocationListAfterCopyingIdentity() throws Exception {
         byte[][] certificates = {testFixture("server-cert.pem")};
         byte[] key = testFixture("server-key.pem");
@@ -924,16 +1038,35 @@ class V3AndS2cParityTest {
                     }
                 });
 
-                try (ClientListenerConnection conn = listener.accept(Duration.ofSeconds(10))) {
+                try (ClientListenerConnection conn = listener.accept(Duration.ofSeconds(10));
+                     RoleReversedSession session = conn.intoRoleReversed()) {
                     assertNotNull(conn);
 
                     // Test negative duration rejection on recvBatch
                     CodecLimits limits = CodecLimits.defaults();
                     assertThrows(InvalidInputException.class, () -> conn.recvBatch(limits, Duration.ofMillis(-1)));
 
-                    try (IncomingServerBatch batch = conn.recvBatch(limits, Duration.ofSeconds(10));
+                    try (IncomingServerBatch batch = session.recvBatch(limits, Duration.ofSeconds(10));
                          ServerRequestDispatcher dispatcher = ServerRequestDispatcher.create()) {
                         assertEquals(5, batch.itemCount());
+                        assertEquals(new ProtocolVersion(2, 1), batch.protocolVersion());
+                        assertEquals(0x1C, batch.itemOperation(0));
+                        assertEquals(0x18, batch.itemOperation(1));
+                        assertEquals(0x1E, batch.itemOperation(2));
+                        assertEquals(0x1B, batch.itemOperation(3));
+                        assertEquals(0x32, batch.itemOperation(4));
+                        assertArrayEquals("notify-uid".getBytes(StandardCharsets.UTF_8), batch.itemNotifyUid(3));
+                        IncomingServerBatch.PutItemDetails putDetails = batch.itemPutV2(0);
+                        assertEquals(2, putDetails.putFunction());
+                        assertNotNull(putDetails.objectItem());
+                        assertNotNull(putDetails.attributes());
+                        try (TtlvItem object = putDetails.objectItem();
+                             TtlvStructure attributes = putDetails.attributes()) {
+                            assertNotNull(object);
+                            assertNotNull(attributes);
+                        }
+                        assertTrue(batch.itemQueryFlags(1) != 0);
+                        assertEquals(2, batch.itemSetEndpointRole(4));
 
                         ServerRequestHandler handler = new ServerRequestHandler() {
                             @Override
@@ -965,8 +1098,10 @@ class V3AndS2cParityTest {
 
                         try (ResponseMessage resp = dispatcher.dispatch(batch, handler)) {
                             // Test negative duration rejection on sendResponse
-                            assertThrows(InvalidInputException.class, () -> conn.sendResponse(resp, Duration.ofMillis(-1)));
-                            conn.sendResponse(resp, Duration.ofSeconds(10));
+                            assertEquals(5, resp.batchItemCount());
+                            assertThrows(InvalidInputException.class,
+                                    () -> session.sendResponse(resp, Duration.ofMillis(-1)));
+                            session.sendResponse(resp, Duration.ofSeconds(10));
                         }
                     }
                 }

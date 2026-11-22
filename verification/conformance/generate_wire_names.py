@@ -430,7 +430,10 @@ def main(argv: list[str] | None = None) -> int:
             atomic_write_bytes(root, OUTPUT_PATH, generated_source)
             print(f"generated wire-name metadata: {root / OUTPUT_PATH}")
             return 0
-        existing_source = safe_read_bytes(root, OUTPUT_PATH, max_bytes=MAX_BYTES)
+        # Git may check out this generated Rust source with CRLF on Windows.
+        existing_source = safe_read_bytes(root, OUTPUT_PATH, max_bytes=MAX_BYTES).replace(
+            b"\r\n", b"\n"
+        )
     except CatalogValidationError:
         print("wire-name generation failed: catalog validation failed", file=sys.stderr)
         return 2

@@ -368,10 +368,10 @@ impl Clone for UniqueIdentifierValue {
 impl PartialEq for UniqueIdentifierValue {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::TextString(left), Self::TextString(right)) => left == right,
+            (Self::TextString(left), Self::TextString(right))
+            | (Self::Identifier(left), Self::Identifier(right)) => left == right,
             (Self::Enumeration(left), Self::Enumeration(right)) => left == right,
             (Self::Integer(left), Self::Integer(right)) => left == right,
-            (Self::Identifier(left), Self::Identifier(right)) => left == right,
             _ => false,
         }
     }

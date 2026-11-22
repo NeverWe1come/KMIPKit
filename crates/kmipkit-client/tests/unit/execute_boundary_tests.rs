@@ -1292,10 +1292,10 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 match member {
                     syn::TraitItem::Fn(function) if !is_test_cfg(&function.attrs) => {
                         self.check_attributes(&function.attrs);
-                        let legacy_batch_item_id_hook =
-                            self.is_source_root(Path::new("server_to_client.rs"))
-                                && trait_item.ident == "ServerRequestHandler"
-                                && is_legacy_batch_item_id_hook(function);
+                        let legacy_batch_item_id_hook = self
+                            .is_source_root(Path::new("server_to_client.rs"))
+                            && trait_item.ident == "ServerRequestHandler"
+                            && is_legacy_batch_item_id_hook(function);
                         if !legacy_batch_item_id_hook {
                             self.check_public_signature(&function.sig, None);
                         }
@@ -3208,7 +3208,10 @@ fn is_legacy_batch_item_id_hook(method: &syn::TraitItemFn) -> bool {
     let Type::Path(option) = id.ty.as_ref() else {
         return false;
     };
-    if option.qself.is_some() || option.path.leading_colon.is_some() || option.path.segments.len() != 1 {
+    if option.qself.is_some()
+        || option.path.leading_colon.is_some()
+        || option.path.segments.len() != 1
+    {
         return false;
     }
     let segment = &option.path.segments[0];
@@ -4780,7 +4783,10 @@ fn exception_for_legacy_batch_item_id_is_limited_to_its_public_trait_and_signatu
         hook.replace("(&mut self,", "(&self,"),
         hook.replace(") {}", ") -> Vec<u8> { loop {} }"),
     ] {
-        assert!(visit(&candidate, source_path), "unexpectedly accepted {candidate}");
+        assert!(
+            visit(&candidate, source_path),
+            "unexpectedly accepted {candidate}"
+        );
     }
 }
 
@@ -5100,13 +5106,14 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
     assert_eq!(actual_ids, EXPECTED_FIXTURE_IDS);
 
     for fixture in FIXTURES {
+        let normalized_source = fixture.source.replace("\r\n", "\n");
         assert!(
-            !fixture.source.trim().is_empty(),
+            !normalized_source.trim().is_empty(),
             "empty fixture: {}",
             fixture.id
         );
         assert!(
-            fixture.source.contains(fixture.probe),
+            normalized_source.contains(fixture.probe),
             "fixture {} is missing its syntax probe",
             fixture.id
         );

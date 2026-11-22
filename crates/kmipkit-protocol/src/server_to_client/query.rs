@@ -62,7 +62,7 @@ impl ServerCapabilities {
     /// Legacy setter retained for source compatibility.
     ///
     /// A non-empty list lacks the metadata required to answer either extension query.
-    /// Use [Self::set_extension_information] to advertise extensions.
+    /// Use [`Self::set_extension_information`] to advertise extensions.
     #[deprecated(note = "use set_extension_information with KMIP Extension Information records")]
     pub fn set_extension_tags(&mut self, tags: Vec<u32>) {
         self.extension_information.clear();

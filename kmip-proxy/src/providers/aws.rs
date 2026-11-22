@@ -31,12 +31,15 @@ impl AwsKmsProvider {
             .region
             .clone()
             .unwrap_or_else(|| "us-east-1".to_string());
+        let http_client = crate::aws_http::http_client().map_err(ProxyError::ProviderError)?;
         let mut kms_builder = aws_sdk_kms::config::Builder::new()
             .behavior_version(aws_sdk_kms::config::BehaviorVersion::latest())
-            .region(aws_sdk_kms::config::Region::new(region.clone()));
+            .region(aws_sdk_kms::config::Region::new(region.clone()))
+            .http_client(http_client.clone());
         let mut secrets_builder = aws_sdk_secretsmanager::config::Builder::new()
             .behavior_version(aws_sdk_secretsmanager::config::BehaviorVersion::latest())
-            .region(aws_sdk_secretsmanager::config::Region::new(region.clone()));
+            .region(aws_sdk_secretsmanager::config::Region::new(region.clone()))
+            .http_client(http_client);
 
         if let Some(endpoint) = &config.endpoint_url {
             kms_builder = kms_builder.endpoint_url(endpoint);
@@ -67,8 +70,10 @@ impl AwsKmsProvider {
             .region
             .clone()
             .unwrap_or_else(|| "us-east-1".to_string());
+        let http_client = crate::aws_http::http_client().map_err(ProxyError::ProviderError)?;
         let mut loader = aws_config::defaults(aws_config::BehaviorVersion::latest())
-            .region(aws_config::Region::new(region.clone()));
+            .region(aws_config::Region::new(region.clone()))
+            .http_client(http_client);
         if let Some(endpoint) = &config.endpoint_url {
             loader = loader.endpoint_url(endpoint);
         }
@@ -708,12 +713,10 @@ impl CloudKmsProvider for AwsKmsProvider {
         if self.is_secret_id(unique_id) {
             let (mat, _) = self.get_key_material(unique_id).await?;
             match mat {
-                KeyMaterialPayload::Symmetric(sym) => {
-                    use aws_lc_rs::hmac;
-                    let s_key = hmac::Key::new(hmac::HMAC_SHA256, &sym);
-                    let tag = hmac::sign(&s_key, data);
-                    Ok(tag.as_ref().to_vec())
-                }
+                KeyMaterialPayload::Symmetric(sym) => crate::crypto::hmac_sha256(&sym, data)
+                    .map_err(|error| {
+                        ProxyError::CryptoError(format!("HMAC-SHA256 failed: {error}"))
+                    }),
                 _ => Err(ProxyError::Unsupported(
                     "secret payload must be symmetric for HMAC sign".to_string(),
                 )),
@@ -748,9 +751,9 @@ impl CloudKmsProvider for AwsKmsProvider {
             let (mat, _) = self.get_key_material(unique_id).await?;
             match mat {
                 KeyMaterialPayload::Symmetric(sym) => {
-                    use aws_lc_rs::hmac;
-                    let s_key = hmac::Key::new(hmac::HMAC_SHA256, &sym);
-                    Ok(hmac::verify(&s_key, data, signature).is_ok())
+                    crate::crypto::verify_hmac_sha256(&sym, data, signature).map_err(|error| {
+                        ProxyError::CryptoError(format!("HMAC-SHA256 verification failed: {error}"))
+                    })
                 }
                 _ => Err(ProxyError::Unsupported(
                     "secret payload must be symmetric for HMAC verify".to_string(),

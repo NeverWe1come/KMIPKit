@@ -36,6 +36,13 @@ CANDIDATES_PATH = (
 )
 
 
+SDD_BACKED_INPUTS = (REPORT_PATH, ROUTES_PATH, CANDIDATES_PATH)
+
+
+@unittest.skipUnless(
+    all(path.is_file() for path in SDD_BACKED_INPUTS),
+    "request-validation route planning snapshots are intentionally omitted from the review tree",
+)
 class ValidationRoutePreparationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

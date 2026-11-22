@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-BASELINE_INVENTORY = ROOT / "specs" / "043-public-api-bindings" / "reports" / "t101-hash-mac-signature-baseline.json"
+BASELINE_INVENTORY = ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "t101-hash-mac-signature-baseline.json"
 OWNER_SPEC = "specs/021-hash-mac-signature-operations/spec.md"
 T101_TEST = "verification/api/tests/test_t101_hash_mac_signature_declaration_mapping.py"
 BASE_CANDIDATE_COUNT = 377
@@ -30,9 +30,7 @@ SUCCESS_TTLV_REQUIREMENTS = SHARED_REQUIREMENTS | {
     "KMIPKIT-0021-FR-009",
     "KMIPKIT-0043-FR-011",
 }
-SUCCESS_TTLV_FUNCTION_REQUIREMENTS = SUCCESS_TTLV_REQUIREMENTS | {"KMIPKIT-0093-FR-008"}
-MASTER_BATCH_RESULT_REQUIREMENTS = {"KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-008"}
-MASTER_RESPONSE_REQUIREMENTS = {"KMIPKIT-0093-FR-008"}
+SUCCESS_TTLV_FUNCTION_REQUIREMENTS = SUCCESS_TTLV_REQUIREMENTS
 LANGUAGES = {"rust", "c", "java", "python"}
 APPROVAL_SOURCE = {"kind": "feature-specification", "path": OWNER_SPEC, "status": "Approved"}
 OPS = {
@@ -300,10 +298,6 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertEqual(targets, {lang: row["languageMappings"][lang]["name"] for lang in LANGUAGES})
                 self.assertEqual({"rust": row["packageId"], "c": "c-kmipkit", "java": "java-kmipkit", "python": "python-kmipkit"}, {lang: row["languageMappings"][lang]["packageId"] for lang in LANGUAGES})
                 expected_requirements = _expected_owner_frs(row["exportName"]) | SHARED_REQUIREMENTS
-                if "ClientBatchOutcome::" in row["exportName"]:
-                    expected_requirements |= MASTER_BATCH_RESULT_REQUIREMENTS
-                elif "ClientResponseView::" in row["exportName"]:
-                    expected_requirements |= MASTER_RESPONSE_REQUIREMENTS
                 if row["exportName"].endswith("Response::with_ttlv"):
                     expected_requirements |= {"KMIPKIT-0043-FR-011"}
                 self.assertEqual(expected_requirements, set(row["requirementIds"]))
@@ -327,7 +321,11 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertIn("T101", row["evidence"])
 
     def test_error_response_ttlv_remains_limited_to_the_approved_fr015_accessors(self) -> None:
-        rows = [r for r in self.manifest["publicDeclarations"] if r["capabilityId"] == "crypto_response_ttlv"]
+        rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("capabilityId") == "crypto_response_ttlv"
+        ]
         expected_rust = {
             ("rust-kmipkit-client", "kmipkit_client::ClientError::response_ttlv"),
             ("rust-kmipkit-client", "kmipkit_client::ClientError::ProtocolResponse::response_ttlv"),

@@ -15,10 +15,16 @@ fn test_generic_link_converts_to_discrete_v3_typed_link() {
     // Build a KMIP 2.x generic Link Structure (KmipTag::Link.as_u32())
     let mut link_struct = Structure::new();
     link_struct
-        .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(0x0000_0101))) // Certificate link type
+        .try_push(ttlv_item(
+            KmipTag::LinkType.as_u32(),
+            Value::enumeration(0x0000_0101),
+        )) // Certificate link type
         .unwrap();
     link_struct
-        .try_push(ttlv_item(KmipTag::LinkedObjectIdentifier.as_u32(), Value::enumeration(target_id))) // Linked Object Identifier
+        .try_push(ttlv_item(
+            KmipTag::LinkedObjectIdentifier.as_u32(),
+            Value::enumeration(target_id),
+        )) // Linked Object Identifier
         .unwrap();
 
     let generic_link = ttlv_item(KmipTag::Link.as_u32(), Value::structure(link_struct));
@@ -70,10 +76,16 @@ fn test_all_fourteen_kmip_21_link_values_map_to_semantic_v3_attributes() {
 
         let mut link_struct = Structure::new();
         link_struct
-            .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(v2_enum)))
+            .try_push(ttlv_item(
+                KmipTag::LinkType.as_u32(),
+                Value::enumeration(v2_enum),
+            ))
             .unwrap();
         link_struct
-            .try_push(ttlv_item(KmipTag::LinkedObjectIdentifier.as_u32(), Value::enumeration(0xCAFE_BABE)))
+            .try_push(ttlv_item(
+                KmipTag::LinkedObjectIdentifier.as_u32(),
+                Value::enumeration(0xCAFE_BABE),
+            ))
             .unwrap();
 
         let generic_link = ttlv_item(KmipTag::Link.as_u32(), Value::structure(link_struct));
@@ -123,7 +135,10 @@ fn test_link_normalizer_error_and_edge_cases() {
     // Generic link with link type but no id
     let mut no_id_struct = Structure::new();
     no_id_struct
-        .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(0x0000_0101)))
+        .try_push(ttlv_item(
+            KmipTag::LinkType.as_u32(),
+            Value::enumeration(0x0000_0101),
+        ))
         .unwrap();
     let no_id_item = ttlv_item(KmipTag::Link.as_u32(), Value::structure(no_id_struct));
     assert!(LinkNormalizer::normalize_to_v3(&no_id_item).is_err());
@@ -181,10 +196,16 @@ fn test_link_identifier_enumeration_and_integer_forms_roundtrip_without_coercion
     ] {
         let mut link_struct = Structure::new();
         link_struct
-            .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(0x0000_0101)))
+            .try_push(ttlv_item(
+                KmipTag::LinkType.as_u32(),
+                Value::enumeration(0x0000_0101),
+            ))
             .unwrap();
         link_struct
-            .try_push(ttlv_item(KmipTag::LinkedObjectIdentifier.as_u32(), identifier))
+            .try_push(ttlv_item(
+                KmipTag::LinkedObjectIdentifier.as_u32(),
+                identifier,
+            ))
             .unwrap();
         let generic = ttlv_item(KmipTag::Link.as_u32(), Value::structure(link_struct));
 
@@ -221,7 +242,10 @@ fn test_link_identifier_enumeration_and_integer_forms_roundtrip_without_coercion
 fn test_generic_link_with_unmapped_children_is_rejected_without_dropping_them() {
     let mut link_struct = Structure::new();
     link_struct
-        .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(0x0000_0101)))
+        .try_push(ttlv_item(
+            KmipTag::LinkType.as_u32(),
+            Value::enumeration(0x0000_0101),
+        ))
         .unwrap();
     link_struct
         .try_push(ttlv_item(
@@ -242,7 +266,10 @@ fn test_generic_link_with_unmapped_children_is_rejected_without_dropping_them() 
 fn test_text_string_identifiers_without_v3_encoding_are_rejected() {
     let mut link_struct = Structure::new();
     link_struct
-        .try_push(ttlv_item(KmipTag::LinkType.as_u32(), Value::enumeration(0x0000_0101)))
+        .try_push(ttlv_item(
+            KmipTag::LinkType.as_u32(),
+            Value::enumeration(0x0000_0101),
+        ))
         .unwrap();
     link_struct
         .try_push(ttlv_item(

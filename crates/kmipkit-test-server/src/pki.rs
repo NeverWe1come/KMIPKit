@@ -6,9 +6,10 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+use kmipkit_test_support::FixtureSigningKey;
 use rcgen::{
     BasicConstraints, Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, IsCa,
-    Issuer, KeyPair, KeyUsagePurpose,
+    Issuer, KeyUsagePurpose,
 };
 use zeroize::Zeroizing;
 
@@ -86,11 +87,12 @@ impl AutoPki {
     ///
     /// Returns [`PkiError`] if keypair or certificate generation fails.
     pub fn generate() -> Result<Self, PkiError> {
-        let ca_key = KeyPair::generate().map_err(|_| PkiError)?;
+        let ca_key = FixtureSigningKey::generate().map_err(|_| PkiError)?;
         let mut ca_params = CertificateParams::default();
         ca_params
             .distinguished_name
             .push(DnType::CommonName, "KMIPKit Test Server Authority");
+        ca_key.prepare_certificate(&mut ca_params);
         ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
         ca_params.key_usages = vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
         let ca_cert = ca_params.self_signed(&ca_key).map_err(|_| PkiError)?;
@@ -99,7 +101,7 @@ impl AutoPki {
         let issuer = Issuer::from_params(&ca_params, &ca_key);
 
         // Server TLS Identity (SAN includes localhost and 127.0.0.1)
-        let server_key = KeyPair::generate().map_err(|_| PkiError)?;
+        let server_key = FixtureSigningKey::generate().map_err(|_| PkiError)?;
         let mut server_params = CertificateParams::new(vec![
             "localhost".to_owned(),
             "127.0.0.1".to_owned(),
@@ -114,6 +116,7 @@ impl AutoPki {
             KeyUsagePurpose::KeyEncipherment,
         ];
         server_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ServerAuth];
+        server_key.prepare_certificate(&mut server_params);
         let server_cert: Certificate = server_params
             .signed_by(&server_key, &issuer)
             .map_err(|_| PkiError)?;
@@ -123,7 +126,7 @@ impl AutoPki {
         let server_key_pem = pem_encode("PRIVATE KEY", &server_key_der);
 
         // Client mTLS Identity
-        let client_key = KeyPair::generate().map_err(|_| PkiError)?;
+        let client_key = FixtureSigningKey::generate().map_err(|_| PkiError)?;
         let mut client_params =
             CertificateParams::new(vec!["client.kmipkit.test".to_owned()]).map_err(|_| PkiError)?;
         client_params
@@ -131,6 +134,7 @@ impl AutoPki {
             .push(DnType::CommonName, "kmipkit-test-client");
         client_params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
         client_params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ClientAuth];
+        client_key.prepare_certificate(&mut client_params);
         let client_cert: Certificate = client_params
             .signed_by(&client_key, &issuer)
             .map_err(|_| PkiError)?;

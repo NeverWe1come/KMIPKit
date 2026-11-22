@@ -39,6 +39,7 @@ else:
 REPORT_PATH = Path("verification/conformance/catalog/coverage-report.md")
 PROFILE_RULE_SOURCE = "crates/kmipkit-protocol/src/profile.rs"
 _GITHUB_API_MAX_RESPONSE_BYTES = 1_048_576
+_RUST_TEST_SOURCE_MAX_BYTES = 2_097_152
 _GITHUB_API_BASE = "https://api.github.com/repos/NeverWe1come/KMIPKit"
 _VERIFIED_EVIDENCE_PROOF = object()
 _EMPTY_TYPED_RULE_REGISTRY = re.compile(
@@ -853,7 +854,11 @@ def _confined_rust_path(repository: Path, candidate: Path) -> Path | None:
 def _rust_child_modules(repository: Path, package_root: Path, source_path: Path) -> set[Path]:
     """Resolve simple Rust module declarations from a package source file."""
     try:
-        source = safe_read_bytes(repository, source_path.relative_to(repository).as_posix(), max_bytes=1_048_576).decode("utf-8")
+        source = safe_read_bytes(
+            repository,
+            source_path.relative_to(repository).as_posix(),
+            max_bytes=_RUST_TEST_SOURCE_MAX_BYTES,
+        ).decode("utf-8")
     except (PathSecurityError, UnicodeDecodeError, ValueError):
         return set()
     code = _strip_rust_comments_and_literals(source)
@@ -1018,7 +1023,9 @@ def _rust_test_file_is_in_package_module_tree(repository: Path, test_path: Path)
 def _typed_rust_test_source(repository_text: str, test_path: str) -> str | None:
     """Read and sanitize each typed-evidence source file once per report run."""
     try:
-        source = safe_read_bytes(Path(repository_text), test_path, max_bytes=1_048_576).decode("utf-8")
+        source = safe_read_bytes(
+            Path(repository_text), test_path, max_bytes=_RUST_TEST_SOURCE_MAX_BYTES
+        ).decode("utf-8")
     except (PathSecurityError, UnicodeDecodeError):
         return None
     return _strip_rust_comments_and_literals(source)

@@ -12,7 +12,8 @@ use crate::{
     KmipOperationResult, ProtocolError, ResponseBatchItemView, ResultReason, ResultStatus,
 };
 
-const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 = OperationCode::QueryAsynchronousRequests.as_u32();
+const QUERY_ASYNCHRONOUS_REQUESTS_OPERATION: u32 =
+    OperationCode::QueryAsynchronousRequests.as_u32();
 const ASYNCHRONOUS_CORRELATION_VALUES: u32 = KmipTag::AsynchronousCorrelationValues.as_u32();
 const ASYNCHRONOUS_REQUEST: u32 = KmipTag::AsynchronousRequest.as_u32();
 const ASYNCHRONOUS_CORRELATION_VALUE: u32 = KmipTag::AsynchronousCorrelationValue.as_u32();

@@ -69,7 +69,7 @@ pub mod extension_registry;
 pub mod fluent;
 
 #[cfg(test)]
-#[path = "../bindings/shared/fixtures/extensions/extension_fixtures.generated.rs"]
+#[path = "../tests/fixtures/extensions/extension_fixtures.generated.rs"]
 pub(crate) mod extension_fixtures;
 
 #[cfg(test)]

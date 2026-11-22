@@ -88,7 +88,7 @@ PEM o DER compatible. Limita la lectura de los archivos de clave a la cuenta
 del servicio. También hay entradas en memoria para aplicaciones que obtengan
 credenciales desde otra fuente segura.
 
-TLS queda fijado a TLS 1.3 con autenticación mutua, rustls y AWS-LC. Se
+TLS queda fijado a TLS 1.3 con autenticación mutua, rustls y OpenSSL. Se
 comprueban la cadena del certificado del servidor, su periodo de validez y el
 nombre del endpoint. No existe una opción de producción para aceptar cualquier
 certificado. Se permite cambiar el nombre TLS en endpoints IP, sin desactivar

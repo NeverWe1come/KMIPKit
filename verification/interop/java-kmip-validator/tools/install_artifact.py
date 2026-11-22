@@ -18,6 +18,18 @@ from pathlib import Path
 
 
 PACKAGE_VERSION = "1.0.0"
+JAVA_BUILD_ARCHIVE_PATHS = (
+    "Cargo.toml",
+    "Cargo.lock",
+    ".cargo",
+    "crates",
+    "bindings/java",
+    "bindings/c",
+    "docs/user-guide/en",
+    "docs/user-guide/es",
+    "tests/fixtures/api/generated",
+    "vendor/aws-lc-sys-0.45.0",
+)
 
 
 def host_classifier() -> str:
@@ -67,17 +79,28 @@ def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
 
 
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
-    archive = subprocess.run(
-        ["git", "-C", str(repository), "archive", "--format=tar", commit],
-        check=True,
-        capture_output=True,
-    )
-    with tarfile.open(fileobj=__import__("io").BytesIO(archive.stdout), mode="r:") as source:
-        for entry in source.getmembers():
-            parts = Path(entry.name).parts
-            if Path(entry.name).is_absolute() or ".." in parts:
-                raise ValueError("Git archive contains an unsafe path")
-        source.extractall(destination, filter="data")
+    with tempfile.TemporaryFile(prefix="kmipkit-git-archive-") as archive_file:
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repository),
+                "archive",
+                "--format=tar",
+                commit,
+                *JAVA_BUILD_ARCHIVE_PATHS,
+            ],
+            check=True,
+            stdout=archive_file,
+            stderr=subprocess.PIPE,
+        )
+        archive_file.seek(0)
+        with tarfile.open(fileobj=archive_file, mode="r:") as source:
+            for entry in source.getmembers():
+                parts = Path(entry.name).parts
+                if Path(entry.name).is_absolute() or ".." in parts:
+                    raise ValueError("Git archive contains an unsafe path")
+            source.extractall(destination, filter="data")
 
 
 def install(repository: Path, commit: str, release_ref: str, maven_repository: Path,

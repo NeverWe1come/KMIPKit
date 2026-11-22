@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
-GENERATED_PARITY = ROOT / "tests" / "fixtures" / "api" / "generated" / "public_api_parity.json"
+GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
 OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
 RETIRED_NO_OFFSET_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"

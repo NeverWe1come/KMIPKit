@@ -64,7 +64,7 @@ jobs:
       - name: Build and install the pinned JNI package
         run: |
           python3 tools/install_artifact.py \
-            --repository ../.. \
+            --repository ../../.. \
             --pin-file library-pin.json \
             --maven-repository build/maven-repository \
             --manifest build/artifact-manifest.json
@@ -74,7 +74,7 @@ jobs:
 
       - name: Test Java 17 consumer against the installed artifact
         run: |
-          bash ../../bindings/java/gradlew \
+          bash ../../../bindings/java/gradlew \
             -PkmipkitMavenRepo="$GITHUB_WORKSPACE/verification/interop/java-kmip-validator/build/maven-repository" \
             test
 

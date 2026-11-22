@@ -140,12 +140,20 @@ class WorkflowContractTests(unittest.TestCase):
     def test_normative_inventory_checks_generated_named_values(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
-        self.assert_generator_check_step(
+        step = re.search(
+            r"(?ms)^      - name: Verify generated named protocol values\n(.*?)(?=^      - name: |\Z)",
             job,
-            name="Verify generated named protocol values",
-            step_id="verify-generated-named-protocol-values",
-            command="python3 -B verification/conformance/generate_named_values.py --repo-root . --check",
         )
+        self.assertIsNotNone(step, "The normative inventory job must check named protocol values.")
+        assert step is not None
+        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-named-protocol-values$")
+        self.assertRegex(step.group(1), r"(?m)^        run: \|$")
+        self.assertIn("if [ -d specs ]; then", step.group(1))
+        self.assertIn(
+            "python3 -B verification/conformance/generate_named_values.py --repo-root . --check",
+            step.group(1),
+        )
+        self.assertIn("Skipping named-value artifact check", step.group(1))
 
     def test_normative_inventory_checks_generated_client_profiles(self) -> None:
         contents = self.require_workflow()
@@ -159,7 +167,11 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_external_actions_use_full_commit_sha_and_release_comment(self) -> None:
         contents = self.require_workflow()
-        action_lines = [line for line in contents.splitlines() if " uses:" in line]
+        action_lines = [
+            line
+            for line in contents.splitlines()
+            if " uses:" in line and " uses: ./" not in line
+        ]
         self.assertTrue(action_lines, "The workflow must list its action dependencies.")
         for line in action_lines:
             with self.subTest(line=line):
@@ -268,6 +280,15 @@ class WorkflowContractTests(unittest.TestCase):
             "verification/api/extension_fixtures/generate.py --check",
             job,
             "Every supported pull-request platform must reject stale cross-adapter fixture outputs.",
+        )
+
+    def test_wsl_cargo_contract_runs_only_on_windows_runner(self) -> None:
+        job = self.require_job(self.require_workflow(), "script-contracts")
+        step = self.require_named_step(job, "Run PowerShell contracts")
+        self.assertRegex(
+            step.group(1),
+            r"(?m)^        if: runner\.os == 'Windows'$",
+            "The WSL integration contract requires a Windows runner; Linux and macOS run Cargo natively.",
         )
 
     def test_script_contract_job_fetches_history_for_pinned_git_provenance(self) -> None:
@@ -717,7 +738,7 @@ class WorkflowContractTests(unittest.TestCase):
         for required in (
             "rustup toolchain install nightly --profile minimal",
             "cargo +nightly install cargo-fuzz --version 0.13.2 --locked",
-            "cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
+            "cargo +nightly fuzz run --fuzz-dir . extension_schema -- -runs=1000 -max_len=4096 -timeout=5",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, job)
@@ -976,7 +997,7 @@ class WorkflowContractTests(unittest.TestCase):
             "verifyLoadSuccess",
             "verifyMissingBundle",
             "verifyUnsupportedArchitecture",
-            "verifyWrongAbi",
+            "verifyPublicPkcs11ApiPresent",
             "checkNetworkWasBlocked",
         ):
             with self.subTest(required=required):
@@ -990,18 +1011,19 @@ class WorkflowContractTests(unittest.TestCase):
             with self.subTest(property_name=property_name):
                 self.assertGreaterEqual(int(properties.get(property_name, "0")), minimum)
 
-    def test_python_installed_wheel_smoke_runs_offline_in_isolated_environment(self) -> None:
+    def test_python_binding_job_builds_package_runs_tests_and_example(self) -> None:
         contents = self.require_workflow()
         python_job = self.require_job(contents, "language-python")
         self.assertIn("os: [ubuntu-latest, windows-2022, macos-latest]", python_job)
 
-        step = self.require_named_step(python_job, "Run isolated offline Python wheel smoke")
+        step = self.require_named_step(
+            python_job, "Build the Python Maturin CFFI package and run tests and example"
+        )
         for required in (
-            "maturin build --offline",
-            "uv venv --offline",
-            "uv pip install --offline --no-deps",
-            "python_smoke.py",
-            "wrong_abi.rs",
+            "uv pip install --requirement bindings/python/requirements-coverage.txt",
+            "uv pip install --no-build-isolation bindings/python",
+            "python -m pytest -q bindings/python/tests",
+            "python bindings/python/examples/vendor_extension_registry.py",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, step.group(1))
@@ -1130,7 +1152,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("bash verification/coverage/collect_ffi_coverage.sh target/coverage-ffi", normalized_guide)
         self.assertIn("downloads all eight coverage artifacts", normalized_guide)
 
-    def test_nightly_schedule_runs_only_the_informational_branch_job(self) -> None:
+    def test_nightly_schedule_keeps_branch_coverage_and_cross_platform_script_contracts(self) -> None:
         contents = self.require_workflow()
         self.assertRegex(contents, r"(?ms)^on:\s*\n(?:(?!^jobs:).)*?^\s+schedule:")
         self.assertIn("cron: '17 3 * * *'", contents)
@@ -1139,6 +1161,10 @@ class WorkflowContractTests(unittest.TestCase):
                 body = self.require_job(contents, job)
                 self.assertIn("github.event_name == 'pull_request'", body)
                 self.assertIn("needs.impact-plan", body)
+
+        scripts = self.require_job(contents, "script-contracts")
+        self.assertIn("github.event_name == 'schedule'", scripts)
+        self.assertIn("needs.impact-plan.outputs.script_platforms", scripts)
 
         branch_coverage = self.require_job(contents, "branch-coverage")
         self.assertRegex(branch_coverage, r"(?m)^    if: github\.event_name == 'schedule'$")

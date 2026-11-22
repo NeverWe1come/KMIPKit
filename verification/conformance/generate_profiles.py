@@ -124,12 +124,13 @@ def parse_profile_targets(raw: bytes, catalog: Mapping[str, Any], repo_root: Pat
     decision_match = _TARGET_DECISION.fullmatch(decision_ref)
     if decision_match is None:
         raise ProfileGenerationError("profile target decision reference is unresolved")
-    try:
-        specification = safe_read_bytes(repo_root, PROFILE_SPEC_PATH, max_bytes=1_048_576).decode("utf-8")
-    except (OSError, UnicodeDecodeError, PathSecurityError) as error:
-        raise ProfileGenerationError("profile target decision source is unavailable") from error
-    if f"**{decision_match.group(1)}**" not in specification:
-        raise ProfileGenerationError("profile target decision reference is unresolved")
+    if (repo_root / "specs").is_dir():
+        try:
+            specification = safe_read_bytes(repo_root, PROFILE_SPEC_PATH, max_bytes=1_048_576).decode("utf-8")
+        except (OSError, UnicodeDecodeError, PathSecurityError) as error:
+            raise ProfileGenerationError("profile target decision source is unavailable") from error
+        if f"**{decision_match.group(1)}**" not in specification:
+            raise ProfileGenerationError("profile target decision reference is unresolved")
 
     raw_profiles = catalog.get("profiles")
     if not isinstance(raw_profiles, list):

@@ -634,6 +634,13 @@ trait Example { fn declaration(&self); }
         self.require_gate()
         self.assertTrue(GATE.rust_source_has_function_body("fn implemented() { let value = 1; }"))
         self.assertTrue(GATE.rust_source_has_function_body("fn incomplete("))
+        callback_table = '''
+#[repr(C)]
+pub struct Callbacks {
+    pub on_request: Option<unsafe extern "C" fn(request: *const u8) -> u32>,
+}
+'''
+        self.assertFalse(GATE.rust_source_has_function_body(callback_table))
 
     def test_only_external_test_directories_are_excluded_from_production_preflight(self) -> None:
         self.require_gate()

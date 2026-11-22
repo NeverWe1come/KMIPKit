@@ -16,11 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 PACKAGE = "rust-kmipkit-protocol"
 OWNER_APPROVAL = {
@@ -87,16 +83,11 @@ ERROR_VARIANTS = (
 RESPONSE_STATES = {
     "GetResponse": {
         "": "verified",
-        # KMIPKIT-0094 accessors remain Rust-only until binding parity lands.
-        "::key_block": "blocked",
-        "::managed_object": "blocked",
         "::object": "verified",
         "::object_type": "verified",
         "::result": "verified",
         "::try_from_response_item": "verified",
         "::unique_identifier": "verified",
-        "::key_block": "blocked",
-        "::managed_object": "blocked",
     },
     "LocateResponse": {
         "": "verified",

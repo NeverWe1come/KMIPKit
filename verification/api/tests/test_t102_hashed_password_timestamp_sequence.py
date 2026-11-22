@@ -108,7 +108,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
         )
         self.assertEqual("ready", invalid_input["mappingState"])
 
-        fixture_path = ROOT / "tests" / "fixtures" / "api" / "shared-capability-parity.json"
+        fixture_path = ROOT / "bindings" / "shared" / "fixtures" / "api" / "shared-capability-parity.json"
         fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
         cases = {case["id"]: case for case in fixture["cases"]}
         case = cases["credentials.hashed-password-timestamp-sequence.v1"]
@@ -134,11 +134,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
     def test_exact_sequence_trait_artifacts_are_excluded_by_the_credential_owner(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         report_path = (
-            ROOT
-            / "specs"
-            / "043-public-api-bindings"
-            / "reports"
-            / "rust-export-report-2026-11-01.json"
+            ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
         )
         report = json.loads(report_path.read_text(encoding="utf-8"))
         expected = {

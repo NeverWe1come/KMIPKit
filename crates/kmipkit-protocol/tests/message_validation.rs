@@ -513,6 +513,34 @@ fn required_message_fields_reject_wrong_ttlv_types_at_each_validation_layer() {
     );
 }
 
+#[test]
+fn kmip30_response_effective_batch_count_uses_the_actual_batch_items() {
+    let version = Value::structure(structure([
+        item(PROTOCOL_VERSION_MAJOR, Value::integer(3)),
+        item(PROTOCOL_VERSION_MINOR, Value::integer(0)),
+    ]));
+    let response = ResponseMessage::try_from_ttlv(structure([
+        item(
+            RESPONSE_HEADER,
+            Value::structure(structure([
+                item(PROTOCOL_VERSION, version),
+                item(TIME_STAMP, Value::date_time(1)),
+            ])),
+        ),
+        item(
+            BATCH_ITEM,
+            Value::structure(structure([
+                item(RESULT_STATUS, Value::enumeration(0)),
+                item(RESPONSE_PAYLOAD, Value::structure(Structure::new())),
+            ])),
+        ),
+    ]))
+    .expect("a KMIP 3.0 response omits Batch Count on the wire");
+
+    assert_eq!(response.header().batch_count(), None);
+    assert_eq!(response.header().effective_batch_count(), 1);
+}
+
 fn request_tree_with_header_fields(extra: Item) -> Structure {
     structure([
         item(

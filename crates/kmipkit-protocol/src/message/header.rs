@@ -66,6 +66,7 @@ impl<'a> RequestHeaderView<'a> {
     /// If encoded on the wire (KMIP 2.x), returns the validated header count.
     /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
     #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)] // Preserve the established conversion.
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
             .unwrap_or_else(|| self.message.batch_items().len() as i32)
@@ -227,6 +228,7 @@ impl<'a> ResponseHeaderView<'a> {
     /// If encoded on the wire (KMIP 2.x), returns the validated header count.
     /// In KMIP 3.0, where Batch Count is reserved, returns the actual number of Batch Items.
     #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)] // Preserve the established conversion.
     pub fn effective_batch_count(self) -> i32 {
         self.batch_count()
             .unwrap_or_else(|| self.message.batch_items().len() as i32)

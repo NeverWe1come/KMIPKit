@@ -43,7 +43,7 @@ impl OciVaultProvider {
         config: &OciConfig,
         master_kek: Option<[u8; 32]>,
     ) -> Result<Self, ProxyError> {
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()

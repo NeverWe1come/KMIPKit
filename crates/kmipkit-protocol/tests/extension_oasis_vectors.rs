@@ -124,7 +124,9 @@ fn table_476_query_extension_functions_are_enumeration_values_five_and_six() {
 
 #[test]
 fn schema_fuzz_corpus_seed_decodes_and_reaches_complete_validation() {
-    const SEED: &[u8] = include_bytes!("../../../verification/security/fuzz/corpus/extension_schema/valid_nested.ttlv");
+    const SEED: &[u8] = include_bytes!(
+        "../../../verification/security/fuzz/corpus/extension_schema/valid_nested.ttlv"
+    );
     let codec_limits = CodecLimits::new(4 * 1024, 64, 512)
         .expect("the fuzz target uses supported bounded decoder limits");
     let decoded = decode_with_limits(SEED, &codec_limits)

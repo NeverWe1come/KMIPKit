@@ -160,6 +160,10 @@ def inventory_c_header(source: str, package: str = "c-kmipkit") -> dict[str, Any
             field_names = []
             if balanced:
                 for declarator in declarators:
+                    callback_field = re.search(r"\(\s*\*\s*([A-Za-z_]\w*)\s*\)", declarator)
+                    if callback_field:
+                        field_names.append(callback_field.group(1))
+                        continue
                     field_name = re.search(r"([A-Za-z_]\w*)\s*(?::\s*\d+)?\s*(?:\[[^]]*\])?\s*$", declarator)
                     if not field_name or "(" in declarator:
                         field_names = []
@@ -1069,7 +1073,13 @@ def _declared_c_record_fields(
     return declarations
 
 
-def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> dict[str, Any]:
+def compare(
+    report: dict[str, Any],
+    manifest: dict[str, Any],
+    package: str,
+    *,
+    c_abi_exports_only: bool = False,
+) -> dict[str, Any]:
     package_rows = [row for row in manifest.get("publicDeclarations", []) if row.get("packageId") == package]
     if package == "c-kmipkit":
         stable_error_codes = {
@@ -1085,8 +1095,14 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
             or row.get("kind") == "c-symbol"
             or row.get("exportName") in stable_error_codes
         ]
-        # Record layouts are the authoritative C field inventory.
-        package_rows.extend(_declared_c_record_fields(manifest, package_rows))
+        if c_abi_exports_only:
+            # This mode audits the built ABI export allowlist: only linkable
+            # symbols belong in the binary inventory. Header macros, inline
+            # helpers, types, and fields are not dynamic exports.
+            package_rows = [row for row in package_rows if row.get("kind") == "c-symbol"]
+        else:
+            # Record layouts are the authoritative C field inventory.
+            package_rows.extend(_declared_c_record_fields(manifest, package_rows))
     declared = {(row["packageId"], row["exportName"]): row for row in package_rows}
     package_exclusions = [row for row in manifest.get("approvedExclusions", [])
                           if row.get("packageId") == package]
@@ -1094,7 +1110,12 @@ def compare(report: dict[str, Any], manifest: dict[str, Any], package: str) -> d
     duplicate_exclusions = sorted(key for key, count in exclusion_counts.items() if count > 1)
     exclusions = {(row["packageId"], row["exportName"]): row for row in package_exclusions}
     declaration_exclusion_overlaps = set(declared) & set(exclusions)
-    observed = {(row["packageId"], row["exportName"]): row for row in report["declarations"]}
+    observed = {
+        (row["packageId"], row["exportName"]): row
+        for row in report["declarations"]
+        if not (package == "c-kmipkit" and c_abi_exports_only)
+        or row.get("kind") == "c-symbol"
+    }
     missing = sorted(set(observed) - set(declared) - set(exclusions))
     stale = sorted(set(declared) - set(observed))
 
@@ -1233,7 +1254,19 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         approved_exclusions=c_exclusions,
         blocked_exports=blocked_c_exports,
     )
-    return compare(c, manifest, "c-kmipkit")
+    binary_report = compare(c, manifest, "c-kmipkit", c_abi_exports_only=True)
+    header = compare(c, manifest, "c-kmipkit")
+    # The C manifest does not yet inventory all header-only declarations. Report
+    # omissions from the manifest separately, while requiring every declared
+    # public item to exist with the expected kind.
+    binary_report["header"] = header
+    binary_report["matchesManifest"] = (
+        binary_report["matchesManifest"]
+        and header["complete"]
+        and not header["notObserved"]
+        and not header["kindMismatches"]
+    )
+    return binary_report
 
 
 def expand_local_c_header_includes(root: Path, header_path: Path) -> str:

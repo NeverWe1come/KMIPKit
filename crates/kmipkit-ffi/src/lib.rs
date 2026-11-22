@@ -1059,6 +1059,7 @@ pub struct kmipkit_server_request_handler_v1_t {
 /// C callback dispatch table for Server-to-Client operations (ABI version 2).
 #[derive(Clone, Copy)]
 #[repr(C)]
+#[allow(clippy::type_complexity)] // The callback signatures mirror the stable C ABI contract.
 pub struct kmipkit_server_request_handler_v2_t {
     pub struct_size: u32,
     pub abi_version: u32,
@@ -1117,9 +1118,10 @@ pub struct kmipkit_server_request_handler_v2_t {
 }
 
 /// C callback dispatch table for Server-to-Client operations (ABI version 3),
-/// supporting granular KmipOperationResult (status, reason, message) error returns.
+/// supporting granular `KmipOperationResult` (status, reason, message) error returns.
 #[derive(Clone, Copy)]
 #[repr(C)]
+#[allow(clippy::type_complexity)] // The callback signatures mirror the stable C ABI contract.
 pub struct kmipkit_server_request_handler_v3_t {
     pub struct_size: u32,
     pub abi_version: u32,
@@ -1188,6 +1190,7 @@ pub struct kmipkit_server_request_handler_v3_t {
 /// A zero count preserves the empty version list. Other callbacks retain v3 result semantics.
 #[derive(Clone, Copy)]
 #[repr(C)]
+#[allow(clippy::type_complexity)] // The callback signatures mirror the stable C ABI contract.
 pub struct kmipkit_server_request_handler_v4_t {
     pub struct_size: u32,
     pub abi_version: u32,
@@ -1257,6 +1260,7 @@ pub struct kmipkit_server_request_handler_v4_t {
 /// A null vendor span means absent; a non-null zero-length span means present empty text.
 #[derive(Clone, Copy)]
 #[repr(C)]
+#[allow(clippy::type_complexity)] // The callback signatures mirror the stable C ABI contract.
 pub struct kmipkit_server_request_handler_v5_t {
     pub struct_size: u32,
     pub abi_version: u32,

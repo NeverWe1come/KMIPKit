@@ -78,7 +78,7 @@ impl OtcKmsProvider {
             .clone()
             .unwrap_or_else(|| "kmipkit-".to_string());
 
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()
@@ -638,10 +638,8 @@ impl CloudKmsProvider for OtcKmsProvider {
         _params: &CryptoParams,
         data: &[u8],
     ) -> Result<Vec<u8>, ProxyError> {
-        use aws_lc_rs::hmac;
-        let s_key = hmac::Key::new(hmac::HMAC_SHA256, unique_id.as_bytes());
-        let tag = hmac::sign(&s_key, data);
-        Ok(tag.as_ref().to_vec())
+        crate::crypto::hmac_sha256(unique_id.as_bytes(), data)
+            .map_err(|error| ProxyError::CryptoError(format!("HMAC-SHA256 failed: {error}")))
     }
 
     async fn verify(
@@ -651,9 +649,9 @@ impl CloudKmsProvider for OtcKmsProvider {
         data: &[u8],
         signature: &[u8],
     ) -> Result<bool, ProxyError> {
-        use aws_lc_rs::hmac;
-        let s_key = hmac::Key::new(hmac::HMAC_SHA256, unique_id.as_bytes());
-        Ok(hmac::verify(&s_key, data, signature).is_ok())
+        crate::crypto::verify_hmac_sha256(unique_id.as_bytes(), data, signature).map_err(|error| {
+            ProxyError::CryptoError(format!("HMAC-SHA256 verification failed: {error}"))
+        })
     }
 
     async fn random_bytes(&self, num_bytes: usize) -> Result<Zeroizing<Vec<u8>>, ProxyError> {

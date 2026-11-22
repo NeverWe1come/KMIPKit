@@ -326,11 +326,9 @@ pub(super) fn validate_request_message(
                 let is_v3 = header
                     .as_ref()
                     .is_some_and(|(_, h)| h.protocol_version.major() == 3);
-                let multi_item_request = header
-                    .as_ref()
-                    .is_some_and(|(_, validated_header)| {
-                        validated_header.batch_count.is_some_and(|count| count > 1)
-                    });
+                let multi_item_request = header.as_ref().is_some_and(|(_, validated_header)| {
+                    validated_header.batch_count.is_some_and(|count| count > 1)
+                });
                 let item_id = with_structure(child, index, None, |view| {
                     validate_request_batch_item(&view, index, multi_item_request, is_v3)
                 })?;
@@ -363,14 +361,14 @@ pub(super) fn validate_request_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedRequestMessage {
@@ -442,14 +440,14 @@ pub(super) fn validate_response_message(
             None,
         ));
     }
-    if let Some(batch_count) = header.batch_count {
-        if usize::try_from(batch_count).ok() != Some(batch_indices.len()) {
-            return Err(error(
-                MessageValidationErrorKind::BatchCountMismatch,
-                Some(header_index),
-                None,
-            ));
-        }
+    if let Some(batch_count) = header.batch_count
+        && usize::try_from(batch_count).ok() != Some(batch_indices.len())
+    {
+        return Err(error(
+            MessageValidationErrorKind::BatchCountMismatch,
+            Some(header_index),
+            None,
+        ));
     }
 
     Ok(ValidatedResponseMessage {
@@ -580,14 +578,12 @@ fn validate_response_header(
             &[PROTOCOL_VERSION, TIME_STAMP, BATCH_COUNT],
             Some(top_index),
         )?;
-        let batch_count = integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
-            .ok_or_else(|| {
-                error(
-                    MessageValidationErrorKind::WrongItemType,
-                    Some(top_index),
-                    None,
-                )
-            })?;
+        let wrong_type = MessageValidationErrorKind::WrongItemType;
+        let Some(batch_count) =
+            integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
+        else {
+            return Err(error(wrong_type, Some(top_index), None)); // COVERAGE-EXCLUDE: validate_fields checks the type first.
+        };
         if batch_count < 1 {
             return Err(error(
                 MessageValidationErrorKind::InvalidBatchCount,
@@ -681,6 +677,7 @@ fn validate_request_batch_item(
     }
 }
 
+#[allow(clippy::too_many_lines)] // Keep response status and payload rules together for one batch item.
 fn validate_response_batch_item(
     view: &StructureView<'_>,
     top_index: usize,

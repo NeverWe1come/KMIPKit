@@ -163,15 +163,21 @@ const PINNED_CASES: &[(&str, &str)] = &[
     ),
     (
         "SKLC-M-1-21",
-        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"),
+        include_str!(
+            "../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-1-21.xml"
+        ),
     ),
     (
         "SKLC-M-2-21",
-        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"),
+        include_str!(
+            "../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-2-21.xml"
+        ),
     ),
     (
         "SKLC-M-3-21",
-        include_str!("../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"),
+        include_str!(
+            "../../../../verification/conformance/oasis/kmip-2.1/fixtures/SKLC-M-3-21.xml"
+        ),
     ),
 ];
 const EXPECTED_RESULTS: &[&str] = &[

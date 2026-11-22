@@ -128,6 +128,10 @@ class AsyncTableContractTests(unittest.TestCase):
                 self.assertNotIn("proposed_requirement_id", row)
                 self.assertNotIn("requirement_id", row)
 
+    @unittest.skipUnless(
+        (ROOT / "specs" / "007-client-execution" / "spec.md").is_file(),
+        "feature specifications are intentionally absent from the code-only review branch",
+    )
     def test_source_table_validator_rejects_wrong_async_contract_semantics(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])

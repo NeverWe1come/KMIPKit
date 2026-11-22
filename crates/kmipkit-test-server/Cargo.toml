@@ -13,17 +13,19 @@ name = "kmipkit-test-server"
 path = "src/main.rs"
 
 [dependencies]
-aws-lc-rs = { workspace = true, features = ["prebuilt-nasm"] }
+openssl.workspace = true
+rustls-openssl.workspace = true
 bytes = { workspace = true, features = ["std"] }
 hyper = { workspace = true, features = ["client", "http1"] }
 kmipkit-protocol.workspace = true
 kmipkit-ttlv.workspace = true
-rcgen = { workspace = true, features = ["aws_lc_rs"] }
+rcgen.workspace = true
+kmipkit-test-support = { workspace = true, features = ["fixtures"] }
 roxmltree.workspace = true
-rustls = { workspace = true, features = ["aws_lc_rs", "std"] }
+rustls.workspace = true
 serde_json.workspace = true
 tokio = { workspace = true, features = ["io-util", "macros", "net", "rt", "sync", "time"] }
-tokio-rustls = { workspace = true, features = ["aws_lc_rs"] }
+tokio-rustls.workspace = true
 zeroize = { workspace = true, features = ["alloc"] }
 
 [dev-dependencies]

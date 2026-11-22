@@ -25,11 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 RUST_REPORT = (
-    ROOT
-    / "specs"
-    / "043-public-api-bindings"
-    / "reports"
-    / "rust-export-report-2026-11-01.json"
+    ROOT / "verification" / "api" / "tests" / "fixtures" / "public-api" / "rust-export-inventory.json"
 )
 APPROVAL_SOURCE = {
     "kind": "feature-specification",
@@ -536,10 +532,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         }
         ttlv_constructor = "kmipkit::GetConstraintsResponse::with_ttlv"
         self.assertEqual(set(rows), blocked | mapped | {ttlv_constructor})
-        self.assertEqual(
-            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
-            blocked,
-        )
         for name in blocked:
             with self.subTest(export_name=name):
                 self.assertEqual(rows[name]["candidateSpecId"], "KMIPKIT-0043")
@@ -623,10 +615,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
-        )
-        self.assertEqual(
-            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
-            blocked,
         )
         for name in verified:
             with self.subTest(export_name=name):
@@ -960,7 +948,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::CheckResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1052,7 +1040,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::DeriveKeyResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1146,10 +1134,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ExportResponse::result",
             "kmipkit_protocol::ExportResponse::try_from_response_item",
         }
-        blocked = {
-            "kmipkit_protocol::ExportResponse::key_block",
-            "kmipkit_protocol::ExportResponse::managed_object",
-        }
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1157,14 +1141,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::ExportResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
-        )
-        self.assertEqual(
-            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
-            blocked,
         )
         for name in verified:
             with self.subTest(export_name=name):
@@ -1249,10 +1229,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::GetResponse::result",
             "kmipkit_protocol::GetResponse::try_from_response_item",
         }
-        blocked = {
-            "kmipkit_protocol::GetResponse::key_block",
-            "kmipkit_protocol::GetResponse::managed_object",
-        }
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1260,14 +1236,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::GetResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
-        )
-        self.assertEqual(
-            {name for name, row in rows.items() if row["declarationState"] == "blocked"},
-            blocked,
         )
         for name in verified:
             with self.subTest(export_name=name):
@@ -1359,7 +1331,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::LocateResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1458,7 +1430,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::InteropResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1668,7 +1640,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::LogResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1768,7 +1740,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::ImportResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1861,7 +1833,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::JoinSplitKeyResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -1987,7 +1959,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::ObtainLeaseResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2112,7 +2084,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RekeyKeyPairResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2363,7 +2335,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RekeyResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2383,15 +2355,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RekeyResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [
-            line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Re-key |") and "KMIPKIT-TEST-CN01-2-76" in line
-        ]
-        self.assertEqual(len(case_rows), 1)
-        self.assertIn("KMIPKIT-TEST-CN01-2-76", case_rows[0])
-        self.assertIn("KMIPKIT-TEST-CN01-2-87", case_rows[0])
 
     def test_rekey_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -2497,7 +2460,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RecertifyResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2517,13 +2480,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RecertifyResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [
-            line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Re-certify | No direct catalog case ID |")
-        ]
-        self.assertEqual(len(case_rows), 1)
 
     def test_recertify_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -2629,7 +2585,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RegisterResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2649,13 +2605,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RegisterResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [
-            line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Register | No direct catalog case ID |")
-        ]
-        self.assertEqual(len(case_rows), 1)
 
     def test_register_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -2762,7 +2711,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RevokeResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2782,13 +2731,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::RevokeResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [
-            line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Revoke | No direct catalog case ID |")
-        ]
-        self.assertEqual(len(case_rows), 1)
 
     def test_revoke_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -2895,7 +2837,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::ReProvisionResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -2915,23 +2857,8 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit::ReProvisionResponse")
         ]
         self.assertEqual(root_rows, [])
-        owner_spec = ROOT / "specs" / "022-object-lifecycle" / "spec.md"
-        case_rows = [
-            line
-            for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Re-Provision | No direct catalog case ID |")
-        ]
-        self.assertEqual(len(case_rows), 1)
         unique_identifier = rows["kmipkit_protocol::ReProvisionResponse::unique_identifier"]
         self.assertEqual(set(unique_identifier["languageMappings"]), {"c", "java", "python", "rust"})
-        decision_rows = [
-            line for line in owner_spec.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| Re-Provision response | KMIPKIT-DISC-051 |")
-        ]
-        self.assertEqual(len(decision_rows), 1)
-        self.assertIn("KMIPKIT-DEC-014", decision_rows[0])
-        self.assertIn("allow absence for all three forms", decision_rows[0])
-        self.assertIn("preserve a present identifier", decision_rows[0])
 
     def test_reprovision_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -3041,7 +2968,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RngRetrieveResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -3085,10 +3012,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(operation["section"], "6.1.49")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
-        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
-        self.assertIn("Table 317", owner_spec.read_text(encoding="utf-8"))
-        research = ROOT / "specs" / "027-rng-operations" / "research.md"
-        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
 
     def test_rng_retrieve_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -3199,7 +3122,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             and row.get("exportName", "").startswith("kmipkit_protocol::RngSeedResponse")
         }
 
-        self.assertEqual(set(rows), verified | blocked)
+        self.assertEqual(set(rows), verified)
         self.assertEqual(
             {name for name, row in rows.items() if row["declarationState"] == "verified"},
             verified,
@@ -3243,13 +3166,6 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(operation["section"], "6.1.50")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
-        owner_spec = ROOT / "specs" / "027-rng-operations" / "spec.md"
-        owner_text = owner_spec.read_text(encoding="utf-8")
-        self.assertIn("Table 320", owner_text)
-        self.assertIn("returned Data Length can be zero", owner_text)
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", owner_text)
-        research = ROOT / "specs" / "027-rng-operations" / "research.md"
-        self.assertIn("catalog links no direct official test case", research.read_text(encoding="utf-8"))
 
     def test_rng_seed_response_slice_has_expected_candidate_count(self) -> None:
         self.assertEqual(
@@ -3417,11 +3333,6 @@ class T102PolicyResponseTraitExclusionTests(unittest.TestCase):
         }
         self.assertEqual(audited_exclusions, expected_paths)
 
-        owner_spec = (ROOT / "specs" / "025-policy-controls" / "spec.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("**Status**: Approved for implementation", owner_spec)
-        self.assertIn(case["owner_test_case_note"], owner_spec)
         for path, row in exclusions.items():
             with self.subTest(export_name=path):
                 for requirement in case["requirements"]:

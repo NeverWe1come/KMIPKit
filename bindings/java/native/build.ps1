@@ -17,7 +17,7 @@ $responseIdentifierTestSource = Join-Path $PSScriptRoot 'tests\response_identifi
 $responseBridgeTestSource = Join-Path $PSScriptRoot 'tests\response_bridge_test.cpp'
 $responseSecretArrayScopeTestSource = Join-Path $PSScriptRoot 'tests\response_secret_array_scope_test.cpp'
 $cHeader = Join-Path $repositoryRoot 'bindings\c\include'
-$internalHeader = Join-Path $repositoryRoot 'tests\fixtures\api\generated'
+$internalHeader = Join-Path $repositoryRoot 'bindings\shared\fixtures\api\generated'
 
 if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) {
     throw 'Visual Studio C++ build tools are required to build the Windows JNI bridge.'
@@ -176,6 +176,8 @@ $compiler += ' /Fo' + '"' + $objectPath + '"'
 $compiler += ' ' + '"' + $jniSource + '"'
 $compiler += ' ' + '"' + $rustLibrary + '"'
 $compiler += ' /link kernel32.lib ntdll.lib userenv.lib ws2_32.lib dbghelp.lib'
+# Cargo's native-link metadata does not carry through the static FFI library.
+$compiler += ' gdi32.lib user32.lib crypt32.lib advapi32.lib'
 $compiler += ' /OUT:' + '"' + $dllPath + '"' + ' /IMPLIB:' + '"' + $importPath + '"'
 $commandLine = 'call "' + $devCommand + '" -no_logo -arch=x64 -host_arch=x64 && ' + $compiler
 & $env:ComSpec /d /s /c $commandLine

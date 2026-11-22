@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SPEC_SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD sources are excluded from this branch")
 class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

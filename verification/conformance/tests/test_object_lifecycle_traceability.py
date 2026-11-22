@@ -44,7 +44,12 @@ def _reference_file(reference: str) -> Path:
     return ROOT / reference.partition("::")[0]
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
+    @unittest.skipUnless(
+        SPEC_PATH.is_file() and TRACEABILITY_PATH.is_file(),
+        "Spec Kit lifecycle documents are excluded from the code-only review branch",
+    )
     def test_all_requirements_link_to_their_operation_and_sources(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         spec = SPEC_PATH.read_text(encoding="utf-8")
@@ -270,6 +275,10 @@ class ObjectLifecycleTraceabilityTests(unittest.TestCase):
             if element.get("feature_spec") == FEATURE_SPEC:
                 self.assertFalse(retired_ids.intersection(element["requirement_ids"]))
 
+    @unittest.skipUnless(
+        SPEC_PATH.is_file() and TRACEABILITY_PATH.is_file(),
+        "Spec Kit lifecycle documents are excluded from the code-only review branch",
+    )
     def test_every_payload_row_has_a_catalog_element_and_resolving_test_symbols(self) -> None:
         trace = TRACEABILITY_PATH.read_text(encoding="utf-8")
         spec = SPEC_PATH.read_text(encoding="utf-8")

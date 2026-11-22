@@ -290,6 +290,13 @@ fn crypto_primitives_work() {
     let decrypted = decrypt_aes(&key, iv.as_deref(), &encrypted).expect("decrypt works");
     assert_eq!(decrypted, data);
 
+    let mut tampered = encrypted.clone();
+    let tag_end = tampered.len() - 1;
+    tampered[tag_end] ^= 0x80;
+    let error = decrypt_aes(&key, iv.as_deref(), &tampered)
+        .expect_err("AES-GCM rejects an altered authentication tag");
+    assert!(error.starts_with("decryption failed:"));
+
     // AES-128 (16-byte key)
     let key16 = &key[..16];
     let (enc16, iv16) = encrypt_aes(key16, None, data).expect("encrypt aes-128");

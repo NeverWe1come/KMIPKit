@@ -42,7 +42,7 @@ impl InfisicalKmsProvider {
         config: &InfisicalConfig,
         master_kek: Option<[u8; 32]>,
     ) -> Result<Self, ProxyError> {
-        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        crate::crypto::install_rustls_openssl_provider()?;
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .build()
@@ -223,11 +223,7 @@ impl CloudKmsProvider for InfisicalKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("infisical-key-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("infisical-key-"), Ok)?;
 
         let enc_alg = Self::map_algorithm(spec);
         let tag_desc = Self::encode_tags(tags);
@@ -266,11 +262,7 @@ impl CloudKmsProvider for InfisicalKmsProvider {
             .name
             .as_deref()
             .map(|n| self.normalize_id(n))
-            .unwrap_or_else(|| {
-                let mut buf = [0u8; 16];
-                let _ = aws_lc_rs::rand::fill(&mut buf);
-                format!("infisical-secret-{}", hex::encode(&buf))
-            });
+            .map_or_else(|| crate::crypto::random_identifier("infisical-secret-"), Ok)?;
 
         let key_len = if spec.length > 0 {
             (spec.length / 8) as usize
@@ -282,8 +274,8 @@ impl CloudKmsProvider for InfisicalKmsProvider {
             Some(m) => m,
             None => {
                 let mut buf = vec![0u8; key_len];
-                aws_lc_rs::rand::fill(&mut buf).map_err(|e| {
-                    ProxyError::ProviderError(format!("entropy generation failed: {e:?}"))
+                crate::crypto::fill_random_bytes(&mut buf).map_err(|error| {
+                    ProxyError::ProviderError(format!("entropy generation failed: {error}"))
                 })?;
                 Zeroizing::new(buf)
             }
@@ -924,12 +916,5 @@ impl CloudKmsProvider for InfisicalKmsProvider {
         Err(ProxyError::ProviderNotConfigured(
             "Infisical feature not enabled".to_string(),
         ))
-    }
-}
-
-mod hex {
-    #[cfg(feature = "infisical")]
-    pub fn encode(bytes: &[u8]) -> String {
-        bytes.iter().map(|b| format!("{b:02x}")).collect()
     }
 }

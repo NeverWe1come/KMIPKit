@@ -3,9 +3,10 @@
 use std::error::Error;
 use std::fmt;
 
+use crate::FixtureSigningKey;
 use rcgen::{
     BasicConstraints, Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, IsCa,
-    Issuer, KeyPair, KeyUsagePurpose,
+    Issuer, KeyUsagePurpose,
 };
 use zeroize::Zeroizing;
 
@@ -36,14 +37,15 @@ impl EphemeralPki {
     ///
     /// # Errors
     ///
-    /// Returns a redacted error if AWS-LC key generation or certificate
+    /// Returns a redacted error if OpenSSL key generation or certificate
     /// construction fails.
     pub fn generate() -> Result<Self, PkiFixtureError> {
-        let authority_key = KeyPair::generate().map_err(|_| PkiFixtureError)?;
+        let authority_key = FixtureSigningKey::generate().map_err(|_| PkiFixtureError)?;
         let mut authority_params = CertificateParams::default();
         authority_params
             .distinguished_name
             .push(DnType::CommonName, "KMIPKit ephemeral test authority");
+        authority_key.prepare_certificate(&mut authority_params);
         authority_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
         authority_params.key_usages = vec![KeyUsagePurpose::KeyCertSign];
         let authority_certificate = authority_params
@@ -152,10 +154,10 @@ impl fmt::Debug for EphemeralIdentity {
 fn generate_identity(
     common_name: &str,
     extended_key_usage: ExtendedKeyUsagePurpose,
-    issuer: &Issuer<'_, &KeyPair>,
+    issuer: &Issuer<'_, &FixtureSigningKey>,
     authority_certificate_der: &[u8],
 ) -> Result<EphemeralIdentity, PkiFixtureError> {
-    let key_pair = KeyPair::generate().map_err(|_| PkiFixtureError)?;
+    let key_pair = FixtureSigningKey::generate().map_err(|_| PkiFixtureError)?;
     let mut params =
         CertificateParams::new(vec![common_name.to_owned()]).map_err(|_| PkiFixtureError)?;
     params
@@ -163,6 +165,7 @@ fn generate_identity(
         .push(DnType::CommonName, common_name);
     params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
     params.extended_key_usages = vec![extended_key_usage];
+    key_pair.prepare_certificate(&mut params);
     let certificate: Certificate = params
         .signed_by(&key_pair, issuer)
         .map_err(|_| PkiFixtureError)?;

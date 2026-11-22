@@ -165,6 +165,14 @@ class CiImpactTests(unittest.TestCase):
                 self.assertEqual(set(IMPACT.PULL_REQUEST_JOB_IDS), set(plan["selected_jobs"]))
                 self.assertEqual(set(IMPACT.ALL_COVERAGE_SCOPES), set(plan["coverage_scopes"]))
 
+    def test_script_contract_platforms_follow_changed_tooling(self) -> None:
+        impact = self.require_impact()
+        rust = self.classify({"status": "M", "paths": ["crates/kmipkit-protocol/src/lib.rs"]})
+        windows = self.classify({"status": "M", "paths": ["bindings/java/native/build.ps1"]})
+        self.assertEqual(["ubuntu-latest"], impact.script_contract_platforms(rust))
+        self.assertIn("windows-latest", impact.script_contract_platforms(windows))
+        self.assertIn("macos-latest", impact.script_contract_platforms(windows))
+
     def test_rename_copy_and_delete_retain_every_relevant_path(self) -> None:
         cases = (
             {"status": "R100", "paths": ["docs/old.md", "bindings/python/src/kmipkit/new.py"]},

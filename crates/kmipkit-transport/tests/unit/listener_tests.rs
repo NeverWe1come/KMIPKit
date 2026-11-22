@@ -43,7 +43,7 @@ fn client_tls_config(pki: &EphemeralPki) -> Arc<ClientConfig> {
         ))
         .expect("authority cert is valid");
 
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
+    let provider = Arc::new(rustls_openssl::default_provider());
     let config = ClientConfig::builder_with_provider(provider)
         .with_protocol_versions(&[&rustls::version::TLS13])
         .expect("TLS 1.3 only")
@@ -1105,6 +1105,45 @@ fn test_listener_accept_without_timeout() {
         .expect("send succeeds");
     let _ = conn.close();
     client_h.join().unwrap();
+}
+
+#[test]
+fn https_listener_rejects_content_type_that_conflicts_with_its_configured_encoding() {
+    let pki = EphemeralPki::generate().expect("pki generation succeeds");
+    let config = test_listener_config(&pki)
+        .target_path("/kmip")
+        .wire_encoding(WireEncoding::Ttlv)
+        .build()
+        .expect("listener config is valid");
+    let mut listener = HttpsListener::bind(config).expect("bind succeeds");
+    let port = listener.port().expect("port is valid");
+    let client_config = client_tls_config(&pki);
+
+    let client = thread::spawn(move || {
+        let socket = TcpStream::connect(("127.0.0.1", port)).expect("connect succeeds");
+        let server_name = ServerName::try_from("server.kmipkit.test").expect("valid server name");
+        let connection = ClientConnection::new(client_config, server_name)
+            .expect("TLS client connection builds");
+        let mut tls = StreamOwned::new(connection, socket);
+        tls.write_all(
+            b"POST /kmip HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}",
+        )
+        .expect("request writes");
+        tls.flush().expect("request flushes");
+        let mut byte = [0_u8; 1];
+        let _ = tls.read(&mut byte);
+    });
+
+    let mut connection = listener
+        .accept(Some(Duration::from_secs(5)))
+        .expect("accept succeeds");
+    let error = connection
+        .recv_request(1024, Some(Duration::from_secs(5)))
+        .expect_err("JSON content type conflicts with the configured TTLV encoding");
+    assert_eq!(error.delivery_state(), crate::RequestDeliveryState::NotSent);
+    assert_eq!(error.cause_category(), crate::TransportCauseCategory::Other);
+    connection.close().expect("connection closes cleanly");
+    client.join().expect("client thread finishes");
 }
 
 #[test]
