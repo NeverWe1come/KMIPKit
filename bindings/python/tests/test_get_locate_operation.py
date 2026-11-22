@@ -420,3 +420,18 @@ def test_locate_response_preserves_identifiers_beyond_default_decoder_limit(monk
     assert result.unique_identifiers[0].text == "repeated"
     assert result.unique_identifiers[-1].text == "repeated"
     assert call_count == identifier_count
+
+
+def test_fluent_get_reuses_native_validation_and_accepts_named_selectors() -> None:
+    from kmipkit.fluent import GetBuilder
+    from kmipkit.protocol_values import KeyFormatType, Operation
+
+    with GetBuilder().key_format_type(KeyFormatType.RAW).key_wrap_type(0x80000000) as builder:
+        builder.validate()
+        with builder.build() as item:
+            assert item.operation == Operation.GET
+
+    with ttlv.ttlv_structure_create() as empty, GetBuilder() as builder:
+        builder.key_wrapping_specification(empty)
+        with pytest.raises(InvalidInputError):
+            builder.validate()

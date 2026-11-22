@@ -14,14 +14,14 @@ use kmipkit_protocol::{
     DecapsulateRequest, DecryptRequest, DeleteAttributeRequest, DerivationMethod,
     DerivationParameters, DeriveKeyRequest, DestroyRequest, DiscoverVersionsRequest,
     EncapsulateRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest,
-    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, LocateRequest,
-    MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest, NewAttribute,
-    ObjectGroupMember, ObjectType, ObliterateRequest, ObtainLeaseRequest, OpaqueObjectContext,
-    OperationData, PingRequest, ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
-    RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObliterateRequest,
+    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion,
+    QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
+    RngSeedRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Tag, Value, ValueView};
@@ -489,9 +489,15 @@ impl<'a> RequestBuilder<'a> {
     /// Begins constructing a typed Get request for an explicit identifier.
     #[must_use]
     pub fn get(self, unique_identifier: UniqueIdentifier) -> GetBuilder<'a> {
+        self.get_request().unique_identifier(unique_identifier)
+    }
+
+    /// Begins a Get request with all selectors unset, including the identifier.
+    #[must_use]
+    pub fn get_request(self) -> GetBuilder<'a> {
         GetBuilder {
             client: self.client,
-            request: GetRequest::new().with_unique_identifier(unique_identifier),
+            request: GetRequest::new(),
             options: None,
             asynchronous_indicator: None,
         }
@@ -3960,6 +3966,65 @@ impl GetBuilder<'_> {
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
         self.asynchronous_indicator = Some(value);
         self
+    }
+
+    /// Selects the object identifier. Leaving it unset uses the KMIP ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets the requested Key Format Type.
+    #[must_use]
+    pub fn key_format_type(mut self, value: KeyFormatType) -> Self {
+        self.request = self.request.with_key_format_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_format_type_code(self, value: u32) -> Self {
+        self.key_format_type(KeyFormatType::from_raw(value))
+    }
+
+    /// Sets the requested Key Wrap Type.
+    #[must_use]
+    pub fn key_wrap_type(mut self, value: KeyWrapType) -> Self {
+        self.request = self.request.with_key_wrap_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_wrap_type_code(self, value: u32) -> Self {
+        self.key_wrap_type(KeyWrapType::from_raw(value))
+    }
+
+    /// Sets the requested Key Compression Type.
+    #[must_use]
+    pub fn key_compression_type(mut self, value: KeyCompressionType) -> Self {
+        self.request = self.request.with_key_compression_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_compression_type_code(self, value: u32) -> Self {
+        self.key_compression_type(KeyCompressionType::from_raw(value))
+    }
+
+    /// Sets the optional Key Wrapping Specification.
+    #[must_use]
+    pub fn key_wrapping_specification(mut self, value: Structure) -> Self {
+        self.request = self.request.with_key_wrapping_specification(value);
+        self
+    }
+
+    /// Checks the request payload locally using the same validator as execution.
+    #[must_use]
+    pub fn validate(&self) -> ValidationReport {
+        self.request.validate()
     }
 
     /// Builds the existing typed Get request without sending it.

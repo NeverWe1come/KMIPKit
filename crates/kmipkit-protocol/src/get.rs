@@ -26,6 +26,12 @@ const SUCCESS: u32 = 0;
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct KeyFormatType(u32);
 
+impl From<u32> for KeyFormatType {
+    fn from(raw: u32) -> Self {
+        Self::from_raw(raw)
+    }
+}
+
 impl KeyFormatType {
     /// Creates a Key Format Type from its raw unsigned Enumeration value.
     #[must_use]
@@ -46,6 +52,12 @@ impl KeyFormatType {
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct KeyWrapType(u32);
 
+impl From<u32> for KeyWrapType {
+    fn from(raw: u32) -> Self {
+        Self::from_raw(raw)
+    }
+}
+
 impl KeyWrapType {
     /// Creates a Key Wrap Type from its raw unsigned Enumeration value.
     #[must_use]
@@ -65,6 +77,12 @@ impl KeyWrapType {
 /// Values are defined by OASIS KMIP v2.1 §11.24, Table 459.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct KeyCompressionType(u32);
+
+impl From<u32> for KeyCompressionType {
+    fn from(raw: u32) -> Self {
+        Self::from_raw(raw)
+    }
+}
 
 impl KeyCompressionType {
     /// Creates a Key Compression Type from its raw unsigned Enumeration value.

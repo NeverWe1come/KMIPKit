@@ -2692,6 +2692,7 @@ fn is_exact_fluent_operation_ttlv_value(
     signature: &syn::Signature,
 ) -> bool {
     let expected_argument = match (impl_type, signature.ident.to_string().as_str()) {
+        (Some("GetBuilder"), "key_wrapping_specification") => "Structure",
         (Some("LocateBuilder"), "attributes")
         | (
             Some("RekeyKeyPairBuilder"),

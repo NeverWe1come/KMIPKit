@@ -421,6 +421,10 @@ class Request:
     def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
+    def get_request(self) -> GetBuilder:
+        """Start a Get request with all selectors initially unset."""
+        return GetBuilder(self._client)
+
     def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
 
@@ -2662,6 +2666,57 @@ class _TypedOperationBuilder:
             pass
 
 
+class GetBuilder(_TypedOperationBuilder):
+    """Build a Get request with all optional KMIP selectors."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._identifier: extensions.UniqueIdentifier | None = None
+        self._format: int | None = None
+        self._wrap: int | None = None
+        self._compression: int | None = None
+        self._wrapping: ttlv.Structure | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier) -> GetBuilder:
+        self._ensure_open()
+        _identifier(value)
+        self._identifier = value
+        return self
+
+    def key_format_type(self, value: int) -> GetBuilder:
+        self._ensure_open()
+        self._format = _unsigned(value, 32)
+        return self
+
+    def key_wrap_type(self, value: int) -> GetBuilder:
+        self._ensure_open()
+        self._wrap = _unsigned(value, 32)
+        return self
+
+    def key_compression_type(self, value: int) -> GetBuilder:
+        self._ensure_open()
+        self._compression = _unsigned(value, 32)
+        return self
+
+    def key_wrapping_specification(self, value: ttlv.Structure) -> GetBuilder:
+        self._wrapping = self._replace_structure(self._wrapping, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        item = extensions.client_batch_item_get(
+            self._identifier, self._format, self._wrap, self._compression, self._wrapping,
+        )
+        try:
+            with item.validation_report() as report:
+                if not report.is_valid:
+                    errors.raise_for_status(4)
+        except BaseException:
+            item.close()
+            raise
+        return item
+
+
 class _AttributeCollectionBuilder(_TypedOperationBuilder):
     """Owns ordered attribute copies for Register and Create Split Key."""
 
@@ -3327,6 +3382,7 @@ __all__ = [
     "EncryptBuilder",
     "GetAttributeListBuilder",
     "GetAttributesBuilder",
+    "GetBuilder",
     "HashBuilder",
     "LocateBuilder",
     "MacBuilder",

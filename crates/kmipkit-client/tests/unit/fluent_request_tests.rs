@@ -3211,3 +3211,32 @@ fn kmip30_fluent_decapsulate_rejects_response_shared_secret_data_with_redacted_e
     assert!(!diagnostics.contains("SHARED_SECRET_PRIVATE_SENTINEL"));
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
+
+#[test]
+fn get_builder_preserves_symbolic_and_raw_selectors_and_validates_locally() {
+    use kmipkit_protocol::KeyFormatType;
+    use kmipkit_protocol::named_values_generated::values::enumeration::key_format_type::RAW;
+
+    let mut client = failed_request_client();
+    let builder = client
+        .request()
+        .get_request()
+        .key_format_type_code(RAW)
+        .key_wrap_type_code(0x8000_0000)
+        .key_compression_type_code(1);
+    assert!(builder.validate().is_valid());
+    let request = builder.build();
+    assert!(request.unique_identifier().is_none());
+    assert_eq!(
+        request.key_format_type(),
+        Some(KeyFormatType::from_raw(RAW))
+    );
+    assert_eq!(request.key_wrap_type().unwrap().raw(), 0x8000_0000);
+    assert_eq!(request.key_compression_type().unwrap().raw(), 1);
+
+    let builder = client
+        .request()
+        .get_request()
+        .key_wrapping_specification(Structure::new());
+    assert!(!builder.validate().is_valid());
+}

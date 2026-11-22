@@ -42,6 +42,7 @@ public final class FluentRequest {
         return builder.uniqueIdentifier(id);
     }
     public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
+    public GetBuilder get() { return new GetBuilder(client); }
     public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }
     public OperationBuilder activate(UniqueIdentifier id) {
         return new OperationBuilder(client, id, OperationBuilder.Kind.ACTIVATE);
