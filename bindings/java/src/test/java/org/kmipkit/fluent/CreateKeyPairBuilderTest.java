@@ -42,8 +42,8 @@ final class CreateKeyPairBuilderTest {
         assertEquals(0, KeyUsage.mask());
         assertThrows(NullPointerException.class, () -> KeyUsage.mask((KeyUsage[]) null));
         try (CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null)) {
-            assertThrows(NullPointerException.class, () -> builder.privateUsageMask(KeyUsage.SIGN));
-            assertThrows(NullPointerException.class, () -> builder.publicUsageMask(KeyUsage.VERIFY));
+            assertSame(builder, builder.privateUsageMask(KeyUsage.SIGN, KeyUsage.UNWRAP_KEY));
+            assertSame(builder, builder.publicUsageMask(KeyUsage.VERIFY));
         }
     }
 
