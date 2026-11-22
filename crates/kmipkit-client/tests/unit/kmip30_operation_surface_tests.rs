@@ -531,6 +531,7 @@ fn kmip30_locate_object_class_mask_survives_fluent_attribute_replacement() {
         ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
     );
     let mask = ObjectClassMask::USER | ObjectClassMask::SYSTEM;
+    let mask = mask | ObjectClassMask::from_raw(0x8000_0000);
     let request = client
         .request()
         .locate(AttributeSet::new())
@@ -542,7 +543,7 @@ fn kmip30_locate_object_class_mask_survives_fluent_attribute_replacement() {
     let payload = request.to_ttlv_payload().unwrap();
     assert!(payload.view().children().iter().any(|field| {
         field.tag().raw() == KmipTag::ObjectClassMask.as_u32()
-            && field.with_value(|value| matches!(value, ValueView::Integer(3)))
+            && field.with_value(|value| matches!(value, ValueView::Integer(bits) if bits.cast_unsigned() == 0x8000_0003))
     }));
 }
 
@@ -551,9 +552,22 @@ fn kmip30_create_key_pair_seed_is_encoded_and_rejected_in_older_editions() {
     use kmipkit_protocol::{CreateKeyPairRequest, SecretBytes};
     use kmipkit_ttlv::KmipTag;
 
+    use crate::fluent::CreateKeyPairBuilder;
+    use kmipkit_protocol::CryptographicAlgorithm;
+    use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::RSA;
+
     let seed = b"fixture-seed";
+    let built = CreateKeyPairBuilder::detached()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .seed(SecretBytes::new(seed.to_vec()))
+        .build()
+        .unwrap();
+    let debug = format!("{built:?}");
+    assert!(debug.contains("has_seed: true"));
+    assert!(!debug.contains("fixture-seed"));
     let request = || CreateKeyPairRequest::new().with_seed(SecretBytes::new(seed.to_vec()));
-    let payload = request().into_ttlv_payload().unwrap();
+    let payload = built.into_ttlv_payload().unwrap();
     assert!(payload.view().children().iter().any(|field| {
         field.tag().raw() == KmipTag::Seed.as_u32()
             && field
