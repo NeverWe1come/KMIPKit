@@ -57,6 +57,7 @@ fn process_pending_is_caller_selected_and_performs_one_exchange() {
 #[test]
 fn process_success_requires_the_empty_table_279_payload() {
     let response = asynchronous_response_bytes(PROCESS, 0, None, None, Some(test_structure([])));
+    let expected_wire_response = response.clone();
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -70,6 +71,10 @@ fn process_success_requires_the_empty_table_279_payload() {
         .expect("successful Process has an empty response payload");
 
     assert!(!result.is_pending());
+    assert_eq!(
+        result.with_raw_response_bytes(<[u8]>::to_vec),
+        expected_wire_response,
+    );
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(
         result
