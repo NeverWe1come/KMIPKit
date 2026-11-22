@@ -140,12 +140,20 @@ class WorkflowContractTests(unittest.TestCase):
     def test_normative_inventory_checks_generated_named_values(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "normative-inventory")
-        self.assert_generator_check_step(
+        step = re.search(
+            r"(?ms)^      - name: Verify generated named protocol values\n(.*?)(?=^      - name: |\Z)",
             job,
-            name="Verify generated named protocol values",
-            step_id="verify-generated-named-protocol-values",
-            command="python3 -B verification/conformance/generate_named_values.py --repo-root . --check",
         )
+        self.assertIsNotNone(step, "The normative inventory job must check named protocol values.")
+        assert step is not None
+        self.assertRegex(step.group(1), r"(?m)^        id: verify-generated-named-protocol-values$")
+        self.assertRegex(step.group(1), r"(?m)^        run: \|$")
+        self.assertIn("if [ -d specs ]; then", step.group(1))
+        self.assertIn(
+            "python3 -B verification/conformance/generate_named_values.py --repo-root . --check",
+            step.group(1),
+        )
+        self.assertIn("Skipping named-value artifact check", step.group(1))
 
     def test_normative_inventory_checks_generated_client_profiles(self) -> None:
         contents = self.require_workflow()

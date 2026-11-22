@@ -149,10 +149,6 @@ pub use cancel::{CancelRequest, CancelResponse, CancellationResult};
 pub use certify::{CertifyError, CertifyRequest, CertifyResponse};
 pub use check::{CheckError, CheckRequest, CheckResponse};
 pub use create::{CreateError, CreateRequest, CreateResponse, ObjectType, UniqueIdentifier};
-pub use enums::{
-    AttributeTag, EphemeralMode, KemAlgorithmCode, KeyLifecycleState, LinkAttributeTag,
-    ObjectTypeCode, OperationCode,
-};
 pub use create_key_pair::{CreateKeyPairError, CreateKeyPairRequest, CreateKeyPairResponse};
 pub use create_split_key::{
     CreateSplitKeyError, CreateSplitKeyRequest, CreateSplitKeyResponse, SplitKeyMethod,
@@ -181,6 +177,10 @@ pub use discover_versions::{
     DiscoverVersionsError, DiscoverVersionsRequest, DiscoverVersionsResponse,
 };
 pub use encrypt::{EncryptError, EncryptRequest, EncryptResponse};
+pub use enums::{
+    AttributeTag, EphemeralMode, KemAlgorithmCode, KeyLifecycleState, LinkAttributeTag,
+    ObjectTypeCode, OperationCode,
+};
 pub use error::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 pub use export::{ExportError, ExportRequest, ExportResponse};
 pub use get::{GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType};
@@ -215,6 +215,8 @@ pub use kmip30_operations::{
     CreateGroupResponse, CreateUserRequest, CreateUserResponse, Kmip30OperationError,
     ObliterateRequest, ObliterateResponse,
 };
+pub use kmipkit_ttlv::KmipTag;
+pub use lifecycle::NistKeyLifecycleGuard;
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
     LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
@@ -237,8 +239,6 @@ pub use message::{
 pub use modify_attribute::{ModifyAttributeError, ModifyAttributeRequest, ModifyAttributeResponse};
 pub use object_class::ObjectClass;
 pub use obtain_lease::{ObtainLeaseError, ObtainLeaseRequest, ObtainLeaseResponse};
-pub use kmipkit_ttlv::KmipTag;
-pub use lifecycle::NistKeyLifecycleGuard;
 pub use operation_data::OperationData;
 pub use ping::{PingError, PingRequest, PingResponse};
 pub use pkcs11::{Pkcs11Error, Pkcs11Request, Pkcs11Response};

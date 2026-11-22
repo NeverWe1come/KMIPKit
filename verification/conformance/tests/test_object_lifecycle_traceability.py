@@ -44,6 +44,7 @@ def _reference_file(reference: str) -> Path:
     return ROOT / reference.partition("::")[0]
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class ObjectLifecycleTraceabilityTests(unittest.TestCase):
     @unittest.skipUnless(
         SPEC_PATH.is_file() and TRACEABILITY_PATH.is_file(),

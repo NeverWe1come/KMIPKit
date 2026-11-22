@@ -126,6 +126,10 @@ EXPECTED_REQUIREMENT_TESTS = {
 }
 
 
+@unittest.skipUnless(
+    SPECIFICATION.is_file(),
+    "SDD specifications are omitted from the code-only review branch",
+)
 class RequirementTraceabilityTests(unittest.TestCase):
     def test_one_requirement_reference_can_cover_multiple_executable_tests(self) -> None:
         self.assert_executable_test_reference(

@@ -326,11 +326,9 @@ pub(super) fn validate_request_message(
                 let is_v3 = header
                     .as_ref()
                     .is_some_and(|(_, h)| h.protocol_version.major() == 3);
-                let multi_item_request = header
-                    .as_ref()
-                    .is_some_and(|(_, validated_header)| {
-                        validated_header.batch_count.is_some_and(|count| count > 1)
-                    });
+                let multi_item_request = header.as_ref().is_some_and(|(_, validated_header)| {
+                    validated_header.batch_count.is_some_and(|count| count > 1)
+                });
                 let item_id = with_structure(child, index, None, |view| {
                     validate_request_batch_item(&view, index, multi_item_request, is_v3)
                 })?;
@@ -582,12 +580,12 @@ fn validate_response_header(
         )?;
         let batch_count = integer_value(required_child(view.children(), BATCH_COUNT, top_index)?)
             .ok_or_else(|| {
-                error(
-                    MessageValidationErrorKind::WrongItemType,
-                    Some(top_index),
-                    None,
-                )
-            })?;
+            error(
+                MessageValidationErrorKind::WrongItemType,
+                Some(top_index),
+                None,
+            )
+        })?;
         if batch_count < 1 {
             return Err(error(
                 MessageValidationErrorKind::InvalidBatchCount,

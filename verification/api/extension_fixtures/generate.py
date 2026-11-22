@@ -16,9 +16,9 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-CORPUS = ROOT / "tests" / "fixtures" / "extensions" / "cases.json"
+CORPUS = ROOT / "bindings" / "shared" / "fixtures" / "extensions" / "cases.json"
 OUTPUTS = {
     ROOT / "bindings" / "c" / "tests" / "extension_fixtures.generated.h": "c",
     ROOT / "bindings" / "java" / "src" / "test" / "java" / "org" / "kmipkit" / "SharedExtensionFixtures.java": "java",

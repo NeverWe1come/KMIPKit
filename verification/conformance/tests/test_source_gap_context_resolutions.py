@@ -216,6 +216,7 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
     return False
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class SourceGapContextResolutionTests(unittest.TestCase):
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),

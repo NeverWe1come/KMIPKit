@@ -30,6 +30,7 @@ REQUIREMENT_IDS = (
 )
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class KeyDerivationTransferTraceabilityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

@@ -488,6 +488,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertTrue(section_clause_ids.issubset(closure.source_clause_ids))
                 self.assertIn(requirement_id, closure.requirement_ids)
 
+    @unittest.skipUnless(
+        (ROOT / "specs" / "010-profile-conformance" / "research.md").is_file(),
+        "profile research source is intentionally absent from this code-only branch",
+    )
     def test_baseline_profile_condition_inventory_covers_the_complete_pinned_section(self) -> None:
         """The inclusion oracle accounts for every §5.1.1 condition without inventing REQ IDs."""
         oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
@@ -2890,6 +2894,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(clause["direction"], "server_to_client")
         self.assertEqual(clause["scope_state"], "server_only")
 
+    @unittest.skipUnless(
+        (ROOT / "specs" / "009-asynchronous-operations" / "spec.md").is_file(),
+        "asynchronous operations specification is intentionally absent from this code-only branch",
+    )
     def test_baseline_result_status_condition_maps_pending_client_duty(self) -> None:
         """Result Status maps its response structure and conditional Pending client duty."""
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -4797,16 +4805,23 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 with self.assertRaises(ProfileGenerationError):
                     self.parse(self.manifest | overrides)
 
-    def test_rejects_empty_duplicate_and_unresolved_decision_targets(self) -> None:
+    def test_rejects_empty_and_duplicate_profile_targets(self) -> None:
         for overrides in (
             {"profile_ids": []},
             {"profile_ids": ["KMIPKIT-PROFILE-BASELINE-CLIENT"] * 2},
-            {"decision_ref": "KMIPKIT-0010/FR-999"},
             {"extra": "unknown"},
         ):
             with self.subTest(overrides=overrides):
                 with self.assertRaises(ProfileGenerationError):
                     self.parse(self.manifest | overrides)
+
+    @unittest.skipUnless(
+        (ROOT / "specs" / "010-profile-conformance" / "spec.md").is_file(),
+        "profile decision source is intentionally absent from this code-only branch",
+    )
+    def test_rejects_unresolved_profile_decision_target(self) -> None:
+        with self.assertRaises(ProfileGenerationError):
+            self.parse(self.manifest | {"decision_ref": "KMIPKIT-0010/FR-999"})
 
     def test_rejects_missing_fields_wrong_types_empty_ids_and_invalid_json(self) -> None:
         invalid_documents = (

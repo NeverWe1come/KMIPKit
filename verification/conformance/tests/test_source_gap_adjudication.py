@@ -108,6 +108,7 @@ def _normalized_html_source_span(lines: list[str], line_range: list[int]) -> str
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD sources are excluded from this branch")
 class SourceGapAdjudicationTests(unittest.TestCase):
     def test_section_4_21_lowercase_request_reuses_only_the_section_4_26_capability(self) -> None:
         catalog = _load_json(CATALOG_PATH)

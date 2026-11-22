@@ -780,7 +780,9 @@ impl ClientListenerConnection {
                     &CodecLimits::defaults(),
                     *encoding,
                 )
-                .map_err(|error| ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent))?;
+                .map_err(|error| {
+                    ClientError::protocol(make_protocol_error(error), RequestDeliveryState::NotSent)
+                })?;
                 conn.send_response(text.as_bytes(), *encoding, timeout)
                     .map_err(ClientError::transport)
             }

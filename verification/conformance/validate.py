@@ -697,6 +697,14 @@ def _strongest_source_authority(
     )
 
 
+def _has_project_design_sources(repo_root: Path) -> bool:
+    """Whether this checkout includes the project design sources used by policy evidence."""
+    return any(
+        (repo_root / relative_path).exists()
+        for relative_path in ("AGENTS.md", ".specify", "specs", "docs/adr")
+    )
+
+
 def _check_policy_provenance(
     policy: dict[str, Any],
     decisions: dict[str, dict[str, Any]],
@@ -729,6 +737,10 @@ def _check_policy_provenance(
         _fail("project policy provenance path does not match the constitution")
     if provenance == "ADR" and re.fullmatch(r"docs/adr/[0-9]{4}-[a-z0-9-]+\.md", source_path) is None:
         _fail("project policy provenance path is not an ADR")
+    if not _has_project_design_sources(repo_root):
+        # Code-only review checkouts deliberately omit SDD and repository policy files.
+        # Keep validating the catalog record shape, but do not require those excluded docs.
+        return
     try:
         content = safe_read_bytes(repo_root, source_path, max_bytes=1_048_576).decode("utf-8", errors="strict")
     except (OSError, UnicodeError, PathSecurityError) as error:
@@ -2093,9 +2105,9 @@ def validate_source_table_contracts(oracle: object, repo_root: Path) -> list[str
                         feature_spec_id,
                     )
                 approved_requirements = feature_requirement_cache[feature_spec_id]
-                if approved_requirements is None:
+                if approved_requirements is None and (root / "specs").is_dir():
                     diagnostics.append(f"{label}.functional_requirement_ids cannot resolve the approved feature spec")
-                elif not set(functional_requirements).issubset(approved_requirements):
+                elif approved_requirements is not None and not set(functional_requirements).issubset(approved_requirements):
                     diagnostics.append(f"{label}.functional_requirement_ids must reference declared feature requirements")
 
         for field, executable_test in (("implementation_refs", False), ("verification_refs", True)):

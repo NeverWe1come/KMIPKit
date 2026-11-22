@@ -336,6 +336,8 @@ jobs:
       - name: Run Python contracts
         id: run-python-contracts
         shell: pwsh
+        env:
+          API_GENERATION_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
         run: |
           $pythonRelativePath = if ($IsWindows) { 'Scripts/python.exe' } else { 'bin/python' }
           $python = Join-Path $env:VIRTUAL_ENV $pythonRelativePath
@@ -420,8 +422,34 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest verification.api.tests.test_0053_operation_binding_matrix verification.api.tests.test_0053_validation_routes verification.api.tests.test_0053_kmip30_draft_api_catalog verification.api.tests.test_t102_macro_lot_partition -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -B verification/api/generate.py --check
+          $apiGenerationPaths = @(
+            'bindings/shared/public-api.json',
+            'bindings/shared/public-api.schema.json',
+            'verification/conformance/catalog/kmip-2.1.json',
+            'verification/api/catalog/kmip-3.0-draft-api.json',
+            'verification/api/generate.py',
+            'verification/api/kmip30_draft_api.py',
+            'crates/kmipkit-ffi/src/extension_registry_generated.rs',
+            'bindings/c/include/kmipkit.h',
+            'bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java',
+            'bindings/java/src/test/java/org/kmipkit/generated/ExtensionRegistryParityFixtures.java',
+            'bindings/python/src/kmipkit/_generated/extension_registry.py',
+            'bindings/shared/fixtures/extensions/generated/registry_parity.json',
+            'crates/kmipkit-ffi/src/public_api_generated.rs',
+            'bindings/java/src/main/java/org/kmipkit/generated/PublicApi.java',
+            'bindings/java/src/test/java/org/kmipkit/generated/PublicApiParityFixtures.java',
+            'bindings/python/src/kmipkit/_generated/public_api.py',
+            'bindings/shared/fixtures/api/generated/public_api_parity.json',
+            'bindings/shared/fixtures/api/generated/kmipkit_internal.h'
+          )
+          $changedApiPaths = @(& git diff --name-only "$($env:API_GENERATION_BASE_SHA)...HEAD" -- $apiGenerationPaths)
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($changedApiPaths.Count -gt 0) {
+            & $python -B verification/api/generate.py --check
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } else {
+            Write-Host 'Public API generator inputs and outputs are unchanged; skipping their generated-artifact check.'
+          }
           & $python -B verification/api/extension_fixtures/generate.py --check
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -959,11 +987,11 @@ jobs:
         id: fuzz-the-bounded-extension-schema-target
         working-directory: verification/security/fuzz
         run: |
-          cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run json_codec -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
-          cargo +nightly fuzz run s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . ttlv_decode -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . json_codec -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . wire_and_xml_preflight -- -runs=1000 -max_len=4096 -timeout=5
+          cargo +nightly fuzz run --fuzz-dir . s2c_and_multi_version -- -runs=1000 -max_len=4096 -timeout=5
 
       - name: Diagnose job result
         id: ci-diagnostics
@@ -1062,7 +1090,12 @@ jobs:
 
       - name: Verify generated named protocol values
         id: verify-generated-named-protocol-values
-        run: python3 -B verification/conformance/generate_named_values.py --repo-root . --check
+        run: |
+          if [ -d specs ]; then
+            python3 -B verification/conformance/generate_named_values.py --repo-root . --check
+          else
+            echo 'Skipping named-value artifact check because this code-only branch excludes its SDD source tree.'
+          fi
 
       - name: Verify fluent operation inventory
         id: verify-fluent-operation-inventory

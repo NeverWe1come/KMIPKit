@@ -106,7 +106,11 @@ fn test_all_twenty_kmip30_link_attribute_tags() {
         (LinkAttributeTag::CertificateRequestLink, 0x0042_01BC),
     ];
 
-    assert_eq!(links.len(), 20, "Must contain exactly 20 KMIP 3.0 link types");
+    assert_eq!(
+        links.len(),
+        20,
+        "Must contain exactly 20 KMIP 3.0 link types"
+    );
     for (link, expected_tag) in links {
         assert_eq!(link.as_u32(), expected_tag);
         assert_eq!(link.into_tag().raw(), expected_tag);
@@ -177,8 +181,16 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
     ]);
 
     let req = RequestMessage::try_from_ttlv(full_msg).expect("KMIP 3.0 valid message");
-    assert_eq!(req.header().batch_count(), None, "Batch Count is None on wire in 3.0");
-    assert_eq!(req.header().effective_batch_count(), 1, "Effective batch count is 1");
+    assert_eq!(
+        req.header().batch_count(),
+        None,
+        "Batch Count is None on wire in 3.0"
+    );
+    assert_eq!(
+        req.header().effective_batch_count(),
+        1,
+        "Effective batch count is 1"
+    );
     let batch_item = req.batch_items().next().unwrap();
     assert_eq!(batch_item.ephemeral_mode(), Some(1));
     assert!(batch_item.is_ephemeral());
@@ -186,23 +198,47 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
 
 #[test]
 fn test_nist_key_lifecycle_guard_rules() {
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::PreActive));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::PreActive));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::PreActive
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::PreActive
+    ));
 
-    assert!(NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Active));
-    assert!(NistKeyLifecycleGuard::can_process(KeyLifecycleState::Active));
+    assert!(NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Active
+    ));
+    assert!(NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Active
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Deactivated));
-    assert!(NistKeyLifecycleGuard::can_process(KeyLifecycleState::Deactivated));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Deactivated
+    ));
+    assert!(NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Deactivated
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Compromised));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::Compromised));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Compromised
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Compromised
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::Destroyed));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::Destroyed));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::Destroyed
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::Destroyed
+    ));
 
-    assert!(!NistKeyLifecycleGuard::can_originate(KeyLifecycleState::DestroyedCompromised));
-    assert!(!NistKeyLifecycleGuard::can_process(KeyLifecycleState::DestroyedCompromised));
+    assert!(!NistKeyLifecycleGuard::can_originate(
+        KeyLifecycleState::DestroyedCompromised
+    ));
+    assert!(!NistKeyLifecycleGuard::can_process(
+        KeyLifecycleState::DestroyedCompromised
+    ));
 }
 
 #[test]

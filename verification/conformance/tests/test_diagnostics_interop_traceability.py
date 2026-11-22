@@ -33,6 +33,7 @@ OMITTED_DATE_TRACEABILITY_CONTRACT = (
 )
 
 
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
     def setUp(self) -> None:
         self.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
