@@ -26,7 +26,6 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const CLIENT_CORRELATION_VALUE: u32 = 0x0042_0105;
 const CRITICALITY_INDICATOR: u32 = 0x0042_0026;
 const EPHEMERAL: u32 = 0x0042_0154;
-const EPHEMERAL_MODE: u32 = 0x0042_01BF;
 const MAXIMUM_RESPONSE_SIZE: u32 = 0x0042_0050;
 const MESSAGE_EXTENSION: u32 = 0x0042_0051;
 const NONCE: u32 = 0x0042_00C8;
@@ -258,7 +257,7 @@ const REQUEST_BATCH_FIELDS_WITH_ID: &[FieldSpec] = &[
 ];
 const REQUEST_BATCH_FIELDS_V3: &[FieldSpec] = &[
     field(OPERATION, ItemType::Enumeration),
-    field(EPHEMERAL_MODE, ItemType::Enumeration),
+    field(EPHEMERAL, ItemType::Enumeration),
     field(REQUEST_PAYLOAD, ItemType::Structure),
     repeated_field(MESSAGE_EXTENSION, ItemType::Structure),
 ];
@@ -623,7 +622,7 @@ fn validate_request_batch_item(
 ) -> Result<Option<Vec<u8>>, MessageValidationError> {
     if is_v3 {
         for child in view.children() {
-            if matches!(child.tag().raw(), UNIQUE_BATCH_ITEM_ID | EPHEMERAL) {
+            if child.tag().raw() == UNIQUE_BATCH_ITEM_ID {
                 return Err(error(
                     MessageValidationErrorKind::InvalidFieldValue,
                     Some(top_index),
