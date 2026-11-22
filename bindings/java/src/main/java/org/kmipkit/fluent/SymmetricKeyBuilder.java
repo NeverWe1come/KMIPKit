@@ -6,6 +6,7 @@ import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatch;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.FluentBatchItemAdapter;
 import org.kmipkit.extensions.RequestOptions;
@@ -135,6 +136,19 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
 
     /** Alias for {@link #build()}. */
     public ClientBatchItem toBatchItem() { return build(); }
+
+    /** Executes Create with the default codec limits and returns its owned result. */
+    public ClientBatchItemResult executeOne() throws org.kmipkit.ClientOperationException {
+        return executeOne(CodecLimits.defaults());
+    }
+
+    /** Returns the owned Create result, including rejection or Pending outcomes. */
+    public ClientBatchItemResult executeOne(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        try (ClientBatchResponse response = execute(limits)) {
+            return response.itemAt(0);
+        }
+    }
 
     public ClientBatchResponse execute(CodecLimits limits) throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");

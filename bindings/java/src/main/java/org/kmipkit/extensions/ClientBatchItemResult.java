@@ -132,6 +132,20 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return TtlvStructure.fromNative(structure, null);
     }
 
+    /** Returns the identifier assigned by a successful Create. */
+    public Optional<UniqueIdentifier> createIdentifier() {
+        return createResponse().map(CreateResponse::uniqueIdentifier);
+    }
+
+    /**
+     * Copies the complete response as received, including the response header and all items.
+     * The caller owns this potentially sensitive array and can clear it after inspection.
+     */
+    public byte[] rawResponseBytes() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(NativeExtensionRegistry::clientBatchItemResponseWireBytes);
+    }
+
     /** Returns the successful Create response, including the identifier's exact wire type. */
     public Optional<CreateResponse> createResponse() {
         NativeExtensionRegistry.ensureLoaded();

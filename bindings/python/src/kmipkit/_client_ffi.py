@@ -1694,6 +1694,8 @@ ffi.cdef(
         uint8_t *out_present, uint32_t *out_tag, uint8_t *out_kind,
         uint32_t *out_enumeration, kmipkit_ttlv_item_t **out_item);
     void kmipkit_ttlv_item_release(kmipkit_ttlv_item_t *handle);
+    int32_t kmipkit_client_batch_item_response_wire_bytes_v1(
+        kmipkit_client_batch_item_response_t *item, kmipkit_byte_span_v1_t *out_bytes);
     int32_t kmipkit_client_batch_item_response_raw_ttlv(
         kmipkit_client_batch_item_response_t *item,
         uint8_t *out_present,

@@ -44,6 +44,26 @@ Consumer implementations:
 - Python: `tests/consumers/0093-journeys/python/main.py`
 - TLS 1.3/mTLS fixture: `tests/consumers/0093-journeys/local_journey_responder.py`
 
+## Read the result of a single Create
+
+The generic and symmetric-key Create builders can return one result directly.
+A success carries the identifier assigned by the server. A rejected result
+carries the KMIP status and reason. A Pending result carries the correlation
+value when asynchronous execution was requested.
+
+| Language | Execute | Read the identifier | Access the received message |
+| --- | --- | --- | --- |
+| Rust | `execute(&limits)` | `result.create_identifier()` | `result.with_raw_response_bytes(callback)` |
+| C | `kmipkit_create_builder_execute_one_v1` or `kmipkit_symmetric_key_builder_execute_one_v1` | `kmipkit_client_batch_item_response_create` | `kmipkit_client_batch_item_response_wire_bytes_v1` |
+| Java | `executeOne()` or `executeOne(limits)` | `result.createIdentifier()` | `result.rawResponseBytes()` |
+| Python | `execute_one(limits)` | `result.unique_identifier` | `result.raw_response_bytes()` |
+
+The byte accessors include the response header and all items in the received
+encoding. C borrows the span until the result is released. Java and Python
+return caller-owned copies. Keep the bytes out of logs. Release the C result
+with `kmipkit_client_batch_item_response_release` and use
+try-with-resources in Java or a context manager in Python.
+
 ## KMIP 3.0 Working Draft operations
 
 The fluent client also provides typed builders for the seven KMIP 3.0
