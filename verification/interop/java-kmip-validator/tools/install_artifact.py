@@ -18,6 +18,14 @@ from pathlib import Path
 
 
 PACKAGE_VERSION = "1.0.0"
+JAVA_BUILD_ARCHIVE_PATHS = (
+    "Cargo.toml",
+    "Cargo.lock",
+    ".cargo",
+    "crates",
+    "bindings/java",
+    "bindings/c",
+)
 
 
 def host_classifier() -> str:
@@ -69,7 +77,15 @@ def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
     with tempfile.TemporaryFile(prefix="kmipkit-git-archive-") as archive_file:
         subprocess.run(
-            ["git", "-C", str(repository), "archive", "--format=tar", commit],
+            [
+                "git",
+                "-C",
+                str(repository),
+                "archive",
+                "--format=tar",
+                commit,
+                *JAVA_BUILD_ARCHIVE_PATHS,
+            ],
             check=True,
             stdout=archive_file,
             stderr=subprocess.PIPE,

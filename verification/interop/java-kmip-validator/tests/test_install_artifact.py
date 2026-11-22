@@ -24,9 +24,20 @@ class InstallArtifactPathTests(unittest.TestCase):
                 ["git", "-C", str(repository), "config", "user.email", "ci@example.invalid"],
                 check=True,
             )
-            expected = repository / "source.txt"
-            expected.write_text("KMIPKit archive source\n", encoding="utf-8")
-            subprocess.run(["git", "-C", str(repository), "add", "source.txt"], check=True)
+            source_files = {
+                "Cargo.toml": "[workspace]\n",
+                "Cargo.lock": "# lock fixture\n",
+                ".cargo/config.toml": "[net]\noffline = false\n",
+                "crates/kmipkit-ffi/Cargo.toml": "[package]\nname = 'kmipkit-ffi'\n",
+                "bindings/java/build.gradle.kts": "plugins {}\n",
+                "bindings/c/include/kmipkit.h": "/* native ABI */\n",
+                "specs/README.md": "excluded design source\n",
+            }
+            for relative_path, contents in source_files.items():
+                source = repository / relative_path
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text(contents, encoding="utf-8")
+            subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
             subprocess.run(["git", "-C", str(repository), "commit", "--quiet", "-m", "fixture"], check=True)
             commit = subprocess.run(
                 ["git", "-C", str(repository), "rev-parse", "HEAD"],
@@ -40,9 +51,10 @@ class InstallArtifactPathTests(unittest.TestCase):
             INSTALL_ARTIFACT.extract_git_archive(repository, commit, destination)
 
             self.assertEqual(
-                (destination / "source.txt").read_text(encoding="utf-8"),
-                "KMIPKit archive source\n",
+                (destination / "bindings/java/build.gradle.kts").read_text(encoding="utf-8"),
+                "plugins {}\n",
             )
+            self.assertFalse((destination / "specs").exists())
 
     def test_pin_file_must_be_inside_consumer_project(self):
         project = Path(__file__).parents[1]
