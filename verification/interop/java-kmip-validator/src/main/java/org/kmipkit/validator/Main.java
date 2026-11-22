@@ -1,7 +1,6 @@
 package org.kmipkit.validator;
 
 import com.fasterxml.jackson.core.StreamReadFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.PrintStream;
@@ -18,7 +17,6 @@ import java.util.UUID;
 
 /** Entry point for the independent Java interoperability consumer. */
 public final class Main {
-    private static final String PIN_FILE = "library-pin.json";
     private static final String DEFAULT_CATALOG = "../shared/catalog/kmipkit-1.0-test-catalog.json";
     private static final String DEFAULT_MANIFEST = "build/artifact-manifest.json";
     private static final ObjectMapper JSON = new ObjectMapper(
@@ -84,7 +82,7 @@ public final class Main {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
         JavaRouteInventory.classify(catalog);
-        ArtifactProvenance artifact = loadArtifact(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
+        ArtifactProvenance artifact = ArtifactProvenance.loadForCheckout(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
         long applicable = applicableCases(catalog, connection.protocolVersion()).size();
         out.println("Preflight passed without DNS lookup or network sockets.");
@@ -100,7 +98,7 @@ public final class Main {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
         JavaRouteInventory.classify(catalog);
-        ArtifactProvenance artifact = loadArtifact(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
+        ArtifactProvenance artifact = ArtifactProvenance.loadForCheckout(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         boolean enableMutations = options.flag("--enable-mutations");
@@ -196,15 +194,6 @@ public final class Main {
             }
         }
         return new RunReport.Summary(evidence.size(), passed, failed, unsupported, policyRestricted, notRun);
-    }
-
-    private static ArtifactProvenance loadArtifact(Path manifestPath) throws Exception {
-        Path pinPath = Path.of(PIN_FILE);
-        JsonNode pin = JSON.readTree(pinPath.toFile());
-        if (pin == null || !"release/1.0.0".equals(pin.path("release_ref").asText())) {
-            throw new IllegalArgumentException("The Java package pin must refer to release/1.0.0");
-        }
-        return ArtifactProvenance.load(manifestPath, pin.path("commit").asText());
     }
 
     private static List<CatalogLoader.CatalogCase> applicableCases(

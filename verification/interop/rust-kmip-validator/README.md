@@ -1,10 +1,10 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `9692057c9ade474fb0c4e0b7130539da368eb794`, targeting KMIP
-2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
+from the checked-out Git commit, targeting KMIP 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
-From the repository root:
+From the repository root, after configuring OpenSSL 3.5 as described in the
+[build guide](../../../docs/user-guide/en/language-packages.md#building-kmipkit-from-source):
 
 ```sh
 python3 verification/interop/rust-kmip-validator/tools/install_artifact.py
@@ -13,10 +13,10 @@ cargo +1.94 build --locked --manifest-path verification/interop/rust-kmip-valida
 ```
 
 The installer archives the exact Git tree, packages five public crates and
-bundles their `.crate` distributions, required release documentation and pinned
-aws-lc-sys patch. Cargo links extracted packages under ignored
+bundles their `.crate` distributions and required documentation. Cargo links
+extracted packages under ignored
 `verification/interop/.local/rust-live/install/`, with no dependency on `../../crates/`.
-The build verifies release identity, bundle SHA-256, complete installed file
+The build verifies the checkout commit, bundle SHA-256, complete installed file
 inventory and every installed byte. Reports embed the consumed artifact hash.
 Python 3.12 or newer is needed for packaging and build-time verification.
 
@@ -56,7 +56,7 @@ The readiness file contains only a socket address. The listener certificate
 needs server-authentication EKU and the peer needs a client certificate trusted
 by the configured CA. Public `ClientListener`/`ServerRequestDispatcher` perform
 reception and dispatch. Without an incoming channel those cases are non-run.
-The pinned raw-TLS listener hardcodes TTLV; JSON/XML reception on that path is
+The raw-TLS listener hardcodes TTLV; JSON/XML reception on that path is
 an explicit API limitation. HTTPS uses the public listener's encoding path.
 
 Recipes use isolated names and identifiers, explicit cryptographic parameters,
@@ -74,7 +74,7 @@ library correctness passes, and server compatibility stays unknown.
 The facade omits `WireEncoding`/listener config exports, so this consumer also
 links the installed public transport package. Public async follow-up methods
 cannot attach Request Header Authentication; authenticated async recipes report
-that explicit API limitation. No pinned library source is changed here.
+that explicit API limitation. The library API is unchanged.
 
 ```sh
 cargo +1.94 fmt --manifest-path verification/interop/rust-kmip-validator/Cargo.toml --check
@@ -98,7 +98,7 @@ Separate tests execute all five incoming operations and both version probes.
 CI uploads only redacted results and package provenance.
 
 The full controlled inventory and all five incoming operations are verified in
-both 2.0 and 2.1. The current package pin includes the KMIP 2.0 session-tag
+both 2.0 and 2.1. The current packages include the KMIP 2.0 session-tag
 correction merged in `3017cfda4dbe1ccdf94c827e318e57688f858165`. Login, Logout
 and Delegated Login run through the controlled peer in 2.0 as well as 2.1;
 older evidence from the pre-fix pin is superseded by the current controlled

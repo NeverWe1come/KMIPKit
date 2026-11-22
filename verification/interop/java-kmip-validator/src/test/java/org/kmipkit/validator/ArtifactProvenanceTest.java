@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
-    private static final String COMMIT = "12496d646d11d4069b58bcc88fc76cc619211ec6";
+    private static final String COMMIT = "1".repeat(40);
 
     @Test
     void verifiesPinnedCommitAndJarDigest() throws Exception {
@@ -36,7 +36,7 @@ class ArtifactProvenanceTest {
     @Test
     void executesPublicApiFromTheInstalledJar() throws Exception {
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.loadForCheckout(manifest);
         Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .toAbsolutePath().normalize();
         assertEquals(provenance.artifactPath(), loadedJar);
@@ -48,7 +48,7 @@ class ArtifactProvenanceTest {
     private static Path writeManifest(Path directory, Path jar, String commit) throws Exception {
         ObjectNode manifest = new ObjectMapper().createObjectNode();
         manifest.put("schema_version", "1.0");
-        manifest.put("release_ref", "release/1.0.0");
+        manifest.put("release_ref", "HEAD");
         manifest.put("library_commit", commit);
         manifest.put("maven_coordinate", "org.kmipkit:kmipkit-java:1.0.0:" + ArtifactProvenance.hostClassifier());
         manifest.put("native_classifier", ArtifactProvenance.hostClassifier());

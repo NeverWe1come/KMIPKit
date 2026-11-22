@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
-"""Build an isolated public-API harness for the pinned local test-server.
+"""Build an isolated public-API harness for the current local test-server.
 
 The upstream CLI blocks its current-thread async executor while joining stdin;
 this harness supplies the existing async shutdown receiver instead.
 """
-import io
 from pathlib import Path
 import shutil
 import subprocess
-import tarfile
 ROOT = Path(__file__).resolve().parents[4]
 LOCAL = ROOT / "verification/interop/.local/rust-test-server"
-SOURCE = LOCAL / "release-source"
 HARNESS = LOCAL / "harness"
-PIN = "9692057c9ade474fb0c4e0b7130539da368eb794"
-LOCAL.mkdir(parents=True, exist_ok=True)
-if not SOURCE.exists():
-    SOURCE.mkdir()
-    archive = subprocess.check_output(["git", "-C", str(ROOT), "archive", PIN])
-    with tarfile.open(fileobj=io.BytesIO(archive)) as source:
-        source.extractall(SOURCE, filter="data")
 (HARNESS / "src").mkdir(parents=True, exist_ok=True)
 shutil.copyfile(ROOT / "verification/interop/rust-kmip-validator/tools/server_harness.rs", HARNESS / "src/main.rs")
 (HARNESS / "Cargo.toml").write_text('''[package]
@@ -29,10 +19,8 @@ edition = "2024"
 rust-version = "1.94"
 [workspace]
 [dependencies]
-kmipkit-test-server = { path = "../release-source/crates/kmipkit-test-server" }
+kmipkit-test-server = { path = "../../../../../crates/kmipkit-test-server" }
 tokio = { version = "=1.53.3", features = ["macros", "rt", "sync"] }
-[patch.crates-io]
-aws-lc-sys = { path = "../release-source/vendor/aws-lc-sys-0.45.0" }
 ''')
 subprocess.run(["cargo", "+1.94", "build", "--manifest-path", str(HARNESS / "Cargo.toml")], check=True)
 print(HARNESS / "target/debug/kmipkit-interop-local-server")

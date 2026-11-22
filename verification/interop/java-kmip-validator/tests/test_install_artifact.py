@@ -33,8 +33,7 @@ class InstallArtifactPathTests(unittest.TestCase):
                 "bindings/c/include/kmipkit.h": "/* native ABI */\n",
                 "docs/user-guide/en/production-transports.md": "English build-time include\n",
                 "docs/user-guide/es/transportes-produccion.md": "Spanish build-time include\n",
-                "tests/fixtures/api/generated/kmipkit_internal.h": "/* internal ABI */\n",
-                "vendor/aws-lc-sys-0.45.0/Cargo.toml": "[package]\nname = 'aws-lc-sys'\n",
+                "bindings/shared/fixtures/api/generated/kmipkit_internal.h": "/* internal ABI */\n",
                 "specs/README.md": "excluded design source\n",
             }
             for relative_path, contents in source_files.items():
@@ -59,7 +58,7 @@ class InstallArtifactPathTests(unittest.TestCase):
                 "plugins {}\n",
             )
             self.assertTrue(
-                (destination / "tests/fixtures/api/generated/kmipkit_internal.h").is_file()
+                (destination / "bindings/shared/fixtures/api/generated/kmipkit_internal.h").is_file()
             )
             self.assertTrue(
                 (destination / "docs/user-guide/en/production-transports.md").is_file()
@@ -67,41 +66,7 @@ class InstallArtifactPathTests(unittest.TestCase):
             self.assertTrue(
                 (destination / "docs/user-guide/es/transportes-produccion.md").is_file()
             )
-            self.assertTrue((destination / "vendor/aws-lc-sys-0.45.0/Cargo.toml").is_file())
             self.assertFalse((destination / "specs").exists())
-
-    def test_pin_file_must_be_inside_consumer_project(self):
-        project = Path(__file__).parents[1]
-        with tempfile.TemporaryDirectory() as temporary:
-            outside = Path(temporary) / "outside.json"
-            outside.write_text("{}", encoding="utf-8")
-            with self.assertRaises(ValueError):
-                INSTALL_ARTIFACT.resolve_pin_file(outside, project)
-
-    def test_pin_file_symlink_cannot_escape_consumer_project(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            project = root / "consumer"
-            project.mkdir()
-            outside = root / "outside.json"
-            outside.write_text("{}", encoding="utf-8")
-            link = project / "outside-link.json"
-            try:
-                link.symlink_to(outside)
-            except OSError as error:
-                if getattr(error, "winerror", None) != 1314:
-                    raise
-                self.skipTest("creating symbolic links requires Windows Developer Mode or privileges")
-            with self.assertRaises(ValueError):
-                INSTALL_ARTIFACT.resolve_pin_file(link, project)
-
-    def test_pin_file_inside_consumer_project_is_accepted(self):
-        project = Path(__file__).parents[1]
-        self.assertEqual(
-            INSTALL_ARTIFACT.resolve_pin_file(project / "library-pin.json", project),
-            (project / "library-pin.json").resolve(),
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,23 +14,31 @@ import java.util.HexFormat;
 /** Verified provenance for the independently installed native Java package. */
 public record ArtifactProvenance(String libraryCommit, String artifactSha256,
                                  String mavenCoordinate, String nativeClassifier, Path artifactPath) {
-    private static final String RELEASE_REF = "release/1.0.0";
+    private static final String RELEASE_REF = "HEAD";
     private static final String PACKAGE_VERSION = "1.0.0";
     private static final ObjectMapper JSON = new ObjectMapper(
             com.fasterxml.jackson.core.JsonFactory.builder()
                     .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
                     .build());
 
-    /** Loads the installer manifest and verifies the release pin, host classifier, and JAR bytes. */
+    /** Loads the installed artifact using the source pin written beside its manifest. */
+    static ArtifactProvenance loadForCheckout(Path manifestPath) throws IOException {
+        JsonNode pin = JSON.readTree(manifestPath.resolveSibling("library-pin.json").toFile());
+        require(pin != null && pin.isObject(), "Artifact source pin must be an object");
+        require(RELEASE_REF.equals(text(pin, "release_ref")), "Artifact source pin must refer to HEAD");
+        return load(manifestPath, text(pin, "commit"));
+    }
+
+    /** Loads the installer manifest and verifies the source pin, host classifier, and JAR bytes. */
     public static ArtifactProvenance load(Path manifestPath, String expectedCommit) throws IOException {
         require(expectedCommit != null && expectedCommit.matches("[0-9a-f]{40}"),
-                "Expected release commit is invalid");
+                "Expected source commit is invalid");
         JsonNode manifest = JSON.readTree(manifestPath.toFile());
         require(manifest != null && manifest.isObject(), "Artifact manifest must be an object");
         require("1.0".equals(text(manifest, "schema_version")), "Artifact manifest schema is unsupported");
-        require(RELEASE_REF.equals(text(manifest, "release_ref")), "Artifact was not built from release/1.0.0");
+        require(RELEASE_REF.equals(text(manifest, "release_ref")), "Artifact was not built from the checkout under test");
         String commit = text(manifest, "library_commit");
-        require(expectedCommit.equals(commit), "Installed artifact commit differs from the exact release pin");
+        require(expectedCommit.equals(commit), "Installed artifact commit differs from the exact source pin");
         String classifier = text(manifest, "native_classifier");
         require(hostClassifier().equals(classifier), "Installed native artifact does not match this host");
         String coordinate = text(manifest, "maven_coordinate");

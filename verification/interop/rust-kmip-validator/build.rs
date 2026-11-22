@@ -9,6 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Path::new("../.local/rust-live/kmipkit-rust-1.0.0.tar.gz"),
         Path::new("../.local/rust-live/install"),
         Path::new("tools/verify_artifact.py"),
+        Path::new("tools/install_artifact.py"),
     ] {
         println!("cargo:rerun-if-changed={}", path.display());
     }

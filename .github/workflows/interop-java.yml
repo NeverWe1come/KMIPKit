@@ -10,6 +10,8 @@ on:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'verification/security/openssl/**'
+      - '.github/actions/setup-static-openssl/**'
       - '.github/workflows/interop-java.yml'
   push:
     branches:
@@ -22,6 +24,8 @@ on:
       - 'crates/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - 'verification/security/openssl/**'
+      - '.github/actions/setup-static-openssl/**'
       - '.github/workflows/interop-java.yml'
 
 permissions:
@@ -38,10 +42,9 @@ jobs:
       run:
         working-directory: verification/interop/java-kmip-validator
     steps:
-      - name: Checkout complete repository history
+      - name: Checkout the revision under test
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Python 3.12
@@ -61,15 +64,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Build and install the pinned JNI package
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
+      - name: Build and install JNI from this revision
         run: |
           python3 tools/install_artifact.py \
             --repository ../../.. \
-            --pin-file library-pin.json \
             --maven-repository build/maven-repository \
             --manifest build/artifact-manifest.json
 
-      - name: Test Java artifact installer path validation
+      - name: Test Java artifact installer
         run: python3 -B -m unittest discover -s tests -p 'test_install_artifact.py' -v
 
       - name: Test Java 17 consumer against the installed artifact
