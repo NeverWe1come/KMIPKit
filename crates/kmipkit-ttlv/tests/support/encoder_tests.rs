@@ -50,3 +50,27 @@ fn string_like_kmip30_values_encode_with_their_distinct_item_types() {
         assert_eq!(decoded.item_type(), expected_item_type);
     }
 }
+
+#[test]
+fn integer_big_integer_and_boolean_values_encode_with_their_ttlv_types() {
+    for (value, expected_type, expected_length) in [
+        (Value::long_integer(i64::MIN), 0x03, 8),
+        (Value::big_integer(vec![0x01, 0x02, 0x03]), 0x04, 3),
+        (Value::boolean(true), 0x06, 8),
+    ] {
+        let item = Item::new(
+            RawTag::new(0x0042_0173).unwrap().try_checked().unwrap(),
+            value,
+        )
+        .unwrap();
+        let mut encoded = Vec::new();
+
+        encode_ttlv_item(&item, &mut encoded);
+
+        assert_eq!(encoded[3], expected_type);
+        assert_eq!(
+            u32::from_be_bytes(encoded[4..8].try_into().unwrap()),
+            expected_length
+        );
+    }
+}

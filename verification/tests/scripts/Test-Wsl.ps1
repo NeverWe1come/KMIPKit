@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$modulePath = Join-Path $PSScriptRoot '..\KmipKit.WslTest.psm1'
+$modulePath = Join-Path $PSScriptRoot '..\..\ci\KmipKit.WslTest.psm1'
 $moduleAvailable = Test-Path -LiteralPath $modulePath
 if ($moduleAvailable) {
     try {

@@ -276,6 +276,37 @@ fn test_cryptographic_parameters_v2_ffi() {
 }
 
 #[test]
+fn cryptographic_parameters_v2_rejects_oversized_optional_material() {
+    for (context_string, input_key_material) in [(true, false), (false, true)] {
+        let mut fields: kmipkit_cryptographic_parameters_fields_v2_t =
+            unsafe { std::mem::zeroed() };
+        fields.struct_size =
+            test_c_abi_struct_size::<kmipkit_cryptographic_parameters_fields_v2_t>();
+        fields.abi_version = 2;
+        if context_string {
+            fields.context_string_present = 1;
+            fields.context_string_length = MAX_TRANSPORT_MATERIAL_BYTES + 1;
+        }
+        if input_key_material {
+            fields.input_key_material_present = 1;
+            fields.input_key_material_length = MAX_TRANSPORT_MATERIAL_BYTES + 1;
+        }
+
+        let mut parameters = ptr::null_mut();
+        assert_eq!(
+            unsafe {
+                cryptographic_parameters::kmipkit_cryptographic_parameters_from_fields_v2(
+                    &raw const fields,
+                    &raw mut parameters,
+                )
+            },
+            ERROR_RESOURCE_LIMIT
+        );
+        assert!(parameters.is_null());
+    }
+}
+
+#[test]
 fn test_s2c_response_builder_ffi() {
     let mut limits = ptr::null_mut();
     assert_eq!(kmipkit_codec_limits_defaults(&raw mut limits), SUCCESS);

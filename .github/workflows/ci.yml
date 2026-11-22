@@ -456,7 +456,7 @@ jobs:
       - name: Run PowerShell contracts
         id: run-powershell-contracts
         if: runner.os == 'Windows'
-        run: pwsh -File verification/ci/Test-Wsl.ps1
+        run: pwsh -File verification/tests/scripts/Test-Wsl.ps1
 
       - name: Diagnose job result
         id: ci-diagnostics
