@@ -2692,13 +2692,13 @@ fn is_exact_fluent_operation_ttlv_value(
     signature: &syn::Signature,
 ) -> bool {
     let expected_argument = match (impl_type, signature.ident.to_string().as_str()) {
-        (Some("GetBuilder"), "key_wrapping_specification") => "Structure",
         (Some("LocateBuilder"), "attributes")
         | (
             Some("RekeyKeyPairBuilder"),
             "common_attributes" | "private_key_attributes" | "public_key_attributes",
         ) => "AttributeSet",
-        (Some("RekeyBuilder" | "RecertifyBuilder"), "attributes" | "protection_storage_masks")
+        (Some("GetBuilder"), "key_wrapping_specification")
+        | (Some("RekeyBuilder" | "RecertifyBuilder"), "attributes" | "protection_storage_masks")
         | (
             Some("RekeyKeyPairBuilder"),
             "common_protection_storage_masks"
