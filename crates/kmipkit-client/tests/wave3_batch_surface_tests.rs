@@ -3,7 +3,7 @@
 use kmipkit_client::{ClientBatchItem, ClientRequest};
 use kmipkit_protocol::{
     AttributeSet, CancelRequest, CreateCredentialObject, CreateCredentialRequest,
-    CreateGroupRequest, CreateUserRequest, CredentialType, DeactivateRequest, DecapsulateRequest,
+    CreateGroupRequest, CreateUserRequest, DeactivateRequest, DecapsulateRequest,
     EncapsulateRequest, ObliterateRequest, PasswordCredentialObject,
     PasswordCredentialObjectFields, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
     SecretText, UniqueIdentifier,
@@ -34,7 +34,6 @@ fn typed_kmip30_batch_item_constructors_exist_and_keep_table_584_operations() {
         ),
         (
             ClientBatchItem::create_credential(CreateCredentialRequest::new(
-                CredentialType::UsernameAndPassword,
                 AttributeSet::new(),
                 CreateCredentialObject::PasswordCredential(password),
             )),

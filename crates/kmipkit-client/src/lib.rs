@@ -243,6 +243,18 @@ mod cancel_execution_tests;
 mod create_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/create_builder_execution_tests.rs"]
+mod create_builder_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/derive_key_fluent_builder_tests.rs"]
+mod derive_key_fluent_builder_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/create_guide_examples.rs"]
+mod create_guide_examples;
+
+#[cfg(test)]
 #[path = "../tests/unit/fluent_request_tests.rs"]
 mod fluent_request_tests;
 
@@ -347,6 +359,10 @@ mod rng_retrieve_execution_tests;
 mod rng_seed_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/rng_seed_guide_examples.rs"]
+mod rng_seed_guide_examples;
+
+#[cfg(test)]
 #[path = "../tests/unit/query_execution_tests.rs"]
 mod query_execution_tests;
 
@@ -391,6 +407,10 @@ mod usage_allocation_guard_tests;
 #[cfg(test)]
 #[path = "../tests/unit/policy_controls_guide_examples.rs"]
 mod policy_controls_guide_examples;
+
+#[cfg(test)]
+#[path = "../tests/unit/rng_retrieve_guide_examples.rs"]
+mod rng_retrieve_guide_examples;
 
 #[cfg(test)]
 #[path = "../tests/unit/attribute_mutation_execution_tests.rs"]
@@ -456,13 +476,18 @@ pub use execute::{
     ResponseEncodingError,
 };
 pub use fluent::{
-    ActivateBuilder, AddAttributeBuilder, ArchiveBuilder, CreateKeyPairBuilder,
-    CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder,
-    DeleteAttributeBuilder, DestroyBuilder, EncryptBuilder, FluentAttributePosition,
-    FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder, HashBuilder,
-    LocateBuilder, MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
-    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, SetAttributeBuilder,
-    SignBuilder, SignatureVerifyBuilder,
+    ActivateBuilder, AddAttributeBuilder, AdjustAttributeBuilder, ArchiveBuilder,
+    AttributeAdjustmentValue, CheckBuilder, CreateBuilder, CreateCredentialBuilder,
+    CreateGroupBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder,
+    CreateUserBuilder, CryptographicUsageMask, DeactivateBuilder, DecapsulateBuilder,
+    DecryptBuilder, DeleteAttributeBuilder, DeriveKeyBuilder, DestroyBuilder,
+    DiscoverVersionsBuilder, EncapsulateBuilder, EncryptBuilder, FluentAttributePosition,
+    FluentBuildError, GetAttributeListBuilder, GetAttributesBuilder, GetBuilder,
+    GetConstraintsBuilder, GetUsageAllocationBuilder, HashBuilder, LocateBuilder, MacBuilder,
+    MacVerifyBuilder, ModifyAttributeBuilder, ObliterateBuilder, ObtainLeaseBuilder, PingBuilder,
+    QueryBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder,
+    RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, RngRetrieveBuilder, RngSeedBuilder,
+    SetAttributeBuilder, SignBuilder, SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

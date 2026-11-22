@@ -16,7 +16,7 @@ use crate::execute::encode_message_for_test;
 use crate::execute_test_support::{test_item, test_structure};
 use crate::{
     ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientErrorCategory, ClientOperation,
-    ClientRequest,
+    ClientRequest, FluentBuildError,
 };
 
 const GET_USAGE_ALLOCATION: u32 = 0x0000_0011;
@@ -366,5 +366,118 @@ fn local_limit_is_not_sent_and_partial_write_is_possibly_sent_without_retry() {
         error.delivery_state(),
         Some(RequestDeliveryState::PossiblySent)
     );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_builder_validates_builds_and_converts_to_the_typed_batch_item() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    assert_eq!(
+        client.request().get_usage_allocation().validate(),
+        Err(FluentBuildError::MissingUsageLimitsCount)
+    );
+    client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(0)
+        .validate()
+        .expect("the typed request does not impose a stateless positive-count rule");
+    assert_eq!(
+        client
+            .request()
+            .get_usage_allocation()
+            .usage_limits_count(0)
+            .build()
+            .expect("zero is preserved by the existing typed request")
+            .usage_limits_count(),
+        0
+    );
+
+    let request = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(29)
+        .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
+        .build()
+        .expect("the existing typed validator accepts a positive count");
+    assert_eq!(request.usage_limits_count(), 29);
+    assert_eq!(
+        request.unique_identifier(),
+        Some(&UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
+    );
+
+    let item = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(29)
+        .to_batch_item()
+        .expect("a valid fluent request converts to a typed batch item");
+    assert_eq!(item.operation(), GET_USAGE_ALLOCATION);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_builder_missing_count_is_not_sent_without_transport_exchange() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .get_usage_allocation()
+        .execute(&CodecLimits::defaults())
+        .expect_err("Usage Limits Count is required before sending");
+
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn fluent_builder_executes_one_typed_exchange_and_preserves_success() {
+    let (mut client, fake, captured) = client_for(ExchangeScript::Success {
+        response: response_bytes(0, None, None, None, Some(success_payload())),
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(29)
+        .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
+        .execute(&CodecLimits::defaults())
+        .expect("the existing client returns a typed Get Usage Allocation result");
+
+    assert_eq!(fake.borrow().exchange_count(), 1);
+    assert_request(
+        captured
+            .borrow()
+            .as_deref()
+            .expect("the typed request was captured"),
+        Some(OBJECT_ID),
+        29,
+    );
+    assert_eq!(completed(result.outcome()).result().status().raw(), 0);
+}
+
+#[test]
+fn fluent_builder_preserves_pending_correlation_without_follow_up() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(2, None, Some(CORRELATION), None, Some(Structure::new())),
+        request_write_chunks: Vec::new(),
+    });
+
+    let result = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(1)
+        .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("Pending remains an explicit typed outcome");
+
+    let ClientBatchOutcome::Pending(pending) = result.outcome() else {
+        panic!("Get Usage Allocation Pending remains visible");
+    };
+    assert_eq!(pending.operation(), ClientOperation::GetUsageAllocation);
+    assert_eq!(pending.asynchronous_correlation_value(), CORRELATION);
     assert_eq!(fake.borrow().exchange_count(), 1);
 }

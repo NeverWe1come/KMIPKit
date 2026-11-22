@@ -35,6 +35,8 @@ type AllocationExample = fn(
     u32,
     &CodecLimits,
 ) -> Result<UsageAllocationContext, Box<dyn Error>>;
+type GetConstraintsExample =
+    fn(&mut Client, &CodecLimits) -> Result<ClientBatchItemResponse, ClientError>;
 type GuardedEncryptExample = fn(
     &mut Client,
     &mut UsageAllocationContext,
@@ -67,10 +69,12 @@ fn allocate_for_object(
     usage_limits_unit: u32,
     limits: &CodecLimits,
 ) -> Result<UsageAllocationContext, Box<dyn Error>> {
-    let response = client.get_usage_allocation(
-        GetUsageAllocationRequest::new(requested_units).with_unique_identifier(object_id),
-        limits,
-    )?;
+    let response = client
+        .request()
+        .get_usage_allocation()
+        .unique_identifier(object_id)
+        .usage_limits_count(requested_units)
+        .execute(limits)?;
     let response_view = response.outcome().response();
     let allocation = response_view
         .get_usage_allocation()
@@ -80,6 +84,15 @@ fn allocate_for_object(
         requested_units,
         usage_limits_unit,
     )?)
+}
+
+fn get_constraints_fluently(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().get_constraints().execute(limits)?;
+    let _typed_response = response.outcome().response().get_constraints();
+    Ok(response)
 }
 
 fn encrypt_with_allocation(
@@ -144,6 +157,9 @@ fn defaults_with_debug_sentinel() -> Structure {
 fn documented_policy_payloads_preserve_defaults_omission_semantics() {
     for guide in [ENGLISH_GUIDE, SPANISH_GUIDE] {
         assert!(guide.contains("GetUsageAllocationRequest::new(25)"));
+        assert!(guide.contains(".get_usage_allocation()"));
+        assert!(guide.contains(".usage_limits_count(requested_units)"));
+        assert!(guide.contains(".get_constraints().execute(limits)"));
         assert!(guide.contains("with_defaults_information(defaults)"));
         assert!(guide.contains("execute_guarded_protection"));
         assert!(guide.contains("local"));
@@ -215,5 +231,6 @@ fn policy_request_debug_uses_operation_names_without_request_payloads() {
 #[test]
 fn documented_guard_examples_compile_against_the_client_api() {
     let _: AllocationExample = allocate_for_object;
+    let _: GetConstraintsExample = get_constraints_fluently;
     let _: GuardedEncryptExample = encrypt_with_allocation;
 }
