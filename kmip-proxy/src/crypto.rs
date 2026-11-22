@@ -36,7 +36,7 @@ pub fn fill_random_bytes(buffer: &mut [u8]) -> Result<(), openssl::error::ErrorS
 
 /// Generates a fresh AES-GCM nonce using OpenSSL's cryptographic RNG.
 pub fn generate_gcm_nonce() -> Result<[u8; 12], openssl::error::ErrorStack> {
-    let mut nonce = [0u8; 12];
+    let mut nonce = <[u8; 12]>::default();
     rand_bytes(&mut nonce)?;
     Ok(nonce)
 }
