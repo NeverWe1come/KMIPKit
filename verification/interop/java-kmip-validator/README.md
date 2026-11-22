@@ -17,10 +17,10 @@ python3 tools/install_artifact.py \
   --maven-repository build/maven-repository \
   --manifest build/artifact-manifest.json
 
-bash ../../bindings/java/gradlew \
+bash ../../../bindings/java/gradlew \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test
 
-bash ../../bindings/java/gradlew \
+bash ../../../bindings/java/gradlew \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" run \
   --args='plan --connection ../shared/profiles/connection.example.json'
 ```
