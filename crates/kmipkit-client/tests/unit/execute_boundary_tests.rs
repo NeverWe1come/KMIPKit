@@ -5106,13 +5106,14 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
     assert_eq!(actual_ids, EXPECTED_FIXTURE_IDS);
 
     for fixture in FIXTURES {
+        let normalized_source = fixture.source.replace("\r\n", "\n");
         assert!(
-            !fixture.source.trim().is_empty(),
+            !normalized_source.trim().is_empty(),
             "empty fixture: {}",
             fixture.id
         );
         assert!(
-            fixture.source.contains(fixture.probe),
+            normalized_source.contains(fixture.probe),
             "fixture {} is missing its syntax probe",
             fixture.id
         );

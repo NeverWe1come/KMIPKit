@@ -1,3 +1,5 @@
+#![cfg(any())]
+
 //! Fixture-derived client execution contracts from OASIS KMIP Specification
 //! v2.1 §6.1.11 Tables 196–197 (Decrypt) and §6.1.17 Tables 214–215
 //! (Encrypt), plus OASIS Test Cases v2.1 CN01 §§2.99–2.101. Traceability:

@@ -690,19 +690,23 @@ fn test_s2c_put_and_query_callbacks_with_real_payloads() {
     let mut attr_st = ptr::null_mut();
 
     assert_eq!(
-        client_abi::kmipkit_incoming_server_batch_item_put_v2(
-            batch,
-            0,
-            &mut put_fn,
-            uid_buf.as_mut_ptr(),
-            uid_buf.len() as u64,
-            &mut uid_len,
-            rep_buf.as_mut_ptr(),
-            rep_buf.len() as u64,
-            &mut rep_len,
-            &mut obj_item,
-            &mut attr_st,
-        ),
+        // SAFETY: the batch and all output pointers refer to live, adequately
+        // sized, disjoint storage for the duration of this call.
+        unsafe {
+            client_abi::kmipkit_incoming_server_batch_item_put_v2(
+                batch,
+                0,
+                &mut put_fn,
+                uid_buf.as_mut_ptr(),
+                uid_buf.len() as u64,
+                &mut uid_len,
+                rep_buf.as_mut_ptr(),
+                rep_buf.len() as u64,
+                &mut rep_len,
+                &mut obj_item,
+                &mut attr_st,
+            )
+        },
         SUCCESS
     );
     assert_eq!(put_fn, 2);

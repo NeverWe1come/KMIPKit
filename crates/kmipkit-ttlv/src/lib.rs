@@ -1,5 +1,5 @@
 //! In-memory, typed representations of generic KMIP TTLV item values, plus a
-//! bounded decoder for one complete TTLV item.
+//! bounded decoder and encoder for complete TTLV items.
 //!
 //! This crate checks 24-bit raw tag representation, tag allocation, the
 //! relationship between a value representation and its Item Type, and the
@@ -10,8 +10,8 @@
 //! framing, type-specific lengths, required padding extents, and default
 //! resource limits before returning exactly one item;
 //! [`crate::codec::decode_with_limits`] accepts immutable per-call limits. It
-//! does not encode TTLV or validate schema-specific field order, cardinality,
-//! or operation semantics. Values
+//! does not validate schema-specific field order, cardinality, or operation
+//! semantics. Values
 //! built with the model constructors satisfy only model constraints;
 //! construction does not establish wire validity. Decoded values pass generic
 //! wire checks but are not validated against a KMIP operation schema.

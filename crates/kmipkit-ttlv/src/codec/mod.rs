@@ -1,4 +1,4 @@
-//! Bounded decoding for one complete generic TTLV item.
+//! Bounded decoding and encoding for generic TTLV items.
 //!
 //! The decoder preserves Structure child order and represented values while
 //! rejecting malformed framing, unsupported Item Types, and Tags that cannot
@@ -16,11 +16,13 @@
 use std::fmt::{self, Display, Formatter};
 
 mod decoder;
+mod encoder;
 
 #[path = "../../tests/support/codec_limits_tests.rs"]
 mod limits_tests;
 
 pub use decoder::{decode, decode_with_limits};
+pub use encoder::{encode_ttlv_item, encode_ttlv_structure};
 
 /// Immutable per-call resource limits for TTLV decoding and internal encoding.
 ///

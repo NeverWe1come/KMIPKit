@@ -25,6 +25,8 @@ JAVA_BUILD_ARCHIVE_PATHS = (
     "crates",
     "bindings/java",
     "bindings/c",
+    "docs/user-guide/en",
+    "docs/user-guide/es",
     "tests/fixtures/api/generated",
     "vendor/aws-lc-sys-0.45.0",
 )

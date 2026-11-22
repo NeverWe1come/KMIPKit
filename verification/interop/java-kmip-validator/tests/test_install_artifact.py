@@ -31,6 +31,8 @@ class InstallArtifactPathTests(unittest.TestCase):
                 "crates/kmipkit-ffi/Cargo.toml": "[package]\nname = 'kmipkit-ffi'\n",
                 "bindings/java/build.gradle.kts": "plugins {}\n",
                 "bindings/c/include/kmipkit.h": "/* native ABI */\n",
+                "docs/user-guide/en/production-transports.md": "English build-time include\n",
+                "docs/user-guide/es/transportes-produccion.md": "Spanish build-time include\n",
                 "tests/fixtures/api/generated/kmipkit_internal.h": "/* internal ABI */\n",
                 "vendor/aws-lc-sys-0.45.0/Cargo.toml": "[package]\nname = 'aws-lc-sys'\n",
                 "specs/README.md": "excluded design source\n",
@@ -59,6 +61,12 @@ class InstallArtifactPathTests(unittest.TestCase):
             self.assertTrue(
                 (destination / "tests/fixtures/api/generated/kmipkit_internal.h").is_file()
             )
+            self.assertTrue(
+                (destination / "docs/user-guide/en/production-transports.md").is_file()
+            )
+            self.assertTrue(
+                (destination / "docs/user-guide/es/transportes-produccion.md").is_file()
+            )
             self.assertTrue((destination / "vendor/aws-lc-sys-0.45.0/Cargo.toml").is_file())
             self.assertFalse((destination / "specs").exists())
 
@@ -78,7 +86,12 @@ class InstallArtifactPathTests(unittest.TestCase):
             outside = root / "outside.json"
             outside.write_text("{}", encoding="utf-8")
             link = project / "outside-link.json"
-            link.symlink_to(outside)
+            try:
+                link.symlink_to(outside)
+            except OSError as error:
+                if getattr(error, "winerror", None) != 1314:
+                    raise
+                self.skipTest("creating symbolic links requires Windows Developer Mode or privileges")
             with self.assertRaises(ValueError):
                 INSTALL_ARTIFACT.resolve_pin_file(link, project)
 
