@@ -646,7 +646,7 @@ const FIXTURES: &[Fixture] = &[
         id: "duplicate_writer",
         path: "tests/fixtures/execute_boundary/duplicate_writer.rs",
         source: include_str!("../../tests/fixtures/execute_boundary/duplicate_writer.rs"),
-        probe: "self.writer.encode(request, permit);\n        self.writer.encode",
+        probe: "self.writer.encode(request, permit);",
         coverage: SourceCoverage::CandidateInspected,
         expected: ExpectedDecision::Reject,
     },
@@ -5342,7 +5342,7 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
             fixture.id
         );
         assert!(
-            fixture.source.contains(fixture.probe),
+            fixture.source.replace("\r\n", "\n").contains(fixture.probe),
             "fixture {} is missing its syntax probe",
             fixture.id
         );
