@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kmipkit.org/schemas/campaign-evidence.schema.json",
   "title": "KMIPKit campaign evidence",
   "type": "object",
   "required": ["schema_version", "run_id", "scope", "language", "library_commit", "artifact_sha256", "matrix_sha256", "events"],
