@@ -19,19 +19,32 @@ permissions:
 
 jobs:
   validate-c:
-    name: C KMIP 2.1 Validator Build and Test
+    name: C installed ABI and controlled KMIP peers
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up CMake and GCC
         run: sudo apt-get update && sudo apt-get install -y cmake build-essential
 
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal
+
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+
+      - name: Build and verify the installed C ABI
+        run: python3 verification/interop/c-kmip-validator/tools/install_artifact.py
+
       - name: Configure CMake
-        run: cmake -S verification/interop/c-kmip-validator -B verification/interop/c-kmip-validator/build
+        run: |
+          validator=verification/interop/c-kmip-validator
+          install=$(PYTHONPATH="$validator/tools" python3 -c 'from artifact_support import INSTALL; print(INSTALL)')
+          cmake -S "$validator" -B "$validator/build" -DKMIPKIT_C_INSTALL_DIR="$install"
 
       - name: Build C validator
         run: cmake --build verification/interop/c-kmip-validator/build
