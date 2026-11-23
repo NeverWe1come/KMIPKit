@@ -671,6 +671,7 @@ struct LocateBuilderState {
     offset_items: Option<i32>,
     storage_status_mask: Option<StorageStatusMask>,
     object_group_member: Option<ObjectGroupMember>,
+    object_class_mask: Option<kmipkit_protocol::ObjectClassMask>,
     asynchronous_indicator: Option<u32>,
 }
 
@@ -4638,6 +4639,79 @@ pub extern "C" fn kmipkit_client_batch_item_with_extension(
     })
 }
 
+fn set_batch_ephemeral(
+    item: *mut kmipkit_client_batch_item_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+    update: impl FnOnce(ClientBatchItem) -> ClientBatchItem,
+) -> i32 {
+    let out = out_slot!(out_item);
+    let handle = try_ffi!(consume_owner(item, Kind::BatchItem));
+    let HandleValue::BatchItem(item) = try_ffi!(unwrap_payload(handle)) else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    *out = try_ffi!(try_make_handle(
+        Kind::BatchItem,
+        HandleValue::BatchItem(Box::new(update(*item)))
+    ));
+    SUCCESS
+}
+
+/// Replaces a Locate item with one that selects the KMIP 3.0 Object Class Mask.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_with_locate_class_mask(
+    item: *mut kmipkit_client_batch_item_t,
+    mask: u32,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = try_ffi!(consume_owner(item, Kind::BatchItem));
+        let HandleValue::BatchItem(item) = try_ffi!(unwrap_payload(handle)) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let mask = kmipkit_protocol::ObjectClassMask::from_raw(mask);
+        let item = try_ffi!(
+            item.with_locate_class_mask(mask)
+                .map_err(|_| ERROR_INVALID_INPUT)
+        );
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(item))
+        ));
+        SUCCESS
+    })
+}
+
+/// Sets a KMIP 2.x batch item's Ephemeral Boolean.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_with_ephemeral(
+    item: *mut kmipkit_client_batch_item_t,
+    value: u8,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if value > 1 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        set_batch_ephemeral(item, out_item, |item| item.with_ephemeral(value != 0))
+    })
+}
+
+/// Sets a KMIP 3.0 batch item's Ephemeral enumeration.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_with_ephemeral_mode(
+    item: *mut kmipkit_client_batch_item_t,
+    mode: u32,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let Some(mode) = kmipkit_protocol::EphemeralMode::from_u32(mode) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        set_batch_ephemeral(item, out_item, |item| item.with_ephemeral_mode(mode))
+    })
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_with_unique_batch_item_id(
     item: *mut kmipkit_client_batch_item_t,
@@ -4705,6 +4779,27 @@ pub extern "C" fn kmipkit_client_batch_item_interop(
             HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::interop(
                 request,
             )))),
+        ));
+        SUCCESS
+    })
+}
+
+/// Resolves a standard Cryptoki name to the KMIP PKCS#11 Function structure.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_pkcs11_function_from_name(
+    name: *const u8,
+    name_length: u64,
+    out_function: *mut *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_function);
+        let name = try_ffi!(input_span(name, name_length, 64));
+        let name = try_ffi!(std::str::from_utf8(name).map_err(|_| ERROR_INVALID_INPUT));
+        let function =
+            try_ffi!(Pkcs11Request::function_ttlv(name).map_err(|_| ERROR_INVALID_INPUT));
+        *out = try_ffi!(try_make_handle(
+            Kind::Structure,
+            HandleValue::Structure(function)
         ));
         SUCCESS
     })
@@ -5279,7 +5374,10 @@ fn copy_unique_identifier(
         return Err(ERROR_INVALID_INPUT);
     }
     let identifier = match value.kind {
-        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING => {
+        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+        | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER
+        | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE
+        | crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE => {
             let text = input_span(value.text_data, value.text_length, MAX_FFI_INPUT_BYTES)?;
             let text = std::str::from_utf8(text).map_err(|_| ERROR_INVALID_INPUT)?;
             let mut owned = String::new();
@@ -5287,23 +5385,24 @@ fn copy_unique_identifier(
                 .try_reserve_exact(text.len())
                 .map_err(|_| ERROR_RESOURCE_LIMIT)?;
             owned.push_str(text);
-            UniqueIdentifier::TextString(owned)
+            match value.kind {
+                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER => {
+                    UniqueIdentifier::Identifier(owned)
+                }
+                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE => {
+                    UniqueIdentifier::Reference(owned)
+                }
+                crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE => {
+                    UniqueIdentifier::NameReference(owned)
+                }
+                _ => UniqueIdentifier::TextString(owned),
+            }
         }
         crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION => {
             UniqueIdentifier::Enumeration(value.enumeration_value)
         }
         crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER => {
             UniqueIdentifier::Integer(value.integer_value)
-        }
-        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER => {
-            let text = input_span(value.text_data, value.text_length, MAX_FFI_INPUT_BYTES)?;
-            let text = std::str::from_utf8(text).map_err(|_| ERROR_INVALID_INPUT)?;
-            let mut owned = String::new();
-            owned
-                .try_reserve_exact(text.len())
-                .map_err(|_| ERROR_RESOURCE_LIMIT)?;
-            owned.push_str(text);
-            UniqueIdentifier::Identifier(owned)
         }
         _ => return Err(ERROR_INVALID_INPUT),
     };
@@ -6342,7 +6441,7 @@ pub extern "C" fn kmipkit_client_batch_item_get_attributes(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_item);
-        let unique_identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let unique_identifier = try_ffi!(copy_optional_identifier(unique_identifier));
         let source_references = try_ffi!(input_array(
             attribute_references,
             attribute_reference_count,
@@ -6358,7 +6457,7 @@ pub extern "C" fn kmipkit_client_batch_item_get_attributes(
             references.push(try_ffi!(copy_attribute_reference(ptr::from_ref(reference))));
         }
         let request = try_ffi!(
-            GetAttributesRequest::try_new(unique_identifier, references)
+            GetAttributesRequest::with_identifier(unique_identifier, references)
                 .map_err(|_| ERROR_INVALID_INPUT)
         );
         *out = try_ffi!(batch_item_handle(ClientRequest::get_attributes(request)));
@@ -7508,6 +7607,23 @@ pub extern "C" fn kmipkit_revoke_request_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_request);
+        if reason.is_null() {
+            let Some(identifier) = try_ffi!(copy_unique_identifier(unique_identifier)) else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            if has_compromise_occurrence_date > 1 {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            let mut request = RevokeRequest::without_reason(identifier);
+            if has_compromise_occurrence_date == 1 {
+                request = request.with_compromise_occurrence_date(compromise_occurrence_date);
+            }
+            *out = try_ffi!(try_make_handle(
+                Kind::RevokeRequest,
+                HandleValue::RevokeRequest(Box::new(request))
+            ));
+            return SUCCESS;
+        }
         let _ = read_handle!(reason, RevocationReason);
         let reason = try_ffi!(owned_payload(reason, Kind::RevocationReason));
         let identifier = try_ffi!(copy_unique_identifier(unique_identifier));
@@ -7627,7 +7743,9 @@ pub extern "C" fn kmipkit_client_batch_item_revoke(
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
         if request.compromise_occurrence_date().is_some()
-            && !matches!(request.revocation_reason().raw(), 2 | 3)
+            && request
+                .explicit_revocation_reason()
+                .is_some_and(|reason| !matches!(reason.raw(), 2 | 3))
         {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }

@@ -482,7 +482,10 @@ fn value_views_equal(left: ValueView<'_>, right: ValueView<'_>) -> bool {
         (ValueView::Enumeration(left), ValueView::Enumeration(right))
         | (ValueView::Interval(left), ValueView::Interval(right)) => left == right,
         (ValueView::Boolean(left), ValueView::Boolean(right)) => left == right,
-        (ValueView::TextString(left), ValueView::TextString(right)) => left == right,
+        (ValueView::TextString(left), ValueView::TextString(right))
+        | (ValueView::Identifier(left), ValueView::Identifier(right))
+        | (ValueView::Reference(left), ValueView::Reference(right))
+        | (ValueView::NameReference(left), ValueView::NameReference(right)) => left == right,
         _ => false,
     }
 }
@@ -532,13 +535,7 @@ fn parse_success_payload(
 }
 
 fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        ValueView::Identifier(value) => Some(UniqueIdentifier::Identifier(value.to_owned())),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 fn push_attribute_group(

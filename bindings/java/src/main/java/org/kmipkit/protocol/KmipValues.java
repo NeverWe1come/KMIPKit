@@ -4531,9 +4531,9 @@ public final class KmipValues {
     }
 
     /** Named KMIP 3.0 values for Ephemeral Mode. */
-    public static final long V3_0_EPHEMERAL_MODE_NO = EphemeralMode.NO;
-    public static final long V3_0_EPHEMERAL_MODE_IMMEDIATE = EphemeralMode.IMMEDIATE;
-    public static final long V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = EphemeralMode.RETAIN_ON_FAILURE;
+    public static final long V3_0_EPHEMERAL_MODE_DATA = EphemeralMode.DATA;
+    public static final long V3_0_EPHEMERAL_MODE_EMPTY = EphemeralMode.EMPTY;
+    public static final long V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER = EphemeralMode.UNIQUE_IDENTIFIER;
 
     /** Returns the assigned KMIP 3.0 Ephemeral Mode catalog name, or null for an unknown raw value. */
     public static String v3_0EphemeralModeName(long raw) {

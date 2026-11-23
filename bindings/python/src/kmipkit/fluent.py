@@ -64,10 +64,7 @@ def _identifier(value: extensions.UniqueIdentifier) -> Any:
     record.abi_version = 1
     record.kind = int(value.kind)
     record.reserved = 0
-    if value.kind in (
-        extensions.UniqueIdentifierKind.TEXT_STRING,
-        extensions.UniqueIdentifierKind.IDENTIFIER,
-    ):
+    if value.kind.is_textual:
         encoded = value.text.encode("utf-8")
         owner = ffi.new("uint8_t[]", encoded)
         record.text_data, record.text_length = owner, len(encoded)
@@ -116,14 +113,7 @@ def _execute_direct_attributes(
         errors.raise_for_status(4)
     if options is not None and not isinstance(options, RequestOptions):
         errors.raise_for_status(4)
-    if (
-        not isinstance(unique_identifier, extensions.UniqueIdentifier)
-        or unique_identifier.kind
-        not in (
-            extensions.UniqueIdentifierKind.TEXT_STRING,
-            extensions.UniqueIdentifierKind.IDENTIFIER,
-        )
-    ):
+    if not isinstance(unique_identifier, extensions.UniqueIdentifier):
         errors.raise_for_status(4)
     if not isinstance(attribute_references, Sequence) or isinstance(
         attribute_references, (str, bytes, bytearray)
@@ -482,6 +472,7 @@ class LocateBuilder:
         self._offset_items: int | None = None
         self._storage_status_mask: int | None = None
         self._object_group_member: int | None = None
+        self._object_class_mask: int | None = None
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
 
@@ -503,6 +494,11 @@ class LocateBuilder:
 
     def object_group_member(self, value: int) -> LocateBuilder:
         self._object_group_member = _unsigned(value, 32)
+        return self
+
+    def object_class_mask(self, value: int) -> LocateBuilder:
+        """Select named KMIP 3.0 Object Class Mask bits."""
+        self._object_class_mask = _unsigned(value, 32)
         return self
 
     def with_options(self, options: RequestOptions) -> LocateBuilder:
@@ -528,6 +524,7 @@ class LocateBuilder:
             offset_items=self._offset_items,
             storage_status_mask=self._storage_status_mask,
             object_group_member=self._object_group_member,
+            object_class_mask=self._object_class_mask,
         )
 
     def to_batch_item(self) -> extensions.ClientBatchItem:
@@ -1745,14 +1742,7 @@ class _AttributeReadBuilder:
         client: Client,
         unique_identifier: extensions.UniqueIdentifier | None,
     ) -> None:
-        if unique_identifier is not None and not (
-            isinstance(unique_identifier, extensions.UniqueIdentifier)
-            and unique_identifier.kind
-            in (
-                extensions.UniqueIdentifierKind.TEXT_STRING,
-                extensions.UniqueIdentifierKind.IDENTIFIER,
-            )
-        ):
+        if unique_identifier is not None and not isinstance(unique_identifier, extensions.UniqueIdentifier):
             errors.raise_for_status(4)
         self._client = client
         self._unique_identifier = unique_identifier
@@ -1823,6 +1813,11 @@ class GetAttributesBuilder(_AttributeReadBuilder):
 
 class GetAttributeListBuilder(_AttributeReadBuilder):
     """Typed Get Attribute List request with an optional object identifier."""
+
+    def __init__(self, client: Client, unique_identifier: extensions.UniqueIdentifier | None) -> None:
+        super().__init__(client, unique_identifier)
+        if unique_identifier is not None and unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING:
+            errors.raise_for_status(4)
 
     def build(self) -> extensions.ClientBatchItem:
         return extensions.client_batch_item_get_attribute_list(
@@ -2076,6 +2071,19 @@ class CreateKeyPairBuilder:
         return self._set(
             lib.kmipkit_create_key_pair_builder_set_algorithm, _unsigned(value, 32)
         )
+
+    def seed(self, value: bytes | bytearray | memoryview) -> CreateKeyPairBuilder:
+        """Supply the KMIP 3.0 key-generation seed."""
+        self._ensure_open()
+        staged, pointer = _stage_crypto_bytes(value)
+        try:
+            with _NATIVE_CALL_LOCK:
+                _raise_client_status(
+                    lib.kmipkit_create_key_pair_builder_set_seed(self._handle, pointer, len(staged))
+                )
+        finally:
+            _wipe_crypto_stage(staged)
+        return self
 
     def length(self, bits: int) -> CreateKeyPairBuilder:
         if (not isinstance(bits, int) or isinstance(bits, bool)

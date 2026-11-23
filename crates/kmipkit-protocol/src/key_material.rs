@@ -60,6 +60,20 @@ impl KeyMaterial {
         })
     }
 
+    /// Builds KMIP 3.0 Seed Private Key material from its byte-string fields.
+    pub fn seed_private_key(
+        seed: Option<Vec<u8>>,
+        key: Option<Vec<u8>>,
+    ) -> Result<Self, ManagedObjectError> {
+        let mut fields = Structure::new();
+        for (tag, bytes) in [(kmipkit_ttlv::KmipTag::Seed.as_u32(), seed), (KEY, key)] {
+            if let Some(bytes) = bytes {
+                fields.try_push(make_item(tag, Value::byte_string(bytes))?)?;
+            }
+        }
+        Self::structure(0x18, fields)
+    }
+
     /// Creates structure material for a transparent key format.
     /// Unknown formats remain open and accept either TTLV form.
     pub fn structure(format_raw: u32, structure: Structure) -> Result<Self, ManagedObjectError> {
@@ -123,7 +137,7 @@ fn format_accepts_type(format: u32, item_type: ItemType) -> bool {
 pub const fn expected_key_material_item_type(format: u32) -> Option<ItemType> {
     match format {
         0x0000_0001..=0x0000_0006 | 0x0000_0016..=0x0000_0017 => Some(ItemType::ByteString),
-        0x0000_0007..=0x0000_000D | 0x0000_0014..=0x0000_0015 => Some(ItemType::Structure),
+        0x0000_0007..=0x0000_000D | 0x0000_0014..=0x0000_0015 | 0x18 => Some(ItemType::Structure),
         _ => None,
     }
 }
@@ -136,6 +150,27 @@ pub(crate) fn validate_key_material_item(
         return Err(ManagedObjectError::IncorrectFieldType);
     }
     match format {
+        0x18 => {
+            let fields = item
+                .as_structure()
+                .ok_or(ManagedObjectError::IncorrectFieldType)?;
+            let children = fields.children();
+            let seed = kmipkit_ttlv::KmipTag::Seed.as_u32();
+            let valid = match children {
+                [one] => matches!(one.tag().raw(), tag if tag == seed || tag == KEY),
+                [first, second] => first.tag().raw() == seed && second.tag().raw() == KEY,
+                _ => false,
+            };
+            if valid
+                && children
+                    .iter()
+                    .all(|child| child.item_type() == ItemType::ByteString)
+            {
+                Ok(())
+            } else {
+                Err(ManagedObjectError::IncorrectFieldType)
+            }
+        }
         7 => TransparentSymmetricKey::validate_item(item),
         8 => TransparentDsaPrivateKey::validate_item(item),
         9 => TransparentDsaPublicKey::validate_item(item),

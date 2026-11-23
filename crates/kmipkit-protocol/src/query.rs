@@ -36,6 +36,7 @@ const VALIDATION_INFORMATION: u32 = 0x0042_00df;
 const CAPABILITY_INFORMATION: u32 = 0x0042_00f7;
 const CLIENT_REGISTRATION_METHOD: u32 = 0x0042_00f6;
 const DEFAULTS_INFORMATION: u32 = 0x0042_0152;
+const CREDENTIAL_INFORMATION: u32 = 0x0042_01B2;
 const PROTECTION_STORAGE_MASKS: u32 = 0x0042_015f;
 
 /// An open KMIP Query Function enumeration value from §11.44, Table 476.
@@ -76,8 +77,6 @@ impl QueryFunction {
     pub const STORAGE_PROTECTION_MASKS: Self = Self(14);
     /// Query Credential Information (15, KMIP 3.0 §11.46).
     pub const CREDENTIAL_INFORMATION: Self = Self(15);
-    /// Historical name for code 15. Use `CREDENTIAL_INFORMATION` in new code.
-    pub const PERFORMS_CRL_CHECKS: Self = Self::CREDENTIAL_INFORMATION;
 
     /// Constructs a Query Function from its exact raw Enumeration value.
     #[must_use]
@@ -256,6 +255,8 @@ pub enum QueryResponseField {
     DefaultsInformation(Item),
     /// Required Protection Storage Masks structure in structured responses.
     ProtectionStorageMasks(Item),
+    /// KMIP 3.0 Credential Information structure.
+    CredentialInformation(Item),
     /// A structurally valid unknown or extension response Item.
     Unknown(Item),
 }
@@ -276,6 +277,7 @@ impl fmt::Debug for QueryResponseField {
             Self::CapabilityInformation(_) => "CapabilityInformation",
             Self::ClientRegistrationMethod(_) => "ClientRegistrationMethod",
             Self::DefaultsInformation(_) => "DefaultsInformation",
+            Self::CredentialInformation(_) => "CredentialInformation",
             Self::ProtectionStorageMasks(_) => "ProtectionStorageMasks",
             Self::Unknown(_) => "Unknown",
         };
@@ -302,6 +304,7 @@ impl QueryResponseField {
             | Self::ValidationInformation(_)
             | Self::CapabilityInformation(_)
             | Self::DefaultsInformation(_)
+            | Self::CredentialInformation(_)
             | Self::ProtectionStorageMasks(_) => QueryResponseFieldKind::Structure,
             Self::Unknown(_) => QueryResponseFieldKind::Unknown,
         }
@@ -324,6 +327,7 @@ impl QueryResponseField {
             | Self::ValidationInformation(_)
             | Self::CapabilityInformation(_)
             | Self::DefaultsInformation(_)
+            | Self::CredentialInformation(_)
             | Self::ProtectionStorageMasks(_)
             | Self::Unknown(_) => None,
         }
@@ -346,6 +350,7 @@ impl QueryResponseField {
             Self::CapabilityInformation(_) => CAPABILITY_INFORMATION,
             Self::ClientRegistrationMethod(_) => CLIENT_REGISTRATION_METHOD,
             Self::DefaultsInformation(_) => DEFAULTS_INFORMATION,
+            Self::CredentialInformation(_) => CREDENTIAL_INFORMATION,
             Self::ProtectionStorageMasks(_) => PROTECTION_STORAGE_MASKS,
             Self::Unknown(item) => item.tag().raw(),
         }
@@ -361,6 +366,7 @@ impl QueryResponseField {
             | Self::ValidationInformation(item)
             | Self::CapabilityInformation(item)
             | Self::DefaultsInformation(item)
+            | Self::CredentialInformation(item)
             | Self::ProtectionStorageMasks(item)
             | Self::Unknown(item) => Some(callback(item)),
             Self::Operation(_)
@@ -390,6 +396,7 @@ impl QueryResponseField {
             | Self::ValidationInformation(item)
             | Self::CapabilityInformation(item)
             | Self::DefaultsInformation(item)
+            | Self::CredentialInformation(item)
             | Self::ProtectionStorageMasks(item)
             | Self::Unknown(item) => return clone_response_item(item),
         };
@@ -436,8 +443,7 @@ impl QueryResponse {
 
         let parsed = item
             .with_response_payload(|payload| {
-                let legacy_masks_required = item.protocol_version() != ProtocolVersion::V3_0;
-                parse_response_payload(&payload, legacy_masks_required)
+                parse_response_payload(&payload, item.protocol_version())
             })
             .ok_or(QueryError::MissingResponsePayload)??;
         Ok(Self {
@@ -613,6 +619,15 @@ impl QueryResponse {
         })
     }
 
+    /// Returns the Credential Information provided by a KMIP 3.0 server.
+    #[must_use]
+    pub fn credential_information(&self) -> Option<&Item> {
+        self.fields.iter().find_map(|field| match field {
+            QueryResponseField::CredentialInformation(item) => Some(item),
+            _ => None,
+        })
+    }
+
     /// Returns unknown and extension Items in their original order.
     pub fn unknown_items(&self) -> impl Iterator<Item = &Item> + '_ {
         self.fields.iter().filter_map(|field| match field {
@@ -640,7 +655,7 @@ struct ParsedResponsePayload {
 
 fn parse_response_payload(
     payload: &StructureView<'_>,
-    legacy_masks_required: bool,
+    version: ProtocolVersion,
 ) -> Result<ParsedResponsePayload, QueryError> {
     if payload.children().is_empty() {
         return Ok(ParsedResponsePayload {
@@ -649,7 +664,7 @@ fn parse_response_payload(
         });
     }
 
-    let mut counts = [0_usize; 14];
+    let mut counts = [0_usize; 15];
     let mut fields = Vec::with_capacity(payload.children().len());
     for field in payload.children() {
         let tag = field.tag().raw();
@@ -669,7 +684,7 @@ fn parse_response_payload(
         fields.push(parsed);
     }
 
-    if legacy_masks_required && counts[13] == 0 {
+    if counts[13] == 0 && version != ProtocolVersion::V3_0 {
         return Err(QueryError::MissingProtectionStorageMasks);
     }
     Ok(ParsedResponsePayload {
@@ -744,6 +759,12 @@ fn parse_known_response_field(
         DEFAULTS_INFORMATION => {
             structure()?;
             Ok(QueryResponseField::DefaultsInformation(clone_item(
+                tag, value,
+            )?))
+        }
+        CREDENTIAL_INFORMATION => {
+            structure()?;
+            Ok(QueryResponseField::CredentialInformation(clone_item(
                 tag, value,
             )?))
         }
@@ -840,6 +861,7 @@ fn query_response_field_index(tag: u32) -> Option<usize> {
         CLIENT_REGISTRATION_METHOD => 11,
         DEFAULTS_INFORMATION => 12,
         PROTECTION_STORAGE_MASKS => 13,
+        CREDENTIAL_INFORMATION => 14,
         _ => return None,
     })
 }
@@ -850,6 +872,7 @@ const fn is_singleton_response_field(tag: u32) -> bool {
         VENDOR_IDENTIFICATION
             | SERVER_INFORMATION
             | DEFAULTS_INFORMATION
+            | CREDENTIAL_INFORMATION
             | PROTECTION_STORAGE_MASKS
     )
 }
@@ -865,28 +888,7 @@ fn clone_response_item(item: &Item) -> Result<Item, QueryError> {
 }
 
 fn clone_value(value: ValueView<'_>) -> Result<Value, QueryError> {
-    match value {
-        ValueView::Structure(structure) => {
-            let mut children = Structure::new();
-            for child in structure.children() {
-                let value = child.with_value(clone_value)?;
-                let item = Item::new(child.tag(), value).map_err(QueryError::TtlvModel)?;
-                children.try_push(item).map_err(QueryError::TtlvModel)?;
-            }
-            Ok(Value::structure(children))
-        }
-        ValueView::Integer(value) => Ok(Value::integer(*value)),
-        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
-        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
-        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
-        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
-        ValueView::TextString(value) => Ok(Value::text_string(value.to_owned())),
-        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
-        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
-        ValueView::Interval(value) => Ok(Value::interval(*value)),
-        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
-        _ => Err(QueryError::MalformedResponsePayload),
-    }
+    value.try_to_owned().map_err(QueryError::TtlvModel)
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

@@ -426,7 +426,7 @@ fn parse_success_payload(
             UNIQUE_IDENTIFIER => {
                 saw_unique_identifier = true;
                 let identifier = field
-                    .with_value(|value| parse_unique_identifier(&value))
+                    .with_value(UniqueIdentifier::from_value)
                     .ok_or(LocateError::MalformedSuccessPayload)?;
                 unique_identifiers.push(identifier);
             }
@@ -435,15 +435,6 @@ fn parse_success_payload(
     }
 
     Ok((located_items, unique_identifiers))
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

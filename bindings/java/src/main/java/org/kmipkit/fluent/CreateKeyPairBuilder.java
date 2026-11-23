@@ -52,6 +52,16 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Supplies the KMIP 3.0 key-generation seed. */
+    public CreateKeyPairBuilder seed(byte[] seed) {
+        if (seed == null) throw new InvalidInputException("Seed is required");
+        handle.withValue(builder -> {
+            NativeFluentRegistry.createKeyPairBuilderSetSeed(builder, seed);
+            return null;
+        });
+        return this;
+    }
+
     public CreateKeyPairBuilder length(int bits) {
         handle.withValue(builder -> {
             NativeFluentRegistry.createKeyPairBuilderSetLength(builder, bits);

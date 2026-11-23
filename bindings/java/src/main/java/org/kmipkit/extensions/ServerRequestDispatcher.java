@@ -19,6 +19,15 @@ public final class ServerRequestDispatcher implements AutoCloseable {
         return new ServerRequestDispatcher(NativeExtensionRegistry.serverRequestDispatcherCreate());
     }
 
+    /** Supplies named Query fields when the handler leaves them unspecified. */
+    public void setQueryMetadata(org.kmipkit.ttlv.TtlvStructure metadata) {
+        Objects.requireNonNull(metadata, "metadata");
+        handle.withValue(dispatcher -> metadata.nativeHandleOwner().withValue(fields -> {
+            NativeExtensionRegistry.serverRequestDispatcherSetQueryMetadata(dispatcher, fields);
+            return null;
+        }));
+    }
+
     public ResponseMessage dispatch(IncomingServerBatch batch, ServerRequestHandler handler) {
         Objects.requireNonNull(batch, "batch");
         Objects.requireNonNull(handler, "handler");

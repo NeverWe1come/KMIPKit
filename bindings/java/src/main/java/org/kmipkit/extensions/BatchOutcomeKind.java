@@ -18,6 +18,9 @@ public record BatchOutcomeKind(long raw) {
         return raw == COMPLETED_VALUE;
     }
 
+    /** Returns whether the server supplied an abbreviated Ephemeral payload. */
+    public boolean isEphemeral() { return raw == 3; }
+
     /** Returns whether this is the Pending outcome defined by ABI v1. */
     public boolean isPending() {
         return raw == PENDING_VALUE;

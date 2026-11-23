@@ -283956,6 +283956,188 @@
     },
     {
       "c": {
+        "documentation": [
+          "Sets the Ephemeral field and consumes the batch item after validation. On success out_item owns the replacement item."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "consumed",
+            "type": "kmipkit_client_batch_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "mode",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_with_ephemeral_mode"
+      },
+      "id": "client_batch_item_with_ephemeral_mode",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemWithEphemeralMode",
+        "method": "withEphemeralMode",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "mode",
+            "type": "long"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_with_ephemeral_mode",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "with_ephemeral_mode",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "mode",
+            "type": "int"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "with_ephemeral_mode",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "mode",
+            "type": "EphemeralMode"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
+        "documentation": [
+          "Sets the Ephemeral field and consumes the batch item after validation. On success out_item owns the replacement item."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "consumed",
+            "type": "kmipkit_client_batch_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "value",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_client_batch_item_t **"
+          }
+        ],
+        "returnType": "int32_t",
+        "symbol": "kmipkit_client_batch_item_with_ephemeral"
+      },
+      "id": "client_batch_item_with_ephemeral",
+      "java": {
+        "class": "ClientBatchItem",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemWithEphemeral",
+        "method": "withEphemeral",
+        "package": "org.kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "boolean"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "ordering": "not-applicable",
+      "python": {
+        "cffiSymbol": "kmipkit_client_batch_item_with_ephemeral",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit"
+        ],
+        "function": "with_ephemeral",
+        "module": "kmipkit.extensions",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "ClientBatchItem"
+          },
+          {
+            "name": "value",
+            "type": "bool"
+          }
+        ],
+        "returnType": "ClientBatchItem"
+      },
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ],
+      "rust": {
+        "module": "kmipkit_client::ClientBatchItem",
+        "name": "with_ephemeral",
+        "owner": "client",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "bool"
+          }
+        ],
+        "requestBoundary": "not-applicable",
+        "returnType": "ClientBatchItem"
+      }
+    },
+    {
+      "c": {
         "errorCategories": [
           "invalid_input"
         ],
@@ -389224,6 +389406,84 @@
         "status": "Approved"
       },
       "capabilityId": "client_batch_model",
+      "declarationId": "rust-observed-9a4c9e596b07f34013ba",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItem::with_ephemeral_mode",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral_mode",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral_mode",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral_mode",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "rust-observed-715056e3587749fce52b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::ClientBatchItem::with_ephemeral",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
       "declarationId": "rust-observed-70496571c728a5f026a6",
       "declarationState": "declared",
       "exportName": "kmipkit_client::ClientBatchItem::unique_batch_item_id",
@@ -401207,6 +401467,84 @@
         },
         "rust": {
           "name": "kmipkit::ClientBatchItem::with_unique_batch_item_id",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "rust-observed-ed8bf38a8457dc31b8a0",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientBatchItem::with_ephemeral_mode",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral_mode",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral_mode",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientBatchItem::with_ephemeral_mode",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "rust-observed-5c86f8a00e308f789265",
+      "declarationState": "declared",
+      "exportName": "kmipkit::ClientBatchItem::with_ephemeral",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::ClientBatchItem::with_ephemeral",
           "packageId": "rust-kmipkit"
         }
       },
@@ -503769,6 +504107,84 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "T076:kmipkit_client_batch_item_with_ephemeral_mode:c-observed",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_with_ephemeral_mode",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral_mode",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral_mode",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral_mode",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "T076:kmipkit_client_batch_item_with_ephemeral:c-observed",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_with_ephemeral",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation — delegated maintainer authorization, independent reviews, and merge of correction PR #39 are recorded in `approval-record.md`.",
         "kind": "feature-specification",
         "path": "specs/007-client-execution/spec.md",
@@ -506984,6 +507400,84 @@
         "status": "Approved"
       },
       "capabilityId": "client_batch_model",
+      "declarationId": "T076:client_batch_item_with_ephemeral_mode:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral_mode",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral_mode",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral_mode",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "T076:client_batch_item_with_ephemeral:java",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
       "declarationId": "T076:client_batch_item_with_unique_batch_item_id:python",
       "declarationState": "declared",
       "exportName": "kmipkit.extensions.with_unique_batch_item_id",
@@ -507003,6 +507497,84 @@
         },
         "rust": {
           "name": "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "T076:client_batch_item_with_ephemeral_mode:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.with_ephemeral_mode",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral_mode",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeralMode",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral_mode",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral_mode",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0006-FR-005",
+        "KMIPKIT-0006-FR-008",
+        "KMIPKIT-0043-FR-005",
+        "KMIPKIT-0043-FR-021"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation under delegated maintainer authorization; see [approval-record.md](approval-record.md).",
+        "kind": "feature-specification",
+        "path": "specs/006-message-batch-model/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "client_batch_model",
+      "declarationId": "T076:client_batch_item_with_ephemeral:python",
+      "declarationState": "declared",
+      "exportName": "kmipkit.extensions.with_ephemeral",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_with_ephemeral",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.extensions.ClientBatchItem.withEphemeral",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.extensions.with_ephemeral",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatchItem::with_ephemeral",
           "packageId": "rust-kmipkit-client"
         }
       },
@@ -982738,6 +983310,15 @@
     },
     {
       "capabilityId": "c_parity_coverage",
+      "declarationId": "Dynamic:kmipkit_server_request_dispatcher_set_query_metadata",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_dispatcher_set_query_metadata",
+      "kind": "c-symbol",
+      "packageId": "c-kmipkit",
+      "requirementIds": []
+    },
+    {
+      "capabilityId": "c_parity_coverage",
       "declarationId": "Dynamic:kmipkit_server_request_dispatcher_dispatch_v1",
       "declarationState": "declared",
       "exportName": "kmipkit_server_request_dispatcher_dispatch_v1",
@@ -993766,13 +994347,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.EphemeralMode.IMMEDIATE:python",
+      "declarationId": "kmipkit.protocol_values.EphemeralMode.EMPTY:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.EphemeralMode.IMMEDIATE",
+      "exportName": "kmipkit.protocol_values.EphemeralMode.EMPTY",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.EphemeralMode.IMMEDIATE",
+          "name": "kmipkit.protocol_values.EphemeralMode.EMPTY",
           "packageId": "python-kmipkit"
         }
       },
@@ -993780,13 +994361,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.EphemeralMode.NO:python",
+      "declarationId": "kmipkit.protocol_values.EphemeralMode.DATA:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.EphemeralMode.NO",
+      "exportName": "kmipkit.protocol_values.EphemeralMode.DATA",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.EphemeralMode.NO",
+          "name": "kmipkit.protocol_values.EphemeralMode.DATA",
           "packageId": "python-kmipkit"
         }
       },
@@ -993794,13 +994375,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.EphemeralMode.RETAIN_ON_FAILURE:python",
+      "declarationId": "kmipkit.protocol_values.EphemeralMode.UNIQUE_IDENTIFIER:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.EphemeralMode.RETAIN_ON_FAILURE",
+      "exportName": "kmipkit.protocol_values.EphemeralMode.UNIQUE_IDENTIFIER",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.EphemeralMode.RETAIN_ON_FAILURE",
+          "name": "kmipkit.protocol_values.EphemeralMode.UNIQUE_IDENTIFIER",
           "packageId": "python-kmipkit"
         }
       },
@@ -999422,13 +1000003,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_IMMEDIATE:python",
+      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_EMPTY:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_IMMEDIATE",
+      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_EMPTY",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_IMMEDIATE",
+          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_EMPTY",
           "packageId": "python-kmipkit"
         }
       },
@@ -999436,13 +1000017,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_NO:python",
+      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_DATA:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_NO",
+      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_DATA",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_NO",
+          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_DATA",
           "packageId": "python-kmipkit"
         }
       },
@@ -999450,13 +1000031,13 @@
       "parityScope": "language-specific"
     },
     {
-      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE:python",
+      "declarationId": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER:python",
       "declarationState": "declared",
-      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE",
+      "exportName": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER",
       "kind": "python-export",
       "languageMappings": {
         "python": {
-          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE",
+          "name": "kmipkit.protocol_values.V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER",
           "packageId": "python-kmipkit"
         }
       },
@@ -1004866,6 +1005447,42 @@
       },
       "packageId": "python-kmipkit",
       "parityScope": "language-specific"
+    },
+    {
+      "capabilityId": "c_parity_coverage",
+      "declarationId": "Dynamic:kmipkit_pkcs11_function_from_name",
+      "declarationState": "declared",
+      "exportName": "kmipkit_pkcs11_function_from_name",
+      "kind": "c-symbol",
+      "packageId": "c-kmipkit",
+      "requirementIds": []
+    },
+    {
+      "capabilityId": "c_parity_coverage",
+      "declarationId": "Dynamic:kmipkit_client_batch_item_with_locate_class_mask",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client_batch_item_with_locate_class_mask",
+      "kind": "c-symbol",
+      "packageId": "c-kmipkit",
+      "requirementIds": []
+    },
+    {
+      "capabilityId": "c_parity_coverage",
+      "declarationId": "Dynamic:kmipkit_create_key_pair_builder_set_seed",
+      "declarationState": "declared",
+      "exportName": "kmipkit_create_key_pair_builder_set_seed",
+      "kind": "c-symbol",
+      "packageId": "c-kmipkit",
+      "requirementIds": []
+    },
+    {
+      "capabilityId": "c_parity_coverage",
+      "declarationId": "Dynamic:kmipkit_locate_builder_set_object_class_mask",
+      "declarationState": "declared",
+      "exportName": "kmipkit_locate_builder_set_object_class_mask",
+      "kind": "c-symbol",
+      "packageId": "c-kmipkit",
+      "requirementIds": []
     }
   ],
   "publicPackages": [
@@ -1006320,6 +1006937,18 @@
           {
             "name": "Integer",
             "value": 3
+          },
+          {
+            "name": "Identifier",
+            "value": 4
+          },
+          {
+            "name": "Reference",
+            "value": 5
+          },
+          {
+            "name": "NameReference",
+            "value": 6
           }
         ]
       },

@@ -435,3 +435,12 @@ fn test_server_put_attributes_and_wildcards() {
     let res = ServerPutRequest::try_from_request_item(view2);
     assert!(res.is_err());
 }
+
+#[test]
+fn put_requires_an_explicit_put_function() {
+    let msg = wrap_request_item(0x1c, Structure::new());
+    assert!(matches!(
+        ServerPutRequest::try_from_request_item(msg.batch_items().next().unwrap()),
+        Err(crate::server_to_client::put::ServerPutError::MissingPutFunction)
+    ));
+}

@@ -544,22 +544,13 @@ fn parse_success_payload(payload: &StructureView<'_>) -> Result<UniqueIdentifier
             if identifier.is_some() {
                 return Err(DeriveKeyError::MalformedSuccessPayload);
             }
-            identifier = field.with_value(|value| parse_unique_identifier(&value));
+            identifier = field.with_value(UniqueIdentifier::from_value);
             if identifier.is_none() {
                 return Err(DeriveKeyError::MalformedSuccessPayload);
             }
         }
     }
     identifier.ok_or(DeriveKeyError::MalformedSuccessPayload)
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }
 
 fn has_required_output_attributes(object_type: ObjectType, attributes: &AttributeSet) -> bool {
@@ -593,12 +584,7 @@ fn is_id_placeholder(identifier: &UniqueIdentifier) -> bool {
 }
 
 fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-        UniqueIdentifier::Identifier(value) => Value::identifier(value),
-    }
+    identifier.into_value()
 }
 
 fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {

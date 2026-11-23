@@ -391,21 +391,12 @@ fn parse_success_payload(payload: &StructureView<'_>) -> Result<UniqueIdentifier
         if unique_identifier.is_some() {
             return Err(ImportError::MalformedSuccessPayload);
         }
-        unique_identifier = field.with_value(|value| parse_unique_identifier(&value));
+        unique_identifier = field.with_value(UniqueIdentifier::from_value);
         if unique_identifier.is_none() {
             return Err(ImportError::MalformedSuccessPayload);
         }
     }
     unique_identifier.ok_or(ImportError::MalformedSuccessPayload)
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }
 
 fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {

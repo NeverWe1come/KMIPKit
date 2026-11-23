@@ -81,6 +81,54 @@ pub enum UniqueIdentifier {
     Integer(i32),
     /// A KMIP 3.0 Identifier primitive (0x0C).
     Identifier(String),
+    /// A KMIP 3.0 reference to an object by identifier.
+    Reference(String),
+    /// A KMIP 3.0 reference to an object by name.
+    NameReference(String),
+}
+
+impl UniqueIdentifier {
+    /// Returns the string for textual identifier and reference forms.
+    #[must_use]
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Self::TextString(s)
+            | Self::Identifier(s)
+            | Self::Reference(s)
+            | Self::NameReference(s) => Some(s),
+            Self::Enumeration(_) | Self::Integer(_) => None,
+        }
+    }
+
+    pub(crate) fn into_reference_value(self) -> Value {
+        match self {
+            Self::TextString(identifier) => Value::reference(identifier),
+            identifier => identifier.into_value(),
+        }
+    }
+
+    pub(crate) fn into_value(self) -> Value {
+        match self {
+            Self::TextString(s) => Value::text_string(s),
+            Self::Identifier(s) => Value::identifier(s),
+            Self::Reference(s) => Value::reference(s),
+            Self::NameReference(s) => Value::name_reference(s),
+            Self::Integer(n) => Value::integer(n),
+            Self::Enumeration(n) => Value::enumeration(n),
+        }
+    }
+
+    pub(crate) fn from_value(value: ValueView<'_>) -> Option<Self> {
+        Some(match value {
+            ValueView::TextString(s) => Self::TextString(s.to_owned()),
+            ValueView::Identifier(s) => Self::Identifier(s.to_owned()),
+            ValueView::Reference(s) => Self::Reference(s.to_owned()),
+            ValueView::NameReference(s) => Self::NameReference(s.to_owned()),
+            ValueView::Enumeration(n) => Self::Enumeration(*n),
+            ValueView::Integer(n) => Self::Integer(*n),
+            _ => return None,
+        })
+    }
 }
 
 impl fmt::Debug for UniqueIdentifier {
@@ -381,13 +429,7 @@ fn parse_object_type(field: &Item) -> Option<ObjectType> {
 }
 
 fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        ValueView::Identifier(value) => Some(UniqueIdentifier::Identifier(value.to_owned())),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

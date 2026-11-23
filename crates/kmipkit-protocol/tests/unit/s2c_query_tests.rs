@@ -178,7 +178,15 @@ fn test_server_query_constructors_and_capabilities_coverage() {
     let ttlv = resp.to_ttlv_payload().expect("to_ttlv_payload succeeds");
     let binding = ttlv.view();
     let children = binding.children();
-    assert_eq!(children.len(), 6); // 2 operations + 2 object types + 1 server information + 1 extension list
+    assert_eq!(children.len(), 7);
+    assert_eq!(
+        children[4].tag().raw(),
+        kmipkit_ttlv::KmipTag::VendorIdentification.as_u32()
+    );
+    assert_eq!(
+        children[5].tag().raw(),
+        kmipkit_ttlv::KmipTag::ServerInformation.as_u32()
+    );
 
     let err1 = ServerQueryError::UnexpectedOperation;
     assert!(format!("{err1}").contains("Query"));
@@ -237,8 +245,7 @@ fn test_server_query_extension_map_and_unknown_payload_fields() {
 
     let msg = wrap_request_item(0x0000_0018, payload);
     let view = msg.batch_items().next().expect("valid view");
-    let parsed = ServerQueryRequest::try_from_request_item(view).expect("valid query request");
-    assert_eq!(parsed.query_functions(), []);
+    assert!(ServerQueryRequest::try_from_request_item(view).is_err());
 }
 
 fn mapped_information(
@@ -362,5 +369,38 @@ fn extension_map_requires_complete_metadata_and_a_versioned_item_type() {
         response
             .to_ttlv_payload_for_version(ProtocolVersion::V3_0)
             .is_ok()
+    );
+}
+
+#[test]
+fn s2c_query_metadata_is_filtered_by_request_and_kept_in_wire_order() {
+    use crate::QueryFunction;
+    use kmipkit_ttlv::KmipTag;
+
+    let mut metadata = ServerCapabilities::new();
+    metadata.add_client_registration_method(1).unwrap();
+    metadata.add_attestation_type(1).unwrap();
+    metadata
+        .add_validation_information(Structure::new())
+        .unwrap();
+    let request = ServerQueryRequest::new(vec![
+        QueryFunction::CLIENT_REGISTRATION_METHODS,
+        QueryFunction::ATTESTATION_TYPES,
+    ]);
+    let mut response = ServerQueryResponse::respond(&request, &ServerCapabilities::new());
+    response.supply_missing_metadata(&request, &metadata);
+    let payload = response.to_ttlv_payload().unwrap();
+    let tags: Vec<_> = payload
+        .view()
+        .children()
+        .iter()
+        .map(|item| item.tag().raw())
+        .collect();
+    assert_eq!(
+        tags,
+        [
+            KmipTag::AttestationType.as_u32(),
+            KmipTag::ClientRegistrationMethod.as_u32()
+        ]
     );
 }

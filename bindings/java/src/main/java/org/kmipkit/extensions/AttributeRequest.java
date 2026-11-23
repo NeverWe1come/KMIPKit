@@ -105,7 +105,7 @@ abstract class AttributeRequest implements AutoCloseable {
 
     static long createReadNative(
             int operation, UniqueIdentifier identifier, List<AttributeReference> references) {
-        if (identifier != null && identifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
+        if (operation != OPERATION_GET_ATTRIBUTES && identifier != null && identifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
             throw new InvalidInputException("attribute request identifier must be text");
         }
         if (references == null) {

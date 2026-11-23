@@ -15,6 +15,104 @@ const RETURN: u32 = 0x0042_015D;
 const CORRELATION: u32 = 0x0042_00D6;
 const RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 
+// KMIP 2.0 §11.38, 2.1 §11.38 and 3.0 §11.40 use the one-based
+// member index in the OASIS PKCS #11 v3.0 CK_FUNCTION_LIST_3_0 structure.
+// https://docs.oasis-open.org/pkcs11/pkcs11-base/v3.0/os/pkcs11-base-v3.0-os.html
+const STANDARD_FUNCTION_NAMES: &[&str] = &[
+    "C_Initialize",
+    "C_Finalize",
+    "C_GetInfo",
+    "C_GetFunctionList",
+    "C_GetSlotList",
+    "C_GetSlotInfo",
+    "C_GetTokenInfo",
+    "C_GetMechanismList",
+    "C_GetMechanismInfo",
+    "C_InitToken",
+    "C_InitPIN",
+    "C_SetPIN",
+    "C_OpenSession",
+    "C_CloseSession",
+    "C_CloseAllSessions",
+    "C_GetSessionInfo",
+    "C_GetOperationState",
+    "C_SetOperationState",
+    "C_Login",
+    "C_Logout",
+    "C_CreateObject",
+    "C_CopyObject",
+    "C_DestroyObject",
+    "C_GetObjectSize",
+    "C_GetAttributeValue",
+    "C_SetAttributeValue",
+    "C_FindObjectsInit",
+    "C_FindObjects",
+    "C_FindObjectsFinal",
+    "C_EncryptInit",
+    "C_Encrypt",
+    "C_EncryptUpdate",
+    "C_EncryptFinal",
+    "C_DecryptInit",
+    "C_Decrypt",
+    "C_DecryptUpdate",
+    "C_DecryptFinal",
+    "C_DigestInit",
+    "C_Digest",
+    "C_DigestUpdate",
+    "C_DigestKey",
+    "C_DigestFinal",
+    "C_SignInit",
+    "C_Sign",
+    "C_SignUpdate",
+    "C_SignFinal",
+    "C_SignRecoverInit",
+    "C_SignRecover",
+    "C_VerifyInit",
+    "C_Verify",
+    "C_VerifyUpdate",
+    "C_VerifyFinal",
+    "C_VerifyRecoverInit",
+    "C_VerifyRecover",
+    "C_DigestEncryptUpdate",
+    "C_DecryptDigestUpdate",
+    "C_SignEncryptUpdate",
+    "C_DecryptVerifyUpdate",
+    "C_GenerateKey",
+    "C_GenerateKeyPair",
+    "C_WrapKey",
+    "C_UnwrapKey",
+    "C_DeriveKey",
+    "C_SeedRandom",
+    "C_GenerateRandom",
+    "C_GetFunctionStatus",
+    "C_CancelFunction",
+    "C_WaitForSlotEvent",
+    "C_GetInterfaceList",
+    "C_GetInterface",
+    "C_LoginUser",
+    "C_SessionCancel",
+    "C_MessageEncryptInit",
+    "C_EncryptMessage",
+    "C_EncryptMessageBegin",
+    "C_EncryptMessageNext",
+    "C_MessageEncryptFinal",
+    "C_MessageDecryptInit",
+    "C_DecryptMessage",
+    "C_DecryptMessageBegin",
+    "C_DecryptMessageNext",
+    "C_MessageDecryptFinal",
+    "C_MessageSignInit",
+    "C_SignMessage",
+    "C_SignMessageBegin",
+    "C_SignMessageNext",
+    "C_MessageSignFinal",
+    "C_MessageVerifyInit",
+    "C_VerifyMessage",
+    "C_VerifyMessageBegin",
+    "C_VerifyMessageNext",
+    "C_MessageVerifyFinal",
+];
+
 /// An explicit Table 273 request. Generic owned payloads zeroize on drop.
 /// The caller supplies the Function Structure, including its Enumeration or
 /// vendor Integer child. No default interface or correlation is synthesized.
@@ -46,6 +144,34 @@ impl Pkcs11Request {
             extensions: Vec::new(),
         }
     }
+    /// Builds a request for a standard Cryptoki function such as `C_GetInfo`.
+    ///
+    /// # Errors
+    /// Returns an error if the name is unknown or cannot be represented as TTLV.
+    pub fn from_function_name(name: &str) -> Result<Self, ProtocolError> {
+        Self::function_ttlv(name).map(Self::new)
+    }
+
+    /// Builds the standard PKCS#11 Function structure from its Cryptoki name.
+    ///
+    /// # Errors
+    /// Returns an error if the name is unknown or cannot be represented as TTLV.
+    pub fn function_ttlv(name: &str) -> Result<Structure, ProtocolError> {
+        let number = STANDARD_FUNCTION_NAMES
+            .iter()
+            .zip(1..)
+            .find_map(|(candidate, number)| (*candidate == name).then_some(number))
+            .ok_or_else(|| {
+                ProtocolError::categorized(
+                    ProtocolErrorKind::InvalidInput,
+                    crate::ProtocolCauseCategory::InvalidValue,
+                )
+            })?;
+        let mut function = Structure::new();
+        common::push(&mut function, FUNCTION, Value::enumeration(number))?;
+        Ok(function)
+    }
+
     /// Retains the explicit opaque Interface Structure without interpreting it.
     #[must_use]
     pub fn with_interface(mut self, interface: Structure) -> Self {

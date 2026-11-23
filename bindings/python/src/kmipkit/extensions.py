@@ -497,10 +497,12 @@ class RevokeRequest(NativeHandle):
     def create(
         cls,
         unique_identifier: UniqueIdentifier | None,
-        reason: RevocationReason,
+        reason: RevocationReason | None,
         compromise_occurrence_date: int | None,
     ) -> RevokeRequest:
-        if not isinstance(reason, RevocationReason):
+        if reason is None and unique_identifier is None:
+            errors.raise_for_status(4)
+        if reason is not None and not isinstance(reason, RevocationReason):
             errors.raise_for_status(4)
         if compromise_occurrence_date is None:
             has_date = 0
@@ -513,8 +515,8 @@ class RevokeRequest(NativeHandle):
             handle = _make_handle(
                 "kmipkit_revoke_request_t",
                 "kmipkit_revoke_request_create",
-                (identifier, reason, has_date, date),
-                consumed_indices=(1,),
+                (identifier, reason if reason is not None else ffi.NULL, has_date, date),
+                consumed_indices=(1,) if reason is not None else (),
             )
         return _wrap_owned_handle(cls, handle)
 
@@ -533,6 +535,12 @@ class UniqueIdentifierKind(IntEnum):
     ENUMERATION = 2
     INTEGER = 3
     IDENTIFIER = 4
+    REFERENCE = 5
+    NAME_REFERENCE = 6
+
+    @property
+    def is_textual(self) -> bool:
+        return self in (self.TEXT_STRING, self.IDENTIFIER, self.REFERENCE, self.NAME_REFERENCE)
 
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -546,7 +554,7 @@ class UniqueIdentifier:
     def __post_init__(self) -> None:
         if not isinstance(self.kind, UniqueIdentifierKind):
             errors.raise_for_status(4)
-        if self.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
+        if self.kind.is_textual:
             if self.text is None or self.number is not None:
                 errors.raise_for_status(4)
             _owned_bytes(self.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
@@ -566,6 +574,14 @@ class UniqueIdentifier:
     @classmethod
     def identifier(cls, value: str) -> UniqueIdentifier:
         return cls(UniqueIdentifierKind.IDENTIFIER, text=value)
+
+    @classmethod
+    def reference(cls, value: str) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.REFERENCE, text=value)
+
+    @classmethod
+    def name_reference(cls, value: str) -> UniqueIdentifier:
+        return cls(UniqueIdentifierKind.NAME_REFERENCE, text=value)
 
     @classmethod
     def enumeration(cls, value: int) -> UniqueIdentifier:
@@ -1765,6 +1781,26 @@ def with_extension(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def with_ephemeral(item: ClientBatchItem, value: bool) -> ClientBatchItem:
+    """Select the KMIP 2.x Boolean that omits response data."""
+    if not isinstance(item, ClientBatchItem) or not isinstance(value, bool):
+        errors.raise_for_status(4)
+    item._require_mutable()
+    handle = _make_handle("kmipkit_client_batch_item_t", "kmipkit_client_batch_item_with_ephemeral",
+                          (item, int(value)), consumed_indices=(0,))
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def with_ephemeral_mode(item: ClientBatchItem, mode: int) -> ClientBatchItem:
+    """Select a KMIP 3.0 EphemeralMode from kmipkit.protocol_values."""
+    if not isinstance(item, ClientBatchItem) or type(mode) is not int or mode not in (1, 2, 3):
+        errors.raise_for_status(4)
+    item._require_mutable()
+    handle = _make_handle("kmipkit_client_batch_item_t", "kmipkit_client_batch_item_with_ephemeral_mode",
+                          (item, mode), consumed_indices=(0,))
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
 def with_unique_batch_item_id(
     item: ClientBatchItem, identifier: bytes | bytearray | memoryview
 ) -> ClientBatchItem:
@@ -2529,7 +2565,7 @@ def _native_unique_identifier(
     record.enumeration_value = 0
     record.integer_value = 0
     owner = None
-    if value.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
+    if value.kind.is_textual:
         raw, owner = _owned_bytes(value.text, _MAX_UNIQUE_BATCH_ITEM_ID_BYTES)
         if staging_buffers is not None:
             staging_buffers.append(owner)
@@ -2954,10 +2990,7 @@ def client_batch_item_get_attributes(
     attribute_references: Sequence[AttributeReference],
 ) -> ClientBatchItem:
     """Create a KMIP 2.1 §6.1.20 Get Attributes item with ordered references."""
-    if unique_identifier is not None and not (
-        isinstance(unique_identifier, UniqueIdentifier)
-        and unique_identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER)
-    ):
+    if unique_identifier is not None and not isinstance(unique_identifier, UniqueIdentifier):
         errors.raise_for_status(4)
     with _staging_buffer_scope() as staging_buffers:
         identifier = _client_native_unique_identifier(
@@ -3177,8 +3210,22 @@ def client_batch_item_interop(
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def pkcs11_function(name: str) -> ttlv.Structure:
+    """Return the KMIP function structure for a standard name such as C_GetInfo."""
+    if not isinstance(name, str) or len(name) > 64:
+        errors.raise_for_status(4)
+    try:
+        encoded = name.encode("ascii")
+    except UnicodeEncodeError:
+        errors.raise_for_status(4)
+    output = _client_ffi.new("kmipkit_ttlv_structure_t **")
+    with _NATIVE_CALL_LOCK:
+        errors.raise_for_status(_client_lib.kmipkit_pkcs11_function_from_name(encoded, len(encoded), output))
+    return ttlv._structure_from_native_address(int(_client_ffi.cast("uintptr_t", output[0])))
+
+
 def client_batch_item_pkcs11(
-    function: ttlv.Structure,
+    function: str | ttlv.Structure,
     interface: ttlv.Structure | None = None,
     correlation_value: bytes | bytearray | memoryview | None = None,
     input_parameters: ttlv.Structure | None = None,
@@ -3190,6 +3237,10 @@ def client_batch_item_pkcs11(
     KMIP v2.1 Table 273 defines no generic extension field. Supply extensions only
     for vendor-specific or profile-specific fields documented by the server.
     """
+    if isinstance(function, str):
+        with pkcs11_function(function) as wire_function:
+            return client_batch_item_pkcs11(wire_function, interface, correlation_value,
+                                           input_parameters, payload_extensions=payload_extensions)
     function_values, interface_values, correlation_values, input_values, extension_values = (
         _bounded_iterable_snapshots(
             ((function,), (interface,), (correlation_value,), (input_parameters,), payload_extensions),
@@ -3309,7 +3360,7 @@ def client_batch_item_validate(
     total_text_bytes = 0
     identifier_texts: list[str | None] = []
     for identifier in identifier_values:
-        if identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
+        if identifier.kind.is_textual:
             text = identifier.text
             if text is None:
                 errors.raise_for_status(4)
@@ -3341,7 +3392,7 @@ def client_batch_item_validate(
             record.text_length = 0
             record.enumeration_value = 0
             record.integer_value = 0
-            if identifier.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
+            if identifier.kind.is_textual:
                 text = identifier_texts[index]
                 if text is None:
                     errors.raise_for_status(4)
@@ -3728,6 +3779,7 @@ def client_batch_item_locate(
     offset_items: int | None = None,
     storage_status_mask: int | None = None,
     object_group_member: int | None = None,
+    object_class_mask: int | None = None,
 ) -> ClientBatchItem:
     """Create a KMIP 2.1 §6.1.28 Locate item with required Attributes."""
     has_maximum = int(maximum_items is not None)
@@ -3746,6 +3798,8 @@ def client_batch_item_locate(
     raw_group_member = 0 if object_group_member is None else _integer_range(
         object_group_member, 0, 0xFFFF_FFFF
     )
+    if object_class_mask is not None:
+        object_class_mask = _integer_range(object_class_mask, 0, 0xFFFF_FFFF)
     handle = _make_handle(
         "kmipkit_client_batch_item_t",
         "kmipkit_client_batch_item_locate",
@@ -3761,7 +3815,17 @@ def client_batch_item_locate(
             _native_structure(attributes, required=True),
         ),
     )
-    return _wrap_owned_handle(ClientBatchItem, handle)
+    item = _wrap_owned_handle(ClientBatchItem, handle)
+    if object_class_mask is None:
+        return item
+    with item:
+        updated = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_with_locate_class_mask",
+            (item, object_class_mask),
+            consumed_indices=(0,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, updated)
 
 
 def client_batch_item_export(
@@ -4161,6 +4225,7 @@ __all__ = [
     "client_batch_item_set_endpoint_role",
     "client_batch_item_interop",
     "client_batch_item_pkcs11",
+    "pkcs11_function",
     "client_batch_item_log",
     "client_batch_item_validate",
     "client_batch_item_delegated_login",
@@ -4180,6 +4245,8 @@ __all__ = [
     "client_batch_item_extension_count",
     "client_batch_item_extension_criticality_indicator_at",
     "client_batch_item_extension_identity_at",
+    "with_ephemeral",
+    "with_ephemeral_mode",
     "with_unique_batch_item_id",
     "client_configuration_extension_registry",
     "client_configuration_wire_encoding",

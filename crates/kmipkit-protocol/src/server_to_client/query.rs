@@ -1,6 +1,6 @@
 //! Typed KMIP 2.0, 2.1, and 3.0 draft Server-to-Client Query payloads (§6.2.4).
 
-use std::{error::Error, fmt};
+use std::{error::Error, fmt, sync::Arc};
 
 use kmipkit_ttlv::{ItemType, KmipTag, ModelError, Structure, Value, ValueView};
 
@@ -21,6 +21,22 @@ const SERVER_INFORMATION_TAG: u32 = KmipTag::ServerInformation.as_u32();
 const VENDOR_IDENTIFICATION_TAG: u32 = KmipTag::VendorIdentification.as_u32();
 const EXTENSION_INFORMATION_TAG: u32 = KmipTag::ExtensionInformation.as_u32();
 
+#[derive(Clone, Debug)]
+struct CapabilityField {
+    function: QueryFunction,
+    item: Arc<kmipkit_ttlv::Item>,
+}
+
+impl PartialEq for CapabilityField {
+    fn eq(&self, other: &Self) -> bool {
+        self.function == other.function
+            && self.item.tag() == other.item.tag()
+            && crate::create_key_pair::values_equal(&self.item, &other.item)
+    }
+}
+
+impl Eq for CapabilityField {}
+
 /// Server/Client capabilities queried via §6.2.4.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ServerCapabilities {
@@ -29,6 +45,7 @@ pub struct ServerCapabilities {
     vendor_identification: Option<String>,
     extension_information: Vec<ExtensionInformation>,
     legacy_extension_tags: Vec<u32>,
+    additional_fields: Vec<CapabilityField>,
 }
 
 impl ServerCapabilities {
@@ -57,6 +74,165 @@ impl ServerCapabilities {
     pub fn set_extension_information(&mut self, information: Vec<ExtensionInformation>) {
         self.extension_information = information;
         self.legacy_extension_tags.clear();
+    }
+
+    /// Advertises server information when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn set_server_information(&mut self, value: Structure) -> Result<(), ProtocolError> {
+        let item = item(KmipTag::ServerInformation.as_u32(), Value::structure(value))?;
+        self.additional_fields
+            .retain(|f| f.function != QueryFunction::SERVER_INFORMATION);
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::SERVER_INFORMATION,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises attestation type when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_attestation_type(&mut self, value: u32) -> Result<(), ProtocolError> {
+        let item = item(KmipTag::AttestationType.as_u32(), Value::enumeration(value))?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::ATTESTATION_TYPES,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises rng parameters when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_rng_parameters(&mut self, value: Structure) -> Result<(), ProtocolError> {
+        let item = item(KmipTag::RNGParameters.as_u32(), Value::structure(value))?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::RNGS,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises profile information when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_profile_information(&mut self, value: Structure) -> Result<(), ProtocolError> {
+        let item = item(
+            KmipTag::ProfileInformation.as_u32(),
+            Value::structure(value),
+        )?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::PROFILES,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises validation information when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_validation_information(&mut self, value: Structure) -> Result<(), ProtocolError> {
+        let item = item(
+            KmipTag::ValidationInformation.as_u32(),
+            Value::structure(value),
+        )?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::VALIDATIONS,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises capability information when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_capability_information(&mut self, value: Structure) -> Result<(), ProtocolError> {
+        let item = item(
+            KmipTag::CapabilityInformation.as_u32(),
+            Value::structure(value),
+        )?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::CAPABILITIES,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Advertises client registration method when requested by the peer.
+    ///
+    /// # Errors
+    /// Returns an error if the value cannot be represented as TTLV.
+    pub fn add_client_registration_method(&mut self, value: u32) -> Result<(), ProtocolError> {
+        let item = item(
+            KmipTag::ClientRegistrationMethod.as_u32(),
+            Value::enumeration(value),
+        )?;
+        self.additional_fields.push(CapabilityField {
+            function: QueryFunction::CLIENT_REGISTRATION_METHODS,
+            item: Arc::new(item),
+        });
+        Ok(())
+    }
+
+    /// Reads additional Query capabilities from their named, standard TTLV fields.
+    ///
+    /// # Errors
+    /// Returns an error for an unexpected field, duplicate singleton, or incorrect type.
+    pub fn from_query_metadata(metadata: Structure) -> Result<Self, ProtocolError> {
+        let mut result = Self::default();
+        for field in metadata.view().children() {
+            let function = match KmipTag::from_u32(field.tag().raw()) {
+                Some(KmipTag::ServerInformation) => QueryFunction::SERVER_INFORMATION,
+                Some(KmipTag::AttestationType) => QueryFunction::ATTESTATION_TYPES,
+                Some(KmipTag::RNGParameters) => QueryFunction::RNGS,
+                Some(KmipTag::ProfileInformation) => QueryFunction::PROFILES,
+                Some(KmipTag::ValidationInformation) => QueryFunction::VALIDATIONS,
+                Some(KmipTag::CapabilityInformation) => QueryFunction::CAPABILITIES,
+                Some(KmipTag::ClientRegistrationMethod) => {
+                    QueryFunction::CLIENT_REGISTRATION_METHODS
+                }
+                _ => {
+                    return Err(invalid_extension_information(
+                        "unsupported Query capability",
+                    ));
+                }
+            };
+            let enumeration = matches!(
+                function,
+                QueryFunction::ATTESTATION_TYPES | QueryFunction::CLIENT_REGISTRATION_METHODS
+            );
+            if !field.with_value(|value| {
+                if enumeration {
+                    matches!(value, ValueView::Enumeration(_))
+                } else {
+                    matches!(value, ValueView::Structure(_))
+                }
+            }) {
+                return Err(invalid_extension_information(
+                    "incorrect Query capability type",
+                ));
+            }
+            if function == QueryFunction::SERVER_INFORMATION
+                && result
+                    .additional_fields
+                    .iter()
+                    .any(|value| value.function == function)
+            {
+                return Err(invalid_extension_information("duplicate Query capability"));
+            }
+            result.additional_fields.push(CapabilityField {
+                function,
+                item: Arc::new(field.try_clone().map_err(protocol_model_error)?),
+            });
+        }
+        Ok(result)
     }
 
     /// Legacy setter retained for source compatibility.
@@ -110,16 +286,17 @@ impl ServerQueryRequest {
                 let mut functions = Vec::new();
                 for field in payload.children() {
                     if field.tag().raw() == QUERY_FUNCTION_TAG {
-                        let raw = field.with_value(|v| match v {
-                            ValueView::Enumeration(e) => Some(*e),
+                        let raw = field.with_value(|value| match value {
+                            ValueView::Enumeration(raw) => Some(*raw),
                             _ => None,
-                        });
-                        if let Some(r) = raw {
-                            functions.push(QueryFunction::from_raw(r));
+                        })?;
+                        if !matches!(raw, 1..=3 | 5..=12 | 0x8000_0000..=u32::MAX) {
+                            return None;
                         }
+                        functions.push(QueryFunction::from_raw(raw));
                     }
                 }
-                Some(functions)
+                (!functions.is_empty()).then_some(functions)
             })
             .ok_or(ServerQueryError::MissingPayload)?
             .ok_or(ServerQueryError::MalformedPayload)?;
@@ -133,7 +310,9 @@ impl ServerQueryRequest {
 pub struct ServerQueryResponse {
     operations: Vec<u32>,
     object_types: Vec<u32>,
-    server_information: Option<Structure>,
+    query_server_information: bool,
+    vendor_identification: Option<String>,
+    fields: Vec<CapabilityField>,
     extensions: Vec<ExtensionInformation>,
     extension_query: Option<ExtensionQuery>,
     has_legacy_extension_tags: bool,
@@ -155,7 +334,9 @@ impl ServerQueryResponse {
     pub fn respond(request: &ServerQueryRequest, capabilities: &ServerCapabilities) -> Self {
         let mut operations = Vec::new();
         let mut object_types = Vec::new();
-        let mut server_information = None;
+        let query_server_information = request
+            .query_functions
+            .contains(&QueryFunction::SERVER_INFORMATION);
         let mut has_ext_list = false;
         let mut has_ext_map = false;
 
@@ -166,18 +347,6 @@ impl ServerQueryResponse {
                 }
                 QueryFunction::OBJECTS => {
                     object_types.clone_from(&capabilities.object_types);
-                }
-                QueryFunction::SERVER_INFORMATION => {
-                    if let Some(ref vendor_id) = capabilities.vendor_identification {
-                        let mut s = Structure::new();
-                        if let Ok(it) = item(
-                            VENDOR_IDENTIFICATION_TAG,
-                            Value::text_string(vendor_id.clone()),
-                        ) {
-                            let _ = s.try_push(it);
-                        }
-                        server_information = Some(s);
-                    }
                 }
                 QueryFunction::EXTENSION_LIST => {
                     has_ext_list = true;
@@ -200,12 +369,40 @@ impl ServerQueryResponse {
         Self {
             operations,
             object_types,
-            server_information,
+            query_server_information,
+            vendor_identification: capabilities.vendor_identification.clone(),
+            fields: capabilities
+                .additional_fields
+                .iter()
+                .filter(|f| request.query_functions.contains(&f.function))
+                .cloned()
+                .collect(),
             extensions: extension_query
                 .map_or_else(Vec::new, |_| capabilities.extension_information.clone()),
             extension_query,
             has_legacy_extension_tags: !capabilities.legacy_extension_tags.is_empty(),
         }
+    }
+
+    /// Adds requested capabilities for which the handler did not supply an explicit value.
+    pub fn supply_missing_metadata(
+        &mut self,
+        request: &ServerQueryRequest,
+        capabilities: &ServerCapabilities,
+    ) {
+        let mut fields = capabilities
+            .additional_fields
+            .iter()
+            .filter(|field| {
+                request.query_functions.contains(&field.function)
+                    && !self
+                        .fields
+                        .iter()
+                        .any(|current| current.function == field.function)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        self.fields.append(&mut fields);
     }
 
     /// Encodes the response payload using KMIP 2.1.
@@ -241,11 +438,29 @@ impl ServerQueryResponse {
                 .map_err(protocol_model_error)?;
         }
 
-        if let Some(ref info) = self.server_information {
-            let cloned_info = info.view().try_clone().map_err(protocol_model_error)?;
+        if self.query_server_information {
+            let vendor = self.vendor_identification.as_ref().ok_or_else(|| {
+                ProtocolError::categorized(
+                    ProtocolErrorKind::InvalidInput,
+                    ProtocolCauseCategory::InvalidValue,
+                )
+            })?;
             structure
-                .try_push(item(SERVER_INFORMATION_TAG, Value::structure(cloned_info))?)
+                .try_push(item(
+                    VENDOR_IDENTIFICATION_TAG,
+                    Value::text_string(vendor.clone()),
+                )?)
                 .map_err(protocol_model_error)?;
+            let server = if let Some(info) = self
+                .fields
+                .iter()
+                .find(|field| field.function == QueryFunction::SERVER_INFORMATION)
+            {
+                info.item.try_clone().map_err(protocol_model_error)?
+            } else {
+                item(SERVER_INFORMATION_TAG, Value::structure(Structure::new()))?
+            };
+            structure.try_push(server).map_err(protocol_model_error)?;
         }
 
         if let Some(query) = self.extension_query {
@@ -269,6 +484,25 @@ impl ServerQueryResponse {
             }
         }
 
+        // Table order is independent of the order in which capabilities were configured.
+        for function in [
+            QueryFunction::ATTESTATION_TYPES,
+            QueryFunction::RNGS,
+            QueryFunction::PROFILES,
+            QueryFunction::VALIDATIONS,
+            QueryFunction::CAPABILITIES,
+            QueryFunction::CLIENT_REGISTRATION_METHODS,
+        ] {
+            for field in self
+                .fields
+                .iter()
+                .filter(|field| field.function == function)
+            {
+                structure
+                    .try_push(field.item.try_clone().map_err(protocol_model_error)?)
+                    .map_err(protocol_model_error)?;
+            }
+        }
         Ok(structure)
     }
 }

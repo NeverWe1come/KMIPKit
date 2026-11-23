@@ -16,30 +16,47 @@ const DELETED_ATTRIBUTE_REFERENCE: u32 = KmipTag::AttributeReference.as_u32();
 /// A server-to-client Notify request (§6.2.2).
 #[derive(Debug)]
 pub struct ServerNotifyRequest {
-    unique_identifier: String,
+    unique_identifier: super::ServerIdentifier,
     attributes: Option<Structure>,
-    deleted_attribute_references: Vec<Structure>,
+    deleted_attribute_references: Vec<DeletedAttributeReference>,
+}
+
+/// Reference to a deleted standard or vendor attribute in wire order.
+#[derive(Debug)]
+pub enum DeletedAttributeReference {
+    /// Numeric tag of a standard attribute.
+    Standard(u32),
+    /// Vendor identification and attribute name.
+    Vendor(Structure),
 }
 
 impl ServerNotifyRequest {
     /// Creates a new Server Notify request.
     #[must_use]
-    pub const fn new(
+    pub fn new(
         unique_identifier: String,
         attributes: Option<Structure>,
         deleted_attribute_references: Vec<Structure>,
     ) -> Self {
         Self {
-            unique_identifier,
+            unique_identifier: super::ServerIdentifier::new(unique_identifier.into()),
             attributes,
-            deleted_attribute_references,
+            deleted_attribute_references: deleted_attribute_references
+                .into_iter()
+                .map(DeletedAttributeReference::Vendor)
+                .collect(),
         }
     }
 
     /// Returns the Unique Identifier of the object to which the notification applies.
     #[must_use]
     pub fn unique_identifier(&self) -> &str {
-        &self.unique_identifier
+        self.unique_identifier.text()
+    }
+
+    /// Returns the original identifier and TTLV type.
+    pub fn identifier(&self) -> &crate::UniqueIdentifier {
+        &self.unique_identifier.value
     }
 
     /// Returns the optional changed attributes.
@@ -50,7 +67,7 @@ impl ServerNotifyRequest {
 
     /// Returns the deleted attribute references.
     #[must_use]
-    pub fn deleted_attribute_references(&self) -> &[Structure] {
+    pub fn deleted_attribute_references(&self) -> &[DeletedAttributeReference] {
         &self.deleted_attribute_references
     }
 
@@ -74,27 +91,28 @@ impl ServerNotifyRequest {
 
                 for field in payload.children() {
                     match field.tag().raw() {
+                        UNIQUE_IDENTIFIER if uid.is_some() => return None,
                         UNIQUE_IDENTIFIER => {
-                            if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) => Some(s.to_string()),
-                                _ => None,
-                            }) {
-                                uid = Some(text);
-                            }
+                            uid = Some(super::ServerIdentifier::new(
+                                field.with_value(crate::UniqueIdentifier::from_value)?,
+                            ));
                         }
+                        ATTRIBUTES if attrs.is_some() => return None,
                         ATTRIBUTES => {
-                            attrs = field.with_value(|v| match v {
-                                ValueView::Structure(st) => st.try_clone().ok(),
-                                _ => None,
-                            });
+                            attrs = Some(field.as_structure()?.try_clone().ok()?);
                         }
                         DELETED_ATTRIBUTE_REFERENCE => {
-                            if let Some(r) = field.with_value(|v| match v {
-                                ValueView::Structure(st) => st.try_clone().ok(),
+                            let reference = field.with_value(|value| match value {
+                                ValueView::Enumeration(tag) => {
+                                    Some(DeletedAttributeReference::Standard(*tag))
+                                }
+                                ValueView::Structure(fields) => fields
+                                    .try_clone()
+                                    .ok()
+                                    .map(DeletedAttributeReference::Vendor),
                                 _ => None,
-                            }) {
-                                deleted_refs.push(r);
-                            }
+                            })?;
+                            deleted_refs.push(reference);
                         }
                         _ => {}
                     }

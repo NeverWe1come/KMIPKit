@@ -4180,22 +4180,22 @@ def v3_0_tag_name(raw: int) -> str | None:
 
 
 # KMIP 3.0 Ephemeral Mode
-V3_0_EPHEMERAL_MODE_NO = 0x00000001
-V3_0_EPHEMERAL_MODE_IMMEDIATE = 0x00000002
-V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE = 0x00000003
+V3_0_EPHEMERAL_MODE_DATA = 0x00000001
+V3_0_EPHEMERAL_MODE_EMPTY = 0x00000002
+V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER = 0x00000003
 
 
 class EphemeralMode:
     """Named values for KMIP 3.0 Ephemeral Mode."""
 
-    NO = 0x00000001
-    IMMEDIATE = 0x00000002
-    RETAIN_ON_FAILURE = 0x00000003
+    DATA = 0x00000001
+    EMPTY = 0x00000002
+    UNIQUE_IDENTIFIER = 0x00000003
 
     @staticmethod
     def name(raw: int) -> str | None:
         return {
-            0x00000001: "No",
-            0x00000002: "Immediate",
-            0x00000003: "Retain on Failure",
+            0x00000001: "Data",
+            0x00000002: "Empty",
+            0x00000003: "Unique Identifier",
         }.get(raw)

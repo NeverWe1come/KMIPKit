@@ -195,8 +195,8 @@ mod enum_mapping_tests {
             OperationCode::QueryAsynchronousRequests,
             OperationCode::Process,
             OperationCode::Ping,
-            OperationCode::KemEncrypt,
-            OperationCode::KemDecrypt,
+            OperationCode::CreateGroup,
+            OperationCode::Obliterate,
             OperationCode::Encapsulate,
             OperationCode::Decapsulate,
         ] {
@@ -209,7 +209,7 @@ mod enum_mapping_tests {
             ObjectTypeCode::PublicKey,
             ObjectTypeCode::PrivateKey,
             ObjectTypeCode::SplitKey,
-            ObjectTypeCode::Template,
+            ObjectTypeCode::PasswordCredential,
             ObjectTypeCode::SecretData,
             ObjectTypeCode::OpaqueObject,
             ObjectTypeCode::PgpKey,
@@ -235,17 +235,14 @@ mod enum_mapping_tests {
             KemAlgorithmCode::Rsasve,
             KemAlgorithmCode::Dhkem,
             KemAlgorithmCode::Mlkem,
-            KemAlgorithmCode::MlKem512,
-            KemAlgorithmCode::MlKem768,
-            KemAlgorithmCode::MlKem1024,
         ] {
             assert_eq!(KemAlgorithmCode::from_u32(value.as_u32()), Some(value));
         }
 
         for value in [
-            EphemeralMode::No,
-            EphemeralMode::Immediate,
-            EphemeralMode::RetainOnFailure,
+            EphemeralMode::Data,
+            EphemeralMode::Empty,
+            EphemeralMode::UniqueIdentifier,
         ] {
             assert_eq!(EphemeralMode::from_u32(value.as_u32()), Some(value));
         }

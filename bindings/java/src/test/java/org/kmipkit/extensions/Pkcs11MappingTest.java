@@ -28,6 +28,13 @@ final class Pkcs11MappingTest {
     }
 
     @Test
+    void publicFactoryAcceptsACryptokiFunctionName() {
+        try (ClientBatchItem item = ClientBatchItem.pkcs11Named("C_GetInfo", null, null, null)) {
+            assertNotNull(item);
+        }
+    }
+
+    @Test
     void publicFactoryAcceptsOptionalStructuresAndCorrelationValue() {
         try (TtlvStructure function = TtlvStructure.create();
                 TtlvStructure interfaceStructure = TtlvStructure.create();

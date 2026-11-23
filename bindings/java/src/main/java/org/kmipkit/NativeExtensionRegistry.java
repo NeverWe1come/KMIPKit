@@ -262,6 +262,7 @@ public final class NativeExtensionRegistry {
             long value, long[] codecLimits);
     public static native long clientRequestMessageExtensionCreate(long registeredValue,
             boolean criticalityIndicator);
+    public static native long pkcs11FunctionFromName(byte[] name);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
     public static native long clientBatchItemOperation(long item);
@@ -537,6 +538,9 @@ public final class NativeExtensionRegistry {
             @Nullable byte[] identifierText, long identifierNumber, long reason,
             boolean hasCompromiseOccurrenceDate, long compromiseOccurrenceDate);
     public static native long clientBatchItemRevoke(long request);
+    public static native long clientBatchItemWithEphemeral(long item, boolean value);
+    public static native long clientBatchItemWithEphemeralMode(long item, long mode);
+    public static native long clientBatchItemWithLocateClassMask(long item, long mask);
     public static native long clientBatchItemWithUniqueBatchItemId(long item, byte[] id);
     public static native @Nullable byte[] clientBatchItemUniqueBatchItemId(long item);
     public static native long clientBatchItemExtensionCount(long item);
@@ -895,6 +899,7 @@ public final class NativeExtensionRegistry {
     public static native long incomingServerBatchItemSetEndpointRole(long rawBatch, int index);
 
     public static native long serverRequestDispatcherCreate();
+    public static native void serverRequestDispatcherSetQueryMetadata(long dispatcher, long metadata);
     public static native long serverRequestDispatcherDispatchV2(
             long rawDispatcher, long rawBatch, org.kmipkit.extensions.ServerRequestHandler handler);
     public static native long serverRequestDispatcherDispatchV3(

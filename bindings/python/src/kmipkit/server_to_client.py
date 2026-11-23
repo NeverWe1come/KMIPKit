@@ -1218,6 +1218,15 @@ class ServerRequestDispatcher(_S2cHandle):
             errors.raise_for_status(7)
         return _wrap_owned_handle(cls, output[0])
 
+    def set_query_metadata(self, metadata: ttlv.Structure) -> None:
+        """Set named Query capability fields that the callback leaves unspecified."""
+        if not isinstance(metadata, ttlv.Structure):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            errors.raise_for_status(_client_lib.kmipkit_server_request_dispatcher_set_query_metadata(
+                self._pointer(), _client_ptr("kmipkit_ttlv_structure_t *", metadata._pointer())
+            ))
+
     def dispatch_v6(
         self,
         batch: IncomingServerBatch,

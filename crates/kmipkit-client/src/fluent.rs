@@ -619,7 +619,13 @@ impl<'a> RequestBuilder<'a> {
     /// Begins constructing a Revoke request with an explicit reason.
     #[must_use]
     pub fn revoke(self, reason: RevocationReason) -> RevokeBuilder<'a> {
-        RevokeBuilder::new(self.client, reason)
+        RevokeBuilder::new(self.client, RevokeRequest::new(reason))
+    }
+
+    /// Begins a KMIP 3.0 Revoke request without an audit reason.
+    #[must_use]
+    pub fn revoke_without_reason(self, identifier: UniqueIdentifier) -> RevokeBuilder<'a> {
+        RevokeBuilder::new(self.client, RevokeRequest::without_reason(identifier))
     }
 
     /// Begins a Locate request with the caller's required Attributes criteria.
@@ -4786,7 +4792,7 @@ impl SetAttributeBuilder<'_> {
 /// A fluent builder for the existing typed Get Attributes request.
 pub struct GetAttributesBuilder<'a> {
     client: &'a mut Client,
-    unique_identifier: Option<String>,
+    unique_identifier: Option<UniqueIdentifier>,
     attribute_references: Vec<AttributeReference>,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
@@ -4806,8 +4812,14 @@ impl<'a> GetAttributesBuilder<'a> {
     /// Selects a text Unique Identifier. Omit this method to preserve the
     /// protocol's optional identifier or batch placeholder behavior.
     #[must_use]
-    pub fn unique_identifier(mut self, value: &str) -> Self {
-        self.unique_identifier = Some(value.to_owned());
+    pub fn unique_identifier(self, value: &str) -> Self {
+        self.identifier(UniqueIdentifier::TextString(value.to_owned()))
+    }
+
+    /// Selects an object by its exact identifier or reference type.
+    #[must_use]
+    pub fn identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
         self
     }
 
@@ -4833,7 +4845,7 @@ impl<'a> GetAttributesBuilder<'a> {
     }
 
     fn construct_request(&self) -> Result<GetAttributesRequest, FluentBuildError> {
-        let request = GetAttributesRequest::try_new(
+        let request = GetAttributesRequest::with_identifier(
             self.unique_identifier.clone(),
             self.attribute_references.iter().cloned(),
         )
@@ -5377,10 +5389,10 @@ pub struct RevokeBuilder<'a> {
 }
 
 impl<'a> RevokeBuilder<'a> {
-    fn new(client: &'a mut Client, reason: RevocationReason) -> Self {
+    fn new(client: &'a mut Client, request: RevokeRequest) -> Self {
         Self {
             client,
-            request: RevokeRequest::new(reason),
+            request,
             options: None,
             asynchronous_indicator: None,
         }
@@ -6176,13 +6188,13 @@ fn item(raw_tag: u32, value: Value) -> Result<Item, FluentBuildError> {
 fn name_attribute(value: String) -> Result<Structure, FluentBuildError> {
     let mut fields = Structure::new();
     fields
+        .try_push(item(NAME_VALUE_TAG, Value::text_string(value))?)
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+    fields
         .try_push(item(
             NAME_TYPE_TAG,
             Value::enumeration(NAME_TYPE_UNINTERPRETED_TEXT_STRING),
         )?)
-        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-    fields
-        .try_push(item(NAME_VALUE_TAG, Value::text_string(value))?)
         .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
     Ok(fields)
 }

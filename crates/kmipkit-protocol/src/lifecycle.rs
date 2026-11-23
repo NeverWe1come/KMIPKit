@@ -1,6 +1,6 @@
 //! Shared TTLV mechanics for managed-object lifecycle operations.
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
+use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value};
 
 use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, UniqueIdentifier};
 
@@ -11,12 +11,7 @@ pub(crate) fn request_payload(
 ) -> Result<Structure, ProtocolError> {
     let mut payload = Structure::new();
     if let Some(identifier) = unique_identifier {
-        let value = match identifier {
-            UniqueIdentifier::TextString(value) => Value::text_string(value.clone()),
-            UniqueIdentifier::Enumeration(value) => Value::enumeration(*value),
-            UniqueIdentifier::Integer(value) => Value::integer(*value),
-            UniqueIdentifier::Identifier(value) => Value::identifier(value.clone()),
-        };
+        let value = identifier.clone().into_value();
         payload.try_push(item(value)?).map_err(model_error)?;
     }
     Ok(payload)
@@ -39,13 +34,7 @@ pub(crate) fn successful_response_identifier(
 }
 
 pub(crate) fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        ValueView::Identifier(value) => Some(UniqueIdentifier::Identifier(value.to_owned())),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 fn item(value: Value) -> Result<Item, ProtocolError> {

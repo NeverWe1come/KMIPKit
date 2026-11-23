@@ -23,11 +23,6 @@ public final class GetAttributesBuilder {
     GetAttributesBuilder(
             KmipClient client, UniqueIdentifier uniqueIdentifier,
             List<AttributeReference> attributeReferences) {
-        if (uniqueIdentifier != null
-                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
-            throw new InvalidInputException(
-                    "Get Attributes Unique Identifier must be a Text String");
-        }
         if (attributeReferences == null || attributeReferences.size() > 100_000) {
             throw new InvalidInputException("Get Attributes references are invalid");
         }

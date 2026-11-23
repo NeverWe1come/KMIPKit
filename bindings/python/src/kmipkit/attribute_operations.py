@@ -565,7 +565,8 @@ class GetAttributesRequest(_AttributeRequest):
         | tuple[extensions.AttributeReference, ...],
     ) -> GetAttributesRequest:
         """Copy an optional identifier and ordered, unique reference sequence."""
-        _validate_identifier(unique_identifier)
+        if unique_identifier is not None and not isinstance(unique_identifier, extensions.UniqueIdentifier):
+            errors.raise_for_status(4)
         references = extensions._bounded_snapshot(
             attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
         )

@@ -16,6 +16,13 @@ struct ResponseIdentifierFields {
     uint64_t text_length = 0;
 };
 
+inline bool textual_identifier_kind(uint32_t kind) noexcept {
+    return kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
+            || kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER
+            || kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE
+            || kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE;
+}
+
 inline bool normalize_response_identifier(
         uint8_t response_present, const kmipkit_unique_identifier_v1_t& value,
         ResponseIdentifierFields* output) noexcept {
@@ -36,8 +43,7 @@ inline bool normalize_response_identifier(
         return false;
     }
 
-    if (value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING
-            || value.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER) {
+    if (textual_identifier_kind(value.kind)) {
         if (value.enumeration_value != 0 || value.integer_value != 0
                 || (value.text_data == nullptr && value.text_length != 0)) {
             return false;

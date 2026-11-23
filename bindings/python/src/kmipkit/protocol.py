@@ -228,7 +228,7 @@ class LeaseContext(_ProtocolHandle):
             lib.kmipkit_lease_context_unique_identifier(self._pointer(), out)
         )
         kind = int(out.kind)
-        if kind in (int(UniqueIdentifierKind.TEXT_STRING), int(UniqueIdentifierKind.IDENTIFIER)):
+        if kind in (int(UniqueIdentifierKind.TEXT_STRING), int(UniqueIdentifierKind.IDENTIFIER), int(UniqueIdentifierKind.REFERENCE), int(UniqueIdentifierKind.NAME_REFERENCE)):
             text = (
                 bytes(ffi.buffer(out.text_data, int(out.text_length))).decode(
                     "utf-8", errors="strict"
@@ -236,9 +236,7 @@ class LeaseContext(_ProtocolHandle):
                 if out.text_length
                 else ""
             )
-            if kind == int(UniqueIdentifierKind.IDENTIFIER):
-                return UniqueIdentifier.identifier(text)
-            return UniqueIdentifier.text_string(text)
+            return UniqueIdentifier(UniqueIdentifierKind(kind), text=text)
         if kind == int(UniqueIdentifierKind.ENUMERATION):
             return UniqueIdentifier.enumeration(int(out.enumeration_value))
         if kind == int(UniqueIdentifierKind.INTEGER):

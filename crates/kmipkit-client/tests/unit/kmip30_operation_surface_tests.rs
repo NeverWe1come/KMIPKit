@@ -172,13 +172,13 @@ fn direct_response_bytes(operation: u32) -> Vec<u8> {
         0x41 => test_structure([
             test_item(
                 0x0042_0094,
-                Value::text_string("new-secret-object".to_owned()),
+                Value::identifier("new-secret-object".to_owned()),
             ),
             test_item(0x0042_00C2, Value::byte_string(vec![0xCA, 0xFE])),
         ]),
         _ => test_structure([test_item(
             0x0042_0094,
-            Value::text_string("created-object".to_owned()),
+            Value::identifier("created-object".to_owned()),
         )]),
     };
     response_bytes(operation, payload)
@@ -593,6 +593,8 @@ fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffi
     let identity = |operation: ClientOperation| BatchIdentity {
         operation: operation.raw(),
         unique_batch_item_id: None,
+        projection: None,
+        query_functions: Vec::new(),
         response_context: None,
         offered_versions: None,
     };
@@ -637,4 +639,157 @@ fn kmip30_rejects_explicit_batch_item_ids_before_transport() {
     let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn typed_batch_encodes_ephemeral_for_each_edition() {
+    use super::build_request_batch_item;
+    use kmipkit_protocol::EphemeralMode;
+    use kmipkit_ttlv::KmipTag;
+    for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+        for enabled in [false, true] {
+            let item = build_request_batch_item(
+                ClientBatchItem::discover_versions().with_ephemeral(enabled),
+                version,
+            )
+            .unwrap();
+            let field = &item.view().children()[1];
+            assert_eq!(field.tag().raw(), KmipTag::Ephemeral.as_u32());
+            assert!(field.with_value(|v| matches!(v, ValueView::Boolean(b) if *b == enabled)));
+        }
+        assert!(
+            build_request_batch_item(
+                ClientBatchItem::discover_versions().with_ephemeral_mode(EphemeralMode::Empty),
+                version
+            )
+            .is_err()
+        );
+    }
+    for mode in [
+        EphemeralMode::Data,
+        EphemeralMode::Empty,
+        EphemeralMode::UniqueIdentifier,
+    ] {
+        let item = build_request_batch_item(
+            ClientBatchItem::discover_versions().with_ephemeral_mode(mode),
+            ProtocolVersion::V3_0,
+        )
+        .unwrap();
+        let field = &item.view().children()[1];
+        assert_eq!(field.tag().raw(), KmipTag::Ephemeral.as_u32());
+        assert!(
+            field.with_value(|v| matches!(v, ValueView::Enumeration(n) if *n == mode.as_u32()))
+        );
+    }
+}
+
+#[test]
+fn version_selects_scalar_name_rekey_identifier_and_optional_revoke_reason() {
+    use kmipkit_protocol::{
+        CreateRequest, ObjectType, RekeyKeyPairRequest, RevokeRequest, UniqueIdentifier,
+    };
+    use kmipkit_ttlv::KmipTag;
+    let name = test_item(
+        KmipTag::Name.as_u32(),
+        Value::structure(test_structure([
+            test_item(
+                KmipTag::NameValue.as_u32(),
+                Value::text_string("client key".into()),
+            ),
+            test_item(KmipTag::NameType.as_u32(), Value::enumeration(1)),
+        ])),
+    );
+    let attributes = AttributeSet::try_new([name]).unwrap();
+    let create = ClientRequest::Create(CreateRequest::new(ObjectType::from_raw(2), attributes));
+    let payload = create.payload_for_version(ProtocolVersion::V3_0).unwrap();
+    let attributes = payload
+        .view()
+        .children()
+        .iter()
+        .find(|i| i.tag().raw() == KmipTag::Attributes.as_u32())
+        .unwrap()
+        .as_structure()
+        .unwrap();
+    assert!(
+        attributes.children()[0].with_value(|v| matches!(v, ValueView::TextString("client key")))
+    );
+
+    for version in [
+        ProtocolVersion::V2_0,
+        ProtocolVersion::V2_1,
+        ProtocolVersion::V3_0,
+    ] {
+        let request = RekeyKeyPairRequest::new()
+            .with_private_key_unique_identifier(UniqueIdentifier::Reference("object".into()));
+        let payload = ClientRequest::RekeyKeyPair(request)
+            .payload_for_version(version)
+            .unwrap();
+        let expected = if version == ProtocolVersion::V3_0 {
+            KmipTag::UniqueIdentifier
+        } else {
+            KmipTag::PrivateKeyUniqueIdentifier
+        };
+        assert_eq!(payload.view().children()[0].tag().raw(), expected.as_u32());
+        let revoke = RevokeRequest::without_reason(UniqueIdentifier::Reference("object".into()));
+        let encoded = ClientRequest::Revoke(revoke).payload_for_version(version);
+        if version == ProtocolVersion::V3_0 {
+            assert_eq!(encoded.unwrap().view().children().len(), 1);
+        } else {
+            assert!(encoded.is_err());
+        }
+    }
+}
+
+#[test]
+fn ephemeral_empty_response_keeps_operation_and_status_without_full_payload() {
+    use kmipkit_protocol::{EphemeralMode, ResultStatus};
+
+    let response = response_bytes(0x3c, Structure::new());
+    let (mut client, transport, _) =
+        crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        });
+    let item = ClientBatchItem::create_group(CreateGroupRequest::new(AttributeSet::new()))
+        .with_ephemeral_mode(EphemeralMode::Empty);
+    let result = client
+        .execute_with_options(
+            ClientBatch::new(item),
+            &CodecLimits::defaults(),
+            &RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0),
+        )
+        .unwrap();
+    let item = result.get(0).unwrap();
+    assert!(
+        matches!(item.outcome(), super::ClientBatchOutcome::Ephemeral {operation: ClientOperation::CreateGroup, result, ..} if result.status() == ResultStatus::from_raw(0))
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_legacy_operation_requires_and_normalizes_its_object_selector() {
+    use kmipkit_protocol::{ActivateRequest, UniqueIdentifier};
+
+    let request = || ClientRequest::Activate(ActivateRequest::new(None));
+    assert!(request().payload_for_version(ProtocolVersion::V2_1).is_ok());
+    assert!(
+        request()
+            .payload_for_version(ProtocolVersion::V3_0)
+            .is_err()
+    );
+
+    let request =
+        || ClientRequest::Activate(ActivateRequest::new(Some(UniqueIdentifier::from("key"))));
+    let v2 = request()
+        .payload_for_version(ProtocolVersion::V2_1)
+        .unwrap();
+    let v3 = request()
+        .payload_for_version(ProtocolVersion::V3_0)
+        .unwrap();
+    assert!(
+        v2.view().children()[0].with_value(|value| matches!(value, ValueView::TextString("key")))
+    );
+    assert!(
+        v3.view().children()[0].with_value(|value| matches!(value, ValueView::Reference("key")))
+    );
 }

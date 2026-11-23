@@ -18,6 +18,7 @@ public final class LocateBuilder implements AutoCloseable {
     private Integer offsetItems;
     private Long storageStatusMask;
     private Long objectGroupMember;
+    private Long objectClassMask;
     private RequestOptions options;
     private Long asynchronousIndicator;
 
@@ -51,6 +52,12 @@ public final class LocateBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Selects Object Class Mask bits in KMIP 3.0. */
+    public LocateBuilder objectClassMask(long mask) {
+        objectClassMask = unsigned32(mask, "Object Class Mask");
+        return this;
+    }
+
     /** Sets exchange-local timeout options. */
     public LocateBuilder withOptions(RequestOptions value) {
         if (value == null) throw new InvalidInputException("request options are required");
@@ -74,8 +81,12 @@ public final class LocateBuilder implements AutoCloseable {
     /** Builds the existing typed batch item without sending it. */
     public ClientBatchItem build() {
         if (attributes == null) throw new InvalidInputException("Locate builder is closed");
-        return ClientBatchItem.locate(
+        ClientBatchItem item = ClientBatchItem.locate(
                 maximumItems, offsetItems, storageStatusMask, objectGroupMember, attributes);
+        if (objectClassMask == null) return item;
+        try (item) {
+            return item.withLocateClassMask(objectClassMask);
+        }
     }
 
     /** Alias for {@link #build()}. */

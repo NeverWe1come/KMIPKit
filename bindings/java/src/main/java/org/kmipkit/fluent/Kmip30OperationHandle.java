@@ -82,24 +82,17 @@ final class Kmip30OperationHandle implements AutoCloseable {
             int operation, UniqueIdentifier identifier, byte[] ciphertext) {
         if (identifier == null) throw new InvalidInputException("Unique Identifier is required");
         NativeExtensionRegistry.ensureLoaded();
-        byte[] text = (identifier.kind() == UniqueIdentifier.Kind.TEXT_STRING
-                || identifier.kind() == UniqueIdentifier.Kind.IDENTIFIER)
+        byte[] text = identifier.kind().isTextual()
                 ? identifier.text().getBytes(StandardCharsets.UTF_8) : null;
         if (text != null && text.length > MAX_IDENTIFIER_BYTES) {
             Arrays.fill(text, (byte) 0);
             throw new InvalidInputException("Unique Identifier exceeds the configured limit");
         }
-        int kind = switch (identifier.kind()) {
-            case TEXT_STRING -> 1;
-            case ENUMERATION -> 2;
-            case INTEGER -> 3;
-            case IDENTIFIER -> 4;
-        };
+        int kind = identifier.nativeKind();
         try {
             return new Kmip30OperationHandle(NativeExtensionRegistry.kmip30OperationBuilderCreate(
                     operation, 0, kind, text,
-                    (identifier.kind() == UniqueIdentifier.Kind.TEXT_STRING
-                            || identifier.kind() == UniqueIdentifier.Kind.IDENTIFIER) ? 0 : identifier.number(),
+                    identifier.kind().isTextual() ? 0 : identifier.number(),
                     ciphertext));
         } finally {
             if (text != null) Arrays.fill(text, (byte) 0);

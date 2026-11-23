@@ -130,6 +130,23 @@ impl RekeyKeyPairRequest {
     /// cardinality rules are violated or a generic TTLV model constraint
     /// prevents representing the payload.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
+        self.into_ttlv_payload_for_version(crate::ProtocolVersion::V2_1)
+    }
+
+    /// Encodes the key identifier using the selected edition's payload schema.
+    ///
+    /// # Errors
+    /// Returns an error if a required identifier is absent or the attributes are invalid.
+    pub fn into_ttlv_payload_for_version(
+        self,
+        version: crate::ProtocolVersion,
+    ) -> Result<Structure, ProtocolError> {
+        if version == crate::ProtocolVersion::V3_0 && self.private_key_unique_identifier.is_none() {
+            return Err(ProtocolError::categorized(
+                ProtocolErrorKind::InvalidInput,
+                ProtocolCauseCategory::InvalidValue,
+            ));
+        }
         if !self.validation_report().is_valid() {
             return Err(common::request_error());
         }
@@ -138,8 +155,16 @@ impl RekeyKeyPairRequest {
         if let Some(identifier) = self.private_key_unique_identifier {
             push(
                 &mut payload,
-                PRIVATE_KEY_UNIQUE_IDENTIFIER,
-                common::unique_identifier_value(identifier),
+                if version == crate::ProtocolVersion::V3_0 {
+                    kmipkit_ttlv::KmipTag::UniqueIdentifier.as_u32()
+                } else {
+                    PRIVATE_KEY_UNIQUE_IDENTIFIER
+                },
+                if version == crate::ProtocolVersion::V3_0 {
+                    identifier.into_reference_value()
+                } else {
+                    common::unique_identifier_value(identifier)
+                },
             )?;
         }
         if let Some(offset) = self.offset {

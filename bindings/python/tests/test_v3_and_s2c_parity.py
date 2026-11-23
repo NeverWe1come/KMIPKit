@@ -31,7 +31,7 @@ from kmipkit import (
     ttlv,
 )
 from kmipkit.protocol import LeaseContext, LinkNormalizer, NistKeyLifecycle, VersionGate, VersionSpan
-from kmipkit.protocol_values import EphemeralMode
+from kmipkit.protocol_values import EphemeralMode, Tag
 from kmipkit.server_to_client import (
     ClientListener,
     ClientListenerConnection,
@@ -85,6 +85,7 @@ def _build_full_s2c_batch_bytes() -> bytes:
     query_payload = (
         _ttlv_test_item(0x00420074, 0x05, _int_val(1))  # Operations (1)
         + _ttlv_test_item(0x00420074, 0x05, _int_val(3))  # ServerInformation (3)
+        + _ttlv_test_item(0x00420074, 0x05, _int_val(7))  # Attestation Types (7)
     )
     item2 = (
         _ttlv_test_item(0x0042005C, 0x05, _int_val(0x00000018))  # Query
@@ -109,6 +110,7 @@ def _build_full_s2c_batch_bytes() -> bytes:
         + _ttlv_test_item(0x00420125, 0x01, _ttlv_test_item(0x00420008, 0x07, b"CustomAttr"))
         + _ttlv_test_item(0x42013B, 0x01, _ttlv_test_item(0x42000A, 0x07, b"first"))
         + _ttlv_test_item(0x42013B, 0x01, _ttlv_test_item(0x42000A, 0x07, b"second"))
+        + _ttlv_test_item(0x42013B, 0x05, _int_val(0x420053))
     )
     item4 = (
         _ttlv_test_item(0x0042005C, 0x05, _int_val(0x0000001B))  # Notify
@@ -222,6 +224,8 @@ def test_server_request_dispatcher_full_dispatch_and_error_preservation() -> Non
         with IncomingServerBatch.from_bytes(batch_bytes, limits) as batch:
             assert batch.item_count() == 5
             dispatcher = ServerRequestDispatcher.create()
+            with _make_structure_helper([(Tag.ATTESTATION_TYPE, ttlv.ttlv_value_enumeration(1))], limits) as metadata:
+                dispatcher.set_query_metadata(metadata)
 
             # 1. Successful handler
             class SuccessHandler(ServerRequestHandler):
@@ -247,6 +251,7 @@ def test_server_request_dispatcher_full_dispatch_and_error_preservation() -> Non
                 ) -> S2cOperationResult:
                     self.notify_called = True
                     assert unique_identifier == b"notify-uid"
+                    assert _ttlv_test_item(0x42013B, 0x05, _int_val(0x420053)) in deleted_references_ttlv
                     return S2cOperationResult.success()
 
                 def handle_put(
@@ -286,6 +291,8 @@ def test_server_request_dispatcher_full_dispatch_and_error_preservation() -> Non
                 for i in range(5):
                     with resp.batch_item_at(i) as bi:
                         assert bi.result_status == 0
+                with resp.batch_item_at(1) as query, query.response_payload as payload:
+                    assert ttlv.ttlv_structure_view_item_count(payload) == 5
             assert h.disc_called and h.notify_called and h.put_called and h.query_called and h.role_called
 
             # 2. Error handler preserving status, reason, message
@@ -825,3 +832,12 @@ def test_ffi_signatures_match_rust_sources() -> None:
 
     assert len(mismatches) == 0, f"Found FFI signature mismatches against Rust: {mismatches}"
 
+
+
+def test_named_ephemeral_modes_retain_batch_operation() -> None:
+    with extensions.client_batch_item_discover_versions() as item:
+        with extensions.with_ephemeral_mode(item, EphemeralMode.EMPTY) as updated:
+            assert updated.operation == 0x1E
+    with extensions.client_batch_item_discover_versions() as item:
+        with extensions.with_ephemeral(item, True) as updated:
+            assert updated.operation == 0x1E

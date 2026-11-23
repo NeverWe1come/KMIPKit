@@ -997,11 +997,6 @@ public final class ClientBatchItem implements AutoCloseable {
     /** Creates a KMIP 2.1 §6.1.20 Get Attributes request with ordered references. */
     public static ClientBatchItem getAttributes(
             @Nullable UniqueIdentifier uniqueIdentifier, List<AttributeReference> attributeReferences) {
-        if (uniqueIdentifier != null
-                && uniqueIdentifier.kind() != UniqueIdentifier.Kind.TEXT_STRING) {
-            throw new InvalidInputException(
-                    "Get Attributes Unique Identifier must be a Text String");
-        }
         if (attributeReferences == null) {
             throw new InvalidInputException("Get Attributes Attribute References are required");
         }
@@ -1267,6 +1262,22 @@ public final class ClientBatchItem implements AutoCloseable {
         } finally {
             clearNativeCopies(identifierCopy);
         }
+    }
+
+    /** Constructs a batch item using a standard Cryptoki function name. */
+    public static ClientBatchItem pkcs11Named(String name, TtlvStructure vendorInterface,
+            byte[] correlationValue, TtlvStructure inputParameters) {
+        try (TtlvStructure function = pkcs11Function(name)) {
+            return pkcs11(function, vendorInterface, correlationValue, inputParameters);
+        }
+    }
+
+    /** Returns the KMIP function structure for a standard Cryptoki name such as C_GetInfo. */
+    public static TtlvStructure pkcs11Function(String name) {
+        if (name == null || name.length() > 64) throw new InvalidInputException("invalid Cryptoki function name");
+        NativeExtensionRegistry.ensureLoaded();
+        return TtlvStructure.fromNative(NativeExtensionRegistry.pkcs11FunctionFromName(
+                name.getBytes(java.nio.charset.StandardCharsets.UTF_8)), null);
     }
 
     /**
@@ -1791,6 +1802,30 @@ public final class ClientBatchItem implements AutoCloseable {
         ArrayList<ClientRequestMessageExtension> next = new ArrayList<>(extensions);
         next.add(extension);
         return new ClientBatchItem(nextHandle, next);
+    }
+
+    /** Selects the KMIP 2.x Ephemeral Boolean. */
+    public ClientBatchItem withEphemeral(boolean value) {
+        requireMutable();
+        NativeExtensionRegistry.ensureLoaded();
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemWithEphemeral(handle.transfer(), value), extensions);
+    }
+
+    /** Selects the KMIP 3.0 EphemeralMode. */
+    public ClientBatchItem withEphemeralMode(long mode) {
+        requireMutable();
+        if (org.kmipkit.protocol.EphemeralMode.name(mode) == null) throw new InvalidInputException("unknown Ephemeral mode");
+        NativeExtensionRegistry.ensureLoaded();
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemWithEphemeralMode(handle.transfer(), mode), extensions);
+    }
+
+    /** Sets Object Class Mask on a KMIP 3.0 Locate item. */
+    public ClientBatchItem withLocateClassMask(long mask) {
+        requireMutable();
+        if (mask < 0 || mask > 0xffff_ffffL) throw new InvalidInputException("invalid Object Class Mask");
+        NativeExtensionRegistry.ensureLoaded();
+        return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemWithLocateClassMask(
+                handle.transfer(), mask), extensions);
     }
 
     /** Returns a new item carrying the caller-selected opaque KMIP identifier bytes. */

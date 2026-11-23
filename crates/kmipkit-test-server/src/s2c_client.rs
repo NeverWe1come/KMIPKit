@@ -6,7 +6,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
-use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Value};
 
 use crate::codec::Format;
 use crate::ops::dispatcher::{
@@ -279,8 +279,11 @@ pub fn build_s2c_put(unique_identifier: &str, object_item: Item) -> Item {
 pub fn build_s2c_query(query_functions: &[u32]) -> Item {
     let mut pld = Structure::new();
     for qf in query_functions {
-        pld.try_push(raw_item(0x0042_007A, Value::enumeration(*qf)))
-            .unwrap();
+        pld.try_push(raw_item(
+            KmipTag::QueryFunction.as_u32(),
+            Value::enumeration(*qf),
+        ))
+        .unwrap();
     }
     wrap_single_request(QUERY_OPERATION, pld)
 }

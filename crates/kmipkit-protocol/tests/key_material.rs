@@ -163,3 +163,30 @@ fn tag(raw: u32) -> kmipkit_ttlv::Tag {
         .try_checked()
         .expect("assigned tag")
 }
+
+#[test]
+fn seed_private_key_accepts_each_defined_field_combination() {
+    use kmipkit_protocol::KeyMaterial;
+    use kmipkit_ttlv::{ItemType, KmipTag};
+    for (seed, key, tags) in [
+        (Some(vec![1]), None, vec![KmipTag::Seed]),
+        (None, Some(vec![2]), vec![KmipTag::Key]),
+        (
+            Some(vec![1]),
+            Some(vec![2]),
+            vec![KmipTag::Seed, KmipTag::Key],
+        ),
+    ] {
+        let material = KeyMaterial::seed_private_key(seed, key)
+            .unwrap()
+            .into_item();
+        let structure = material.as_structure().unwrap();
+        assert_eq!(structure.children().len(), tags.len());
+        for (item, tag) in structure.children().iter().zip(tags) {
+            assert_eq!(item.tag().raw(), tag.as_u32());
+            assert_eq!(item.item_type(), ItemType::ByteString);
+        }
+    }
+    assert!(KeyMaterial::seed_private_key(None, None).is_err());
+    assert!(KeyMaterial::byte_string(0x18, vec![1]).is_err());
+}

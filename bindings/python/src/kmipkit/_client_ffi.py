@@ -308,6 +308,7 @@ ffi.cdef(
     void kmipkit_create_builder_release(kmipkit_create_builder_t *);
     int32_t kmipkit_create_key_pair_builder_create(kmipkit_create_key_pair_builder_t **);
     int32_t kmipkit_create_key_pair_builder_set_algorithm(kmipkit_create_key_pair_builder_t *, uint32_t);
+    int32_t kmipkit_create_key_pair_builder_set_seed(kmipkit_create_key_pair_builder_t *, const uint8_t *, uint64_t);
     int32_t kmipkit_create_key_pair_builder_set_length(kmipkit_create_key_pair_builder_t *, int32_t);
     int32_t kmipkit_create_key_pair_builder_set_private_usage_mask(kmipkit_create_key_pair_builder_t *, int32_t);
     int32_t kmipkit_create_key_pair_builder_set_public_usage_mask(kmipkit_create_key_pair_builder_t *, int32_t);
@@ -2610,6 +2611,10 @@ ffi.cdef(
 
     /* ServerRequestDispatcher */
     typedef struct kmipkit_server_request_dispatcher_t kmipkit_server_request_dispatcher_t;
+    int32_t kmipkit_server_request_dispatcher_set_query_metadata(
+        kmipkit_server_request_dispatcher_t *dispatcher, kmipkit_ttlv_structure_t *metadata);
+    int32_t kmipkit_pkcs11_function_from_name(
+        const uint8_t *name, uint64_t name_length, kmipkit_ttlv_structure_t **out_function);
     int32_t kmipkit_server_request_dispatcher_create(
         kmipkit_server_request_dispatcher_t ** out_dispatcher);
     void kmipkit_server_request_dispatcher_release(

@@ -912,7 +912,7 @@ final class NativeBridgeCoverageTest {
                         0, null, 0, null, new long[0], new byte[0][], new byte[0][]));
         assertThrows(InvalidInputException.class,
                 () -> NativeExtensionRegistry.clientBatchItemGetAttributes(
-                        2, null, 1, new int[0], new long[0], new byte[0][], new byte[0][]));
+                        2, null, -1, new int[0], new long[0], new byte[0][], new byte[0][]));
         int[] tooManyKinds = new int[100_001];
         long[] tooManyTags = new long[tooManyKinds.length];
         byte[][] tooManyVendors = new byte[tooManyKinds.length][];

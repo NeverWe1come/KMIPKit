@@ -1413,17 +1413,21 @@ public final class ClientBatchItemResult implements AutoCloseable {
      * when none of the requested attributes exists; a present empty structure remains distinct.
      */
     public static final class GetAttributesResponse implements AutoCloseable {
-        private final String uniqueIdentifier;
+        private final UniqueIdentifier uniqueIdentifier;
         private final @Nullable TtlvStructure attributes;
 
         private GetAttributesResponse(
-                String uniqueIdentifier, @Nullable TtlvStructure attributes) {
+                UniqueIdentifier uniqueIdentifier, @Nullable TtlvStructure attributes) {
             this.uniqueIdentifier = uniqueIdentifier;
             this.attributes = attributes;
         }
 
         /** Returns the resolved Text String Unique Identifier. */
-        public String uniqueIdentifier() { return uniqueIdentifier; }
+        public String uniqueIdentifier() { return uniqueIdentifier.kind().isTextual()
+                ? uniqueIdentifier.text() : Long.toString(uniqueIdentifier.number()); }
+
+        /** Returns the identifier with its original wire type. */
+        public UniqueIdentifier identifier() { return uniqueIdentifier; }
 
         /** Returns the ordered Attributes structure when the response includes that field. */
         public Optional<TtlvStructure> attributes() { return Optional.ofNullable(attributes); }
@@ -2961,9 +2965,11 @@ public final class ClientBatchItemResult implements AutoCloseable {
                 }
                 return Optional.empty();
             }
-            if (!(tuple[1] instanceof String uniqueIdentifier) || handles[0] < 0) {
+            if (handles[0] < 0) {
                 throw new InvalidInputException("native Get Attributes response is incomplete");
             }
+            UniqueIdentifier uniqueIdentifier = tuple[1] instanceof String text
+                    ? UniqueIdentifier.textString(text) : identifierRecord(tuple[1]);
             if (handles[0] == 0) {
                 return Optional.of(new GetAttributesResponse(uniqueIdentifier, null));
             }

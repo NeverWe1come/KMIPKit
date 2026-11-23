@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Value};
 
 use crate::{
     AttributeSet, KmipOperationResult, ObjectType, ProtocolCauseCategory, ProtocolError,
@@ -437,12 +437,7 @@ impl Error for CreateSplitKeyError {
 }
 
 fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-        UniqueIdentifier::Identifier(value) => Value::identifier(value),
-    }
+    identifier.into_value()
 }
 
 fn parse_non_failure_payload(
@@ -464,12 +459,7 @@ fn parse_non_failure_payload(
 }
 
 fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), ProtocolError> {

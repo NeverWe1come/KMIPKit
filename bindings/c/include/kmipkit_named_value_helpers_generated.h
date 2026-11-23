@@ -1816,9 +1816,9 @@ static inline const char *KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw) {
 }
 static inline const char *KMIPKIT_V3_0_EPHEMERAL_MODE_name(uint32_t raw) {
     switch (raw) {
-    case UINT32_C(0x00000001): return "No";
-    case UINT32_C(0x00000002): return "Immediate";
-    case UINT32_C(0x00000003): return "Retain on Failure";
+    case UINT32_C(0x00000001): return "Data";
+    case UINT32_C(0x00000002): return "Empty";
+    case UINT32_C(0x00000003): return "Unique Identifier";
     default: return 0;
     }
 }

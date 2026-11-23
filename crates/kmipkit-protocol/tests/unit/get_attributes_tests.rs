@@ -608,7 +608,7 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
         Structure::new(),
         structure([item(ATTRIBUTES, Value::structure(Structure::new()))]),
         structure([
-            item(UNIQUE_IDENTIFIER, Value::integer(17)),
+            item(UNIQUE_IDENTIFIER, Value::boolean(true)),
             item(ATTRIBUTES, Value::structure(Structure::new())),
         ]),
         structure([
@@ -649,7 +649,7 @@ fn response_rejects_payloads_missing_required_fields_or_violating_table_224_shap
         let message = response_message(0, None, None, Some(payload));
         assert!(
             GetAttributesResponse::try_from_response_item(response_item(&message)).is_err(),
-            "only a Text String identifier followed by an optional Attributes Structure is accepted"
+            "only a valid identifier followed by an optional Attributes Structure is accepted"
         );
     }
 }
@@ -684,4 +684,39 @@ fn response_rejects_vendor_attribute_fields_outside_table_150_order() {
         GetAttributesResponse::try_from_response_item(response_item(&message)).is_err(),
         "a successful response cannot accept Table 150 members out of order"
     );
+}
+
+#[test]
+fn get_attributes_selects_identifier_wire_form_by_version() {
+    use crate::{ProtocolVersion, UniqueIdentifier};
+    for version in [
+        ProtocolVersion::V2_0,
+        ProtocolVersion::V2_1,
+        ProtocolVersion::V3_0,
+    ] {
+        let request = GetAttributesRequest::try_new(Some("object".into()), []).unwrap();
+        let payload = request.to_ttlv_payload_for_version(version).unwrap();
+        let id = &payload.view().children()[0];
+        if version == ProtocolVersion::V3_0 {
+            assert!(id.with_value(|value| matches!(value, ValueView::Reference("object"))));
+        } else {
+            assert!(id.with_value(|value| matches!(value, ValueView::TextString("object"))));
+        }
+
+        let request =
+            GetAttributesRequest::with_identifier(Some(UniqueIdentifier::Integer(7)), []).unwrap();
+        let payload = request.to_ttlv_payload_for_version(version).unwrap();
+        assert!(
+            payload.view().children()[0].with_value(|value| matches!(value, ValueView::Integer(7)))
+        );
+        let request = GetAttributesRequest::with_identifier(
+            Some(UniqueIdentifier::NameReference("key".into())),
+            [],
+        )
+        .unwrap();
+        assert_eq!(
+            request.to_ttlv_payload_for_version(version).is_ok(),
+            version == ProtocolVersion::V3_0
+        );
+    }
 }

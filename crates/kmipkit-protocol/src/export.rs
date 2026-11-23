@@ -324,7 +324,7 @@ fn parse_success_payload(
             }
             UNIQUE_IDENTIFIER => {
                 let value = field
-                    .with_value(|value| parse_unique_identifier(&value))
+                    .with_value(UniqueIdentifier::from_value)
                     .ok_or(ExportError::MalformedSuccessPayload)?;
                 set_once(&mut unique_identifier, value)?;
             }
@@ -386,13 +386,4 @@ fn is_object_tag(raw: u32) -> bool {
             | OPAQUE_OBJECT
             | PGP_KEY
     )
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }

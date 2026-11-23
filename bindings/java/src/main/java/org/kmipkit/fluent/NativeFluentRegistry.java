@@ -62,6 +62,7 @@ final class NativeFluentRegistry {
 
     static native void createKeyPairBuilderSetAlgorithm(long builder, long algorithm);
 
+    static native void createKeyPairBuilderSetSeed(long builder, byte[] seed);
     static native void createKeyPairBuilderSetLength(long builder, int length);
 
     static native void createKeyPairBuilderSetPrivateUsageMask(long builder, int usageMask);

@@ -83,11 +83,17 @@ fn kmip20_prohibits_all_six_kmip21_operations() {
 }
 
 #[test]
-fn kmip20_prohibits_mutation_of_seven_cryptographic_attributes() {
+fn kmip20_checks_attribute_mutability_against_the_attribute_tables() {
+    assert!(
+        VersionGate::validate_attribute_mutation(
+            ProtocolVersion::V2_0,
+            CRYPTOGRAPHIC_PARAMETERS_TAG
+        )
+        .is_ok()
+    );
     let rotate_only_attrs = [
         CRYPTOGRAPHIC_ALGORITHM_TAG,
         CRYPTOGRAPHIC_LENGTH_TAG,
-        CRYPTOGRAPHIC_PARAMETERS_TAG,
         CRYPTOGRAPHIC_USAGE_MASK_TAG,
         DIGEST_TAG,
         KEY_VALUE_PRESENT_TAG,

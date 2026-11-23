@@ -78,6 +78,8 @@ typedef uint32_t kmipkit_unique_identifier_kind_t;
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION ((kmipkit_unique_identifier_kind_t)2)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER ((kmipkit_unique_identifier_kind_t)3)
 #define KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER ((kmipkit_unique_identifier_kind_t)4)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE ((kmipkit_unique_identifier_kind_t)5)
+#define KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE ((kmipkit_unique_identifier_kind_t)6)
 
 typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_WIRE_ENCODING_TTLV ((kmipkit_wire_encoding_t)0)
@@ -898,9 +900,9 @@ typedef uint32_t kmipkit_wire_encoding_t;
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_PROTECT_STOP_DATE ((uint32_t)3)
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_UNSPECIFIED ((uint32_t)1)
 #define KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_USAGE_LIMIT ((uint32_t)4)
-#define KMIPKIT_V3_0_EPHEMERAL_MODE_NO ((uint32_t)1)
-#define KMIPKIT_V3_0_EPHEMERAL_MODE_IMMEDIATE ((uint32_t)2)
-#define KMIPKIT_V3_0_EPHEMERAL_MODE_RETAIN_ON_FAILURE ((uint32_t)3)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_DATA ((uint32_t)1)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_EMPTY ((uint32_t)2)
+#define KMIPKIT_V3_0_EPHEMERAL_MODE_UNIQUE_IDENTIFIER ((uint32_t)3)
 #define KMIPKIT_V3_0_ITEM_TYPE_IDENTIFIER ((uint32_t)12)
 #define KMIPKIT_V3_0_ITEM_TYPE_NAME_REFERENCE ((uint32_t)14)
 #define KMIPKIT_V3_0_ITEM_TYPE_REFERENCE ((uint32_t)13)
@@ -2796,6 +2798,8 @@ int32_t kmipkit_client_batch_item_ping(kmipkit_client_batch_item_t ** out_item);
 /* Creates a typed PKCS#11 request from KMIP v2.1 §6.1.37, Table 273. Function is required; nullable Interface, Correlation Value, and Input Parameters preserve absent versus present-empty values. The request copies input data into KMIPKit-owned storage.
  */
 /* KMIPKIT-0040-FR-001, KMIPKIT-0040-FR-002, KMIPKIT-0040-FR-003, KMIPKIT-0040-FR-004, KMIPKIT-0040-FR-005, KMIPKIT-0040-FR-006, KMIPKIT-0040-FR-007, KMIPKIT-0040-FR-008, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-008, KMIPKIT-0043-FR-009, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-012, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-018, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
+int32_t kmipkit_pkcs11_function_from_name(const uint8_t * name, uint64_t name_length, kmipkit_ttlv_structure_t ** out_function);
+
 int32_t kmipkit_client_batch_item_pkcs11(kmipkit_ttlv_structure_t * function, kmipkit_ttlv_structure_t * interface, const kmipkit_byte_span_v1_t * correlation_value, kmipkit_ttlv_structure_t * input_parameters, kmipkit_client_batch_item_t ** out_item);
 /* Creates a PKCS#11 request with caller-ordered opaque payload extensions. KMIP v2.1 Section 6.1.37 Table 273 defines no generic extension field; use these only when a server or profile documents the vendor-specific fields.
  * Input handles are borrowed and copied, and extension order is preserved. A NULL array is accepted only with a zero count. The extension array must not overlap out_item.
@@ -3323,6 +3327,9 @@ int32_t kmipkit_client_batch_item_with_extension(kmipkit_client_batch_item_t * i
  * On success, out_item receives the replacement handle.
  */
 /* KMIPKIT-0006-FR-005, KMIPKIT-0006-FR-008, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-021 */
+int32_t kmipkit_client_batch_item_with_locate_class_mask(kmipkit_client_batch_item_t *item, uint32_t mask, kmipkit_client_batch_item_t **out_item);
+int32_t kmipkit_client_batch_item_with_ephemeral(kmipkit_client_batch_item_t * item, uint8_t value, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_item_with_ephemeral_mode(kmipkit_client_batch_item_t * item, uint32_t mode, kmipkit_client_batch_item_t ** out_item);
 int32_t kmipkit_client_batch_item_with_unique_batch_item_id(kmipkit_client_batch_item_t * item, const uint8_t * id_data, uint64_t id_length, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-002, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_request_time_stamp(kmipkit_client_batch_t * batch, uint8_t * out_present, int64_t * out_time_stamp);
@@ -3539,6 +3546,7 @@ int32_t kmipkit_create_key_pair_builder_set_algorithm(kmipkit_create_key_pair_bu
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_create_key_pair_builder_set_asynchronous_indicator(kmipkit_create_key_pair_builder_t * builder, uint32_t value);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
+int32_t kmipkit_create_key_pair_builder_set_seed(kmipkit_create_key_pair_builder_t *builder, const uint8_t *data, uint64_t length);
 int32_t kmipkit_create_key_pair_builder_set_length(kmipkit_create_key_pair_builder_t * builder, int32_t length);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005 */
 int32_t kmipkit_create_key_pair_builder_set_private_name(kmipkit_create_key_pair_builder_t * builder, const uint8_t * name_data, uint64_t name_length);
@@ -4288,6 +4296,7 @@ int32_t kmipkit_locate_builder_set_offset_items(kmipkit_locate_builder_t * build
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
 int32_t kmipkit_locate_builder_set_storage_status_mask(kmipkit_locate_builder_t * builder, uint32_t value);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
+int32_t kmipkit_locate_builder_set_object_class_mask(kmipkit_locate_builder_t *builder, uint32_t value);
 int32_t kmipkit_locate_builder_set_object_group_member(kmipkit_locate_builder_t * builder, uint32_t value);
 /* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011, KMIPKIT-0101-FR-001, KMIPKIT-0101-FR-004, KMIPKIT-0101-FR-005, KMIPKIT-0101-FR-006 */
 int32_t kmipkit_locate_builder_set_asynchronous_indicator(kmipkit_locate_builder_t * builder, uint32_t value);
@@ -4673,6 +4682,9 @@ int32_t kmipkit_incoming_server_batch_item_set_endpoint_role(kmipkit_incoming_se
 void kmipkit_incoming_server_batch_release(kmipkit_incoming_server_batch_t * batch);
 
 /* Server Request Dispatcher */
+/** Copies the additional Query capability fields into the dispatcher. */
+int32_t kmipkit_server_request_dispatcher_set_query_metadata(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_ttlv_structure_t * metadata);
+
 int32_t kmipkit_server_request_dispatcher_create(kmipkit_server_request_dispatcher_t ** out_dispatcher);
 int32_t kmipkit_server_request_dispatcher_dispatch_v1(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v1_t * handler, kmipkit_response_message_t ** out_response);
 int32_t kmipkit_server_request_dispatcher_dispatch_v2(kmipkit_server_request_dispatcher_t * dispatcher, kmipkit_incoming_server_batch_t * batch, const kmipkit_server_request_handler_v2_t * handler, kmipkit_response_message_t ** out_response);

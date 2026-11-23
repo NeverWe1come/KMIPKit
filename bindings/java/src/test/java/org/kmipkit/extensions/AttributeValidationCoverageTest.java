@@ -51,7 +51,7 @@ final class AttributeValidationCoverageTest {
                 () -> AttributeRequest.createNative(5, null,
                         null, null, null, 0x1_0000_0000L, null));
         assertThrows(InvalidInputException.class,
-                () -> AttributeRequest.createReadNative(5, integerIdentifier, List.of()));
+                () -> AttributeRequest.createReadNative(6, integerIdentifier, List.of()));
         assertThrows(InvalidInputException.class,
                 () -> AttributeRequest.createReadNative(5, null, null));
         assertThrows(InvalidInputException.class,

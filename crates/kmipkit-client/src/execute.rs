@@ -290,15 +290,15 @@ pub enum Kmip30DraftOperation {
 impl Kmip30DraftOperation {
     /// Returns the KMIP 3.0 Working Draft Operation Enumeration.
     #[must_use]
-    const fn raw(self) -> u32 {
+    const fn typed_operation(self) -> ClientOperation {
         match self {
-            Self::CreateGroup => CREATE_GROUP_OPERATION,
-            Self::Obliterate => OBLITERATE_OPERATION,
-            Self::CreateUser => CREATE_USER_OPERATION,
-            Self::CreateCredential => CREATE_CREDENTIAL_OPERATION,
-            Self::Deactivate => DEACTIVATE_OPERATION,
-            Self::Encapsulate => ENCAPSULATE_OPERATION,
-            Self::Decapsulate => DECAPSULATE_OPERATION,
+            Self::CreateGroup => ClientOperation::CreateGroup,
+            Self::Obliterate => ClientOperation::Obliterate,
+            Self::CreateUser => ClientOperation::CreateUser,
+            Self::CreateCredential => ClientOperation::CreateCredential,
+            Self::Deactivate => ClientOperation::Deactivate,
+            Self::Encapsulate => ClientOperation::Encapsulate,
+            Self::Decapsulate => ClientOperation::Decapsulate,
         }
     }
 }
@@ -819,72 +819,76 @@ impl ClientRequest {
     }
 
     const fn operation(&self) -> u32 {
+        self.typed_operation().raw()
+    }
+
+    const fn typed_operation(&self) -> ClientOperation {
         match self {
-            Self::DiscoverVersions(_) => DISCOVER_VERSIONS_OPERATION,
-            Self::Activate(_) => ACTIVATE_OPERATION,
-            Self::Archive(_) => ARCHIVE_OPERATION,
-            Self::Certify(_) => CERTIFY_OPERATION,
-            Self::Check(_) => CHECK_OPERATION,
-            Self::DelegatedLogin(_) => DELEGATED_LOGIN_OPERATION,
-            Self::Login(_) => LOGIN_OPERATION,
-            Self::Logout(_) => LOGOUT_OPERATION,
-            Self::ObtainLease(_) => OBTAIN_LEASE_OPERATION,
-            Self::Recertify(_) => RECERTIFY_OPERATION,
-            Self::Rekey(_) => REKEY_OPERATION,
-            Self::RekeyKeyPair(_) => REKEY_KEY_PAIR_OPERATION,
-            Self::ReProvision(_) => REPROVISION_OPERATION,
-            Self::Register(_) => REGISTER_OPERATION,
-            Self::Revoke(_) => REVOKE_OPERATION,
-            Self::Destroy(_) => DESTROY_OPERATION,
-            Self::Recover(_) => RECOVER_OPERATION,
-            Self::Get(_) => GET_OPERATION,
-            Self::Locate(_) => LOCATE_OPERATION,
-            Self::Create(_) => CREATE_OPERATION,
-            Self::CreateKeyPair(_) => CREATE_KEY_PAIR_OPERATION,
-            Self::CreateSplitKey(_) => CREATE_SPLIT_KEY_OPERATION,
-            Self::AddAttribute(_) => ADD_ATTRIBUTE_OPERATION,
-            Self::AdjustAttribute(_) => ADJUST_ATTRIBUTE_OPERATION,
-            Self::DeleteAttribute(_) => DELETE_ATTRIBUTE_OPERATION,
-            Self::ModifyAttribute(_) => MODIFY_ATTRIBUTE_OPERATION,
-            Self::SetAttribute(_) => SET_ATTRIBUTE_OPERATION,
-            Self::GetAttributes(_) => GET_ATTRIBUTES_OPERATION,
-            Self::GetAttributeList(_) => GET_ATTRIBUTE_LIST_OPERATION,
-            Self::Ping(_) => PING_OPERATION,
-            Self::Interop(_) => INTEROP_OPERATION,
-            Self::Log(_) => LOG_OPERATION,
-            Self::Validate(_) => VALIDATE_OPERATION,
-            Self::Pkcs11(_) => PKCS11_OPERATION,
-            Self::GetConstraints(_) => GET_CONSTRAINTS_OPERATION,
-            Self::SetConstraints(_) => SET_CONSTRAINTS_OPERATION,
-            Self::SetDefaults(_) => SET_DEFAULTS_OPERATION,
-            Self::GetUsageAllocation(_) => GET_USAGE_ALLOCATION_OPERATION,
-            Self::Query(_) => QUERY_OPERATION,
-            Self::Encrypt(_) => ENCRYPT_OPERATION,
-            Self::Decrypt(_) => DECRYPT_OPERATION,
-            Self::DeriveKey(_) => DERIVE_KEY_OPERATION,
-            Self::Export(_) => EXPORT_OPERATION,
-            Self::Import(_) => IMPORT_OPERATION,
-            Self::JoinSplitKey(_) => JOIN_SPLIT_KEY_OPERATION,
-            Self::Hash(_) => HASH_OPERATION,
-            Self::Mac(_) => MAC_OPERATION,
-            Self::MacVerify(_) => MAC_VERIFY_OPERATION,
-            Self::Sign(_) => SIGN_OPERATION,
-            Self::SignatureVerify(_) => SIGNATURE_VERIFY_OPERATION,
-            Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
-            Self::RngSeed(_) => RNG_SEED_OPERATION,
-            Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
-            Self::Cancel(_) => CANCEL_OPERATION,
-            Self::Poll(_) => POLL_OPERATION,
-            Self::Process(_) => PROCESS_OPERATION,
-            Self::QueryAsynchronousRequests(_) => QUERY_ASYNCHRONOUS_REQUESTS_OPERATION,
-            Self::CreateGroup(_) => CREATE_GROUP_OPERATION,
-            Self::Obliterate(_) => OBLITERATE_OPERATION,
-            Self::CreateUser(_) => CREATE_USER_OPERATION,
-            Self::CreateCredential(_) => CREATE_CREDENTIAL_OPERATION,
-            Self::Deactivate(_) => DEACTIVATE_OPERATION,
-            Self::Encapsulate(_) => ENCAPSULATE_OPERATION,
-            Self::Decapsulate(_) => DECAPSULATE_OPERATION,
-            Self::Kmip30Draft { operation, .. } => operation.raw(),
+            Self::DiscoverVersions(_) => ClientOperation::DiscoverVersions,
+            Self::Activate(_) => ClientOperation::Activate,
+            Self::Archive(_) => ClientOperation::Archive,
+            Self::Certify(_) => ClientOperation::Certify,
+            Self::Check(_) => ClientOperation::Check,
+            Self::DelegatedLogin(_) => ClientOperation::DelegatedLogin,
+            Self::Login(_) => ClientOperation::Login,
+            Self::Logout(_) => ClientOperation::Logout,
+            Self::ObtainLease(_) => ClientOperation::ObtainLease,
+            Self::Recertify(_) => ClientOperation::Recertify,
+            Self::Rekey(_) => ClientOperation::Rekey,
+            Self::RekeyKeyPair(_) => ClientOperation::RekeyKeyPair,
+            Self::ReProvision(_) => ClientOperation::ReProvision,
+            Self::Register(_) => ClientOperation::Register,
+            Self::Revoke(_) => ClientOperation::Revoke,
+            Self::Destroy(_) => ClientOperation::Destroy,
+            Self::Recover(_) => ClientOperation::Recover,
+            Self::Get(_) => ClientOperation::Get,
+            Self::Locate(_) => ClientOperation::Locate,
+            Self::Create(_) => ClientOperation::Create,
+            Self::CreateKeyPair(_) => ClientOperation::CreateKeyPair,
+            Self::CreateSplitKey(_) => ClientOperation::CreateSplitKey,
+            Self::AddAttribute(_) => ClientOperation::AddAttribute,
+            Self::AdjustAttribute(_) => ClientOperation::AdjustAttribute,
+            Self::DeleteAttribute(_) => ClientOperation::DeleteAttribute,
+            Self::ModifyAttribute(_) => ClientOperation::ModifyAttribute,
+            Self::SetAttribute(_) => ClientOperation::SetAttribute,
+            Self::GetAttributes(_) => ClientOperation::GetAttributes,
+            Self::GetAttributeList(_) => ClientOperation::GetAttributeList,
+            Self::Ping(_) => ClientOperation::Ping,
+            Self::Interop(_) => ClientOperation::Interop,
+            Self::Log(_) => ClientOperation::Log,
+            Self::Validate(_) => ClientOperation::Validate,
+            Self::Pkcs11(_) => ClientOperation::Pkcs11,
+            Self::GetConstraints(_) => ClientOperation::GetConstraints,
+            Self::SetConstraints(_) => ClientOperation::SetConstraints,
+            Self::SetDefaults(_) => ClientOperation::SetDefaults,
+            Self::GetUsageAllocation(_) => ClientOperation::GetUsageAllocation,
+            Self::Query(_) => ClientOperation::Query,
+            Self::Encrypt(_) => ClientOperation::Encrypt,
+            Self::Decrypt(_) => ClientOperation::Decrypt,
+            Self::DeriveKey(_) => ClientOperation::DeriveKey,
+            Self::Export(_) => ClientOperation::Export,
+            Self::Import(_) => ClientOperation::Import,
+            Self::JoinSplitKey(_) => ClientOperation::JoinSplitKey,
+            Self::Hash(_) => ClientOperation::Hash,
+            Self::Mac(_) => ClientOperation::Mac,
+            Self::MacVerify(_) => ClientOperation::MacVerify,
+            Self::Sign(_) => ClientOperation::Sign,
+            Self::SignatureVerify(_) => ClientOperation::SignatureVerify,
+            Self::RngRetrieve(_) => ClientOperation::RngRetrieve,
+            Self::RngSeed(_) => ClientOperation::RngSeed,
+            Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
+            Self::Cancel(_) => ClientOperation::Cancel,
+            Self::Poll(_) => ClientOperation::Poll,
+            Self::Process(_) => ClientOperation::Process,
+            Self::QueryAsynchronousRequests(_) => ClientOperation::QueryAsyncRequests,
+            Self::CreateGroup(_) => ClientOperation::CreateGroup,
+            Self::Obliterate(_) => ClientOperation::Obliterate,
+            Self::CreateUser(_) => ClientOperation::CreateUser,
+            Self::CreateCredential(_) => ClientOperation::CreateCredential,
+            Self::Deactivate(_) => ClientOperation::Deactivate,
+            Self::Encapsulate(_) => ClientOperation::Encapsulate,
+            Self::Decapsulate(_) => ClientOperation::Decapsulate,
+            Self::Kmip30Draft { operation, .. } => operation.typed_operation(),
         }
     }
 
@@ -1034,7 +1038,7 @@ impl ClientRequest {
             Self::Recover(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
             Self::Revoke(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
             Self::Get(request) => Self::id_placeholder_is_selected(request.unique_identifier()),
-            Self::GetAttributes(request) => request.unique_identifier().is_none(),
+            Self::GetAttributes(request) => Self::id_placeholder_is_selected(request.identifier()),
             Self::GetAttributeList(request) => request.unique_identifier().is_none(),
             Self::GetUsageAllocation(request) => {
                 Self::id_placeholder_is_selected(request.unique_identifier())
@@ -1101,6 +1105,44 @@ impl ClientRequest {
                 | Self::JoinSplitKey(_)
                 | Self::Register(_)
         )
+    }
+
+    fn payload_for_version(self, version: ProtocolVersion) -> Result<Structure, ProtocolError> {
+        if let Self::GetAttributes(request) = self {
+            return request.to_ttlv_payload_for_version(version);
+        }
+        if let Self::RekeyKeyPair(request) = self {
+            return request.into_ttlv_payload_for_version(version);
+        }
+        if let Self::Revoke(request) = self {
+            return request.into_ttlv_payload_for_version(version);
+        }
+        if version == ProtocolVersion::V3_0 {
+            match &self {
+                Self::Locate(r) if r.object_group_member().is_some() => {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidInput));
+                }
+                Self::Query(r) if r.object_groups().is_some() => {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidInput));
+                }
+                _ => {}
+            }
+        }
+        let operation = self.typed_operation();
+        let payload = self.payload()?;
+        if version != ProtocolVersion::V3_0 {
+            return Ok(payload);
+        }
+        if operation.requires_v3_object_identifier() {
+            return normalize_v3_object_identifier(payload);
+        }
+        if matches!(
+            operation,
+            ClientOperation::Create | ClientOperation::CreateKeyPair
+        ) {
+            return normalize_creation_names(&payload);
+        }
+        Ok(payload)
     }
 
     fn payload(self) -> Result<Structure, ProtocolError> {
@@ -1320,8 +1362,15 @@ const LOCATE_OPERATION: u32 = 0x0000_0008;
 const QUERY_REQUEST_STRUCTURE_DEPTH: usize = 3;
 const QUERY_REQUEST_WITH_OBJECT_GROUPS_STRUCTURE_DEPTH: usize = 4;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(super) enum BatchEphemeral {
+    Boolean(bool),
+    Mode(kmipkit_protocol::EphemeralMode),
+}
+
 /// One closed typed request and its optional Unique Batch Item ID.
 pub struct ClientBatchItem {
+    ephemeral: Option<BatchEphemeral>,
     request: ClientRequest,
     unique_batch_item_id: Option<Vec<u8>>,
     message_extensions: Vec<ClientRequestMessageExtension>,
@@ -1561,8 +1610,38 @@ impl ClientBatchItem {
         Self {
             request,
             unique_batch_item_id: None,
+            ephemeral: None,
             message_extensions: Vec::new(),
         }
+    }
+
+    /// Sets the KMIP 3.0 Object Class Mask on a Locate item.
+    ///
+    /// # Errors
+    /// Returns an error for a different operation.
+    pub fn with_locate_class_mask(
+        mut self,
+        mask: kmipkit_protocol::ObjectClassMask,
+    ) -> Result<Self, ProtocolError> {
+        let ClientRequest::Locate(request) = self.request else {
+            return Err(protocol_error(ProtocolErrorKind::InvalidInput));
+        };
+        self.request = ClientRequest::Locate(request.with_object_class_mask(mask));
+        Ok(self)
+    }
+
+    /// Sets the optional KMIP 2.x Ephemeral boolean.
+    #[must_use]
+    pub const fn with_ephemeral(mut self, value: bool) -> Self {
+        self.ephemeral = Some(BatchEphemeral::Boolean(value));
+        self
+    }
+
+    /// Selects which fields the KMIP 3.0 server should return.
+    #[must_use]
+    pub const fn with_ephemeral_mode(mut self, mode: kmipkit_protocol::EphemeralMode) -> Self {
+        self.ephemeral = Some(BatchEphemeral::Mode(mode));
+        self
     }
 
     /// Sets this item's Unique Batch Item ID.
@@ -2229,6 +2308,35 @@ pub enum ClientOperation {
 }
 
 impl ClientOperation {
+    const fn requires_v3_object_identifier(self) -> bool {
+        matches!(
+            self,
+            Self::Activate
+                | Self::AddAttribute
+                | Self::AdjustAttribute
+                | Self::Archive
+                | Self::Check
+                | Self::Decrypt
+                | Self::DeleteAttribute
+                | Self::Destroy
+                | Self::Encrypt
+                | Self::Export
+                | Self::Get
+                | Self::GetAttributeList
+                | Self::GetUsageAllocation
+                | Self::Mac
+                | Self::MacVerify
+                | Self::ModifyAttribute
+                | Self::ObtainLease
+                | Self::Recover
+                | Self::Recertify
+                | Self::Rekey
+                | Self::SetAttribute
+                | Self::Sign
+                | Self::SignatureVerify
+        )
+    }
+
     /// Returns the operation enumeration assigned by the selected KMIP version.
     ///
     /// Operations shared by KMIP 2.0 and 2.1 use §11.36, Table 470. The seven
@@ -3440,6 +3548,14 @@ impl fmt::Debug for Kmip30OperationResponse {
 /// A typed operation response or an explicitly resumable Pending result.
 #[non_exhaustive]
 pub enum ClientBatchOutcome {
+    /// The server returned the abbreviated payload selected by Ephemeral.
+    /// The original fields are available through the retained response message.
+    Ephemeral {
+        /// The operation selected by the client.
+        operation: ClientOperation,
+        /// The common operation result.
+        result: KmipOperationResult,
+    },
     /// The server returned a non-Pending KMIP result.
     Completed(DiscoverVersionsResponse),
     /// The server returned a Delegated Login result.
@@ -3622,6 +3738,7 @@ impl ClientBatchOutcome {
             | Self::Process(_)
             | Self::QueryAsyncRequests(_)
             | Self::Pkcs11(_)
+            | Self::Ephemeral { .. }
             | Self::Kmip30(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
         }
@@ -3688,6 +3805,7 @@ impl ClientBatchOutcome {
             | Self::Poll(result)
             | Self::Process(result)
             | Self::QueryAsyncRequests(result) => result,
+            Self::Ephemeral { result, .. } => result,
             Self::Kmip30(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -3754,6 +3872,7 @@ impl ClientBatchOutcome {
             Self::Poll(_) => ClientOperation::Poll,
             Self::Process(_) => ClientOperation::Process,
             Self::QueryAsyncRequests(_) => ClientOperation::QueryAsyncRequests,
+            Self::Ephemeral { operation, .. } => *operation,
             Self::Kmip30(response) => response.operation(),
             Self::Pending(pending) => pending.operation(),
         }
@@ -4411,7 +4530,8 @@ impl ClientBatchOutcome {
             Self::SetEndpointRole(response) => {
                 ClientResponseView::new(ClientResponseRef::SetEndpointRole(response))
             }
-            Self::Cancel(result)
+            Self::Ephemeral { result, .. }
+            | Self::Cancel(result)
             | Self::Poll(result)
             | Self::Process(result)
             | Self::QueryAsyncRequests(result) => {
@@ -4562,6 +4682,11 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("SetEndpointRole")
                 .field(response)
                 .finish(),
+            Self::Ephemeral { operation, result } => formatter
+                .debug_struct("Ephemeral")
+                .field("operation", operation)
+                .field("result", result)
+                .finish(),
             Self::Cancel(result) => formatter.debug_tuple("Cancel").field(result).finish(),
             Self::Poll(result) => formatter.debug_tuple("Poll").field(result).finish(),
             Self::Process(result) => formatter.debug_tuple("Process").field(result).finish(),
@@ -4677,6 +4802,9 @@ impl fmt::Display for ClientBatchOutcome {
             Self::RngSeed(response) => write!(formatter, "RngSeed({})", response.result()),
             Self::SetEndpointRole(response) => {
                 write!(formatter, "SetEndpointRole({})", response.result())
+            }
+            Self::Ephemeral { operation, result } => {
+                write!(formatter, "Ephemeral({operation:?}, {result})")
             }
             Self::Cancel(result) => write!(formatter, "Cancel({result})"),
             Self::Poll(result) => write!(formatter, "Poll({result})"),
@@ -5916,6 +6044,7 @@ impl Client {
         })?;
         validate_typed_request_preflight(
             &batch,
+            effective_version,
             profiles.is_some_and(ProfileExchangeValidator::includes_original_creation_date_rule),
         )?;
         validate_request_extension_ownership(&batch, &self.configuration).map_err(|error| {
@@ -8395,9 +8524,14 @@ pub(super) fn validate_batch(
 
 fn validate_typed_request_preflight(
     batch: &ClientBatch,
+    version: ProtocolVersion,
     profile_validates_original_creation_date: bool,
 ) -> Result<(), ClientError> {
     for item in &batch.items {
+        // The version-specific Revoke encoder validates the 3.0 payload.
+        if version == ProtocolVersion::V3_0 && matches!(item.request, ClientRequest::Revoke(_)) {
+            continue;
+        }
         let report = item.request.validation_report();
         let only_profile_owned_creation_date_findings = profile_validates_original_creation_date
             && !report.is_valid()
@@ -8813,7 +8947,7 @@ fn build_request_message(
         push(
             &mut tree,
             BATCH_ITEM,
-            Value::structure(build_request_batch_item(item)?),
+            Value::structure(build_request_batch_item(item, options.protocol_version)?),
         )?;
     }
 
@@ -8950,14 +9084,125 @@ fn maximum_response_size_for_batch(batch: &ClientBatch, limits: &CodecLimits) ->
         .then(|| i32::try_from(limits.max_message_bytes()).unwrap_or(i32::MAX))
 }
 
-fn build_request_batch_item(item: ClientBatchItem) -> Result<Structure, ProtocolError> {
+// A fluent name is stored using the 2.x model until the exchange version is selected.
+fn normalize_v3_object_identifier(payload: Structure) -> Result<Structure, ProtocolError> {
+    let view = payload.view();
+    let uid_tag = kmipkit_ttlv::KmipTag::UniqueIdentifier.as_u32();
+    let id = view
+        .children()
+        .iter()
+        .find(|field| field.tag().raw() == uid_tag)
+        .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidInput))?;
+    let replacement = id.with_value(|value| match value {
+        ValueView::TextString(id) => Some(Value::reference(id.to_owned())),
+        _ => None,
+    });
+    let Some(replacement) = replacement else {
+        return Ok(payload);
+    };
+    let mut replacement = Some(replacement);
+    let mut result = Structure::new();
+    for field in view.children() {
+        let field = if std::ptr::eq(field, id) {
+            let value = replacement
+                .take()
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+            Item::new(field.tag(), value).map_err(model_protocol_error)?
+        } else {
+            field.try_clone().map_err(model_protocol_error)?
+        };
+        result.try_push(field).map_err(model_protocol_error)?;
+    }
+    Ok(result)
+}
+
+fn normalize_creation_names(payload: &Structure) -> Result<Structure, ProtocolError> {
+    use kmipkit_ttlv::KmipTag;
+    let mut result = Structure::new();
+    for field in payload.view().children() {
+        let group = matches!(
+            KmipTag::from_u32(field.tag().raw()),
+            Some(
+                KmipTag::Attributes
+                    | KmipTag::CommonAttributes
+                    | KmipTag::PrivateKeyAttributes
+                    | KmipTag::PublicKeyAttributes
+            )
+        );
+        if !group {
+            result
+                .try_push(field.try_clone().map_err(model_protocol_error)?)
+                .map_err(model_protocol_error)?;
+            continue;
+        }
+        let mut attributes = Structure::new();
+        for attribute in field
+            .as_structure()
+            .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?
+            .children()
+        {
+            if attribute.tag().raw() == KmipTag::Name.as_u32()
+                && let Some(name) = attribute.as_structure()
+            {
+                let [value, kind] = name.children() else {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+                };
+                if value.tag().raw() != KmipTag::NameValue.as_u32()
+                    || kind.tag().raw() != KmipTag::NameType.as_u32()
+                    || !kind.with_value(|v| matches!(v, ValueView::Enumeration(1)))
+                {
+                    return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+                }
+                let text = value
+                    .with_value(|v| match v {
+                        ValueView::TextString(s) => Some(s.to_owned()),
+                        _ => None,
+                    })
+                    .ok_or_else(|| protocol_error(ProtocolErrorKind::InvalidValue))?;
+                push(
+                    &mut attributes,
+                    KmipTag::Name.as_u32(),
+                    Value::text_string(text),
+                )?;
+            } else {
+                attributes
+                    .try_push(attribute.try_clone().map_err(model_protocol_error)?)
+                    .map_err(model_protocol_error)?;
+            }
+        }
+        push(&mut result, field.tag().raw(), Value::structure(attributes))?;
+    }
+    Ok(result)
+}
+
+fn build_request_batch_item(
+    item: ClientBatchItem,
+    version: ProtocolVersion,
+) -> Result<Structure, ProtocolError> {
     let ClientBatchItem {
+        ephemeral,
         request,
         unique_batch_item_id,
         message_extensions,
     } = item;
     let mut batch_item = Structure::new();
     push_batch_item_operation(&mut batch_item, request.operation())?;
+    if let Some(ephemeral) = ephemeral {
+        let value = match (ephemeral, version) {
+            (BatchEphemeral::Mode(mode), ProtocolVersion::V3_0) => {
+                Value::enumeration(mode.as_u32())
+            }
+            (BatchEphemeral::Boolean(value), ProtocolVersion::V2_0 | ProtocolVersion::V2_1) => {
+                Value::boolean(value)
+            }
+            _ => return Err(protocol_error(ProtocolErrorKind::InvalidInput)),
+        };
+        push(
+            &mut batch_item,
+            kmipkit_ttlv::KmipTag::Ephemeral.as_u32(),
+            value,
+        )?;
+    }
     if let Some(id) = unique_batch_item_id {
         push(
             &mut batch_item,
@@ -8968,7 +9213,7 @@ fn build_request_batch_item(item: ClientBatchItem) -> Result<Structure, Protocol
     push(
         &mut batch_item,
         REQUEST_PAYLOAD,
-        Value::structure(request.payload()?),
+        Value::structure(request.payload_for_version(version)?),
     )?;
     for extension in &message_extensions {
         push(
@@ -9161,6 +9406,8 @@ pub(super) struct BatchIdentity {
     pub(super) unique_batch_item_id: Option<Vec<u8>>,
     pub(super) response_context: Option<CryptographicOperationResponseContext>,
     pub(super) offered_versions: Option<Vec<ProtocolVersion>>,
+    pub(super) query_functions: Vec<kmipkit_protocol::QueryFunction>,
+    pub(super) projection: Option<(ClientOperation, BatchEphemeral)>,
 }
 
 impl BatchIdentity {
@@ -9175,6 +9422,11 @@ impl BatchIdentity {
                 }
                 _ => None,
             },
+            projection: item.ephemeral.map(|e| (item.request.typed_operation(), e)),
+            query_functions: match &item.request {
+                ClientRequest::Query(request) => request.functions().to_vec(),
+                _ => Vec::new(),
+            },
         }
     }
 
@@ -9182,6 +9434,8 @@ impl BatchIdentity {
         Self {
             operation: item.operation().unwrap_or_default(),
             unique_batch_item_id: item.with_unique_batch_item_id(<[u8]>::to_vec),
+            projection: None,
+            query_functions: Vec::new(),
             response_context: None,
             offered_versions: None,
         }
@@ -9455,8 +9709,22 @@ fn validate_response_inner(
         };
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
-        let request_identity = &request_identities[request_index];
-        let outcome = response_outcome(request_identity, item)?;
+        let identity = &request_identities[request_index];
+        let outcome = projected_response(identity, item)?;
+        if let ClientBatchOutcome::Query(response) = &outcome
+            && item.protocol_version() == ProtocolVersion::V3_0
+            && response.result().status() == ResultStatus::from_raw(0)
+        {
+            use kmipkit_protocol::QueryFunction;
+            let requested = &request_identities[request_index].query_functions;
+            if (requested.contains(&QueryFunction::STORAGE_PROTECTION_MASKS)
+                && response.protection_storage_masks().is_none())
+                || (requested.contains(&QueryFunction::CREDENTIAL_INFORMATION)
+                    && response.credential_information().is_none())
+            {
+                return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+            }
+        }
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
@@ -9478,6 +9746,81 @@ fn validate_response_inner(
 }
 
 #[allow(clippy::too_many_lines)]
+fn projected_response(
+    identity: &BatchIdentity,
+    item: ResponseBatchItemView<'_>,
+) -> Result<ClientBatchOutcome, ProtocolError> {
+    use kmipkit_protocol::EphemeralMode;
+    use kmipkit_ttlv::KmipTag;
+    let full_response = || response_outcome(identity, item);
+    let Some((operation, selection)) = identity.projection else {
+        return full_response();
+    };
+    if item.result_status() != Some(ResultStatus::from_raw(0)) {
+        return full_response();
+    }
+    let mode = match selection {
+        BatchEphemeral::Boolean(false) => return full_response(),
+        BatchEphemeral::Boolean(true) => EphemeralMode::Data,
+        BatchEphemeral::Mode(mode) => mode,
+    };
+    let valid = item
+        .with_response_payload(|payload| match mode {
+            EphemeralMode::Empty => payload.children().is_empty(),
+            EphemeralMode::UniqueIdentifier => match payload.children() {
+                [] => true,
+                [field] => {
+                    field.tag().raw() == KmipTag::UniqueIdentifier.as_u32()
+                        && field.with_value(|v| {
+                            matches!(
+                                v,
+                                ValueView::Identifier(_)
+                                    | ValueView::Integer(_)
+                                    | ValueView::Enumeration(_)
+                            )
+                        })
+                }
+                _ => false,
+            },
+            EphemeralMode::Data => payload
+                .children()
+                .iter()
+                .all(|field| field.tag().raw() != KmipTag::Data.as_u32()),
+        })
+        .unwrap_or(false);
+    if !valid {
+        return Err(protocol_error(ProtocolErrorKind::InvalidValue));
+    }
+    if mode == EphemeralMode::Data {
+        let full = full_response();
+        if full.is_ok() {
+            return full;
+        }
+        let accepts_missing_data = match operation {
+            ClientOperation::RngRetrieve => true,
+            ClientOperation::Hash => {
+                identity.response_context == Some(CryptographicOperationResponseContext::SinglePart)
+                    && HashResponse::try_from_response_item_with_context(
+                        item,
+                        CryptographicOperationResponseContext::MultipartNonFinal,
+                    )
+                    .is_ok()
+            }
+            _ => false,
+        };
+        if !accepts_missing_data {
+            return full;
+        }
+    }
+    let result = KmipOperationResult::new(
+        ResultStatus::from_raw(0),
+        item.result_reason(),
+        item.with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned())),
+    )
+    .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue))?;
+    Ok(ClientBatchOutcome::Ephemeral { operation, result })
+}
+
 fn response_outcome(
     request: &BatchIdentity,
     item: ResponseBatchItemView<'_>,
@@ -10414,6 +10757,8 @@ fn validate_async_response(
     let requests = [BatchIdentity {
         operation,
         unique_batch_item_id: None,
+        projection: None,
+        query_functions: Vec::new(),
         response_context: None,
         offered_versions: None,
     }];
@@ -10834,23 +11179,7 @@ fn ensure_query_ttlv_structure_length_is_representable(length: usize) -> Result<
 }
 
 fn copy_value(view: ValueView<'_>) -> Result<Value, ProtocolError> {
-    match view {
-        ValueView::Structure(value) => Ok(Value::structure(copy_structure(&value)?)),
-        ValueView::Integer(value) => Ok(Value::integer(*value)),
-        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
-        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
-        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
-        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
-        ValueView::TextString(value) => Ok(Value::text_string((*value).to_owned())),
-        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
-        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
-        ValueView::Interval(value) => Ok(Value::interval(*value)),
-        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
-        ValueView::Identifier(value) => Ok(Value::identifier((*value).to_owned())),
-        ValueView::Reference(value) => Ok(Value::reference((*value).to_owned())),
-        ValueView::NameReference(value) => Ok(Value::name_reference((*value).to_owned())),
-        _ => Err(protocol_error(ProtocolErrorKind::UnsupportedValue)),
-    }
+    view.try_to_owned().map_err(model_protocol_error)
 }
 
 #[cfg(test)]

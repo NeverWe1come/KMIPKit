@@ -727,3 +727,8 @@ def test_pkcs11_success_path_preserves_order_and_unknown_values(
             raise AssertionError("the loopback PKCS#11 mTLS peer did not finish")
         if not peer_failures.empty():
             raise peer_failures.get()
+
+
+def test_pkcs11_item_accepts_standard_function_name() -> None:
+    with extensions.client_batch_item_pkcs11("C_GetInfo") as item:
+        assert item.operation == 0x33

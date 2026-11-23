@@ -1775,7 +1775,7 @@ def test_attribute_mutation_response_mappers_reject_malformed_native_identifiers
 
     def fill_response(_item: object, present: object, identifier: object) -> int:
         present[0] = 0 if malformation == "absent" else 1  # type: ignore[index]
-        identifier.kind = 2 if malformation == "kind" else 1  # type: ignore[attr-defined]
+        identifier.kind = 99 if malformation == "kind" else 1  # type: ignore[attr-defined]
         identifier.reserved = 0  # type: ignore[attr-defined]
         identifier.text_length = (
             1 if malformation in ("null-span", "invalid-utf8") else 0
@@ -1890,7 +1890,7 @@ def test_get_attributes_response_releases_payload_on_invalid_identifier(
 
     def fill_response(_item: object, present: object, identifier: object, output: object) -> int:
         present[0] = 0 if malformation == "absent" else 1  # type: ignore[index]
-        identifier.kind = 2 if malformation == "kind" else 1  # type: ignore[attr-defined]
+        identifier.kind = 99 if malformation == "kind" else 1  # type: ignore[attr-defined]
         identifier.reserved = 0  # type: ignore[attr-defined]
         identifier.text_length = (
             1 if malformation in ("null-span", "invalid-utf8") else 0

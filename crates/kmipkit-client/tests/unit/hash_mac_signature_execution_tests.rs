@@ -434,12 +434,16 @@ fn batch_item_ids_associate_out_of_order_responses_with_their_operations() {
         BatchIdentity {
             operation: HASH,
             unique_batch_item_id: Some(b"hash-id".to_vec()),
+            projection: None,
+            query_functions: Vec::new(),
             response_context: None,
             offered_versions: None,
         },
         BatchIdentity {
             operation: SIGN,
             unique_batch_item_id: Some(b"sign-id".to_vec()),
+            projection: None,
+            query_functions: Vec::new(),
             response_context: None,
             offered_versions: None,
         },
@@ -448,12 +452,16 @@ fn batch_item_ids_associate_out_of_order_responses_with_their_operations() {
         BatchIdentity {
             operation: SIGN,
             unique_batch_item_id: Some(b"sign-id".to_vec()),
+            projection: None,
+            query_functions: Vec::new(),
             response_context: None,
             offered_versions: None,
         },
         BatchIdentity {
             operation: HASH,
             unique_batch_item_id: Some(b"hash-id".to_vec()),
+            projection: None,
+            query_functions: Vec::new(),
             response_context: None,
             offered_versions: None,
         },

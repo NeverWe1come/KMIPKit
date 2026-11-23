@@ -239,3 +239,40 @@ fn test_server_notify_wildcards() {
     let res = ServerNotifyRequest::try_from_request_item(view);
     assert!(res.is_err());
 }
+
+#[test]
+fn notify_preserves_ordered_standard_and_vendor_references() {
+    use crate::server_to_client::DeletedAttributeReference;
+    use kmipkit_ttlv::KmipTag;
+    let mut payload = Structure::new();
+    for (tag, value) in [
+        (
+            KmipTag::UniqueIdentifier,
+            Value::text_string("object".into()),
+        ),
+        (
+            KmipTag::AttributeReference,
+            Value::enumeration(KmipTag::Name.as_u32()),
+        ),
+        (
+            KmipTag::AttributeReference,
+            Value::structure(Structure::new()),
+        ),
+    ] {
+        payload
+            .try_push(
+                Item::new(
+                    RawTag::new(tag.as_u32()).unwrap().try_checked().unwrap(),
+                    value,
+                )
+                .unwrap(),
+            )
+            .unwrap();
+    }
+    let message = wrap_request_item(0x1b, payload);
+    let notify =
+        ServerNotifyRequest::try_from_request_item(message.batch_items().next().unwrap()).unwrap();
+    assert!(
+        matches!(notify.deleted_attribute_references(), [DeletedAttributeReference::Standard(tag), DeletedAttributeReference::Vendor(_)] if *tag==KmipTag::Name.as_u32())
+    );
+}

@@ -127,6 +127,7 @@ class BatchOutcome(IntEnum):
 
     COMPLETED = 1
     PENDING = 2
+    EPHEMERAL = 3
 
 
 
@@ -2904,12 +2905,28 @@ class GetAttributeListResponse:
         self.response_payload_ttlv.close()
 
 
-@dataclass(frozen=True, slots=True, repr=False)
+@dataclass(frozen=True, slots=True, repr=False, init=False)
 class GetAttributesResponse:
     """Successful Get Attributes response, preserving whether Attributes was present."""
 
-    unique_identifier: str = field(repr=False)
+    identifier: extensions.UniqueIdentifier = field(repr=False)
     attributes: ttlv.Structure | None = field(repr=False)
+
+    def __init__(
+        self, unique_identifier: str | extensions.UniqueIdentifier, attributes: ttlv.Structure | None
+    ) -> None:
+        identifier = (
+            extensions.UniqueIdentifier.text_string(unique_identifier)
+            if isinstance(unique_identifier, str)
+            else unique_identifier
+        )
+        object.__setattr__(self, "identifier", identifier)
+        object.__setattr__(self, "attributes", attributes)
+
+    @property
+    def unique_identifier(self) -> str | int:
+        """Return the resolved value. The identifier member retains its exact wire type."""
+        return self.identifier.text if self.identifier.kind.is_textual else self.identifier.number
 
     def close(self) -> None:
         """Release the caller-owned generic Attributes structure when present."""
@@ -3373,6 +3390,8 @@ class UsageAllocationContext(_ClientHandle):
             if kind in (
                 int(extensions.UniqueIdentifierKind.TEXT_STRING),
                 int(extensions.UniqueIdentifierKind.IDENTIFIER),
+                int(extensions.UniqueIdentifierKind.REFERENCE),
+                int(extensions.UniqueIdentifierKind.NAME_REFERENCE),
             ):
                 if identifier.text_length > _MAX_INPUT_BYTES or (
                     identifier.text_length and identifier.text_data == ffi.NULL
@@ -3387,9 +3406,7 @@ class UsageAllocationContext(_ClientHandle):
                     text = encoded.decode("utf-8", errors="strict")
                 except UnicodeDecodeError:
                     errors.raise_for_status(4)
-                if kind == int(extensions.UniqueIdentifierKind.IDENTIFIER):
-                    return extensions.UniqueIdentifier.identifier(text)
-                return extensions.UniqueIdentifier.text_string(text)
+                return extensions.UniqueIdentifier(extensions.UniqueIdentifierKind(kind), text=text)
             if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
                 return extensions.UniqueIdentifier.enumeration(int(identifier.enumeration_value))
             if kind == int(extensions.UniqueIdentifierKind.INTEGER):
@@ -4576,6 +4593,7 @@ def _batch_result(
                     item,
                     lib.kmipkit_client_batch_item_response_pending_correlation_value,
                 )
+                typed_operation = None if outcome == BatchOutcome.EPHEMERAL else int(metadata.operation)
                 supported_versions = _discover_versions_supported_versions(item)
                 create_object_type, create_identifier = _create_response(item)
                 private_identifier, public_identifier = _create_key_pair_response(item)
@@ -4584,126 +4602,126 @@ def _batch_result(
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x06
+                    and typed_operation == 0x06
                 ):
                     certify_response = _certify_response(item)
                 recertify_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x07
+                    and typed_operation == 0x07
                 ):
                     recertify_response = _recertify_response(item)
                 rekey_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x04
+                    and typed_operation == 0x04
                 ):
                     rekey_response = _rekey_response(item)
                 rekey_key_pair_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x1D
+                    and typed_operation == 0x1D
                 ):
                     rekey_key_pair_response = _rekey_key_pair_response(item)
                 reprovision_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x35
+                    and typed_operation == 0x35
                 ):
                     reprovision_response = _reprovision_response(item)
                 register_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x03
+                    and typed_operation == 0x03
                 ):
                     register_response = _register_response(item)
                 revoke_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x13
+                    and typed_operation == 0x13
                 ):
                     revoke_response = _revoke_response(item)
                 activate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x12
+                    and typed_operation == 0x12
                 ):
                     activate_response = _lifecycle_response(item, "activate", ActivateResponse)
                 archive_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x15
+                    and typed_operation == 0x15
                 ):
                     archive_response = _lifecycle_response(item, "archive", ArchiveResponse)
                 destroy_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x14
+                    and typed_operation == 0x14
                 ):
                     destroy_response = _lifecycle_response(item, "destroy", DestroyResponse)
                 recover_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x16
+                    and typed_operation == 0x16
                 ):
                     recover_response = _lifecycle_response(item, "recover", RecoverResponse)
                 create_group_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x3C
+                    and typed_operation == 0x3C
                 ):
                     create_group_response = _lifecycle_response(item, "create_group", CreateGroupResponse)
                 obliterate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x3D
+                    and typed_operation == 0x3D
                 ):
                     obliterate_response = _obliterate_response(item)
                 create_user_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x3E
+                    and typed_operation == 0x3E
                 ):
                     create_user_response = _lifecycle_response(item, "create_user", CreateUserResponse)
                 create_credential_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x3F
+                    and typed_operation == 0x3F
                 ):
                     create_credential_response = _lifecycle_response(item, "create_credential", CreateCredentialResponse)
                 deactivate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x40
+                    and typed_operation == 0x40
                 ):
                     deactivate_response = _lifecycle_response(item, "deactivate", DeactivateResponse)
                 encapsulate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x41
+                    and typed_operation == 0x41
                 ):
                     encapsulate_response = _encapsulate_response(item)
                 decapsulate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x42
+                    and typed_operation == 0x42
                 ):
                     decapsulate_response = _lifecycle_response(item, "decapsulate", DecapsulateResponse)
                 rng_retrieve_response = None
@@ -4715,7 +4733,7 @@ def _batch_result(
                             and int(metadata.result_status) == 0
                         )
                     )
-                    and int(metadata.operation) == 0x25
+                    and typed_operation == 0x25
                 ):
                     rng_retrieve_response = _rng_retrieve_response(item)
                 rng_seed_response = None
@@ -4727,47 +4745,47 @@ def _batch_result(
                             and int(metadata.result_status) == 0
                         )
                     )
-                    and int(metadata.operation) == 0x26
+                    and typed_operation == 0x26
                 ):
                     rng_seed_response = _rng_seed_response(item)
                 check_response = None
-                if int(metadata.operation) == 0x09:
+                if typed_operation == 0x09:
                     check_response = _check_response(item)
                 delegated_login_response = None
-                if int(metadata.operation) == 0x2F:
+                if typed_operation == 0x2F:
                     delegated_login_response = _delegated_login_response(item)
                 login_response = None
-                if int(metadata.operation) == 0x2D:
+                if typed_operation == 0x2D:
                     login_response = _login_response(item)
                 logout_response = None
-                if int(metadata.operation) == 0x2E:
+                if typed_operation == 0x2E:
                     logout_response = _logout_response(item)
                 allocation_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x11
+                    and typed_operation == 0x11
                 ):
                     allocation_response = _get_usage_allocation_response(item)
                 obtain_lease_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x10
+                    and typed_operation == 0x10
                 ):
                     obtain_lease_response = _obtain_lease_response(item)
                 constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x38
+                    and typed_operation == 0x38
                 ):
                     constraints_response = _get_constraints_response(item)
                 attribute_list_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x0C
+                    and typed_operation == 0x0C
                 ):
                     attribute_list_response = _get_attribute_list_response(
                         item, max_elements, max_message_bytes
@@ -4776,120 +4794,120 @@ def _batch_result(
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x0B
+                    and typed_operation == 0x0B
                 ):
                     get_attributes_response = _get_attributes_response(item)
                 add_attribute_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x0D
+                    and typed_operation == 0x0D
                 ):
                     add_attribute_response = _add_attribute_response(item)
                 set_attribute_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x31
+                    and typed_operation == 0x31
                 ):
                     set_attribute_response = _set_attribute_response(item)
                 adjust_attribute_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x30
+                    and typed_operation == 0x30
                 ):
                     adjust_attribute_response = _adjust_attribute_response(item)
                 delete_attribute_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x0F
+                    and typed_operation == 0x0F
                 ):
                     delete_attribute_response = _delete_attribute_response(item)
                 modify_attribute_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x0E
+                    and typed_operation == 0x0E
                 ):
                     modify_attribute_response = _modify_attribute_response(item)
                 set_constraints_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x37
+                    and typed_operation == 0x37
                 ):
                     set_constraints_response = _set_constraints_response(item)
                 set_defaults_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x36
+                    and typed_operation == 0x36
                 ):
                     set_defaults_response = _set_defaults_response(item)
                 set_endpoint_role_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 50
+                    and typed_operation == 50
                 ):
                     set_endpoint_role_response = _set_endpoint_role_response(item)
                 derive_key_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x05
+                    and typed_operation == 0x05
                 ):
                     derive_key_response = _derive_key_response(item)
                 export_response = None
-                if int(metadata.operation) == 0x2B:
+                if typed_operation == 0x2B:
                     export_response = _export_response(item)
                 import_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x2A
+                    and typed_operation == 0x2A
                 ):
                     import_response = _import_response(item)
                 join_split_key_response = _join_split_key_response_for_result(
                     item,
                     outcome=outcome,
                     result_status=int(metadata.result_status),
-                    operation=int(metadata.operation),
+                    operation=typed_operation,
                 )
                 get_response = None
-                if int(metadata.operation) == 0x0A:
+                if typed_operation == 0x0A:
                     get_response = _get_response(item)
                 locate_response = None
-                if int(metadata.operation) == 0x08:
+                if typed_operation == 0x08:
                     locate_response = _locate_response(item)
                 interop_response = None
-                if int(metadata.operation) == 0x34:
+                if typed_operation == 0x34:
                     interop_response = _interop_response(item)
                 pkcs11_response = None
-                if int(metadata.operation) == 0x33:
+                if typed_operation == 0x33:
                     pkcs11_response = _pkcs11_response(item)
                 log_response = None
-                if int(metadata.operation) == 0x2C:
+                if typed_operation == 0x2C:
                     log_response = _log_response(item)
                 validate_response = None
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x17
+                    and typed_operation == 0x17
                 ):
                     validate_response = _validate_response(item)
                 ping_response = None
-                if int(metadata.operation) == 0x3B:
+                if typed_operation == 0x3B:
                     ping_response = _ping_response(item)
                 query_response = None
-                if int(metadata.operation) == 0x18:
+                if typed_operation == 0x18:
                     query_response = _query_response(item)
                 cryptographic_responses = (None, None, None, None, None, None, None)
                 if outcome == BatchOutcome.COMPLETED and int(metadata.result_status) == 0:
                     cryptographic_responses = _cryptographic_responses(
-                        item, int(metadata.operation)
+                        item, typed_operation
                     )
                 (
                     encrypt_response,
@@ -4905,13 +4923,13 @@ def _batch_result(
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) in {0x3F, 0x3C, 0x3E, 0x40, 0x42, 0x41}
+                    and typed_operation in {0x3F, 0x3C, 0x3E, 0x40, 0x42, 0x41}
                 ):
                     kmip30_identifier = _kmip30_identifier_response(item)
                 if (
                     outcome == BatchOutcome.COMPLETED
                     and int(metadata.result_status) == 0
-                    and int(metadata.operation) == 0x41
+                    and typed_operation == 0x41
                 ):
                     encapsulate_data = _encapsulate_response_data(item)
                 result = BatchItemResult(
@@ -5061,6 +5079,8 @@ def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
     if kind in (
         int(extensions.UniqueIdentifierKind.TEXT_STRING),
         int(extensions.UniqueIdentifierKind.IDENTIFIER),
+        int(extensions.UniqueIdentifierKind.REFERENCE),
+        int(extensions.UniqueIdentifierKind.NAME_REFERENCE),
     ):
         if output.text_length > sys.maxsize:
             errors.raise_for_status(6)
@@ -5073,9 +5093,7 @@ def _read_unique_identifier(output: Any) -> extensions.UniqueIdentifier:
         )
         try:
             text = raw.decode("utf-8", errors="strict")
-            if kind == int(extensions.UniqueIdentifierKind.IDENTIFIER):
-                return extensions.UniqueIdentifier.identifier(text)
-            return extensions.UniqueIdentifier.text_string(text)
+            return extensions.UniqueIdentifier(extensions.UniqueIdentifierKind(kind), text=text)
         except UnicodeDecodeError:
             errors.raise_for_status(4)
     if kind == int(extensions.UniqueIdentifierKind.ENUMERATION):
@@ -6360,27 +6378,12 @@ def _get_attributes_response(
         if attributes_handle != ffi.NULL:
             lib.kmipkit_ttlv_structure_release(attributes_handle)
         errors.raise_for_status(4)
-    if identifier.kind != 1 or identifier.reserved != 0:
-        if attributes_handle != ffi.NULL:
-            lib.kmipkit_ttlv_structure_release(attributes_handle)
-        errors.raise_for_status(4)
-    identifier_length = int(identifier.text_length)
-    if identifier_length and identifier.text_data == ffi.NULL:
-        if attributes_handle != ffi.NULL:
-            lib.kmipkit_ttlv_structure_release(attributes_handle)
-        errors.raise_for_status(4)
     try:
-        unique_identifier = (
-            bytes(ffi.buffer(identifier.text_data, identifier_length)).decode(
-                "utf-8", "strict"
-            )
-            if identifier_length
-            else ""
-        )
-    except UnicodeDecodeError:
+        unique_identifier = _read_unique_identifier(identifier)
+    except Exception:
         if attributes_handle != ffi.NULL:
             lib.kmipkit_ttlv_structure_release(attributes_handle)
-        errors.raise_for_status(4)
+        raise
     if attributes_handle == ffi.NULL:
         return GetAttributesResponse(unique_identifier, None)
     try:

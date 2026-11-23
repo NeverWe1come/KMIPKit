@@ -9,7 +9,7 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::{
     AttributeReference, AttributeSet, AttributeSetError, KmipOperationResult,
     ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, attribute::copy_text_string,
+    ResultValidationError, UniqueIdentifier,
 };
 
 const GET_ATTRIBUTES_OPERATION: u32 = 0x0000_000B;
@@ -20,7 +20,7 @@ const SUCCESS: u32 = 0;
 /// A client-to-server Get Attributes request from OASIS KMIP v2.1 §6.1.20.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GetAttributesRequest {
-    unique_identifier: Option<String>,
+    unique_identifier: Option<UniqueIdentifier>,
     attribute_references: Vec<AttributeReference>,
 }
 
@@ -34,6 +34,20 @@ impl GetAttributesRequest {
     /// exact same name or tag reference is supplied more than once.
     pub fn try_new(
         unique_identifier: Option<String>,
+        attribute_references: impl IntoIterator<Item = AttributeReference>,
+    ) -> Result<Self, GetAttributesError> {
+        Self::with_identifier(
+            unique_identifier.map(UniqueIdentifier::TextString),
+            attribute_references,
+        )
+    }
+
+    /// Creates a request using the supplied KMIP identifier wire form.
+    ///
+    /// # Errors
+    /// Returns an error for duplicate references.
+    pub fn with_identifier(
+        unique_identifier: Option<UniqueIdentifier>,
         attribute_references: impl IntoIterator<Item = AttributeReference>,
     ) -> Result<Self, GetAttributesError> {
         let mut references = Vec::new();
@@ -55,7 +69,15 @@ impl GetAttributesRequest {
     /// Returns the optional object identifier selected by this request.
     #[must_use]
     pub fn unique_identifier(&self) -> Option<&str> {
-        self.unique_identifier.as_deref()
+        self.unique_identifier
+            .as_ref()
+            .and_then(UniqueIdentifier::as_str)
+    }
+
+    /// Returns the identifier with its original TTLV type.
+    #[must_use]
+    pub fn identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
     }
 
     /// Returns the ordered, unique Attribute References selected by this request.
@@ -73,13 +95,51 @@ impl GetAttributesRequest {
     /// Vendor Identification, or a fixed field tag or generic TTLV Structure
     /// cannot be represented.
     pub fn to_ttlv_payload(&self) -> Result<Structure, ProtocolError> {
+        self.encode_payload(
+            self.unique_identifier
+                .as_ref()
+                .map(|id| id.clone().into_value()),
+        )
+    }
+
+    /// Encodes the object selector with the wire type used by this edition.
+    pub fn to_ttlv_payload_for_version(
+        &self,
+        version: crate::ProtocolVersion,
+    ) -> Result<Structure, ProtocolError> {
+        let id = match (version, self.identifier()) {
+            (crate::ProtocolVersion::V3_0, Some(UniqueIdentifier::TextString(id))) => {
+                Some(Value::reference(id.clone()))
+            }
+            (crate::ProtocolVersion::V3_0, None) => {
+                return Err(ProtocolError::categorized(
+                    ProtocolErrorKind::InvalidInput,
+                    ProtocolCauseCategory::InvalidValue,
+                ));
+            }
+            (
+                crate::ProtocolVersion::V2_0 | crate::ProtocolVersion::V2_1,
+                Some(
+                    UniqueIdentifier::Identifier(_)
+                    | UniqueIdentifier::Reference(_)
+                    | UniqueIdentifier::NameReference(_),
+                ),
+            ) => {
+                return Err(ProtocolError::categorized(
+                    ProtocolErrorKind::InvalidInput,
+                    ProtocolCauseCategory::InvalidValue,
+                ));
+            }
+            (_, id) => id.cloned().map(UniqueIdentifier::into_value),
+        };
+        self.encode_payload(id)
+    }
+
+    fn encode_payload(&self, id: Option<Value>) -> Result<Structure, ProtocolError> {
         let mut payload = Structure::new();
-        if let Some(unique_identifier) = &self.unique_identifier {
+        if let Some(unique_identifier) = id {
             payload
-                .try_push(item(
-                    UNIQUE_IDENTIFIER_TAG,
-                    Value::text_string(unique_identifier.clone()),
-                )?)
+                .try_push(item(UNIQUE_IDENTIFIER_TAG, unique_identifier)?)
                 .map_err(model_error)?;
         }
 
@@ -105,7 +165,7 @@ impl GetAttributesRequest {
 /// payload.
 pub struct GetAttributesResponse {
     result: KmipOperationResult,
-    unique_identifier: Option<String>,
+    unique_identifier: Option<UniqueIdentifier>,
     attributes: Option<AttributeSet>,
 }
 
@@ -166,7 +226,15 @@ impl GetAttributesResponse {
     /// Returns the required successful-response Unique Identifier, if present.
     #[must_use]
     pub fn unique_identifier(&self) -> Option<&str> {
-        self.unique_identifier.as_deref()
+        self.unique_identifier
+            .as_ref()
+            .and_then(UniqueIdentifier::as_str)
+    }
+
+    /// Returns the identifier with its original TTLV type.
+    #[must_use]
+    pub fn identifier(&self) -> Option<&UniqueIdentifier> {
+        self.unique_identifier.as_ref()
     }
 
     /// Returns the ordered direct attributes when the response contains the
@@ -262,14 +330,14 @@ impl Error for GetAttributesError {
 
 fn parse_success_payload(
     payload: &StructureView<'_>,
-) -> Result<(String, Option<AttributeSet>), GetAttributesError> {
+) -> Result<(UniqueIdentifier, Option<AttributeSet>), GetAttributesError> {
     let fields = payload.children();
     if !(fields.len() == 1 || fields.len() == 2) || fields[0].tag().raw() != UNIQUE_IDENTIFIER_TAG {
         return Err(GetAttributesError::MalformedSuccessPayload);
     }
 
     let unique_identifier = fields[0]
-        .with_value(|value| copy_text_string(&value))
+        .with_value(UniqueIdentifier::from_value)
         .ok_or(GetAttributesError::MalformedSuccessPayload)?;
 
     if fields.len() == 1 {
@@ -307,30 +375,7 @@ fn parse_attributes(structure: &StructureView<'_>) -> Result<AttributeSet, GetAt
 }
 
 fn clone_value(value: ValueView<'_>) -> Result<Value, GetAttributesError> {
-    match value {
-        ValueView::Structure(structure) => {
-            let mut children = Structure::new();
-            for child in structure.children() {
-                let value = child.with_value(clone_value)?;
-                let item = Item::new(child.tag(), value).map_err(GetAttributesError::TtlvModel)?;
-                children
-                    .try_push(item)
-                    .map_err(GetAttributesError::TtlvModel)?;
-            }
-            Ok(Value::structure(children))
-        }
-        ValueView::Integer(value) => Ok(Value::integer(*value)),
-        ValueView::LongInteger(value) => Ok(Value::long_integer(*value)),
-        ValueView::BigInteger(value) => Ok(Value::big_integer(value.to_vec())),
-        ValueView::Enumeration(value) => Ok(Value::enumeration(*value)),
-        ValueView::Boolean(value) => Ok(Value::boolean(*value)),
-        ValueView::TextString(value) => Ok(Value::text_string(value.to_owned())),
-        ValueView::ByteString(value) => Ok(Value::byte_string(value.to_vec())),
-        ValueView::DateTime(value) => Ok(Value::date_time(*value)),
-        ValueView::Interval(value) => Ok(Value::interval(*value)),
-        ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
-        _ => Err(GetAttributesError::MalformedSuccessPayload),
-    }
+    value.try_to_owned().map_err(GetAttributesError::TtlvModel)
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

@@ -201,13 +201,13 @@ class V3AndS2cParityTest {
 
     @Test
     void ephemeralModeConstantsAndNames() {
-        assertEquals(1L, EphemeralMode.NO);
-        assertEquals(2L, EphemeralMode.IMMEDIATE);
-        assertEquals(3L, EphemeralMode.RETAIN_ON_FAILURE);
+        assertEquals(1L, EphemeralMode.DATA);
+        assertEquals(2L, EphemeralMode.EMPTY);
+        assertEquals(3L, EphemeralMode.UNIQUE_IDENTIFIER);
 
-        assertEquals("No", EphemeralMode.name(EphemeralMode.NO));
-        assertEquals("Immediate", EphemeralMode.name(EphemeralMode.IMMEDIATE));
-        assertEquals("Retain On Failure", EphemeralMode.name(EphemeralMode.RETAIN_ON_FAILURE));
+        assertEquals("Data", EphemeralMode.name(EphemeralMode.DATA));
+        assertEquals("Empty", EphemeralMode.name(EphemeralMode.EMPTY));
+        assertEquals("Unique Identifier", EphemeralMode.name(EphemeralMode.UNIQUE_IDENTIFIER));
         assertNull(EphemeralMode.name(999L));
     }
 

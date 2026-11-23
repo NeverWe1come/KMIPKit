@@ -47,8 +47,8 @@ int main(void) {
     assert(KMIPKIT_V3_0_TAG_name(UINT32_C(0x42018F)) == 0);
 
     /* KMIP 3.0 Ephemeral Mode & Query Function */
-    assert(KMIPKIT_V3_0_EPHEMERAL_MODE_IMMEDIATE == UINT32_C(2));
-    assert(strcmp(KMIPKIT_V3_0_EPHEMERAL_MODE_name(KMIPKIT_V3_0_EPHEMERAL_MODE_IMMEDIATE), "Immediate") == 0);
+    assert(KMIPKIT_V3_0_EPHEMERAL_MODE_EMPTY == UINT32_C(2));
+    assert(strcmp(KMIPKIT_V3_0_EPHEMERAL_MODE_name(KMIPKIT_V3_0_EPHEMERAL_MODE_EMPTY), "Empty") == 0);
     assert(strcmp(KMIPKIT_V3_0_QUERY_FUNCTION_name(UINT32_C(15)), "Query Credential Information") == 0);
     return 0;
 }

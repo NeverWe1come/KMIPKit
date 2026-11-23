@@ -205,12 +205,7 @@ impl GetRequest {
     pub fn to_ttlv_payload(self) -> Result<Structure, ProtocolError> {
         let mut payload = Structure::new();
         if let Some(unique_identifier) = self.unique_identifier {
-            let value = match unique_identifier {
-                UniqueIdentifier::TextString(value) => Value::text_string(value),
-                UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-                UniqueIdentifier::Integer(value) => Value::integer(value),
-                UniqueIdentifier::Identifier(value) => Value::identifier(value),
-            };
+            let value = unique_identifier.into_value();
             payload
                 .try_push(item(UNIQUE_IDENTIFIER, value)?)
                 .map_err(protocol_model_error)?;
@@ -453,22 +448,13 @@ fn parse_success_payload(
         })
         .ok_or(GetError::MalformedSuccessPayload)?;
     let unique_identifier = unique_identifier_field
-        .with_value(|value| parse_unique_identifier(&value))
+        .with_value(UniqueIdentifier::from_value)
         .ok_or(GetError::MalformedSuccessPayload)?;
     let object = object_field
         .try_clone()
         .map_err(|_| GetError::MalformedSuccessPayload)?;
 
     Ok((object_type, unique_identifier, object))
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, ProtocolError> {

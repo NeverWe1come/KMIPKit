@@ -212,7 +212,7 @@ impl VersionGate {
 
     /// Validates whether mutating the attribute represented by `tag` is permitted under `version`.
     ///
-    /// In OASIS KMIP 2.0, the seven core cryptographic attributes are rotate-only and cannot be mutated
+    /// In OASIS KMIP 2.0, the listed cryptographic attributes are rotate-only and cannot be mutated
     /// via `SetAttribute`.
     ///
     /// # Errors
@@ -231,7 +231,6 @@ impl VersionGate {
             match tag {
                 0x0042_0028 // Cryptographic Algorithm
                 | 0x0042_002A // Cryptographic Length
-                | 0x0042_002B // Cryptographic Parameters
                 | 0x0042_002C // Cryptographic Usage Mask
                 | 0x0042_0034 // Digest
                 | 0x0042_00BB // Key Value Present

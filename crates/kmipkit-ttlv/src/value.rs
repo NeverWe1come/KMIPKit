@@ -349,6 +349,16 @@ pub fn try_clone_value(value: &Value) -> Result<Value, crate::ModelError> {
     clone_value_view(value.as_view())
 }
 
+impl ValueView<'_> {
+    /// Copies this borrowed value and its children, preserving the wire type.
+    ///
+    /// # Errors
+    /// Returns the model error if a nested item cannot be copied.
+    pub fn try_to_owned(self) -> Result<Value, crate::ModelError> {
+        clone_value_view(self)
+    }
+}
+
 pub(crate) fn clone_value_view(value: ValueView<'_>) -> Result<Value, crate::ModelError> {
     match value {
         ValueView::Structure(structure) => {

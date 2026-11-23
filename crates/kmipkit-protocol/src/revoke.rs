@@ -64,7 +64,7 @@ impl RevocationReason {
 /// compromise dates to the caller and server policy.
 pub struct RevokeRequest {
     unique_identifier: Option<UniqueIdentifier>,
-    revocation_reason: RevocationReason,
+    revocation_reason: Option<RevocationReason>,
     revocation_message: Option<String>,
     compromise_occurrence_date: Option<i64>,
 }
@@ -75,7 +75,18 @@ impl RevokeRequest {
     pub const fn new(revocation_reason: RevocationReason) -> Self {
         Self {
             unique_identifier: None,
-            revocation_reason,
+            revocation_reason: Some(revocation_reason),
+            revocation_message: None,
+            compromise_occurrence_date: None,
+        }
+    }
+
+    /// Creates a KMIP 3.0 Revoke request without a reason.
+    #[must_use]
+    pub fn without_reason(identifier: UniqueIdentifier) -> Self {
+        Self {
+            unique_identifier: Some(identifier),
+            revocation_reason: None,
             revocation_message: None,
             compromise_occurrence_date: None,
         }
@@ -111,6 +122,15 @@ impl RevokeRequest {
     /// Returns the required raw-preserving Revocation Reason.
     #[must_use]
     pub const fn revocation_reason(&self) -> RevocationReason {
+        match self.revocation_reason {
+            Some(reason) => reason,
+            None => RevocationReason::UNSPECIFIED,
+        }
+    }
+
+    /// Returns the reason explicitly included on the wire.
+    #[must_use]
+    pub const fn explicit_revocation_reason(&self) -> Option<RevocationReason> {
         self.revocation_reason
     }
 
@@ -134,7 +154,21 @@ impl RevokeRequest {
     /// supplied for a reason other than Key Compromise or CA Compromise, or
     /// when the resulting TTLV model cannot be represented.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
-        if !self.validation_report().is_valid() {
+        self.into_ttlv_payload_for_version(crate::ProtocolVersion::V2_1)
+    }
+
+    /// Encodes the required fields and date semantics of the selected edition.
+    pub fn into_ttlv_payload_for_version(
+        self,
+        version: crate::ProtocolVersion,
+    ) -> Result<Structure, ProtocolError> {
+        if version == crate::ProtocolVersion::V3_0 {
+            if self.unique_identifier.is_none()
+                || (self.revocation_message.is_some() && self.revocation_reason.is_none())
+            {
+                return Err(invalid_request());
+            }
+        } else if self.revocation_reason.is_none() || !self.validation_report().is_valid() {
             return Err(invalid_request());
         }
 
@@ -143,19 +177,25 @@ impl RevokeRequest {
             common::push(
                 &mut payload,
                 UNIQUE_IDENTIFIER,
-                common::unique_identifier_value(identifier),
+                if version == crate::ProtocolVersion::V3_0 {
+                    identifier.into_reference_value()
+                } else {
+                    common::unique_identifier_value(identifier)
+                },
             )?;
         }
-        let mut reason = Structure::new();
-        common::push(
-            &mut reason,
-            REVOCATION_REASON_CODE,
-            Value::enumeration(self.revocation_reason.raw()),
-        )?;
-        if let Some(message) = self.revocation_message {
-            common::push(&mut reason, REVOCATION_MESSAGE, Value::text_string(message))?;
+        if let Some(code) = self.revocation_reason {
+            let mut reason = Structure::new();
+            common::push(
+                &mut reason,
+                REVOCATION_REASON_CODE,
+                Value::enumeration(code.raw()),
+            )?;
+            if let Some(message) = self.revocation_message {
+                common::push(&mut reason, REVOCATION_MESSAGE, Value::text_string(message))?;
+            }
+            common::push(&mut payload, REVOCATION_REASON, Value::structure(reason))?;
         }
-        common::push(&mut payload, REVOCATION_REASON, Value::structure(reason))?;
         if let Some(date_time) = self.compromise_occurrence_date {
             common::push(
                 &mut payload,
@@ -167,11 +207,11 @@ impl RevokeRequest {
     }
 
     fn validation_report(&self) -> ValidationReport {
-        if self.compromise_occurrence_date.is_some()
-            && !matches!(
-                self.revocation_reason.raw(),
-                KEY_COMPROMISE_REASON | CA_COMPROMISE_REASON
-            )
+        if (self.revocation_message.is_some() && self.revocation_reason.is_none())
+            || (self.compromise_occurrence_date.is_some()
+                && self.revocation_reason.is_some_and(|reason| {
+                    !matches!(reason.raw(), KEY_COMPROMISE_REASON | CA_COMPROMISE_REASON)
+                }))
         {
             crate::validation::request_issue_report(
                 "PAYLOAD-POLICY-P005",

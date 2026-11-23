@@ -16,12 +16,18 @@ public final class UniqueIdentifier {
         TEXT_STRING(1),
         ENUMERATION(2),
         INTEGER(3),
-        IDENTIFIER(4);
+        IDENTIFIER(4),
+        REFERENCE(5),
+        NAME_REFERENCE(6);
 
         private final int raw;
 
         Kind(int raw) {
             this.raw = raw;
+        }
+
+        public boolean isTextual() {
+            return this == TEXT_STRING || this == IDENTIFIER || this == REFERENCE || this == NAME_REFERENCE;
         }
 
         int raw() {
@@ -49,11 +55,7 @@ public final class UniqueIdentifier {
     }
 
     public static UniqueIdentifier textString(String value) {
-        Objects.requireNonNull(value, "value");
-        if (!StandardCharsets.UTF_8.newEncoder().canEncode(value)) {
-            throw new InvalidInputException("Unique Identifier is not valid UTF-8 text");
-        }
-        return new UniqueIdentifier(Kind.TEXT_STRING, value, 0);
+        return textual(Kind.TEXT_STRING, value);
     }
 
     public static UniqueIdentifier enumeration(long value) {
@@ -68,11 +70,23 @@ public final class UniqueIdentifier {
     }
 
     public static UniqueIdentifier identifier(String value) {
+        return textual(Kind.IDENTIFIER, value);
+    }
+
+    public static UniqueIdentifier reference(String value) {
+        return textual(Kind.REFERENCE, value);
+    }
+
+    public static UniqueIdentifier nameReference(String value) {
+        return textual(Kind.NAME_REFERENCE, value);
+    }
+
+    private static UniqueIdentifier textual(Kind kind, String value) {
         Objects.requireNonNull(value, "value");
         if (!StandardCharsets.UTF_8.newEncoder().canEncode(value)) {
             throw new InvalidInputException("Unique Identifier is not valid UTF-8 text");
         }
-        return new UniqueIdentifier(Kind.IDENTIFIER, value, 0);
+        return new UniqueIdentifier(kind, value, 0);
     }
 
     /** Returns this identifier's exact KMIP TTLV wire type. */
@@ -82,7 +96,7 @@ public final class UniqueIdentifier {
 
     /** Returns the Text String or Identifier value when this identifier uses that wire type. */
     public String text() {
-        if (kind != Kind.TEXT_STRING && kind != Kind.IDENTIFIER) {
+        if (!kind.isTextual()) {
             throw new InvalidInputException("Unique Identifier is not a Text String or Identifier");
         }
         return text;
@@ -90,7 +104,7 @@ public final class UniqueIdentifier {
 
     /** Returns the unsigned Enumeration value or signed Integer value. */
     public long number() {
-        if (kind == Kind.TEXT_STRING || kind == Kind.IDENTIFIER) {
+        if (kind.isTextual()) {
             throw new InvalidInputException("Unique Identifier is a Text String or Identifier");
         }
         return number;
@@ -101,7 +115,7 @@ public final class UniqueIdentifier {
     }
 
     public byte[] nativeText() {
-        if (kind != Kind.TEXT_STRING && kind != Kind.IDENTIFIER) {
+        if (!kind.isTextual()) {
             return null;
         }
         return ExtensionText.encodeUtf8(text, MAX_NATIVE_TEXT_BYTES, "Unique Identifier");
@@ -117,7 +131,7 @@ public final class UniqueIdentifier {
             case TEXT_STRING -> textString(decodeUtf8(text));
             case ENUMERATION -> enumeration(enumeration);
             case INTEGER -> integer(Math.toIntExact(integer));
-            case IDENTIFIER -> identifier(decodeUtf8(text));
+            case IDENTIFIER, REFERENCE, NAME_REFERENCE -> textual(valueKind, decodeUtf8(text));
         };
     }
 

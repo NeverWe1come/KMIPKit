@@ -77,8 +77,8 @@ impl fmt::Display for PutFunction {
 #[derive(Debug)]
 pub struct ServerPutRequest {
     put_function: PutFunction,
-    unique_identifier: String,
-    replaced_unique_identifier: Option<String>,
+    unique_identifier: super::ServerIdentifier,
+    replaced_unique_identifier: Option<super::ServerIdentifier>,
     object_item: Item,
     attributes: Option<Structure>,
 }
@@ -86,7 +86,7 @@ pub struct ServerPutRequest {
 impl ServerPutRequest {
     /// Creates a new Server Put request.
     #[must_use]
-    pub const fn new(
+    pub fn new(
         put_function: PutFunction,
         unique_identifier: String,
         replaced_unique_identifier: Option<String>,
@@ -95,8 +95,9 @@ impl ServerPutRequest {
     ) -> Self {
         Self {
             put_function,
-            unique_identifier,
-            replaced_unique_identifier,
+            unique_identifier: super::ServerIdentifier::new(unique_identifier.into()),
+            replaced_unique_identifier: replaced_unique_identifier
+                .map(|s| super::ServerIdentifier::new(s.into())),
             object_item,
             attributes,
         }
@@ -111,13 +112,25 @@ impl ServerPutRequest {
     /// Returns the Unique Identifier of the object being pushed.
     #[must_use]
     pub fn unique_identifier(&self) -> &str {
-        &self.unique_identifier
+        self.unique_identifier.text()
+    }
+
+    /// Returns the original identifier and TTLV type.
+    pub fn identifier(&self) -> &crate::UniqueIdentifier {
+        &self.unique_identifier.value
     }
 
     /// Returns the Replaced Unique Identifier if Put Function is Replace.
     #[must_use]
     pub fn replaced_unique_identifier(&self) -> Option<&str> {
-        self.replaced_unique_identifier.as_deref()
+        self.replaced_unique_identifier
+            .as_ref()
+            .map(super::ServerIdentifier::text)
+    }
+
+    /// Returns the original replaced identifier and TTLV type.
+    pub fn replaced_identifier(&self) -> Option<&crate::UniqueIdentifier> {
+        self.replaced_unique_identifier.as_ref().map(|id| &id.value)
     }
 
     /// Returns the Managed Object item being pushed to the client.
@@ -165,39 +178,29 @@ impl ServerPutRequest {
 
                 for field in payload.children() {
                     match field.tag().raw() {
+                        PUT_FUNCTION if put_fn.is_some() => return None,
                         PUT_FUNCTION => {
-                            if let Some(raw) = field.with_value(|v| match v {
+                            let raw = field.with_value(|v| match v {
                                 ValueView::Enumeration(e) => Some(*e),
                                 _ => None,
-                            }) {
-                                put_fn = Some(PutFunction::from_raw(raw));
-                            }
+                            })?;
+                            put_fn = Some(PutFunction::from_raw(raw));
                         }
+                        UNIQUE_IDENTIFIER if uid.is_some() => return None,
                         UNIQUE_IDENTIFIER => {
-                            if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) | ValueView::Identifier(s) => {
-                                    Some(s.to_string())
-                                }
-                                _ => None,
-                            }) {
-                                uid = Some(text);
-                            }
+                            uid = Some(super::ServerIdentifier::new(
+                                field.with_value(crate::UniqueIdentifier::from_value)?,
+                            ));
                         }
+                        REPLACED_UNIQUE_IDENTIFIER if replaced_uid.is_some() => return None,
                         REPLACED_UNIQUE_IDENTIFIER => {
-                            if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) | ValueView::Identifier(s) => {
-                                    Some(s.to_string())
-                                }
-                                _ => None,
-                            }) {
-                                replaced_uid = Some(text);
-                            }
+                            replaced_uid = Some(super::ServerIdentifier::new(
+                                field.with_value(crate::UniqueIdentifier::from_value)?,
+                            ));
                         }
+                        ATTRIBUTES if attrs.is_some() => return None,
                         ATTRIBUTES => {
-                            attrs = field.with_value(|v| match v {
-                                ValueView::Structure(st) => st.try_clone().ok(),
-                                _ => None,
-                            });
+                            attrs = Some(field.as_structure()?.try_clone().ok()?);
                         }
                         _ => {
                             // Any other item is the Managed Object
@@ -213,7 +216,7 @@ impl ServerPutRequest {
             .ok_or(ServerPutError::MissingPayload)?
             .ok_or(ServerPutError::MalformedPayload)?;
 
-        let put_function = parsed.0.unwrap_or(PutFunction::NEW);
+        let put_function = parsed.0.ok_or(ServerPutError::MissingPutFunction)?;
         let unique_identifier = parsed.1.ok_or(ServerPutError::MissingUniqueIdentifier)?;
         let replaced_unique_identifier = parsed.2;
         let object_item = parsed.3.ok_or(ServerPutError::MissingManagedObject)?;
@@ -261,6 +264,8 @@ impl ServerPutResponse {
 /// Errors returned while processing Server-to-Client Put requests.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ServerPutError {
+    /// The required Put Function was absent or mistyped.
+    MissingPutFunction,
     /// Operation code in item did not match Put.
     UnexpectedOperation,
     /// Request batch item was missing a request payload.
@@ -279,6 +284,7 @@ impl fmt::Display for ServerPutError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnexpectedOperation => write!(f, "item operation was not Put"),
+            Self::MissingPutFunction => write!(f, "Put request omitted required Put Function"),
             Self::MissingPayload => write!(f, "request item missing payload"),
             Self::MissingUniqueIdentifier => {
                 write!(f, "Put request omitted required Unique Identifier")

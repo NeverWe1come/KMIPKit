@@ -53,6 +53,7 @@ final class CreateKeyPairBuilderTest {
             assertThrows(ClientOperationException.class, builder::build);
             builder.algorithm(KmipValues.CryptographicAlgorithm.RSA)
                     .length(2048)
+                    .seed(new byte[] {1, 2, 3})
                     .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
                     .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY);
             builder.validate();

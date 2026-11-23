@@ -730,6 +730,10 @@ pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING: u32 = 1;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION: u32 = 2;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER: u32 = 3;
 pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER: u32 = 4;
+/// KMIP 3.0 reference wire form.
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE: u32 = 5;
+/// KMIP 3.0 name reference wire form.
+pub const KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE: u32 = 6;
 
 /// One explicitly encoded transport certificate, key, or revocation input.
 #[repr(C)]

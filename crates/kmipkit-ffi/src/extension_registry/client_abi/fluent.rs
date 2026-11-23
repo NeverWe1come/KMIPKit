@@ -797,8 +797,8 @@ fn get_attributes_client_request(
     attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
     attribute_reference_count: u64,
 ) -> FfiResult<ClientRequest> {
-    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
-        .ok_or(ERROR_INVALID_INPUT)?;
+    let unique_identifier =
+        super::super::copy_optional_identifier(unique_identifier)?.ok_or(ERROR_INVALID_INPUT)?;
     let source_references = input_array(
         attribute_references,
         attribute_reference_count,
@@ -813,7 +813,7 @@ fn get_attributes_client_request(
             reference,
         ))?);
     }
-    let request = GetAttributesRequest::try_new(Some(unique_identifier), references)
+    let request = GetAttributesRequest::with_identifier(Some(unique_identifier), references)
         .map_err(|_| ERROR_INVALID_INPUT)?;
     Ok(ClientRequest::GetAttributes(request))
 }
@@ -1519,6 +1519,21 @@ pub extern "C" fn kmipkit_create_key_pair_builder_set_algorithm(
         try_ffi!(update_key_pair_builder(builder, |builder| {
             builder.algorithm(CryptographicAlgorithm::from_raw(algorithm))
         }));
+        SUCCESS
+    })
+}
+
+/// Copies the optional KMIP 3.0 key-generation Seed into the builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_seed(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    data: *const u8,
+    length: u64,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let data = try_ffi!(input_span(data, length, MAX_FFI_INPUT_BYTES));
+        let seed = kmipkit_protocol::SecretBytes::new(data.to_vec());
+        try_ffi!(update_key_pair_builder(builder, |builder| builder.seed(seed)));
         SUCCESS
     })
 }
@@ -2939,6 +2954,9 @@ fn locate_builder_request(
     if let Some(value) = builder.object_group_member {
         request = request.with_object_group_member(value);
     }
+    if let Some(value) = builder.object_class_mask {
+        request = request.with_object_class_mask(value);
+    }
     Ok((
         ClientRequest::Locate(request),
         builder.asynchronous_indicator,
@@ -2964,7 +2982,12 @@ fn revoke_builder_request(
         request = request.with_compromise_occurrence_date(date);
     }
     if request.compromise_occurrence_date().is_some()
-        && !matches!(request.revocation_reason().raw(), 2 | 3)
+        && !matches!(
+            request
+                .explicit_revocation_reason()
+                .map(RevocationReason::raw),
+            Some(2 | 3)
+        )
     {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -2997,6 +3020,7 @@ pub extern "C" fn kmipkit_locate_builder_create(
                 offset_items: None,
                 storage_status_mask: None,
                 object_group_member: None,
+                object_class_mask: None,
                 asynchronous_indicator: None,
             })),
         ));
@@ -3046,6 +3070,13 @@ locate_builder_setter!(
     object_group_member,
     u32,
     ObjectGroupMember::from_raw
+);
+
+locate_builder_setter!(
+    kmipkit_locate_builder_set_object_class_mask,
+    object_class_mask,
+    u32,
+    kmipkit_protocol::ObjectClassMask::from_raw
 );
 
 /// Sets the Request Header Asynchronous Indicator on a Locate builder.

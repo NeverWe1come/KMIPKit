@@ -2404,7 +2404,7 @@ pub extern "C" fn kmipkit_get_attributes_request_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_request);
-        let identifier = try_ffi!(copy_optional_text_identifier(unique_identifier));
+        let identifier = try_ffi!(copy_optional_identifier(unique_identifier));
         let source_references = try_ffi!(input_array(
             attribute_references,
             attribute_reference_count,
@@ -2420,7 +2420,8 @@ pub extern "C" fn kmipkit_get_attributes_request_create(
             references.push(try_ffi!(copy_attribute_reference(ptr::from_ref(reference))));
         }
         let request = try_ffi!(
-            GetAttributesRequest::try_new(identifier, references).map_err(|_| ERROR_INVALID_INPUT)
+            GetAttributesRequest::with_identifier(identifier, references)
+                .map_err(|_| ERROR_INVALID_INPUT)
         );
         *out = try_ffi!(try_make_handle(
             Kind::GetAttributesRequest,
@@ -2443,8 +2444,7 @@ pub extern "C" fn kmipkit_get_attributes_request_unique_identifier(
         let HandleValue::GetAttributesRequest(request) = &handle.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        if let Err(status) =
-            write_unique_identifier_text_v1(out_unique_identifier, request.unique_identifier())
+        if let Err(status) = write_unique_identifier_v1(out_unique_identifier, request.identifier())
         {
             return record_ffi_error(status);
         }
@@ -5209,7 +5209,12 @@ pub unsafe extern "C" fn kmipkit_client_batch_item_response_metadata_v2(
             struct_size,
             abi_version: 2,
             operation: outcome.operation().raw(),
-            outcome_kind: if outcome.asynchronous_correlation_value().is_some() {
+            outcome_kind: if matches!(
+                outcome,
+                kmipkit_client::ClientBatchOutcome::Ephemeral { .. }
+            ) {
+                3
+            } else if outcome.asynchronous_correlation_value().is_some() {
                 BATCH_OUTCOME_PENDING
             } else {
                 BATCH_OUTCOME_COMPLETED
@@ -5280,8 +5285,18 @@ pub(super) fn write_unique_identifier_v1(
                 output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_INTEGER;
                 output.integer_value = *value;
             }
-            kmipkit_protocol::UniqueIdentifier::Identifier(text) => {
-                output.kind = crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER;
+            kmipkit_protocol::UniqueIdentifier::Identifier(text)
+            | kmipkit_protocol::UniqueIdentifier::Reference(text)
+            | kmipkit_protocol::UniqueIdentifier::NameReference(text) => {
+                output.kind = match identifier {
+                    kmipkit_protocol::UniqueIdentifier::Reference(_) => {
+                        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_REFERENCE
+                    }
+                    kmipkit_protocol::UniqueIdentifier::NameReference(_) => {
+                        crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_NAME_REFERENCE
+                    }
+                    _ => crate::KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER,
+                };
                 output.text_data = text.as_ptr();
                 output.text_length = u64::try_from(text.len()).unwrap_or(u64::MAX);
             }
@@ -6926,7 +6941,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attributes(
         let kmipkit_client::ClientBatchOutcome::GetAttributes(result) = item.outcome() else {
             return SUCCESS;
         };
-        let Some(value) = result.unique_identifier() else {
+        let Some(value) = result.identifier() else {
             return SUCCESS;
         };
 
@@ -6949,7 +6964,7 @@ pub extern "C" fn kmipkit_client_batch_item_response_get_attributes(
             } else {
                 ptr::null_mut()
             };
-        if let Err(status) = write_unique_identifier_text_v1(unique_identifier, Some(value)) {
+        if let Err(status) = write_unique_identifier_v1(unique_identifier, Some(value)) {
             if !attributes_handle.is_null() {
                 release(attributes_handle, Kind::Structure);
             }
@@ -10938,15 +10953,25 @@ impl kmipkit_client::ServerRequestHandler for CServerRequestHandlerAdapterV3 {
         };
         let mut deleted_content = Vec::new();
         for reference in request.deleted_attribute_references() {
-            let mut content = Vec::new();
-            encode_structure_view_bytes(&reference.view(), &mut content);
-            write_ttlv_header(
-                &mut deleted_content,
-                [0x42, 0x01, 0x3b],
-                0x01,
-                content.len(),
-            );
-            deleted_content.extend_from_slice(&content);
+            use kmipkit_protocol::server_to_client::DeletedAttributeReference;
+            match reference {
+                DeletedAttributeReference::Standard(tag) => {
+                    write_ttlv_header(&mut deleted_content, [0x42, 0x01, 0x3b], 0x05, 4);
+                    deleted_content.extend_from_slice(&tag.to_be_bytes());
+                    deleted_content.extend_from_slice(&[0; 4]);
+                }
+                DeletedAttributeReference::Vendor(fields) => {
+                    let mut content = Vec::new();
+                    encode_structure_view_bytes(&fields.view(), &mut content);
+                    write_ttlv_header(
+                        &mut deleted_content,
+                        [0x42, 0x01, 0x3b],
+                        0x01,
+                        content.len(),
+                    );
+                    deleted_content.extend_from_slice(&content);
+                }
+            }
         }
         let mut deleted = Vec::new();
         write_ttlv_header(
@@ -11250,6 +11275,30 @@ pub extern "C" fn kmipkit_server_request_dispatcher_create(
                 kmipkit_client::ServerRequestDispatcher::new(),
             ))),
         ));
+        SUCCESS
+    })
+}
+
+/// Copies Query capability metadata into a dispatcher.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_request_dispatcher_set_query_metadata(
+    dispatcher: *mut kmipkit_server_request_dispatcher_t,
+    metadata: *mut kmipkit_ttlv_structure_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(dispatcher, ServerRequestDispatcher);
+        let HandleValue::ServerRequestDispatcher(dispatcher) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let metadata = try_ffi!(super::copy_required_structure_handle(metadata));
+        let capabilities = try_ffi!(
+            kmipkit_protocol::ServerCapabilities::from_query_metadata(metadata)
+                .map_err(|_| ERROR_INVALID_INPUT)
+        );
+        let Ok(mut dispatcher) = dispatcher.try_lock() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        dispatcher.set_query_capabilities(capabilities);
         SUCCESS
     })
 }

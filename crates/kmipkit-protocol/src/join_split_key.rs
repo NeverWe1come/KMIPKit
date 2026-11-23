@@ -3,7 +3,7 @@
 use std::error::Error;
 use std::fmt;
 
-use kmipkit_ttlv::{ModelError, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{ModelError, Structure, StructureView, Value};
 
 use crate::cryptographic_operation::{self as common, OwnedResponseTtlv};
 use crate::{
@@ -388,21 +388,12 @@ fn parse_success_payload(
         if unique_identifier.is_some() {
             return Err(JoinSplitKeyError::MalformedSuccessPayload);
         }
-        unique_identifier = field.with_value(|value| parse_unique_identifier(&value));
+        unique_identifier = field.with_value(UniqueIdentifier::from_value);
         if unique_identifier.is_none() {
             return Err(JoinSplitKeyError::MalformedSuccessPayload);
         }
     }
     unique_identifier.ok_or(JoinSplitKeyError::MalformedSuccessPayload)
-}
-
-fn parse_unique_identifier(value: &ValueView<'_>) -> Option<UniqueIdentifier> {
-    match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString((*value).to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(**value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(**value)),
-        _ => None,
-    }
 }
 
 fn model_error(error: ModelError) -> ProtocolError {

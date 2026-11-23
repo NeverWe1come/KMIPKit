@@ -70,8 +70,8 @@ fn test_kmip_30_pqc_and_kem_tags_and_operations() {
     assert_eq!(KmipTag::PerformsCRLChecks.as_u32(), 0x0042_01CB);
 
     // KEM Operations
-    assert_eq!(OperationCode::KemEncrypt.as_u32(), 0x0000_003C);
-    assert_eq!(OperationCode::KemDecrypt.as_u32(), 0x0000_003D);
+    assert_eq!(OperationCode::CreateGroup.as_u32(), 0x0000_003C);
+    assert_eq!(OperationCode::Obliterate.as_u32(), 0x0000_003D);
     assert_eq!(OperationCode::Encapsulate.as_u32(), 0x0000_0041);
     assert_eq!(OperationCode::Decapsulate.as_u32(), 0x0000_0042);
 
@@ -243,7 +243,7 @@ fn test_nist_key_lifecycle_guard_rules() {
 
 #[test]
 fn test_query_function_performs_crl_checks_kmip30() {
-    let qf = QueryFunction::PERFORMS_CRL_CHECKS;
+    let qf = QueryFunction::CREDENTIAL_INFORMATION;
     assert_eq!(qf.raw(), 15);
 }
 

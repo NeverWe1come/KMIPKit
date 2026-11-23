@@ -563,3 +563,19 @@ fn tables_379_380_381_preserve_absent_known_member_and_repeated_unknown_members(
         Some(2)
     );
 }
+
+#[test]
+fn standard_pkcs11_names_resolve_to_one_based_function_list_positions() {
+    use kmipkit_ttlv::KmipTag;
+    for (name, index) in [
+        ("C_Initialize", 1),
+        ("C_GetInfo", 3),
+        ("C_MessageVerifyFinal", 92),
+    ] {
+        let fields = Pkcs11Request::function_ttlv(name).unwrap();
+        let item = &fields.view().children()[0];
+        assert_eq!(item.tag().raw(), KmipTag::PKCS11Function.as_u32());
+        assert!(item.with_value(|v| matches!(v, ValueView::Enumeration(n) if *n == index)));
+    }
+    assert!(Pkcs11Request::from_function_name("C_Unknown").is_err());
+}

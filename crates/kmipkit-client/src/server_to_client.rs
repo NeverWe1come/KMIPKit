@@ -8,9 +8,9 @@ use std::net::SocketAddr;
 use std::time::Duration;
 
 use kmipkit_protocol::server_to_client::{
-    ServerDiscoverVersionsRequest, ServerDiscoverVersionsResponse, ServerNotifyRequest,
-    ServerNotifyResponse, ServerPutRequest, ServerPutResponse, ServerQueryRequest,
-    ServerQueryResponse, ServerResponseBuilder,
+    ServerCapabilities, ServerDiscoverVersionsRequest, ServerDiscoverVersionsResponse,
+    ServerNotifyRequest, ServerNotifyResponse, ServerPutRequest, ServerPutResponse,
+    ServerQueryRequest, ServerQueryResponse, ServerResponseBuilder,
 };
 use kmipkit_protocol::{
     KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
@@ -400,13 +400,20 @@ pub trait ServerRequestHandler {
 
 /// Dispatches an incoming server batch to a [`ServerRequestHandler`] and builds a [`ResponseMessage`].
 #[derive(Default)]
-pub struct ServerRequestDispatcher;
+pub struct ServerRequestDispatcher {
+    query_capabilities: ServerCapabilities,
+}
 
 impl ServerRequestDispatcher {
     /// Creates a new dispatcher.
     #[must_use]
     pub fn new() -> Self {
-        Self
+        Self::default()
+    }
+
+    /// Sets additional Query capabilities used when the handler leaves them unspecified.
+    pub fn set_query_capabilities(&mut self, capabilities: ServerCapabilities) {
+        self.query_capabilities = capabilities;
     }
 
     /// Dispatches all items in `batch` to `handler` and compiles the canonical response message.
@@ -492,7 +499,8 @@ impl ServerRequestDispatcher {
                     }
                 },
                 ServerRequestItemPayload::Query(req) => {
-                    let result = handler.handle_query(req).and_then(|response| {
+                    let result = handler.handle_query(req).and_then(|mut response| {
+                        response.supply_missing_metadata(req, &self.query_capabilities);
                         response
                             .to_ttlv_payload_for_version(batch.protocol_version())
                             .map_err(|_| {

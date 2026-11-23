@@ -28,7 +28,7 @@ fn names_all_standard_query_function_values_and_preserves_future_values() {
         QueryFunction::CLIENT_REGISTRATION_METHODS,
         QueryFunction::DEFAULTS_INFORMATION,
         QueryFunction::STORAGE_PROTECTION_MASKS,
-        QueryFunction::PERFORMS_CRL_CHECKS,
+        QueryFunction::CREDENTIAL_INFORMATION,
     ];
     assert_eq!(named.map(QueryFunction::raw), STANDARD_QUERY_FUNCTIONS);
     assert_eq!(QueryFunction::from_raw(0x8000_0042).raw(), 0x8000_0042);

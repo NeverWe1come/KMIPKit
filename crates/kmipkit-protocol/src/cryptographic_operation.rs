@@ -214,12 +214,7 @@ fn model_error(error: ModelError) -> ProtocolError {
 }
 
 pub(crate) fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-        UniqueIdentifier::Identifier(value) => Value::identifier(value),
-    }
+    identifier.into_value()
 }
 
 pub(crate) fn validate_parameters(parameters: &Structure) -> Result<(), ProtocolError> {
@@ -361,12 +356,7 @@ impl OwnedResponseTtlv {
 }
 
 pub(crate) fn parse_identifier(field: &Item) -> Option<UniqueIdentifier> {
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 pub(crate) fn parse_secret(field: &Item) -> Option<SecretBytes> {

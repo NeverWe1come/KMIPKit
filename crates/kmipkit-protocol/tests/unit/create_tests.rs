@@ -453,7 +453,13 @@ fn response_preserves_unknown_object_type_and_all_unique_identifier_wire_forms()
             response.unique_identifier(),
             response.unique_identifier().unwrap(),
         ) {
-            (_, UniqueIdentifier::TextString(value) | UniqueIdentifier::Identifier(value)) => {
+            (
+                _,
+                UniqueIdentifier::TextString(value)
+                | UniqueIdentifier::Identifier(value)
+                | UniqueIdentifier::Reference(value)
+                | UniqueIdentifier::NameReference(value),
+            ) => {
                 assert_eq!(value, "id-001");
             }
             (_, UniqueIdentifier::Enumeration(value)) => assert_eq!(*value, 0xf001_0001),

@@ -586,14 +586,22 @@ pub enum OperationCode {
     Process = 0x0000_003A,
     /// `PING` (`0x0000_003B`)
     Ping = 0x0000_003B,
-    /// `KEM_ENCRYPT` (`0x0000_003C`)
-    KemEncrypt = 0x0000_003C,
-    /// `KEM_DECRYPT` (`0x0000_003D`)
-    KemDecrypt = 0x0000_003D,
+    /// `CREATE_GROUP` (`0x0000_003C`)
+    CreateGroup = 0x0000_003C,
+    /// `OBLITERATE` (`0x0000_003D`)
+    Obliterate = 0x0000_003D,
     /// `ENCAPSULATE` (`0x0000_0041`, KMIP 3.0)
     Encapsulate = 0x0000_0041,
     /// `DECAPSULATE` (`0x0000_0042`, KMIP 3.0)
     Decapsulate = 0x0000_0042,
+    /// PKCS#11.
+    Pkcs11 = 0x0000_0033,
+    /// Create User.
+    CreateUser = 0x0000_003E,
+    /// Create Credential.
+    CreateCredential = 0x0000_003F,
+    /// Deactivate.
+    Deactivate = 0x0000_0040,
 }
 
 impl OperationCode {
@@ -668,8 +676,12 @@ impl OperationCode {
             0x0000_0039 => Some(Self::QueryAsynchronousRequests),
             0x0000_003A => Some(Self::Process),
             0x0000_003B => Some(Self::Ping),
-            0x0000_003C => Some(Self::KemEncrypt),
-            0x0000_003D => Some(Self::KemDecrypt),
+            0x0000_003C => Some(Self::CreateGroup),
+            0x0000_003D => Some(Self::Obliterate),
+            0x0000_0033 => Some(Self::Pkcs11),
+            0x0000_003E => Some(Self::CreateUser),
+            0x0000_003F => Some(Self::CreateCredential),
+            0x0000_0040 => Some(Self::Deactivate),
             _ => None,
         }
     }
@@ -690,8 +702,6 @@ pub enum ObjectTypeCode {
     PrivateKey = 0x0000_0004,
     /// `Split Key` (`0x0000_0005`)
     SplitKey = 0x0000_0005,
-    /// `Template` (`0x0000_0006`)
-    Template = 0x0000_0006,
     /// `Secret Data` (`0x0000_0007`)
     SecretData = 0x0000_0007,
     /// `Opaque Object` (`0x0000_0008`)
@@ -704,6 +714,14 @@ pub enum ObjectTypeCode {
     UserObject = 0x0000_000B,
     /// `Group Object (KMIP 3.0+)` (`0x0000_000C`)
     GroupObject = 0x0000_000C,
+    /// Password Credential.
+    PasswordCredential = 0x0000_000D,
+    /// Device Credential.
+    DeviceCredential = 0x0000_000E,
+    /// OneTimePassword Credential.
+    OneTimePasswordCredential = 0x0000_000F,
+    /// HashedPassword Credential.
+    HashedPasswordCredential = 0x0000_0010,
 }
 
 impl ObjectTypeCode {
@@ -723,13 +741,16 @@ impl ObjectTypeCode {
             0x0000_0003 => Some(Self::PublicKey),
             0x0000_0004 => Some(Self::PrivateKey),
             0x0000_0005 => Some(Self::SplitKey),
-            0x0000_0006 => Some(Self::Template),
             0x0000_0007 => Some(Self::SecretData),
             0x0000_0008 => Some(Self::OpaqueObject),
             0x0000_0009 => Some(Self::PgpKey),
             0x0000_000A => Some(Self::CertificateRequest),
             0x0000_000B => Some(Self::UserObject),
             0x0000_000C => Some(Self::GroupObject),
+            0x0000_000D => Some(Self::PasswordCredential),
+            0x0000_000E => Some(Self::DeviceCredential),
+            0x0000_000F => Some(Self::OneTimePasswordCredential),
+            0x0000_0010 => Some(Self::HashedPasswordCredential),
             _ => None,
         }
     }
@@ -786,12 +807,6 @@ pub enum KemAlgorithmCode {
     Dhkem = 0x0000_0002,
     /// `ML-KEM` (`0x0000_0003`)
     Mlkem = 0x0000_0003,
-    /// `ML-KEM-512 (FIPS 203)` (`0x0000_0004`)
-    MlKem512 = 0x0000_0004,
-    /// `ML-KEM-768 (FIPS 203)` (`0x0000_0005`)
-    MlKem768 = 0x0000_0005,
-    /// `ML-KEM-1024 (FIPS 203)` (`0x0000_0006`)
-    MlKem1024 = 0x0000_0006,
 }
 
 impl KemAlgorithmCode {
@@ -809,9 +824,6 @@ impl KemAlgorithmCode {
             0x0000_0001 => Some(Self::Rsasve),
             0x0000_0002 => Some(Self::Dhkem),
             0x0000_0003 => Some(Self::Mlkem),
-            0x0000_0004 => Some(Self::MlKem512),
-            0x0000_0005 => Some(Self::MlKem768),
-            0x0000_0006 => Some(Self::MlKem1024),
             _ => None,
         }
     }
@@ -821,21 +833,21 @@ impl KemAlgorithmCode {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 pub enum EphemeralMode {
-    /// Legacy variant name. KMIP 3.0 uses this value to omit Data.
-    No = 0x0000_0001,
-    /// Legacy variant name. KMIP 3.0 uses this value for an empty response payload.
-    Immediate = 0x0000_0002,
-    /// Legacy variant name. KMIP 3.0 uses this value to retain only Unique Identifier.
-    RetainOnFailure = 0x0000_0003,
+    /// KMIP 3.0 uses this value to omit Data.
+    Data = 0x0000_0001,
+    /// KMIP 3.0 uses this value for an empty response payload.
+    Empty = 0x0000_0002,
+    /// KMIP 3.0 uses this value to retain only Unique Identifier.
+    UniqueIdentifier = 0x0000_0003,
 }
 
 impl EphemeralMode {
     /// Omits Data from the response payload.
-    pub const DATA: Self = Self::No;
+    pub const DATA: Self = Self::Data;
     /// Omits all fields from the response payload.
-    pub const EMPTY: Self = Self::Immediate;
+    pub const EMPTY: Self = Self::Empty;
     /// Retains only Unique Identifier in the response payload.
-    pub const UNIQUE_IDENTIFIER: Self = Self::RetainOnFailure;
+    pub const UNIQUE_IDENTIFIER: Self = Self::UniqueIdentifier;
 
     /// Returns the 32-bit enumeration value.
     #[inline]
@@ -848,9 +860,9 @@ impl EphemeralMode {
     #[must_use]
     pub const fn from_u32(raw: u32) -> Option<Self> {
         match raw {
-            0x0000_0001 => Some(Self::No),
-            0x0000_0002 => Some(Self::Immediate),
-            0x0000_0003 => Some(Self::RetainOnFailure),
+            0x0000_0001 => Some(Self::Data),
+            0x0000_0002 => Some(Self::Empty),
+            0x0000_0003 => Some(Self::UniqueIdentifier),
             _ => None,
         }
     }

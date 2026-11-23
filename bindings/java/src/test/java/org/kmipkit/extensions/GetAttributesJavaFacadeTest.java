@@ -27,8 +27,9 @@ import org.kmipkit.ttlv.TtlvValueView;
 final class GetAttributesJavaFacadeTest {
     @Test
     void rejectsInvalidIdentifierAndNullReferences() {
-        assertThrows(InvalidInputException.class,
-                () -> ClientBatchItem.getAttributes(UniqueIdentifier.integer(7), List.of()));
+        for (UniqueIdentifier id : List.of(UniqueIdentifier.integer(7), UniqueIdentifier.reference("id"), UniqueIdentifier.nameReference("key"))) {
+            try (ClientBatchItem item = ClientBatchItem.getAttributes(id, List.of())) { assertNotNull(item); }
+        }
         ArrayList<AttributeReference> references = new ArrayList<>();
         references.add(null);
         assertThrows(InvalidInputException.class,

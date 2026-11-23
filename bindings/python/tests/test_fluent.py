@@ -88,6 +88,8 @@ def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
                 )
                 assert item.operation == 8
                 item.close()
+                with locate.object_class_mask(1).build() as item:
+                    assert item.operation == 8
 
     revoke = (
         fluent.Request(None)
@@ -772,11 +774,10 @@ def test_attribute_read_builders_validate_and_expose_typed_batch_items() -> None
         builder.with_options(object())  # type: ignore[arg-type]
     with pytest.raises(errors.KmipKitError):
         builder.execute(object())  # type: ignore[arg-type]
-    with pytest.raises(errors.KmipKitError):
-        request.get_attributes(
-            unique_identifier=extensions.UniqueIdentifier.integer(-1),
-            attribute_references=[reference],
-        )
+    for uid in (extensions.UniqueIdentifier.integer(-1), extensions.UniqueIdentifier.reference("object"),
+                extensions.UniqueIdentifier.name_reference("key name")):
+        with request.get_attributes(unique_identifier=uid, attribute_references=[reference]).build() as item:
+            assert item.operation == 11
     with pytest.raises(errors.KmipKitError):
         request.get_attribute_list(
             unique_identifier=extensions.UniqueIdentifier.integer(-1)

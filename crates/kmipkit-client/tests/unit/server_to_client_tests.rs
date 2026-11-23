@@ -116,6 +116,8 @@ fn make_test_request_batch_ttlv() -> Vec<u8> {
         .try_push(Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![3])).unwrap())
         .unwrap();
     let mut p3 = Structure::new();
+    p3.try_push(Item::new(tag(0x0042_0070), Value::enumeration(1)).unwrap())
+        .unwrap();
     p3.try_push(
         Item::new(
             tag(0x0042_0094),
@@ -141,8 +143,14 @@ fn make_test_request_batch_ttlv() -> Vec<u8> {
         .try_push(Item::new(tag(UNIQUE_BATCH_ITEM_ID_TAG), Value::byte_string(vec![4])).unwrap())
         .unwrap();
     let mut p4 = Structure::new();
-    p4.try_push(Item::new(tag(0x0042_007A), Value::enumeration(0x01)).unwrap())
-        .unwrap(); // QueryFunction = QueryOperations
+    p4.try_push(
+        Item::new(
+            tag(kmipkit_ttlv::KmipTag::QueryFunction.as_u32()),
+            Value::enumeration(0x01),
+        )
+        .unwrap(),
+    )
+    .unwrap(); // QueryFunction = QueryOperations
     item4
         .try_push(Item::new(tag(REQUEST_PAYLOAD_TAG), Value::structure(p4)).unwrap())
         .unwrap();

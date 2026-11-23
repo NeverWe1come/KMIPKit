@@ -2,7 +2,7 @@
 
 use std::{error::Error, fmt};
 
-use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value, ValueView};
+use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Value};
 
 use crate::cryptographic_operation::OwnedResponseTtlv;
 use crate::{
@@ -36,12 +36,7 @@ fn push(payload: &mut Structure, raw_tag: u32, value: Value) -> Result<(), Strin
 }
 
 fn unique_identifier_value(identifier: UniqueIdentifier) -> Value {
-    match identifier {
-        UniqueIdentifier::TextString(value) => Value::text_string(value),
-        UniqueIdentifier::Enumeration(value) => Value::enumeration(value),
-        UniqueIdentifier::Integer(value) => Value::integer(value),
-        UniqueIdentifier::Identifier(value) => Value::identifier(value),
-    }
+    identifier.into_reference_value()
 }
 
 fn unique_identifier_item(identifier: UniqueIdentifier) -> Result<Item, String> {
@@ -81,13 +76,7 @@ fn parse_unique_identifier(field: &Item) -> Option<UniqueIdentifier> {
     if field.tag().raw() != UNIQUE_IDENTIFIER_TAG {
         return None;
     }
-    field.with_value(|value| match value {
-        ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
-        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
-        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
-        ValueView::Identifier(value) => Some(UniqueIdentifier::Identifier(value.to_owned())),
-        _ => None,
-    })
+    field.with_value(UniqueIdentifier::from_value)
 }
 
 pub(crate) fn parse_success_identifier(
