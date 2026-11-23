@@ -5,7 +5,7 @@
 //! or schema validity.
 //!
 //! Verifies TTLV semantic value model representation across all supported Item Types.
-//! Structure depth is capped at 64 by KMIPKit policy, not by an OASIS protocol constraint.
+//! Structure depth is capped at 64 by `KMIPKit` policy, not by an OASIS protocol constraint.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::fmt::{Debug, Display};

@@ -1,6 +1,6 @@
 //! Create Split Key payload tests derived from KMIP Specification v2.1
 //! §6.1.10, Tables 193–195, and the Table 9 Split Key object definition.
-//! Prime Field Size enforcement for method 3 is an accepted KMIPKit
+//! Prime Field Size enforcement for method 3 is an accepted `KMIPKit`
 //! caller-input validation policy; Table 193 itself marks the request field optional.
 
 use crate::{

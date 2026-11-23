@@ -1,7 +1,7 @@
 //! Stop batch response cardinality tests derived from OASIS KMIP v2.1 §§8.3,
 //! 8.6, 9.6, 9.21, and 11.5/Table 434, covering batch error continuation scenarios.
 //! OASIS does not explicitly require omission of unprocessed response items;
-//! the partial response rule is KMIPKit client policy. These are
+//! the partial response rule is `KMIPKit` client policy. These are
 //! deterministic fake-transport tests, not official OASIS vectors.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.

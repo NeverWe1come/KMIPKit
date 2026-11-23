@@ -1,6 +1,6 @@
 //! OASIS KMIP Specification v2.1, §10.1.1 (Tag), Chapter 11 introduction, and §11.56 (Tag
 //! Enumeration).
-//! Exact-over-range precedence is the accepted KMIPKit policy in tag allocation,
+//! Exact-over-range precedence is the accepted `KMIPKit` policy in tag allocation,
 //! not an OASIS interpretation.
 
 // Generated catalog literals use grouped hexadecimal digits; keep the lint
