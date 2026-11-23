@@ -3,6 +3,7 @@
 Fixture bytes stay in memory; evidence contains normalized tree hashes only.
 """
 from __future__ import annotations
+from collections.abc import Callable
 import hashlib
 import json
 from pathlib import Path
@@ -480,6 +481,7 @@ class ControlledTlsPeer:
         include_response_extension: bool = False,
         result_statuses: list[int] | None = None,
         result_reasons: list[int | None] | None = None,
+        response_factory: Callable[[bytes], bytes] | None = None,
     ) -> None:
         self.status = status
         self.reason = reason
@@ -492,6 +494,7 @@ class ControlledTlsPeer:
         self.include_response_extension = include_response_extension
         self.result_statuses = result_statuses
         self.result_reasons = result_reasons
+        self.response_factory = response_factory
         self.peer_observed_effects: list[str] = []
         self.peer_observed_state_before_sha256: str | None = None
         self.peer_observed_state_after_sha256: str | None = None
@@ -532,6 +535,11 @@ class ControlledTlsPeer:
                 else:
                     request = read_raw_document(stream, self.encoding)
                 self.requests.append(request)
+                if self.response_factory is not None:
+                    response = self.response_factory(request)
+                    self.responses.append(response)
+                    stream.sendall(response)
+                    return
                 self.request_observation = request_observation(request, self.encoding)
                 statuses = self.result_statuses or [self.status] * len(
                     self.request_observation["operations"]
