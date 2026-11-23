@@ -85,3 +85,11 @@ The runner verifies that the loaded JAR matches the installer manifest, calls
 all seven public generic-payload constructors through JNI, and checks their
 operation codes. It generates local evidence. The existing live runner
 handles KMIP 2.0 and 2.1.
+
+For one live typed KMIP 2.x Query Operations exchange, reuse the Java
+runner with `--scope live --connection PATH`. The report retains the numeric
+KMIP result and the outcome of the installed typed response checks.
+
+To select the common source revision for a cross-language run, pass a
+checkout of the exact commit to `tools/install_artifact.py --repository`.
+Use the JAR produced by that installer to build the standalone distribution.
