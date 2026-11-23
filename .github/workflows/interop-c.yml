@@ -54,7 +54,7 @@ jobs:
 
       - name: Verify shared draft campaign evidence
         run: |
-          python3 -m pip install 'jsonschema==4.23.0'
+          python3 -m pip install --only-binary ':all:' 'jsonschema==4.23.0'
           validator=verification/interop/c-kmip-validator
           report_dir="$(mktemp -d)"
           python3 verification/interop/shared/tools/campaign.py --version 3.0 \

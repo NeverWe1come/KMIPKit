@@ -1,6 +1,7 @@
 #include "c_validator.h"
 #include "live_driver.h"
 #include "kmipkit.h"
+#include "kmipkit_fluent.h"
 #include "json.h"
 #include <assert.h>
 #include <stdio.h>
@@ -76,8 +77,48 @@ static void test_get_attribute_list_request_identifier_forms(void) {
     }
 }
 
+static void test_installed_kmip30_fluent_builders(void) {
+    static const uint8_t text[] = "kmip30-fixture";
+    const kmipkit_byte_span_v1_t bytes = {text, sizeof(text) - 1};
+    const kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = sizeof(identifier),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = text,
+        .text_length = sizeof(text) - 1,
+    };
+    kmipkit_ttlv_structure_t *source = NULL;
+    kmipkit_attribute_set_t *attributes = NULL;
+    kmipkit_create_credential_object_t *credential = NULL;
+    kmipkit_kmip30_operation_builder_t *builders[7] = {0};
+    assert(kmipkit_ttlv_structure_create(&source) == 0);
+    assert(kmipkit_attribute_set_create(source, &attributes) == 0);
+    assert(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &credential) == 0);
+    assert(kmipkit_create_group_builder_create(attributes, &builders[0]) == 0);
+    assert(kmipkit_obliterate_builder_create(&identifier, &builders[1]) == 0);
+    assert(kmipkit_create_user_builder_create(attributes, &builders[2]) == 0);
+    assert(kmipkit_create_credential_builder_create(attributes, credential, &builders[3]) == 0);
+    assert(kmipkit_deactivate_builder_create(&identifier, &builders[4]) == 0);
+    assert(kmipkit_encapsulate_builder_create(&identifier, &builders[5]) == 0);
+    assert(kmipkit_decapsulate_builder_create(&identifier, &bytes, &builders[6]) == 0);
+    for (uint32_t index = 0; index < 7; ++index) {
+        kmipkit_client_batch_item_t *item = NULL;
+        uint32_t operation = 0;
+        assert(kmipkit_kmip30_operation_builder_validate(builders[index]) == 0);
+        assert(kmipkit_kmip30_operation_builder_build_batch_item(builders[index], &item) == 0);
+        assert(kmipkit_client_batch_item_operation(item, &operation) == 0);
+        assert(operation == 0x3c + index);
+        kmipkit_client_batch_item_release(item);
+        kmipkit_kmip30_operation_builder_release(builders[index]);
+    }
+    kmipkit_create_credential_object_release(credential);
+    kmipkit_attribute_set_release(attributes);
+    kmipkit_ttlv_structure_release(source);
+}
+
 int main(void) {
     printf("Running C validator unit tests...\n");
+    test_installed_kmip30_fluent_builders();
 
     // 0. Confirm the shared release catalog is consumed in full.
     kmip_test_case_t *catalog = calloc(KMIP_MAX_CASES, sizeof(*catalog));
