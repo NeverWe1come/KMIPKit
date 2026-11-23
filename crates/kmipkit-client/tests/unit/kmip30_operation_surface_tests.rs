@@ -420,3 +420,155 @@ fn test_item(raw_tag: u32, value: Value) -> Item {
         .expect("fixture Tag is catalogued or an allocated extension");
     Item::new(tag, value).expect("fixture Item is structurally valid")
 }
+
+#[test]
+fn kmip30_multi_item_batch_uses_wire_order_without_batch_ids() {
+    let response = test_structure([
+        test_item(
+            0x0042_007a,
+            Value::structure(test_structure([
+                test_item(
+                    0x0042_0069,
+                    Value::structure(test_structure([
+                        test_item(0x0042_006a, Value::integer(3)),
+                        test_item(0x0042_006b, Value::integer(0)),
+                    ])),
+                ),
+                test_item(0x0042_0092, Value::date_time(1)),
+            ])),
+        ),
+        test_item(
+            0x0042_000f,
+            Value::structure(test_structure([
+                test_item(0x0042_005c, Value::enumeration(ClientOperation::Ping.raw())),
+                test_item(0x0042_007f, Value::enumeration(0)),
+                test_item(0x0042_007c, Value::structure(Structure::new())),
+            ])),
+        ),
+        test_item(
+            0x0042_000f,
+            Value::structure(test_structure([
+                test_item(0x0042_005c, Value::enumeration(ClientOperation::Ping.raw())),
+                test_item(0x0042_007f, Value::enumeration(1)),
+                test_item(0x0042_007e, Value::enumeration(1)),
+            ])),
+        ),
+    ]);
+    let limits = CodecLimits::defaults();
+    let response = super::encode_message_for_test(response, &limits).unwrap();
+    let (mut client, fake, _) =
+        crate::asynchronous_execution_test_support::client_for(ExchangeScript::Success {
+            response,
+            request_write_chunks: Vec::new(),
+        });
+    let batch = ClientBatch::from_items([
+        ClientBatchItem::new(ClientRequest::Ping(kmipkit_protocol::PingRequest::new())),
+        ClientBatchItem::new(ClientRequest::Ping(kmipkit_protocol::PingRequest::new())),
+    ])
+    .with_protocol_version(ProtocolVersion::V3_0);
+    let result = client.execute(batch, &limits).unwrap();
+    let statuses: Vec<_> = result
+        .iter()
+        .map(|item| item.outcome().result().status().raw())
+        .collect();
+    assert_eq!(statuses, [0, 1]);
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn kmip30_poll_uses_a_header_without_batch_count() {
+    use crate::asynchronous_execution_test_support::client_for;
+    let response = response_with_result(
+        ClientOperation::Poll.raw(),
+        2,
+        None,
+        Some(b"test-correlation"),
+    );
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let result = client
+        .execute_poll_with_options(
+            kmipkit_protocol::PollRequest::new(b"test-correlation"),
+            &CodecLimits::defaults(),
+            &RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0),
+        )
+        .unwrap();
+    assert!(result.is_pending());
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_credential_information_is_rejected_in_both_older_editions() {
+    use crate::asynchronous_execution_test_support::client_for;
+    use kmipkit_protocol::{QueryFunction, QueryRequest};
+    let (mut client, fake, _) =
+        client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 2 });
+    for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+        let request =
+            ClientRequest::Query(QueryRequest::new([QueryFunction::CREDENTIAL_INFORMATION]));
+        let batch = ClientBatch::new(ClientBatchItem::new(request)).with_protocol_version(version);
+        let validation = super::validate_batch(&batch, version)
+            .expect_err("Query Credential Information is unavailable before KMIP 3.0");
+        assert_eq!(
+            validation.to_string(),
+            "Query Credential Information requires KMIP 3.0"
+        );
+        let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    }
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffix() {
+    use super::{BatchIdentity, ResponseAssociationError, associate_v3_batch_items};
+
+    let identity = |operation: ClientOperation| BatchIdentity {
+        operation: operation.raw(),
+        unique_batch_item_id: None,
+        response_context: None,
+    };
+    let requests = [
+        identity(ClientOperation::Ping),
+        identity(ClientOperation::Query),
+    ];
+    let prefix = [identity(ClientOperation::Ping)];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, true),
+        Ok(vec![Some(0), None])
+    );
+    assert_eq!(
+        associate_v3_batch_items(&requests, &prefix, false),
+        Err(ResponseAssociationError::ItemCountMismatch)
+    );
+    let reordered = [
+        identity(ClientOperation::Query),
+        identity(ClientOperation::Ping),
+    ];
+    assert_eq!(
+        associate_v3_batch_items(&requests, &reordered, false),
+        Err(ResponseAssociationError::ItemOperationMismatch)
+    );
+}
+
+#[test]
+fn kmip30_rejects_explicit_batch_item_ids_before_transport() {
+    let (mut client, transport, _) =
+        crate::asynchronous_execution_test_support::client_for(ExchangeScript::FailBeforeWrite);
+    let batch = ClientBatch::new(
+        ClientBatchItem::new(ClientRequest::Ping(kmipkit_protocol::PingRequest::new()))
+            .with_unique_batch_item_id(vec![1]),
+    )
+    .with_protocol_version(ProtocolVersion::V3_0);
+    let validation = super::validate_batch(&batch, ProtocolVersion::V3_0)
+        .expect_err("KMIP 3.0 reserves Unique Batch Item ID");
+    assert_eq!(
+        validation.to_string(),
+        "Unique Batch Item ID is reserved in KMIP 3.0"
+    );
+    let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}

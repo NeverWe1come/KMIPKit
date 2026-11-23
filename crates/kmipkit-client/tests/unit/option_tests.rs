@@ -96,6 +96,8 @@ fn candidate_build_batch_error_option(
             | crate::execute::BatchValidationError::EmptyBatch
             | crate::execute::BatchValidationError::MissingBatchItemId
             | crate::execute::BatchValidationError::DuplicateBatchItemId
+            | crate::execute::BatchValidationError::BatchItemIdReservedInV3
+            | crate::execute::BatchValidationError::QueryFunctionRequiresV3
             | crate::execute::BatchValidationError::IneligibleIdPlaceholder
             | crate::execute::BatchValidationError::InvalidAsynchronousIndicator
             | crate::execute::BatchValidationError::ExtensionRegistryMismatch => {

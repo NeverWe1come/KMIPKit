@@ -8282,6 +8282,8 @@ pub(super) enum BatchValidationError {
     EmptyBatch,
     MissingBatchItemId,
     DuplicateBatchItemId,
+    BatchItemIdReservedInV3,
+    QueryFunctionRequiresV3,
     IneligibleIdPlaceholder,
     InvalidAsynchronousIndicator,
     RepeatedBatchErrorContinuation,
@@ -8296,6 +8298,8 @@ impl fmt::Display for BatchValidationError {
             Self::EmptyBatch => "client batch must contain an item",
             Self::MissingBatchItemId => "multi-item request requires every batch item ID",
             Self::DuplicateBatchItemId => "request batch item IDs must be unique",
+            Self::BatchItemIdReservedInV3 => "Unique Batch Item ID is reserved in KMIP 3.0",
+            Self::QueryFunctionRequiresV3 => "Query Credential Information requires KMIP 3.0",
             Self::IneligibleIdPlaceholder => "ID Placeholder has no eligible preceding batch item",
             Self::InvalidAsynchronousIndicator => "asynchronous indicator is unassigned",
             Self::RepeatedBatchErrorContinuation => "batch error continuation is repeated",
@@ -8358,9 +8362,21 @@ pub(super) fn validate_batch(
     let options = validate_batch_options(batch, effective_version)?;
 
     let mut identifiers = HashSet::new();
+    let is_v3 = effective_version == ProtocolVersion::V3_0;
     for item in &batch.items {
+        if !is_v3
+            && let ClientRequest::Query(query) = &item.request
+            && query
+                .functions()
+                .contains(&kmipkit_protocol::QueryFunction::CREDENTIAL_INFORMATION)
+        {
+            return Err(BatchValidationError::QueryFunctionRequiresV3);
+        }
         match (&item.unique_batch_item_id, batch.items.len()) {
-            (None, count) if count > 1 => return Err(BatchValidationError::MissingBatchItemId),
+            (Some(_), _) if is_v3 => return Err(BatchValidationError::BatchItemIdReservedInV3),
+            (None, count) if count > 1 && !is_v3 => {
+                return Err(BatchValidationError::MissingBatchItemId);
+            }
             (Some(id), _) if !identifiers.insert(id.as_slice()) => {
                 return Err(BatchValidationError::DuplicateBatchItemId);
             }
@@ -9078,7 +9094,9 @@ fn build_async_request_message(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
-    push(&mut header, BATCH_COUNT, Value::integer(1))?;
+    if protocol_version != ProtocolVersion::V3_0 {
+        push(&mut header, BATCH_COUNT, Value::integer(1))?;
+    }
 
     let mut batch_item = Structure::new();
     push(&mut batch_item, OPERATION, Value::enumeration(operation))?;
@@ -9237,6 +9255,25 @@ pub(super) fn associate_batch_items_allow_missing(
     Ok(associated)
 }
 
+fn associate_v3_batch_items(
+    requests: &[BatchIdentity],
+    responses: &[BatchIdentity],
+    allow_missing: bool,
+) -> Result<Vec<Option<usize>>, ResponseAssociationError> {
+    if responses.len() > requests.len() || (!allow_missing && responses.len() != requests.len()) {
+        return Err(ResponseAssociationError::ItemCountMismatch);
+    }
+    // KMIP 3.0 executes the batch in wire order and reserves Unique Batch Item ID.
+    for (request, response) in requests.iter().zip(responses) {
+        if request.operation != response.operation {
+            return Err(ResponseAssociationError::ItemOperationMismatch);
+        }
+    }
+    Ok((0..requests.len())
+        .map(|index| (index < responses.len()).then_some(index))
+        .collect())
+}
+
 #[derive(Clone, Copy)]
 pub(super) struct PendingState {
     pub(super) pending: bool,
@@ -9372,11 +9409,19 @@ fn validate_response_inner(
         && response_items.iter().any(|item| {
             item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
         });
-    let association = associate_batch_items_allow_missing(
-        request_identities,
-        &response_identities,
-        partial_response_permitted,
-    )
+    let association = if resp_ver == ProtocolVersion::V3_0 {
+        associate_v3_batch_items(
+            request_identities,
+            &response_identities,
+            partial_response_permitted,
+        )
+    } else {
+        associate_batch_items_allow_missing(
+            request_identities,
+            &response_identities,
+            partial_response_permitted,
+        )
+    }
     .map_err(ProtocolError::from)?;
 
     let outcome_states = response_items
