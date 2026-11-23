@@ -101,7 +101,7 @@ fn draft_campaign_records_only_the_executed_local_constructor() {
         actual["events"],
         serde_json::json!([{
             "obligation_id": obligation, "public_api_symbol": symbol, "status": "passed",
-            "assertion": "draft_operation_code"
+            "assertion": "draft_operation_and_ordered_payload"
         }])
     );
 }
