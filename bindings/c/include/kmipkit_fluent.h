@@ -89,6 +89,18 @@ int32_t kmipkit_create_builder_set_protection_storage_masks(kmipkit_create_build
 int32_t kmipkit_create_builder_set_asynchronous_indicator(kmipkit_create_builder_t * builder, uint32_t value);
 int32_t kmipkit_create_builder_validate(kmipkit_create_builder_t * builder);
 int32_t kmipkit_create_builder_build_batch_item(kmipkit_create_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* Execute one Create. NULL options use client defaults. The returned item carries
+ * success, rejection, or Pending and is released with kmipkit_client_batch_item_response_release. */
+int32_t kmipkit_create_builder_execute_one_v1(
+    kmipkit_create_builder_t *builder, kmipkit_client_t *client, kmipkit_codec_limits_t *limits,
+    const kmipkit_request_options_v1_t *options, kmipkit_client_batch_item_response_t **out_result);
+int32_t kmipkit_symmetric_key_builder_execute_one_v1(
+    kmipkit_symmetric_key_builder_t *builder, kmipkit_client_t *client, kmipkit_codec_limits_t *limits,
+    const kmipkit_request_options_v1_t *options, kmipkit_client_batch_item_response_t **out_result);
+/* Borrow the complete received message, including framing fields and all items.
+ * Keep the item alive throughout use of this span, and keep the bytes out of logs. */
+int32_t kmipkit_client_batch_item_response_wire_bytes_v1(
+    kmipkit_client_batch_item_response_t *item, kmipkit_byte_span_v1_t *out_bytes);
 int32_t kmipkit_create_builder_execute_v1(kmipkit_create_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_create_builder_execute_with_options_v1(kmipkit_create_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_ping_builder_create(kmipkit_ping_builder_t ** out_builder);

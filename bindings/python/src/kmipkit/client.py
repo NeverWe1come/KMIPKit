@@ -2247,6 +2247,35 @@ class BatchItemResult(_BatchItemResultNativeState):
         """
         return self._render_response_view("xml", limits)
 
+    def raw_response_bytes(self) -> bytes:
+        """Copy the complete received message. Treat the returned bytes as sensitive."""
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            span = ffi.new("kmipkit_byte_span_v1_t *")
+            _raise_abi_status(lib.kmipkit_client_batch_item_response_wire_bytes_v1(
+                item._pointer(), span
+            ))
+            if span.length > sys.maxsize:
+                errors.raise_for_status(6)
+            return bytes(ffi.buffer(span.data, int(span.length)))
+
+    def close(self) -> None:
+        """Release the native item view. Copied result metadata remains readable."""
+        with _NATIVE_CALL_LOCK:
+            for native_response in (
+                self._native_response_item, self._native_usage_allocation_response
+            ):
+                if native_response is not None:
+                    native_response.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
     def _render_response_view(self, encoding: str, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
         if not isinstance(limits, ttlv.CodecLimits) or self._native_response_item is None:
             errors.raise_for_status(4)
@@ -3259,6 +3288,15 @@ class BatchResult(_ClientHandle):
     ) -> None:
         super().__init__(handle, _token=_token)
         self.items = items
+
+    def _take_single_item(self) -> BatchItemResult:
+        """Transfer the sole result before closing the enclosing batch."""
+        with _NATIVE_CALL_LOCK:
+            if len(self.items) != 1:
+                errors.raise_for_status(7)
+            (item,) = self.items
+            self.items = ()
+            return item
 
     def item_count(self) -> int:
         """Return the number of response items actually returned by the server."""

@@ -4019,8 +4019,9 @@ final class ClientFacadeTlsIntegrationTest {
         X509Certificate clientCertificate = testCertificate(clientCertificatePem);
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        byte[] createWire = fluentClientResponseMessage(1);
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
-                fluentClientResponseMessage(1), fluentClientResponseMessage(1),
+                createWire, createWire, createWire, createWire,
                 fluentClientResponseMessage(10), fluentClientResponseMessage(10),
                 fluentClientResponseMessage(20), fluentClientResponseMessage(20),
                 discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1),
@@ -4051,6 +4052,23 @@ final class ClientFacadeTlsIntegrationTest {
             try (ClientBatchResponse response = client.createSymmetricKey(
                     SymmetricKeyRequest.unnamed(3, 256, 12), limits, RequestOptions.defaults())) {
                 assertEquals(1, response.itemCount());
+            }
+            try (var builder = client.request().createSymmetricKey().aes256()
+                         .usageMask(org.kmipkit.protocol.KeyUsage.ENCRYPT);
+                    ClientBatchItemResult response = builder.executeOne()) {
+                assertEquals(0, response.resultStatus());
+                UniqueIdentifier created = response.createIdentifier().orElseThrow();
+                assertEquals(id.kind(), created.kind());
+                assertEquals(id.text(), created.text());
+                assertArrayEquals(createWire, response.rawResponseBytes());
+            }
+            try (var builder = client.request().create()
+                         .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
+                         .withOptions(RequestOptions.defaults());
+                    ClientBatchItemResult response = builder.executeOne()) {
+                assertEquals(0, response.resultStatus());
+                assertEquals(id.text(), response.createIdentifier().orElseThrow().text());
+                assertArrayEquals(createWire, response.rawResponseBytes());
             }
             try (ClientBatchResponse response = client.getById(id, limits)) {
                 assertEquals(1, response.itemCount());
@@ -4091,7 +4109,7 @@ final class ClientFacadeTlsIntegrationTest {
         } finally {
             listener.close();
         }
-        assertEquals(10, peer.get(15, TimeUnit.SECONDS).size());
+        assertEquals(12, peer.get(15, TimeUnit.SECONDS).size());
     }
 
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.

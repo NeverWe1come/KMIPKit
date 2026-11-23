@@ -10139,6 +10139,161 @@ fn ffi_last_error_snapshots_are_isolated_between_threads() {
     assert_eq!(delivery, DELIVERY_STATE_NONE);
 }
 
+fn create_result_wire_fixture() -> Vec<u8> {
+    ttlv_structure(
+        0x0042_007b,
+        [
+            ttlv_structure(
+                0x0042_007a,
+                [
+                    ttlv_structure(
+                        0x0042_0069,
+                        [ttlv_integer(0x0042_006a, 2), ttlv_integer(0x0042_006b, 1)],
+                    ),
+                    ttlv_datetime(0x0042_0092, 1),
+                    ttlv_integer(0x0042_000d, 1),
+                ],
+            ),
+            ttlv_structure(
+                0x0042_000f,
+                [
+                    ttlv_enumeration(0x0042_005c, 1),
+                    ttlv_enumeration(0x0042_007f, 0),
+                    ttlv_structure(
+                        0x0042_007c,
+                        [
+                            ttlv_enumeration(0x0042_0057, 2),
+                            ttlv_integer(0x0042_0094, -17),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+#[test]
+fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
+    use super::fluent::*;
+
+    let wire = create_result_wire_fixture();
+    let inherit = || timeout(0, 0, 0);
+    let options = request_options(inherit(), inherit(), inherit(), inherit());
+    for (symmetric, options) in [
+        (false, ptr::null()),
+        (false, &raw const options),
+        (true, ptr::null()),
+        (true, &raw const options),
+    ] {
+        let (client, peer) = client_with_one_response(wire.clone());
+        let client = make_handle(
+            Kind::Client,
+            HandleValue::Client(Box::new(Mutex::new(client))),
+        );
+        let mut limits = ptr::null_mut();
+        assert_eq!(kmipkit_codec_limits_defaults(&mut limits), SUCCESS);
+        let mut result = ptr::null_mut();
+        let status = if symmetric {
+            let mut builder = ptr::null_mut();
+            assert_eq!(kmipkit_symmetric_key_builder_create(&mut builder), SUCCESS);
+            assert_eq!(
+                kmipkit_symmetric_key_builder_set_algorithm(builder, 3),
+                SUCCESS
+            );
+            assert_eq!(
+                kmipkit_symmetric_key_builder_set_length(builder, 256),
+                SUCCESS
+            );
+            assert_eq!(
+                kmipkit_symmetric_key_builder_set_usage_mask(builder, 4),
+                SUCCESS
+            );
+            // SAFETY: the native handles and writable output reference live values.
+            let status = unsafe {
+                kmipkit_symmetric_key_builder_execute_one_v1(
+                    builder,
+                    client,
+                    limits,
+                    options,
+                    &mut result,
+                )
+            };
+            kmipkit_symmetric_key_builder_release(builder);
+            status
+        } else {
+            let mut builder = ptr::null_mut();
+            assert_eq!(kmipkit_create_builder_create(&mut builder), SUCCESS);
+            assert_eq!(kmipkit_create_builder_set_object_type(builder, 2), SUCCESS);
+            // SAFETY: the native handles and writable output reference live values.
+            let status = unsafe {
+                kmipkit_create_builder_execute_one_v1(builder, client, limits, options, &mut result)
+            };
+            kmipkit_create_builder_release(builder);
+            status
+        };
+        kmipkit_client_release(client);
+        kmipkit_codec_limits_release(limits);
+        assert_eq!(status, SUCCESS);
+        peer.join().expect("peer served one response");
+
+        let mut present = 0;
+        let mut object_type = 0;
+        let mut identifier = empty_unique_identifier_output_v1();
+        assert_eq!(
+            kmipkit_client_batch_item_response_create(
+                result,
+                &mut present,
+                &mut object_type,
+                &mut identifier,
+            ),
+            SUCCESS
+        );
+        assert_eq!(
+            (present, object_type, identifier.integer_value),
+            (1, 2, -17)
+        );
+        let mut span = byte_span(&[]);
+        assert_eq!(
+            kmipkit_client_batch_item_response_wire_bytes_v1(result, &mut span),
+            SUCCESS
+        );
+        // SAFETY: the returned span is valid while the owning result is live.
+        let bytes =
+            unsafe { std::slice::from_raw_parts(span.data, usize::try_from(span.length).unwrap()) };
+        assert_eq!(bytes, wire);
+        kmipkit_client_batch_item_response_release(result);
+    }
+}
+
+#[test]
+fn ffi_create_result_rejects_invalid_arguments_and_clears_the_output() {
+    use super::fluent::{
+        kmipkit_client_batch_item_response_wire_bytes_v1, kmipkit_create_builder_execute_one_v1,
+    };
+
+    let mut result = ptr::dangling_mut();
+    // SAFETY: the output is writable and all optional inputs are null.
+    let status = unsafe {
+        kmipkit_create_builder_execute_one_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null(),
+            &raw mut result,
+        )
+    };
+    assert_eq!(status, ERROR_INVALID_INPUT);
+    assert!(result.is_null());
+
+    let mut span = byte_span(b"previous bytes");
+    assert_eq!(
+        kmipkit_client_batch_item_response_wire_bytes_v1(ptr::null_mut(), &raw mut span),
+        ERROR_INVALID_INPUT
+    );
+    assert!(span.data.is_null());
+    assert_eq!(span.length, 0);
+}
+
 #[test]
 fn ffi_symmetric_builder_validation_delivery_preserves_internal_failure_metadata() {
     // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; ADR-0012 pre-send validation.

@@ -262,14 +262,14 @@ fn create_batch_is_one_exchange_and_associates_reordered_results_by_exact_ids() 
         result.get(1).and_then(|item| item.unique_batch_item_id()),
         Some(second_id.as_slice())
     );
-    let ClientBatchOutcome::CreateCompleted(first) = result.get(0).unwrap().outcome() else {
+    let ClientBatchOutcome::CreateCompleted(_) = result.get(0).unwrap().outcome() else {
         panic!("first request has a completed Create outcome");
     };
     let ClientBatchOutcome::CreateCompleted(second) = result.get(1).unwrap().outcome() else {
         panic!("second request has a completed Create outcome");
     };
     assert_eq!(
-        first.unique_identifier(),
+        result.get(0).unwrap().create_identifier(),
         Some(&kmipkit_protocol::UniqueIdentifier::TextString(
             "object-first".to_owned()
         ))
@@ -485,6 +485,7 @@ fn create_pending_retains_operation_result_and_exact_correlation_without_follow_
         Some(PENDING_CORRELATION)
     );
     assert!(outcome.discover_versions_response().is_none());
+    assert!(result.get(0).unwrap().create_identifier().is_none());
     assert!(outcome.create_response().is_none());
     assert!(outcome.create_key_pair_response().is_none());
     assert!(outcome.create_split_key_response().is_none());

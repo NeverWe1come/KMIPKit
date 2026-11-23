@@ -4882,6 +4882,12 @@ impl ClientBatchItemResponse {
             .supported_versions()
     }
 
+    /// Borrows the identifier returned by a successful Create operation.
+    #[must_use]
+    pub fn create_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.outcome().create_response()?.unique_identifier()
+    }
+
     /// Returns the typed item outcome.
     #[must_use]
     pub const fn outcome(&self) -> &ClientBatchOutcome {

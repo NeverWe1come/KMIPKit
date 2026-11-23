@@ -2768,6 +2768,81 @@ pub extern "C" fn kmipkit_symmetric_key_builder_build_batch_item(
     })
 }
 
+/// Borrows the complete received response message while the item handle is live.
+///
+/// Keep the bytes out of logs. Copy before releasing the response item, and do
+/// not release the handle concurrently with an access through this span.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_wire_bytes_v1(
+    item: *mut kmipkit_client_batch_item_response_t,
+    out_bytes: *mut crate::kmipkit_byte_span_v1_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if !out_bytes.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let output = scalar_out!(out_bytes);
+        let mut present = 0;
+        try_ffi!(set_borrowed_span(&mut present, output, None));
+        let response_handle = read_handle!(item, ClientBatchItemResponse);
+        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
+        try_ffi!(item.with_raw_response_bytes(|bytes| {
+            set_borrowed_span(&mut present, output, Some(bytes))
+        }));
+        SUCCESS
+    })
+}
+
+fn execute_create_result(
+    out_result: *mut *mut kmipkit_client_batch_item_response_t,
+    execute: impl FnOnce(*mut *mut kmipkit_client_batch_response_t) -> i32,
+) -> i32 {
+    if !out_result.is_aligned() {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    }
+    let out = out_slot!(out_result);
+    let mut response = ptr::null_mut();
+    let status = execute(&raw mut response);
+    if status != SUCCESS {
+        return status;
+    }
+    let status = kmipkit_client_batch_response_item_at(response, 0, out);
+    kmipkit_client_batch_response_release(response);
+    if status == SUCCESS && out.is_null() {
+        return record_ffi_error(ERROR_INTERNAL);
+    }
+    status
+}
+
+/// Executes a symmetric key Create and returns its independently owned result.
+///
+/// # Safety
+/// Non-null options must reference a readable v1 record. The output must be
+/// writable and must not overlap any input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_symmetric_key_builder_execute_one_v1(
+    builder: *mut kmipkit_symmetric_key_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_result: *mut *mut kmipkit_client_batch_item_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_create_result(out_result, |response| {
+            if options.is_null() {
+                kmipkit_symmetric_key_builder_execute_v1(builder, client, limits, response)
+            } else {
+                // SAFETY: The caller supplies a readable v1 record.
+                unsafe {
+                    kmipkit_symmetric_key_builder_execute_with_options_v1(
+                        builder, client, limits, options, response,
+                    )
+                }
+            }
+        })
+    })
+}
+
 /// Executes the builder with the client's configured timeout policy.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_symmetric_key_builder_execute_v1(
@@ -3476,6 +3551,32 @@ pub extern "C" fn kmipkit_create_builder_build_batch_item(
             )))),
         ));
         SUCCESS
+    })
+}
+
+/// Executes a generic Create and returns its independently owned result.
+///
+/// # Safety
+/// Non-null options must reference a readable v1 record. The output must be
+/// writable and must not overlap any input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_create_builder_execute_one_v1(
+    builder: *mut kmipkit_create_builder_t,
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_result: *mut *mut kmipkit_client_batch_item_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        execute_create_result(out_result, |response| {
+            let options = if options.is_null() {
+                None
+            } else {
+                // SAFETY: The caller supplies a readable v1 record.
+                Some(try_ffi!(unsafe { borrow_fluent_request_options(options) }))
+            };
+            execute_create_builder(builder, client, limits, options, response)
+        })
     })
 }
 

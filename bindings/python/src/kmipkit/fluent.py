@@ -12,6 +12,7 @@ from ._handles import NativeHandle, _wrap_owned_handle
 from .client import (
     _NATIVE_CALL_LOCK,
     Batch,
+    BatchItemResult,
     BatchResult,
     Client,
     RequestOptions,
@@ -805,6 +806,13 @@ class CreateBuilder:
         self, limits: ttlv.CodecLimits, client: Client | None = None
     ) -> BatchResult:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_one(
+        self, limits: ttlv.CodecLimits, client: Client | None = None
+    ) -> BatchItemResult:
+        """Execute Create and return the owned result, including rejection or Pending."""
+        with self.execute(limits, client) as batch:
+            return batch._take_single_item()
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2013,6 +2021,13 @@ class SymmetricKeyBuilder:
 
     def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_one(
+        self, limits: ttlv.CodecLimits, client: Client | None = None
+    ) -> BatchItemResult:
+        """Execute Create and return the owned result, including rejection or Pending."""
+        with self.execute(limits, client) as batch:
+            return batch._take_single_item()
 
     def close(self) -> None:
         if self._handle != ffi.NULL:

@@ -138,6 +138,7 @@ final class NativeBridgeCoverageTest {
         List<Executable> responseGetters = List.of(
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadata(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseMetadataV2(0),
+                () -> NativeExtensionRegistry.clientBatchItemResponseWireBytes(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseExtensionCount(0),
                 () -> NativeExtensionRegistry.clientBatchItemResponseExtensionTtlvAt(0, 0),

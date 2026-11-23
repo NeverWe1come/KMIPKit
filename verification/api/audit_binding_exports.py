@@ -1293,6 +1293,7 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
             and row["exportName"] not in manifest_c_symbols
             and (
                 "_builder_" in row["exportName"]
+                or row["exportName"] == "kmipkit_client_batch_item_response_wire_bytes_v1"
                 or row["exportName"].startswith(fluent_prefixes)
             )
         )
