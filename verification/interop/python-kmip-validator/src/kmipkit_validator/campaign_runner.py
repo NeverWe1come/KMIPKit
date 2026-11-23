@@ -9,6 +9,7 @@ from uuid import uuid4
 from .cli import _is_installed_package
 from .contract import load_connection, validate_artifact, validate_local_inputs
 from .driver import PythonKmipDriver
+from .oasis_query import oasis_query_evidence
 
 OPERATION_CODES = {
     "client_batch_item_create_group": 0x3C,
@@ -97,7 +98,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--matrix-sha256", required=True)
-    parser.add_argument("--scope", choices=("local", "live"), required=True)
+    parser.add_argument("--scope", choices=("local", "controlled", "live"), required=True)
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--connection", type=Path)
@@ -111,6 +112,8 @@ def main():
         match args.scope:
             case "local":
                 evidence = plan_path.with_name("evidence-python-local.json")
+            case "controlled":
+                evidence = plan_path.with_name("evidence-python-controlled.json")
             case "live":
                 evidence = plan_path.with_name("evidence-python-live.json")
             case _:
@@ -128,6 +131,10 @@ def main():
                 if args.connection is not None:
                     raise ValueError("Local campaigns do not take a connection")
                 events = list(draft_events(source))
+            elif args.scope == "controlled":
+                if args.connection is not None:
+                    raise ValueError("The controlled OASIS scenario supplies its own loopback peer")
+                events = oasis_query_evidence(source)
             else:
                 if args.connection is None:
                     raise ValueError("Live campaigns require a connection")

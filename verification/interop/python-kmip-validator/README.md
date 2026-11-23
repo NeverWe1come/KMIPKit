@@ -54,3 +54,13 @@ selects KMIP 2.0 or 2.1 with `api_level` set to `typed-protocol`. The probe
 requests operations and object types once, checks the response through the
 installed package and records the wire result codes. The broader standalone
 `run` command retains its own reports.
+
+Use `--scope controlled --version 3.0` to execute the pinned OASIS
+`QS-M-1-30` Query scenario against the built-in loopback TLS peer.
+The peer checks the request's correlation value and query functions and
+returns the ordered operation list from the XML. The current wheel rejects
+this structured response because its Query decoder requires Protection
+Storage Masks. The 3.0 draft makes that field conditional on the requested
+Query Function. The scenario records the rejection as failed and retains the
+fixture as published. The wheel pin includes the Python binding correction
+required to set the correlation value and reach this response check.
