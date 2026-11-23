@@ -9,7 +9,7 @@
     "catalog_source": { "type": "string" },
     "target_versions": {
       "type": "array",
-      "items": { "enum": ["2.0", "2.1"] },
+      "items": { "enum": ["2.0", "2.1", "3.0"] },
       "minItems": 1,
       "uniqueItems": true
     },
@@ -92,7 +92,7 @@
               "mode": { "enum": ["server_exchange", "local_model"] },
               "protocol_versions": {
                 "type": "array",
-                "items": { "enum": ["2.0", "2.1"] },
+                "items": { "enum": ["2.0", "2.1", "3.0"] },
                 "minItems": 1,
                 "uniqueItems": true
               },
