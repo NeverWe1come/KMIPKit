@@ -2,7 +2,7 @@
 
 use kmipkit_ttlv::{StructureView, ValueView};
 
-use crate::{ResultReason, ResultStatus};
+use crate::{ProtocolVersion, ResultReason, ResultStatus};
 
 use super::{RequestMessage, ResponseMessage};
 
@@ -133,6 +133,10 @@ impl<'a> ResponseBatchItemView<'a> {
             message,
             root_index,
         }
+    }
+
+    pub(crate) fn protocol_version(self) -> ProtocolVersion {
+        self.message.header().protocol_version()
     }
 
     fn with_batch<R>(self, callback: impl for<'b> FnOnce(StructureView<'b>) -> R) -> Option<R> {
