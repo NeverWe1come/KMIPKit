@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate the normative interoperability catalog for KMIP 2.0 and 2.1."""
 
 from __future__ import annotations

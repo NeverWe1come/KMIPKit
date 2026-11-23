@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Validate the authored public API route inventory (KMIPKIT-0092).
 
 Construction and execution identities are separate. Public convenience send

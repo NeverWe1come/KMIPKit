@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate the planned coverage matrix from normative cases, public routes and profile XMLs."""
 from __future__ import annotations
 

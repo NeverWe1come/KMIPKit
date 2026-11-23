@@ -1,5 +1,6 @@
 """Read the pinned PKCS #11 values referenced by KMIP 2.x and 3.0."""
 
+from collections.abc import Iterator
 import hashlib
 from pathlib import Path
 import re
@@ -14,7 +15,7 @@ PKCS11_HEADERS = {
 }
 
 
-def referenced_values(repository_root: Path):
+def referenced_values(repository_root: Path) -> Iterator[tuple[str, str, str, str, str, str]]:
     """Yield each value's stable suffix, family, name, wire value, allocation and source header."""
     header_dir = repository_root / HEADER_DIR
     contents = {}
