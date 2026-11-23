@@ -64,3 +64,8 @@ Storage Masks. The 3.0 draft makes that field conditional on the requested
 Query Function. The scenario records the rejection as failed and retains the
 fixture as published. The wheel pin includes the Python binding correction
 required to set the correlation value and reach this response check.
+
+Export `KMIPKIT_INTEROP_LIBRARY_COMMIT` before building the wheel and invoking
+the campaign to select a specific common source revision. In a source revision
+with the Query decoder correction, the OASIS scenario checks the decoded
+operation list for equality, including order.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -15,12 +16,13 @@ MANIFEST = PROJECT / "build" / "artifact-manifest.json"
 
 
 def verify() -> dict[str, str]:
+    commit = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT", PIN["commit"])
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     wheel = Path(manifest["artifact_file"]).resolve(strict=True)
     actual = hashlib.sha256(wheel.read_bytes()).hexdigest()
     if (
         manifest.get("release_ref") != "release/1.0.0-review"
-        or manifest.get("library_commit") != PIN["commit"]
+        or manifest.get("library_commit") != commit
         or manifest.get("artifact_sha256") != actual
         or manifest.get("package_version") != "1.0.0"
     ):
@@ -30,7 +32,7 @@ def verify() -> dict[str, str]:
     package = distribution("kmipkit")
     if package.version != "1.0.0":
         raise ValueError("installed package version mismatch")
-    return {"library_commit": PIN["commit"], "artifact_sha256": actual}
+    return {"library_commit": commit, "artifact_sha256": actual}
 
 
 if __name__ == "__main__":
