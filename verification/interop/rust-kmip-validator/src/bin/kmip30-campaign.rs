@@ -2,8 +2,8 @@
 #![forbid(unsafe_code)]
 
 use clap::{Parser, ValueEnum};
-use kmipkit::ClientBatchItem;
-use kmipkit::ttlv::Structure;
+use kmipkit::ttlv::{Item, RawTag, Structure, Value as TtlvValue, ValueView};
+use kmipkit::{ClientBatchItem, ClientRequest};
 use serde_json::{Value, json};
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
@@ -41,7 +41,25 @@ fn check(symbol: &str) -> Option<bool> {
             "decapsulate_draft" => (ClientBatchItem::decapsulate_draft, 0x42),
             _ => return None,
         };
-    Some(make(Structure::new()).operation() == expected)
+    let fields = [(0x0054_0010, 17), (0x0042_0001, 29), (0x0054_0010, 31)];
+    let mut payload = Structure::new();
+    for (tag, value) in fields {
+        let tag = RawTag::new(tag).ok()?.try_checked().ok()?;
+        payload
+            .try_push(Item::new(tag, TtlvValue::integer(value)).ok()?)
+            .ok()?;
+    }
+    let item = make(payload);
+    let ClientRequest::Kmip30Draft { payload, .. } = item.request() else {
+        return Some(false);
+    };
+    let children = payload.view().children();
+    let preserved = children.len() == fields.len()
+        && children.iter().zip(fields).all(|(item, (tag, value))| {
+            item.tag().raw() == tag
+                && item.with_value(|actual| matches!(actual, ValueView::Integer(n) if *n == value))
+        });
+    Some(item.operation() == expected && preserved)
 }
 
 fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
@@ -71,7 +89,7 @@ fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
             "obligation_id": obligation,
             "public_api_symbol": symbol,
             "status": if passed { "passed" } else { "failed" },
-            "assertion": "draft_operation_code",
+            "assertion": "draft_operation_and_ordered_payload",
         }));
     }
 
@@ -126,5 +144,94 @@ mod tests {
             assert_eq!(check(&symbol), Some(true), "{symbol}");
         }
         assert_eq!(check("kmipkit_client::ClientBatchItem::unknown"), None);
+    }
+
+    #[test]
+    fn installed_fluent_builders_produce_all_seven_typed_operations() {
+        use kmipkit::Client;
+        use kmipkit::client_config::{ClientConfiguration, client_extension_registry};
+        use kmipkit::protocol::{
+            AttributeSet, CreateCredentialObject, PasswordCredentialObject,
+            PasswordCredentialObjectFields, SecretText, UniqueIdentifier,
+        };
+        use kmipkit_transport::{
+            CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig,
+            TrustSource,
+        };
+
+        let registry =
+            client_extension_registry(Vec::new(), kmipkit::protocol::extension::defaults())
+                .expect("empty extension registry");
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../bindings/shared/fixtures/login-mtls");
+        let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", 1))
+            .client_identity(ClientIdentity::new(
+                CertificateInput::from_pem_file(fixture.join("client-cert.pem"))
+                    .expect("test certificate"),
+                PrivateKeyInput::from_pem_file(fixture.join("client-key.pem"))
+                    .expect("test private key"),
+            ))
+            .trust_source(TrustSource::certificate_authorities(vec![
+                CertificateInput::from_pem_file(fixture.join("server-cert.pem"))
+                    .expect("test trust anchor"),
+            ]))
+            .build()
+            .expect("valid endpoint configuration");
+        let mut client = Client::new(ClientConfiguration::new(registry), transport)
+            .expect("client construction without connecting");
+        let identifier = || UniqueIdentifier::TextString("kmip30-fixture".into());
+        let password = PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+            password: Some(SecretText::new("disposable-fixture".into())),
+            ..PasswordCredentialObjectFields::default()
+        })
+        .expect("valid password fixture");
+        let cases = [
+            (
+                client
+                    .request()
+                    .create_group(AttributeSet::new())
+                    .to_batch_item(),
+                0x3c,
+            ),
+            (
+                client.request().obliterate(identifier()).to_batch_item(),
+                0x3d,
+            ),
+            (
+                client
+                    .request()
+                    .create_user(AttributeSet::new())
+                    .to_batch_item(),
+                0x3e,
+            ),
+            (
+                client
+                    .request()
+                    .create_credential(
+                        AttributeSet::new(),
+                        CreateCredentialObject::PasswordCredential(password),
+                    )
+                    .to_batch_item(),
+                0x3f,
+            ),
+            (
+                client.request().deactivate(identifier()).to_batch_item(),
+                0x40,
+            ),
+            (
+                client.request().encapsulate(identifier()).to_batch_item(),
+                0x41,
+            ),
+            (
+                client
+                    .request()
+                    .decapsulate(identifier(), vec![1, 2, 3])
+                    .to_batch_item(),
+                0x42,
+            ),
+        ];
+        for (item, code) in cases {
+            assert_eq!(item.operation(), code);
+        }
     }
 }

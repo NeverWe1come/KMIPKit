@@ -150,6 +150,6 @@ python3 verification/interop/shared/tools/campaign.py --version 3.0 \
 ```
 
 The runner invokes all seven catalogued generic-payload constructors and checks
-their operation codes. It records the installed distribution's provenance.
+their operation codes, field values, ordering and repeated tags. It records the installed distribution's provenance.
 XML scenarios, fluent routes, response checks and live KMIP 3.0 exchanges
 remain pending in the campaign report.
