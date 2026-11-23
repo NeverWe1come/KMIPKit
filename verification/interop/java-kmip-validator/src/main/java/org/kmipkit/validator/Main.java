@@ -38,6 +38,9 @@ public final class Main {
             return 0;
         }
         try {
+            if ("--plan".equals(args[0])) {
+                return DraftCampaign.run(args, Path.of(DEFAULT_MANIFEST));
+            }
             Arguments options = Arguments.parse(args);
             return switch (args[0]) {
                 case "plan" -> plan(options, out);
