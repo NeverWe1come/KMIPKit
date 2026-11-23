@@ -22,9 +22,18 @@ generic-payload constructors.
 
 ```sh
 python3 verification/interop/shared/tools/campaign.py --version 3.0 \
-  --runner c verification/interop/c-kmip-validator/tools/draft_campaign.py \
+  --runner c verification/interop/c-kmip-validator/tools/campaign_runner.py \
   --output-dir /tmp/kmip-c-draft
 ```
 
 The report records the installed library digest and the constructor checks.
 The local checks leave XML scenarios and live KMIP 3.0 exchanges pending.
+
+For a live typed KMIP 2.x Query Operations exchange, reuse the C runner
+with `--scope live --connection PATH`. It selects the matching wire
+obligation and invokes the native validator with `--case test-op-query`.
+The native response assertions and numeric result codes feed the shared report.
+
+Export `KMIPKIT_INTEROP_LIBRARY_COMMIT` before building the installed artifact
+and invoking the campaign to select the common source revision. Configure
+CMake with the installation directory for that commit.

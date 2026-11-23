@@ -58,5 +58,5 @@ jobs:
           validator=verification/interop/c-kmip-validator
           report_dir="$(mktemp -d)"
           python3 verification/interop/shared/tools/campaign.py --version 3.0 \
-            --runner c "$validator/tools/draft_campaign.py" --output-dir "$report_dir"
+            --runner c "$validator/tools/campaign_runner.py" --output-dir "$report_dir"
           python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); assert s["public_api"]["c"] == {"total": 7, "complete": 7}' "$report_dir/summary.json"

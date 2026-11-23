@@ -26,7 +26,7 @@ static void print_usage(const char *program) {
             "  %s preflight --connection <path> [--catalog <path>]\n"
             "  %s run --connection <path> [--capabilities <path>] [--catalog <path>] "
             "[--output <json>] [--output-markdown <md>] [--output-html <html>] "
-            "[--allow-mutations]\n",
+            "[--allow-mutations] [--case <id>]\n",
             program, program, program);
 }
 
@@ -123,6 +123,7 @@ int main(int argc, char **argv) {
     const char *markdown_output_path = NULL;
     const char *html_output_path = NULL;
     bool allow_mutations = false;
+    const char *case_filter = NULL;
 
     for (int index = 2; index < argc; ++index) {
         if (strcmp(argv[index], "--connection") == 0 && index + 1 < argc) {
@@ -138,6 +139,9 @@ int main(int argc, char **argv) {
             markdown_output_path = argv[++index];
         } else if (strcmp(argv[index], "--output-html") == 0 && index + 1 < argc) {
             html_output_path = argv[++index];
+        } else if (strcmp(argv[index], "--case") == 0 && index + 1 < argc &&
+                   strcmp(command, "run") == 0 && !case_filter) {
+            case_filter = argv[++index];
         } else if (strcmp(argv[index], "--allow-mutations") == 0) {
             allow_mutations = true;
         } else {
@@ -246,7 +250,14 @@ int main(int argc, char **argv) {
         size_t applicable_count = 0;
         for (size_t index = 0; index < case_count; ++index) {
             if ((cases[index].protocol_version_mask & selected_version) == 0) continue;
+            if (case_filter && strcmp(cases[index].case_id, case_filter) != 0) continue;
             applicable[applicable_count++] = cases[index];
+        }
+        if (case_filter && applicable_count != 1) {
+            fprintf(stderr, "Run refused: no unique case for the selected protocol version.\n");
+            free(applicable);
+            free(cases);
+            return 2;
         }
         if (!connection.dedicated_test_environment_confirmed) {
             fprintf(stderr, "Run refused: dedicated test environment confirmation is required.\n");
