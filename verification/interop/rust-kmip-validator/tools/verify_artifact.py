@@ -3,6 +3,8 @@
 import hashlib
 import io
 import json
+import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -13,7 +15,12 @@ LOCAL = ROOT / "verification/interop/.local/rust-live"
 
 
 def source_commit():
-    return subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
+    selected = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT")
+    if selected is not None and not re.fullmatch(r"[0-9a-f]{40}", selected):
+        raise ValueError("expected a full source commit")
+    return subprocess.check_output(
+        ["git", "-C", str(ROOT), "rev-parse", "--verify", f"{selected or 'HEAD'}^{{commit}}"], text=True,
+    ).strip()
 
 
 def verify():
