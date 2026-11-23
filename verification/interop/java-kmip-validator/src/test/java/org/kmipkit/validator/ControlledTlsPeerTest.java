@@ -99,15 +99,23 @@ class ControlledTlsPeerTest {
         Path connectionFile = temporaryDirectory.resolve("query-connection.json");
         Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
                 clientCertificatePem, clientPrivateKeyPem));
-        var connection = ConnectionConfig.load(connectionFile);
-        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
-        var testCase = catalog.cases().stream()
-                .filter(value -> value.caseId().equals("test-op-query"))
-                .findFirst().orElseThrow();
-
-        JavaKmipDriver.CaseOutcome outcome;
-        try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
-            outcome = driver.execute(testCase);
+        ObjectMapper mapper = new ObjectMapper();
+        var plan = temporaryDirectory.resolve("plan.jsonl");
+        String obligation = "c".repeat(64);
+        var row = mapper.createObjectNode().put("language", "java").put("case_id", "test-op-query")
+                .put("target_id", "KMIPKIT-ELEM-OP-C2S-QUERY").put("protocol_version", "2.1")
+                .put("action", "send").put("execution_status", "required").put("encoding", "TTLV")
+                .put("transport", "raw_tls").put("obligation_id", obligation)
+                .put("public_api_symbol", "org.kmipkit.extensions.ClientBatchItem.query")
+                .put("execution_api_symbol", "org.kmipkit.extensions.Client.execute");
+        Files.writeString(plan, mapper.writeValueAsString(row));
+        var evidence = temporaryDirectory.resolve("evidence");
+        int exit;
+        try {
+            exit = DraftCampaign.run(new String[] {
+                    "--plan", plan.toString(), "--matrix-sha256", "b".repeat(64), "--scope", "live",
+                    "--connection", connectionFile.toString(), "--evidence", evidence.toString(),
+            }, Path.of(System.getProperty("kmipkit.artifactManifest")));
         } finally {
             listener.close();
         }
@@ -116,7 +124,12 @@ class ControlledTlsPeerTest {
                 "The controlled peer must receive the typed Query operation.");
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The Query request must include a non-empty Query Function.");
-        assertEquals("passed", outcome.status(), outcome.toString());
+        var event = mapper.readTree(evidence.toFile()).path("events").get(0);
+        assertEquals(0, exit);
+        assertEquals(obligation, event.path("obligation_id").asText());
+        assertEquals("passed", event.path("status").asText());
+        assertEquals("supported", event.path("server_compatibility").asText());
+        assertEquals(0, event.path("result_status_code").asInt());
     }
 
     @Test

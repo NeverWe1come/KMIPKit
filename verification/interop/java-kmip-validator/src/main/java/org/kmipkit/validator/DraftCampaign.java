@@ -18,7 +18,7 @@ final class DraftCampaign {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final String PREFIX = "org.kmipkit.extensions.ClientBatchItem.";
     private static final Set<String> OPTIONS = Set.of(
-            "--plan", "--matrix-sha256", "--scope", "--evidence", "--profile");
+            "--plan", "--matrix-sha256", "--scope", "--evidence", "--profile", "--connection");
 
     private record Constructor(Function<TtlvStructure, ClientBatchItem> make, int code) {
         boolean check() {
@@ -45,6 +45,21 @@ final class DraftCampaign {
         if (!artifact.artifactSha256().equals(ArtifactProvenance.sha256(loadedJar()))) {
             throw new IllegalArgumentException("The loaded KMIPKit JAR differs from the verified artifact");
         }
+        String scope = options.get("--scope");
+        var result = JSON.createObjectNode().put("schema_version", "1.0").put("scope", scope)
+                .put("language", "java").put("run_id", UUID.randomUUID().toString())
+                .put("library_commit", artifact.libraryCommit()).put("artifact_sha256", artifact.artifactSha256())
+                .put("matrix_sha256", options.get("--matrix-sha256"));
+        int exit = "live".equals(scope) ? QueryCampaign.run(options, result) : local(options, result);
+        try (var writer = Files.newBufferedWriter(Path.of(options.get("--evidence")))) {
+            JSON.writeValue(writer, result);
+        }
+        return exit;
+    }
+
+    private static int local(Map<String, String> options, com.fasterxml.jackson.databind.node.ObjectNode result)
+            throws IOException {
+        if (options.containsKey("--connection")) throw new IllegalArgumentException("Local campaigns do not take a connection");
         var events = JSON.createArrayNode();
         boolean allPassed = true;
         try (var reader = Files.newBufferedReader(Path.of(options.get("--plan")))) {
@@ -70,14 +85,7 @@ final class DraftCampaign {
             }
         }
         if (events.isEmpty()) throw new IllegalArgumentException("The plan has no supported draft routes");
-        var result = JSON.createObjectNode().put("schema_version", "1.0").put("scope", "local")
-                .put("language", "java").put("run_id", UUID.randomUUID().toString())
-                .put("library_commit", artifact.libraryCommit()).put("artifact_sha256", artifact.artifactSha256())
-                .put("matrix_sha256", options.get("--matrix-sha256"));
         result.set("events", events);
-        try (var writer = Files.newBufferedWriter(Path.of(options.get("--evidence")))) {
-            JSON.writeValue(writer, result);
-        }
         return allPassed ? 0 : 1;
     }
 
@@ -97,7 +105,7 @@ final class DraftCampaign {
                 throw new IllegalArgumentException("Unknown, duplicated or incomplete campaign option");
             }
         }
-        if (!"local".equals(options.get("--scope")) || !options.containsKey("--plan")
+        if (!Set.of("local", "live").contains(options.getOrDefault("--scope", "")) || !options.containsKey("--plan")
                 || !options.containsKey("--evidence") || !options.getOrDefault("--matrix-sha256", "").matches("[0-9a-f]{64}")) {
             throw new IllegalArgumentException("A local campaign requires a plan, fingerprint and evidence path");
         }
