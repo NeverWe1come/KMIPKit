@@ -1,0 +1,3 @@
+# These pinned source files are retained byte-for-byte.
+kmip-*/**/*.xml -text -whitespace
+pkcs11-3.0/include/*.h -text -whitespace
