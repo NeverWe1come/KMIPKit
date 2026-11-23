@@ -58,3 +58,50 @@ fn run_cannot_report_success_without_establishing_a_real_connection() {
     );
     assert!(!String::from_utf8_lossy(&output.stderr).contains("/path/to/"));
 }
+
+#[test]
+fn draft_campaign_records_only_the_executed_local_constructor() {
+    use std::io::Write;
+
+    let mut plan = NamedTempFile::new().expect("plan file");
+    let evidence = NamedTempFile::new().expect("evidence file");
+    let symbol = "kmipkit_client::ClientBatchItem::create_group_draft";
+    let obligation = "a".repeat(64);
+    let matrix_digest = "b".repeat(64);
+    for (language, api) in [("c", symbol), ("rust", "unknown"), ("rust", symbol)] {
+        writeln!(
+            plan,
+            "{}",
+            serde_json::json!({
+                "language": language, "protocol_version": "3.0", "kind": "public_route",
+                "action": "construct", "execution_status": "required",
+                "obligation_id": obligation, "public_api_symbol": api
+            })
+        )
+        .expect("write plan");
+    }
+    let output = Command::new(env!("CARGO_BIN_EXE_kmip30-campaign"))
+        .args(["--plan"])
+        .arg(plan.path())
+        .args([
+            "--matrix-sha256",
+            &matrix_digest,
+            "--scope",
+            "local",
+            "--evidence",
+        ])
+        .arg(evidence.path())
+        .output()
+        .expect("execute campaign");
+    assert!(output.status.success());
+    let actual: serde_json::Value =
+        serde_json::from_reader(evidence.as_file()).expect("valid campaign evidence");
+    assert_eq!(actual["matrix_sha256"], matrix_digest);
+    assert_eq!(
+        actual["events"],
+        serde_json::json!([{
+            "obligation_id": obligation, "public_api_symbol": symbol, "status": "passed",
+            "assertion": "draft_operation_code"
+        }])
+    );
+}

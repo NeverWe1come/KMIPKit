@@ -1,5 +1,6 @@
 [package]
 name = "rust-kmip-validator"
+default-run = "rust-kmip-validator"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
