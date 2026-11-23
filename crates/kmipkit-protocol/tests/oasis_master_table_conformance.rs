@@ -171,7 +171,7 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
     let req_header = structure([v3_version]);
     let req_batch = structure([
         item(0x0042_005C, Value::enumeration(0x0000_0018)), // Query
-        item(0x0042_01BF, Value::enumeration(1)),           // Ephemeral Mode: Ephemeral
+        item(0x0042_0154, Value::enumeration(2)),           // Ephemeral: Empty
         item(0x0042_0079, Value::structure(Structure::new())), // Request Payload
     ]);
 
@@ -192,7 +192,7 @@ fn test_kmip_30_framing_option_a_and_prohibited_tags() {
         "Effective batch count is 1"
     );
     let batch_item = req.batch_items().next().unwrap();
-    assert_eq!(batch_item.ephemeral_mode(), Some(1));
+    assert_eq!(batch_item.ephemeral_mode(), Some(2));
     assert!(batch_item.is_ephemeral());
 }
 
@@ -249,7 +249,7 @@ fn test_query_function_performs_crl_checks_kmip30() {
 
 #[test]
 fn test_enums_completeness() {
-    assert_eq!(EphemeralMode::Immediate.as_u32(), 2);
+    assert_eq!(EphemeralMode::EMPTY.as_u32(), 2);
     assert_eq!(ObjectTypeCode::Certificate.as_u32(), 1);
     assert_eq!(AttributeTag::CryptographicAlgorithm.as_u32(), 0x0042_0028);
     assert_eq!(ProtocolVersion::V3_0.major(), 3);

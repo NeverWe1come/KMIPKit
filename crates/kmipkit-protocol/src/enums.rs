@@ -817,19 +817,26 @@ impl KemAlgorithmCode {
     }
 }
 
-/// KMIP 3.0 Ephemeral Mode Enumeration codes (Tag `0x4201BF`).
+/// KMIP 3.0 Ephemeral Enumeration codes (Tag `0x420154`).
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(u32)]
 pub enum EphemeralMode {
-    /// `No ephemeral handling` (`0x0000_0001`)
+    /// Legacy variant name. KMIP 3.0 uses this value to omit Data.
     No = 0x0000_0001,
-    /// `Destroy immediately after request completes` (`0x0000_0002`)
+    /// Legacy variant name. KMIP 3.0 uses this value for an empty response payload.
     Immediate = 0x0000_0002,
-    /// `Destroy on success; retain on failure for diagnostics` (`0x0000_0003`)
+    /// Legacy variant name. KMIP 3.0 uses this value to retain only Unique Identifier.
     RetainOnFailure = 0x0000_0003,
 }
 
 impl EphemeralMode {
+    /// Omits Data from the response payload.
+    pub const DATA: Self = Self::No;
+    /// Omits all fields from the response payload.
+    pub const EMPTY: Self = Self::Immediate;
+    /// Retains only Unique Identifier in the response payload.
+    pub const UNIQUE_IDENTIFIER: Self = Self::RetainOnFailure;
+
     /// Returns the 32-bit enumeration value.
     #[inline]
     #[must_use]
