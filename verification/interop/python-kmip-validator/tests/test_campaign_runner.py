@@ -52,3 +52,43 @@ class CampaignRunnerTests(unittest.TestCase):
                     self.assertEqual(events[0].get("result_reason_code"), reason)
                 finally:
                     peer.close()
+
+    def test_all_seven_fluent_builders_validate_and_convert_to_batch_items(self):
+        from contextlib import ExitStack
+        from kmipkit import extensions, fluent, ttlv
+        from kmipkit.attribute_operations import AttributeSet
+        from kmipkit.credentials import SecretText
+        from kmipkit_validator.driver import PythonKmipDriver
+
+        driver = PythonKmipDriver({
+            "server_id": "construction-only", "protocol_version": "2.1", "transport": "raw_tls",
+            "encoding": "TTLV", "api_level": "typed-protocol", "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": 1}},
+            "tls": {
+                "ca_cert_path": str(PKI / "server-cert.pem"), "client_cert_path": str(PKI / "client-cert.pem"),
+                "client_key_path": str(PKI / "client-key.pem"), "server_name_override": "localhost",
+            },
+        })
+        try:
+            with ExitStack() as handles:
+                structure = handles.enter_context(ttlv.ttlv_structure_create())
+                attributes = handles.enter_context(AttributeSet.try_new(structure))
+                secret = handles.enter_context(SecretText.from_text("disposable-fixture"))
+                credential = handles.enter_context(fluent.CreateCredentialObject.password(password=secret))
+                identifier = extensions.UniqueIdentifier.text_string("kmip30-fixture")
+                request = driver._client.request()
+                routes = (
+                    (request.create_group, (attributes,), 0x3C),
+                    (request.obliterate, (identifier,), 0x3D),
+                    (request.create_user, (attributes,), 0x3E),
+                    (request.create_credential, (attributes, credential), 0x3F),
+                    (request.deactivate, (identifier,), 0x40),
+                    (request.encapsulate, (identifier,), 0x41),
+                    (request.decapsulate, (identifier, b"ciphertext-fixture"), 0x42),
+                )
+                for make, args, code in routes:
+                    with self.subTest(operation=code), make(*args) as builder:
+                        builder.validate()
+                        with builder.to_batch_item() as item:
+                            self.assertEqual(item.operation, code)
+        finally:
+            driver.close()
