@@ -153,3 +153,12 @@ The runner invokes all seven catalogued generic-payload constructors and checks
 their operation codes, field values, ordering and repeated tags. It records the installed distribution's provenance.
 XML scenarios, fluent routes, response checks and live KMIP 3.0 exchanges
 remain pending in the campaign report.
+
+The shared live campaign can run the typed KMIP 2.x Query Operations case
+against a configured endpoint. Select `--scope live --connection PATH` and
+use `tools/run_live_campaign.sh` as the Rust runner after building the main
+validator. The resulting event records the outcome of one actual exchange.
+
+Set `KMIPKIT_INTEROP_LIBRARY_COMMIT` to a full Git commit to build and verify
+the crates from the same source revision used by the other validators.
+Export the value before installing the artifacts and compiling the runner.

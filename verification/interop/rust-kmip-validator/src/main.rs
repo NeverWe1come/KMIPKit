@@ -5,6 +5,7 @@ mod driver;
 mod fixtures;
 mod incoming;
 mod models;
+mod query_campaign;
 mod recipes;
 mod report;
 mod runner;
@@ -23,6 +24,8 @@ struct Cli {
 }
 #[derive(Subcommand)]
 enum Command {
+    /// Run one planned typed Query against a configured server.
+    QueryCampaign(query_campaign::QueryArgs),
     /// Offline catalog planning; profiles never suppress probes.
     Plan {
         #[arg(long)]
@@ -75,6 +78,7 @@ fn emit(value: &Value) -> Result<()> {
 }
 fn dispatch(cli: Cli) -> Result<bool> {
     match cli.command {
+        Command::QueryCampaign(args) => query_campaign::run(&args),
         Command::Plan {
             capabilities,
             connection,

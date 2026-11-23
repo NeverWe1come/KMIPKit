@@ -278,6 +278,44 @@ class LiveContract(unittest.TestCase):
                 self.assertEqual(peer.operations, [0x18])
                 self.assertNotIn("secret-response-sentinel", json.dumps(report))
 
+    def test_shared_query_campaign_uses_one_typed_exchange(self):
+        schema_path = ROOT / "verification/interop/shared/schemas/campaign-evidence.schema.json"
+        evidence_schema = json.loads(schema_path.read_text())
+        payload = [ttlv(0x42005c, 5, 0x18), ttlv(0x42015f, 1, [])]
+        outcomes = [(0, None, "passed", "supported"), (1, 5, "failed", "unsupported"),
+                    (1, 12, "blocked", "policy_restricted")]
+        for code, reason, status, compatibility in outcomes:
+            def respond(tree):
+                self.assertEqual(find(tree, 0x420074), 1)
+                return response(0x18, status=code, reason=reason, payload=payload if code == 0 else None)
+
+            with self.subTest(reason=reason), ControlledPeer(self.pki, respond) as peer:
+                work = Path(tempfile.mkdtemp(dir=self.directory))
+                config = self.connection(peer.port)
+                config.update(server_product="controlled fixture", server_version="1",
+                              server_configuration_fingerprint="c" * 64)
+                (work / "connection.json").write_text(json.dumps(config))
+                row = {"language": "rust", "protocol_version": "2.1", "case_id": "test-op-query",
+                       "target_id": "KMIPKIT-ELEM-OP-C2S-QUERY", "encoding": "TTLV", "transport": "raw_tls",
+                       "public_api_symbol": "kmipkit_protocol::QueryRequest::new",
+                       "execution_api_symbol": "kmipkit_client::Client::execute", "obligation_id": "a" * 64,
+                       "action": "send", "execution_status": "required"}
+                (work / "plan.jsonl").write_text(json.dumps(row) + "\n")
+                output = work / "evidence-rust-live.json"
+                process = subprocess.run(
+                    [str(VALIDATOR), "query-campaign", "--scope", "live", "--matrix-sha256", "b" * 64,
+                     "--plan", str(work / "plan.jsonl"), "--connection", str(work / "connection.json"),
+                     "--evidence", str(output)], capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(process.returncode, int(status == "failed"), process.stderr)
+                evidence = json.loads(output.read_text())
+                jsonschema.Draft202012Validator(evidence_schema).validate(evidence)
+                self.assertEqual(peer.operations, [0x18])
+                self.assertEqual(evidence["events"][0]["status"], status)
+                self.assertEqual(evidence["events"][0]["server_compatibility"], compatibility)
+                self.assertEqual(evidence["events"][0]["result_status_code"], code)
+                self.assertEqual(evidence["events"][0].get("result_reason_code"), reason)
+
     def test_connection_drop_after_request_is_never_retried(self):
         with ControlledPeer(self.pki, lambda tree: None) as peer:
             process, report = self.command(self.connection(peer.port), self.rows("test-op-query"))

@@ -97,7 +97,14 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     } else {
         kmipkit::ProtocolVersion::V2_1
     };
-    let configuration = ClientConfiguration::new(registry).with_protocol_version(version);
+    let encoding = match connection.encoding.as_str() {
+        "JSON" => kmipkit_transport::WireEncoding::Json,
+        "XML" => kmipkit_transport::WireEncoding::Xml,
+        _ => kmipkit_transport::WireEncoding::Ttlv,
+    };
+    let configuration = ClientConfiguration::new(registry)
+        .with_protocol_version(version)
+        .with_wire_encoding(encoding);
     Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
