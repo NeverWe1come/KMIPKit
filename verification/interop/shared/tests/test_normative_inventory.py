@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 from verification.conformance.attribute_policy_source import _SourceParser
-from verification.interop.shared.catalog.generate_matrix_catalog import (
+from verification.interop.shared.tools.matrix.kmip2x_catalog import (
     _payload_value_type_alternatives,
     _section_versions,
     oasis_section_indexes,

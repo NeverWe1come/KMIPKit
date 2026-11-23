@@ -8,7 +8,7 @@ configuration. These suites do not make certification or blanket profile claims.
 
 ## Projects
 
-- `shared/`: schemas, versioned test catalog, vectors, profiles, and tools.
+- [`shared/`](shared/README.md) holds the planned coverage matrix for KMIP 2.0, 2.1 and 3.0, plus the catalogs, schemas, profiles and reports used by the validators.
 - `rust-kmip-validator/`: independent Rust consumer.
 - `c-kmip-validator/`: independent C ABI consumer.
 - `java-kmip-validator/`: independent Java consumer.

@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
 
-FIXTURES = Path("verification/interop/shared/catalog/oasis")
+from . import OASIS_FIXTURES
 PROFILES = {
     "2.0": ("kmip-profiles-v2.0.html", "3c48352c8c5c201461dba76315af5e4d81107577be52c89573a122ee3f975949"),
     "2.1": ("kmip-profiles-v2.1-os.html", "f11144aa793335f38dbd1864ec4709ca83ac80f588bbb790ba37f6c53be207a9"),
@@ -48,7 +48,7 @@ def _message_items(message: ET.Element, kind: str, path: str, protocol_version: 
 
 
 def xml_rows(root: Path, version: str, by_field: dict):
-    fixture_dir = FIXTURES / f"kmip-{version}"
+    fixture_dir = OASIS_FIXTURES / f"kmip-{version}"
     directory = root / fixture_dir
     filename, expected_digest = PROFILES[version]
     profile = (root / f"verification/conformance/oasis/kmip-{version}/upstream" / filename).read_bytes()
