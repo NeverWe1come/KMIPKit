@@ -5,7 +5,7 @@ use std::{error::Error, fmt};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
+    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
     ResponseBatchItemView, ResultMessage, ResultValidationError,
 };
 
@@ -435,7 +435,10 @@ impl QueryResponse {
         }
 
         let parsed = item
-            .with_response_payload(|payload| parse_response_payload(&payload))
+            .with_response_payload(|payload| {
+                let legacy_masks_required = item.protocol_version() != ProtocolVersion::V3_0;
+                parse_response_payload(&payload, legacy_masks_required)
+            })
             .ok_or(QueryError::MissingResponsePayload)??;
         Ok(Self {
             result,
@@ -600,7 +603,8 @@ impl QueryResponse {
         })
     }
 
-    /// Returns optional Protection Storage Masks. Structured success requires it.
+    /// Returns Protection Storage Masks when present. KMIP 3.0 makes the field
+    /// conditional on the corresponding Query Function.
     #[must_use]
     pub fn protection_storage_masks(&self) -> Option<&Item> {
         self.fields.iter().find_map(|field| match field {
@@ -636,6 +640,7 @@ struct ParsedResponsePayload {
 
 fn parse_response_payload(
     payload: &StructureView<'_>,
+    legacy_masks_required: bool,
 ) -> Result<ParsedResponsePayload, QueryError> {
     if payload.children().is_empty() {
         return Ok(ParsedResponsePayload {
@@ -664,7 +669,7 @@ fn parse_response_payload(
         fields.push(parsed);
     }
 
-    if counts[13] == 0 {
+    if legacy_masks_required && counts[13] == 0 {
         return Err(QueryError::MissingProtectionStorageMasks);
     }
     Ok(ParsedResponsePayload {
