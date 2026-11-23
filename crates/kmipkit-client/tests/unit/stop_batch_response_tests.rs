@@ -73,13 +73,15 @@ fn stop_batch_accepts_failure_response_with_omitted_later_item() {
 
 #[test]
 fn stop_batch_orders_returned_subset_by_request_identity() {
+    let fixtures = [
+        ResponseItemFixture::failure(Some(THIRD_ID)),
+        ResponseItemFixture::success(Some(FIRST_ID)),
+    ];
+    let wire = response_bytes((2, 1), &fixtures);
     let response = execute_response(
         &[FIRST_ID, SECOND_ID, THIRD_ID],
         Some(BATCH_ERROR_CONTINUATION_STOP),
-        &[
-            ResponseItemFixture::failure(Some(THIRD_ID)),
-            ResponseItemFixture::success(Some(FIRST_ID)),
-        ],
+        &fixtures,
     )
     .expect("a Stop failure permits the returned subset");
 
@@ -92,6 +94,16 @@ fn stop_batch_orders_returned_subset_by_request_identity() {
         response.get(1).and_then(|item| item.unique_batch_item_id()),
         Some(THIRD_ID)
     );
+
+    let retained_address = response
+        .with_raw_response_bytes(|bytes| {
+            assert_eq!(bytes, wire);
+            bytes.as_ptr()
+        })
+        .expect("the batch retains its response");
+    for item in response.iter() {
+        item.with_raw_response_bytes(|bytes| assert_eq!(bytes.as_ptr(), retained_address));
+    }
 }
 
 #[test]

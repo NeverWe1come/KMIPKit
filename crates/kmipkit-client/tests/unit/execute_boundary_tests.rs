@@ -1010,8 +1010,8 @@ impl BoundaryAudit {
             is_exact_extension_view_callback(execute_root_scope, impl_type, signature);
         let error_response_ttlv_callback =
             is_exact_error_response_ttlv_callback(error_root_scope, impl_type, signature);
-        let async_outcome_callback =
-            is_exact_async_outcome_callback(execute_root_scope, impl_type, signature);
+        let response_callback =
+            is_exact_response_callback(execute_root_scope, impl_type, signature);
         let batch_from_items = is_exact_batch_from_items(execute_root_scope, impl_type, signature);
         let error_validation_source =
             is_exact_error_validation_source(error_root_scope, impl_type, signature);
@@ -1052,7 +1052,7 @@ impl BoundaryAudit {
             is_exact_incoming_server_batch_decode(s2c_root_scope, impl_type, signature);
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
-            || async_outcome_callback
+            || response_callback
             || error_validation_source
             || fluent_catalogued_attribute
             || fluent_explicit_value;
@@ -1070,7 +1070,7 @@ impl BoundaryAudit {
                     || (unique_id_setter
                         || extension_view_callback
                         || error_response_ttlv_callback
-                        || async_outcome_callback)
+                        || response_callback)
                         && index == 1
                     || batch_from_items && index == 0
                     || registry_value_validation && index == 2
@@ -2074,17 +2074,23 @@ fn is_exact_extension_view_callback_type(ty: &Type) -> bool {
         && callback_output_is_result
 }
 
-fn is_exact_async_outcome_callback(
+fn is_exact_response_callback(
     execute_root_scope: bool,
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    if !execute_root_scope
-        || impl_type != Some("ClientOperationOutcome")
-        || !matches!(
-            signature.ident.to_string().as_str(),
-            "with_asynchronous_correlation_value" | "with_cancel_echo" | "with_response_payload"
+    let returns_optional = match (impl_type, signature.ident.to_string().as_str()) {
+        (
+            Some("ClientOperationOutcome"),
+            "with_asynchronous_correlation_value" | "with_cancel_echo" | "with_response_payload",
         )
+        | (Some("ClientBatchResponse"), "with_raw_response_bytes") => true,
+        (Some("ClientBatchItemResponse" | "ClientOperationOutcome"), "with_raw_response_bytes") => {
+            false
+        }
+        _ => return false,
+    };
+    if !execute_root_scope
         || signature.generics.params.len() != 1
         || signature.generics.where_clause.is_some()
         || signature.asyncness.is_some()
@@ -2126,23 +2132,27 @@ fn is_exact_async_outcome_callback(
                     && pattern.subpat.is_none()
                     && pattern.attrs.is_empty())
                 && argument.attrs.is_empty()
-                && is_exact_async_outcome_callback_type(
+                && is_exact_response_callback_type(
                     &argument.ty,
                     signature.ident == "with_response_payload",
                 )
     );
-    let returns_option_of_result = matches!(
+    let returns_expected_result = matches!(
         &signature.output,
-        syn::ReturnType::Type(_, output) if is_exact_option_generic_r(output)
+        syn::ReturnType::Type(_, output) if if returns_optional {
+            is_exact_option_generic_r(output)
+        } else {
+            is_plain_type_path(output, "R")
+        }
     );
 
     generic_is_plain_result
         && receiver_is_shared_self
         && callback_is_exact
-        && returns_option_of_result
+        && returns_expected_result
 }
 
-fn is_exact_async_outcome_callback_type(ty: &Type, payload: bool) -> bool {
+fn is_exact_response_callback_type(ty: &Type, payload: bool) -> bool {
     let Type::ImplTrait(implementation_trait) = ty else {
         return false;
     };
