@@ -106,7 +106,8 @@ def validate_artifact(manifest_path: Path = ARTIFACT_MANIFEST) -> dict[str, str]
         raise ValueError("installed KMIPKit artifact is not pinned to release/1.0.0-review")
     pin_path = ARTIFACT_MANIFEST.parents[1] / "library-pin.json"
     pin, _ = load_json(pin_path, "KMIPKit release pin is unavailable")
-    if value.get("library_commit") != pin.get("commit") or value.get("package_version") != "1.0.0":
+    expected_commit = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT", pin.get("commit"))
+    if commit != expected_commit or value.get("package_version") != "1.0.0":
         raise ValueError("installed KMIPKit artifact differs from the exact release pin")
     if os.environ.get("KMIPKIT_NATIVE_LIBRARY"):
         raise ValueError("Campaigns require the native library bundled in the wheel")

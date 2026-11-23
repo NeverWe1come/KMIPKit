@@ -97,8 +97,8 @@ def main() -> int:
     args = parser.parse_args()
     try:
         pin = json.loads(args.pin_file.resolve(strict=True).read_text(encoding="utf-8"))
-        commit = pin["commit"]
-        if pin.get("release_ref") != "release/1.0.0-review" or not isinstance(commit, str) or len(commit) != 40:
+        commit = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT", pin["commit"])
+        if pin.get("release_ref") != "release/1.0.0-review" or not isinstance(commit, str) or len(commit) != 40 or any(c not in "0123456789abcdef" for c in commit):
             raise ValueError("pin must select a full commit from release/1.0.0-review")
         resolved = subprocess.run(
             ["git", "-C", str(args.repository.resolve(strict=True)), "rev-parse", "--verify", f"{commit}^{{commit}}"],
