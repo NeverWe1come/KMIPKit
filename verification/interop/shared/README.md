@@ -5,7 +5,7 @@ Generate the JSON summary or the JSON Lines matrix from the repository root.
 ```sh
 python3 verification/interop/shared/tools/coverage_matrix.py
 python3 verification/interop/shared/tools/coverage_matrix.py --jsonl --output /tmp/coverage-matrix.jsonl
-python3 verification/interop/shared/tools/coverage_matrix.py --version 3.0 --origin xml
+python3 verification/interop/shared/tools/coverage_matrix.py --version 2.0 --version 2.1 --origin xml
 ```
 
 Repeat `--version` to select multiple versions. `--origin` accepts `normative`
@@ -20,9 +20,9 @@ review commit used to inspect the public API. To regenerate its inputs, run
 
 The 3.0 inventory uses the pinned OASIS Working Draft and identifies its
 numbered sections, table rows, normative prose and externally referenced
-PKCS #11 values. The generator also reads the 102 profile XMLs under
-`catalog/oasis/kmip-3.0/`. Each XML row locates a specific exchange and batch
-item in its original fixture. A link to a payload field records its presence
+PKCS #11 values. The generator reads the profile XMLs for all three versions
+under `catalog/oasis/` and verifies their SHA-256 checksums. Each XML row
+locates a specific exchange and batch item in its original fixture. A link to a payload field records its presence
 in that fixture. Conditional rules, value semantics and absent fields need
 their own assertions. The public route rows identify the explicitly cataloged
 draft constructors. Other requirements remain visible as inventory rows while
@@ -36,7 +36,9 @@ against installed packages belong in execution reports.
 | KMIP version | Origin | Cases or inventory entries | Planned rows |
 | --- | --- | ---: | ---: |
 | 2.0 | Normative | 2,289 | 154,004 |
+| 2.0 | OASIS XML | 93 | 613 |
 | 2.1 | Normative | 2,346 | 159,328 |
+| 2.1 | OASIS XML | 93 | 613 |
 | 3.0 | Normative | 5,206 | 5,234 |
 | 3.0 | OASIS XML | 102 | 654 |
 
@@ -46,6 +48,7 @@ review API exposes seven additional routes. The port also applies the
 version-specific payload and partial Stop response corrections from the
 dependent PRs.
 
-The 3.0 XML cases contain 617 request/response exchanges and show 94 distinct
-payload fields. The 28 additional 3.0 normative rows are constructor routes
+The 2.0 and 2.1 XML corpora each contain 578 request/response exchanges.
+The 3.0 XML corpus contains 617. In total, 288 XML cases contribute 1,773
+exchanges and 1,880 planned rows to the 320,446-row matrix. The 28 additional 3.0 normative rows are constructor routes
 for the seven draft operations mapped across the four languages.

@@ -15,6 +15,7 @@ from typing import Iterator
 
 from cli_paths import resolve_within
 from kmip30_matrix import iter_draft_cells
+from oasis_xml import legacy_field_index, xml_rows
 
 ROOT = Path(__file__).resolve().parents[4]
 LANGUAGES = ("rust", "c", "java", "python")
@@ -515,10 +516,15 @@ def build_matrix(catalog: dict, manifest: dict) -> dict:
 def selected_cells(root: Path, versions: tuple[str, ...], origin: str | None) -> Iterator[dict]:
     shared = root / "verification/interop/shared"
     manifest = json.loads((shared / "coverage/route-capabilities.json").read_text())
-    if origin != "xml" and any(version in versions for version in ("2.0", "2.1")):
+    legacy_versions = tuple(version for version in ("2.0", "2.1") if version in versions)
+    if legacy_versions:
         catalog = json.loads((shared / "catalog/kmipkit-2x-matrix-catalog.json").read_text())
-        for cell in iter_cells(catalog, manifest, protocol_versions=versions):
-            yield {**cell, "origin": "normative"}
+        if origin != "xml":
+            for cell in iter_cells(catalog, manifest, protocol_versions=legacy_versions):
+                yield {**cell, "origin": "normative"}
+        if origin != "normative":
+            for version in legacy_versions:
+                yield from xml_rows(root, version, legacy_field_index(catalog["normative_targets"], version))
     if "3.0" in versions:
         for cell in iter_draft_cells(root, manifest["library_commit"]):
             if origin is None or cell["origin"] == origin:
@@ -548,7 +554,7 @@ def summarize_cells(cells: Iterator[dict], emit=None) -> dict:
         counts[version, origin] += 1
         cases[version, origin, case] += 1
         if origin == "xml":
-            scenario_exchanges.add((case, cell["step_index"]))
+            scenario_exchanges.add((version, case, cell["step_index"]))
             observed_targets.update(
                 target for ids in cell["observed_fields"].values() for target in ids
             )
