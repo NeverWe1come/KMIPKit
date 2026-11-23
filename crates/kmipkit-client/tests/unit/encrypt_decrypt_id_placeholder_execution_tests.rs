@@ -2,8 +2,9 @@
 
 //! Client-level ID Placeholder contracts derived from KMIP v2.1 §6.1,
 //! §6.1.8/Table 187, §6.1.11/Table 196, §6.1.17/Table 214, and §9.8.
-//! Traceability: `KMIP-REQ-SPEC-6.1-003-002`, `functional requirement`, and
-//! `KMIP-REQ-SPEC-6.1-001-003`. These tests exercise ID Placeholder
+//! Verifies client-level ID Placeholder eligibility and result association
+//! in batched Encrypt and Decrypt operations, ensuring proper dependency
+//! ordering and error propagation. These tests exercise ID Placeholder
 //! eligibility and result association through the typed client path.
 
 use kmipkit_protocol::{

@@ -1,7 +1,7 @@
 //! Client-owned immutable extension registry tests.
 //!
-//! Traceability: functional requirement, functional requirement, and
-//! success criterion.
+//! Validates client-owned extension registry immutability, schema registration,
+//! and isolation guarantees across client instances.
 
 use kmipkit_client::extension_registry;
 use kmipkit_client::{ClientError, ClientErrorCategory};
@@ -215,7 +215,7 @@ fn ordered_identities(
 
 #[test]
 fn client_registries_keep_definition_snapshots_isolated() {
-    // functional requirement: a registry belongs to one client configuration.
+    // A registry belongs to one client configuration.
     let alpha = &FIXTURES[0];
     let beta = &FIXTURES[2];
     let alpha_registry = registry(&[alpha]);
@@ -272,7 +272,7 @@ fn registry_read_operations_leave_the_constructed_snapshot_unchanged() {
 
 #[test]
 fn definition_and_metadata_views_ignore_registration_order() {
-    // functional requirement and success criterion: registry-local definition
+    // Registry-local definition lookup.
     // and metadata views are deterministic regardless of registration order.
     let forward = registry(&[&FIXTURES[0], &FIXTURES[1], &FIXTURES[2]]);
     let reverse = registry(&[&FIXTURES[2], &FIXTURES[1], &FIXTURES[0]]);
@@ -294,7 +294,7 @@ fn definition_and_metadata_views_ignore_registration_order() {
         }
     }
 
-    // the specification rules: these are deterministic metadata list/map views over the local
+    // Deterministic metadata list/map views over the local
     // registry. They do not indicate that a remote KMIP server supports them.
     let local_metadata_map = |registry: &extension_registry::ClientExtensionRegistry| {
         (0..definition_count_as_usize(registry))

@@ -1,10 +1,7 @@
 //! Delegated Login contracts from OASIS KMIP Specification v2.1 §6.1.12,
 //! Tables 199–201, with Ticket encoding from §7.39, Table 391.
 //!
-//! Traceability: `KMIP-ELEM-OP-C2S-DELEGATED-LOGIN`,
-//! the protocol specification, the protocol specification, and
-//! the protocol specification. These are source-derived tests, not official
-//! Test Case executions.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

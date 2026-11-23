@@ -2,17 +2,9 @@
 //! message extensions. These are not official OASIS test vectors.
 //!
 //! OASIS KMIP Specification v2.1 §§9.2, 9.6, 9.13, 9.19, 11.3, and 11.5;
-//! Tables 432 and 435. `KMIPKIT-DISC-001` remains open: these tests make no
-//! assertion about Continue or Undo execution, rollback, or retry effects.
-//! `KMIPKIT-DEC-002` applies only the assigned-value outbound policy and does
-//! not call the §11.5 extension allocation invalid.
-//!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-REQ-SPEC-8-003-002`, `KMIP-REQ-SPEC-9.2-001`,
-//! `KMIP-REQ-SPEC-9.6-001-001`, `-001-002`, `-001-003`,
-//! `KMIP-REQ-SPEC-9.13-001-004`, `-001-005`,
-//! `KMIP-REQ-SPEC-9.19-002`, `KMIPKIT-DISC-001`, and
-//! `KMIPKIT-DISC-043` / `KMIPKIT-DEC-002`.
+//! Tables 432 and 435. Verifies client option handling, batch continuation
+//! options, and message extension processing according to normative KMIP 2.1
+//! specifications.
 
 use kmipkit_protocol::RequestMessage;
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
@@ -371,10 +363,9 @@ fn mixed_batch_rejects_pending_when_asynchronous_responses_are_prohibited() {
 }
 
 /// A Pending response carries the field required by OASIS KMIP Specification
-/// v2.1 §8.6, Table 399 (with related context in §9.1), catalog element
-/// `KMIP-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`. The
-/// separately cited §9.19 / `KMIP-REQ-SPEC-9.19-002` concerns using that
-/// value in a subsequent Poll request.
+/// v2.1 §8.6, Table 399 (with related context in §9.1), ensuring the
+/// Asynchronous Correlation Value is present. Specification §9.19 concerns
+/// using that value in a subsequent Poll request.
 #[test]
 fn pending_response_requires_its_asynchronous_correlation_value() {
     let pending = [CandidateBatchOutcome::Pending {

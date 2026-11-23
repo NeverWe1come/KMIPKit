@@ -5,8 +5,7 @@
 //! They do not encode TTLV bytes, apply client execution policy, or claim
 //! operation-schema validity.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules and the specification rules.
+//! Verifies message structure, batch item preservation, and protocol versioning.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};

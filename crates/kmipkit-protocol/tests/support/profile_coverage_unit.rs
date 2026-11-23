@@ -80,7 +80,7 @@ fn original_creation_date_context_allows_only_the_first_addition() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn usage_limits_total_context_distinguishes_protection_from_count_allocation() {
     const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
     const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
@@ -170,7 +170,7 @@ fn usage_limits_total_context_distinguishes_protection_from_count_allocation() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn usage_limits_count_context_requires_the_existing_count_to_match() {
     const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
     const OBJECT_ID: &str = "usage-limits-count-context-test";
@@ -424,7 +424,7 @@ fn original_creation_date_context_rejects_malformed_targets_and_non_add_changes(
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn usage_limits_context_requires_known_protection_and_allocation_facts() {
     const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
     const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
@@ -520,7 +520,7 @@ fn usage_limits_context_requires_known_protection_and_allocation_facts() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn usage_limits_count_context_rejects_malformed_and_unknown_count_values() {
     const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
     const OBJECT_ID: &str = "usage-limits-malformed-count-context-test";
@@ -579,7 +579,7 @@ fn usage_limits_count_context_rejects_malformed_and_unknown_count_values() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §§4.59 and 5.5; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §§4.59 and 5.5.
 // Keep the malformed wrapper and reference branches on the same shared payload fixture.
 #[allow(clippy::too_many_lines)]
 fn usage_limits_helpers_cover_malformed_wrappers_and_reference_forms() {
@@ -834,7 +834,7 @@ fn usage_limits_helpers_reject_wrong_nested_value_types() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Tables 148–149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Tables 148–149.
 // Keep the partial state matrix together because each outcome evaluates the same mutation.
 #[allow(clippy::too_many_lines)]
 fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
@@ -994,7 +994,7 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Tables 148–149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Tables 148–149.
 fn usage_limits_profile_context_rejects_malformed_or_unbound_mutations() {
     const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
     const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";

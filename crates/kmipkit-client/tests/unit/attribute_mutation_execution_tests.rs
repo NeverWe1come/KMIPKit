@@ -6,9 +6,8 @@
 //! §6.1.51 Tables 322–324 (Set). Direct Current/New Attribute Items follow
 //! §§5.6–5.7 Tables 162–163; Attribute Reference forms follow §5.5 Table 161;
 //! Vendor Attribute follows §4.60 Table 150. Standard attribute mutation
-//! policy is sourced from §4.1–§4.63 attribute tables and the generated
-//! catalog policy (the specification requirements;
-//! the specification rules). These are derived project tests, not official
+//! policy is sourced from §4.1–§4.63 attribute tables and the generated catalog rules.
+//! These are derived project tests, not official
 //! OASIS conformance-case claims.
 
 use std::cell::{Cell, RefCell};

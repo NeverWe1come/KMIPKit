@@ -2,7 +2,6 @@
 //! Tables 328–330, and Defaults Information §7.11. These are not official
 //! OASIS Test Cases.
 //! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

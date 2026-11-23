@@ -1,7 +1,7 @@
 //! Explicit profile selection must fail closed before an exchange until its
 //! complete typed rule registry is available. Source: KMIP Specification v2.1
-//! §14.1; KMIP Profiles v2.1 §6.1. Verifies protocol model, request/response validation, and security invariants.
-//! and the specification rules.
+//! §14.1; KMIP Profiles v2.1 §6.1. Verifies profile preflight enforcement
+//! across client operations.
 
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;

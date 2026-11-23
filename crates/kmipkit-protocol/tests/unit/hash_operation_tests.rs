@@ -2,10 +2,8 @@
 //! §6.1.24, Tables 235–237; Hashing Algorithm values are from §11.21, Table
 //! 454. These tests do not claim an official Test Case pass.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-OP-C2S-HASH`, `KMIP-ELEM-ENUM-VALUE-OPERATION-HASH-00000027`,
-//! `KMIP-ELEM-ENUMERATION-HASHING-ALGORITHM`, and
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for Hash operations, Hashing Algorithm, and Data structures.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::structure_contains_tag;

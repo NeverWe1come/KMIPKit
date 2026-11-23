@@ -1,7 +1,6 @@
 //! Project-derived fake-transport checks for OASIS KMIP Specification v2.1
 //! §6.1.22, Tables 229–231, and Constraints §7.7.
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification, and the protocol specification.
+//! Verifies Get Constraints request/response execution.
 //! These are not official OASIS Test Cases.
 
 use kmipkit_protocol::{GetConstraintsResponse, ResultReason};

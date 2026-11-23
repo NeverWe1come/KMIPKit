@@ -2,10 +2,9 @@
 //! Cryptographic Algorithm and Digital Signature Algorithm values follow
 //! §§11.12/11.16, Tables 443/447. These tests do not claim an official pass.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM`,
-//! `KMIP-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM`, and the shared Data,
-//! Digested Data, Correlation Value, Init Indicator, and Final Indicator.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for Sign operations, Cryptographic Algorithm, Digital Signature Algorithm,
+//! and shared Data, Digested Data, Correlation Value, Init Indicator, and Final Indicator.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{

@@ -1,6 +1,5 @@
 //! Compile-check the Rust RNG Retrieve examples in the bilingual guides.
-//! They trace to OASIS KMIP v2.1 §6.1.49, Tables 316–318, and
-//! the protocol specification, the specification rules, and the specification rules; these are project examples, not
+//! They trace to OASIS KMIP v2.1 §6.1.49, Tables 316–318; these are project examples, not
 //! official conformance tests.
 
 use kmipkit_ttlv::codec::CodecLimits;

@@ -1,5 +1,5 @@
 //! Verifies public API ownership, redaction, and borrowing invariants.
-//! Authority: approved specification requirement specification and Rust value-model contract.
+//! Enforces memory safety and zeroization guarantees in the Rust TTLV value model.
 
 #![cfg(not(coverage))]
 #![allow(unexpected_cfgs, dead_code)]

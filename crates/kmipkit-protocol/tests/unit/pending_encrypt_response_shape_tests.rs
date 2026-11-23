@@ -4,10 +4,7 @@
 //! correlation value in the response batch item. The multipart Correlation
 //! Value remains in the operation Response Payload under §7.8.
 //!
-//! Traceability: `KMIP-REQ-SPEC-6.1-001-002`,
-//! `KMIP-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`,
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
-//! `KMIP-ELEM-OP-C2S-ENCRYPT`, and `KMIP-ELEM-OP-C2S-DECRYPT`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

@@ -4,10 +4,7 @@
 //! Credential models. They do not claim official OASIS test-vector coverage
 //! or server-side credential satisfaction.
 //!
-//! Traceability: KMIP-REQ-SPEC-9.4-001-001, KMIP-REQ-SPEC-9.4-001-002,
-//! KMIP-REQ-SPEC-9.4-002, KMIP-REQ-SPEC-9.11-004-001/-002/-003,
-//! KMIP-REQ-SPEC-9.11-006; the specification requirements,
-//! the specification rules.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use kmipkit_protocol::{
     Authentication, CredentialType, CredentialValidationErrorKind, CredentialValue,
@@ -806,8 +803,8 @@ fn hashed_password_timestamp_sequence_matches_shared_fixture() {
         .as_i64()
         .expect("next timestamp is signed 64-bit");
 
-    // KMIP Specification v2.1 §9.11, Table 415; the specification rules is resolved in
-    // the specification requirement and the specification requirement the implementation as caller-owned per-Username state.
+    // KMIP Specification v2.1 §9.11, Table 415; timestamp sequence tracking
+    // is maintained in the implementation as caller-owned per-Username state.
     let mut sequence = HashedPasswordTimestampSequence::new(Some(restored));
     assert_eq!(
         sequence.last_timestamp(),

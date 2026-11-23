@@ -1,8 +1,8 @@
-//! Fake-transport response inspection and specification requirement criticality behavior.
+//! Fake-transport response inspection and message extension criticality behavior.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.
 //! KMIP 2.1 §9.13, Table 418. Registry inspection is integrated with typed
-//! response mapping while specification requirement retains unknown-extension criticality.
+//! response mapping while retaining unknown-extension criticality.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -387,7 +387,7 @@ fn a_registered_noncritical_response_payload_is_recognized_and_preserved() {
             ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions())),
             &CodecLimits::defaults(),
         )
-        .expect("an unrecognized noncritical extension is accepted by specification requirement");
+        .expect("an unrecognized noncritical extension is accepted");
     let extension = &response.get(0).expect("one response item").extensions()[0];
     let (vendor, criticality, payload) = extension_parts(extension);
     let payload_tags = payload

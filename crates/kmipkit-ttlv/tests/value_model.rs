@@ -4,9 +4,8 @@
 //! These tests cover the in-memory semantic model only, not TTLV wire encoding
 //! or schema validity.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! functional requirement, and specification requirement-NR-001–NR-007. Structure depth is
-//! capped at 64 by `KMIPKit` policy, not by an OASIS protocol constraint.
+//! Verifies TTLV semantic value model representation across all supported Item Types.
+//! Structure depth is capped at 64 by KMIPKit policy, not by an OASIS protocol constraint.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::fmt::{Debug, Display};

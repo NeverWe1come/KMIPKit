@@ -1,9 +1,8 @@
 //! Project-derived fake-client checks for OASIS KMIP Specification v2.1
 //! §6.1.53, Tables 328–330 and Defaults Information §7.11.
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification, the protocol specification.
+//! Verifies Set Defaults request/response execution.
 //! These are not official OASIS Test Cases. Table 328 explicitly states the
-//! absent-field behavior; the approved KMIPKIT-DISC-020 disposition applies
+//! absent-field behavior; the approved constraint disposition applies
 //! to Table 330's truncated error introduction.
 
 use kmipkit_protocol::{ResultReason, SetDefaultsRequest};

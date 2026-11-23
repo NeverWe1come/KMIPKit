@@ -1,5 +1,5 @@
 //! Fluent Register tests derived from KMIP v2.1 §6.1.43, Tables 291–293,
-//! and the specification requirements.
+//! verifying builder construction and response mapping.
 
 use std::cell::RefCell;
 use std::rc::Rc;

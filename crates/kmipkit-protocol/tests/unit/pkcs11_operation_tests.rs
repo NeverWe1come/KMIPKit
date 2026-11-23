@@ -1,5 +1,5 @@
 //! Source-derived OASIS KMIP v2.1 §6.1.37 Tables 273–275 and
-//! §§7.26–7.30 Tables 378–382; KMIP-ELEM-OP-C2S-PKCS-11.
+//! §§7.26–7.30 Tables 378–382 for PKCS#11 operations.
 //! No official PKCS#11 fixture or profile-conformance claim is implied.
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

@@ -4,9 +4,8 @@
 //! include the optional Time Stamp as a Date-Time. These tests use a caller
 //! supplied raw Date-Time and do not test countdown-derived values.
 //!
-//! Traceability: `functional requirement`, `success criterion`,
-//! `KMIP-REQ-SPEC-9.20-001-001`, and
-//! `KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`.
+//! Validates client emission of optional request Time Stamp values and checks
+//! monotonicity and date-time format compliance under OASIS KMIP §9.20.
 
 use std::error::Error;
 

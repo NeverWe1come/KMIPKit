@@ -3,8 +3,7 @@
 //! exercise in-memory conversion; they are not official OASIS fixtures and do
 //! not assert wire validity.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules, and the specification rules.
+//! Verifies lossless conversion between TTLV structures and typed message models.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};

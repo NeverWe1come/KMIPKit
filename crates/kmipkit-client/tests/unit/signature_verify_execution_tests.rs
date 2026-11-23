@@ -2,8 +2,8 @@
 //! §6.1.56, Tables 337–339. These are fake-transport tests, not official
 //! Test Case executions.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for client Signature Verify operation execution.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

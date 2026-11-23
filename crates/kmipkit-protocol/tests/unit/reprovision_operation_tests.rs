@@ -1,8 +1,5 @@
 //! Re-Provision contracts from OASIS KMIP v2.1 §6.1.48, Tables 313–315.
-//! Traceability: `KMIP-REQ-SPEC-6.1.48-001`, `-004`, and `-006`.
-//! `KMIPKIT-DISC-040` approves all three request forms and retains Table 315's
-//! source caption typo without treating it as another operation. These are
-//! source-derived tests, not official OASIS Test Case executions.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{

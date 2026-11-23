@@ -1,4 +1,4 @@
-//! Red-phase contract tests for the specification requirements and the specification rules.
+//! Verifies diagnostic redaction of secret material and session state across transport errors.
 //!
 //! File-source behavior and the crate-internal test-only secret-owner observer
 //! are covered alongside current public-surface checks in

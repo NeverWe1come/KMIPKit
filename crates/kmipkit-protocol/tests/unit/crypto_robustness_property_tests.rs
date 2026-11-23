@@ -3,9 +3,7 @@
 //!
 //! References: KMIP Specification v2.1 §6.1.11, Table 196; §6.1.17, Table
 //! 214; §7.9, Tables 360–361; §§8.6 and 9.17–9.18; §11.46.
-//! Traceability: `functional requirement`, `functional requirement`,
-//! `functional requirement`, `functional requirement`, and
-//! `KMIP-REQ-SPEC-6.1-001-002`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use std::fmt;
 

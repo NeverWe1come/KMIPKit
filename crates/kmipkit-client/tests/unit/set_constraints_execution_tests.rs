@@ -1,9 +1,8 @@
 //! Project-derived fake-client checks for OASIS KMIP Specification v2.1
 //! §6.1.52, Tables 325–327; Constraints structure §7.7.
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification, the protocol specification.
+//! Verifies Set Constraints request/response execution.
 //! These are not official OASIS Test Cases. The error mapping follows the
-//! maintainer-approved KMIPKIT-DISC-020 interpretation in `spec.md`.
+//! OASIS specification interpretation for constraints.
 
 use kmipkit_protocol::{ResultReason, SetConstraintsRequest};
 use kmipkit_test_support::ExchangeScript;
@@ -220,7 +219,7 @@ fn set_constraints_outcome_exposes_typed_views_and_safe_diagnostics() {
 
 #[test]
 fn table_327_failure_alternatives_are_preserved_without_retry() {
-    // Table 327 repeats Invalid Field. KMIPKIT-DISC-020 associates this error
+    // Table 327 repeats Invalid Field. The client associates this error
     // introduction with Set Constraints; the table's reasons remain binding.
     for reason in [
         0x07,

@@ -1,4 +1,4 @@
-//! specification requirement compile-time checks for the 56 direct Client operations.
+//! Compile-time surface checks for the 56 direct Client operations.
 //!
 //! Operation names and direction follow OASIS KMIP v2.1 §6.1 and the reviewed
 //! 56-row client operation inventory in `component specification`.

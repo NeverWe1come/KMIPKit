@@ -1,10 +1,10 @@
 #![cfg(test)]
 
 //! Fake-transport Re-certify contracts from OASIS KMIP v2.1 §6.1.45,
-//! Tables 298–302. Stable requirement coverage: `KMIP-REQ-SPEC-6.1.45-001`,
-//! `-002-001`, `-002-002`, `-004`, `-006-001`, `-006-002`, and `-008`.
-//! Shared Pending and delivery behavior follows KMIP v2.1 §§8.6, 9.1, and
-//! 9.2. These are derived tests, not official OASIS Test Case executions.
+//! Tables 298–302. Validates client execution of Re-certify requests, certificate
+//! re-issuance, and response payload handling. Shared Pending and delivery
+//! behavior follows KMIP v2.1 §§8.6, 9.1, and 9.2. These are derived tests,
+//! not official OASIS Test Case executions.
 
 use kmipkit_protocol::{
     AttributeSet, CreateRequest, ObjectType, RecertifyRequest, SecretBytes, UniqueIdentifier,

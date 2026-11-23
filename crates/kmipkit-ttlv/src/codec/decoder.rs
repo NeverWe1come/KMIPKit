@@ -53,11 +53,9 @@ pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
 /// use kmipkit_ttlv::{ItemType, ValueView};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// // OASIS KMIP Specification v2.1 §§10.1.1–10.1.3, 10.1.5, 11.23, and 11.56;
-/// // KMIP-REQ-SPEC-10.1.5-001-002, and KMIP-REQ-SPEC-11.56-001.
-/// // Generic order, repeated Tags, and unknown mask/Enumeration values are
-/// // Checking padding
-/// // extents without constraining pad-byte values follows the specification rules.
+/// // OASIS KMIP Specification v2.1 §§10.1.1–10.1.3, 10.1.5, 11.23, and 11.56 TTLV encoding rules.
+/// // Generic order, repeated Tags, and unknown mask/Enumeration values are preserved.
+/// // Checking padding extents without constraining pad-byte values follows the TTLV decoding policy.
 /// let wire = [
 ///     // Generic Structure Tag 0x420173; 3 child Items, 16 bytes each.
 ///     0x42, 0x01, 0x73, 0x01, 0x00, 0x00, 0x00, 0x30,

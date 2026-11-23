@@ -8016,7 +8016,7 @@ impl Client {
     }
 
     /// Executes one Query Asynchronous Requests operation and exposes its
-    /// response payload generically while `KMIPKIT-DISC-039` remains unresolved.
+    /// response payload generically as a generic TTLV structure.
     ///
     /// # Errors
     ///

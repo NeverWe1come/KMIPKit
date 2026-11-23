@@ -21,7 +21,7 @@ fn both_guides_contain_executable_cryptographic_operation_examples() {
         assert!(guide.contains("MacVerifyRequest"));
         assert!(guide.contains("SignRequest"));
         assert!(guide.contains("SignatureVerifyRequest"));
-        assert!(guide.contains("KMIPKIT-DISC-048"));
+        assert!(guide.contains("Validity Indicator"));
     }
 }
 

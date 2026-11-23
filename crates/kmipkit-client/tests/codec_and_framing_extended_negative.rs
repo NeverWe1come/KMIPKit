@@ -3,7 +3,7 @@
 //! Covers hostile XML (entity expansions, DTDs, recursive namespaces, deep nesting),
 //! malformed JSON (non-hex byte strings, overflow integers, invalid escapes, unclosed structures),
 //! and raw TLS transport stream truncations.
-//! Conforms to `KMIPKit` security and privacy policy, KMIPKIT-REQ-PROF-5.4.1, and KMIPKIT-REQ-PROF-5.5.1.
+//! Conforms to `KMIPKit` security and privacy policy and OASIS KMIP Profile requirements.
 
 use std::io::{Read, Write};
 use std::net::TcpListener;

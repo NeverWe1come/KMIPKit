@@ -3,10 +3,7 @@
 //! Test Case passes.
 //!
 //! Covers synchronous and fluent RNG Retrieve request construction and response
-//! validation in Rust using a fake transport (`KMIP-ELEM-OP-C2S-RNG-RETRIEVE`,
-//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`).
+//! validation in Rust using a fake transport, verifying Data Length and Data fields.
 
 use kmipkit_protocol::{ProtocolCauseCategory, RngRetrieveRequest};
 use kmipkit_test_support::ExchangeScript;

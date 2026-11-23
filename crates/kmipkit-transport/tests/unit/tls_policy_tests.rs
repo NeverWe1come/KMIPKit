@@ -1,8 +1,8 @@
-//! TLS policy tests derived from the specification requirements, and the specification rules.
+//! Verifies TLS policy enforcement including certificate validation, revocation checks, and zero-RTT early data prohibition.
 //!
 //! KMIP Specification v2.1 §10.4 requires channel confidentiality, integrity,
 //! and authenticity. The product-specific TLS 1.3, mutual authentication,
-//! trust, revocation, and resumption requirements are defined in specification requirement.
+//! trust, revocation, and session resumption policies are enforced according to TLS 1.3 transport security rules.
 
 use std::env;
 use std::fs;

@@ -1,8 +1,7 @@
 //! OASIS KMIP Specification v2.1 §§8.1–8.6 and 9.2–9.21;
 //! Tables 395–399, 408–409, 418, and 421.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules through the specification rules, and the specification rules.
+//! Verifies request and response message header and batch item accessors.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};

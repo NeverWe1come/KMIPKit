@@ -1,5 +1,5 @@
 // Verifies public API ownership, redaction, and borrowing invariants.
-// Authority: approved specification requirement Rust value-model contract.
+// Enforces that borrowed views cannot escape item closure lifetimes.
 use kmipkit_ttlv::{Item, ValueView};
 
 fn borrowed_text(item: &Item) -> Option<&str> {

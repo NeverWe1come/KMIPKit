@@ -4,8 +4,8 @@
 //! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules and the specification rules.
+//! Verifies request/response payload construction, unique identifier handling,
+//! and error formatting.
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{

@@ -2,7 +2,7 @@
 
 //! Attribute model requirements from OASIS KMIP v2.1 §§4.60 and 5.1–5.4,
 //! Tables 150 and 157–160. Generic direct attribute items preserve their
-//! original tags, typed values, repetitions, and order under functional requirement.
+//! original tags, typed values, repetitions, and order.
 
 use crate::{AttributeSet, AttributeSetError};
 use kmipkit_ttlv::codec::decode;

@@ -6,12 +6,7 @@
 //! Request checks exercise the crate-private validation boundary used before
 //! serialization/transmission; they do not define a public request parser.
 //!
-//! Traceability: `KMIP-REQ-SPEC-6.1.11-001-001`,
-//! `KMIP-REQ-SPEC-6.1.17-001-001`, `KMIP-REQ-SPEC-4.16-002`,
-//! `KMIP-REQ-SPEC-4.16-003`, `KMIP-REQ-SPEC-6.1-001-002`,
-//! `KMIP-ELEM-OP-C2S-DECRYPT`, `KMIP-ELEM-OP-C2S-ENCRYPT`,
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`,
-//! and `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use std::fmt::{Debug, Display};
 

@@ -1,7 +1,7 @@
-//! Redaction regressions for the specification requirement lifecycle values.
+//! Redaction regressions for client lifecycle operations and identifiers.
 //!
-//! Derived from the project's the specification requirements security requirement and
-//! shared specification requirement error contract. These are project-policy tests, not
+//! Derived from payload zeroization security requirements and
+//! shared error contracts. These are project-policy tests, not
 //! official OASIS Test Cases.
 
 use std::error::Error;

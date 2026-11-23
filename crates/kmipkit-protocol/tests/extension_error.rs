@@ -1,6 +1,6 @@
-//! specification requirement protocol error contract tests.
+//! Protocol error contract tests for extensions.
 //!
-//! Traceability: functional requirement and functional requirement.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use std::error::Error;
 use std::fmt::Write as _;

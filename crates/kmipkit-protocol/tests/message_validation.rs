@@ -1,8 +1,7 @@
 //! OASIS KMIP Specification v2.1: §§6.1.38, 8.3, 8.6, 9.1–9.2, 9.9–9.10,
 //! 9.13, 9.19, 9.21, 11.56; Tables 276, 396, 399, 400, 408–409, and 418.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules.
+//! Verifies pre-send message validation rules, required fields, and batch bounds.
 
 use kmipkit_protocol::{MessageValidationErrorKind, RequestMessage, ResponseMessage, ResultStatus};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};

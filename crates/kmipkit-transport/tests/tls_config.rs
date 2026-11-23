@@ -1,4 +1,4 @@
-//! Derived tests for the specification requirements, and the specification rules.
+//! Verifies TLS 1.3 client configuration invariants, cipher suite enforcement, and certificate validation.
 //!
 //! The default HTTPS target also verifies OASIS KMIP Profiles v2.1 OS §5.3.1
 //! item 3 (`SHOULD`), while caller-selected origin-form targets cover item 4.

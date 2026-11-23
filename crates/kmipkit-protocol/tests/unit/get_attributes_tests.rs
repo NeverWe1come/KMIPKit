@@ -1,8 +1,7 @@
 #![cfg(test)]
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.20, Tables
-//! 223–225. Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules.
+//! 223–225, verifying request reference filtering and response attribute extraction.
 //! These are derived structural tests; they do not claim an official OASIS case passed.
 
 use crate::{

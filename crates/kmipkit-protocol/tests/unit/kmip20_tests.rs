@@ -1,4 +1,4 @@
-//! OASIS KMIP 2.0 interoperability and conformance tests (specification requirement).
+//! OASIS KMIP 2.0 interoperability and conformance tests for multi-version support.
 
 use crate::{ProtocolVersion, VersionGate, VersionGateError};
 

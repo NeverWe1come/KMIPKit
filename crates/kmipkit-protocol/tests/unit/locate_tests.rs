@@ -7,9 +7,8 @@
 //! vectors, not official OASIS Test Cases.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules; `KMIP-REQ-SPEC-6.1.28-001`, -002, -007, -008-001, -008-002,
-//! -011, -012, -013-001, and -013-002. The Object Group Member vector checks
-//! Table 247 value preservation only; server matching remains server behavior.
+//! The Object Group Member vector checks Table 247 value preservation only;
+//! server matching remains server behavior.
 
 use crate::{
     AttributeSet, AttributeSetError, LocateError, LocateRequest, LocateResponse, ObjectGroupMember,

@@ -4,11 +4,7 @@
 //! (Table 461), and 11.29; permitted Unique Identifier forms come from §4.58,
 //! Tables 145–146. Any Object remains opaque as defined in §2. These are local
 //! source-derived vectors, not official OASIS Test Cases.
-//! Verifies typed response parsing and validation requirements.
-//! the specification rules and the specification rules.
-//!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules and the specification rules.
+//! Verifies typed response parsing, request structure ordering, and validation rules.
 
 use crate::{
     GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,

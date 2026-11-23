@@ -2,9 +2,9 @@
 //! Cryptographic Algorithm values follow §11.12, Table 443. These tests do not
 //! claim an official Test Case pass.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM`, and the shared Data,
-//! Correlation Value, Init Indicator, and Final Indicator elements.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for MAC operations, Cryptographic Algorithm, and shared Data, Correlation Value,
+//! Init Indicator, and Final Indicator elements.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{

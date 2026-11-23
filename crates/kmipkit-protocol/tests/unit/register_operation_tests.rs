@@ -1,8 +1,5 @@
 //! Register tests from OASIS KMIP v2.1 §6.1.43, Tables 291–294.
-//! Traceability covers `KMIP-REQ-SPEC-3.1-004-001`, `-005-001`, and
-//! `KMIP-REQ-SPEC-6.1.43-001`, `-005`, `-007`,
-//! `-009-001`, `-009-002`, `-010-001`, `-010-002`, and `-011`.
-//! These vectors are derived from the pinned tables, not official fixture runs.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{
@@ -784,7 +781,7 @@ fn request_rejects_algorithm_and_length_split_between_register_and_key_value_att
 
 #[test]
 fn request_preserves_key_value_attributes_associated_with_raw_key_material() {
-    // `KMIP-REQ-SPEC-3.2-001`: KMIP Specification v2.1 §3.2, Table 13
+    // KMIP Specification v2.1 §3.2, Table 13
     // requires Key Material in a structured Key Value and permits associated
     // Attributes. §5.1, Table 157 defines those children as §4 attributes with
     // their defined TTLV types. This is an in-memory Register payload, not
@@ -1107,7 +1104,7 @@ fn request_requires_usage_mask_for_managed_cryptographic_objects() {
 
 #[test]
 fn request_rejects_certificate_without_usage_mask() {
-    // KMIP-REQ-SPEC-6.1.43-007: KMIP Specification v2.1 §2.1 classifies
+    // KMIP Specification v2.1 §2.1 classifies
     // Certificate as managed cryptographic material; §6.1.43 Table 293 requires
     // Cryptographic Usage Mask for managed cryptographic objects.
     let result = RegisterRequest::new(

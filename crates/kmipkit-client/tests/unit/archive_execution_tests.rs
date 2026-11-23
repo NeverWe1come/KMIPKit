@@ -5,10 +5,10 @@
 //! Identifier encodings; §11.56 Table 487 assigns tag 0x420094 to Unique Identifier;
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
-//! and the specification requirement/0009 client contracts. Traceability:
-//! `KMIP-ELEM-OP-C2S-ARCHIVE`, the specification requirements,
-//! the specification rules, and the specification rules.
-//! These are derived structural/execution tests, not official OASIS Test Cases.
+//! Validates client execution of Archive requests and responses, verifying
+//! Unique Identifier encoding, single-exchange synchronous delivery, and
+//! handling of success, failure, and pending response states. These are
+//! derived structural tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{ArchiveRequest, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;

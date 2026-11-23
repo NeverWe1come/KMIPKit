@@ -1,7 +1,7 @@
 //! Source-derived Certify contracts from OASIS KMIP v2.1 §6.1.6,
-//! Tables 179–181. Stable requirement coverage:
-//! `KMIP-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
-//! `-003`, and `-007`. These tests are derived from the pinned standard and
+//! Tables 179–181. Covers Certificate Request type and value validations,
+//! certificate attribute preservation, and response unique identifier handling.
+//! These tests are derived from the pinned standard and
 //! do not claim an official OASIS Test Case pass.
 
 use crate::async_operation_fixtures::{response_message, structure};

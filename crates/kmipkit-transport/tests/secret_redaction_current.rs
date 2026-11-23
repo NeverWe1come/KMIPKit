@@ -1,5 +1,4 @@
-//! Current-public-surface redaction checks for the specification requirements and
-//! the specification rules. File inputs and key-owner observation are covered by the paired
+//! Verifies that public transport error and debug representations never leak sensitive credentials or session secrets. File inputs and key-owner observation are covered by the paired
 //! `secret_redaction` contract target.
 
 #[path = "support/secret_redaction/current.rs"]

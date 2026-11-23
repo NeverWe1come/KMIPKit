@@ -1,5 +1,5 @@
 //! Verifies public API ownership, redaction, and borrowing invariants.
-//! Authority: approved specification requirement specification and Rust value-model contract.
+//! Enforces memory safety and zeroization guarantees in the Rust TTLV value model.
 
 use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex, Write as _};
 

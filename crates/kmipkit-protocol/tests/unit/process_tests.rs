@@ -1,8 +1,7 @@
 //! Derived KMIP 2.1 Process tests; not official conformance vectors.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! §6.1.39, Tables 278–280. The missing catalog requirement ID for Table 278
-//! remains an explicit traceability gate (the specification rules).
+//! Verifies protocol model, request/response validation, and security invariants
+//! for Process operations under OASIS KMIP v2.1 §6.1.39, Tables 278–280.
 
 use kmipkit_ttlv::ValueView;
 

@@ -1,4 +1,4 @@
-//! Unit tests for KMIP 3.0 KEM (Encapsulate/Decapsulate) and Deactivate models (specification requirement).
+//! Unit tests for KMIP 3.0 KEM (Encapsulate/Decapsulate) and Deactivate models for multi-version support.
 
 use crate::{
     DeactivateRequest, DeactivateResponse, DecapsulateRequest, DecapsulateResponse,

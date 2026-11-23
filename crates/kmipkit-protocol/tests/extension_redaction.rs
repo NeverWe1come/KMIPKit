@@ -1,6 +1,6 @@
 //! Redaction guarantees for validated vendor extension values.
 //!
-//! Traceability: functional requirement and KMIP 2.1 §9.13, Table 418.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 #[cfg(any())]
 use std::error::Error;

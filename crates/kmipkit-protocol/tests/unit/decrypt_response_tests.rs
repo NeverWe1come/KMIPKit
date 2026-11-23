@@ -4,10 +4,7 @@
 //! defined by §11.36. These table-derived vectors are not official Test Case
 //! passes.
 //!
-//! Traceability: `KMIP-REQ-SPEC-6.1-001-002`,
-//! `KMIP-ELEM-OP-C2S-DECRYPT`,
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::response_message;
 use crate::operation_test_support::item;

@@ -1,4 +1,4 @@
-//! Client-boundary contracts for the specification requirements and the specification rules.
+//! Validates client boundary contracts for operation execution, batching, and error handling.
 //!
 //! The wire Operation Enumeration values follow OASIS KMIP Specification v2.1
 //! §11.36, Table 470: Get is 0x0000000A and Locate is 0x00000008. Operation

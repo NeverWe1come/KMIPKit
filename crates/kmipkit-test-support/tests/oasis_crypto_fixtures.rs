@@ -795,14 +795,10 @@ fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items
     // are fixture-derived operation-item assertions from Test Cases v2.1 CN01
     // §§2.99–2.101, never complete official Test Case pass claims.
     //
-    // Traceability: `KMIP-REQ-SPEC-6.1-001-002`,
-    // `KMIP-ELEM-OP-C2S-ENCRYPT`,
-    // `KMIP-ELEM-OP-C2S-DECRYPT`,
-    // `KMIPKIT-TEST-CN01-2-99`, `KMIPKIT-TEST-CN01-2-100`,
-    // `KMIPKIT-TEST-CN01-2-101`,
-    // `KMIP-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`,
-    // `KMIP-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
-    // `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+    // Validates cryptographic operation response outcomes under KMIP 2.1 §6.1
+    // for Encrypt and Decrypt operations against official fixtures
+    // `TC-STREAM-ENC-1-21`, `TC-STREAM-ENC-2-21`, and `TC-STREAM-ENCDEC-1-21`,
+    // asserting Authenticated Encryption Tag, Correlation Value, and Data payload handling.
     let cases = [
         (
             TC_ENC_1_21_ID,

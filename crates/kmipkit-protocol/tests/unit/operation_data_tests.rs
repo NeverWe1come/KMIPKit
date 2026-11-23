@@ -1,9 +1,7 @@
 //! Operation Data tests derived from OASIS KMIP v2.1 §7.9, Tables 360–361.
-//! These are source-derived shared-value tests contributing to
-//! functional requirement, not official OASIS Test Cases.
+//! These are source-derived shared-value tests, not official OASIS Test Cases.
 //!
-//! Traceability: `functional requirement` and
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use std::fmt::{Debug, Display};
 

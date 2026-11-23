@@ -1,11 +1,8 @@
 //! Source-derived RNG Seed contracts from OASIS KMIP v2.1 §6.1.50,
 //! Tables 319–321. These tests do not claim an official Test Case pass.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-OP-C2S-RNG-SEED`,
-//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for RNG Seed operations, Data Length, and Data payloads.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::structure_contains_tag;
@@ -118,7 +115,7 @@ fn successful_response_preserves_zero_data_length_and_unknown_fields() {
         ])),
     );
     let response = RngSeedResponse::try_from_response_item(response_item(&message))
-        .expect("§6.1.50 and KMIP-REQ-SPEC-6.1.50-001 accept zero bytes used");
+        .expect("§6.1.50 accepts zero bytes used");
 
     assert_eq!(response.result().status().raw(), SUCCESS);
     assert_eq!(response.data_length(), Some(0));

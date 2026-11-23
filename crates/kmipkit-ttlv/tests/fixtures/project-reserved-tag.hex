@@ -1,3 +1,3 @@
 # Case: the accepted KMIPKit decoder policy rejects a received Reserved Tag.
-# Attribution: KMIPKit requirement functional requirement and accepted architectural decision reject received Reserved Tags; OASIS Key Management Interoperability Protocol Specification Version 2.1, Chapter 11 and Section 11.56, provide the reserved-tag rule and allocation context (specification requirement-NR-006).
+# Attribution: KMIPKit parser validation under reserved tag policy reject received Reserved Tags; OASIS Key Management Interoperability Protocol Specification Version 2.1, Chapter 11 and Section 11.56, provide the reserved-tag rule and allocation context.
 42 00 09 05 00 00 00 04 00 00 00 09 00 00 00 00

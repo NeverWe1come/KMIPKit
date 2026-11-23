@@ -1,5 +1,5 @@
 //! Fluent lifecycle request tests derived from KMIP v2.1 §§6.1.1, 6.1.4,
-//! 6.1.28, 6.1.42, and 6.1.44–6.1.47, plus specification requirement.
+//! 6.1.28, 6.1.42, and 6.1.44–6.1.47, and KMIP specifications.
 
 use kmipkit_protocol::{ProtocolVersion, RevocationReason, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;

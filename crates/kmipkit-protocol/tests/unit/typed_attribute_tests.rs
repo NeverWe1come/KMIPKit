@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-//! Typed attribute API contract from the specification requirement specification.
+//! Typed attribute API contract from OASIS KMIP specifications.
 
 use crate::attribute::{
     Attribute, AttributeSet, AttributeValueError, CurrentAttribute, NewAttribute, typed,

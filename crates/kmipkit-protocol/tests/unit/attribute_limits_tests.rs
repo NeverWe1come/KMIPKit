@@ -265,7 +265,7 @@ fn truncated_ttlv_response_frames_are_rejected_payload_free_for_all_operations()
 #[test]
 fn configured_ttlv_limits_reject_all_seven_response_shapes_before_returning_a_tree() {
     // KMIPKit's accepted decoder defaults are 16 MiB, depth 64, and 100,000
-    // Items (security zeroization policy; functional requirement). Lowered per-call limits are
+    // Items under decoder resource limits. Lowered per-call limits are
     // checked while decoding, before an Item tree can be returned.
     let oversized_result_message = SECRET_SENTINEL.repeat(64);
 

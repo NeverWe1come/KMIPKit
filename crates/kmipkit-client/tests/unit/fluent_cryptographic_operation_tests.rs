@@ -1,11 +1,13 @@
-//! Fluent cryptographic request builders from specification requirement and KMIP v2.1.
+//! Fluent cryptographic request builders from OASIS KMIP v2.1.
 //!
 //! Normative sources: KMIP v2.1 §4.16, Table 59; §6.1.11, Table 196;
 //! §6.1.17, Table 214; §6.1.24, Table 235; §6.1.32, Table 259;
 //! §6.1.33, Table 262; §6.1.55, Table 334; §6.1.56, Table 337; and
-//! §§7.3, 7.8, 7.9, 7.14, 7.17, 7.20, 7.38, and 7.39. Traceability:
-//! functional requirement through functional requirement and functional requirement
-//! through functional requirement.
+//! §§7.3, 7.8, 7.9, 7.14, 7.17, 7.20, 7.38, and 7.39.
+//!
+//! Validates the fluent API builders for cryptographic operations (Encrypt,
+//! Decrypt, Sign, Signature Verify, MAC, MAC Verify, and Hash) across
+//! parameter configuration, data input, and response inspection.
 
 use kmipkit_protocol::{
     CryptographicParameters, CryptographicParametersBuilder, OperationData, SecretBytes,

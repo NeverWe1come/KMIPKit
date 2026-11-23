@@ -1,9 +1,11 @@
 #![cfg(test)]
 
 //! Derived Delete Attribute request/response vectors for OASIS KMIP v2.1
-//! §6.1.13, Tables 202–204, and §5.6, Table 162. Traceability:
-//! the specification requirements.
-//! These derived vectors do not claim that an official OASIS case passed.
+//! §6.1.13, Tables 202–204, and §5.6, Table 162.
+//!
+//! Validates client omission of optional selectors, all-instance deletion,
+//! local read-only rejection, and server result propagation. These derived
+//! vectors do not claim that an official OASIS case passed.
 
 use crate::{
     AttributeReference, CurrentAttribute, DeleteAttributeRequest, DeleteAttributeResponse,

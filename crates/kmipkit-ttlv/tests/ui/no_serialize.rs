@@ -1,5 +1,5 @@
 // Verifies public API ownership, redaction, and borrowing invariants.
-// Authority: approved specification requirement Rust value-model contract.
+// Enforces omission of Serialize trait to protect secret zeroization invariants.
 use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 use serde::Serialize;
 

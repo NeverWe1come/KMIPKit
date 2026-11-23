@@ -7,7 +7,8 @@
 //! response wrapper before entering its decoder.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-REQ-SPEC-9.12-001-002`, `-001-003`, and low-level transport exchange contract.
+//! Verifies that the client validates incoming response wrappers before
+//! passing data to the TTLV decoder, ensuring bounded memory allocation.
 
 use std::cell::Cell;
 use std::fmt::Write as _;
@@ -192,7 +193,7 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
 
 #[test]
 fn ttlv_hex_limits_bound_the_rendered_output_not_only_binary_ttlv() {
-    // functional requirement; KMIP 2.1 §§8.4–8.6. Inspection uses the requested output cap.
+    // KMIP 2.1 §§8.4–8.6. Inspection uses the requested output cap.
     let bytes = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
     let binary_length = bytes.len();
     let hex_length = binary_length.checked_mul(2).expect("fixture size fits");

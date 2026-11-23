@@ -4,9 +4,7 @@
 //! validation and preservation, not operation-specific payloads or server
 //! behavior; they are source-derived tests, not official OASIS Test Cases.
 //!
-//! Traceability: `KMIP-REQ-SPEC-4.16-001-001`,
-//! `KMIP-REQ-SPEC-4.16-001-002`, `KMIP-REQ-SPEC-4.16-002`, and
-//! `KMIP-REQ-SPEC-4.16-003`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::ProtocolError;
 use crate::{

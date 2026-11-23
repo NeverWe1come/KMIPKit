@@ -13,9 +13,8 @@
 //! standard-library whitelist. It does not expand macros or resolve types; the
 //! whitelist's token trees are checked for protected boundary identifiers.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the specification rules; `success criterion`, the specification rules;
-//! caller-requested encoding and zeroization, low-level transport exchange contract, the specification rules.
+//! Verifies private execute boundary AST checks, ensuring single exchange
+//! invocation and zeroization of secret payloads.
 
 use std::collections::HashSet;
 use std::fs;

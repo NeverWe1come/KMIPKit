@@ -372,7 +372,7 @@ operación y no se convierten en decisiones criptográficas locales. Signature
 Verify también puede exponer Data recuperados mediante un callback prestado de
 `SecretBytes`.
 
-`KMIPKIT-DISC-048` sigue abierto: las Tablas 263 y 338 omiten Validity
+Existe una discrepancia en la especificación OASIS sobre la verificación multipart: las Tablas 263 y 338 omiten Validity
 Indicator en toda respuesta multiparte, mientras que §§6.1.33 y 6.1.56 lo
 exigen en la respuesta multiparte final. La API tipada lo exige para una sola
 parte, lo rechaza en partes no finales y acepta ambas formas en la parte final

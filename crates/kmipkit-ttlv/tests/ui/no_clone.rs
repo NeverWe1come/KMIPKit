@@ -1,5 +1,5 @@
 // Verifies public API ownership, redaction, and borrowing invariants.
-// Authority: approved specification requirement Rust value-model contract.
+// Enforces non-Clone semantics for StructureView to ensure immutable borrow guarantees.
 use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 
 fn requires_clone<T: Clone>() {}

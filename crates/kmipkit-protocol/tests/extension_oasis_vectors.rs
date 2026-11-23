@@ -2,9 +2,7 @@
 #![cfg(any())]
 //! Project-authored conformance vectors from OASIS KMIP Specification v2.1.
 //!
-//! Traceability: §7.13 Table 365; §8.3 Table 396; §9.13 Table 418;
-//! §11.44 Table 476; §11.56 tag allocations; functional requirement and
-//! functional requirement.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 #[path = "../../../bindings/shared/fixtures/extensions/oasis/mod.rs"]
 mod oasis;

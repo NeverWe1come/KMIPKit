@@ -5,11 +5,10 @@
 //! Identifier encodings; §11.56 Table 487 assigns tag 0x420094 to Unique Identifier;
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables
-//! 399–401; §11.3/Table 431; and the specification requirement/0009 client contracts.
-//! Traceability:
-//! `KMIP-ELEM-OP-C2S-DESTROY`, the specification requirements,
-//! the specification rules, and the specification rules.
-//! `KMIP-CLAUSE-SPEC-6.1.15-001` is server-only. These are derived
+//! 399–401, and §11.3/Table 431.
+//! Validates client execution of Destroy requests and responses, verifying
+//! Unique Identifier encoding, single-exchange synchronous delivery, and
+//! handling of success, failure, and pending response states. These are derived
 //! structural/execution tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{DestroyRequest, UniqueIdentifier};
@@ -255,7 +254,7 @@ fn destroy_success_returns_server_result_without_simulating_object_state() {
                 response_identifier.to_owned()
             ))
         );
-        // The server-only state effect from KMIP-CLAUSE-SPEC-6.1.15-001 is
+        // The server-only state effect from KMIP v2.1 §6.1.15 is
         // not represented as local state; the client returns only the KMIP
         // result and identifier required by the successful response.
         assert_destroy_request(

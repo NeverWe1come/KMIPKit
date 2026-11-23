@@ -3723,7 +3723,7 @@ fn result_message_client_access_has_an_optional_typed_rule() {
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.17-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.17-001";
 
-    // OASIS KMIP Specification v2.1 §9.17; KMIPKIT-DEC-016.
+    // OASIS KMIP Specification v2.1 §9.17 Result Message optional capability rule.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
@@ -7277,7 +7277,7 @@ fn profile_rejects_malformed_attestation_credential_envelopes() {
 #[test]
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
     // KMIP Specification v2.1 §9.11/Table 412 and §10.1.2; the typed Device
-    // policy follows the specification requirements and keeps field presence separate from text.
+    // policy follows OASIS KMIP 2.1 rules and keeps field presence separate from text.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-001";
     const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -14537,7 +14537,7 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
 
 #[test]
 fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
-    // KMIP Specification v2.1 §4.14, Table 55; KMIP-REQ-SPEC-4.14-001-001.
+    // KMIP Specification v2.1 §4.14, Table 55 domain parameter rules.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
@@ -14580,7 +14580,7 @@ fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
 
 #[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.16-001-001";
     const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let result = ProfileValidationResult {
@@ -14633,7 +14633,7 @@ fn public_profile_result_entrypoints_validate_transport_and_responses() {
 
 #[test]
 fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     let result = ProfileValidationResult {
         profile_ids: vec!["TEST-PROFILE".to_owned()],
         requirement_ids: vec!["TEST-REQ".to_owned()],
@@ -14679,7 +14679,7 @@ fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
 
 #[test]
 fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
     let requirements = [requirement(
         "TEST-REQ",
@@ -17108,7 +17108,7 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
 
 #[test]
 fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
-    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3; KMIP-REQ-SPEC-2.7-001.
+    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3 wrapped secret data rules.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const IMPORT_OPERATION: u32 = 0x0000_002A;
@@ -22535,7 +22535,7 @@ fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior
 fn profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.45 paragraph 2 requires a Unique Identifier
     // when Certificate Request Value is omitted; Table 300's optional field
-    // and ID Placeholder note are adjudicated separately by KMIPKIT-DEC-019.
+    // and ID Placeholder note are reconciled by requiring an explicit Unique Identifier.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| {
@@ -23047,8 +23047,8 @@ fn profile_maps_omitted_certify_certificate_request_object_as_optional_capabilit
 #[test]
 fn profile_maps_omitted_certify_request_identifier_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.6 paragraph 2 requires an explicit Unique
-    // Identifier when Certificate Request Value is omitted; KMIPKIT-DEC-013
-    // resolves the conflicting Table 179 ID Placeholder sentence.
+    // Identifier when Certificate Request Value is omitted, reconciling
+    // the conflicting Table 179 ID Placeholder sentence.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
@@ -26218,7 +26218,7 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIP-REQ-SPEC-4.59-002",
@@ -26229,7 +26229,7 @@ fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition(
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 and Table 149.
 fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIP-REQ-SPEC-4.59-002",
@@ -26240,7 +26240,7 @@ fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_gene
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIP-REQ-SPEC-4.59-003-001",

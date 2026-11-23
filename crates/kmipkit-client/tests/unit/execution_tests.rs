@@ -9,9 +9,8 @@
 //! order. These derived tests are not official OASIS vectors.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-REQ-SPEC-8.3-003`, `KMIP-REQ-SPEC-9.21-001-001`,
-//! `KMIP-REQ-SPEC-9.21-001-002`, `KMIPKIT-DISC-022`,
-//! `functional requirement`, and `functional requirement`.
+//! Verifies protocol message construction, request/response validation,
+//! correlation value handling, and batch item association invariants.
 
 use kmipkit_protocol::ProtocolVersion;
 use kmipkit_ttlv::codec::CodecLimits;

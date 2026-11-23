@@ -3,7 +3,7 @@
 //! not official vectors.
 //!
 //! Verifies protocol model, request/response validation, and security invariants.
-//! mapping remains excluded while KMIPKIT-DISC-039 is open.
+//! mapping remains excluded as a generic TTLV structure.
 
 use std::cell::Cell;
 use std::rc::Rc;

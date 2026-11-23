@@ -23,8 +23,6 @@ fn both_guides_cover_default_and_explicit_managed_opaque_context() {
         assert!(guide.contains("Cryptographic Length"));
         assert!(guide.contains("0x80000001"));
         assert!(guide.contains("Table 469") || guide.contains("Tabla 469"));
-        assert!(guide.contains("KMIP-REQ-SPEC-2.3-002"));
-        assert!(guide.contains("KMIP-REQ-SPEC-2.3-003"));
     }
 }
 

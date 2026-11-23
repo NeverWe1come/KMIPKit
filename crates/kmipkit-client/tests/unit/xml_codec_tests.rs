@@ -1,4 +1,4 @@
-//! specification requirement: OASIS KMIP Spec v2.1 §10.2.3 and Profiles v2.1
+//! XML encoding support: OASIS KMIP Spec v2.1 §10.2.3 and Profiles v2.1
 //! §§5.4.1.1–5.4.1.6.13, 5.4.2 and 5.4.4.1. Codec replay is not server
 //! interoperability, full client profile conformance, or certification.
 use kmipkit_ttlv::codec::CodecLimits;
@@ -46,7 +46,7 @@ fn equal(left: &Item, right: &Item) {
     });
 }
 
-// specification requirement-R001: Profiles §§5.4.1.1–5.4.1.6.2.
+// XML encoding rule: Profiles §§5.4.1.1–5.4.1.6.2.
 #[test]
 fn ordered_repeated_children_and_default_structure_survive_roundtrip() {
     let input = "<RequestPayload><QueryFunction type=\"Enumeration\" value=\"QueryOperations\"/><QueryFunction type=\"Enumeration\" value=\"QueryObjects\"/></RequestPayload>";
@@ -81,7 +81,7 @@ fn general_form_namespaces_and_hex_tags_resolve_to_raw_identity() {
     );
 }
 
-// specification requirement-R002: Profiles §§5.4.1.2, 5.4.1.6.3–5.4.1.6.13.
+// XML encoding rule: Profiles §§5.4.1.2, 5.4.1.6.3–5.4.1.6.13.
 #[test]
 fn all_scalar_types_have_independently_specified_xml_values() {
     let cases = [
@@ -143,7 +143,7 @@ fn symbolic_enum_names_and_raw_unknown_values_remain_distinct() {
     );
 }
 
-// specification requirement-R003: Profiles §5.4.1.6.4, shared 0054 assigned M/B metadata.
+// XML encoding rule: Profiles §5.4.1.6.4, shared 0054 assigned M/B metadata.
 #[test]
 fn masks_use_space_separated_names_and_preserve_unknown_bits() {
     for (tag, input, bits, expected) in [
@@ -243,7 +243,7 @@ fn xml_attribute_normalization_preserves_character_references() {
     );
 }
 
-// specification requirement-R004: common bounded encode/decode contract.
+// XML encoding rule: common bounded encode/decode contract.
 #[test]
 fn byte_depth_and_element_limits_apply_to_decode_and_encode() {
     let input = "<RequestPayload><BatchCount type=\"Integer\" value=\"1\"/></RequestPayload>";
@@ -301,7 +301,7 @@ fn deeply_nested_input_is_rejected_before_building_a_deep_tree() {
     );
 }
 
-// specification requirement-R005: malformed input and parser hardening; never resolves entities.
+// XML encoding rule: malformed input and parser hardening; never resolves entities.
 #[test]
 fn malformed_xml_and_external_resolution_requests_are_rejected() {
     for input in [
@@ -422,7 +422,7 @@ fn invalid_model_values_fail_encoding_as_redacted_values() {
     }
 }
 
-// specification requirement-R006: Profiles §5.4.4.1 official pinned vector replay.
+// XML encoding rule: Profiles §5.4.4.1 official pinned vector replay.
 #[test]
 fn official_msgenc_xml_m_1_21_replays_all_four_messages() {
     let fixture = include_str!("../fixtures/xml/MSGENC-XML-M-1-21.xml")
@@ -617,7 +617,7 @@ fn normalized_initial_digits_and_xml_text_escape_combinations_roundtrip() {
     equal(&false_value, &parse(&xml(&false_value)));
 }
 
-// specification requirement-R004: the complete input must pass limits before parser allocation.
+// XML encoding rule: the complete input must pass limits before parser allocation.
 #[test]
 fn complete_element_preflight_precedes_earlier_payload_decoding() {
     let input =
@@ -642,7 +642,7 @@ fn complete_depth_preflight_precedes_earlier_namespace_decoding() {
     );
 }
 
-// specification requirement-R005: Namespaces in XML 1.0 sections 3-4, XML 1.0 section 2.3.
+// XML encoding rule: Namespaces in XML 1.0 sections 3-4, XML 1.0 section 2.3.
 #[test]
 fn qualified_names_require_nonempty_ncname_prefix_and_local_name() {
     for input in [
@@ -678,7 +678,7 @@ fn xml_ncname_unicode_ranges_are_accepted_for_namespace_prefixes() {
     }
 }
 
-// specification requirement-R004/R005: valid delimiters must not inflate resource counts.
+// XML encoding rule: valid delimiters must not inflate resource counts.
 #[test]
 fn lexical_preflight_ignores_non_item_markup_and_quoted_delimiters() {
     let input = b"<RequestPayload><!-- <BatchItem/> --><?instruction <BatchItem/>?><TTLV tag='0x540001' type='TextString' value='> / >'></TTLV><![CDATA[\n ]]></RequestPayload>";

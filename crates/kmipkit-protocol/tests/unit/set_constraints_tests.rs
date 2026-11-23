@@ -1,7 +1,6 @@
 //! Project-derived tests for OASIS KMIP Specification v2.1 §6.1.52,
 //! Tables 325–327 and §7.7 Constraints. These are not official test cases.
 //! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

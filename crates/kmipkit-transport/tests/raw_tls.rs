@@ -1,4 +1,4 @@
-//! Red-phase behavior contract for specification requirement raw TTLV over TLS.
+//! Verifies synchronous raw TTLV transport over TLS 1.3 with mutual authentication.
 //!
 //! The source-included private adapter seam is intentionally test-only; this
 //! target does not prescribe a public adapter type name. The accepted

@@ -1,9 +1,8 @@
 //! Client registry enforcement for schema-specific resource limits.
 //!
-//! Traceability: functional requirement. These configured registry limits are
-//! `KMIPKit` policy. OASIS KMIP v2.1 §9.13, Table 418 defines the enclosing
-//! Message Extension and Vendor Extension Structure, not schema resource
-//! limits for vendor payloads.
+//! Validates client registry enforcement for schema-specific resource limits,
+//! ensuring that discriminator comparison budgets and schema node counts are
+//! strictly bounded to prevent resource exhaustion attacks.
 
 use kmipkit_client::{ClientError, extension_registry};
 use kmipkit_protocol::{ProtocolError, ProtocolErrorKind, extension};

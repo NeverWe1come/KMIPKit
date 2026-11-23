@@ -1,7 +1,7 @@
 //! OASIS KMIP v2.1 §§9.3–9.4, Tables 402–403; derived capability-boundary tests.
 //!
-//! Traceability: KMIP-REQ-SPEC-9.3-001-001/-002;
-//! KMIP-REQ-SPEC-9.4-001-001; functional requirement; success criterion.
+//! Validates attestation indicator emission in request headers and ensures
+//! that client operations do not emit spurious authentication payloads.
 //! The Discover Versions test asserts the non-secret header indicator and
 //! confirms that execution adds no Authentication or Credential payload,
 //! covering the optional Authentication omission allowed by §9.4.

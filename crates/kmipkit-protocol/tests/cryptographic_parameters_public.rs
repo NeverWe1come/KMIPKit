@@ -3,9 +3,8 @@
 //! Structure field order follows §10.1.2. Unknown member preservation and raw
 //! Enumeration values are project API compatibility requirements.
 //!
-//! Verifies protocol model, request/response validation, and security invariants.
-//! `KMIP-ELEM-STRUCTURE-MEMBER-4-16-*` IDs in
-//! the protocol architecture documentation.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for Cryptographic Parameters structure members.
 
 use kmipkit_protocol::{CryptographicParameters, CryptographicParametersBuilder};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};

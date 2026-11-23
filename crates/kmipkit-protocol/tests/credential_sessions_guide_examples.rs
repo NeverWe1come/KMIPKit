@@ -16,7 +16,6 @@ fn both_guides_document_login_ticket_ownership_and_logout_without_claiming_serve
         assert!(guide.contains("LogoutRequest"));
         assert!(guide.contains("Ticket"));
         assert!(guide.contains("Delegated Login"));
-        assert!(guide.contains("specification requirement"));
         assert!(guide.contains("synthetic-ticket-value"));
     }
 }

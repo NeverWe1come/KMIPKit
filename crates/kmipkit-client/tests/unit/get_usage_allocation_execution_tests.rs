@@ -1,7 +1,6 @@
 //! Project-derived fake-transport checks for OASIS KMIP Specification v2.1
 //! §6.1.23, Tables 232–234, and §4.59, Table 148. These are not official cases.
-//! Verifies protocol model, request/response validation, and security invariants.
-//! the protocol specification, and the protocol specification.
+//! Verifies Get Usage Allocation request/response execution.
 
 use kmipkit_protocol::{
     GetUsageAllocationRequest, GetUsageAllocationResponse, ResultReason, UniqueIdentifier,
