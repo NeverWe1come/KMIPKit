@@ -7922,7 +7922,10 @@ fn profile_maps_optional_client_correlation_value_capability() {
 #[test]
 fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
     const REQUIREMENTS: [(&str, &str); 4] = [
-        ("KMIPKIT-REQ-SPEC-6.1.5-001", "KMIPKIT-CLAUSE-SPEC-6.1.5-001"),
+        (
+            "KMIPKIT-REQ-SPEC-6.1.5-001",
+            "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+        ),
         (
             "KMIPKIT-REQ-SPEC-6.1.38-001-001",
             "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
@@ -11207,7 +11210,10 @@ fn profile_rejects_malformed_locate_key_value_present_criterion() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+        );
     }
 }
 
@@ -14214,7 +14220,8 @@ const TABLE_191_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const TABLE_191_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const TABLE_191_CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const TABLE_191_CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002b;
-const TABLE_191_REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"];
+const TABLE_191_REQUIREMENT_IDS: [&str; 2] =
+    ["KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"];
 
 fn table_191_value(tag: u32, generation: i32) -> Value {
     match tag {
@@ -14441,7 +14448,10 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
 }
 
 #[test]
@@ -14519,7 +14529,10 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
 }
 
 #[test]
@@ -14559,7 +14572,10 @@ fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.14-001")
+    );
 }
 
 #[test]
@@ -16122,7 +16138,10 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
 
     let malformed_wrapping_data = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -16136,7 +16155,10 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
 
     let incomplete_wrapping_data = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -16150,7 +16172,10 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+    );
 }
 
 #[test]
@@ -16896,7 +16921,10 @@ fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
     // KMIP Specification v2.1 §3.3 says a Key Block MAY provide optional Key
     // Wrapping Data. Section 3.1 requires the structure when the Key Value is
     // wrapped; this profile rule proves both supplied and omitted request forms.
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.3-001-001", "KMIPKIT-REQ-SPEC-3.3-001-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.3-001-001",
+        "KMIPKIT-REQ-SPEC-3.3-001-002",
+    ];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16999,7 +17027,10 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-004"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
+    );
 }
 
 #[test]
@@ -17240,7 +17271,10 @@ fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
     }
 }
 
@@ -17315,7 +17349,10 @@ fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
+        );
     }
 }
 
@@ -17349,7 +17386,10 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.27-001"));
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+    );
 }
 
 const TABLE12_REGISTER_OPERATION: u32 = 0x0000_0003;
@@ -17500,7 +17540,10 @@ fn assert_table12_request_rejected(
 }
 
 fn assert_table12_malformed_shape_rejected(request: &crate::RequestMessage) {
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
     const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
     const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
 
@@ -17609,7 +17652,10 @@ fn profile_allows_table12_register_key_value_location_without_key_block() {
     const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
     const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
     const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
 
     let request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -17642,8 +17688,14 @@ fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 establish Import and Register request applicability.
     const CASES: [(&str, &str); 2] = [
-        ("KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-CLAUSE-SPEC-3.1-004"),
-        ("KMIPKIT-REQ-SPEC-3.1-005-002", "KMIPKIT-CLAUSE-SPEC-3.1-005"),
+        (
+            "KMIPKIT-REQ-SPEC-3.1-004-002",
+            "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        ),
+        (
+            "KMIPKIT-REQ-SPEC-3.1-005-002",
+            "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        ),
     ];
 
     for (requirement_id, source_clause_id) in CASES {
@@ -17943,7 +17995,10 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 establish Import and Register request applicability.
     // Both fields may be absent together under these reciprocal-presence SHALLs.
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
     let result = table12_profile_result(&REQUIREMENT_IDS);
 
     for operation in [TABLE12_REGISTER_OPERATION, TABLE12_IMPORT_OPERATION] {
@@ -17976,8 +18031,12 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
 
 #[test]
 fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-001", "KMIPKIT-REQ-SPEC-3.1-005-001"];
-    const SOURCE_CLAUSES: [&str; 2] = ["KMIPKIT-CLAUSE-SPEC-3.1-004", "KMIPKIT-CLAUSE-SPEC-3.1-005"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+    ];
+    const SOURCE_CLAUSES: [&str; 2] =
+        ["KMIPKIT-CLAUSE-SPEC-3.1-004", "KMIPKIT-CLAUSE-SPEC-3.1-005"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     for (requirement_id, source_clause_id) in REQUIREMENT_IDS.iter().zip(SOURCE_CLAUSES) {
@@ -18026,7 +18085,10 @@ fn profile_maps_key_block_algorithm_and_length_omission_for_import() {
 
 #[test]
 fn profile_keeps_key_block_omission_exemptions_and_unknown_object_types_neutral() {
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-001", "KMIPKIT-REQ-SPEC-3.1-005-001"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+    ];
 
     let secret_data = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -19593,7 +19655,10 @@ fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_bloc
     // §2.3 Table 4 defines Opaque Data Type/Value, §11.35 Table 469 gives the
     // extension range, and §6.1.43 Table 291 carries Register's Any Object.
     // Opaque Objects have no Key Block under Table 4.
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
     let result = table12_profile_result(&REQUIREMENT_IDS);
 
     let secret_data_with_unpaired_key_block = request_message_with_operation_payload(
@@ -19621,7 +19686,10 @@ fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_bloc
 fn profile_checks_each_mixed_register_import_batch_item() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 carry one Any Object per Import or Register Batch Item.
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const REQUIREMENT_IDS: [&str; 2] = [
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-REQ-SPEC-3.1-005-002",
+    ];
     let result = table12_profile_result(&REQUIREMENT_IDS);
     let valid_import = table12_request_payload(
         TABLE12_IMPORT_OPERATION,
@@ -19751,7 +19819,10 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+        );
     }
 
     result
@@ -19782,8 +19853,14 @@ fn assert_key_value_present_register_request_rejected(request: &crate::RequestMe
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
-    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.28-001-001"));
-    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
+    assert_eq!(
+        error.requirement_id(),
+        Some("KMIPKIT-REQ-SPEC-4.28-001-001")
+    );
+    assert_eq!(
+        error.source_clause_id(),
+        Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+    );
 }
 
 #[test]
@@ -20005,7 +20082,10 @@ fn profile_rejects_key_value_present_attribute_mutations() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{case}");
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.28-001")
+        );
     }
 }
 
@@ -20121,7 +20201,10 @@ fn profile_rejects_client_modify_attribute_for_state() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.57-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.57-001")
+        );
     }
 
     result
@@ -21029,7 +21112,10 @@ fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-002"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
     }
 }
 
@@ -21064,7 +21150,10 @@ fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-002"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-002")
+        );
     }
 
     for payload in [
@@ -21222,7 +21311,10 @@ fn profile_rejects_malformed_opaque_object_context_shapes() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
     }
 
     result
@@ -21303,7 +21395,10 @@ fn profile_rejects_malformed_opaque_context_get_attributes_responses() {
             ProfileValidationErrorCode::ResponseRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-2.3-001")
+        );
     }
 
     result
@@ -21433,7 +21528,10 @@ fn profile_rejects_malformed_register_key_value_location_members() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.27-001"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-4.27-001")
+        );
     }
 }
 
@@ -21526,8 +21624,10 @@ const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
 const REVOKE_SHOULD_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-001";
 const REVOKE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-002";
 const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.44-003";
-const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] =
-    ["KMIPKIT-REQ-SPEC-4.47-001-001", "KMIPKIT-REQ-SPEC-4.47-001-002"];
+const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] = [
+    "KMIPKIT-REQ-SPEC-4.47-001-001",
+    "KMIPKIT-REQ-SPEC-4.47-001-002",
+];
 const REVOKE_MESSAGE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.47-001";
 
 fn revoke_reason_item(reason_code: Value) -> Item {
@@ -21886,9 +21986,12 @@ const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-0
 const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-008";
 const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-008";
 const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-003";
-const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
-const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-001";
-const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
+const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID: &str =
+    "KMIPKIT-REQ-SPEC-6.1.45-002-001";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID: &str =
+    "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
 const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-001";
 const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-001";
 const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -21901,7 +22004,8 @@ const CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-003
 const CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-003";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
 const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
-const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-003";
+const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str =
+    "KMIPKIT-REQ-SPEC-6.1.6-002-003";
 const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID: &str =
     "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
@@ -23369,8 +23473,10 @@ const RNG_REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const RNG_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
 const RNG_PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
 const RNG_PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
-const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] =
-    ["KMIPKIT-REQ-SPEC-4.46-001-001", "KMIPKIT-REQ-SPEC-4.46-001-002"];
+const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] = [
+    "KMIPKIT-REQ-SPEC-4.46-001-001",
+    "KMIPKIT-REQ-SPEC-4.46-001-002",
+];
 const RNG_PARAMETERS_REQUIREMENTS: [&str; 4] = [
     "KMIPKIT-REQ-SPEC-7.36-001",
     "KMIPKIT-REQ-SPEC-7.36-002-001",
@@ -24289,7 +24395,10 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-003"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-3.3-003")
+        );
     }
 
     for (encoding_option, key_value) in [
@@ -24613,7 +24722,10 @@ fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-009"));
+        assert_eq!(
+            error.source_clause_id(),
+            Some("KMIPKIT-CLAUSE-SPEC-3.3-009")
+        );
     }
 
     let valid_request = register_key_value_wrapping_request(

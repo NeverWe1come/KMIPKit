@@ -23,7 +23,7 @@ def test_generated_registry_manifest_has_unique_traceable_api_entries() -> None:
         assert isinstance(function["parameters"], list)
         assert function["returnType"]
         assert function["requirementIds"]
-        assert all(requirement.startswith("EXTENSION-REGISTRY-REQ-") for requirement in function["requirementIds"])
+        assert all(requirement.startswith("KMIPKIT-0012-FR-") for requirement in function["requirementIds"])
 
 
 def test_generated_public_api_manifest_has_unique_python_declarations() -> None:

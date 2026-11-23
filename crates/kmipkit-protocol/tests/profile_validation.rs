@@ -46,7 +46,10 @@ fn baseline_target_selection_requires_category_appropriate_evidence() {
     for whole_spec_requirement in ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"] {
         assert!(target.requirement_ids.contains(&whole_spec_requirement));
     }
-    for whole_spec_clause in ["KMIPKIT-CLAUSE-SPEC-14.1-001", "KMIPKIT-CLAUSE-SPEC-14.1-002"] {
+    for whole_spec_clause in [
+        "KMIPKIT-CLAUSE-SPEC-14.1-001",
+        "KMIPKIT-CLAUSE-SPEC-14.1-002",
+    ] {
         assert!(target.source_clause_ids.contains(&whole_spec_clause));
     }
 
