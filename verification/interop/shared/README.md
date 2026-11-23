@@ -62,3 +62,59 @@ The 2.0 and 2.1 XML corpora each contain 578 request/response exchanges.
 The 3.0 XML corpus contains 617. In total, 288 XML cases contribute 1,773
 exchanges and 1,880 planned rows to the 320,446-row matrix. The 28 additional 3.0 normative rows are
 constructor routes for the seven draft operations mapped across the four languages.
+
+## Campaign plans and evidence reports
+
+From the repository root, export the obligations and open the generated
+`index.html` to browse them. The HTML report works directly from disk.
+
+```sh
+python3 verification/interop/shared/tools/campaign.py --output-dir /tmp/kmip-plan
+```
+
+`plan.jsonl` adds an `obligation_id` to each coverage row. The identifier is the
+SHA-256 of the canonical JSON row. The campaign fingerprint is the SHA-256 of
+those binary identifiers concatenated in plan order. Export a fresh plan
+when the inventory, fixtures or route manifest change.
+
+A language consumer writes one
+[campaign evidence file](schemas/campaign-evidence.schema.json) per scope.
+Use `local` for public construction, codecs and accessors that run without
+an exchange. Use `controlled` for assertions on a deterministic peer and
+`live` for observations on a deployed KMS. Live evidence identifies the
+server configuration. Provide the actual encoding and transport for every
+controlled or live event. XML scenarios reference the ordered step and batch
+item through their obligation IDs. The API symbols in their events identify
+the public routes exercised by that consumer.
+
+The optional parity group digest identifies the same normalized test
+input and assertion across languages. Add the digest of the normalized
+observed semantics only for deterministic, public fixture values. Compare
+equivalent targets, preserve batch ordering and normalize KMIP status and
+reason values to their wire codes. Keep credentials, raw KMIP messages
+and generated key material out of the evidence file.
+
+Aggregate evidence from a common plan in one report. Repeat the version
+selection used when exporting the plan, if any.
+
+```sh
+python3 verification/interop/shared/tools/campaign.py \
+  --profile verification/interop/shared/profiles/cosmian-kms.json \
+  --output-dir /tmp/kmip-campaign /path/to/evidence-rust.json /path/to/evidence-java.json
+```
+
+The outputs include a summary in the terminal, `summary.json`,
+`summary.md`, the complete `checks.jsonl` and a paginated HTML table.
+`--require-complete` fails if an applicable obligation lacks successful
+local or controlled evidence. Live observations remain visible alongside
+that coverage. Expected rejections and policy restrictions can be recorded
+independently of the assertion outcome.
+
+To launch a campaign-capable consumer, supply `--runner LANGUAGE EXECUTABLE`
+once per language and specify the scope. The runner is invoked directly
+with `--plan`, `--matrix-sha256`, `--scope` and `--evidence`. A live campaign
+takes `--connection`, enforces the configured version and checks the server
+identity on the returned evidence. The optional profile is passed with
+`--profile` and supplies capability declarations to the report. A runner
+should write its evidence before exiting with a failure. Run a single
+language with one executable or repeat the option for multiple languages.

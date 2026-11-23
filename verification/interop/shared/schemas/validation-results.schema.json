@@ -21,7 +21,7 @@
       },
       "additionalProperties": false
     },
-    "protocol_version": { "enum": ["2.0", "2.1"] },
+    "protocol_version": { "enum": ["2.0", "2.1", "3.0"] },
     "catalog_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "execution": {
       "type": "object",

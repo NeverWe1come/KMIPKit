@@ -27,7 +27,7 @@
     "description": {
       "type": "string"
     },
-    "protocol_version": { "enum": ["2.0", "2.1"] },
+    "protocol_version": { "enum": ["2.0", "2.1", "3.0"] },
     "transport": { "enum": ["raw_tls", "https"] },
     "encoding": { "enum": ["TTLV", "JSON", "XML"] },
     "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },

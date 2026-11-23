@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMIPKit Interoperability Checks</title>
+<style>
+body { font: 1rem system-ui, sans-serif; margin: 2rem; color: #172334; background: #f7f9fc; }
+label { display: inline-flex; flex-direction: column; margin: 0 1rem 1rem 0; gap: .3rem; }
+input, select, button { font: inherit; padding: .35rem; }
+table { border-collapse: collapse; width: 100%; background: white; }
+th, td { text-align: left; padding: .55rem; vertical-align: top; border-bottom: 1px solid #d6e0ed; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>KMIPKit Interoperability Checks</h1>
+<p id="server"></p>
+<div class="scroll"><table id="summary">
+<thead><tr><th>Language</th><th>Public routes complete</th><th>Passed</th><th>Failed</th><th>Blocked</th><th>Pending</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<p id="compatibility"></p>
+<label>Case, operation or API symbol <input id="search" type="search"></label>
+<label>Protocol version <select id="version"><option value="">All</option><option>2.0</option><option>2.1</option><option>3.0</option></select></label>
+<label>Language <select id="language"><option value="">All</option></select></label>
+<label>Check status <select id="status"><option value="">All</option><option>passed</option><option>failed</option><option>blocked</option><option>pending</option><option>not_applicable</option></select></label>
+<div class="scroll"><table id="checks">
+<thead><tr><th>KMIP</th><th>Operation</th><th>Case</th><th>API symbol</th><th>Action</th><th>Encoding</th><th>Transport</th><th>Declared</th><th>Checks</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<p><button id="previous">Previous</button> <span id="range" aria-live="polite"></span> <button id="next">Next</button></p>
+<script id="campaign" type="application/json"><!--CAMPAIGN_DATA--></script>
+<script>
+const report = JSON.parse(document.getElementById("campaign").textContent);
+const {summary, server, languages, public_api, server_compatibility} = report.summary;
+const byId = name => document.getElementById(name);
+const fields = ["search", "version", "language", "status"].map(byId);
+const [search, version, language, status] = fields;
+byId("server").textContent = server ? `${server.product} ${server.version} (${server.id})` : "Live server evidence pending";
+byId("compatibility").textContent = Object.entries(server_compatibility)
+  .map(([state, count]) => `${state.replaceAll("_", " ")}: ${count}`).join(" · ");
+function cells(parent, values) {
+  for (const value of values) parent.insertCell().textContent = value ?? "—";
+}
+for (const name of languages) {
+  language.add(new Option(name, name));
+  const counts = summary[name];
+  const routes = public_api[name];
+  cells(document.querySelector("#summary tbody").insertRow(), [
+    name, `${routes.complete} / ${routes.total}`,
+    ...["passed", "failed", "blocked", "pending"].map(state => counts[state] ?? 0)
+  ]);
+}
+let page = 0;
+const pageSize = 100;
+function render() {
+  const term = search.value.trim().toLowerCase();
+  const body = document.querySelector("#checks tbody");
+  body.replaceChildren();
+  let matches = 0;
+  for (const check of report.checks) {
+    const [protocol, operation, caseId, symbol, action, encoding, transport, declared, results, fixture, step, item] = check;
+    if (version.value && version.value !== protocol) continue;
+    if (term && ![caseId, operation, symbol].some(value => value?.toLowerCase().includes(term))) continue;
+    const selected = Object.entries(results).filter(([name, result]) =>
+      (!language.value || name === language.value) && (!status.value || result.status === status.value));
+    if ((language.value || status.value) && selected.length === 0) continue;
+    const index = matches++;
+    if (index < page * pageSize || index >= (page + 1) * pageSize) continue;
+    const row = body.insertRow();
+    cells(row, [protocol, operation, caseId, symbol, action, encoding, transport, declared]);
+    const detail = document.createElement("details");
+    const title = document.createElement("summary");
+    title.textContent = selected.map(([name, result]) => `${name}: ${result.status}`).join(" · ") || "Normative inventory";
+    const data = document.createElement("pre");
+    data.textContent = JSON.stringify({fixture, step, item, checks: Object.fromEntries(selected)}, null, 2);
+    detail.append(title, data);
+    row.insertCell().append(detail);
+  }
+  byId("previous").disabled = page === 0;
+  byId("next").disabled = (page + 1) * pageSize >= matches;
+  byId("range").textContent = matches ? `${page * pageSize + 1}–${Math.min(matches, (page + 1) * pageSize)} of ${matches}` : "No matches";
+}
+for (const field of fields) field.addEventListener("input", () => { page = 0; render(); });
+byId("previous").onclick = () => { page--; render(); };
+byId("next").onclick = () => { page++; render(); };
+render();
+</script>
+</body>
+</html>
