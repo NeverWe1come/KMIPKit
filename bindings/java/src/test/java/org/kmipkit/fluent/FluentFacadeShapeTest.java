@@ -57,6 +57,8 @@ import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.protocol.KeyUsage;
+import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
@@ -247,6 +249,15 @@ final class FluentFacadeShapeTest {
     }
 
     @Test
+    void symmetricKeyRequestAcceptsNamedUsageFlags() {
+        SymmetricKeyRequest request = new SymmetricKeyRequest(
+                3, 256, "signing key", KeyUsage.ENCRYPT, KeyUsage.DECRYPT);
+        assertEquals((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                | KmipValues.CryptographicUsageMask.DECRYPT), request.usageMask());
+        assertEquals("signing key", request.name());
+    }
+
+    @Test
     void kmipClientExposesNamedOperationConveniences() throws Exception {
         Class<?> client = Class.forName("org.kmipkit.client.KmipClient");
         Class<?> request = Class.forName("org.kmipkit.client.SymmetricKeyRequest");
@@ -279,7 +290,7 @@ final class FluentFacadeShapeTest {
         }
         try (SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
             builder.aes256()
-                    .usageMask((int) (CryptographicUsageMask.ENCRYPT | CryptographicUsageMask.DECRYPT))
+                    .usageMask(KeyUsage.ENCRYPT, KeyUsage.DECRYPT)
                     .name("payments-key");
             try (ClientBatchItem item = builder.toBatchItem()) {
                 assertNotNull(item);

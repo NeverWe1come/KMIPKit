@@ -1906,8 +1906,10 @@ class SymmetricKeyBuilder:
         return self._set(lib.kmipkit_symmetric_key_builder_set_length, value)
 
     def usage_mask(self, value: int) -> SymmetricKeyBuilder:
-        self._usage_mask = value
-        return self._set(lib.kmipkit_symmetric_key_builder_set_usage_mask, value)
+        bits = _signed_i32_bits(value)
+        self._set(lib.kmipkit_symmetric_key_builder_set_usage_mask, bits)
+        self._usage_mask = bits
+        return self
 
     def aes_256(self) -> SymmetricKeyBuilder:
         """Select AES with a 256-bit key; usage policy remains caller-selected."""

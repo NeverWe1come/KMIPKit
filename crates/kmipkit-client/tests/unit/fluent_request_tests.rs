@@ -3242,6 +3242,15 @@ fn get_builder_preserves_symbolic_and_raw_selectors_and_validates_locally() {
 }
 
 #[test]
+fn raw_usage_mask_conveniences_preserve_ttlv_bits() {
+    CreateSymmetricKeyBuilder::detached()
+        .aes_128()
+        .usage_mask_bits(0x0c)
+        .build_request()
+        .expect("raw symmetric usage bits remain available to expert callers");
+}
+
+#[test]
 fn get_builder_supports_batch_items_and_exchange_options() {
     use kmipkit_protocol::{KeyCompressionType, KeyFormatType, KeyWrapType};
 

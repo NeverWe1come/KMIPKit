@@ -1,5 +1,6 @@
 package org.kmipkit.fluent;
 
+import org.kmipkit.protocol.KeyUsage;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.client.KmipClient;
@@ -47,6 +48,11 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
     public SymmetricKeyBuilder length(int bits) {
         handle.withValue(builder -> { NativeExtensionRegistry.symmetricKeyBuilderSetLength(builder, bits); return null; });
         return this;
+    }
+
+    /** Selects named KMIP key usage flags. */
+    public SymmetricKeyBuilder usageMask(KeyUsage... flags) {
+        return usageMask(KeyUsage.mask(flags));
     }
 
     public SymmetricKeyBuilder usageMask(int mask) {
