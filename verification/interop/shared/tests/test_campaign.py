@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 from verification.interop.shared.tools import campaign
 
@@ -89,3 +91,22 @@ class CampaignTests(unittest.TestCase):
         self.assertEqual(campaign.report(matrix, digest, [rust, c_run], languages)["parity"], {"matched": 1})
         c_event["semantic_sha256"] = "f" * 64
         self.assertEqual(campaign.report(matrix, digest, [rust, c_run], languages)["parity"], {"mismatched": 1})
+
+    def test_launch_uses_fixed_scope_and_absolute_path_arguments(self):
+        args = SimpleNamespace(scope="controlled", connection=None, profile=None, output_dir=Path("--results"))
+        runner = Path("validator").resolve()
+        with patch.object(campaign.subprocess, "run", return_value=SimpleNamespace(returncode=1)) as run:
+            self.assertEqual(campaign.launch_validators({"rust": runner}, args, self.digest), ([], ["rust"]))
+            directory = args.output_dir.resolve()
+            run.assert_called_once_with(
+                [str(runner), "--plan", str(directory / "plan.jsonl"), "--matrix-sha256", self.digest,
+                 "--scope", "controlled", "--evidence", str(directory / "evidence-rust-controlled.json")],
+                check=False,
+            )
+
+    def test_launch_rejects_invalid_scope_before_starting_a_process(self):
+        args = SimpleNamespace(scope="--invalid")
+        with patch.object(campaign.subprocess, "run") as run:
+            with self.assertRaisesRegex(ValueError, "invalid campaign scope"):
+                campaign.launch_validators({"rust": Path("validator")}, args, self.digest)
+            run.assert_not_called()

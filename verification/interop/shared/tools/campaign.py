@@ -254,6 +254,16 @@ def write_report(destination, result):
 
 def launch_validators(runners, args, digest):
     """A runner receives a plan and writes evidence even when a test fails."""
+    match args.scope:
+        case "local":
+            scope_options = ("--scope", "local")
+        case "controlled":
+            scope_options = ("--scope", "controlled")
+        case "live":
+            scope_options = ("--scope", "live")
+        case _:
+            raise ValueError("invalid campaign scope")
+    output_dir = args.output_dir.resolve()
     runs = []
     failures = []
     connection = read_validated(args.connection, "server-connection.schema.json") if args.connection else None
@@ -267,11 +277,11 @@ def launch_validators(runners, args, digest):
     if args.scope != "live" and connection is not None:
         raise ValueError("--connection requires --scope live")
     for language, executable in runners.items():
-        output = args.output_dir / f"evidence-{language}-{args.scope}.json"
+        output = output_dir / f"evidence-{language}-{scope_options[1]}.json"
         if output.exists():
             raise ValueError(f"evidence output already exists: {output.name}; use a fresh output directory")
-        command = [str(executable), "--plan", str(args.output_dir / "plan.jsonl"),
-                   "--matrix-sha256", digest, "--scope", args.scope, "--evidence", str(output)]
+        command = [str(executable), "--plan", str(output_dir / "plan.jsonl"),
+                   "--matrix-sha256", digest, *scope_options, "--evidence", str(output)]
         if args.connection:
             command.extend(("--connection", str(args.connection.resolve())))
         if args.profile:
