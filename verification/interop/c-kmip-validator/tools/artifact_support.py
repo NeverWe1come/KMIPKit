@@ -2,9 +2,13 @@
 
 import hashlib
 import json
+import os
+import re
 from pathlib import Path
 
-PIN = "992efad552ec7f5a8d269daf49b432b9c2f2339e"
+PIN = os.environ.get("KMIPKIT_INTEROP_LIBRARY_COMMIT", "992efad552ec7f5a8d269daf49b432b9c2f2339e")
+if not re.fullmatch(r"[0-9a-f]{40}", PIN):
+    raise ValueError("expected a full source commit")
 ROOT = Path(__file__).resolve().parents[4]
 LOCAL = ROOT / "verification/interop/.local/c-live"
 BUNDLE = LOCAL / f"kmipkit-c-1.0.0-{PIN[:12]}.tar.gz"
