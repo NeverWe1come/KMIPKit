@@ -942,31 +942,31 @@ fn query_response_rejects_repetitions_of_each_singleton_table_283_member() {
 #[test]
 fn kmip30_query_operations_response_does_not_require_storage_masks() {
     let version = item(
-        0x420069,
+        0x0042_0069,
         Value::structure(structure([
-            item(0x42006a, Value::integer(3)),
-            item(0x42006b, Value::integer(0)),
+            item(0x0042_006a, Value::integer(3)),
+            item(0x0042_006b, Value::integer(0)),
         ])),
     );
     let header = item(
-        0x42007a,
+        0x0042_007a,
         Value::structure(structure([
             version,
-            item(0x420092, Value::date_time(1_794_268_800)),
+            item(0x0042_0092, Value::date_time(1_794_268_800)),
         ])),
     );
     let payload = item(
-        0x42007c,
+        0x0042_007c,
         Value::structure(structure([
-            item(0x42005c, Value::enumeration(18)),
-            item(0x42005c, Value::enumeration(2)),
+            item(0x0042_005c, Value::enumeration(18)),
+            item(0x0042_005c, Value::enumeration(2)),
         ])),
     );
     let batch = item(
-        0x42000f,
+        0x0042_000f,
         Value::structure(structure([
-            item(0x42005c, Value::enumeration(QUERY_OPERATION)),
-            item(0x42007f, Value::enumeration(0)),
+            item(0x0042_005c, Value::enumeration(QUERY_OPERATION)),
+            item(0x0042_007f, Value::enumeration(0)),
             payload,
         ])),
     );
