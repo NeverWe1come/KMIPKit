@@ -17,12 +17,13 @@ use kmipkit_protocol::{
     EncapsulateRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest,
     GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, KeyCompressionType,
     KeyFormatType, KeyWrapType, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
-    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, ObliterateRequest,
-    ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion,
-    QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest,
-    RngSeedRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ModifyAttributeRequest, NewAttribute, ObjectClassMask, ObjectGroupMember, ObjectType,
+    ObliterateRequest, ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Tag, Value, ValueView};
@@ -3624,6 +3625,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
 /// A Create Key Pair builder with independent common and key-specific attributes.
 pub struct CreateKeyPairBuilder<'a> {
     client: Option<&'a mut Client>,
+    seed: Option<SecretBytes>,
     algorithm: Option<CryptographicAlgorithm>,
     length: Option<i32>,
     private_usage_mask: Option<CryptographicUsageMask>,
@@ -3642,6 +3644,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
     fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
+            seed: None,
             algorithm: None,
             length: None,
             private_usage_mask: None,
@@ -3665,6 +3668,13 @@ impl<'a> CreateKeyPairBuilder<'a> {
     #[must_use]
     pub fn detached() -> Self {
         Self::new(None)
+    }
+
+    /// Supplies the optional KMIP 3.0 key-generation Seed.
+    #[must_use]
+    pub fn seed(mut self, seed: SecretBytes) -> Self {
+        self.seed = Some(seed);
+        self
     }
 
     /// Selects an explicit common KMIP Cryptographic Algorithm.
@@ -3885,6 +3895,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
         }
         if !public.is_empty() {
             request = request.with_public_key_attributes(public);
+        }
+        if let Some(seed) = &self.seed {
+            request = request.with_seed(seed.with_bytes(|bytes| SecretBytes::new(bytes.to_vec())));
         }
         if !request.validate().is_valid() {
             return Err(FluentBuildError::InvalidRequest);
@@ -5515,25 +5528,7 @@ impl<'a> LocateBuilder<'a> {
     /// Sets the complete ordered Attributes filter set.
     #[must_use]
     pub fn attributes(mut self, attributes: AttributeSet) -> Self {
-        let maximum_items = self.request.maximum_items();
-        let offset_items = self.request.offset_items();
-        let storage_status_mask = self.request.storage_status_mask();
-        let object_group_member = self.request.object_group_member();
-
-        let mut request = LocateRequest::new(attributes);
-        if let Some(value) = maximum_items {
-            request = request.with_maximum_items(value);
-        }
-        if let Some(value) = offset_items {
-            request = request.with_offset_items(value);
-        }
-        if let Some(value) = storage_status_mask {
-            request = request.with_storage_status_mask(value);
-        }
-        if let Some(value) = object_group_member {
-            request = request.with_object_group_member(value);
-        }
-        self.request = request;
+        self.request = self.request.with_attributes(attributes);
         self
     }
 
@@ -5562,6 +5557,13 @@ impl<'a> LocateBuilder<'a> {
     #[must_use]
     pub fn object_group_member(mut self, value: ObjectGroupMember) -> Self {
         self.request = self.request.with_object_group_member(value);
+        self
+    }
+
+    /// Sets the KMIP 3.0 Object Class Mask filter.
+    #[must_use]
+    pub fn object_class_mask(mut self, value: ObjectClassMask) -> Self {
+        self.request = self.request.with_object_class_mask(value);
         self
     }
 

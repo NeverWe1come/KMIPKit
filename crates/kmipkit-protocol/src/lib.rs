@@ -219,7 +219,8 @@ pub use kmipkit_ttlv::KmipTag;
 pub use lifecycle::NistKeyLifecycleGuard;
 pub use link_normalizer::{LinkNormalizer, LinkType};
 pub use locate::{
-    LocateError, LocateRequest, LocateResponse, ObjectGroupMember, StorageStatusMask,
+    LocateError, LocateRequest, LocateResponse, ObjectClassMask, ObjectGroupMember,
+    StorageStatusMask,
 };
 pub use log::{LogError, LogRequest, LogResponse};
 pub use login::{LoginError, LoginRequest, LoginResponse};

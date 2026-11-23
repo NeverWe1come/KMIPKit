@@ -522,6 +522,71 @@ fn query_credential_information_is_rejected_in_both_older_editions() {
 }
 
 #[test]
+fn kmip30_locate_object_class_mask_survives_fluent_attribute_replacement() {
+    use kmipkit_protocol::ObjectClassMask;
+    use kmipkit_ttlv::KmipTag;
+
+    let (mut client, _, _) = crate::asynchronous_execution_test_support::client_for(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
+    );
+    let mask = ObjectClassMask::USER | ObjectClassMask::SYSTEM;
+    let mask = mask | ObjectClassMask::from_raw(0x8000_0000);
+    let request = client
+        .request()
+        .locate(AttributeSet::new())
+        .object_class_mask(mask)
+        .attributes(AttributeSet::new())
+        .build_request()
+        .unwrap();
+    assert_eq!(request.object_class_mask(), Some(mask));
+    let payload = request.to_ttlv_payload().unwrap();
+    assert!(payload.view().children().iter().any(|field| {
+        field.tag().raw() == KmipTag::ObjectClassMask.as_u32()
+            && field.with_value(|value| matches!(value, ValueView::Integer(bits) if bits.cast_unsigned() == 0x8000_0003))
+    }));
+}
+
+#[test]
+fn kmip30_create_key_pair_seed_is_encoded_and_rejected_in_older_editions() {
+    use kmipkit_protocol::{CreateKeyPairRequest, SecretBytes};
+    use kmipkit_ttlv::KmipTag;
+
+    use crate::fluent::CreateKeyPairBuilder;
+    use kmipkit_protocol::CryptographicAlgorithm;
+    use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::RSA;
+
+    let seed = b"fixture-seed";
+    let built = CreateKeyPairBuilder::detached()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .seed(SecretBytes::new(seed.to_vec()))
+        .build()
+        .unwrap();
+    let debug = format!("{built:?}");
+    assert!(debug.contains("has_seed: true"));
+    assert!(!debug.contains("fixture-seed"));
+    let request = || CreateKeyPairRequest::new().with_seed(SecretBytes::new(seed.to_vec()));
+    let payload = built.into_ttlv_payload().unwrap();
+    assert!(payload.view().children().iter().any(|field| {
+        field.tag().raw() == KmipTag::Seed.as_u32()
+            && field
+                .with_value(|value| matches!(value, ValueView::ByteString(bytes) if bytes == seed))
+    }));
+    let (mut client, fake, _) = crate::asynchronous_execution_test_support::client_for(
+        ExchangeScript::FailAfterPartialWrite { written_bytes: 2 },
+    );
+    for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+        let batch = ClientBatch::new(ClientBatchItem::new(
+            ClientRequest::CreateKeyPair(request()),
+        ))
+        .with_protocol_version(version);
+        let error = client.execute(batch, &CodecLimits::defaults()).unwrap_err();
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    }
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffix() {
     use super::{BatchIdentity, ResponseAssociationError, associate_v3_batch_items};
 

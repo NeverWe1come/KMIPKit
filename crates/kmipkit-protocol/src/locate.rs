@@ -14,6 +14,7 @@ const LOCATE_OPERATION: u32 = 0x0000_0008;
 const MAXIMUM_ITEMS: u32 = 0x0042_004F;
 const OFFSET_ITEMS: u32 = 0x0042_00D4;
 const STORAGE_STATUS_MASK: u32 = 0x0042_008E;
+const OBJECT_CLASS_MASK: u32 = kmipkit_ttlv::KmipTag::ObjectClassMask.as_u32();
 const OBJECT_GROUP_MEMBER: u32 = 0x0042_00AC;
 const ATTRIBUTES: u32 = 0x0042_0125;
 const LOCATED_ITEMS: u32 = 0x0042_00D5;
@@ -62,6 +63,47 @@ impl ObjectGroupMember {
     }
 }
 
+/// The raw-preserving KMIP 3.0 Object Class Mask.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ObjectClassMask(u32);
+
+impl ObjectClassMask {
+    /// Selects user objects.
+    pub const USER: Self = Self(
+        crate::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::USER,
+    );
+    /// Selects system objects.
+    pub const SYSTEM: Self = Self(
+        crate::named_values_generated::values::versions::v3_0::bitmask::object_class_mask::SYSTEM,
+    );
+
+    /// Preserves the original bit pattern, including extension bits.
+    #[must_use]
+    pub const fn from_raw(bits: u32) -> Self {
+        Self(bits)
+    }
+
+    /// Returns the original bit pattern.
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+}
+
+impl std::ops::BitOr for ObjectClassMask {
+    type Output = Self;
+
+    fn bitor(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+
+#[derive(Clone, Copy)]
+enum ObjectFilter {
+    GroupMember(ObjectGroupMember),
+    ClassMask(ObjectClassMask),
+}
+
 /// A typed KMIP 2.1 Locate request payload from §6.1.28, Table 247.
 ///
 /// The required Attributes Structure is retained even when empty. The client
@@ -70,7 +112,7 @@ pub struct LocateRequest {
     maximum_items: Option<i32>,
     offset_items: Option<i32>,
     storage_status_mask: Option<StorageStatusMask>,
-    object_group_member: Option<ObjectGroupMember>,
+    object_filter: Option<ObjectFilter>,
     attributes: AttributeSet,
 }
 
@@ -82,7 +124,7 @@ impl LocateRequest {
             maximum_items: None,
             offset_items: None,
             storage_status_mask: None,
-            object_group_member: None,
+            object_filter: None,
             attributes,
         }
     }
@@ -111,7 +153,21 @@ impl LocateRequest {
     /// Sets the optional Object Group Member Enumeration, including future values.
     #[must_use]
     pub const fn with_object_group_member(mut self, member: ObjectGroupMember) -> Self {
-        self.object_group_member = Some(member);
+        self.object_filter = Some(ObjectFilter::GroupMember(member));
+        self
+    }
+
+    /// Sets the KMIP 3.0 Object Class Mask, replacing any Object Group Member filter.
+    #[must_use]
+    pub const fn with_object_class_mask(mut self, mask: ObjectClassMask) -> Self {
+        self.object_filter = Some(ObjectFilter::ClassMask(mask));
+        self
+    }
+
+    /// Replaces the required Attributes filter without changing the other selectors.
+    #[must_use]
+    pub fn with_attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = attributes;
         self
     }
 
@@ -136,7 +192,19 @@ impl LocateRequest {
     /// Returns the optional raw-preserving Object Group Member value.
     #[must_use]
     pub const fn object_group_member(&self) -> Option<ObjectGroupMember> {
-        self.object_group_member
+        match self.object_filter {
+            Some(ObjectFilter::GroupMember(member)) => Some(member),
+            _ => None,
+        }
+    }
+
+    /// Returns the optional KMIP 3.0 Object Class Mask.
+    #[must_use]
+    pub const fn object_class_mask(&self) -> Option<ObjectClassMask> {
+        match self.object_filter {
+            Some(ObjectFilter::ClassMask(mask)) => Some(mask),
+            _ => None,
+        }
     }
 
     /// Returns the required ordered direct-item Attributes Structure contents.
@@ -175,9 +243,18 @@ impl LocateRequest {
                 )?)
                 .map_err(protocol_model_error)?;
         }
-        if let Some(member) = self.object_group_member {
+        if let Some(member) = self.object_group_member() {
             payload
                 .try_push(item(OBJECT_GROUP_MEMBER, Value::enumeration(member.raw()))?)
+                .map_err(protocol_model_error)?;
+        }
+
+        if let Some(mask) = self.object_class_mask() {
+            payload
+                .try_push(item(
+                    OBJECT_CLASS_MASK,
+                    Value::integer(mask.raw().cast_signed()),
+                )?)
                 .map_err(protocol_model_error)?;
         }
 
