@@ -26,25 +26,34 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # actions/setup-python v5.0.0
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
-      - name: Run Unit Tests
-        run: |
-          PYTHONPATH=src python3 -m unittest discover -s tests -p "test_*.py" -v
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal
 
-      - name: Validate Against Cosmian Profile
-        run: |
-          PYTHONPATH=src python3 -m kmipkit_validator run \
-            --capabilities ../shared/profiles/cosmian-kms.json \
-            --output-dir ./results
+      - name: Build pinned static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
 
-      - name: Verify Output Reports Generated
+      - name: Build and install the reviewed Python wheel
         run: |
-          test -f results/results.json
-          test -f results/report.md
-          test -f results/report.html
+          python3 -m pip install --only-binary ':all:' 'maturin==1.9.4' 'cffi==2.0.0' 'jsonschema==4.23.0'
+          python3 tools/install_artifact.py
+          python3 tools/verify_artifact.py
+
+      - name: Run installed-package tests and controlled TLS probes
+        run: PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Verify shared draft campaign evidence
+        working-directory: .
+        run: |
+          validator=verification/interop/python-kmip-validator
+          report_dir="$(mktemp -d)"
+          python3 verification/interop/shared/tools/campaign.py --version 3.0 \
+            --runner python "$validator/tools/run_campaign.sh" --output-dir "$report_dir"
+          python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); assert s["public_api"]["python"] == {"total": 7, "complete": 7}' "$report_dir/summary.json"
