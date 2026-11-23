@@ -148,7 +148,7 @@ class T091RootReexportAliasTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(
             generate.ManifestError,
-            "Rust-only parity is reserved for accepted the transport architecture decision transport declarations",
+            "Rust-only parity is reserved for accepted ADR-0014 transport declarations",
         ):
             generate._validate_public_declarations(
                 [canonical, unrelated_alias],

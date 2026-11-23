@@ -28,32 +28,32 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
 
         self.assertEqual(len(definitions), 62)
         by_id = {definition.element_id: definition for definition in definitions}
-        self.assertNotIn("KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES", by_id)
+        self.assertNotIn("KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES", by_id)
         self.assertEqual(
-            by_id["KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE"].tag,
+            by_id["KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE"].tag,
             0x0042_0001,
         )
         self.assertEqual(
-            by_id["KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE"].value_kind,
+            by_id["KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE"].value_kind,
             "DateTime",
         )
         self.assertEqual(
             by_id[
-                "KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION"
+                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION"
             ].source_multiplicity,
             "Yes",
         )
         self.assertEqual(
-            by_id["KMIP-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER"].value_kind,
+            by_id["KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER"].value_kind,
             "UniqueIdentifier",
         )
         self.assertEqual(
-            by_id["KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"].tag,
+            by_id["KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"].tag,
             0x0042_0008,
         )
         self.assertEqual(
             by_id[
-                "KMIP-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
+                "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
             ].source_multiplicity,
             "Yes for PGP keys. No for X.509 certificates.",
         )
@@ -81,13 +81,13 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
     def test_generated_registry_retains_source_multiplicity_and_trace_ids(self) -> None:
         rendered = generate_attribute_types.render_typed_rust(self.catalog)
 
-        self.assertIn("KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION", rendered)
+        self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION", rendered)
         self.assertIn('source_multiplicity: Some("Yes")', rendered)
         self.assertIn(
             'source_multiplicity: Some("Yes for PGP keys. No for X.509 certificates.")',
             rendered,
         )
-        self.assertIn("KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE", rendered)
+        self.assertIn("KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", rendered)
         self.assertIn('source_multiplicity: Some("No")', rendered)
 
     def test_ffi_catalog_generation_exposes_tags_and_source_ttlv_types(self) -> None:
@@ -141,10 +141,10 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid element identity"):
             generate_attribute_types._marker_identifier("not-an-attribute")
         with self.assertRaisesRegex(ValueError, "invalid element identity"):
-            generate_attribute_types._marker_identifier("KMIP-ELEM-ATTRIBUTE-")
+            generate_attribute_types._marker_identifier("KMIPKIT-ELEM-ATTRIBUTE-")
         self.assertEqual(
             "Attribute123Abc",
-            generate_attribute_types._marker_identifier("KMIP-ELEM-ATTRIBUTE-123-ABC"),
+            generate_attribute_types._marker_identifier("KMIPKIT-ELEM-ATTRIBUTE-123-ABC"),
         )
 
         self.assertIsNone(generate_attribute_types._source_multiplicity({}))
@@ -208,9 +208,9 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
                 if row.get("element_id") == element_id
             )
 
-        activation = "KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE"
-        certificate = "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
-        vendor = "KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
+        activation = "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE"
+        certificate = "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
+        vendor = "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
         assert_invalid(
             lambda catalog: tag_record(catalog).update({"element_id": None}),
             "invalid identity or wire value",
@@ -303,7 +303,7 @@ class TypedAttributeGeneratorTests(unittest.TestCase):
         def duplicate_activation_tag(catalog: dict[str, Any]) -> None:
             duplicate = copy.deepcopy(attribute_record(catalog, activation))
             duplicate.update({
-                "element_id": "KMIP-ELEM-ATTRIBUTE-TEST-ALIAS",
+                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-TEST-ALIAS",
                 "source_name": "Test Alias",
             })
             catalog["elements"].append(duplicate)

@@ -86,7 +86,7 @@ class T102RngErrorMappingTests(unittest.TestCase):
                 self.assertTrue(OWNER_REQUIREMENTS <= requirements)
                 self.assertTrue(SHARED_REQUIREMENTS <= requirements)
                 self.assertTrue(
-                    {item for item in response["requirementIds"] if item.startswith("KMIP-REQ-SPEC-")}
+                    {item for item in response["requirementIds"] if item.startswith("KMIPKIT-REQ-SPEC-")}
                     <= requirements
                 )
                 self.assertTrue(PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))

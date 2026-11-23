@@ -290,7 +290,7 @@ def expected_attribute_policies(raw: bytes) -> tuple[dict[str, dict[str, Any]], 
         "structure_table": "Table 150",
         "source_text": vendor_text,
         "value_predicate": {
-            "member_element_id": "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
+            "member_element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
             "equals": "y",
             "source_indicates_origin": "server_created",
         },

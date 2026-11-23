@@ -746,8 +746,8 @@ fn request_profile_rejection_is_not_sent_and_skips_the_exchange() {
 
 #[test]
 fn singleton_check_profile_rule_rejection_is_not_sent_and_skips_the_exchange() {
-    const CHECK_REQUIREMENT: &str = "KMIP-REQ-SPEC-6.1.7-001";
-    const CHECK_CLAUSE: &str = "KMIP-CLAUSE-SPEC-6.1.7-001";
+    const CHECK_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-6.1.7-001";
+    const CHECK_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-001";
 
     let exchanges = Rc::new(Cell::new(0));
     let request_checks = Rc::new(Cell::new(0));
@@ -812,8 +812,8 @@ fn server_result_has_no_local_profile_validation_error() {
 
 #[test]
 fn original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.38-003";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.38-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
     const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
     const OBJECT_ID: &str = "profile-context-object-sensitive-id";
 
@@ -876,8 +876,8 @@ fn original_creation_date_mutation_with_present_bound_context_is_rejected_before
 
 #[test]
 fn original_creation_date_non_add_mutation_with_known_absent_state_is_rejected() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.38-003";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.38-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
     const ORIGINAL_CREATION_DATE: u32 = 0x0042_00BC;
     const OBJECT_ID: &str = "profile-context-known-absent-object-id";
 
@@ -935,8 +935,8 @@ fn original_creation_date_non_add_mutation_with_known_absent_state_is_rejected()
 
 #[test]
 fn usage_limits_total_change_after_protection_use_is_rejected_with_bound_context() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.59-002";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-002";
     const USAGE_LIMITS: u32 = 0x0042_0095;
     const TOTAL: u32 = 0x0042_0097;
     const COUNT: u32 = 0x0042_0096;
@@ -988,8 +988,8 @@ fn usage_limits_total_change_after_protection_use_is_rejected_with_bound_context
 
 #[test]
 fn usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.59-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
     const USAGE_LIMITS: u32 = 0x0042_0095;
     const TOTAL: u32 = 0x0042_0097;
     const COUNT: u32 = 0x0042_0096;
@@ -1042,8 +1042,8 @@ fn usage_limits_total_change_after_allocation_is_attributed_only_when_count_chan
 
 #[test]
 fn usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.59-002";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-002";
     const USAGE_LIMITS: u32 = 0x0042_0095;
     const TOTAL: u32 = 0x0042_0097;
     const COUNT: u32 = 0x0042_0096;
@@ -1437,8 +1437,8 @@ fn usage_limits_total_set_rejects_missing_required_unit_before_transport() {
 
 #[test]
 fn usage_limits_total_set_cannot_change_count() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
-    const CLAUSE: &str = "KMIP-CLAUSE-SPEC-4.59-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
     const USAGE_LIMITS: u32 = 0x0042_0095;
     const TOTAL: u32 = 0x0042_0097;
     const COUNT: u32 = 0x0042_0096;

@@ -17,7 +17,7 @@ OWNER = "specs/026-pkcs11/spec.md"
 PARITY_TEST_EVIDENCE_ID = (
     "verification/api/tests/test_t102_pkcs11_request_serializer_mapping.py"
 )
-CAPABILITY = "KMIP-ELEM-OP-C2S-PKCS-11"
+CAPABILITY = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 TARGETS = (
     (
         "rust-observed-dc0d9f8db2cc819081a5",
@@ -100,7 +100,7 @@ class T102Pkcs11RequestSerializerMappingTests(unittest.TestCase):
             specification,
         )
         self.assertIn(
-            "| PKCS#11 | KMIP-ELEM-OP-C2S-PKCS-11 | §6.1.37 | 273 | 274 | 275 |",
+            "| PKCS#11 | KMIPKIT-ELEM-OP-C2S-PKCS-11 | §6.1.37 | 273 | 274 | 275 |",
             specification,
         )
         source_test = (

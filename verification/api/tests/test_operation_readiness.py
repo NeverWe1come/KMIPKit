@@ -1134,7 +1134,7 @@ class OperationReadinessSchemaTests(unittest.TestCase):
         _ready_operation(manifest)
         manifest["publicDeclarations"] = _ready_declarations(
             declaration_id="discover_versions_execute",
-            capability_id="KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS",
+            capability_id="KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
         )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -1149,14 +1149,14 @@ class OperationReadinessSchemaTests(unittest.TestCase):
 
     def test_adr_owned_capability_must_resolve_to_accepted_adr(self) -> None:
         manifest = _contract_manifest()
-        adr_path = "docs/architecture/transport-security.md"
+        adr_path = "docs/adr/0014-public-transport-exchange-contract.md"
         manifest["capabilities"] = [
             {
                 "capabilityId": "transport_exchange",
                 "requirementIds": ["KMIPKIT-0043-FR-001"],
                 "capabilityState": "declared",
                 "parityScope": "rust-only-adr",
-                "ownerAdrId": "the transport architecture decision",
+                "ownerAdrId": "ADR-0014",
                 "acceptedEvidence": {
                     "kind": "accepted-adr",
                     "path": adr_path,
@@ -1171,21 +1171,21 @@ class OperationReadinessSchemaTests(unittest.TestCase):
             adr = root / adr_path
             adr.parent.mkdir(parents=True)
             adr.write_text(
-                "# the transport architecture decision\n\n**Status**: Accepted.\n\n"
+                "# ADR-0014\n\n**Status**: Accepted.\n\n"
                 "Maintainer acceptance for release 1.0.0\n",
                 encoding="utf-8",
             )
             _validate_v2_readiness(self, manifest, root)
 
             adr.write_text(
-                "# the transport architecture decision\n\nStatus: Accepted.\n\n"
+                "# ADR-0014\n\nStatus: Accepted.\n\n"
                 "Maintainer acceptance for release 1.0.0\n",
                 encoding="utf-8",
             )
             _validate_v2_readiness(self, manifest, root)
 
             adr.write_text(
-                "# the transport architecture decision\n\n**Status**: Proposed.\n\n"
+                "# ADR-0014\n\n**Status**: Proposed.\n\n"
                 "Maintainer acceptance for release 1.0.0\n",
                 encoding="utf-8",
             )

@@ -114,7 +114,11 @@ fn selected_get_items_rejects_reordered_response_correlations() {
 #[test]
 fn selected_get_items_rejects_non_adjacent_request_response_messages() {
     let result = std::panic::catch_unwind(|| {
-        selected_get_items(NON_ADJACENT_REQUEST_RESPONSE_XML, "TEST-GET-ADJACENCY", &[0, 1])
+        selected_get_items(
+            NON_ADJACENT_REQUEST_RESPONSE_XML,
+            "TEST-GET-ADJACENCY",
+            &[0, 1],
+        )
     });
 
     assert!(

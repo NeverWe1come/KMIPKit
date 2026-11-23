@@ -17,9 +17,9 @@ class ProfileSectionsSevenThroughElevenCrosswalkTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        requirement_id = "KMIP-REQ-SPEC-9.9-001"
-        request_field_id = "KMIP-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"
-        response_field_id = "KMIP-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE"
+        requirement_id = "KMIPKIT-REQ-SPEC-9.9-001"
+        request_field_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE"
+        response_field_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE"
         requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
         )
@@ -45,8 +45,8 @@ class ProfileSectionsSevenThroughElevenCrosswalkTests(unittest.TestCase):
         section_requirements = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
-            if requirement["requirement_id"].startswith("KMIP-REQ-SPEC-")
-            and requirement["requirement_id"].removeprefix("KMIP-REQ-SPEC-").split("-", 1)[0].split(".", 1)[0]
+            if requirement["requirement_id"].startswith("KMIPKIT-REQ-SPEC-")
+            and requirement["requirement_id"].removeprefix("KMIPKIT-REQ-SPEC-").split("-", 1)[0].split(".", 1)[0]
             in {"7", "8", "9", "10", "11"}
         }
         reviewed_ids = {row["requirement_id"] for row in oracle["requirement_crosswalk"]}

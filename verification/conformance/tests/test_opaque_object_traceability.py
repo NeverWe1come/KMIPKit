@@ -12,18 +12,18 @@ CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 TRACEABILITY = ROOT / "specs/029-opaque-object-context/traceability.md"
 
 REQUIREMENTS = {
-    "KMIP-REQ-SPEC-2.3-002": "§2.3",
-    "KMIP-REQ-SPEC-2.3-003": "§2.3, Table 4; §6.1.43, Table 291",
-    "KMIP-REQ-SPEC-6.1.43-001": "§6.1.43, Table 291",
-    "KMIP-REQ-SPEC-6.1.43-007": "§6.1.43, Table 293",
-    "KMIP-REQ-SPEC-6.1.43-009-001": "§6.1.43, Table 293",
-    "KMIP-REQ-SPEC-6.1.43-009-002": "§6.1.43, Table 293",
-    "KMIP-REQ-SPEC-6.1.43-010-001": "§6.1.43, Table 293",
-    "KMIP-REQ-SPEC-6.1.43-010-002": "§6.1.43, Table 293",
+    "KMIPKIT-REQ-SPEC-2.3-002": "§2.3",
+    "KMIPKIT-REQ-SPEC-2.3-003": "§2.3, Table 4; §6.1.43, Table 291",
+    "KMIPKIT-REQ-SPEC-6.1.43-001": "§6.1.43, Table 291",
+    "KMIPKIT-REQ-SPEC-6.1.43-007": "§6.1.43, Table 293",
+    "KMIPKIT-REQ-SPEC-6.1.43-009-001": "§6.1.43, Table 293",
+    "KMIPKIT-REQ-SPEC-6.1.43-009-002": "§6.1.43, Table 293",
+    "KMIPKIT-REQ-SPEC-6.1.43-010-001": "§6.1.43, Table 293",
+    "KMIPKIT-REQ-SPEC-6.1.43-010-002": "§6.1.43, Table 293",
 }
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class OpaqueObjectTraceabilityTests(unittest.TestCase):
     def test_table4_required_fields_are_traced_to_child_elements_not_heading(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
@@ -33,7 +33,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
         }
         elements = {record["element_id"]: record for record in catalog["elements"]}
 
-        header = clauses["KMIP-CLAUSE-SPEC-2.3-003"]
+        header = clauses["KMIPKIT-CLAUSE-SPEC-2.3-003"]
         self.assertEqual(
             header["locator"], {"ordinal": 3, "block_kind": "table_row"}
         )
@@ -41,7 +41,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
         self.assertEqual(header["disposition"], "non_applicable")
         self.assertEqual(header["requirement_ids"], [])
 
-        requirement = requirements["KMIP-REQ-SPEC-2.3-003"]
+        requirement = requirements["KMIPKIT-REQ-SPEC-2.3-003"]
         self.assertEqual(requirement["feature_spec"], "KMIPKIT-0044")
         self.assertEqual(requirement["source_clause_ids"], [])
         self.assertEqual(requirement["source_keyword"], None)
@@ -78,42 +78,42 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
         )
 
         required_children = {
-            "KMIP-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": "Enumeration",
-            "KMIP-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": "Byte String",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": "Enumeration",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": "Byte String",
         }
         for element_id, encoding in required_children.items():
             with self.subTest(element_id=element_id):
                 element = elements[element_id]
                 self.assertEqual(element["source_requiredness"], "Yes")
                 self.assertEqual(element["source_encoding"], encoding)
-                self.assertIn("KMIP-REQ-SPEC-2.3-003", element["requirement_ids"])
+                self.assertIn("KMIPKIT-REQ-SPEC-2.3-003", element["requirement_ids"])
                 self.assertIn(
                     {"source_id": "KMIPKIT-SRC-spec", "section": "2.3"},
                     element["source_refs"],
                 )
 
         register_evidence = {
-            "KMIP-REQ-SPEC-6.1.43-001": (
+            "KMIPKIT-REQ-SPEC-6.1.43-001": (
                 "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
                 "managed_opaque_register_preserves_standard_table_291_wire_shape_and_attribute_order"
             ),
-            "KMIP-REQ-SPEC-6.1.43-007": (
+            "KMIPKIT-REQ-SPEC-6.1.43-007": (
                 "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
                 "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
             ),
-            "KMIP-REQ-SPEC-6.1.43-009-001": (
+            "KMIPKIT-REQ-SPEC-6.1.43-009-001": (
                 "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
                 "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
             ),
-            "KMIP-REQ-SPEC-6.1.43-009-002": (
+            "KMIPKIT-REQ-SPEC-6.1.43-009-002": (
                 "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
                 "managed_opaque_context_requires_algorithm_and_length_as_a_pair"
             ),
-            "KMIP-REQ-SPEC-6.1.43-010-001": (
+            "KMIPKIT-REQ-SPEC-6.1.43-010-001": (
                 "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
                 "managed_opaque_context_accepts_table293_attributes_without_a_key_block_and_emits_no_marker"
             ),
-            "KMIP-REQ-SPEC-6.1.43-010-002": (
+            "KMIPKIT-REQ-SPEC-6.1.43-010-002": (
                 "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::"
                 "managed_opaque_context_requires_algorithm_and_length_as_a_pair"
             ),
@@ -177,16 +177,16 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
                 self.assertEqual(gap["source_excerpt"], excerpt)
                 self.assertEqual(gap["source_keywords"], [])
                 self.assertEqual(gap["source_force"], "required_table_body_value")
-                self.assertEqual(gap["candidate_requirement_id"], "KMIP-REQ-SPEC-2.3-003")
+                self.assertEqual(gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-2.3-003")
                 self.assertIsNone(gap["proposed_requirement_id"])
-                self.assertEqual(gap["reused_requirement_id"], "KMIP-REQ-SPEC-2.3-003")
+                self.assertEqual(gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-2.3-003")
                 self.assertEqual(gap["status"], "source_obligation_covered_by_existing_stable_label")
                 self.assertIn(row_label, gap["audited_statement"])
 
         header = next(
             review
             for review in oracle["source_requirement_reviews"]
-            if review["source_clause_id"] == "KMIP-CLAUSE-SPEC-2.3-003"
+            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-2.3-003"
         )
         self.assertEqual(header["source_obligations"], [])
         self.assertEqual(header["expected_client_requirement_ids"], [])
@@ -205,11 +205,11 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
         oracle_profiles = {
             profile["profile_id"]: profile for profile in oracle["profiles"]
         }
-        requirement_id = "KMIP-REQ-SPEC-2.3-003"
+        requirement_id = "KMIPKIT-REQ-SPEC-2.3-003"
         relevant_profiles = [
             profile
             for profile in catalog["profiles"]
-            if "KMIP-CLAUSE-SPEC-2.3-003" in profile["source_clause_ids"]
+            if "KMIPKIT-CLAUSE-SPEC-2.3-003" in profile["source_clause_ids"]
         ]
         self.assertTrue(relevant_profiles)
         for profile in relevant_profiles:
@@ -222,7 +222,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
 
     @unittest.skipUnless(
         TRACEABILITY.is_file(),
-        "External traceability documents are not bundled with this source distribution",
+        "Spec Kit traceability files are excluded from the code-only review branch",
     )
     def test_each_context_requirement_has_source_code_positive_and_negative_evidence(self) -> None:
         self.assertTrue(TRACEABILITY.is_file(), "feature traceability ledger must exist")
@@ -232,7 +232,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
             if not line.startswith("|"):
                 continue
             cells = [cell.strip() for cell in line.strip("|").split("|")]
-            if len(cells) != 5 or not cells[0].strip("`").startswith("KMIP-REQ-SPEC-"):
+            if len(cells) != 5 or not cells[0].strip("`").startswith("KMIPKIT-REQ-SPEC-"):
                 continue
             requirement_id = cells[0].strip("`")
             self.assertNotIn(requirement_id, rows, f"duplicate traceability row: {requirement_id}")
@@ -248,7 +248,7 @@ class OpaqueObjectTraceabilityTests(unittest.TestCase):
                 self._check_file_references(implementation)
                 self._check_test_references(positive)
                 self._check_test_references(negative)
-                if requirement_id == "KMIP-REQ-SPEC-6.1.43-001":
+                if requirement_id == "KMIPKIT-REQ-SPEC-6.1.43-001":
                     self.assertIn(
                         "verification/conformance/tests/test_opaque_object_traceability.py::"
                         "test_register_request_constructor_requires_object_type_and_attributes",

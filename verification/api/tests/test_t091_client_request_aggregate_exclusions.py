@@ -80,7 +80,7 @@ class T091ClientRequestAggregateExclusionTests(unittest.TestCase):
                 self.assertIsNotNone(exclusion, f"missing exact request accessor exclusion: {key}")
                 self.assertEqual("KMIPKIT-0043", exclusion["candidateSpecId"])
                 self.assertEqual("accepted-adr", exclusion["approvalSource"]["kind"])
-                self.assertEqual("docs/architecture/public-api.md", exclusion["approvalSource"]["path"])
+                self.assertEqual("docs/adr/0006-public-api-and-bindings.md", exclusion["approvalSource"]["path"])
                 self.assertIn("opaque-handle boundary", exclusion["reason"])
 
         remaining = [

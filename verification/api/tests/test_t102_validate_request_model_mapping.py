@@ -10,7 +10,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-VALIDATE"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-VALIDATE"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUEST_EXPORTS = {
@@ -27,12 +27,12 @@ REQUIREMENTS = {
         f"KMIPKIT-0043-FR-{index:03}"
         for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22)
     ),
-    "KMIP-REQ-SPEC-6.1.57-001",
-    "KMIP-REQ-SPEC-6.1.57-002-001",
-    "KMIP-REQ-SPEC-6.1.57-002-002",
-    "KMIP-REQ-SPEC-6.1.57-004",
-    "KMIP-REQ-SPEC-6.1.57-005",
-    "KMIP-REQ-SPEC-6.1.57-006",
+    "KMIPKIT-REQ-SPEC-6.1.57-001",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.57-004",
+    "KMIPKIT-REQ-SPEC-6.1.57-005",
+    "KMIPKIT-REQ-SPEC-6.1.57-006",
 }
 PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/validate_operation_tests.rs",

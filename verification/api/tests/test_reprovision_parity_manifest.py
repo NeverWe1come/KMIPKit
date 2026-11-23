@@ -10,12 +10,12 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-PROVISION"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIP-REQ-SPEC-6.1.48-001",
-    "KMIP-REQ-SPEC-6.1.48-004",
-    "KMIP-REQ-SPEC-6.1.48-006",
+    "KMIPKIT-REQ-SPEC-6.1.48-001",
+    "KMIPKIT-REQ-SPEC-6.1.48-004",
+    "KMIPKIT-REQ-SPEC-6.1.48-006",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"

@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 
 class RekeyKeyPairManifestTests(unittest.TestCase):
@@ -29,7 +29,7 @@ class RekeyKeyPairManifestTests(unittest.TestCase):
         operation = next(row for row in manifest["operations"] if row["operationId"] == OPERATION_ID)
         names = {row["languageMappings"][language]["name"] for language, ids in operation["declarations"].items() for item in ids for row in manifest["publicDeclarations"] if row["declarationId"] == item}
         self.assertTrue(any("RekeyKeyPair" in name or "rekey_key_pair" in name or "rekeyKeyPair" in name for name in names))
-        self.assertIn("KMIP-REQ-SPEC-6.1.47-001", {item for row in manifest["publicDeclarations"] if row["declarationId"] in {x for ids in operation["declarations"].values() for x in ids} for item in row["requirementIds"]})
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.47-001", {item for row in manifest["publicDeclarations"] if row["declarationId"] in {x for ids in operation["declarations"].values() for x in ids} for item in row["requirementIds"]})
 
     def test_private_key_identifier_request_setter_maps_without_a_fabricated_req_id(self) -> None:
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -44,7 +44,7 @@ class RekeyKeyPairManifestTests(unittest.TestCase):
             set(declaration["requirementIds"]),
         )
         self.assertFalse(
-            any(item.startswith("KMIP-REQ-SPEC-6.1.47-") for item in declaration["requirementIds"])
+            any(item.startswith("KMIPKIT-REQ-SPEC-6.1.47-") for item in declaration["requirementIds"])
         )
         operation = next(row for row in manifest["operations"] if row["operationId"] == OPERATION_ID)
         self.assertIn(declaration["declarationId"], operation["declarations"]["rust"])

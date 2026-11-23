@@ -11,7 +11,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-DELEGATED-LOGIN"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN"
 OWNER_SPEC = "specs/024-credential-sessions/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
@@ -40,16 +40,16 @@ TABLE_TRACEABILITY = {
     "KMIPKIT-024-T199-REQUEST",
     "KMIPKIT-024-T200-RESPONSE",
     "KMIPKIT-024-T201-ERROR",
-    "KMIP-ELEM-TAG-420049",
-    "KMIP-ELEM-TAG-42014C",
-    "KMIP-ELEM-TAG-420095",
-    "KMIP-ELEM-TAG-42014D",
-    "KMIP-ELEM-TAG-420149",
-    "KMIP-ELEM-TAG-42014A",
-    "KMIP-ELEM-TAG-42014B",
-    "KMIP-ELEM-TAG-42007F",
-    "KMIP-ELEM-TAG-42007E",
-    "KMIP-ELEM-TAG-42007D",
+    "KMIPKIT-ELEM-TAG-420049",
+    "KMIPKIT-ELEM-TAG-42014C",
+    "KMIPKIT-ELEM-TAG-420095",
+    "KMIPKIT-ELEM-TAG-42014D",
+    "KMIPKIT-ELEM-TAG-420149",
+    "KMIPKIT-ELEM-TAG-42014A",
+    "KMIPKIT-ELEM-TAG-42014B",
+    "KMIPKIT-ELEM-TAG-42007F",
+    "KMIPKIT-ELEM-TAG-42007E",
+    "KMIPKIT-ELEM-TAG-42007D",
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",

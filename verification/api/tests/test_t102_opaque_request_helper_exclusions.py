@@ -20,7 +20,7 @@ from verification.api.tests.t102_manifest_totals import (
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
-OWNER = "docs/architecture/public-api.md"
+OWNER = "docs/adr/0006-public-api-and-bindings.md"
 EXPECTED = {
     "rust-observed-5c3085bfc5d5023a37fa": "kmipkit_client::ClientBatchItem::request",
     "rust-observed-ba435cff9cb4abd90525": "kmipkit::ClientBatchItem::request",
@@ -62,14 +62,14 @@ class T102OpaqueRequestHelperExclusionTests(unittest.TestCase):
                 self.assertEqual("Accepted", record["approvalSource"]["status"])
                 self.assertIn("Status: Accepted", record["approvalSource"]["evidence"])
                 self.assertIn(identifier, record["evidence"])
-                self.assertIn("the client batch item architecture decision", record["evidence"])
+                self.assertIn("ADR-0006", record["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-010", record["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", record["evidence"])
 
         # Excluding only inspection helpers must not remove Register or Join Split Key.
         required_operations = {
-            "KMIP-ELEM-OP-C2S-REGISTER",
-            "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+            "KMIPKIT-ELEM-OP-C2S-REGISTER",
+            "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         }
         operations = {row["operationId"] for row in self.manifest["operations"]}
         self.assertTrue(required_operations.issubset(operations))
@@ -95,7 +95,7 @@ class T102OpaqueRequestHelperExclusionTests(unittest.TestCase):
         for requirement_id, row in requirements.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertIn(
-                    "ClientBatchItem::request readback exports are exact reviewed exclusions under the client batch item architecture decision",
+                    "ClientBatchItem::request readback exports are exact reviewed exclusions under ADR-0006",
                     row,
                 )
                 self.assertNotIn(

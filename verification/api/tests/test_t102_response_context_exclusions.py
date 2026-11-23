@@ -74,11 +74,11 @@ class T102ResponseContextExclusionTests(unittest.TestCase):
         self.assertIn("KMIPKIT-DISC-048", source)
         self.assertIn("Validity Indicator", source)
         operation_ids = {
-            "KMIP-ELEM-OP-C2S-HASH",
-            "KMIP-ELEM-OP-C2S-MAC",
-            "KMIP-ELEM-OP-C2S-MAC-VERIFY",
-            "KMIP-ELEM-OP-C2S-SIGN",
-            "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY",
+            "KMIPKIT-ELEM-OP-C2S-HASH",
+            "KMIPKIT-ELEM-OP-C2S-MAC",
+            "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+            "KMIPKIT-ELEM-OP-C2S-SIGN",
+            "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
         }
         operations = {
             row["operationId"]: row

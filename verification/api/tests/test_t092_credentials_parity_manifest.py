@@ -124,7 +124,7 @@ VALIDATION_ERROR_EXPORTS = {
 }
 NONCE_REQUIREMENTS = {
     "KMIPKIT-0008-FR-006",
-    "KMIP-REQ-SPEC-9.11-006",
+    "KMIPKIT-REQ-SPEC-9.11-006",
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
     "KMIPKIT-0043-FR-010",
@@ -226,8 +226,8 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                     {
                         "KMIPKIT-0008-FR-007",
                         "KMIPKIT-0008-FR-010",
-                        "KMIP-REQ-SPEC-9.11-010-001",
-                        "KMIP-REQ-SPEC-9.11-010-002",
+                        "KMIPKIT-REQ-SPEC-9.11-010-001",
+                        "KMIPKIT-REQ-SPEC-9.11-010-002",
                         "KMIPKIT-0043-FR-021",
                         "KMIPKIT-0043-FR-022",
                     }
@@ -262,7 +262,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                         "KMIPKIT-0008-FR-003",
                         "KMIPKIT-0008-FR-004",
                         "KMIPKIT-0008-FR-010",
-                        "KMIP-REQ-SPEC-9.11-001",
+                        "KMIPKIT-REQ-SPEC-9.11-001",
                         "KMIPKIT-0043-FR-021",
                         "KMIPKIT-0043-FR-022",
                     }
@@ -1085,7 +1085,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
                 self.assertTrue(
                     {
                         "KMIPKIT-0008-FR-003",
-                        "KMIP-REQ-SPEC-9.11-001",
+                        "KMIPKIT-REQ-SPEC-9.11-001",
                         "KMIPKIT-0043-FR-004",
                         "KMIPKIT-0043-FR-005",
                         "KMIPKIT-0043-FR-010",
@@ -1154,7 +1154,7 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         required_ids = {
             "KMIPKIT-0008-FR-006",
-            "KMIP-REQ-SPEC-9.11-006",
+            "KMIPKIT-REQ-SPEC-9.11-006",
             "KMIPKIT-0043-FR-004",
             "KMIPKIT-0043-FR-005",
             "KMIPKIT-0043-FR-010",
@@ -1325,9 +1325,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         required_ids = {
             "KMIPKIT-0008-FR-001",
             "KMIPKIT-0008-FR-002",
-            "KMIP-REQ-SPEC-9.4-001-001",
-            "KMIP-REQ-SPEC-9.4-001-002",
-            "KMIP-REQ-SPEC-9.4-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-001",
+            "KMIPKIT-REQ-SPEC-9.4-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-002",
             "KMIPKIT-0043-FR-004",
             "KMIPKIT-0043-FR-005",
             "KMIPKIT-0043-FR-010",
@@ -1388,9 +1388,9 @@ class T092CredentialsParityManifestTests(unittest.TestCase):
         }
         requirements = {
             "KMIPKIT-0008-FR-005",
-            "KMIP-REQ-SPEC-9.11-004-001",
-            "KMIP-REQ-SPEC-9.11-004-002",
-            "KMIP-REQ-SPEC-9.11-004-003",
+            "KMIPKIT-REQ-SPEC-9.11-004-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-003",
             "KMIPKIT-0043-FR-004",
             "KMIPKIT-0043-FR-005",
             "KMIPKIT-0043-FR-010",

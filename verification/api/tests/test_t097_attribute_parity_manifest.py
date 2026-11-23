@@ -779,7 +779,7 @@ class T097AttributeParityManifestTests(unittest.TestCase):
         operation_rows = [
             row
             for row in self.manifest["publicDeclarations"]
-            if row.get("capabilityId") == "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES"
+            if row.get("capabilityId") == "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"
         ]
         self.assertTrue(operation_rows)
         for row in operation_rows:

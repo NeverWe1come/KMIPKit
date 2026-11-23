@@ -27,7 +27,7 @@ CRYPTographic_TYPES = {
             "KMIPKIT-0021-FR-009",
             "KMIPKIT-0021-FR-013",
         ),
-        "owner_trace": "KMIP-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM",
+        "owner_trace": "KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM",
     },
     "DigitalSignatureAlgorithm": {
         "implementation": "kmipkit_protocol::cryptographic_operation::DigitalSignatureAlgorithm",
@@ -39,7 +39,7 @@ CRYPTographic_TYPES = {
             "KMIPKIT-0021-FR-009",
             "KMIPKIT-0021-FR-013",
         ),
-        "owner_trace": "KMIP-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM",
+        "owner_trace": "KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM",
     },
     "HashingAlgorithm": {
         "implementation": "kmipkit_protocol::cryptographic_operation::HashingAlgorithm",
@@ -49,7 +49,7 @@ CRYPTographic_TYPES = {
             "KMIPKIT-0021-FR-009",
             "KMIPKIT-0021-FR-013",
         ),
-        "owner_trace": "KMIP-ELEM-ENUMERATION-HASHING-ALGORITHM",
+        "owner_trace": "KMIPKIT-ELEM-ENUMERATION-HASHING-ALGORITHM",
     },
     "ValidityIndicator": {
         "implementation": "kmipkit_protocol::cryptographic_operation::ValidityIndicator",
@@ -58,7 +58,7 @@ CRYPTographic_TYPES = {
             "KMIPKIT-0021-FR-008",
             "KMIPKIT-0021-FR-009",
         ),
-        "owner_trace": "KMIP-ELEM-ENUMERATION-VALIDITY-INDICATOR",
+        "owner_trace": "KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR",
     },
     "CryptographicOperationResponseContext": {
         "implementation": "kmipkit_protocol::cryptographic_operation::CryptographicOperationResponseContext",

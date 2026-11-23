@@ -1100,7 +1100,7 @@ fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
     assert_eq!(VENDOR_ATTRIBUTE_POLICY.source_refs[0].section, "4.60");
     assert_eq!(
         VENDOR_ATTRIBUTE_POLICY.member_element_id,
-        "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
     );
     assert_eq!(
         VENDOR_ATTRIBUTE_POLICY.source_indicates_origin,

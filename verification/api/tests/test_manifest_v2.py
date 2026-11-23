@@ -117,12 +117,12 @@ HEADERLESS_C_FUNCTION_EXCLUSIONS = {
     "kmipkit_test_client_batch_item_encoded_operation",
 }
 VERIFIED_OPERATION_DECLARED_EXPORTS = {
-    "KMIP-ELEM-OP-C2S-ADD-ATTRIBUTE",
-    "KMIP-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
-    "KMIP-ELEM-OP-C2S-DELETE-ATTRIBUTE",
-    "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES",
-    "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
-    "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
 }
 # T053 closes the four-language API mappings for all client-initiated
 # operations. This records API readiness, not formal KMIP profile conformance.
@@ -414,16 +414,16 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_requirement_ids_accept_referenced_kmip_7_12_sections(self) -> None:
         for definition in ("requirementId", "v2RequirementId"):
             validator = Draft202012Validator(self.schema["$defs"][definition])
-            self.assertTrue(validator.is_valid("KMIP-REQ-SPEC-7.12-003"))
-            self.assertTrue(validator.is_valid("KMIP-REQ-SPEC-7.12-005-001"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-003"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-7.12-005-001"))
         self.assertFalse(validator.is_valid("*mut *mut *mut kmipkit_ttlv_structure_t"))
 
     def test_v2_requirement_ids_accept_referenced_kmip_9_4_sections(self) -> None:
         for definition in ("requirementId", "v2RequirementId"):
             validator = Draft202012Validator(self.schema["$defs"][definition])
-            self.assertTrue(validator.is_valid("KMIP-REQ-SPEC-9.4-001-001"))
-            self.assertTrue(validator.is_valid("KMIP-REQ-SPEC-9.4-001-002"))
-            self.assertTrue(validator.is_valid("KMIP-REQ-SPEC-9.4-002"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-001-001"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-001-002"))
+            self.assertTrue(validator.is_valid("KMIPKIT-REQ-SPEC-9.4-002"))
 
     def test_blocked_condition_schema_round_trips_lifetime_and_trait_bounds(self) -> None:
         manifest = _valid_v2_manifest()
@@ -2095,7 +2095,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS"
         )
         requirement_ids = {
             "KMIPKIT-0007-FR-002",
@@ -2109,7 +2109,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(export=export_name):
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS",
+                    "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS",
                     declaration["capabilityId"],
                 )
                 self.assertNotIn("candidateSpecId", declaration)
@@ -2375,11 +2375,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         cases = {
             "MacVerify": (
-                "KMIP-ELEM-OP-C2S-MAC-VERIFY",
+                "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
                 "mac_verify",
             ),
             "SignatureVerify": (
-                "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY",
+                "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
                 "signature_verify",
             ),
         }
@@ -2454,31 +2454,31 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         cases = {
             "get_usage_allocation": (
-                "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
                 "kmipkit_client_batch_item_get_usage_allocation",
                 "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
                 "kmipkit.extensions.client_batch_item_get_usage_allocation",
             ),
             "import": (
-                "KMIP-ELEM-OP-C2S-IMPORT",
+                "KMIPKIT-ELEM-OP-C2S-IMPORT",
                 "kmipkit_client_batch_item_import",
                 "org.kmipkit.extensions.ClientBatchItem.importObject",
                 "kmipkit.extensions.client_batch_item_import",
             ),
             "interop": (
-                "KMIP-ELEM-OP-C2S-INTEROP",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
                 "kmipkit_client_batch_item_interop",
                 "org.kmipkit.extensions.ClientBatchItem.interop",
                 "kmipkit.extensions.client_batch_item_interop",
             ),
             "log": (
-                "KMIP-ELEM-OP-C2S-LOG",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
                 "kmipkit_client_batch_item_log",
                 "org.kmipkit.extensions.ClientBatchItem.log",
                 "kmipkit.extensions.client_batch_item_log",
             ),
             "validate": (
-                "KMIP-ELEM-OP-C2S-VALIDATE",
+                "KMIPKIT-ELEM-OP-C2S-VALIDATE",
                 "kmipkit_client_batch_item_validate",
                 "org.kmipkit.extensions.ClientBatchItem.validate",
                 "kmipkit.extensions.client_batch_item_validate",
@@ -2581,7 +2581,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for row in self.checked_in_manifest["publicDeclarations"]
         }
         canonical = declarations["kmipkit_client::ClientRequest::add_attribute"]
-        operation_id = "KMIP-ELEM-OP-C2S-ADD-ATTRIBUTE"
+        operation_id = "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE"
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
@@ -2626,32 +2626,32 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         cases = {
             "AdjustAttribute": (
-                "KMIP-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
+                "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE",
                 "adjust_attribute",
                 ("", "::0"),
             ),
             "DeleteAttribute": (
-                "KMIP-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+                "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
                 "delete_attribute",
                 ("", "::0"),
             ),
             "GetAttributeList": (
-                "KMIP-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
                 "get_attribute_list",
                 ("::0",),
             ),
             "GetAttributes": (
-                "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
                 "get_attributes",
                 ("::0",),
             ),
             "ModifyAttribute": (
-                "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+                "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
                 "modify_attribute",
                 ("", "::0"),
             ),
             "SetAttribute": (
-                "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE",
+                "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
                 "set_attribute",
                 ("", "::0"),
             ),
@@ -2700,49 +2700,49 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         variants = {
             "Certify": (
-                "KMIP-ELEM-OP-C2S-CERTIFY",
+                "KMIPKIT-ELEM-OP-C2S-CERTIFY",
                 "kmipkit::ClientRequest::Certify",
             ),
             "Check": (
-                "KMIP-ELEM-OP-C2S-CHECK",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
                 "kmipkit_client::ClientRequest::check",
             ),
             "ObtainLease": (
-                "KMIP-ELEM-OP-C2S-OBTAIN-LEASE",
+                "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
                 "kmipkit_client::ClientRequest::obtain_lease",
             ),
             "ReProvision": (
-                "KMIP-ELEM-OP-C2S-RE-PROVISION",
+                "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
                 "kmipkit_client::ClientRequest::reprovision",
             ),
             "Recertify": (
-                "KMIP-ELEM-OP-C2S-RE-CERTIFY",
+                "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
                 "kmipkit_client::ClientRequest::Recertify",
             ),
             "Register": (
-                "KMIP-ELEM-OP-C2S-REGISTER",
+                "KMIPKIT-ELEM-OP-C2S-REGISTER",
                 "kmipkit_client::ClientRequest::Register",
             ),
             "Rekey": (
-                "KMIP-ELEM-OP-C2S-RE-KEY",
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY",
                 "kmipkit_client::ClientRequest::Rekey",
             ),
             "RekeyKeyPair": (
-                "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
                 "kmipkit_client::ClientRequest::RekeyKeyPair",
             ),
             "Revoke": (
-                "KMIP-ELEM-OP-C2S-REVOKE",
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
                 "kmipkit_client::ClientRequest::Revoke",
             ),
         }
         helpers = {
-            "certify": "KMIP-ELEM-OP-C2S-CERTIFY",
-            "recertify": "KMIP-ELEM-OP-C2S-RE-CERTIFY",
-            "register": "KMIP-ELEM-OP-C2S-REGISTER",
-            "rekey": "KMIP-ELEM-OP-C2S-RE-KEY",
-            "rekey_key_pair": "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
-            "revoke": "KMIP-ELEM-OP-C2S-REVOKE",
+            "certify": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+            "recertify": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+            "register": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+            "rekey": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+            "rekey_key_pair": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+            "revoke": "KMIPKIT-ELEM-OP-C2S-REVOKE",
         }
         expected_exports = []
         for variant, (operation_id, canonical_name) in variants.items():
@@ -2796,26 +2796,26 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         variants = {
             "GetConstraints": (
-                "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS",
+                "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
                 "kmipkit_client::ClientRequest::GetConstraints",
             ),
             "GetUsageAllocation": (
-                "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
                 "kmipkit_client::ClientRequest::get_usage_allocation",
             ),
             "SetConstraints": (
-                "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS",
+                "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
                 "kmipkit_client::ClientRequest::SetConstraints",
             ),
             "SetDefaults": (
-                "KMIP-ELEM-OP-C2S-SET-DEFAULTS",
+                "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
                 "kmipkit_client::ClientRequest::SetDefaults",
             ),
         }
         helpers = {
-            "get_constraints": "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS",
-            "set_constraints": "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS",
-            "set_defaults": "KMIP-ELEM-OP-C2S-SET-DEFAULTS",
+            "get_constraints": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+            "set_constraints": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+            "set_defaults": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
         }
         expected_exports = []
         for variant, (operation_id, canonical_name) in variants.items():
@@ -2870,11 +2870,11 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         cases = {
             "DelegatedLogin": (
-                "KMIP-ELEM-OP-C2S-DELEGATED-LOGIN",
+                "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
                 "delegated_login",
             ),
-            "Login": ("KMIP-ELEM-OP-C2S-LOGIN", "login"),
-            "Logout": ("KMIP-ELEM-OP-C2S-LOGOUT", "logout"),
+            "Login": ("KMIPKIT-ELEM-OP-C2S-LOGIN", "login"),
+            "Logout": ("KMIPKIT-ELEM-OP-C2S-LOGOUT", "logout"),
         }
         expected_exports = [
             (f"{prefix}::ClientRequest::{variant}{suffix}", operation_id, method)
@@ -2918,9 +2918,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             row["operationId"]: row for row in self.checked_in_manifest["operations"]
         }
         cases = {
-            "Export": ("KMIP-ELEM-OP-C2S-EXPORT", "export"),
-            "Import": ("KMIP-ELEM-OP-C2S-IMPORT", "import"),
-            "JoinSplitKey": ("KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY", "join_split_key"),
+            "Export": ("KMIPKIT-ELEM-OP-C2S-EXPORT", "export"),
+            "Import": ("KMIPKIT-ELEM-OP-C2S-IMPORT", "import"),
+            "JoinSplitKey": ("KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", "join_split_key"),
         }
         expected_exports = []
         for variant, (operation_id, method) in cases.items():
@@ -2968,8 +2968,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             row["operationId"]: row for row in self.checked_in_manifest["operations"]
         }
         cases = {
-            "Get": ("KMIP-ELEM-OP-C2S-GET", "get"),
-            "Locate": ("KMIP-ELEM-OP-C2S-LOCATE", "locate"),
+            "Get": ("KMIPKIT-ELEM-OP-C2S-GET", "get"),
+            "Locate": ("KMIPKIT-ELEM-OP-C2S-LOCATE", "locate"),
         }
         expected_exports = []
         for variant, (operation_id, method) in cases.items():
@@ -3016,27 +3016,27 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         }
         cases = {
             "Pkcs11": (
-                "KMIP-ELEM-OP-C2S-PKCS-11",
+                "KMIPKIT-ELEM-OP-C2S-PKCS-11",
                 "KMIPKIT-0040",
                 "kmipkit_client::ClientRequest::pkcs11",
             ),
             "RngRetrieve": (
-                "KMIP-ELEM-OP-C2S-RNG-RETRIEVE",
+                "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
                 "KMIPKIT-0041",
                 "kmipkit_client::ClientRequest::rng_retrieve",
             ),
             "RngSeed": (
-                "KMIP-ELEM-OP-C2S-RNG-SEED",
+                "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
                 "KMIPKIT-0041",
                 "kmipkit_client::ClientRequest::rng_seed",
             ),
             "Interop": (
-                "KMIP-ELEM-OP-C2S-INTEROP",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
                 "KMIPKIT-0042",
                 "kmipkit_client::ClientRequest::Interop",
             ),
             "Log": (
-                "KMIP-ELEM-OP-C2S-LOG",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
                 "KMIPKIT-0042",
                 "kmipkit_client::ClientRequest::Log",
             ),
@@ -3296,7 +3296,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(
                     {
                         "kind": "accepted-adr",
-                        "path": "docs/architecture/transport-security.md",
+                        "path": "docs/adr/0014-public-transport-exchange-contract.md",
                         "status": "Accepted",
                     },
                     {
@@ -3322,7 +3322,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if row["packageId"] == "rust-kmipkit-transport"
             and row["exportName"].startswith("<kmipkit_transport::")
             and row["approvalSource"]["path"]
-            == "docs/architecture/transport-security.md"
+            == "docs/adr/0014-public-transport-exchange-contract.md"
         ]
         self.assertEqual(82, len(exclusions))
         for exclusion in exclusions:
@@ -3331,7 +3331,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(
                     {
                         "kind": "accepted-adr",
-                        "path": "docs/architecture/transport-security.md",
+                        "path": "docs/adr/0014-public-transport-exchange-contract.md",
                         "status": "Accepted",
                     },
                     {
@@ -3356,7 +3356,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-CERTIFY"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-CERTIFY"
         )
         client_execution = next(
             row
@@ -3366,7 +3366,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertEqual("kmipkit_client::Client::certify", declaration["exportName"])
         self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual("KMIP-ELEM-OP-C2S-CERTIFY", declaration["capabilityId"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-CERTIFY", declaration["capabilityId"])
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
             {
@@ -3406,7 +3406,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-CHECK"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-CHECK"
         )
         client_execution = next(
             row
@@ -3416,7 +3416,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
         self.assertEqual("kmipkit_client::Client::check", declaration["exportName"])
         self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual("KMIP-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
             {
@@ -3449,28 +3449,28 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_t091_async_operation_options_map_to_direct_specialized_methods(self) -> None:
         cases = {
             "poll": (
-                "KMIP-ELEM-OP-C2S-POLL",
+                "KMIPKIT-ELEM-OP-C2S-POLL",
                 "KMIPKIT-0009-FR-003",
                 "kmipkit_client_execute_poll_with_options_v1",
                 "executePollWithOptions",
                 "execute_poll_with_options",
             ),
             "cancel": (
-                "KMIP-ELEM-OP-C2S-CANCEL",
+                "KMIPKIT-ELEM-OP-C2S-CANCEL",
                 "KMIPKIT-0009-FR-004",
                 "kmipkit_client_execute_cancel_with_options_v1",
                 "executeCancelWithOptions",
                 "execute_cancel_with_options",
             ),
             "process": (
-                "KMIP-ELEM-OP-C2S-PROCESS",
+                "KMIPKIT-ELEM-OP-C2S-PROCESS",
                 "KMIPKIT-0009-FR-005",
                 "kmipkit_client_execute_process_with_options_v1",
                 "executeProcessWithOptions",
                 "execute_process_with_options",
             ),
             "query_async_requests": (
-                "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
                 "KMIPKIT-0009-FR-006",
                 "kmipkit_client_execute_query_async_requests_with_options_v1",
                 "executeQueryAsyncRequestsWithOptions",
@@ -3623,12 +3623,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (
                 "rust-observed-88587ed0c8f26b4fe362",
                 "kmipkit_client::Client::certify_with_options",
-                "KMIP-ELEM-OP-C2S-CERTIFY",
+                "KMIPKIT-ELEM-OP-C2S-CERTIFY",
             ),
             (
                 "rust-observed-08b1b13b97c0d8bcb4b7",
                 "kmipkit_client::Client::check_with_options",
-                "KMIP-ELEM-OP-C2S-CHECK",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
             ),
         )
         client_execution = next(
@@ -3688,21 +3688,21 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_t091_high_level_operation_options_map_to_four_language_execution(self) -> None:
         operations = {
-            "activate": "KMIP-ELEM-OP-C2S-ACTIVATE",
-            "archive": "KMIP-ELEM-OP-C2S-ARCHIVE",
-            "destroy": "KMIP-ELEM-OP-C2S-DESTROY",
-            "recover": "KMIP-ELEM-OP-C2S-RECOVER",
-            "ping": "KMIP-ELEM-OP-C2S-PING",
-            "query": "KMIP-ELEM-OP-C2S-QUERY",
-            "hash": "KMIP-ELEM-OP-C2S-HASH",
-            "mac": "KMIP-ELEM-OP-C2S-MAC",
-            "mac_verify": "KMIP-ELEM-OP-C2S-MAC-VERIFY",
-            "sign": "KMIP-ELEM-OP-C2S-SIGN",
-            "signature_verify": "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY",
-            "create": "KMIP-ELEM-OP-C2S-CREATE",
-            "create_key_pair": "KMIP-ELEM-OP-C2S-CREATE-KEY-PAIR",
-            "create_split_key": "KMIP-ELEM-OP-C2S-CREATE-SPLIT-KEY",
-            "import": "KMIP-ELEM-OP-C2S-IMPORT",
+            "activate": "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+            "archive": "KMIPKIT-ELEM-OP-C2S-ARCHIVE",
+            "destroy": "KMIPKIT-ELEM-OP-C2S-DESTROY",
+            "recover": "KMIPKIT-ELEM-OP-C2S-RECOVER",
+            "ping": "KMIPKIT-ELEM-OP-C2S-PING",
+            "query": "KMIPKIT-ELEM-OP-C2S-QUERY",
+            "hash": "KMIPKIT-ELEM-OP-C2S-HASH",
+            "mac": "KMIPKIT-ELEM-OP-C2S-MAC",
+            "mac_verify": "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
+            "sign": "KMIPKIT-ELEM-OP-C2S-SIGN",
+            "signature_verify": "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
+            "create": "KMIPKIT-ELEM-OP-C2S-CREATE",
+            "create_key_pair": "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+            "create_split_key": "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+            "import": "KMIPKIT-ELEM-OP-C2S-IMPORT",
         }
         declarations = {
             row["exportName"]: row
@@ -3811,7 +3811,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
     def test_t091_client_derive_key_with_options_maps_to_shared_execute_options(self) -> None:
         declaration_id = "rust-observed-c1b5fc8d2a0980e520c3"
         export_name = "kmipkit_client::Client::derive_key_with_options"
-        operation_id = "KMIP-ELEM-OP-C2S-DERIVE-KEY"
+        operation_id = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
         declaration = next(
             row
             for row in self.checked_in_manifest["publicDeclarations"]
@@ -3867,7 +3867,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             row["exportName"]: row
             for row in self.checked_in_manifest["publicDeclarations"]
         }
-        operation_id = "KMIP-ELEM-OP-C2S-DERIVE-KEY"
+        operation_id = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
@@ -3950,7 +3950,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             row["declarationId"]: row
             for row in self.checked_in_manifest["publicDeclarations"]
         }
-        operation_id = "KMIP-ELEM-OP-C2S-CREATE"
+        operation_id = "KMIPKIT-ELEM-OP-C2S-CREATE"
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
@@ -4017,13 +4017,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         ):
             for operation, variant, request_name, response_id in (
                 (
-                    "KMIP-ELEM-OP-C2S-CREATE-KEY-PAIR",
+                    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
                     "CreateKeyPairCompleted",
                     "kmipkit.extensions.client_batch_item_create_key_pair",
                     "T032:create-key-pair:response:client_batch_item_response_create_key_pair:rust",
                 ),
                 (
-                    "KMIP-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+                    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
                     "CreateSplitKeyCompleted",
                     "kmipkit.extensions.client_batch_item_create_split_key",
                     "T032:create-split-key:response:kmipkit_client_batch_item_response_create_split_key_count:rust",
@@ -4098,25 +4098,25 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "kmipkit_client::ClientRequest::interop",
                 "rust-kmipkit-client",
                 "kmipkit.extensions.client_batch_item_interop",
-                "KMIP-ELEM-OP-C2S-INTEROP",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
             ),
             (
                 "kmipkit::ClientRequest::interop",
                 "rust-kmipkit",
                 "kmipkit.extensions.client_batch_item_interop",
-                "KMIP-ELEM-OP-C2S-INTEROP",
+                "KMIPKIT-ELEM-OP-C2S-INTEROP",
             ),
             (
                 "kmipkit_client::ClientRequest::log",
                 "rust-kmipkit-client",
                 "kmipkit.extensions.client_batch_item_log",
-                "KMIP-ELEM-OP-C2S-LOG",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
             ),
             (
                 "kmipkit::ClientRequest::log",
                 "rust-kmipkit",
                 "kmipkit.extensions.client_batch_item_log",
-                "KMIP-ELEM-OP-C2S-LOG",
+                "KMIPKIT-ELEM-OP-C2S-LOG",
             ),
         )
 
@@ -4446,7 +4446,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             row["exportName"]: row
             for row in self.checked_in_manifest["publicDeclarations"]
         }
-        operation_id = "KMIP-ELEM-OP-C2S-VALIDATE"
+        operation_id = "KMIPKIT-ELEM-OP-C2S-VALIDATE"
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
@@ -4516,42 +4516,42 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (
                 "rust-observed-140bdc0f9fae454fc042",
                 "kmipkit_client::Client::export_with_options",
-                "KMIP-ELEM-OP-C2S-EXPORT",
+                "KMIPKIT-ELEM-OP-C2S-EXPORT",
             ),
             (
                 "rust-observed-ebb77d7fd426167a9803",
                 "kmipkit_client::Client::join_split_key_with_options",
-                "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+                "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
             ),
             (
                 "rust-observed-5195c370b6caa0ab9688",
                 "kmipkit_client::Client::obtain_lease_with_options",
-                "KMIP-ELEM-OP-C2S-OBTAIN-LEASE",
+                "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
             ),
             (
                 "rust-observed-96cbaa2e43262aca95ac",
                 "kmipkit_client::Client::recertify_with_options",
-                "KMIP-ELEM-OP-C2S-RE-CERTIFY",
+                "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
             ),
             (
                 "rust-observed-47920171a3daac07bad8",
                 "kmipkit_client::Client::register_with_options",
-                "KMIP-ELEM-OP-C2S-REGISTER",
+                "KMIPKIT-ELEM-OP-C2S-REGISTER",
             ),
             (
                 "rust-observed-f01e496c4f3e0f0b076e",
                 "kmipkit_client::Client::rekey_key_pair_with_options",
-                "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
             ),
             (
                 "rust-observed-be39cf02d9bfc818336d",
                 "kmipkit_client::Client::rekey_with_options",
-                "KMIP-ELEM-OP-C2S-RE-KEY",
+                "KMIPKIT-ELEM-OP-C2S-RE-KEY",
             ),
             (
                 "rust-observed-e3bff71088cf1caee803",
                 "kmipkit_client::Client::revoke_with_options",
-                "KMIP-ELEM-OP-C2S-REVOKE",
+                "KMIPKIT-ELEM-OP-C2S-REVOKE",
             ),
         )
         client_execution = next(
@@ -4560,22 +4560,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if row["capabilityId"] == "client_execution"
         )
         option_requirement_additions = {
-            "KMIP-ELEM-OP-C2S-EXPORT": {
+            "KMIPKIT-ELEM-OP-C2S-EXPORT": {
                 "KMIPKIT-0043-FR-010",
                 "KMIPKIT-0043-FR-021",
-                "KMIP-REQ-SPEC-6.1.18-001-001",
-                "KMIP-REQ-SPEC-6.1.18-008",
-                "KMIP-REQ-SPEC-7.18-001-001",
-                "KMIP-REQ-SPEC-7.18-004",
+                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIPKIT-REQ-SPEC-6.1.18-008",
+                "KMIPKIT-REQ-SPEC-7.18-001-001",
+                "KMIPKIT-REQ-SPEC-7.18-004",
             },
-            "KMIP-ELEM-OP-C2S-REGISTER": {
+            "KMIPKIT-ELEM-OP-C2S-REGISTER": {
                 *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 9)),
                 "KMIPKIT-0044-FR-001",
                 "KMIPKIT-0044-FR-003",
                 "KMIPKIT-0044-FR-005",
                 "KMIPKIT-0044-FR-007",
             },
-            "KMIP-ELEM-OP-C2S-REVOKE": {
+            "KMIPKIT-ELEM-OP-C2S-REVOKE": {
                 *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 7)),
                 "KMIPKIT-0036-FR-008",
             },
@@ -4642,17 +4642,17 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_t091_root_client_reexports_map_to_the_same_verified_operations(self) -> None:
         methods = (
-            ("certify", "KMIP-ELEM-OP-C2S-CERTIFY"),
-            ("check", "KMIP-ELEM-OP-C2S-CHECK"),
-            ("derive_key", "KMIP-ELEM-OP-C2S-DERIVE-KEY"),
-            ("export", "KMIP-ELEM-OP-C2S-EXPORT"),
-            ("join_split_key", "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY"),
-            ("obtain_lease", "KMIP-ELEM-OP-C2S-OBTAIN-LEASE"),
-            ("recertify", "KMIP-ELEM-OP-C2S-RE-CERTIFY"),
-            ("register", "KMIP-ELEM-OP-C2S-REGISTER"),
-            ("rekey_key_pair", "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"),
-            ("rekey", "KMIP-ELEM-OP-C2S-RE-KEY"),
-            ("revoke", "KMIP-ELEM-OP-C2S-REVOKE"),
+            ("certify", "KMIPKIT-ELEM-OP-C2S-CERTIFY"),
+            ("check", "KMIPKIT-ELEM-OP-C2S-CHECK"),
+            ("derive_key", "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"),
+            ("export", "KMIPKIT-ELEM-OP-C2S-EXPORT"),
+            ("join_split_key", "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"),
+            ("obtain_lease", "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"),
+            ("recertify", "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"),
+            ("register", "KMIPKIT-ELEM-OP-C2S-REGISTER"),
+            ("rekey_key_pair", "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"),
+            ("rekey", "KMIPKIT-ELEM-OP-C2S-RE-KEY"),
+            ("revoke", "KMIPKIT-ELEM-OP-C2S-REVOKE"),
         )
         declarations = {
             (row["packageId"], row["exportName"]): row
@@ -4837,14 +4837,14 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
 
     def test_t091_remaining_root_client_methods_map_to_verified_operations(self) -> None:
         methods = (
-            ("get_attribute_list", "KMIP-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"),
-            ("get_constraints", "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS"),
-            ("reprovision", "KMIP-ELEM-OP-C2S-RE-PROVISION"),
-            ("reprovision_with_options", "KMIP-ELEM-OP-C2S-RE-PROVISION"),
-            ("rng_retrieve", "KMIP-ELEM-OP-C2S-RNG-RETRIEVE"),
-            ("rng_seed", "KMIP-ELEM-OP-C2S-RNG-SEED"),
-            ("set_constraints", "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS"),
-            ("set_defaults", "KMIP-ELEM-OP-C2S-SET-DEFAULTS"),
+            ("get_attribute_list", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"),
+            ("get_constraints", "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"),
+            ("reprovision", "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"),
+            ("reprovision_with_options", "KMIPKIT-ELEM-OP-C2S-RE-PROVISION"),
+            ("rng_retrieve", "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"),
+            ("rng_seed", "KMIPKIT-ELEM-OP-C2S-RNG-SEED"),
+            ("set_constraints", "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS"),
+            ("set_defaults", "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS"),
         )
         declarations = {
             (row["packageId"], row["exportName"]): row
@@ -4929,7 +4929,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
         self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual("KMIP-ELEM-OP-C2S-SET-CONSTRAINTS", declaration["capabilityId"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", declaration["capabilityId"])
         self.assertEqual(
             {
                 "rust": {
@@ -4962,12 +4962,12 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-CHECK"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-CHECK"
         )
 
         self.assertEqual("kmipkit::ClientRequest::Check", declaration["exportName"])
         self.assertEqual("verified", declaration["declarationState"])
-        self.assertEqual("KMIP-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-CHECK", declaration["capabilityId"])
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
             {
@@ -5002,13 +5002,13 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-OBTAIN-LEASE"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
         )
 
         self.assertEqual("kmipkit::ClientRequest::obtain_lease", declaration["exportName"])
         self.assertEqual("verified", declaration["declarationState"])
         self.assertEqual(
-            "KMIP-ELEM-OP-C2S-OBTAIN-LEASE", declaration["capabilityId"]
+            "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE", declaration["capabilityId"]
         )
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
@@ -5044,7 +5044,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         operation = next(
             row
             for row in self.checked_in_manifest["operations"]
-            if row["operationId"] == "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
         )
 
         self.assertEqual(
@@ -5052,7 +5052,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual("verified", declaration["declarationState"])
         self.assertEqual(
-            "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION", declaration["capabilityId"]
+            "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", declaration["capabilityId"]
         )
         self.assertNotIn("candidateSpecId", declaration)
         self.assertEqual(
@@ -5223,18 +5223,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 expected_requirement_ids = [
                     requirement_id
                     for requirement_id in expected_requirement_ids
-                    if requirement_id != "KMIP-REQ-SPEC-6.1.28-007"
+                    if requirement_id != "KMIPKIT-REQ-SPEC-6.1.28-007"
                 ]
             elif variant == "Recertify":
                 # This discriminator carries the operation code, not request fields.
                 # Re-certify clauses remain attached to request surfaces and builders.
                 request_requirements = {
-                    "KMIP-REQ-SPEC-6.1.45-001",
-                    "KMIP-REQ-SPEC-6.1.45-002-001",
-                    "KMIP-REQ-SPEC-6.1.45-002-003",
-                    "KMIP-REQ-SPEC-6.1.45-004",
-                    "KMIP-REQ-SPEC-6.1.45-006-001",
-                    "KMIP-REQ-SPEC-6.1.45-008",
+                    "KMIPKIT-REQ-SPEC-6.1.45-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+                    "KMIPKIT-REQ-SPEC-6.1.45-004",
+                    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+                    "KMIPKIT-REQ-SPEC-6.1.45-008",
                 }
                 expected_requirement_ids = [
                     requirement_id
@@ -5699,7 +5699,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (
                 "rust-observed-4d05f9d9fc8377cd7a6f",
                 "kmipkit_client::ClientRequest::Check",
-                "KMIP-ELEM-OP-C2S-CHECK",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
                 "kmipkit_client_batch_item_check",
                 "org.kmipkit.extensions.ClientBatchItem.check",
                 "kmipkit.extensions.client_batch_item_check",
@@ -5707,7 +5707,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (
                 "rust-observed-12029d442c5430d1f445",
                 "kmipkit_client::ClientRequest::get_usage_allocation",
-                "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+                "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
                 "kmipkit_client_batch_item_get_usage_allocation",
                 "org.kmipkit.extensions.ClientBatchItem.getUsageAllocation",
                 "kmipkit.extensions.client_batch_item_get_usage_allocation",
@@ -5715,7 +5715,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             (
                 "rust-observed-1966bfc9acb5c4e64ccb",
                 "kmipkit_client::ClientRequest::obtain_lease",
-                "KMIP-ELEM-OP-C2S-OBTAIN-LEASE",
+                "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
                 "kmipkit_client_batch_item_obtain_lease",
                 "org.kmipkit.extensions.ClientBatchItem.obtainLease",
                 "kmipkit.extensions.client_batch_item_obtain_lease",
@@ -6005,7 +6005,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         self.assertEqual(transport["parityScope"], "rust-only-adr")
         self.assertEqual(transport["capabilityState"], "declared")
-        self.assertEqual(transport["ownerAdrId"], "the transport architecture decision")
+        self.assertEqual(transport["ownerAdrId"], "ADR-0014")
 
     def test_checked_in_manifest_maps_ttlv_item_type_macros_and_blocks_unversioned_fields(self) -> None:
         declarations = {
@@ -6610,8 +6610,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 self.assertEqual(
                     {item["capabilityId"] for item in lifecycle_mappings},
                     {
-                        "KMIP-ELEM-OP-C2S-ENCRYPT",
-                        "KMIP-ELEM-OP-C2S-DECRYPT",
+                        "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                        "KMIPKIT-ELEM-OP-C2S-DECRYPT",
                     },
                 )
                 self.assertIn("lifecycle counterpart", c_exclusions[symbol]["reason"])
@@ -6677,8 +6677,8 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 for item in rust_exclusions
             },
             {
-                "docs/architecture/overview.md",
-                "docs/architecture/public-api.md",
+                "docs/adr/0003-layered-cargo-workspace.md",
+                "docs/adr/0006-public-api-and-bindings.md",
                 "specs/022-object-lifecycle/spec.md",
                 "specs/029-opaque-object-context/spec.md",
                 "specs/010-profile-conformance/spec.md",
@@ -7791,10 +7791,10 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             }
             mappings["rust"] = {"packageId": package_id, "name": export_name}
             owner_requirements = {
-                "KMIP-ELEM-OP-C2S-REGISTER": [
+                "KMIPKIT-ELEM-OP-C2S-REGISTER": [
                     f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 9)
                 ],
-                "KMIP-ELEM-OP-C2S-REVOKE": [
+                "KMIPKIT-ELEM-OP-C2S-REVOKE": [
                     *(f"KMIPKIT-0036-FR-{number:03d}" for number in range(1, 7)),
                     "KMIPKIT-0036-FR-008",
                 ],

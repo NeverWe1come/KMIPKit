@@ -11,7 +11,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/022-object-lifecycle/spec.md"
 DECLARATION_ID = "rust-observed-d0317408cb64ea049eaf"
 EXPORT_NAME = "kmipkit_protocol::CertifyRequest::unique_identifier"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-CERTIFY"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_certify_request_identifier_member_mapping.py"
 
 
@@ -62,7 +62,7 @@ class T102CertifyRequestIdentifierMemberMappingTests(unittest.TestCase):
     def test_mapping_uses_the_approved_certify_source_and_existing_wire_case(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Certify | KMIP-ELEM-OP-C2S-CERTIFY | §6.1.6 | 179 | 180 | 181 |",
+            "| Certify | KMIPKIT-ELEM-OP-C2S-CERTIFY | §6.1.6 | 179 | 180 | 181 |",
             owner,
         )
         request_source = (ROOT / "crates/kmipkit-protocol/src/certify.rs").read_text(

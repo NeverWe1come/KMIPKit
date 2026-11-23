@@ -76,7 +76,7 @@ class SourceAuditTests(unittest.TestCase):
         second = audit_document(html, "KMIPKIT-SRC-spec")
         self.assertEqual(first, second)
         self.assertEqual([item["clause_id"] for item in first], [
-            "KMIP-CLAUSE-SPEC-4.2-001", "KMIP-CLAUSE-SPEC-4.2-002",
+            "KMIPKIT-CLAUSE-SPEC-4.2-001", "KMIPKIT-CLAUSE-SPEC-4.2-002",
         ])
 
     def test_ignores_base_links_and_external_resources_without_fetching(self) -> None:

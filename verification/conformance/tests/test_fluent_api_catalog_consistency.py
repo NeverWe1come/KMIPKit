@@ -39,7 +39,7 @@ class FluentApiCatalogConsistencyTests(unittest.TestCase):
             row["name"]: row["wire_value"]
             for row in self.base["elements"]
             if row.get("kind") == "enumeration_value"
-            and "KMIP-ELEM-ENUMERATION-OPERATION"
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION"
             in row.get("parent_element_ids", [])
         }
         expected_v21 = {

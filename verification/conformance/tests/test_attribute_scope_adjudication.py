@@ -22,17 +22,17 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
 
         self.assertIn(
-            "KMIP-REQ-SPEC-6.1.12-003",
-            reviews["KMIP-CLAUSE-SPEC-6.1.12-003"]["expected_client_requirement_ids"],
+            "KMIPKIT-REQ-SPEC-6.1.12-003",
+            reviews["KMIPKIT-CLAUSE-SPEC-6.1.12-003"]["expected_client_requirement_ids"],
         )
-        derive_key_members = reviews["KMIP-CLAUSE-SPEC-6.1.14-006"]["expected_client_requirement_ids"]
-        self.assertIn("KMIP-REQ-SPEC-6.1.14-010", derive_key_members)
-        self.assertNotIn("KMIP-REQ-SPEC-6.1.14-002", derive_key_members)
+        derive_key_members = reviews["KMIPKIT-CLAUSE-SPEC-6.1.14-006"]["expected_client_requirement_ids"]
+        self.assertIn("KMIPKIT-REQ-SPEC-6.1.14-010", derive_key_members)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.14-002", derive_key_members)
 
     def test_derive_key_attributes_requiredness_has_a_table_gap_crosswalk(self) -> None:
         catalog = _read(CATALOG_PATH)
         oracle = _read(ORACLE_PATH)
-        requirement_id = "KMIP-REQ-SPEC-6.1.14-007-001"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-007-001"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         crosswalk = [row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == requirement_id]
 
@@ -50,11 +50,11 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
     def test_derive_key_method_multiplicity_uses_the_accepted_client_interpretation(self) -> None:
         catalog = _read(CATALOG_PATH)
         oracle = _read(ORACLE_PATH)
-        requirement_id = "KMIP-REQ-SPEC-6.1.14-002"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-002"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.14-002"
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.14-002"
         )
 
         crosswalk = next(
@@ -82,11 +82,11 @@ class AttributeScopeAdjudicationTests(unittest.TestCase):
     def test_derive_key_method_evidence_stays_with_the_baseline_profile(self) -> None:
         catalog = _read(CATALOG_PATH)
         oracle = _read(ORACLE_PATH)
-        requirement_id = "KMIP-REQ-SPEC-6.1.14-002"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-002"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.14-002"
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.14-002"
         )
 
         self.assertEqual(requirement["role"], "client")

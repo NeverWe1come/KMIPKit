@@ -25,7 +25,7 @@ fn profile_object_state_debug_redacts_identifiers_and_asserted_facts() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn original_creation_date_context_allows_only_the_first_addition() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.38-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
     const OBJECT_ID: &str = "original-creation-date-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -82,8 +82,8 @@ fn original_creation_date_context_allows_only_the_first_addition() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn usage_limits_total_context_distinguishes_protection_from_count_allocation() {
-    const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
-    const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
+    const GENERAL_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const ALLOCATION_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
     const OBJECT_ID: &str = "usage-limits-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -172,7 +172,7 @@ fn usage_limits_total_context_distinguishes_protection_from_count_allocation() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn usage_limits_count_context_requires_the_existing_count_to_match() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
     const OBJECT_ID: &str = "usage-limits-count-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -318,7 +318,7 @@ fn client_response_operation_matches_the_operation_it_was_sent_for() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn original_creation_date_context_rejects_malformed_targets_and_non_add_changes() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.38-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
     const OBJECT_ID: &str = "original-creation-date-malformed-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -426,8 +426,8 @@ fn original_creation_date_context_rejects_malformed_targets_and_non_add_changes(
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn usage_limits_context_requires_known_protection_and_allocation_facts() {
-    const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
-    const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
+    const GENERAL_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const ALLOCATION_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
     const OBJECT_ID: &str = "usage-limits-unknown-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -522,7 +522,7 @@ fn usage_limits_context_requires_known_protection_and_allocation_facts() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn usage_limits_count_context_rejects_malformed_and_unknown_count_values() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
     const OBJECT_ID: &str = "usage-limits-malformed-count-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -860,8 +860,8 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
             &payload.view(),
             &matching_context,
             "profile-test",
-            "KMIP-REQ-SPEC-4.59-002",
-            "KMIP-CLAUSE-SPEC-4.59-002",
+            "KMIPKIT-REQ-SPEC-4.59-002",
+            "KMIPKIT-CLAUSE-SPEC-4.59-002",
             0
         )
         .is_ok()
@@ -880,8 +880,8 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
             &malformed_identifier.view(),
             &matching_context,
             "profile-test",
-            "KMIP-REQ-SPEC-4.59-002",
-            "KMIP-CLAUSE-SPEC-4.59-002",
+            "KMIPKIT-REQ-SPEC-4.59-002",
+            "KMIPKIT-CLAUSE-SPEC-4.59-002",
             0,
         )
         .expect_err("invalid identifiers cannot bind contextual object state");
@@ -895,8 +895,8 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
         &payload.view(),
         &crate::ProfileValidationContext::new(),
         "profile-test",
-        "KMIP-REQ-SPEC-4.59-002",
-        "KMIP-CLAUSE-SPEC-4.59-002",
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
         0,
     )
     .expect_err("the corresponding object state is required");
@@ -909,8 +909,8 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
         &crate::ProfileValidationContext::new()
             .with_object_state(0, crate::ProfileObjectState::new("different-object")),
         "profile-test",
-        "KMIP-REQ-SPEC-4.59-002",
-        "KMIP-CLAUSE-SPEC-4.59-002",
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
         0,
     )
     .expect_err("state bound to a different identifier cannot authorize the request");
@@ -996,9 +996,9 @@ fn usage_limits_state_helpers_reject_unbound_and_indeterminate_state() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.59 Tables 148–149.
 fn usage_limits_profile_context_rejects_malformed_or_unbound_mutations() {
-    const GENERAL_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-002";
-    const ALLOCATION_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-001";
-    const COUNT_REQUIREMENT: &str = "KMIP-REQ-SPEC-4.59-003-002";
+    const GENERAL_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-002";
+    const ALLOCATION_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
+    const COUNT_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
     const OBJECT_ID: &str = "usage-limits-malformed-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -1165,7 +1165,7 @@ fn obtain_lease_response_rule_rejects_ambiguous_batch_correlation() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn original_creation_date_context_rejects_unbound_and_duplicate_targets() {
-    const REQUIREMENT: &str = "KMIP-REQ-SPEC-4.38-003";
+    const REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-4.38-003";
     const OBJECT_ID: &str = "original-creation-date-unbound-context-test";
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
     const NEW_ATTRIBUTE: u32 = 0x0042_013D;
@@ -1244,72 +1244,72 @@ fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
     const TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned";
 
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.40-001-001",
-        "KMIP-CLAUSE-SPEC-4.40-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         "process_start_date_use_after_date_caller_asserted",
         TEST_ID,
         RuleTestKind::OptionalCapabilityUsable,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.40-001-002",
-        "KMIP-CLAUSE-SPEC-4.40-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "no_cryptographic_use_before_process_start_date_caller_asserted",
         TEST_ID,
         RuleTestKind::NegativeBehavior,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.40-001-003",
-        "KMIP-CLAUSE-SPEC-4.40-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         "process_start_date_may_equal_or_follow_activation_date_caller_asserted",
         TEST_ID,
         RuleTestKind::OptionalCapabilityUsable,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.40-001-004",
-        "KMIP-CLAUSE-SPEC-4.40-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "process_start_date_must_not_precede_activation_date_caller_asserted",
         TEST_ID,
         RuleTestKind::NegativeBehavior,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.40-001-005",
-        "KMIP-CLAUSE-SPEC-4.40-001",
+        "KMIPKIT-REQ-SPEC-4.40-001-005",
+        "KMIPKIT-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "process_start_date_immutable_after_occurrence_caller_asserted",
         TEST_ID,
         RuleTestKind::NegativeBehavior,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.41-001-001",
-        "KMIP-CLAUSE-SPEC-4.41-001",
+        "KMIPKIT-REQ-SPEC-4.41-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "no_cryptographic_protection_after_protect_stop_date_caller_asserted",
         TEST_ID,
         RuleTestKind::NegativeBehavior,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.41-001-002",
-        "KMIP-CLAUSE-SPEC-4.41-001",
+        "KMIPKIT-REQ-SPEC-4.41-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::OptionalCapability,
         "protect_stop_date_may_equal_or_precede_deactivation_date_caller_asserted",
         TEST_ID,
         RuleTestKind::OptionalCapabilityUsable,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.41-001-003",
-        "KMIP-CLAUSE-SPEC-4.41-001",
+        "KMIPKIT-REQ-SPEC-4.41-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "protect_stop_date_must_not_follow_deactivation_date_caller_asserted",
         TEST_ID,
         RuleTestKind::NegativeBehavior,
     );
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.41-001-004",
-        "KMIP-CLAUSE-SPEC-4.41-001",
+        "KMIPKIT-REQ-SPEC-4.41-001-004",
+        "KMIPKIT-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "protect_stop_date_immutable_after_occurrence_caller_asserted",
         TEST_ID,
@@ -1320,7 +1320,7 @@ fn profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned() {
 #[test]
 // OASIS KMIP Specification v2.1 §4.57 paragraph 2.
 fn server_only_pre_active_use_prohibition_is_not_a_client_rule() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.57-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-002";
 
     assert!(
         CLIENT_REQUIREMENTS
@@ -1348,15 +1348,15 @@ fn simple_typed_rule_mapping_defaults_gap_and_evaluator_to_absent() {
     }];
 
     let mapping = super::super::typed_rule_mapping_without_evaluator(
-        "KMIP-REQ-SPEC-TEST-001",
-        "KMIP-CLAUSE-SPEC-TEST-001",
+        "KMIPKIT-REQ-SPEC-TEST-001",
+        "KMIPKIT-CLAUSE-SPEC-TEST-001",
         super::GeneratedVerificationCategory::OptionalCapability,
         TEST_EVIDENCE,
         CONSTRAINTS,
     );
 
-    assert_eq!(mapping.requirement_id, "KMIP-REQ-SPEC-TEST-001");
-    assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-TEST-001");
+    assert_eq!(mapping.requirement_id, "KMIPKIT-REQ-SPEC-TEST-001");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-TEST-001");
     assert_eq!(mapping.source_gap_id, None);
     assert_eq!(
         mapping.verification_category,

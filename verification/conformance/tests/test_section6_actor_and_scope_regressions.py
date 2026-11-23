@@ -16,34 +16,34 @@ FIXTURE_PATH = ROOT / "verification/conformance/tests/fixtures/profile-closure-v
 SOURCE_PATH = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 FALSE_CLIENT_CANDIDATES = {
-    "KMIP-REQ-SPEC-6.1.44-001": "KMIP-CLAUSE-SPEC-6.1.44-001",
-    "KMIP-REQ-SPEC-6.1.45-002-002": "KMIP-CLAUSE-SPEC-6.1.45-002",
-    "KMIP-REQ-SPEC-6.1.45-006-002": "KMIP-CLAUSE-SPEC-6.1.45-006",
+    "KMIPKIT-REQ-SPEC-6.1.44-001": "KMIPKIT-CLAUSE-SPEC-6.1.44-001",
+    "KMIPKIT-REQ-SPEC-6.1.45-002-002": "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+    "KMIPKIT-REQ-SPEC-6.1.45-006-002": "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
 }
 
 VALIDATE_CANDIDATES = {
-    "KMIP-REQ-SPEC-6.1.57-001": "KMIP-CLAUSE-SPEC-6.1.57-001",
-    "KMIP-REQ-SPEC-6.1.57-002-001": "KMIP-CLAUSE-SPEC-6.1.57-002",
-    "KMIP-REQ-SPEC-6.1.57-002-002": "KMIP-CLAUSE-SPEC-6.1.57-002",
-    "KMIP-REQ-SPEC-6.1.57-004": "KMIP-CLAUSE-SPEC-6.1.57-004",
-    "KMIP-REQ-SPEC-6.1.57-005": "KMIP-CLAUSE-SPEC-6.1.57-005",
+    "KMIPKIT-REQ-SPEC-6.1.57-001": "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-001": "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-002": "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+    "KMIPKIT-REQ-SPEC-6.1.57-004": "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
+    "KMIPKIT-REQ-SPEC-6.1.57-005": "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
 }
 
 VALIDATE_LOCATORS = {
-    "KMIP-CLAUSE-SPEC-6.1.57-001": [36998, 37000],
-    "KMIP-CLAUSE-SPEC-6.1.57-002": [37002, 37006],
-    "KMIP-CLAUSE-SPEC-6.1.57-004": [37044, 37060],
-    "KMIP-CLAUSE-SPEC-6.1.57-005": [37062, 37079],
-    "KMIP-CLAUSE-SPEC-6.1.57-006": [37081, 37099],
+    "KMIPKIT-CLAUSE-SPEC-6.1.57-001": [36998, 37000],
+    "KMIPKIT-CLAUSE-SPEC-6.1.57-002": [37002, 37006],
+    "KMIPKIT-CLAUSE-SPEC-6.1.57-004": [37044, 37060],
+    "KMIPKIT-CLAUSE-SPEC-6.1.57-005": [37062, 37079],
+    "KMIPKIT-CLAUSE-SPEC-6.1.57-006": [37081, 37099],
 }
 
 VALIDATE_KEYWORDS = {
-    "KMIP-REQ-SPEC-6.1.57-001": "SHALL",
-    "KMIP-REQ-SPEC-6.1.57-002-001": "MAY",
-    "KMIP-REQ-SPEC-6.1.57-002-002": "MAY",
-    "KMIP-REQ-SPEC-6.1.57-004": "MAY",
-    "KMIP-REQ-SPEC-6.1.57-005": "MAY",
-    "KMIP-REQ-SPEC-6.1.57-006": "SHALL",
+    "KMIPKIT-REQ-SPEC-6.1.57-001": "SHALL",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-001": "MAY",
+    "KMIPKIT-REQ-SPEC-6.1.57-002-002": "MAY",
+    "KMIPKIT-REQ-SPEC-6.1.57-004": "MAY",
+    "KMIPKIT-REQ-SPEC-6.1.57-005": "MAY",
+    "KMIPKIT-REQ-SPEC-6.1.57-006": "SHALL",
 }
 
 
@@ -110,9 +110,9 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 self.assertIn("reject", rejections[requirement_id]["expected_disposition"])
 
     def test_import_and_encrypt_actor_dispositions_remain_explicit(self) -> None:
-        import_id = "KMIP-REQ-SPEC-6.1.25-001"
+        import_id = "KMIPKIT-REQ-SPEC-6.1.25-001"
         import_requirement = self.requirements[import_id]
-        import_review = self.reviews["KMIP-CLAUSE-SPEC-6.1.25-001"]
+        import_review = self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]
         import_atoms = {
             atom["source_keyword"]: atom
             for atom in import_review["source_obligations"]
@@ -136,9 +136,9 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
             )
         )
 
-        encrypt_id = "KMIP-REQ-SPEC-6.1.17-005-001"
+        encrypt_id = "KMIPKIT-REQ-SPEC-6.1.17-005-001"
         encrypt_requirement = self.requirements[encrypt_id]
-        encrypt_review = self.reviews["KMIP-CLAUSE-SPEC-6.1.17-005"]
+        encrypt_review = self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.17-005"]
         self.assertNotIn(encrypt_id, self.crosswalk_ids)
         self.assertNotIn(encrypt_id, self.client_profile_ids)
         self.assertEqual(encrypt_requirement["role"], "not_applicable")
@@ -184,8 +184,8 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 self.assertEqual(requirement["scope_state"], "client_1_0")
 
     def test_validate_feature_scope_does_not_attribute_passive_shall(self) -> None:
-        requirement_id = "KMIP-REQ-SPEC-6.1.57-006"
-        clause_id = "KMIP-CLAUSE-SPEC-6.1.57-006"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-006"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.57-006"
         requirement = self.requirements[requirement_id]
         clause = next(
             row for row in self.catalog["source_clauses"] if row["clause_id"] == clause_id
@@ -223,13 +223,13 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
                 self.assertEqual(review["html_line_range"], line_range)
                 self.assertEqual(review["source_excerpt"], pinned_excerpt(line_range))
                 self.assertEqual(review["source_locator"], clauses[clause_id]["locator"])
-        self.assertIn("No, MAY be repeated", self.reviews["KMIP-CLAUSE-SPEC-6.1.57-004"]["source_excerpt"])
-        self.assertIn("No, MAY be repeated", self.reviews["KMIP-CLAUSE-SPEC-6.1.57-005"]["source_excerpt"])
-        self.assertIn("If omitted, the current date and time SHALL be assumed", self.reviews["KMIP-CLAUSE-SPEC-6.1.57-006"]["source_excerpt"])
+        self.assertIn("No, MAY be repeated", self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-004"]["source_excerpt"])
+        self.assertIn("No, MAY be repeated", self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-005"]["source_excerpt"])
+        self.assertIn("If omitted, the current date and time SHALL be assumed", self.reviews["KMIPKIT-CLAUSE-SPEC-6.1.57-006"]["source_excerpt"])
 
     def test_required_yes_payload_gaps_preserve_client_direction_and_scope(self) -> None:
         expected = {
-            "KMIP-REQ-SPEC-6.1.14-007-001": (
+            "KMIPKIT-REQ-SPEC-6.1.14-007-001": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",
                 [25980, 26001],
                 "include the desired Attributes in the Derive Key request",
@@ -258,7 +258,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
     def test_required_usage_count_table_contract_preserves_client_direction_and_scope(self) -> None:
         """The moved Table 232 row retains its actor, requiredness, and client scope."""
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"
-        requirement_id = "KMIP-REQ-SPEC-6.1.23-002-001"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.23-002-001"
         contract = next(
             row for row in self.fixture["source_table_contracts"] if row["gap_id"] == gap_id
         )
@@ -283,7 +283,7 @@ class SectionSixActorAndScopeRegressionTests(unittest.TestCase):
         self.assertEqual(contract["requiredness"], "Yes")
         self.assertEqual(contract["contract_kind"], "operation_request_table_field")
         self.assertEqual(
-            contract["operation_element_id"], "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+            contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
         )
 
 

@@ -5194,7 +5194,7 @@ impl ProfileExchangeValidator for ProfileValidationResult {
     fn includes_original_creation_date_rule(&self) -> bool {
         self.requirement_ids()
             .iter()
-            .any(|id| id == "KMIP-REQ-SPEC-4.38-003")
+            .any(|id| id == "KMIPKIT-REQ-SPEC-4.38-003")
     }
 
     fn validate_response(

@@ -11,7 +11,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/028-diagnostics-interop/spec.md"
 DECLARATION_ID = "rust-observed-326a5a1e346eb2a8787e"
 EXPORT_NAME = "kmipkit_protocol::InteropRequest::interop_function"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-INTEROP"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-INTEROP"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_interop_function_member_mapping.py"
 
 
@@ -60,7 +60,7 @@ class T102InteropFunctionMemberMappingTests(unittest.TestCase):
     def test_mapping_is_grounded_in_the_approved_table_and_open_value_test(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Interop | KMIP-ELEM-OP-C2S-INTEROP | §6.1.26 | 241 | 242 | 243 |",
+            "| Interop | KMIPKIT-ELEM-OP-C2S-INTEROP | §6.1.26 | 241 | 242 | 243 |",
             owner,
         )
         protocol_source = (ROOT / "crates/kmipkit-protocol/src/interop.rs").read_text(

@@ -167,13 +167,13 @@ const ISSUER_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B1;
 const SUBJECT_ALTERNATIVE_NAME_TAG: u32 = 0x0042_00B3;
 const SUBJECT_DISTINGUISHED_NAME_TAG: u32 = 0x0042_00B4;
 const VALIDITY_DATE_TAG: u32 = 0x0042_009A;
-const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-006-002";
-const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-006";
+const DERIVE_KEY_ID_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-002";
+const DERIVE_KEY_ID_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-006";
 const DERIVE_KEY_ID_PLACEHOLDER_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-const DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-006-001";
-const DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-010";
-const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.16-002";
-const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.16-002";
+const DERIVE_KEY_REPEATED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-006-001";
+const DERIVE_KEY_REQUIRED_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-010";
+const VARIABLE_IV_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-002";
+const VARIABLE_IV_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-002";
 const REGISTER_OPERATION_TAG: u32 = 0x0000_0003;
 const DERIVE_KEY_OPERATION: u32 = 0x0000_0005;
 const DERIVE_KEY_SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
@@ -1582,7 +1582,7 @@ fn response_message_with_operation_status(
 fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
     // KMIP Specification v2.1 §6.1.50 permits the server to ignore seed data;
     // the client SHALL NOT treat a successful zero Data Length as an error.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.50-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.50-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const RNG_SEED_OPERATION: u32 = 0x0000_0026;
     const DATA: u32 = 0x0042_00C2;
@@ -1604,7 +1604,7 @@ fn profile_accepts_rng_seed_response_when_server_uses_zero_seed_bytes() {
         .iter()
         .find(|requirement| requirement.requirement_id == REQUIREMENT_ID)
         .expect("the RNG Seed response requirement has generated metadata");
-    assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-6.1.50-001");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-6.1.50-001");
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::ProhibitedBehavior
@@ -1669,7 +1669,7 @@ fn profile_accepts_zero_length_rng_seed_response_after_batch_reordering() {
     const RNG_SEED_OPERATION: u32 = 0x0000_0026;
     const DATA: u32 = 0x0042_00C2;
     const DATA_LENGTH: u32 = 0x0042_00C4;
-    const RNG_SEED_REQUIREMENT: &str = "KMIP-REQ-SPEC-6.1.50-001";
+    const RNG_SEED_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-6.1.50-001";
 
     let request = request_message_with_two_operation_payloads(
         RNG_SEED_OPERATION,
@@ -1857,7 +1857,7 @@ fn each_keyword_category_requires_the_matching_test_form() {
 
 #[test]
 fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.16-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -1914,7 +1914,7 @@ fn production_discover_versions_rule_accepts_only_kmip_21_offers() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-6.1.16-001")
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
     );
 
     let mixed_versions = request_message_with_operation_payload(
@@ -1929,8 +1929,8 @@ fn profile_maps_required_discover_versions_preference_order_for_single_supported
     // KMIP Specification v2.1 §6.1.16 paragraph 1 requires decreasing
     // preference order; KMIPKit 1.0 supports only KMIP 2.1, so its singleton
     // list satisfies the ordering rule without claiming general sorting.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.16-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.16-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.16-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -1978,8 +1978,8 @@ fn profile_maps_derive_key_source_eligibility_as_caller_responsibility() {
     // KMIP Specification v2.1 §6.1.14 requires the source Managed Object's
     // Cryptographic Usage Mask to include Derive Key. The request model only
     // carries caller-selected source identifiers and cannot inspect server state.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DERIVE_KEY_REQUEST_TEST_ID: &str = "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers";
 
@@ -2267,8 +2267,8 @@ fn profile_maps_derive_key_unique_identifiers_rejects_missing_request_context() 
 fn profile_maps_required_derive_key_cryptographic_length() {
     // KMIP Specification v2.1 §6.1.14 Table 205 requires the desired output
     // length; §4.15 Table 57 defines Cryptographic Length as an Integer.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -2326,8 +2326,8 @@ fn profile_maps_required_derive_key_cryptographic_length() {
 fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
     // KMIP Specification v2.1 §6.1.14 requires Cryptographic Algorithm when
     // Derive Key creates a key; this condition does not apply to Secret Data.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -2406,8 +2406,8 @@ fn profile_maps_required_derive_key_cryptographic_algorithm_for_key_results() {
 fn profile_maps_required_derive_key_symmetric_output_attributes() {
     // KMIP Specification v2.1 §6.1.14 Table 205 requires both Cryptographic
     // Length and Cryptographic Algorithm when Derive Key creates a Symmetric Key.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-007-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-007";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-007-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -2510,7 +2510,7 @@ fn profile_maps_required_derive_key_symmetric_output_attributes() {
 #[test]
 fn profile_maps_required_derive_key_object_type() {
     // KMIP Specification v2.1 §6.1.14 Table 205 marks Object Type required.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-009";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -2594,7 +2594,7 @@ fn profile_maps_required_derive_key_object_type() {
 #[test]
 fn profile_maps_required_derive_key_derivation_method() {
     // KMIP Specification v2.1 §6.1.14 Table 205 marks Derivation Method required.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-011";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-011";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -2680,7 +2680,7 @@ fn profile_maps_required_derive_key_derivation_method() {
 #[test]
 fn profile_maps_required_derive_key_parameters() {
     // KMIP Specification v2.1 §6.1.14 Table 205 marks Derivation Parameters required.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-012";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-012";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PBKDF2_METHOD: u32 = 1;
     const FUTURE_METHOD: u32 = 0xF123_4567;
@@ -2788,8 +2788,8 @@ fn profile_maps_required_derive_key_parameters() {
 #[test]
 fn profile_maps_derive_key_prf_parameters_with_source_condition() {
     // KMIP Specification v2.1 §7.12 explicitly requires a Hashing Algorithm for HASH.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.12-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.12-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const HASH_METHOD: u32 = 2;
     const HMAC_METHOD: u32 = 3;
@@ -2870,8 +2870,8 @@ fn profile_maps_derive_key_prf_parameters_with_source_condition() {
 
 #[test]
 fn profile_rejects_hash_derivation_without_one_hashing_algorithm() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.12-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.12-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const HASH_METHOD: u32 = 2;
     const SHA_256: u32 = 6;
@@ -2946,8 +2946,8 @@ fn profile_rejects_hash_derivation_without_one_hashing_algorithm() {
 fn profile_maps_optional_derive_key_input_forms() {
     // KMIP Specification v2.1 §7.12 permits either input form; §4.58 Table 145
     // permits Text String, Enumeration, and Integer Unique Identifier encodings.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.12-005-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.12-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const HMAC_METHOD: u32 = 3;
 
@@ -3040,7 +3040,7 @@ fn profile_maps_optional_derive_key_input_forms() {
 fn profile_maps_table_145_unique_identifier_encodings_for_derive_key() {
     // KMIP Specification v2.1 §4.58 Table 145 permits Text String, Enumeration,
     // or Integer for Unique Identifier. The preceding test covers Text String.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.12-005-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const HMAC_METHOD: u32 = 3;
 
@@ -3071,8 +3071,8 @@ fn profile_maps_table_145_unique_identifier_encodings_for_derive_key() {
 
 #[test]
 fn profile_rejects_non_table_145_unique_identifier_encoding() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.12-005-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.12-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.12-005-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.12-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const HMAC_METHOD: u32 = 3;
 
@@ -3109,8 +3109,8 @@ fn profile_rejects_non_table_145_unique_identifier_encoding() {
 #[test]
 fn profile_maps_optional_asynchronous_indicator_capability() {
     // KMIP Specification v2.1 §8 permits capable clients to signal asynchronous-response support.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8-003-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-003-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -3163,7 +3163,7 @@ fn profile_maps_optional_asynchronous_indicator_capability() {
 #[test]
 fn profile_maps_required_derive_key_attributes() {
     // KMIP Specification v2.1 §6.1.14 Table 205 requires Attributes; §5.1 defines its Structure.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-007-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-007-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -3243,8 +3243,8 @@ fn profile_maps_required_derive_key_attributes() {
 fn profile_maps_client_optional_derive_key_secret_data_total_length() {
     // KMIP Specification v2.1 §6.1.14 permits deriving multiple keys and IVs
     // through a Secret Data result whose Cryptographic Length is the total.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-001-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.14-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.14-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -3336,8 +3336,8 @@ fn profile_maps_client_optional_derive_key_secret_data_total_length() {
 
 #[test]
 fn profile_maps_required_ttlv_text_and_byte_string_padding() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-10.1.5-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-10.1.5-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-10.1.5-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-10.1.5-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     assert_required_configuration_mapping(
@@ -3409,31 +3409,31 @@ fn profile_maps_required_ttlv_structure_order_and_numeric_padding() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let expected_mappings: &[(&str, &str, &[&str])] = &[
         (
-            "KMIP-REQ-SPEC-10.1.2-001",
-            "KMIP-CLAUSE-SPEC-10.1.2-001",
+            "KMIPKIT-REQ-SPEC-10.1.2-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
             &[
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::structure_preserves_child_order_and_repeated_tags",
                 "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_a_device_identifier_field_in_device_credentials",
             ],
         ),
         (
-            "KMIP-REQ-SPEC-10.1.2-002-001",
-            "KMIP-CLAUSE-SPEC-10.1.2-002",
+            "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
             &[
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::big_integer_padding_is_minimal_and_sign_extended",
             ],
         ),
         (
-            "KMIP-REQ-SPEC-10.1.2-002-002",
-            "KMIP-CLAUSE-SPEC-10.1.2-002",
+            "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
             &[
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
             ],
         ),
         (
-            "KMIP-REQ-SPEC-10.1.5-001-002",
-            "KMIP-CLAUSE-SPEC-10.1.5-001",
+            "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
             &[
                 "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
             ],
@@ -3467,21 +3467,21 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let expected_mappings: &[(&str, &[&str])] = &[
         (
-            "KMIP-REQ-SPEC-10.4-001-001",
+            "KMIPKIT-REQ-SPEC-10.4-001-001",
             &[
                 "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
                 "crates/kmipkit-transport/tests/https.rs::https_default_target_posts_exact_bytes_with_required_headers_and_zeroizes_on_success",
             ],
         ),
         (
-            "KMIP-REQ-SPEC-10.4-001-002",
+            "KMIPKIT-REQ-SPEC-10.4-001-002",
             &[
                 "crates/kmipkit-transport/tests/tls_integrity.rs::raw_tls_rejects_a_tampered_post_handshake_application_record",
                 "crates/kmipkit-transport/tests/tls_integrity.rs::https_invalidates_a_connection_after_a_tampered_post_handshake_application_record",
             ],
         ),
         (
-            "KMIP-REQ-SPEC-10.4-001-003",
+            "KMIPKIT-REQ-SPEC-10.4-001-003",
             &[
                 "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_sends_exact_bytes_over_tls13_mtls_and_closes_after_one_frame",
                 "crates/kmipkit-transport/tests/raw_tls.rs::raw_tls_rejects_unknown_server_ca",
@@ -3494,7 +3494,7 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
     for (requirement_id, expected_test_ids) in expected_mappings {
         assert_required_configuration_mapping(
             requirement_id,
-            "KMIP-CLAUSE-SPEC-10.4-001",
+            "KMIPKIT-CLAUSE-SPEC-10.4-001",
             "transport_security",
             "tls13",
             expected_test_ids,
@@ -3520,8 +3520,8 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
     // extension tags start with 0x54. Applicability is mapped by DEC-018.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-11.56-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-11.56-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11.56-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11.56-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -3562,8 +3562,8 @@ fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
 #[test]
 fn profile_maps_reserved_tag_prohibition_for_outbound_requests() {
     // KMIP Specification v2.1 §11 prohibits using Tag Values marked Reserved.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-11-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-11-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -3636,7 +3636,7 @@ fn derive_key_parameters_payload(method: u32, parameters: Value) -> Structure {
 }
 
 fn assert_required_derive_key_parameters_mapping_is_traceable() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.14-012";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.14-012";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -3678,8 +3678,8 @@ fn assert_symmetric_derive_key_payload_rejected(
     assert_request_rejected_for_requirement(
         result,
         &request,
-        "KMIP-REQ-SPEC-6.1.14-007-002",
-        "KMIP-CLAUSE-SPEC-6.1.14-007",
+        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
         reason,
     );
 }
@@ -3710,7 +3710,7 @@ fn assert_derivation_parameters_request_rejected(
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
-    assert_eq!(error.requirement_id(), Some("KMIP-REQ-SPEC-6.1.14-012"));
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-6.1.14-012"));
     assert_eq!(error.source_clause_id(), None);
     assert_eq!(
         error.source_gap_id(),
@@ -3720,8 +3720,8 @@ fn assert_derivation_parameters_request_rejected(
 
 #[test]
 fn result_message_client_access_has_an_optional_typed_rule() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.17-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.17-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.17-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.17-001";
 
     // OASIS KMIP Specification v2.1 §9.17 Result Message optional capability rule.
     let mapping = TYPED_RULE_MAPPINGS
@@ -3800,9 +3800,9 @@ fn profile_maps_application_specific_information_request_shapes() {
     let mapping = application_specific_information_mapping();
     let requirement = CLIENT_REQUIREMENTS
         .iter()
-        .find(|requirement| requirement.requirement_id == "KMIP-REQ-SPEC-4.4-001")
+        .find(|requirement| requirement.requirement_id == "KMIPKIT-REQ-SPEC-4.4-001")
         .expect("Application Specific Information omission resolves to metadata");
-    assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-4.4-001");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.4-001");
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::OptionalCapability
@@ -4014,14 +4014,14 @@ const APPLICATION_SPECIFIC_INFORMATION_OPERATIONS: &[(u32, &[u32])] = &[
 fn application_specific_information_mapping() -> &'static TypedRuleMapping {
     TYPED_RULE_MAPPINGS
         .iter()
-        .find(|mapping| mapping.requirement_id == "KMIP-REQ-SPEC-4.4-001")
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-4.4-001")
         .expect("Application Specific Information has a typed profile rule")
 }
 
 fn application_information_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
-        requirement_ids: vec!["KMIP-REQ-SPEC-4.4-001".to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-4.4-001".to_owned()],
     }
 }
 
@@ -4032,8 +4032,8 @@ fn assert_application_information_request_rejected(
     assert_request_rejected_for_requirement(
         &application_information_profile_result(),
         request,
-        "KMIP-REQ-SPEC-4.4-001",
-        "KMIP-CLAUSE-SPEC-4.4-001",
+        "KMIPKIT-REQ-SPEC-4.4-001",
+        "KMIPKIT-CLAUSE-SPEC-4.4-001",
         expected_reason,
     );
 }
@@ -4104,8 +4104,8 @@ fn profile_maps_requested_key_format_for_server_generated_material_operations() 
     // KMIP Specification v2.1 §4.26 Table 79 permits a client to request the
     // output Key Format Type in each operation that generates material. Table
     // 80 defines the attribute as single-instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.26-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.26-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.26-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.26-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_OPERATION: u32 = 0x0000_0001;
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
@@ -4253,8 +4253,8 @@ fn request_with_key_format_pair_attributes(operation: u32) -> crate::RequestMess
 #[test]
 fn profile_maps_request_batch_item_repetition_as_optional_capability() {
     // KMIP Specification v2.1 §8.1 Table 394 allows Request Batch Item to repeat.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8.1-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8.1-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.1-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.1-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -4305,8 +4305,8 @@ fn profile_maps_request_batch_item_repetition_as_optional_capability() {
 #[test]
 fn profile_maps_multiple_client_operations_in_one_batch_as_optional_capability() {
     // KMIP Specification v2.1 §6.1 permits multiple operations in one batch.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const FIRST_OPERATION: u32 = REGISTER_OPERATION_TAG;
     const SECOND_OPERATION: u32 = GET_OPERATION;
@@ -4390,8 +4390,8 @@ fn profile_maps_multiple_client_operations_in_one_batch_as_optional_capability()
 fn profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability() {
     // KMIP Specification v2.1 §7.18 Table 370 permits repeated Attribute Name
     // Text Strings in Get (§6.1.19) and Export (§6.1.18) wrapping requests.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.18-006";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.18-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-006";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_get_and_export_wrapping_attribute_names_as_optional_capability";
 
@@ -4529,8 +4529,8 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
     // KMIP Specification v2.1 §4 permits multiple instances for attributes
     // marked multi-instance; §4.32 Table 94 marks Name as multi-instance.
     // §6.1.20 Tables 223–224 define the Get Attributes request/response shape.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_multi_instance_attribute_representation_as_optional_capability";
     const NAME_TAG: u32 = 0x0042_0053;
@@ -4593,8 +4593,8 @@ fn profile_maps_multi_instance_attribute_representation_as_optional_capability()
 fn profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior() {
     // KMIP Specification v2.1 §4 says instances of an attribute SHOULD have
     // different values; §4.32 Table 94 permits multiple Name instances.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior";
     const NAME_VALUE_TAG: u32 = 0x0042_0055;
@@ -4660,8 +4660,8 @@ fn profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior
 fn profile_maps_single_instance_attributes_as_required_behavior() {
     // KMIP Specification v2.1 §4 defines single-instance attributes; Table 46
     // marks Comment as single-instance, and §6.1.20 Table 224 returns attributes.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_instance_attributes_as_required_behavior";
     const COMMENT_TAG: u32 = 0x0042_00FD;
@@ -4716,7 +4716,7 @@ fn profile_maps_single_instance_attributes_as_required_behavior() {
 #[test]
 fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_response() {
     // KMIP Specification v2.1 §4 and Table 46 limit Comment to one instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const COMMENT_TAG: u32 = 0x0042_00FD;
 
@@ -4750,7 +4750,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_get_attributes_respons
 fn profile_rejects_repeated_single_instance_attributes_in_export_response() {
     // KMIP Specification v2.1 §4/Table 46 and §6.1.18 Table 218 include the
     // returned object's Attributes in an Export response.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -4799,7 +4799,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_export_response() {
 fn profile_rejects_repeated_single_instance_attributes_in_export_key_value() {
     // KMIP Specification v2.1 §3.2 Table 13 permits Attributes in Key Value;
     // §4 Table 46 makes Comment single-instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -4850,7 +4850,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_export_key_value() {
 #[test]
 fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
     // KMIP Specification v2.1 §4 and Table 46 make Comment single-instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
     const COMMENT_TAG: u32 = 0x0042_00FD;
@@ -4884,7 +4884,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_create_request() {
 #[test]
 fn profile_accepts_valid_single_instance_attribute_in_create_request() {
     // KMIP Specification v2.1 §4 and Table 46 permit one Comment instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
     const COMMENT_TAG: u32 = 0x0042_00FD;
@@ -4915,7 +4915,7 @@ fn profile_accepts_valid_single_instance_attribute_in_create_request() {
 fn profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_requests() {
     // KMIP Specification v2.1 §4 and Table 46 limit Comment to one instance.
     // The operation tables carry object attributes in each listed request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTES: u32 = 0x0042_0125;
     const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
@@ -5007,7 +5007,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_all_object_attribute_r
 fn profile_rejects_repeated_single_instance_attributes_in_nested_key_value_groups() {
     // KMIP Specification v2.1 §3.2 Table 13 permits an Attributes group in
     // Key Value; §4 Table 46 makes Comment single-instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const KEY_BLOCK: u32 = 0x0042_0040;
     const KEY_VALUE: u32 = 0x0042_0045;
@@ -5111,7 +5111,7 @@ fn profile_rejects_repeated_single_instance_attributes_in_nested_key_value_group
 fn profile_rejects_repeated_conditional_dsa_without_object_context() {
     // KMIP Specification v2.1 §4 Table 72 permits repeated values only for
     // PGP Key Object Type; a Certificate without X.509 context is undecided.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
 
@@ -5146,7 +5146,7 @@ fn profile_rejects_repeated_conditional_dsa_without_object_context() {
 fn profile_rejects_repeated_dsa_for_pgp_certificate_context() {
     // Table 41 scopes Certificate Type to Certificate objects; Table 72's
     // repeated-value exception names PGP Key Object Type only.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
     const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
@@ -5183,7 +5183,7 @@ fn profile_rejects_repeated_dsa_for_pgp_certificate_context() {
 fn profile_accepts_repeated_dsa_for_pgp_key_object_type() {
     // Specification §4.22 Table 72 permits repeated Digital Signature
     // Algorithm for PGP Key objects.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DIGITAL_SIGNATURE_ALGORITHM_TAG: u32 = 0x0042_00AE;
     const IMPORT_OPERATION: u32 = 0x0000_002A;
@@ -5214,7 +5214,7 @@ fn profile_accepts_repeated_dsa_for_pgp_key_object_type() {
 fn profile_requires_get_and_export_wrapping_key_information_pairing() {
     // KMIP Specification v2.1 §6.1.18 gives Export the same wrapping
     // semantics as Get; §7.18 Table 370 requires at least one key-info field.
-    const REQUIREMENT_IDS: [&str; 2] = ["KMIP-REQ-SPEC-7.18-004", "KMIP-REQ-SPEC-7.18-005"];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-7.18-004", "KMIPKIT-REQ-SPEC-7.18-005"];
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     let no_key_information = get_request_with_wrapping_key_information(false, false);
     let encryption_only = get_request_with_wrapping_key_information(true, false);
@@ -5281,8 +5281,8 @@ fn profile_requires_get_and_export_wrapping_key_information_pairing() {
         &malformed_export_wrapping_specification,
     ];
     for (requirement_id, source_clause_id) in [
-        (REQUIREMENT_IDS[0], "KMIP-CLAUSE-SPEC-7.18-004"),
-        (REQUIREMENT_IDS[1], "KMIP-CLAUSE-SPEC-7.18-005"),
+        (REQUIREMENT_IDS[0], "KMIPKIT-CLAUSE-SPEC-7.18-004"),
+        (REQUIREMENT_IDS[1], "KMIPKIT-CLAUSE-SPEC-7.18-005"),
     ] {
         assert_wrapping_key_information_mapping(
             requirement_id,
@@ -5346,8 +5346,8 @@ fn assert_wrapping_key_information_mapping(
 fn profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specification() {
     // KMIP Specification v2.1 §7.18 requires this structure when the client
     // requests a wrapped key; Get and Export make it optional otherwise.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.18-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.18-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.18-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.18-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -5422,19 +5422,19 @@ fn profile_maps_get_and_export_wrapped_key_requests_to_key_wrapping_specificatio
 
 const GET_RETURN_OPTION_REQUIREMENTS: [(&str, &str); 4] = [
     (
-        "KMIP-REQ-SPEC-6.1.19-003",
+        "KMIPKIT-REQ-SPEC-6.1.19-003",
         "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
     ),
     (
-        "KMIP-REQ-SPEC-6.1.19-004",
+        "KMIPKIT-REQ-SPEC-6.1.19-004",
         "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
     ),
     (
-        "KMIP-REQ-SPEC-6.1.19-005",
+        "KMIPKIT-REQ-SPEC-6.1.19-005",
         "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
     ),
     (
-        "KMIP-REQ-SPEC-6.1.19-006",
+        "KMIPKIT-REQ-SPEC-6.1.19-006",
         "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
     ),
 ];
@@ -5519,7 +5519,7 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
             tagged(0x0042_0042, Value::text_string("raw-text".to_owned())),
         ]),
     );
-    assert!(!get_return_option_evaluator("KMIP-REQ-SPEC-6.1.19-003")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-003")(
         Some(&malformed_key_format),
         None
     ));
@@ -5536,7 +5536,7 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
             tagged(0x0042_00F8, Value::enumeration(2)),
         ]),
     );
-    assert!(!get_return_option_evaluator("KMIP-REQ-SPEC-6.1.19-004")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-004")(
         Some(&duplicate_key_wrap_type),
         None
     ));
@@ -5555,7 +5555,7 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
             ),
         ]),
     );
-    assert!(!get_return_option_evaluator("KMIP-REQ-SPEC-6.1.19-006")(
+    assert!(!get_return_option_evaluator("KMIPKIT-REQ-SPEC-6.1.19-006")(
         Some(&malformed_wrapping_specification),
         None
     ));
@@ -5570,7 +5570,7 @@ fn assert_get_return_option_rejections(result: &ProfileValidationResult) {
 fn profile_maps_get_and_export_key_format_client_assumption() {
     // KMIP Specification v2.1 §6.1.19 makes the same-as-registered format a
     // client assumption; §6.1.18 applies it to Export as well.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.19-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.19-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;
 
@@ -5684,8 +5684,8 @@ fn profile_maps_optional_get_return_format_controls() {
 #[test]
 fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
     // KMIP Specification v2.1 §8.2 Table 395 permits Attestation Type to repeat.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8.2-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8.2-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.2-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.2-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -5729,8 +5729,8 @@ fn profile_maps_repeated_request_attestation_types_as_optional_capability() {
 fn profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages() {
     // KMIP Specification v2.1 §§8, 8.1, 8.3/Table 396, 8.4, 8.6/Table 399, and 9.7.
     // Request Payload is required; Response Payload is absent only for Failure.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-001";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_failure_response_payload_and_message_extensions_for_client_messages";
 
     assert_message_envelope_mapping(
@@ -5776,8 +5776,8 @@ fn profile_maps_optional_failure_response_payload_and_message_extensions_for_cli
 #[test]
 fn profile_maps_message_field_order_for_client_requests_and_responses() {
     // KMIP Specification v2.1 §8 requires the prescribed order for both message forms.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8-002";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_message_field_order_for_client_requests_and_responses";
 
     assert_message_envelope_mapping(
@@ -5806,8 +5806,8 @@ fn profile_maps_message_field_order_for_client_requests_and_responses() {
 #[test]
 fn profile_maps_required_batch_items_for_client_requests_and_responses() {
     // KMIP Specification v2.1 §§8.1, 8.4, and 9.7 require one or more Batch Items.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.7-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.7-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.7-001";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_required_batch_items_for_client_requests_and_responses";
 
     assert_message_envelope_mapping(
@@ -5874,8 +5874,8 @@ fn assert_message_envelope_mapping(
 #[test]
 fn profile_maps_repeated_request_message_extensions_as_optional_capability() {
     // KMIP Specification v2.1 §8.3 Table 396 permits repeated request Message Extensions.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8.3-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8.3-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.3-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_repeated_request_message_extensions_as_optional_capability";
     const MODEL_TEST_ID: &str = "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields";
@@ -5966,10 +5966,10 @@ fn profile_maps_vendor_extension_structure_and_optional_capability() {
 
 fn assert_vendor_extension_typed_mappings() {
     // KMIP Specification v2.1 §§9.13 and 11.56 define the extension fields and tag range.
-    const OPTIONAL_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-001";
-    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-002";
-    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.13-001";
+    const OPTIONAL_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-001";
+    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-002";
+    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_vendor_extension_structure_and_optional_capability";
     const VALIDATION_TEST_ID: &str = "crates/kmipkit-protocol/tests/message_validation.rs::repeated_request_extensions_preserve_order_and_expose_typed_fields";
@@ -6026,9 +6026,9 @@ fn assert_vendor_extension_typed_mappings() {
 fn assert_baseline_contains_vendor_extension_requirements() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let requirement_ids = [
-        "KMIP-REQ-SPEC-9.13-001-001",
-        "KMIP-REQ-SPEC-9.13-001-002",
-        "KMIP-REQ-SPEC-9.13-001-003",
+        "KMIPKIT-REQ-SPEC-9.13-001-001",
+        "KMIPKIT-REQ-SPEC-9.13-001-002",
+        "KMIPKIT-REQ-SPEC-9.13-001-003",
     ];
     let baseline = crate::profiles_generated::CLIENT_PROFILES
         .iter()
@@ -6041,9 +6041,9 @@ fn assert_baseline_contains_vendor_extension_requirements() {
 
 fn assert_vendor_extension_ttlv_behavior() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const OPTIONAL_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-001";
-    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-002";
-    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-003";
+    const OPTIONAL_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-001";
+    const REQUIRED_FIELDS_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-002";
+    const VENDOR_ID_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-003";
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
         requirement_ids: vec![
@@ -6101,8 +6101,8 @@ fn assert_vendor_extension_ttlv_behavior() {
 #[test]
 fn profile_rejects_response_with_critical_message_extension() {
     // KMIP Specification v2.1 §9.13 requires rejection of unknown critical extensions.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.13-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6140,8 +6140,8 @@ fn profile_rejects_response_with_critical_message_extension() {
 #[test]
 fn profile_maps_noncritical_response_extension_as_optional_capability() {
     // KMIP Specification v2.1 §9.13 permits treating an unknown non-critical extension as absent.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.13-001-005";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.13-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.13-001-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.13-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6185,8 +6185,8 @@ fn profile_maps_noncritical_response_extension_as_optional_capability() {
 #[test]
 fn profile_maps_request_time_stamp_as_optional_capability() {
     // KMIP Specification v2.1 §9.20 makes Time Stamp OPTIONAL in a client request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.20-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.20-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.20-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.20-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6234,8 +6234,8 @@ fn profile_maps_request_time_stamp_as_optional_capability() {
 fn profile_maps_validate_validity_date_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 make the
     // Validate request Validity Date optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-002-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.57-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
 
@@ -6302,8 +6302,8 @@ fn profile_maps_validate_validity_date_as_optional_capability() {
 fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 paragraph 2 and Table 340 permit the
     // request to combine certificate objects and Managed Certificate IDs.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-002-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.57-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
@@ -6386,8 +6386,8 @@ fn profile_maps_validate_mixed_chain_inputs_as_optional_capability() {
 fn profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs() {
     // KMIP Specification v2.1 §6.1.57 paragraphs 1–2 and Table 340 define one
     // chain per Validate request, represented by the two repeatable flat lists.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.57-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
@@ -6487,7 +6487,7 @@ fn profile_maps_validate_single_chain_required_behavior_over_flat_list_inputs() 
 
 #[test]
 fn profile_rejects_validate_request_without_a_chain_member() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
 
@@ -6523,8 +6523,8 @@ fn profile_rejects_validate_request_without_a_chain_member() {
 fn profile_maps_validate_repeated_certificates_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Certificate optional
     // and permits it to be repeated in a Validate request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.57-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
@@ -6652,8 +6652,8 @@ fn assert_ordered_validate_identifier_values(payload: &Structure) {
 fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.57 Table 340 makes Validate Unique
     // Identifier fields optional and permits them to be repeated.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-005";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.57-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.57-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
@@ -6741,7 +6741,7 @@ fn profile_maps_validate_repeated_unique_identifiers_as_optional_capability() {
 
 #[test]
 fn profile_rejects_malformed_validate_unique_identifier_wire_type() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
 
@@ -6776,7 +6776,7 @@ fn profile_rejects_malformed_validate_unique_identifier_wire_type() {
 
 #[test]
 fn profile_rejects_malformed_validate_validity_date_when_present() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.57-002-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.57-002-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const VALIDATE_OPERATION: u32 = 0x0000_0017;
 
@@ -6815,8 +6815,8 @@ fn profile_rejects_malformed_validate_validity_date_when_present() {
 #[test]
 fn profile_maps_optional_maximum_response_size_capability() {
     // KMIP Specification v2.1 §9.12 defines Maximum Response Size as optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.12-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.12-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6865,8 +6865,8 @@ fn profile_maps_optional_maximum_response_size_capability() {
 fn profile_requires_a_credential_when_request_authentication_is_present() {
     // KMIP Specification v2.1 §9.4 and Table 403: Authentication is optional,
     // but a present Authentication structure contains one or more Credentials.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.4-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.4-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -6922,13 +6922,13 @@ fn profile_requires_a_credential_when_request_authentication_is_present() {
 fn profile_maps_optional_authentication_and_repeated_credentials() {
     // KMIP Specification v2.1 §§9.4 and 9.11: client authentication and
     // repeated Credentials are optional capabilities whose use is caller-led.
-    const AUTHENTICATION_OPTIONAL: &str = "KMIP-REQ-SPEC-9.4-001-001";
-    const CREDENTIAL_REPEATED: &str = "KMIP-REQ-SPEC-9.4-002";
+    const AUTHENTICATION_OPTIONAL: &str = "KMIPKIT-REQ-SPEC-9.4-001-001";
+    const CREDENTIAL_REPEATED: &str = "KMIPKIT-REQ-SPEC-9.4-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     for (requirement_id, source_clause_id) in [
-        (AUTHENTICATION_OPTIONAL, "KMIP-CLAUSE-SPEC-9.4-001"),
-        (CREDENTIAL_REPEATED, "KMIP-CLAUSE-SPEC-9.4-002"),
+        (AUTHENTICATION_OPTIONAL, "KMIPKIT-CLAUSE-SPEC-9.4-001"),
+        (CREDENTIAL_REPEATED, "KMIPKIT-CLAUSE-SPEC-9.4-002"),
     ] {
         let mapping = TYPED_RULE_MAPPINGS
             .iter()
@@ -7012,8 +7012,8 @@ fn profile_maps_optional_request_authentication_from_profiles_clause() {
 #[test]
 fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_used() {
     // KMIP Specification v2.1 §9.11 and Table 413 require one evidence field.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-006";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7086,7 +7086,7 @@ fn profile_requires_attestation_measurement_or_assertion_when_attestation_is_use
 #[test]
 fn profile_rejects_malformed_device_credential_envelopes() {
     // KMIP Specification v2.1 §9.11/Table 410 defines the outer Credential fields.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7172,7 +7172,7 @@ fn profile_rejects_malformed_device_credential_envelopes() {
 #[test]
 fn profile_rejects_malformed_attestation_credential_envelopes() {
     // KMIP Specification v2.1 §9.11/Table 410 defines the outer Credential fields.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7278,8 +7278,8 @@ fn profile_rejects_malformed_attestation_credential_envelopes() {
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
     // KMIP Specification v2.1 §9.11/Table 412 and §10.1.2; the typed Device
     // policy follows OASIS KMIP 2.1 rules and keeps field presence separate from text.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7334,9 +7334,9 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
             Value::text_string("caller-value".to_owned()),
         )]);
         assert!(!evaluate(Some(&request), None));
-        let error = result
-            .validate_request(&request)
-            .expect_err("Password and Device Identifier alone do not satisfy the device-identifier rule");
+        let error = result.validate_request(&request).expect_err(
+            "Password and Device Identifier alone do not satisfy the device-identifier rule",
+        );
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
@@ -7370,8 +7370,8 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
 fn profile_maps_hashed_password_sha256_default_as_required_behavior() {
     // KMIP Specification v2.1 §9.11 before Table 415 defaults an omitted Hashing
     // Algorithm to SHA-256; Table 415 marks Hashing Algorithm as an optional Enumeration.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-010-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-010";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-010-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-010";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7405,8 +7405,8 @@ fn profile_maps_profile_indicated_credential_authentication_model_capability() {
     // KMIP Specification v2.1 §9.11 permits Credentials for authentication as
     // indicated by KMIP Profiles; Profiles v2.1 §3.1.3 defines server use.
     // This verifies model serialization, not profile mechanism selection or acceptance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7438,8 +7438,8 @@ fn profile_maps_profile_indicated_credential_authentication_model_capability() {
 fn profile_maps_device_identifier_uniqueness_as_caller_responsibility() {
     // KMIP Specification v2.1 §9.11/Table 412 requires unique caller-supplied
     // Device identifiers; the comparison scope is not specified by the source.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DEVICE_MODEL_TEST_ID: &str = "crates/kmipkit-protocol/tests/credential_contract.rs::device_requires_a_named_identifier_and_preserves_all_six_text_fields";
     const PUBLIC_API_TEST_ID: &str = "crates/kmipkit-protocol/tests/credential_public_api.rs::typed_credential_wrappers_expose_views_and_lossless_conversions";
@@ -7480,8 +7480,8 @@ fn profile_maps_name_uniqueness_as_caller_responsibility() {
     // KMIP Specification v2.1 §4.32 requires a client-assigned Name to be
     // unique within its target server; Table 93 defines the Name structure.
     // The request model cannot inspect remote or concurrent Name assignments.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.32-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.32-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const NAME_ATTRIBUTE_TEST_ID: &str = "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text";
 
@@ -7518,8 +7518,8 @@ fn profile_maps_name_uniqueness_as_caller_responsibility() {
 fn profile_maps_declared_response_capacity_as_required_behavior() {
     // KMIP Specification v2.1 §9.12 makes the advertised byte count the
     // response size the requester SHALL be able to handle.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.12-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.12-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CLAMP_TEST_ID: &str = "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_advertises_local_response_cap_clamped_to_signed_integer";
     const CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/create_split_key_execution_tests.rs::create_split_key_accepts_response_exactly_at_local_limit";
@@ -7558,8 +7558,8 @@ fn profile_maps_declared_response_capacity_as_required_behavior() {
 #[test]
 fn profile_maps_optional_device_password_authentication_capability() {
     // KMIP Specification v2.1 §9.11/Table 412 defines Password as an optional Text String.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7644,8 +7644,8 @@ fn profile_maps_optional_device_password_authentication_capability() {
 fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
     // KMIP Specification v2.1 §9.12; Discover Versions is not likely-large,
     // while Create Split Key can return repeated key material (§6.1.10).
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.12-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.12-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.12-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.12-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7713,9 +7713,9 @@ fn profile_maps_maximum_response_size_only_for_possible_large_replies() {
 fn profile_maps_server_generated_correlation_to_multipart_continuations() {
     // KMIP Specification v2.1 §7.8 requires the server-generated Correlation
     // Value on every subsequent request in a multipart cryptographic operation.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.8-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.8-001";
     const MULTIPART_CLIENT_TEST_ID: &str = "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::every_typed_multipart_operation_reuses_server_correlation_in_follow_up";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.8-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.8-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const INITIAL_INDICATOR: u32 = 0x0042_00D7;
     const CRYPTOGRAPHIC_OPERATIONS: [u32; 7] = [
@@ -7748,7 +7748,7 @@ fn profile_maps_server_generated_correlation_to_multipart_continuations() {
         evidence.test_id == MULTIPART_CLIENT_TEST_ID
             && evidence.kind == RuleTestKind::PositiveBehavior
     }));
-    for unrelated_requirement in ["KMIP-REQ-SPEC-6.1.11-005", "KMIP-REQ-SPEC-6.1.11-006"] {
+    for unrelated_requirement in ["KMIPKIT-REQ-SPEC-6.1.11-005", "KMIPKIT-REQ-SPEC-6.1.11-006"] {
         let unrelated_mapping = TYPED_RULE_MAPPINGS
             .iter()
             .find(|mapping| mapping.requirement_id == unrelated_requirement)
@@ -7866,8 +7866,8 @@ fn assert_multipart_correlation_cases(
 #[test]
 fn profile_maps_optional_client_correlation_value_capability() {
     // KMIP Specification v2.1 §9.9 permits clients to add this request string.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.9-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.9-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.9-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.9-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -7922,16 +7922,13 @@ fn profile_maps_optional_client_correlation_value_capability() {
 #[test]
 fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
     const REQUIREMENTS: [(&str, &str); 4] = [
+        ("KMIPKIT-REQ-SPEC-6.1.5-001", "KMIPKIT-CLAUSE-SPEC-6.1.5-001"),
         (
-            "KMIP-REQ-SPEC-6.1.5-001",
-            "KMIP-CLAUSE-SPEC-6.1.5-001",
+            "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+            "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
         ),
-        (
-            "KMIP-REQ-SPEC-6.1.38-001-001",
-            "KMIP-CLAUSE-SPEC-6.1.38-001",
-        ),
-        ("KMIP-REQ-SPEC-9.1-001", "KMIP-CLAUSE-SPEC-9.1-001"),
-        ("KMIP-REQ-SPEC-9.19-002", "KMIP-CLAUSE-SPEC-9.19-002"),
+        ("KMIPKIT-REQ-SPEC-9.1-001", "KMIPKIT-CLAUSE-SPEC-9.1-001"),
+        ("KMIPKIT-REQ-SPEC-9.19-002", "KMIPKIT-CLAUSE-SPEC-9.19-002"),
     ];
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_poll_cancel_asynchronous_correlation_requirements";
     const ASYNC_CORRELATION_VALUE_TAG: u32 = 0x0042_0006;
@@ -8016,8 +8013,8 @@ fn profile_maps_poll_cancel_asynchronous_correlation_requirements() {
 #[test]
 fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
     // KMIP Specification v2.1 §9.21 makes the ID optional in a client request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.21-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.21-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.21-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.21-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -8064,7 +8061,7 @@ fn profile_maps_request_unique_batch_item_id_as_optional_capability() {
 #[test]
 fn profile_maps_delete_attribute_reference_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.13 Table 202 marks Attribute Reference optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.13-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.13-006";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -8116,7 +8113,7 @@ fn profile_maps_delete_attribute_reference_as_optional_capability() {
 #[test]
 fn profile_maps_delete_attribute_current_attribute_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.13 Table 202 marks Current Attribute optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.13-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.13-005";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -8172,8 +8169,8 @@ fn profile_maps_modify_attribute_current_attribute_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.34 paragraph 1 and Table 265 make
     // Current Attribute optional; omission leaves instance selection to the
     // server and is valid when the attribute has one instance.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.34-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.34-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.34-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.34-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
     const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
@@ -8241,8 +8238,8 @@ fn profile_maps_modify_attribute_current_attribute_as_optional_capability() {
 #[test]
 fn profile_maps_client_get_attributes_optional_attribute_references() {
     // KMIP Specification v2.1 §6.1.20 Table 223 permits repeated references.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.20-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.20-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.20-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
 
@@ -8304,8 +8301,8 @@ fn profile_maps_client_get_attributes_optional_attribute_references() {
 #[test]
 fn profile_rejects_repeated_identical_get_attributes_references() {
     // KMIP Specification v2.1 §6.1.20 prohibits repeating one Attribute Reference.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.20-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.20-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.20-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.20-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
 
@@ -8413,8 +8410,8 @@ fn profile_rejects_repeated_identical_get_attributes_references() {
 #[test]
 fn profile_maps_client_query_function_repetition_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.40 Table 282 allows Query Function repetition.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.40-016";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.40-016";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-016";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.40-016";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
     const QUERY_FUNCTION_TAG: u32 = 0x0042_0074;
@@ -8480,8 +8477,8 @@ fn profile_maps_client_query_function_repetition_as_optional_capability() {
 #[test]
 fn profile_requires_complete_version_in_query_profile_responses() {
     // KMIP Specification v2.1 §7.32 and Table 384 require both Integer parts.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.32-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.32-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
     const PROFILE_VERSION_MAJOR: u32 = 0x0042_0143;
@@ -8576,8 +8573,8 @@ fn query_profiles_response_with_optional_version(
 #[test]
 fn profile_maps_optional_profile_specific_query_fields() {
     // KMIP Specification v2.1 §7.31 permits profile-specific fields.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-7.31-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-7.31-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-7.31-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-7.31-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -8610,8 +8607,8 @@ fn profile_maps_optional_profile_specific_query_fields() {
 #[test]
 fn profile_requires_at_least_one_client_query_function() {
     // KMIP Specification v2.1 §6.1.40 paragraph 14 requires one or more.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.40-014";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.40-014";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.40-014";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.40-014";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const QUERY_OPERATION: u32 = 0x0000_0018;
     const QUERY_FUNCTION_TAG: u32 = 0x0042_0074;
@@ -8685,8 +8682,8 @@ fn profile_requires_at_least_one_client_query_function() {
 #[test]
 fn profile_maps_optional_locate_maximum_items_capability() {
     // KMIP Specification v2.1 §6.1.28 and Table 247 make Maximum Items optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.28-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOCATE_OPERATION: u32 = 0x0000_0008;
     const MAXIMUM_ITEMS_TAG: u32 = 0x0042_004F;
@@ -8755,8 +8752,8 @@ fn profile_maps_optional_locate_maximum_items_capability() {
 #[test]
 fn profile_maps_optional_locate_offset_items_capability() {
     // KMIP Specification v2.1 §6.1.28 and Table 247 make Offset Items optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.28-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOCATE_OPERATION: u32 = 0x0000_0008;
     const OFFSET_ITEMS_TAG: u32 = 0x0042_00D4;
@@ -8902,8 +8899,8 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
     // KMIP Specification v2.1 §6.1.7 Tables 182–183 list direct Check fields;
     // §9.13 Table 418 places vendor extensions on the Batch Item, and §11.56
     // assigns the extension-tag prefix used by the opaque vendor value.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.7-002-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.7-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -8947,8 +8944,8 @@ fn profile_maps_check_additional_attributes_to_the_listed_set() {
 fn profile_recommends_lowercase_pkcs12_friendly_name_values() {
     // KMIP Specification v2.1 §4.39 says clients SHOULD use a lowercase
     // PKCS#12 Friendly Name text string.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.39-002-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.39-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.39-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.39-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -9211,7 +9208,7 @@ fn assert_check_limit_is_scoped_to_check(
 fn profile_maps_client_check_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.7 Table 182 and Table 183 define this
     // optional Check field and its Long Integer representation.
-    let result = optional_check_profile_result("KMIP-REQ-SPEC-6.1.7-003");
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-003");
     let with_count = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         crate::CheckRequest::new()
@@ -9251,8 +9248,8 @@ fn profile_recommends_stop_or_undo_when_check_is_present() {
     // KMIP Specification v2.1 §6.1.7 recommends Stop or Undo for a batch
     // containing Check; §9.6 defaults omission to Stop and §11.5 Table 435
     // assigns Continue=1, Stop=2, and Undo=3.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.7-002-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.7-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CONTINUE: u32 = 1;
     const STOP: u32 = 2;
@@ -9341,8 +9338,8 @@ fn profile_recommends_stop_or_undo_when_check_is_present() {
 fn profile_recommends_batch_order_true_when_check_is_present() {
     // KMIP Specification v2.1 §6.1.7 paragraph 2 recommends true when a batch
     // contains Check; §9.8 says omission has the effective value true.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.7-002-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.7-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-002-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -9431,8 +9428,8 @@ fn profile_recommends_check_only_in_a_multi_item_batch_without_ordering() {
     // KMIP Specification v2.1 §6.1.7's opening paragraph recommends that
     // Check appear in a batched set. Its later operation sequence is only
     // “usually” followed, so this rule does not impose operation order.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.7-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.7-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -9502,7 +9499,7 @@ fn profile_recommends_check_only_in_a_multi_item_batch_without_ordering() {
 fn profile_maps_get_usage_allocation_required_usage_limits_count() {
     // KMIP Specification v2.1 §6.1.23 Table 232 marks Usage Limits Count
     // required; §7.40 Table 392 defines its TTLV type as Long Integer.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.23-002-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.23-002-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
@@ -9584,7 +9581,7 @@ fn profile_maps_get_usage_allocation_required_usage_limits_count() {
 fn profile_maps_client_check_lease_time() {
     // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 define optional
     // Check Lease Time; §4.30 Table 88 defines its TTLV type as Interval.
-    let result = optional_check_profile_result("KMIP-REQ-SPEC-6.1.7-005");
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-005");
     let with_lease_time = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         crate::CheckRequest::new()
@@ -9627,7 +9624,7 @@ fn profile_maps_client_check_lease_time() {
 fn profile_maps_client_check_cryptographic_usage_mask() {
     // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit a Check mask
     // different from Locate; §4.17 Table 61 defines its TTLV type as Integer.
-    let result = optional_check_profile_result("KMIP-REQ-SPEC-6.1.7-004-002");
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-002");
     let locate_then_check = request_message_with_batch_operations([
         (
             LOCATE_OPERATION_TAG,
@@ -9675,7 +9672,7 @@ fn profile_maps_client_check_cryptographic_usage_mask() {
 fn profile_maps_client_check_intended_cryptographic_uses() {
     // KMIP Specification v2.1 §6.1.7 Tables 182 and 183 permit the client to
     // state intended Check uses; §4.17 Table 61 defines the mask's TTLV type as Integer.
-    let result = optional_check_profile_result("KMIP-REQ-SPEC-6.1.7-004-001");
+    let result = optional_check_profile_result("KMIPKIT-REQ-SPEC-6.1.7-004-001");
     let with_mask = request_message_with_operation_payload(
         CHECK_OPERATION_TAG,
         crate::CheckRequest::new()
@@ -9707,7 +9704,7 @@ fn profile_maps_client_check_intended_cryptographic_uses() {
 #[test]
 fn profile_maps_client_delegated_login_rights_as_required_structure() {
     // KMIP Specification v2.1 §6.1.12 Table 199 requires Rights in the request.
-    let result = delegated_login_profile_result("KMIP-REQ-SPEC-6.1.12-003");
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-003");
     let valid = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
         crate::DelegatedLoginRequest::new(delegated_login_rights())
@@ -9770,7 +9767,7 @@ fn profile_maps_client_delegated_login_rights_as_required_structure() {
 #[test]
 fn profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_time() {
     // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Lease Time.
-    let result = delegated_login_profile_result("KMIP-REQ-SPEC-6.1.12-005");
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-005");
     let rights_only = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
         crate::DelegatedLoginRequest::new(delegated_login_rights())
@@ -9814,7 +9811,7 @@ fn profile_maps_client_delegated_login_lease_time_as_optional_interval_or_date_t
 #[test]
 fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
     // KMIP Specification v2.1 §6.1.30 Table 253 marks Lease Time optional.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.30-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
@@ -9885,7 +9882,7 @@ fn profile_maps_login_optional_lease_time_as_optional_interval_or_date_time() {
 fn profile_maps_login_optional_request_count_as_integer() {
     // KMIP Specification v2.1 §6.1.30 Table 253 marks Request Count optional
     // and describes it as an integer; the catalog tracks its source gap.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.30-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-002";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REQUEST_COUNT_TAG: u32 = 0x0042_014C;
@@ -9964,7 +9961,7 @@ fn profile_maps_login_optional_request_count_as_integer() {
 fn profile_maps_login_optional_usage_limits_as_table_392_structure() {
     // KMIP Specification v2.1 §6.1.30 Table 253 permits Usage Limits;
     // §7.40 Table 392 requires its three typed members.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.30-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.30-003";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOGIN_USAGE_LIMITS_TAG: u32 = 0x0042_0095;
@@ -10071,7 +10068,7 @@ fn profile_maps_login_optional_usage_limits_as_table_392_structure() {
 fn profile_maps_client_logout_required_ticket_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.31 Table 256 requires Ticket in Logout;
     // §7.39 Table 391 defines Ticket as a Structure.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.31-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.31-001";
     const SOURCE_GAP_ID: &str = "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOGOUT_OPERATION_TAG: u32 = 0x0000_002E;
@@ -10149,8 +10146,8 @@ fn profile_maps_client_logout_required_ticket_as_required_behavior() {
 fn profile_maps_recertify_offset_as_optional_interval() {
     // KMIP Specification v2.1 §6.1.45 Table 300 permits an optional Offset;
     // it is an Interval.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.45-006-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.45-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-006-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const RECERTIFY_OPERATION_TAG: u32 = 0x0000_0007;
     const OFFSET_TAG: u32 = 0x0042_0058;
@@ -10236,8 +10233,8 @@ fn profile_maps_recertify_offset_as_optional_interval() {
 fn profile_maps_rekey_offset_as_optional_interval() {
     // KMIP Specification v2.1 §6.1.46 Table 305 permits an optional Offset;
     // it is an Interval.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.46-004-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.46-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.46-004-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.46-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REKEY_OPERATION_TAG: u32 = 0x0000_0004;
     const OFFSET_TAG: u32 = 0x0042_0058;
@@ -10316,8 +10313,8 @@ fn profile_maps_rekey_offset_as_optional_interval() {
 #[test]
 fn profile_maps_rekey_key_pair_offset_as_optional_interval() {
     // KMIP Specification v2.1 §6.1.47 Table 310 marks Offset optional and types it as Interval.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.47-004-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.47-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.47-004-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.47-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REKEY_KEY_PAIR_OPERATION_TAG: u32 = 0x0000_001D;
     const OFFSET_TAG: u32 = 0x0042_0058;
@@ -10398,8 +10395,8 @@ fn profile_maps_rekey_key_pair_offset_as_optional_interval() {
 fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.55 and Table 334 permit omitting
     // Cryptographic Parameters when the managed object provides them.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.55-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.55-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.55-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.55-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const SIGN_OPERATION_TAG: u32 = 0x0000_0021;
     const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
@@ -10497,8 +10494,8 @@ fn profile_maps_sign_cryptographic_parameters_omission_as_optional_capability() 
 fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.56 and Table 337 permit omission of
     // Cryptographic Parameters when the managed object provides them.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.56-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.56-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.56-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.56-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const SIGNATURE_VERIFY_OPERATION_TAG: u32 = 0x0000_0022;
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
@@ -10593,8 +10590,8 @@ fn profile_maps_signature_verify_cryptographic_parameters_omission_as_optional_c
 fn profile_maps_signature_verify_original_data_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.56 and Table 337 permit original Data
     // when the selected verification algorithm needs it.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.56-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.56-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.56-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.56-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const SIGNATURE_VERIFY_OPERATION_TAG: u32 = 0x0000_0022;
     const DATA_TAG: u32 = 0x0042_00C2;
@@ -10761,8 +10758,8 @@ fn profile_maps_reprovision_certificate_request_forms() {
     // KMIP Specification v2.1 §6.1.48 and Table 313 permit optional
     // Certificate Request and Certificate fields; §§2.1 Table 2 and 2.2
     // Table 3 define their required nested Enumeration and Byte String fields.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.48-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.48-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.48-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.48-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REPROVISION_OPERATION_TAG: u32 = 0x0000_0035;
     const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
@@ -10864,7 +10861,7 @@ fn profile_maps_reprovision_certificate_request_forms() {
 #[test]
 fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
     // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Request Count.
-    let result = delegated_login_profile_result("KMIP-REQ-SPEC-6.1.12-006");
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-006");
     let omitted = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
         crate::DelegatedLoginRequest::new(delegated_login_rights())
@@ -10906,7 +10903,7 @@ fn profile_maps_client_delegated_login_request_count_as_optional_integer() {
 fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
     // KMIP Specification v2.1 §6.1.12 Table 199 permits optional Usage Limits;
     // its value uses the required members from §7.40 Table 392.
-    let result = delegated_login_profile_result("KMIP-REQ-SPEC-6.1.12-007");
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-007");
     let omitted = request_message_with_operation_payload(
         DELEGATED_LOGIN_OPERATION_TAG,
         crate::DelegatedLoginRequest::new(delegated_login_rights())
@@ -10945,7 +10942,7 @@ fn profile_maps_client_delegated_login_usage_limits_as_optional_structure() {
 fn profile_rejects_delegated_login_usage_limits_missing_or_malformed_members() {
     // KMIP Specification v2.1 §7.40 Table 392 marks all three Usage Limits
     // members as required and assigns their TTLV encodings.
-    let result = delegated_login_profile_result("KMIP-REQ-SPEC-6.1.12-007");
+    let result = delegated_login_profile_result("KMIPKIT-REQ-SPEC-6.1.12-007");
     let malformed_values = [
         Structure::new(),
         structure([
@@ -10985,8 +10982,8 @@ fn profile_rejects_delegated_login_usage_limits_missing_or_malformed_members() {
 #[test]
 fn profile_maps_client_locate_attributes_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.28 Table 247 marks Locate Attributes required.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-013-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.28-013";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-013";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOCATE_OPERATION: u32 = 0x0000_0008;
 
@@ -11044,8 +11041,8 @@ fn profile_maps_client_locate_attributes_as_required_behavior() {
 #[test]
 fn profile_maps_client_locate_empty_attributes_match_all_capability() {
     // KMIP Specification v2.1 §6.1.28 Table 247 permits empty Attributes.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-013-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.28-013";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-013-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-013";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOCATE_OPERATION: u32 = 0x0000_0008;
     const ACTIVATION_DATE_TAG: u32 = 0x0042_0001;
@@ -11119,8 +11116,8 @@ fn profile_maps_client_locate_empty_attributes_match_all_capability() {
 #[test]
 fn profile_maps_client_locate_key_value_present_as_optional_capability() {
     // KMIP Specification v2.1 §4.28 permits Key Value Present in Locate.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.28-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -11171,7 +11168,7 @@ fn profile_maps_client_locate_key_value_present_as_optional_capability() {
 
 #[test]
 fn profile_rejects_malformed_locate_key_value_present_criterion() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -11210,18 +11207,15 @@ fn profile_rejects_malformed_locate_key_value_present_criterion() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-4.28-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
     }
 }
 
 #[test]
 fn profile_maps_client_locate_partial_structured_attribute_fields() {
     // KMIP Specification v2.1 §6.1.28 permits partial structured attributes.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-007";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.28-007";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-007";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.28-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const LOCATE_OPERATION: u32 = 0x0000_0008;
     const LINK_TAG: u32 = 0x0042_004A;
@@ -11319,8 +11313,8 @@ fn client_object_state_link_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
         requirement_ids: vec![
-            "KMIP-REQ-SPEC-4.31-004".to_owned(),
-            "KMIP-REQ-SPEC-4.31-005".to_owned(),
+            "KMIPKIT-REQ-SPEC-4.31-004".to_owned(),
+            "KMIPKIT-REQ-SPEC-4.31-005".to_owned(),
         ],
     }
 }
@@ -11391,7 +11385,7 @@ fn profile_accepts_complete_client_object_state_link_values() {
 fn profile_maps_optional_absent_link_for_unavailable_associated_key_material() {
     // KMIP Specification v2.1 §4.31 paragraph 2 permits absent Links when the
     // associated cryptographic key material is unavailable to the client.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.31-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.31-002";
     const CERTIFICATE_OBJECT_TAG: u32 = 0x0042_0013;
     const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
     const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
@@ -11440,18 +11434,18 @@ fn profile_rejects_incomplete_client_object_state_links() {
                 0x0042_004A,
                 Value::text_string("not-a-Link-Structure".to_owned()),
             ),
-            "KMIP-REQ-SPEC-4.31-004",
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
             client_object_state_link([tagged(
                 0x0042_004C,
                 Value::text_string("linked-object-7".to_owned()),
             )]),
-            "KMIP-REQ-SPEC-4.31-004",
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
             client_object_state_link([tagged(0x0042_004B, Value::enumeration(1))]),
-            "KMIP-REQ-SPEC-4.31-005",
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
         (
             client_object_state_link([
@@ -11461,7 +11455,7 @@ fn profile_rejects_incomplete_client_object_state_links() {
                     Value::text_string("linked-object-7".to_owned()),
                 ),
             ]),
-            "KMIP-REQ-SPEC-4.31-004",
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
             client_object_state_link([
@@ -11471,7 +11465,7 @@ fn profile_rejects_incomplete_client_object_state_links() {
                     Value::byte_string(b"not-an-identifier".to_vec()),
                 ),
             ]),
-            "KMIP-REQ-SPEC-4.31-005",
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
         (
             client_object_state_link([
@@ -11482,7 +11476,7 @@ fn profile_rejects_incomplete_client_object_state_links() {
                     Value::text_string("linked-object-7".to_owned()),
                 ),
             ]),
-            "KMIP-REQ-SPEC-4.31-004",
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
             client_object_state_link([
@@ -11496,7 +11490,7 @@ fn profile_rejects_incomplete_client_object_state_links() {
                     Value::text_string("linked-object-8".to_owned()),
                 ),
             ]),
-            "KMIP-REQ-SPEC-4.31-005",
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
     ];
 
@@ -11524,7 +11518,7 @@ fn profile_rejects_incomplete_client_object_state_links() {
             .validate_request(&add_attribute)
             .expect_err("Add Attribute object-state Links require Linked Object Identifier")
             .requirement_id(),
-        Some("KMIP-REQ-SPEC-4.31-005")
+        Some("KMIPKIT-REQ-SPEC-4.31-005")
     );
 }
 
@@ -11567,11 +11561,11 @@ fn profile_rejects_incomplete_client_object_state_links_in_get_attributes_respon
                 0x0042_004C,
                 Value::text_string("linked-object-7".to_owned()),
             )]),
-            "KMIP-REQ-SPEC-4.31-004",
+            "KMIPKIT-REQ-SPEC-4.31-004",
         ),
         (
             client_object_state_link([tagged(0x0042_004B, Value::enumeration(1))]),
-            "KMIP-REQ-SPEC-4.31-005",
+            "KMIPKIT-REQ-SPEC-4.31-005",
         ),
     ];
 
@@ -11630,7 +11624,7 @@ fn profile_correlates_reordered_get_attributes_link_responses_by_batch_id() {
         error.code(),
         ProfileValidationErrorCode::ResponseRuleRejected
     );
-    assert_eq!(error.requirement_id(), Some("KMIP-REQ-SPEC-4.31-004"));
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.31-004"));
 
     let failed_get_attributes = get_attributes_link_batch_response(1, []);
     result
@@ -11782,8 +11776,8 @@ fn get_attributes_link_response(links: impl IntoIterator<Item = Item>) -> crate:
 #[test]
 fn profile_maps_create_split_key_optional_source_identifier() {
     // KMIP Specification v2.1 §6.1.10 permits identifying the split source.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.10-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.10-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.10-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.10-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_SPLIT_KEY_OPERATION: u32 = 0x0000_0028;
     const UNIQUE_IDENTIFIER_TAG: u32 = 0x0042_0094;
@@ -11856,8 +11850,8 @@ fn profile_maps_create_split_key_optional_source_identifier() {
 fn profile_requires_prime_field_size_for_polynomial_split_key_requests() {
     // KMIP Specification v2.1 §2.8, Table 9 and §6.1.10, Table 193 require
     // Prime Field Size for Polynomial Sharing Prime Field Create Split Key.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.8-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-2.8-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.8-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-2.8-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12023,8 +12017,8 @@ fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
     // KMIP Specification v2.1 §8.3 Table 396 requires this field when Batch
     // Count is greater than one; Profiles v2.1 §4.1.2 item 6 corroborates the
     // client-side requirement and permits omission for a single-item request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-8.3-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-8.3-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-8.3-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-8.3-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12069,8 +12063,8 @@ fn profile_maps_required_unique_batch_item_id_for_multi_item_requests() {
 fn profile_maps_required_batch_count_to_request_item_count() {
     // KMIP Specification v2.1 §9.5 requires Batch Count to represent the
     // number of Batch Items in the message.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.5-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.5-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.5-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.5-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12117,8 +12111,8 @@ fn profile_maps_required_batch_count_to_request_item_count() {
 #[test]
 fn profile_maps_single_operation_batch_count_to_one() {
     // KMIP Specification v2.1 §9.5 requires count 1 for a single operation.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.5-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.5-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.5-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.5-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12165,8 +12159,8 @@ fn profile_maps_single_operation_batch_count_to_one() {
 #[test]
 fn profile_maps_default_batch_error_continuation_to_stop() {
     // KMIP Specification v2.1 §9.6 defaults an omitted option to Stop.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.6-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.6-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const STOP: u32 = 2;
 
@@ -12222,8 +12216,8 @@ fn profile_maps_assigned_batch_error_continuation_values() {
     // KMIP Specification v2.1 §9.6 and §11.5 Table 435 assign Continue=1,
     // Stop=2, and Undo=3. DEC-002 preserves extension values in generic models
     // while restricting this outbound profile rule to the assigned values.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.6-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.6-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12275,8 +12269,8 @@ fn profile_maps_assigned_batch_error_continuation_values() {
 fn profile_requires_attestation_capable_indicator_when_client_can_create_credential() {
     // KMIP Specification v2.1 §9.3 requires True exactly when this client can
     // create an Attestation Credential; an absent indicator has effective value False.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.3-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.3-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_requires_attestation_capable_indicator_when_client_can_create_credential";
 
@@ -12346,8 +12340,8 @@ fn profile_requires_attestation_capable_indicator_when_client_can_create_credent
 #[test]
 fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
     // KMIP Specification v2.1 §9.6 permits this option only when Batch Count > 1.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.6-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.6-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12428,7 +12422,7 @@ fn profile_maps_batch_error_continuation_option_only_for_multi_item_batches() {
 fn profile_maps_client_get_key_compression_type_selector() {
     // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
     // §6.1.19 Table 220 exposes the caller-selected Get request field.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.1-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;
     const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
@@ -12575,8 +12569,8 @@ fn get_request_with_return_controls(include_controls: bool) -> crate::RequestMes
 fn profile_maps_client_export_controls_with_get_semantics() {
     // KMIP Specification v2.1 §6.1.18 requires Export's four controls to use
     // the same request semantics as Get (§6.1.19 and §7.18).
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.18-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.18-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.18-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -12641,8 +12635,8 @@ fn profile_maps_client_export_controls_with_get_semantics() {
 fn profile_maps_client_export_key_compression_type_selector() {
     // KMIP Specification v2.1 §3.1 permits Key Compression Type in a Key Block;
     // §6.1.18 Table 217 exposes the caller-selected Export request field.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.1-001";
-    const EXPORT_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.18-007";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-001";
+    const EXPORT_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     const KEY_COMPRESSION_TYPE_TAG: u32 = 0x0042_0041;
@@ -12757,8 +12751,8 @@ fn optional_export_profile_result(requirement_id: &str) -> ProfileValidationResu
 fn profile_maps_client_export_optional_format_and_wrap_selectors() {
     // KMIP Specification v2.1 §6.1.18 Table 217 marks both request selectors
     // optional and specifies their effect on the format of the returned value.
-    const FORMAT_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.18-005";
-    const WRAP_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.18-006";
+    const FORMAT_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-005";
+    const WRAP_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-006";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
     const KEY_FORMAT_TYPE_SELECTOR_TAG: u32 = 0x0042_0042;
     const KEY_WRAP_TYPE_SELECTOR_TAG: u32 = 0x0042_00F8;
@@ -12830,7 +12824,7 @@ fn profile_maps_client_export_optional_format_and_wrap_selectors() {
 fn profile_maps_client_export_optional_wrapping_specification() {
     // KMIP Specification v2.1 §6.1.18 Table 217 makes the field optional;
     // §7.18 Table 370 defines its valid request shape.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.18-008";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.18-008";
     const EXPORT_OPERATION: u32 = 0x0000_002B;
 
     let result = optional_export_profile_result(REQUIREMENT_ID);
@@ -12901,9 +12895,9 @@ fn profile_maps_client_export_optional_wrapping_specification() {
 fn profile_maps_client_pgp_key_forms_and_versions_as_opaque_bytes() {
     // KMIP Specification v2.1 §2.4/Table 5 permits PGP Key versions 3 and 4;
     // §2.4 also recommends preserving its Key Block as caller-owned opaque data.
-    const REQUIREMENT_OBJECT_FORM: &str = "KMIP-REQ-SPEC-2.4-001-001";
-    const REQUIREMENT_VERSION: &str = "KMIP-REQ-SPEC-2.4-001-002";
-    const REQUIREMENT_OPAQUE_KEY_BLOCK: &str = "KMIP-REQ-SPEC-2.4-002-001";
+    const REQUIREMENT_OBJECT_FORM: &str = "KMIPKIT-REQ-SPEC-2.4-001-001";
+    const REQUIREMENT_VERSION: &str = "KMIPKIT-REQ-SPEC-2.4-001-002";
+    const REQUIREMENT_OPAQUE_KEY_BLOCK: &str = "KMIPKIT-REQ-SPEC-2.4-002-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let requirement_ids = [
@@ -13074,7 +13068,7 @@ fn profile_rejects_malformed_pgp_key_import_shapes() {
 
 #[test]
 fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_inference() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.16-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
     let result = ProfileValidationResult {
@@ -13130,8 +13124,8 @@ fn profile_allows_type_specific_cryptographic_parameters_without_remote_object_i
 
 #[test]
 fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.16-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.16-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_001F;
     const DECRYPT_OPERATION: u32 = 0x0000_0020;
@@ -13210,8 +13204,8 @@ fn profile_maps_client_optional_cryptographic_parameters_for_encrypt_and_decrypt
 fn profile_maps_encrypt_cryptographic_parameters_omission_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.17 and Table 214 permit omission when the
     // Managed Cryptographic Object supplies the applicable parameters.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.17-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.17-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.17-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.17-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_001F;
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
@@ -13285,8 +13279,8 @@ fn profile_maps_encrypt_iv_counter_nonce_omission_as_optional_capability() {
     // KMIP Specification v2.1 §6.1.17 permits omission when Random IV is true
     // or the selected Cryptographic Algorithm does not require an IV. RSA is
     // value 4 in §11.12 Table 443.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.17-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.17-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.17-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.17-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_001F;
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
@@ -13415,10 +13409,10 @@ fn variable_iv_profile_rule() -> (RuleEvaluator, ProfileValidationResult) {
 #[test]
 fn profile_maps_decrypt_optional_fields_from_section_6_1_11() {
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.11-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.11-001";
     const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-6.1.11-001-001",
-        "KMIP-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
     ];
 
     let request = request_message_with_operation_payload(
@@ -13621,8 +13615,8 @@ fn profile_rejects_invalid_ttlv_types_for_variable_iv_rule() {
 #[test]
 fn profile_maps_gcm_tag_length_as_required_behavior() {
     // §4.16 requires Tag Length for GCM; §11.6 Table 436 assigns GCM value 9.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.16-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.16-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.16-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_001F;
     const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
@@ -13697,7 +13691,7 @@ fn profile_rejects_non_structure_cryptographic_parameters_for_algorithm_constrai
     const CRYPTOGRAPHIC_PARAMETERS_TAG: u32 = 0x0042_002B;
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
-    for requirement_id in ["KMIP-REQ-SPEC-4.16-002", "KMIP-REQ-SPEC-4.16-003"] {
+    for requirement_id in ["KMIPKIT-REQ-SPEC-4.16-002", "KMIPKIT-REQ-SPEC-4.16-003"] {
         let mapping = TYPED_RULE_MAPPINGS
             .iter()
             .find(|mapping| mapping.requirement_id == requirement_id)
@@ -13727,7 +13721,7 @@ fn profile_rejects_non_structure_cryptographic_parameters_for_algorithm_constrai
 
 #[test]
 fn profile_validates_nested_register_gcm_tag_length() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.16-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.16-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const BLOCK_CIPHER_MODE_TAG: u32 = 0x0042_0011;
     const IV_LENGTH_TAG: u32 = 0x0042_00CD;
@@ -13788,8 +13782,8 @@ fn profile_maps_single_object_group_membership_as_optional_capability() {
     // KMIP Specification v2.1 §4.35 permits a client to associate an object
     // with a group; Table 99 defines its Text String encoding, and §11.56
     // assigns the Object Group tag used below.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.35-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.35-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_OPERATION: u32 = 0x0000_0001;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -13854,8 +13848,8 @@ fn profile_maps_multiple_object_group_membership_as_optional_capability() {
     // KMIP Specification v2.1 §4.35 permits multiple Object Group values;
     // Table 99 defines Text String, §6.1.8 Table 186 carries Attributes, and
     // §11.56 assigns the Object Group tag used below.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.35-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.35-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_OPERATION: u32 = 0x0000_0001;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -13920,8 +13914,8 @@ fn profile_recommends_object_group_name_attribute_when_assigning_group() {
     // Object Group; Table 99 defines Text String, Table 100 permits client
     // assignment, §6.1.8 Table 186 carries Create Attributes, and §11.56
     // assigns the Object Group tag.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.35-001-003";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.35-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.35-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_OPERATION: u32 = 0x0000_0001;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -13978,7 +13972,7 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
     // §6.1.9 Table 189, §6.1.14 Table 205, §6.1.34 Table 265,
     // §6.1.43 Table 291, §6.1.45 Table 300, §6.1.46 Table 305,
     // §6.1.47 Table 310, §6.1.51 Table 322, and §11.56 (Object Group tag).
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.35-001-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.35-001-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const OBJECT_GROUP_TAG: u32 = 0x0042_0056;
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
@@ -14039,7 +14033,7 @@ fn profile_checks_object_group_names_on_every_client_assignment_route() {
 fn profile_maps_repeated_attributes_for_client_requests_and_responses() {
     // KMIP Specification v2.1 §5.1, Table 157 permits repeated §4 attributes
     // in request Attributes structures and returned response Attributes.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-5.1-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-5.1-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REGISTER_OPERATION: u32 = 0x0000_0003;
 
@@ -14107,9 +14101,9 @@ fn profile_maps_repeated_create_key_pair_attribute_groups() {
     const PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
 
     for (requirement_id, group_tag) in [
-        ("KMIP-REQ-SPEC-5.2-002", COMMON_ATTRIBUTES),
-        ("KMIP-REQ-SPEC-5.3-002", PRIVATE_KEY_ATTRIBUTES),
-        ("KMIP-REQ-SPEC-5.4-002", PUBLIC_KEY_ATTRIBUTES),
+        ("KMIPKIT-REQ-SPEC-5.2-002", COMMON_ATTRIBUTES),
+        ("KMIPKIT-REQ-SPEC-5.3-002", PRIVATE_KEY_ATTRIBUTES),
+        ("KMIPKIT-REQ-SPEC-5.4-002", PUBLIC_KEY_ATTRIBUTES),
     ] {
         let result = ProfileValidationResult {
             profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -14141,14 +14135,14 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
 
     for (requirement_id, fields) in [
         (
-            "KMIP-REQ-SPEC-6.1.9-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.9-001-001",
             vec![tagged(
                 COMMON_ATTRIBUTES,
                 Value::structure(repeated_context_attributes()),
             )],
         ),
         (
-            "KMIP-REQ-SPEC-6.1.9-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.9-001-002",
             vec![
                 tagged(
                     PRIVATE_KEY_ATTRIBUTES,
@@ -14181,7 +14175,7 @@ fn profile_maps_client_create_key_pair_attribute_assignment_groups() {
 
     let separate_groups_result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
-        requirement_ids: vec!["KMIP-REQ-SPEC-6.1.9-001-002".to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-6.1.9-001-002".to_owned()],
     };
     for fields in [
         vec![
@@ -14220,8 +14214,7 @@ const TABLE_191_CRYPTOGRAPHIC_ALGORITHM: u32 = 0x0042_0028;
 const TABLE_191_CRYPTOGRAPHIC_LENGTH: u32 = 0x0042_002a;
 const TABLE_191_CRYPTOGRAPHIC_DOMAIN_PARAMETERS: u32 = 0x0042_0029;
 const TABLE_191_CRYPTOGRAPHIC_PARAMETERS: u32 = 0x0042_002b;
-const TABLE_191_REQUIREMENT_IDS: [&str; 2] =
-    ["KMIP-REQ-SPEC-6.1.9-006", "KMIP-REQ-SPEC-6.1.9-007"];
+const TABLE_191_REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"];
 
 fn table_191_value(tag: u32, generation: i32) -> Value {
     match tag {
@@ -14348,9 +14341,9 @@ fn profile_rejects_unequal_create_key_pair_table_191_values() {
             );
             assert_eq!(error.requirement_id(), Some(requirement_id));
             let clause = if requirement_id.ends_with("006") {
-                "KMIP-CLAUSE-SPEC-6.1.9-006"
+                "KMIPKIT-CLAUSE-SPEC-6.1.9-006"
             } else {
-                "KMIP-CLAUSE-SPEC-6.1.9-007"
+                "KMIPKIT-CLAUSE-SPEC-6.1.9-007"
             };
             assert_eq!(error.source_clause_id(), Some(clause));
         }
@@ -14390,7 +14383,7 @@ fn profile_rejects_inherited_table_191_conflict_in_mixed_batch() {
 
 #[test]
 fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.14-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
     const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
@@ -14448,16 +14441,13 @@ fn profile_maps_client_supplied_create_key_pair_domain_parameters() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-4.14-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
 }
 
 #[test]
 fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
     // KMIP Specification v2.1 §4.14 and Tables 55–56; §11.12, Table 443.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.14-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
     const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
@@ -14529,16 +14519,13 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-4.14-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
 }
 
 #[test]
 fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
     // KMIP Specification v2.1 §4.14, Table 55 domain parameter rules.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.14-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
     const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
@@ -14572,16 +14559,13 @@ fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-4.14-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.14-001"));
 }
 
 #[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
     // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.16-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
     const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let result = ProfileValidationResult {
         profile_ids: vec![PROFILE_ID.to_owned()],
@@ -14615,7 +14599,7 @@ fn public_profile_result_entrypoints_validate_transport_and_responses() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-6.1.16-001")
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.16-001")
     );
 
     let unmapped = ProfileValidationResult {
@@ -14704,8 +14688,8 @@ fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
 fn selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure() {
     // KMIP Specification v2.1 §14.1 paragraphs 1–2; KMIP Profiles v2.1 §6.1.
     const PROFILE_ID: &str = "KMIPKIT-PROFILE-TEST-CLIENT";
-    const CLIENT_CONFORMANCE: &str = "KMIP-REQ-SPEC-14.1-001";
-    const CLAIMED_PROFILE_CLOSURE: &str = "KMIP-REQ-SPEC-14.1-002";
+    const CLIENT_CONFORMANCE: &str = "KMIPKIT-REQ-SPEC-14.1-001";
+    const CLAIMED_PROFILE_CLOSURE: &str = "KMIPKIT-REQ-SPEC-14.1-002";
     const UNMAPPED_CHILD: &str = "KMIPKIT-REQ-PROF-3.2-001";
     const CONFORMANCE_REQUIREMENTS: &[&str] = &[CLIENT_CONFORMANCE, CLAIMED_PROFILE_CLOSURE];
     const INCOMPLETE_CLOSURE: &[&str] =
@@ -16104,7 +16088,7 @@ fn typed_rule_evaluators_fail_closed_without_a_request() {
 fn profile_maps_client_import_of_wrapped_secret_data() {
     // KMIP Specification v2.1 §2.7/Table 8 permits a wrapped Secret Data Key Value;
     // §3.1/Table 12 selects its encoding, and §3.3/Table 14 requires key information.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16138,10 +16122,7 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-2.7-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
 
     let malformed_wrapping_data = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -16155,10 +16136,7 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-2.7-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
 
     let incomplete_wrapping_data = secret_data_import_request(
         Value::byte_string(b"synthetic-wrapped-secret-data".to_vec()),
@@ -16172,10 +16150,7 @@ fn profile_maps_client_import_of_wrapped_secret_data() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-2.7-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
 }
 
 #[test]
@@ -16183,7 +16158,7 @@ fn profile_maps_client_import_of_wrapped_object_and_attributes_as_optional_capab
     // KMIP Profiles v2.1 §5.1.1 item 7 permits optional support for unlisted
     // clauses. KMIP Specification v2.1 §6.1.25 Table 238 permits wrapped Import
     // objects and attributes; §3.2 permits the wrapped Key Value to be opaque.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.25-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.25-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const IMPORT_OPERATION: u32 = 0x0000_002A;
     const UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
@@ -16268,11 +16243,11 @@ fn baseline_profile_and_shared_batch_requirements_have_typed_mappings() {
         "KMIPKIT-REQ-PROF-6.1-002",
         "KMIPKIT-REQ-PROF-6.1-003",
         "KMIPKIT-REQ-PROF-6.1-004",
-        "KMIP-REQ-SPEC-6.1-001-001",
-        "KMIP-REQ-SPEC-6.1-001-002",
-        "KMIP-REQ-SPEC-6.1-003-002",
-        "KMIP-REQ-SPEC-6.1-004",
-        "KMIP-REQ-SPEC-6.1-005",
+        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIPKIT-REQ-SPEC-6.1-001-002",
+        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIPKIT-REQ-SPEC-6.1-004",
+        "KMIPKIT-REQ-SPEC-6.1-005",
     ];
 
     for requirement_id in REQUIREMENT_IDS {
@@ -16373,8 +16348,8 @@ fn client_response_operation_correlation_rejects_invalid_batch_responses() {
     // to operations it issues. This bounded check pairs response operations
     // with the corresponding request and leaves operation payload decoding to
     // each typed response model.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;
     const ENCRYPT_OPERATION: u32 = 0x0000_0003;
@@ -16407,7 +16382,7 @@ fn client_response_operation_correlation_rejects_invalid_batch_responses() {
 fn client_response_correlates_reordered_items_by_id_when_batch_order_is_effective() {
     // KMIP Specification v2.1 §§6.1, 9.8, and 9.21: execution order does not
     // replace the Unique Batch Item ID used to correlate each response.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const GET_OPERATION: u32 = 0x0000_000A;
     const ENCRYPT_OPERATION: u32 = 0x0000_0003;
@@ -16437,7 +16412,7 @@ fn recover_before_use_remains_explicit_caller_controlled_behavior() {
     // KMIP Specification v2.1 §6.1 requires Recover before using an archived
     // object. The client cannot infer remote archive state; the caller issues
     // Recover and then chooses whether to use the returned object.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ENCRYPT_OPERATION: u32 = 0x0000_0003;
     const RECOVER_OPERATION: u32 = 0x0000_0016;
@@ -16480,7 +16455,7 @@ fn recover_before_use_remains_explicit_caller_controlled_behavior() {
 fn archived_locate_recover_get_workflow_is_explicitly_caller_controlled() {
     // KMIP Specification v2.1 §6.1.28 requires Recover followed by Get to
     // obtain archived Locate results. The caller controls all three exchanges.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.28-004-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.28-004-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -16546,7 +16521,7 @@ fn profile_maps_recover_poll_as_caller_directed_optional_capability() {
     // KMIP Specification v2.1 §6.1.42 permits asynchronous polling when
     // Recover is delayed; the caller supplies each Poll correlation.
     assert_caller_directed_optional_profile_mapping(
-        "KMIP-REQ-SPEC-6.1.42-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
         "recover_poll_caller_directed",
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
     );
@@ -16557,7 +16532,7 @@ fn profile_maps_recover_get_as_caller_directed_optional_capability() {
     // KMIP Specification v2.1 §6.1.42 permits Get once Recover completes;
     // each exchange remains explicitly selected by the caller.
     assert_caller_directed_optional_profile_mapping(
-        "KMIP-REQ-SPEC-6.1.42-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
         "recover_get_caller_directed",
         "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
     );
@@ -16568,7 +16543,7 @@ fn profile_maps_optional_archive_request_capability() {
     // KMIP Specification v2.1 §6.1.4 and Table 173 define Archive as a client
     // preference; §4.58 Table 145 defines Unique Identifier's permitted types.
     // Omission of Unique Identifier selects the ID Placeholder.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ARCHIVE_OPERATION: u32 = 0x0000_0015;
 
@@ -16673,7 +16648,7 @@ fn typed_rule_evaluators_tolerate_missing_context() {
 fn profile_requires_key_wrapping_data_for_wrapped_register_and_import_values() {
     // KMIP Specification v2.1 §3.1 and Table 12 require Key Wrapping Data
     // whenever the Key Value is wrapped.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.1-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16745,7 +16720,7 @@ fn profile_requires_key_wrapping_data_for_wrapped_register_and_import_values() {
 fn profile_omits_key_wrapping_data_for_plaintext_register_and_import_values() {
     // KMIP Specification v2.1 §3.1, Table 12 prohibits Key Wrapping Data when
     // the client Key Value is plaintext.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.1-006";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.1-006";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16921,10 +16896,7 @@ fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
     // KMIP Specification v2.1 §3.3 says a Key Block MAY provide optional Key
     // Wrapping Data. Section 3.1 requires the structure when the Key Value is
     // wrapped; this profile rule proves both supplied and omitted request forms.
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.3-001-001",
-        "KMIP-REQ-SPEC-3.3-001-002",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.3-001-001", "KMIPKIT-REQ-SPEC-3.3-001-002"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16953,7 +16925,7 @@ fn profile_maps_optional_key_wrapping_data_for_register_and_import() {
 fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
     // KMIP Specification v2.1 §3.3/Table 14 requires Encryption Key Information,
     // MAC/Signature Key Information, or both whenever Key Wrapping Data is used.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.3-004";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.3-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -16995,7 +16967,7 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         .is_err_and(|error| {
             error.code() == ProfileValidationErrorCode::RequestRuleRejected
                 && error.requirement_id() == Some(REQUIREMENT_ID)
-                && error.source_clause_id() == Some("KMIP-CLAUSE-SPEC-3.3-004")
+                && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
         });
     assert!(
         malformed_import_has_expected_rejection,
@@ -17011,7 +16983,7 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         .is_err_and(|error| {
             error.code() == ProfileValidationErrorCode::RequestRuleRejected
                 && error.requirement_id() == Some(REQUIREMENT_ID)
-                && error.source_clause_id() == Some("KMIP-CLAUSE-SPEC-3.3-004")
+                && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-3.3-004")
         });
     assert!(
         wrong_type_import_has_expected_rejection,
@@ -17027,10 +16999,7 @@ fn profile_maps_required_key_information_when_wrapping_data_is_supplied() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-3.3-004")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-004"));
 }
 
 #[test]
@@ -17039,11 +17008,11 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
     // the wrapping method; Table 15 requires TTLV when Encoding Option is absent.
     const REQUIREMENT_IDS: [(&str, &str); 2] = [
         (
-            "KMIP-REQ-SPEC-3.3-002",
+            "KMIPKIT-REQ-SPEC-3.3-002",
             "iv_counter_nonce_when_required_by_wrapping_method_caller_asserted",
         ),
         (
-            "KMIP-REQ-SPEC-3.3-006",
+            "KMIPKIT-REQ-SPEC-3.3-006",
             "wrapped_key_value_ttlv_when_encoding_option_absent_caller_asserted",
         ),
     ];
@@ -17109,7 +17078,7 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
 #[test]
 fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
     // KMIP Specification v2.1 §§2.7, 3.1, and 3.3 wrapped secret data rules.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const IMPORT_OPERATION: u32 = 0x0000_002A;
 
@@ -17127,7 +17096,7 @@ fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
             .is_err_and(|error| {
                 error.code() == ProfileValidationErrorCode::RequestRuleRejected
                     && error.requirement_id() == Some(REQUIREMENT_ID)
-                    && error.source_clause_id() == Some("KMIP-CLAUSE-SPEC-2.7-001")
+                    && error.source_clause_id() == Some("KMIPKIT-CLAUSE-SPEC-2.7-001")
             });
         assert!(
             rejected_by_expected_rule,
@@ -17226,7 +17195,7 @@ fn malformed_secret_data_import_payloads() -> Vec<(&'static str, Structure)> {
 #[test]
 fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
     // KMIP Specification v2.1 §3.3/Table 15 requires one Wrapping Method Enumeration.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const WRAPPING_METHOD: u32 = 0x0042_009E;
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -17271,17 +17240,14 @@ fn profile_rejects_wrapped_secret_data_without_one_wrapping_method() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.7-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
     }
 }
 
 #[test]
 fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
     // KMIP Specification v2.1 §3.3 Tables 15–17 define the required key-info identifier.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.7-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const WRAPPING_METHOD: u32 = 0x0042_009E;
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -17349,17 +17315,14 @@ fn profile_rejects_wrapping_key_information_without_one_text_identifier() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.7-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.7-001"));
     }
 }
 
 #[test]
 fn profile_maps_client_register_key_value_location_only_without_key_value() {
     // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.27-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -17386,10 +17349,7 @@ fn profile_maps_client_register_key_value_location_only_without_key_value() {
         ProfileValidationErrorCode::RequestRuleRejected
     );
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-4.27-001")
-    );
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.27-001"));
 }
 
 const TABLE12_REGISTER_OPERATION: u32 = 0x0000_0003;
@@ -17540,12 +17500,9 @@ fn assert_table12_request_rejected(
 }
 
 fn assert_table12_malformed_shape_rejected(request: &crate::RequestMessage) {
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-REQ-SPEC-3.1-005-002",
-    ];
-    const ALGORITHM_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-004";
-    const LENGTH_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-005";
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
 
     let error = table12_profile_result(&REQUIREMENT_IDS)
         .validate_request(request)
@@ -17556,8 +17513,8 @@ fn assert_table12_malformed_shape_rejected(request: &crate::RequestMessage) {
     );
     assert!(matches!(
         (error.requirement_id(), error.source_clause_id()),
-        (Some("KMIP-REQ-SPEC-3.1-004-002"), Some(ALGORITHM_CLAUSE))
-            | (Some("KMIP-REQ-SPEC-3.1-005-002"), Some(LENGTH_CLAUSE))
+        (Some("KMIPKIT-REQ-SPEC-3.1-004-002"), Some(ALGORITHM_CLAUSE))
+            | (Some("KMIPKIT-REQ-SPEC-3.1-005-002"), Some(LENGTH_CLAUSE))
     ));
 }
 
@@ -17652,10 +17609,7 @@ fn profile_allows_table12_register_key_value_location_without_key_block() {
     const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
     const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
     const KEY_VALUE_LOCATION_TYPE: u32 = 0x0042_00BA;
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-REQ-SPEC-3.1-005-002",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
 
     let request = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -17688,14 +17642,8 @@ fn profile_maps_key_block_algorithm_length_pairing_as_required_behavior() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 establish Import and Register request applicability.
     const CASES: [(&str, &str); 2] = [
-        (
-            "KMIP-REQ-SPEC-3.1-004-002",
-            "KMIP-CLAUSE-SPEC-3.1-004",
-        ),
-        (
-            "KMIP-REQ-SPEC-3.1-005-002",
-            "KMIP-CLAUSE-SPEC-3.1-005",
-        ),
+        ("KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-CLAUSE-SPEC-3.1-004"),
+        ("KMIPKIT-REQ-SPEC-3.1-005-002", "KMIPKIT-CLAUSE-SPEC-3.1-005"),
     ];
 
     for (requirement_id, source_clause_id) in CASES {
@@ -17903,22 +17851,22 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
     // supplied multipart AAD and Decrypt tags on the initial client request.
     const CASES: [(&str, &str, &str, u32, u32); 3] = [
         (
-            "KMIP-REQ-SPEC-6.1.17-006",
-            "KMIP-CLAUSE-SPEC-6.1.17-006",
+            "KMIPKIT-REQ-SPEC-6.1.17-006",
+            "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::encrypt_caller_reuses_initial_server_correlation_for_middle_and_final_parts",
             0x0000_001F,
             0x0042_00FE,
         ),
         (
-            "KMIP-REQ-SPEC-6.1.11-005",
-            "KMIP-CLAUSE-SPEC-6.1.11-005",
+            "KMIPKIT-REQ-SPEC-6.1.11-005",
+            "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
             0x0000_0020,
             0x0042_00FE,
         ),
         (
-            "KMIP-REQ-SPEC-6.1.11-006",
-            "KMIP-CLAUSE-SPEC-6.1.11-006",
+            "KMIPKIT-REQ-SPEC-6.1.11-006",
+            "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_multipart_execution_tests.rs::decrypt_caller_reuses_initial_server_correlation_and_keeps_aad_and_tag_initial",
             0x0000_0020,
             0x0042_00FF,
@@ -17940,10 +17888,10 @@ fn profile_maps_multipart_aead_fields_to_initial_requests() {
 #[test]
 fn profile_rejects_unpaired_direct_key_block_fields_in_register_and_import() {
     // KMIP Specification v2.1 §3.1 Table 12; request scope is §§6.1.25 and 6.1.43.
-    const ALGORITHM_REQUIREMENT: &str = "KMIP-REQ-SPEC-3.1-004-002";
-    const ALGORITHM_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-004";
-    const LENGTH_REQUIREMENT: &str = "KMIP-REQ-SPEC-3.1-005-002";
-    const LENGTH_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-005";
+    const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-005-002";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
 
     for operation in [TABLE12_REGISTER_OPERATION, TABLE12_IMPORT_OPERATION] {
         let algorithm_without_length = request_message_with_operation_payload(
@@ -17995,10 +17943,7 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 establish Import and Register request applicability.
     // Both fields may be absent together under these reciprocal-presence SHALLs.
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-REQ-SPEC-3.1-005-002",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
     let result = table12_profile_result(&REQUIREMENT_IDS);
 
     for operation in [TABLE12_REGISTER_OPERATION, TABLE12_IMPORT_OPERATION] {
@@ -18031,12 +17976,8 @@ fn profile_accepts_absent_or_present_direct_key_block_pairs() {
 
 #[test]
 fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-001",
-        "KMIP-REQ-SPEC-3.1-005-001",
-    ];
-    const SOURCE_CLAUSES: [&str; 2] =
-        ["KMIP-CLAUSE-SPEC-3.1-004", "KMIP-CLAUSE-SPEC-3.1-005"];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-001", "KMIPKIT-REQ-SPEC-3.1-005-001"];
+    const SOURCE_CLAUSES: [&str; 2] = ["KMIPKIT-CLAUSE-SPEC-3.1-004", "KMIPKIT-CLAUSE-SPEC-3.1-005"];
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     for (requirement_id, source_clause_id) in REQUIREMENT_IDS.iter().zip(SOURCE_CLAUSES) {
@@ -18073,22 +18014,19 @@ fn profile_maps_key_block_algorithm_and_length_omission_from_key_value() {
 fn profile_maps_key_block_algorithm_and_length_omission_for_import() {
     assert_table12_key_block_omission_accepted(
         TABLE12_IMPORT_OPERATION,
-        "KMIP-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
         tagged(TABLE12_CRYPTOGRAPHIC_ALGORITHM, Value::enumeration(3)),
     );
     assert_table12_key_block_omission_accepted(
         TABLE12_IMPORT_OPERATION,
-        "KMIP-REQ-SPEC-3.1-005-001",
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
         tagged(TABLE12_CRYPTOGRAPHIC_LENGTH, Value::integer(256)),
     );
 }
 
 #[test]
 fn profile_keeps_key_block_omission_exemptions_and_unknown_object_types_neutral() {
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-001",
-        "KMIP-REQ-SPEC-3.1-005-001",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-001", "KMIPKIT-REQ-SPEC-3.1-005-001"];
 
     let secret_data = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -18124,8 +18062,8 @@ fn profile_rejects_omitted_key_block_algorithm_missing_from_key_value() {
     );
     assert_table12_key_block_omission_rejected(
         &request,
-        "KMIP-REQ-SPEC-3.1-004-001",
-        "KMIP-CLAUSE-SPEC-3.1-004",
+        "KMIPKIT-REQ-SPEC-3.1-004-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
     );
 }
 
@@ -18137,8 +18075,8 @@ fn profile_rejects_omitted_key_block_length_missing_from_key_value() {
     );
     assert_table12_key_block_omission_rejected(
         &request,
-        "KMIP-REQ-SPEC-3.1-005-001",
-        "KMIP-CLAUSE-SPEC-3.1-005",
+        "KMIPKIT-REQ-SPEC-3.1-005-001",
+        "KMIPKIT-CLAUSE-SPEC-3.1-005",
     );
 }
 
@@ -18194,10 +18132,10 @@ fn assert_table12_key_block_omission_rejected(
 fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing() {
     // KMIP Specification v2.1 §3.1 Table 12 checks direct Key Block fields;
     // §6.1.43 Table 291 places Register Attributes outside that Key Block.
-    const ALGORITHM_REQUIREMENT: &str = "KMIP-REQ-SPEC-3.1-004-002";
-    const ALGORITHM_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-004";
-    const LENGTH_REQUIREMENT: &str = "KMIP-REQ-SPEC-3.1-005-002";
-    const LENGTH_CLAUSE: &str = "KMIP-CLAUSE-SPEC-3.1-005";
+    const ALGORITHM_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-004-002";
+    const ALGORITHM_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-004";
+    const LENGTH_REQUIREMENT: &str = "KMIPKIT-REQ-SPEC-3.1-005-002";
+    const LENGTH_CLAUSE: &str = "KMIPKIT-CLAUSE-SPEC-3.1-005";
 
     let algorithm_only_with_nested_and_outer_length = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -18247,8 +18185,8 @@ fn profile_does_not_merge_register_or_key_value_attributes_into_table12_pairing(
 #[test]
 fn profile_maps_register_key_value_attributes_as_optional_capability() {
     // KMIP Specification v2.1 §3.2 Table 13 permits Attributes in structured Key Value.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.2-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-3.2-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.2-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-3.2-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -18343,8 +18281,8 @@ fn profile_maps_register_key_value_attributes_as_optional_capability() {
 #[test]
 fn profile_maps_optional_register_nist_key_type_capability() {
     // KMIP Specification v2.1 §4.34 Table 97 and §§11.32, 11.34 define applicability and encoding.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.34-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.34-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.34-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.34-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const NIST_KEY_TYPE_TAG: u32 = 0x0042_013A;
 
@@ -18449,7 +18387,7 @@ fn profile_maps_optional_register_nist_key_type_capability() {
 
 #[test]
 fn profile_rejects_malformed_register_key_value_attributes_container() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.2-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.2-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -18556,10 +18494,10 @@ fn profile_rejects_malformed_register_key_value_attributes_container() {
 fn profile_maps_register_object_type_and_attributes_as_required() {
     // KMIP Specification v2.1 §6.1.43 Table 291 and the Register text require
     // Object Type and the Attributes object for each applicable request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-001";
-    const ATTRIBUTE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-007";
-    const ATTRIBUTE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-007";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-001";
+    const ATTRIBUTE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-007";
+    const ATTRIBUTE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-007";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -18653,12 +18591,12 @@ fn profile_maps_register_object_type_and_attributes_as_required() {
 fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() {
     // KMIP Specification v2.1 §6.1.43 Table 293 permits these omissions only
     // when the corresponding information is carried by the Key Block/Certificate.
-    const ALGORITHM_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-001";
-    const ALGORITHM_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
-    const LENGTH_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-010-001";
-    const LENGTH_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-010";
-    const SIGNATURE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-011";
-    const SIGNATURE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-011";
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const ALGORITHM_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
+    const LENGTH_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-010";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
+    const SIGNATURE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-011";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_conditional_algorithm_length_and_signature_omissions";
     for (requirement_id, source_clause_id) in [
         (ALGORITHM_REQUIREMENT_ID, ALGORITHM_CLAUSE_ID),
@@ -18695,9 +18633,9 @@ fn profile_maps_register_conditional_algorithm_length_and_signature_omissions() 
 fn profile_maps_register_omission_exemptions_and_malformed_containers() {
     // KMIP Specification v2.1 §6.1.43 Table 293 exempts Secret Data and only
     // permits omission when the required information is structurally present.
-    const ALGORITHM_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-001";
-    const LENGTH_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-010-001";
-    const SIGNATURE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-011";
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_exemptions_and_malformed_containers";
 
     for requirement_id in [
@@ -18720,9 +18658,9 @@ fn profile_maps_register_omission_exemptions_and_malformed_containers() {
 #[test]
 fn profile_maps_register_omission_pair_metadata_branches() {
     const REQUIREMENT_IDS: [&str; 3] = [
-        "KMIP-REQ-SPEC-6.1.43-009-001",
-        "KMIP-REQ-SPEC-6.1.43-010-001",
-        "KMIP-REQ-SPEC-6.1.43-011",
+        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIPKIT-REQ-SPEC-6.1.43-011",
     ];
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_register_omission_pair_metadata_branches";
 
@@ -18742,8 +18680,8 @@ fn profile_maps_register_omission_pair_metadata_branches() {
 }
 
 fn assert_register_table293_outer_pair_metadata_branches() {
-    const ALGORITHM_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-001";
-    const LENGTH_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-010-001";
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
 
     let paired = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -18817,7 +18755,7 @@ fn assert_register_table293_outer_pair_metadata_branches() {
 }
 
 fn assert_register_signature_algorithm_presence_branches() {
-    const SIGNATURE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-011";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
     let signature_algorithm_present = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         structure([
@@ -18878,8 +18816,8 @@ fn register_omission_mapping(requirement_id: &str) -> &'static TypedRuleMapping 
 }
 
 fn assert_register_secret_data_omission_is_allowed() {
-    const ALGORITHM_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-001";
-    const LENGTH_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-010-001";
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
+    const LENGTH_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-001";
     let secret_data = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
         table12_request_payload(
@@ -18898,7 +18836,7 @@ fn assert_register_secret_data_omission_is_allowed() {
 }
 
 fn assert_register_duplicate_key_block_algorithm_is_rejected() {
-    const ALGORITHM_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-001";
+    const ALGORITHM_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-001";
     const KEY_BLOCK_TAG: u32 = 0x0042_0040;
     const KEY_FORMAT_TYPE_TAG: u32 = 0x0042_0027;
     const KEY_VALUE_TAG: u32 = 0x0042_0045;
@@ -18940,7 +18878,7 @@ fn assert_register_duplicate_key_block_algorithm_is_rejected() {
 }
 
 fn assert_register_signature_omission_rejects_malformed_certificates() {
-    const SIGNATURE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-011";
+    const SIGNATURE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-011";
     const CERTIFICATE_TAG: u32 = 0x0042_0013;
     const CERTIFICATE_TYPE_TAG: u32 = 0x0042_001D;
     const CERTIFICATE_VALUE_TAG: u32 = 0x0042_001E;
@@ -19112,8 +19050,8 @@ fn assert_register_certificate_signature_omission(signature_requirement_id: &str
 fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
     // KMIP Specification v2.1 §6.1.43 Table 293 pairs the outer Register
     // Attributes. §§3.1–3.2 separately describe Key Block and Key Value data.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_algorithm_requires_length_in_attributes";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -19215,8 +19153,8 @@ fn profile_maps_client_register_algorithm_requires_length_in_attributes() {
 #[test]
 fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
     // KMIP Specification v2.1 §6.1.43 Table 293, Register Attributes column.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
 
     let algorithm_without_length = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -19248,8 +19186,8 @@ fn profile_rejects_client_register_algorithm_without_length_in_attributes() {
 fn profile_does_not_use_key_block_length_as_register_attribute_pairing() {
     // KMIP Specification v2.1 §6.1.43 Table 293 makes the Register Attributes
     // pair direct; §3.1 Table 12 independently governs fields inside Key Block.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
 
     let result = table12_profile_result(&[REQUIREMENT_ID]);
     let key_block_length = [
@@ -19286,8 +19224,8 @@ fn profile_does_not_use_key_block_length_as_register_attribute_pairing() {
 fn profile_maps_client_register_length_requires_algorithm_in_attributes() {
     // KMIP Specification v2.1 §6.1.43 Table 293's Length row requires the
     // Algorithm row above in the outer Register Attributes.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-010-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-010";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-010-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-010";
     const PROFILE_TEST_ID: &str = "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_length_requires_algorithm_in_attributes";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -19385,7 +19323,7 @@ fn profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opa
     // KMIP Specification v2.1 §2.3 makes Opaque's managed-crypto status depend
     // on local client context, which is not encoded in the §6.1.43 Table 291
     // request. A wire-only evaluator cannot infer that context.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
 
     let opaque_with_algorithm_only = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -19408,7 +19346,7 @@ fn profile_does_not_apply_register_managed_crypto_pairing_to_context_unknown_opa
 fn profile_does_not_count_key_block_length_from_a_non_object_register_structure() {
     // KMIP Specification v2.1 §6.1.43 Table 291 places the object in its
     // object-specific structure; an unrelated payload structure is not evidence.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
 
     let decoy = tagged(
         0x0042_0001,
@@ -19445,8 +19383,8 @@ fn profile_does_not_count_key_block_length_from_a_non_object_register_structure(
 #[test]
 fn profile_rejects_malformed_register_object_key_block_length_sources() {
     // KMIP Specification v2.1 §6.1.43 Table 293; §§3.1–3.2 Tables 12–13.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
     let result = table12_profile_result(&[REQUIREMENT_ID]);
     let request_for_object = |object: Option<Item>| {
         let mut fields = vec![
@@ -19527,7 +19465,7 @@ fn profile_rejects_malformed_register_object_key_block_length_sources() {
 #[test]
 fn profile_applies_register_algorithm_length_rule_to_standard_object_types() {
     // KMIP Specification v2.1 §§2.1–2.9 and §6.1.43 Table 293.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
     let cases = [
         (1, TABLE12_CERTIFICATE, true),
         (2, TABLE12_SYMMETRIC_KEY, true),
@@ -19571,8 +19509,8 @@ fn profile_applies_register_algorithm_length_rule_to_standard_object_types() {
 fn profile_rejects_malformed_register_attributes_for_algorithm_length_requirement() {
     // KMIP Specification v2.1 §6.1.43 Table 293 requires readable Register
     // Attributes to evaluate the conditional Cryptographic Algorithm pair.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.43-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.43-009";
     let result = table12_profile_result(&[REQUIREMENT_ID]);
     let object = || table12_key_block_object(TABLE12_SYMMETRIC_KEY, false, false, None);
     let assert_rejected = |payload: Structure| {
@@ -19631,7 +19569,7 @@ fn profile_rejects_malformed_register_attributes_for_algorithm_length_requiremen
 #[test]
 fn profile_exempts_secret_data_from_register_algorithm_length_requirement() {
     // KMIP Specification v2.1 §6.1.43 Table 293 explicitly excludes Secret Data.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-009-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-009-002";
 
     let secret_data_with_algorithm_only = request_message_with_operation_payload(
         TABLE12_REGISTER_OPERATION,
@@ -19655,10 +19593,7 @@ fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_bloc
     // §2.3 Table 4 defines Opaque Data Type/Value, §11.35 Table 469 gives the
     // extension range, and §6.1.43 Table 291 carries Register's Any Object.
     // Opaque Objects have no Key Block under Table 4.
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-REQ-SPEC-3.1-005-002",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
     let result = table12_profile_result(&REQUIREMENT_IDS);
 
     let secret_data_with_unpaired_key_block = request_message_with_operation_payload(
@@ -19686,10 +19621,7 @@ fn profile_exempts_secret_data_and_ignores_valid_opaque_objects_without_key_bloc
 fn profile_checks_each_mixed_register_import_batch_item() {
     // KMIP Specification v2.1 §3.1 Table 12 defines the pair; §§6.1.25 Table 238
     // and 6.1.43 Table 291 carry one Any Object per Import or Register Batch Item.
-    const REQUIREMENT_IDS: [&str; 2] = [
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-REQ-SPEC-3.1-005-002",
-    ];
+    const REQUIREMENT_IDS: [&str; 2] = ["KMIPKIT-REQ-SPEC-3.1-004-002", "KMIPKIT-REQ-SPEC-3.1-005-002"];
     let result = table12_profile_result(&REQUIREMENT_IDS);
     let valid_import = table12_request_payload(
         TABLE12_IMPORT_OPERATION,
@@ -19731,16 +19663,16 @@ fn profile_checks_each_mixed_register_import_batch_item() {
     ]);
     assert_table12_request_rejected(
         &invalid_batch,
-        "KMIP-REQ-SPEC-3.1-004-002",
-        "KMIP-CLAUSE-SPEC-3.1-004",
+        "KMIPKIT-REQ-SPEC-3.1-004-002",
+        "KMIPKIT-CLAUSE-SPEC-3.1-004",
     );
 }
 
 #[test]
 fn profile_maps_client_register_key_value_present_as_prohibited_behavior() {
     // KMIP Specification v2.1 §4.28 prohibits this client-supplied Register attribute.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.28-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -19764,7 +19696,7 @@ fn profile_maps_client_register_key_value_present_as_prohibited_behavior() {
 #[test]
 fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion() {
     // KMIP Specification v2.1 §4.28 prohibits Register use and permits Locate use.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const LOCATE_OPERATION: u32 = 0x0000_0008;
@@ -19819,10 +19751,7 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-4.28-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
     }
 
     result
@@ -19841,7 +19770,7 @@ fn profile_rejects_key_value_present_in_register_but_preserves_locate_criterion(
 fn key_value_present_register_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-BASELINE-CLIENT".to_owned()],
-        requirement_ids: vec!["KMIP-REQ-SPEC-4.28-001-001".to_owned()],
+        requirement_ids: vec!["KMIPKIT-REQ-SPEC-4.28-001-001".to_owned()],
     }
 }
 
@@ -19853,14 +19782,8 @@ fn assert_key_value_present_register_request_rejected(request: &crate::RequestMe
         error.code(),
         ProfileValidationErrorCode::RequestRuleRejected
     );
-    assert_eq!(
-        error.requirement_id(),
-        Some("KMIP-REQ-SPEC-4.28-001-001")
-    );
-    assert_eq!(
-        error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-4.28-001")
-    );
+    assert_eq!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.28-001-001"));
+    assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
 }
 
 #[test]
@@ -19931,7 +19854,7 @@ fn profile_checks_register_key_value_present_for_each_batch_item() {
 
 #[test]
 fn profile_maps_key_value_present_register_malformed_duplicate_and_batch_rejections() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-001";
     const EXPECTED_TEST_IDS: [&str; 3] = [
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_attributes_type_for_register_key_value_present",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_duplicate_attributes_for_register_key_value_present",
@@ -19963,8 +19886,8 @@ fn client_register_key_value_present_evaluator_fails_closed_without_request_cont
 #[test]
 fn profile_maps_key_value_present_modification_as_prohibited_behavior() {
     // KMIP Specification v2.1 §4.28 and Table 85 prohibit client mutation.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.28-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.28-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -19988,7 +19911,7 @@ fn profile_maps_key_value_present_modification_as_prohibited_behavior() {
 #[test]
 fn profile_rejects_key_value_present_attribute_mutations() {
     // KMIP Specification v2.1 §4.28/Table 85 prohibit client mutation; operation payloads are §§6.1.2, 6.1.3, 6.1.13, 6.1.34, 6.1.51 and their attribute wrappers/references are §§5.5–5.7.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
@@ -20082,10 +20005,7 @@ fn profile_rejects_key_value_present_attribute_mutations() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID), "{case}");
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-4.28-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.28-001"));
     }
 }
 
@@ -20108,15 +20028,15 @@ fn standard_lease_time_name_reference() -> Item {
 
 #[test]
 fn profile_maps_read_only_attribute_prohibitions_as_prohibited_behavior() {
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let mappings = [
         (
-            "KMIP-REQ-SPEC-4-001-004",
+            "KMIPKIT-REQ-SPEC-4-001-004",
             "profile_rejects_read_only_attribute_modification_on_all_client_routes",
         ),
         (
-            "KMIP-REQ-SPEC-4-001-005",
+            "KMIPKIT-REQ-SPEC-4-001-005",
             "profile_rejects_read_only_attribute_deletion",
         ),
     ];
@@ -20145,8 +20065,8 @@ fn profile_maps_read_only_attribute_prohibitions_as_prohibited_behavior() {
 
 #[test]
 fn profile_maps_state_attribute_modify_prohibition_as_prohibited_behavior() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.57-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.57-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.57-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const TEST_NAME: &str = "profile_rejects_client_modify_attribute_for_state";
 
@@ -20172,7 +20092,7 @@ fn profile_maps_state_attribute_modify_prohibition_as_prohibited_behavior() {
 
 #[test]
 fn profile_rejects_client_modify_attribute_for_state() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.57-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
     const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
@@ -20201,10 +20121,7 @@ fn profile_rejects_client_modify_attribute_for_state() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-4.57-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.57-001"));
     }
 
     result
@@ -20224,8 +20141,8 @@ fn profile_rejects_client_modify_attribute_for_state() {
 #[test]
 fn profile_rejects_read_only_attribute_modification_on_all_client_routes() {
     // KMIP Specification v2.1 §4 defines read-only attributes as non-modifiable by the client or server.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-004";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-004";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
@@ -20332,8 +20249,8 @@ fn profile_rejects_read_only_attribute_modification_on_all_client_routes() {
 #[test]
 fn profile_rejects_read_only_attribute_deletion() {
     // KMIP Specification v2.1 §4 defines read-only attributes as non-deletable by the client.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4-001-005";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4-001-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const DELETE_ATTRIBUTE_OPERATION: u32 = 0x0000_000F;
     const CURRENT_ATTRIBUTE_TAG: u32 = 0x0042_013C;
@@ -20404,8 +20321,8 @@ fn profile_rejects_read_only_attribute_deletion() {
 
 #[test]
 fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.51-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.51-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.51-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -20435,7 +20352,7 @@ fn profile_maps_set_attribute_read_only_prohibition_as_prohibited_behavior() {
 #[test]
 fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
     // KMIP Specification v2.1 §4 and §6.1.51; Lease Time is client read-only in §4.30.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.51-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.51-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
     const NEW_ATTRIBUTE_TAG: u32 = 0x0042_013D;
@@ -20463,7 +20380,7 @@ fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-6.1.51-001")
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.51-001")
     );
 
     let modifiable_request = request_message_with_operation_payload(
@@ -20520,7 +20437,7 @@ fn profile_rejects_set_attribute_on_read_only_standard_attribute() {
 #[test]
 fn profile_rejects_key_value_present_mutation_in_mixed_batch() {
     // KMIP Specification v2.1 §4.28/Table 85; batch operations are §8.1 and the payloads are §§6.1.28, 6.1.51.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ATTRIBUTES_TAG: u32 = 0x0042_0125;
     const SET_ATTRIBUTE_OPERATION: u32 = 0x0000_0031;
@@ -20557,7 +20474,7 @@ fn profile_rejects_key_value_present_mutation_in_mixed_batch() {
 #[test]
 fn profile_rejects_malformed_key_value_present_attribute_reference() {
     // KMIP Specification v2.1 §4.28/Table 85, §5.5, and §6.1.3 define the policy and reference shape.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
     const ATTRIBUTE_REFERENCE_TAG: u32 = 0x0042_013B;
@@ -20595,7 +20512,7 @@ fn client_key_value_present_mutation_rule_fails_closed_without_request_context()
 #[test]
 fn profile_preserves_other_attribute_mutations_and_locate_criteria() {
     // The §4.28 mutation prohibition is specific to Key Value Present.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.28-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.28-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const ADJUST_ATTRIBUTE_OPERATION: u32 = 0x0000_0030;
@@ -20658,7 +20575,7 @@ fn profile_preserves_other_attribute_mutations_and_locate_criteria() {
 #[test]
 fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     // KMIP Specification v2.1 §§3.2–3.3, Tables 13–15; §11.18 Table 450; §6.1.43 Table 291.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.43-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.43-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -20688,14 +20605,14 @@ fn profile_maps_client_register_wrapped_key_value_with_embedded_attributes() {
     assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
     assert_eq!(
         error.source_clause_id(),
-        Some("KMIP-CLAUSE-SPEC-6.1.43-005")
+        Some("KMIPKIT-CLAUSE-SPEC-6.1.43-005")
     );
 }
 
 #[test]
 fn profile_maps_required_fields_of_opaque_register_object() {
     // KMIP Specification v2.1 §2.3, Table 4 requires both typed child fields.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let validation = ProfileValidationResult {
@@ -20713,7 +20630,7 @@ fn profile_maps_required_fields_of_opaque_register_object() {
     validate_mapping(BASELINE_PROFILE_ID, requirement, mapping)
         .expect("the typed mapping preserves its catalogued source gap and locator");
     let mismatched_mapping = TypedRuleMapping {
-        source_clause_id: "KMIP-CLAUSE-SPEC-2.3-003",
+        source_clause_id: "KMIPKIT-CLAUSE-SPEC-2.3-003",
         ..*mapping
     };
     let mismatch = validate_mapping(BASELINE_PROFILE_ID, requirement, &mismatched_mapping)
@@ -20792,7 +20709,7 @@ fn profile_maps_required_fields_of_opaque_register_object() {
 
 #[test]
 fn profile_opaque_rule_accepts_non_applicable_and_response_contexts() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let validation = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -20845,8 +20762,8 @@ fn profile_validation_error_rejects_conflicting_source_references() {
     let conflicting = ProfileValidationError::for_rule_requirement(
         ProfileValidationErrorCode::RuleMappingMismatch,
         "KMIPKIT-PROFILE-BASELINE-CLIENT",
-        "KMIP-REQ-SPEC-2.3-003",
-        "KMIP-CLAUSE-SPEC-2.3-001",
+        "KMIPKIT-REQ-SPEC-2.3-003",
+        "KMIPKIT-CLAUSE-SPEC-2.3-001",
         Some("KMIPKIT-SOURCE-GAP-UNKNOWN"),
     );
     assert_eq!(conflicting.source_clause_id(), None);
@@ -20856,7 +20773,7 @@ fn profile_validation_error_rejects_conflicting_source_references() {
     let unresolved_gap = ProfileValidationError::for_rule_requirement(
         ProfileValidationErrorCode::RuleMappingMismatch,
         "KMIPKIT-PROFILE-BASELINE-CLIENT",
-        "KMIP-REQ-SPEC-2.3-003",
+        "KMIPKIT-REQ-SPEC-2.3-003",
         "",
         Some("KMIPKIT-SOURCE-GAP-UNKNOWN"),
     );
@@ -20872,13 +20789,13 @@ fn profile_validation_error_rejects_conflicting_source_references() {
 #[test]
 fn profile_accepts_ttlv_mask_integer_values() {
     // KMIP Specification v2.1 §12 requires every TTLV mask value to use Integer encoding.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-12-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-12-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROTECTION_STORAGE_MASKS_TAG: u32 = 0x0042_015F;
     const PROTECTION_STORAGE_MASK_TAG: u32 = 0x0042_015E;
     const STORAGE_STATUS_MASK_TAG: u32 = 0x0042_008E;
     const GET_OPERATION_TAG: u32 = 0x0000_000A;
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-12-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-12-001";
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
@@ -20916,13 +20833,13 @@ fn profile_accepts_ttlv_mask_integer_values() {
 #[test]
 fn profile_rejects_non_integer_ttlv_mask_values() {
     // KMIP Specification v2.1 §12 requires every TTLV mask value to use Integer encoding.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-12-001-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-12-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const PROTECTION_STORAGE_MASKS_TAG: u32 = 0x0042_015F;
     const PROTECTION_STORAGE_MASK_TAG: u32 = 0x0042_015E;
     const STORAGE_STATUS_MASK_TAG: u32 = 0x0042_008E;
     const GET_OPERATION_TAG: u32 = 0x0000_000A;
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-12-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-12-001";
 
     let validation = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -20994,7 +20911,7 @@ fn response_message_with_mask_value(
 #[test]
 fn profile_maps_client_register_opaque_object_context_custom_attributes() {
     // KMIP Specification v2.1 §2.3, §4.60/Table 150, and §6.1.43/Table 291.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let payload = opaque_object_register_payload(true);
@@ -21042,7 +20959,7 @@ fn profile_maps_client_register_opaque_object_context_custom_attributes() {
 #[test]
 fn profile_maps_client_register_opaque_object_context_managed_attributes() {
     // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let validation = ProfileValidationResult {
@@ -21078,7 +20995,7 @@ fn profile_maps_client_register_opaque_object_context_managed_attributes() {
 #[test]
 fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
     // KMIP Specification v2.1 §2.3 and §6.1.43, Tables 291/293.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let validation = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -21112,16 +21029,13 @@ fn profile_rejects_malformed_managed_opaque_attribute_wire_types() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.3-002")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-002"));
     }
 }
 
 #[test]
 fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let validation = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -21150,10 +21064,7 @@ fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.3-002")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-002"));
     }
 
     for payload in [
@@ -21221,7 +21132,7 @@ fn profile_managed_opaque_rule_is_scoped_to_register_request_metadata() {
 
 #[test]
 fn profile_opaque_context_capability_does_not_require_or_revalidate_other_register_fields() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -21250,7 +21161,7 @@ fn profile_opaque_context_capability_does_not_require_or_revalidate_other_regist
 #[test]
 fn profile_maps_client_get_attributes_opaque_object_custom_context() {
     // KMIP Specification v2.1 §2.3 and §6.1.20/Table 224.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let request = request_message_with_operation_payload(
@@ -21290,7 +21201,7 @@ fn profile_maps_client_get_attributes_opaque_object_custom_context() {
 
 #[test]
 fn profile_rejects_malformed_opaque_object_context_shapes() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -21311,10 +21222,7 @@ fn profile_rejects_malformed_opaque_object_context_shapes() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.3-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-001"));
     }
 
     result
@@ -21331,7 +21239,7 @@ fn profile_rejects_malformed_opaque_object_context_shapes() {
 
 #[test]
 fn profile_rejects_malformed_opaque_context_get_attributes_responses() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.3-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.3-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let result = ProfileValidationResult {
@@ -21395,10 +21303,7 @@ fn profile_rejects_malformed_opaque_context_get_attributes_responses() {
             ProfileValidationErrorCode::ResponseRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-2.3-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-2.3-001"));
     }
 
     result
@@ -21463,9 +21368,9 @@ fn profile_maps_client_get_attributes_response_x509_values() {
     let selected = ProfileValidationResult {
         profile_ids: vec!["KMIPKIT-PROFILE-TEST-CLIENT".to_owned()],
         requirement_ids: [
-            "KMIP-REQ-SPEC-4.62-003",
-            "KMIP-REQ-SPEC-4.63-004",
-            "KMIP-REQ-SPEC-4.63-005",
+            "KMIPKIT-REQ-SPEC-4.62-003",
+            "KMIPKIT-REQ-SPEC-4.63-004",
+            "KMIPKIT-REQ-SPEC-4.63-005",
         ]
         .into_iter()
         .map(str::to_owned)
@@ -21485,7 +21390,7 @@ fn profile_maps_client_get_attributes_response_x509_values() {
 #[test]
 fn profile_rejects_malformed_register_key_value_location_members() {
     // KMIP Specification v2.1 §4.27/Table 82 requires both typed members.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.27-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
     const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
@@ -21528,17 +21433,14 @@ fn profile_rejects_malformed_register_key_value_location_members() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-4.27-001")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-4.27-001"));
     }
 }
 
 #[test]
 fn profile_rejects_malformed_register_object_key_block_shapes_for_key_value_location() {
     // KMIP Specification v2.1 §4.27/Table 82 and §6.1.43/Table 291.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.27-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const KEY_VALUE_LOCATION: u32 = 0x0042_00B8;
     const KEY_VALUE_LOCATION_VALUE: u32 = 0x0042_00B9;
@@ -21621,14 +21523,12 @@ const REVOCATION_REASON: u32 = 0x0042_0081;
 const REVOCATION_REASON_CODE: u32 = 0x0042_0082;
 const REVOCATION_MESSAGE: u32 = 0x0042_0080;
 const COMPROMISE_OCCURRENCE_DATE: u32 = 0x0042_0021;
-const REVOKE_SHOULD_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.44-003-001";
-const REVOKE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.44-003-002";
-const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.44-003";
-const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] = [
-    "KMIP-REQ-SPEC-4.47-001-001",
-    "KMIP-REQ-SPEC-4.47-001-002",
-];
-const REVOKE_MESSAGE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.47-001";
+const REVOKE_SHOULD_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-001";
+const REVOKE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.44-003-002";
+const REVOKE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.44-003";
+const REVOKE_MESSAGE_REQUIREMENT_IDS: [&str; 2] =
+    ["KMIPKIT-REQ-SPEC-4.47-001-001", "KMIPKIT-REQ-SPEC-4.47-001-002"];
+const REVOKE_MESSAGE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.47-001";
 
 fn revoke_reason_item(reason_code: Value) -> Item {
     tagged(
@@ -21977,37 +21877,33 @@ fn profile_rejects_revoke_compromise_occurrence_date_when_reason_is_malformed() 
     }
 }
 
-const CERTIFY_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.6-001";
-const CERTIFY_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.6-001";
+const CERTIFY_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-001";
+const CERTIFY_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-001";
 const CERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const CERTIFY_OPERATION: u32 = 0x0000_0006;
-const CERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.6-007";
-const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.6-007";
-const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.45-008";
-const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.45-008";
-const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.45-002-003";
-const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str =
-    "KMIP-CLAUSE-SPEC-6.1.45-002";
-const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID: &str =
-    "KMIP-REQ-SPEC-6.1.45-002-001";
-const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID: &str =
-    "KMIP-CLAUSE-SPEC-6.1.45-002";
-const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.45-001";
-const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.45-001";
+const CERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-007";
+const CERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-007";
+const RECERTIFY_REQUEST_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-008";
+const RECERTIFY_REQUEST_TYPE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-008";
+const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-003";
+const RECERTIFY_OMITTED_REQUEST_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-002-001";
+const RECERTIFY_OPTIONAL_CERTIFICATE_REQUEST_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-002";
+const RECERTIFY_SINGLE_CERTIFICATE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.45-001";
+const RECERTIFY_SINGLE_CERTIFICATE_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.45-001";
 const RECERTIFY_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 const RECERTIFY_OPERATION_TAG: u32 = 0x0000_0007;
 const CERTIFICATE_REQUEST_TYPE_TAG: u32 = 0x0042_0019;
 const CERTIFICATE_REQUEST_VALUE_TAG: u32 = 0x0042_0140;
-const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.6-002-001";
-const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.6-002";
-const CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.6-003";
-const CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.6-003";
-const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.6-002-002";
-const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.6-002";
-const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str =
-    "KMIP-REQ-SPEC-6.1.6-002-003";
+const CERTIFY_REQUEST_OMISSION_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-001";
+const CERTIFY_REQUEST_OMISSION_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_GET_PLACEHOLDER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-003";
+const CERTIFY_GET_PLACEHOLDER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-003";
+const CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-002";
+const CERTIFY_OMITTED_VALUE_IDENTIFIER_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
+const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.6-002-003";
 const CERTIFY_OMITTED_REQUEST_CERTIFICATE_TYPE_SOURCE_CLAUSE_ID: &str =
-    "KMIP-CLAUSE-SPEC-6.1.6-002";
+    "KMIPKIT-CLAUSE-SPEC-6.1.6-002";
 
 fn certify_profile_result() -> ProfileValidationResult {
     ProfileValidationResult {
@@ -23327,9 +23223,9 @@ const ORIGINAL_CREATION_DATE_TAG: u32 = 0x0042_00BC;
 const ORIGINAL_CREATION_DATE_ADD_OPERATION: u32 = 0x0000_000D;
 const ORIGINAL_CREATION_DATE_NEW_ATTRIBUTE: u32 = 0x0042_013D;
 const ORIGINAL_CREATION_DATE_REQUIREMENTS: [&str; 3] = [
-    "KMIP-REQ-SPEC-4.38-001-001",
-    "KMIP-REQ-SPEC-4.38-001-002",
-    "KMIP-REQ-SPEC-4.38-001-003",
+    "KMIPKIT-REQ-SPEC-4.38-001-001",
+    "KMIPKIT-REQ-SPEC-4.38-001-002",
+    "KMIPKIT-REQ-SPEC-4.38-001-003",
 ];
 
 fn register_original_creation_date_request(date: Option<Value>) -> crate::RequestMessage {
@@ -23387,7 +23283,7 @@ fn profile_maps_original_creation_date_register_and_add_capabilities() {
             "Original Creation Date has a typed mapping"
         );
         if let Some(mapping) = mapping {
-            assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-4.38-001");
+            assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.38-001");
             assert_eq!(
                 mapping.verification_category,
                 GeneratedVerificationCategory::OptionalCapability
@@ -23473,15 +23369,13 @@ const RNG_REKEY_KEY_PAIR_OPERATION: u32 = 0x0000_001D;
 const RNG_COMMON_ATTRIBUTES: u32 = 0x0042_0126;
 const RNG_PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
 const RNG_PUBLIC_KEY_ATTRIBUTES: u32 = 0x0042_0128;
-const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] = [
-    "KMIP-REQ-SPEC-4.46-001-001",
-    "KMIP-REQ-SPEC-4.46-001-002",
-];
+const RANDOM_NUMBER_GENERATOR_REQUIREMENTS: [&str; 2] =
+    ["KMIPKIT-REQ-SPEC-4.46-001-001", "KMIPKIT-REQ-SPEC-4.46-001-002"];
 const RNG_PARAMETERS_REQUIREMENTS: [&str; 4] = [
-    "KMIP-REQ-SPEC-7.36-001",
-    "KMIP-REQ-SPEC-7.36-002-001",
-    "KMIP-REQ-SPEC-7.36-002-002",
-    "KMIP-REQ-SPEC-7.36-003",
+    "KMIPKIT-REQ-SPEC-7.36-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-001",
+    "KMIPKIT-REQ-SPEC-7.36-002-002",
+    "KMIPKIT-REQ-SPEC-7.36-003",
 ];
 
 fn random_number_generator_structure() -> Value {
@@ -23575,7 +23469,7 @@ fn profile_maps_register_and_add_attribute_random_number_generator_capabilities(
             "Random Number Generator has a typed mapping"
         );
         if let Some(mapping) = mapping {
-            assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-4.46-001");
+            assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.46-001");
             assert_eq!(
                 mapping.verification_category,
                 GeneratedVerificationCategory::OptionalCapability
@@ -23594,7 +23488,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_and_response_rules() {
     let expected = [
         (
             RNG_PARAMETERS_REQUIREMENTS[0],
-            "KMIP-CLAUSE-SPEC-7.36-001",
+            "KMIPKIT-CLAUSE-SPEC-7.36-001",
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
@@ -23602,7 +23496,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_and_response_rules() {
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[1],
-            "KMIP-CLAUSE-SPEC-7.36-002",
+            "KMIPKIT-CLAUSE-SPEC-7.36-002",
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_register_random_number_generator",
@@ -23610,7 +23504,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_and_response_rules() {
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[2],
-            "KMIP-CLAUSE-SPEC-7.36-002",
+            "KMIPKIT-CLAUSE-SPEC-7.36-002",
             GeneratedVerificationCategory::RequiredBehavior,
             RuleTestKind::PositiveBehavior,
             "profile_accepts_unspecified_rng_algorithm_when_details_are_unknown",
@@ -23618,7 +23512,7 @@ fn profile_maps_shared_rng_parameters_to_client_request_and_response_rules() {
         ),
         (
             RNG_PARAMETERS_REQUIREMENTS[3],
-            "KMIP-CLAUSE-SPEC-7.36-003",
+            "KMIPKIT-CLAUSE-SPEC-7.36-003",
             GeneratedVerificationCategory::OptionalCapability,
             RuleTestKind::OptionalCapabilityUsable,
             "profile_accepts_rng_parameters_with_optional_fields",
@@ -24358,7 +24252,7 @@ fn add_attribute_rng_evaluator_rejects_duplicate_and_malformed_fields() {
 fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
     // KMIP Specification v2.1 §3.3/Table 14 prohibits attributes in Key Value
     // when Key Wrapping Data selects No Encoding (Enumeration value 1).
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.3-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.3-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const KEY_MATERIAL: u32 = 0x0042_0043;
     const KEY_VALUE_ATTRIBUTES: u32 = 0x0042_0125;
@@ -24395,10 +24289,7 @@ fn profile_rejects_key_value_attributes_when_wrapping_uses_no_encoding() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-3.3-003")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-003"));
     }
 
     for (encoding_option, key_value) in [
@@ -24694,7 +24585,7 @@ fn profile_operation_specific_optional_rules_ignore_register_payloads() {
 fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
     // KMIP Specification v2.1 §3.3/Table 14 requires Unique Identifier in
     // Encryption Key Information and MAC/Signature Key Information.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.3-009";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.3-009";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const WRAPPING_METHOD: u32 = 0x0042_009E;
     const ENCRYPTION_KEY_INFORMATION: u32 = 0x0042_0036;
@@ -24722,10 +24613,7 @@ fn profile_requires_unique_identifier_for_key_wrapping_key_information() {
             ProfileValidationErrorCode::RequestRuleRejected
         );
         assert_eq!(error.requirement_id(), Some(REQUIREMENT_ID));
-        assert_eq!(
-            error.source_clause_id(),
-            Some("KMIP-CLAUSE-SPEC-3.3-009")
-        );
+        assert_eq!(error.source_clause_id(), Some("KMIPKIT-CLAUSE-SPEC-3.3-009"));
     }
 
     let valid_request = register_key_value_wrapping_request(
@@ -24797,11 +24685,11 @@ fn register_or_import_split_key_request(
 fn profile_constrains_split_key_part_identifier_to_declared_parts() {
     // KMIP Specification v2.1 §2.8 and Table 9 require
     // 1 <= Key Part Identifier <= Split Key Parts.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-2.8-001-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.8-001-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REGISTER_OPERATION: u32 = 0x0000_0003;
     const IMPORT_OPERATION: u32 = 0x0000_002A;
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-2.8-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-2.8-001";
 
     let result = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -24944,8 +24832,8 @@ fn profile_maps_join_split_key_threshold_behavior_using_typed_request_evidence()
     // caller-known Split Key Threshold number of Unique Identifier entries.
     // Section 4.58 Table 145 permits Text String, Enumeration, or Integer;
     // §11.58 Table 489 supplies the Join Split Key Enumeration value below.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.27-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.27-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -25029,8 +24917,8 @@ fn join_split_key_request_with_identifiers(
 fn profile_maps_repeated_join_split_key_identifiers_as_an_optional_capability() {
     // KMIP Specification v2.1 §6.1.27 Table 244 permits Unique Identifier
     // to be repeated in a Join Split Key request.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.27-005";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.27-005";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-005";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-005";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
 
     let mapping = TYPED_RULE_MAPPINGS
@@ -25071,8 +24959,8 @@ fn profile_maps_optional_join_split_key_secret_data_type() {
     // KMIP Specification v2.1 §6.1.27 paragraph 2 and Table 244 permit the
     // client to include Secret Data Type for a Secret Data result. Section
     // 11.52 Table 483 defines the field as an Enumeration.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.27-002-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.27-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.27-002-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.27-002";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const JOIN_SPLIT_KEY_OPERATION: u32 = 0x0000_0029;
     const OBJECT_TYPE_TAG: u32 = 0x0042_0057;
@@ -25165,8 +25053,8 @@ fn profile_maps_optional_join_split_key_secret_data_type() {
 fn profile_rejects_usage_limits_count_in_add_and_modify_attribute() {
     // KMIP Specification v2.1 §4.59 paragraph 3 prohibits setting or modifying
     // Usage Limits Count through Add Attribute or Modify Attribute.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.59-003-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.59-003";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const ADD_ATTRIBUTE_OPERATION: u32 = 0x0000_000D;
     const MODIFY_ATTRIBUTE_OPERATION: u32 = 0x0000_000E;
@@ -25329,8 +25217,8 @@ fn mac_verify_profile_test_payload(
 #[test]
 fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
     // OASIS KMIP Specification v2.1 §6.1.32, opening operation description.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.32-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.32-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.32-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.32-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MAC_OPERATION: u32 = 0x0000_0023;
 
@@ -25407,8 +25295,8 @@ fn profile_maps_mac_cryptographic_parameters_omission_as_optional_capability() {
 #[test]
 fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capability() {
     // OASIS KMIP Specification v2.1 §6.1.33, opening operation description.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.33-001-002";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.33-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-002";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 
@@ -25487,8 +25375,8 @@ fn profile_maps_mac_verify_cryptographic_parameters_omission_as_optional_capabil
 #[test]
 fn profile_maps_mac_verify_original_data_as_optional_capability() {
     // OASIS KMIP Specification v2.1 §6.1.33, opening operation description.
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.33-001-001";
-    const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-6.1.33-001";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.33-001-001";
+    const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-6.1.33-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const MAC_VERIFY_OPERATION: u32 = 0x0000_0024;
 
@@ -25576,8 +25464,8 @@ fn profile_maps_mac_verify_original_data_as_optional_capability() {
         .expect("a MAC Verify Data rule does not constrain Locate requests");
 }
 
-const T052_RSA_PRIVATE_KEY_REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-3.7-002";
-const T052_RSA_PRIVATE_KEY_SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-3.7-002";
+const T052_RSA_PRIVATE_KEY_REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-3.7-002";
+const T052_RSA_PRIVATE_KEY_SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-3.7-002";
 
 fn t052_transparent_rsa_private_key_request(
     operation: u32,
@@ -25869,9 +25757,9 @@ fn profile_maps_obtain_lease_response_capabilities() {
     const LAST_CHANGE_DATE_TAG: u32 = 0x0042_0048;
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REQUIREMENT_IDS: [&str; 3] = [
-        "KMIP-REQ-SPEC-6.1.35-001-001",
-        "KMIP-REQ-SPEC-6.1.35-002",
-        "KMIP-REQ-SPEC-6.1.35-005",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
     ];
 
     let request = request_message_with_operation_payload(OBTAIN_LEASE_OPERATION, Structure::new());
@@ -25956,9 +25844,9 @@ fn profile_maps_obtain_lease_capabilities_in_ordered_and_id_correlated_mixed_bat
     const LAST_CHANGE_DATE_TAG: u32 = 0x0042_0048;
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REQUIREMENT_IDS: [&str; 3] = [
-        "KMIP-REQ-SPEC-6.1.35-001-001",
-        "KMIP-REQ-SPEC-6.1.35-002",
-        "KMIP-REQ-SPEC-6.1.35-005",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
     ];
     let selected = ProfileValidationResult {
         profile_ids: vec![BASELINE_PROFILE_ID.to_owned()],
@@ -26017,9 +25905,9 @@ fn profile_obtain_lease_response_capabilities_reject_malformed_success() {
     const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const REQUIREMENT_IDS: [&str; 3] = [
-        "KMIP-REQ-SPEC-6.1.35-001-001",
-        "KMIP-REQ-SPEC-6.1.35-002",
-        "KMIP-REQ-SPEC-6.1.35-005",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIPKIT-REQ-SPEC-6.1.35-005",
     ];
     let request = request_message_with_operation_payload(OBTAIN_LEASE_OPERATION, Structure::new());
     let selected = ProfileValidationResult {
@@ -26120,8 +26008,8 @@ fn assert_static_caller_owned_operation_mapping(
 #[test]
 fn profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommendation() {
     assert_static_caller_owned_operation_mapping(
-        "KMIP-REQ-SPEC-6.1.45-004",
-        "KMIP-CLAUSE-SPEC-6.1.45-004",
+        "KMIPKIT-REQ-SPEC-6.1.45-004",
+        "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         "recertify_once_per_existing_certificate_caller_asserted",
         "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
@@ -26133,8 +26021,8 @@ fn profile_maps_recertify_once_per_existing_certificate_as_caller_owned_recommen
 #[test]
 fn profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation() {
     assert_static_caller_owned_operation_mapping(
-        "KMIP-REQ-SPEC-6.1.46-001",
-        "KMIP-CLAUSE-SPEC-6.1.46-001",
+        "KMIPKIT-REQ-SPEC-6.1.46-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         "rekey_once_per_existing_key_caller_asserted",
         "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
@@ -26146,8 +26034,8 @@ fn profile_maps_rekey_once_per_existing_key_as_caller_owned_recommendation() {
 #[test]
 fn profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommendation() {
     assert_static_caller_owned_operation_mapping(
-        "KMIP-REQ-SPEC-6.1.47-001",
-        "KMIP-CLAUSE-SPEC-6.1.47-001",
+        "KMIPKIT-REQ-SPEC-6.1.47-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         "rekey_key_pair_once_per_existing_pair_caller_asserted",
         "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
@@ -26159,8 +26047,8 @@ fn profile_maps_rekey_key_pair_once_per_existing_pair_as_caller_owned_recommenda
 #[test]
 fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_behavior() {
     assert_static_caller_owned_operation_mapping(
-        "KMIP-REQ-SPEC-6.1.48-006",
-        "KMIP-CLAUSE-SPEC-6.1.48-006",
+        "KMIPKIT-REQ-SPEC-6.1.48-006",
+        "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
         GeneratedVerificationCategory::RequiredBehavior,
         "reprovision_when_credentials_are_required_caller_directed",
         "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
@@ -26173,8 +26061,8 @@ fn profile_maps_reprovision_when_credentials_are_required_as_caller_directed_beh
 // OASIS KMIP Specification v2.1 §4.38 paragraph 4 and Table 106.
 fn profile_maps_original_creation_date_immutability_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
-        "KMIP-REQ-SPEC-4.38-003",
-        "KMIP-CLAUSE-SPEC-4.38-003",
+        "KMIPKIT-REQ-SPEC-4.38-003",
+        "KMIPKIT-CLAUSE-SPEC-4.38-003",
         "original_creation_date_immutable_after_set_caller_asserted",
         "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::original_creation_date_mutation_with_present_bound_context_is_rejected_before_transport",
     );
@@ -26183,7 +26071,7 @@ fn profile_maps_original_creation_date_immutability_as_caller_owned_prohibition(
 #[test]
 // OASIS KMIP Specification v2.1 §4.57 paragraph 5.
 fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
-    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.57-005-002";
+    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.57-005-002";
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
@@ -26194,7 +26082,7 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
         .expect("the trusted-client recommendation resolves to normative metadata");
 
     assert!(requirement.has_accepted_deviation);
-    assert_eq!(mapping.source_clause_id, "KMIP-CLAUSE-SPEC-4.57-005");
+    assert_eq!(mapping.source_clause_id, "KMIPKIT-CLAUSE-SPEC-4.57-005");
     assert_eq!(
         mapping.verification_category,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation
@@ -26221,8 +26109,8 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
 // OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
-        "KMIP-REQ-SPEC-4.59-002",
-        "KMIP-CLAUSE-SPEC-4.59-002",
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
         "usage_limits_total_immutable_after_protection_begins_caller_asserted",
         "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_protection_use_is_rejected_with_bound_context",
     );
@@ -26232,8 +26120,8 @@ fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition(
 // OASIS KMIP Specification v2.1 §4.59 and Table 149.
 fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
-        "KMIP-REQ-SPEC-4.59-002",
-        "KMIP-CLAUSE-SPEC-4.59-002",
+        "KMIPKIT-REQ-SPEC-4.59-002",
+        "KMIPKIT-CLAUSE-SPEC-4.59-002",
         "usage_limits_total_immutable_after_protection_begins_caller_asserted",
         "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_without_count_change_uses_general_prohibition",
     );
@@ -26243,8 +26131,8 @@ fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_gene
 // OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
-        "KMIP-REQ-SPEC-4.59-003-001",
-        "KMIP-CLAUSE-SPEC-4.59-003",
+        "KMIPKIT-REQ-SPEC-4.59-003-001",
+        "KMIPKIT-CLAUSE-SPEC-4.59-003",
         "usage_limits_total_immutable_after_count_allocation_caller_asserted",
         "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
     );
@@ -26254,8 +26142,8 @@ fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition(
 // OASIS KMIP Specification v2.1 §6.1.14 paragraph 2 and Table 205.
 fn profile_maps_multiple_derive_key_inputs_as_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.14-002",
-        "KMIP-CLAUSE-SPEC-6.1.14-002",
+        "KMIPKIT-REQ-SPEC-6.1.14-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
         GeneratedVerificationCategory::OptionalCapability,
         "derive_key_multiple_inputs_caller_selected",
         "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
@@ -26263,7 +26151,7 @@ fn profile_maps_multiple_derive_key_inputs_as_optional_capability() {
     );
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
-        .find(|mapping| mapping.requirement_id == "KMIP-REQ-SPEC-6.1.14-002")
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-6.1.14-002")
         .expect("multiple Derive Key inputs have a typed profile mapping");
     assert_eq!(
         mapping.test_evidence.len(),
@@ -26276,8 +26164,8 @@ fn profile_maps_multiple_derive_key_inputs_as_optional_capability() {
 // OASIS KMIP Specification v2.1 §6.1.34 paragraph 1 and Table 265.
 fn profile_maps_modify_attribute_existing_instance_as_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.34-001-003",
-        "KMIP-CLAUSE-SPEC-6.1.34-001",
+        "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
         GeneratedVerificationCategory::OptionalCapability,
         "modify_attribute_existing_instance_named",
         "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
@@ -26358,8 +26246,8 @@ fn assert_static_caller_owned_profile_rule_mapping(
 // OASIS KMIP Specification v2.1 §4.17 paragraph 1 and Table 61.
 fn profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.17-001-001",
-        "KMIP-CLAUSE-SPEC-4.17-001",
+        "KMIPKIT-REQ-SPEC-4.17-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
         GeneratedVerificationCategory::OptionalCapability,
         "target_usage_mask_allows_requested_function_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
@@ -26371,8 +26259,8 @@ fn profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability() {
 // OASIS KMIP Specification v2.1 §4.17 paragraph 1 and Table 61.
 fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.17-001-002",
-        "KMIP-CLAUSE-SPEC-4.17-001",
+        "KMIPKIT-REQ-SPEC-4.17-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.17-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "target_usage_mask_excludes_requested_function_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
@@ -26384,8 +26272,8 @@ fn profile_maps_usage_mask_restriction_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §4.34 paragraph 1.
 fn profile_maps_single_key_usage_recommendation_as_caller_owned_behavior() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.34-001-002",
-        "KMIP-CLAUSE-SPEC-4.34-001",
+        "KMIPKIT-REQ-SPEC-4.34-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.34-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         "single_cryptographic_usage_per_key_object_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
@@ -26397,8 +26285,8 @@ fn profile_maps_single_key_usage_recommendation_as_caller_owned_behavior() {
 // OASIS KMIP Specification v2.1 §4.30 paragraph 1.
 fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.30-001",
-        "KMIP-CLAUSE-SPEC-4.30-001",
+        "KMIPKIT-REQ-SPEC-4.30-001",
+        "KMIPKIT-CLAUSE-SPEC-4.30-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "lease_not_expired_or_renewed_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
@@ -26410,8 +26298,8 @@ fn profile_maps_lease_expiry_restriction_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §6.1.23 paragraph 1.
 fn profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.23-001-001",
-        "KMIP-CLAUSE-SPEC-6.1.23-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "usage_allocation_obtained_before_protection_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
@@ -26423,8 +26311,8 @@ fn profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition()
 // OASIS KMIP Specification v2.1 §6.1.23 paragraph 1.
 fn profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.23-001-002",
-        "KMIP-CLAUSE-SPEC-6.1.23-001",
+        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
         GeneratedVerificationCategory::RequiredBehavior,
         "usage_allocation_requested_within_object_date_window_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
@@ -26436,8 +26324,8 @@ fn profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior()
 // OASIS KMIP Specification v2.1 §6.1.23 paragraph 2.
 fn profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.23-002-002",
-        "KMIP-CLAUSE-SPEC-6.1.23-002",
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "usage_allocation_remains_available_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
@@ -26449,8 +26337,8 @@ fn profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §6.1.35 paragraph 1.
 fn profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-6.1.35-001-002",
-        "KMIP-CLAUSE-SPEC-6.1.35-001",
+        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
+        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "lease_not_expired_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
@@ -26462,8 +26350,8 @@ fn profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §4.1 paragraph 1.
 fn profile_maps_activation_date_use_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.1-001-001",
-        "KMIP-CLAUSE-SPEC-4.1-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::OptionalCapability,
         "activation_date_reached_before_use_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
@@ -26475,8 +26363,8 @@ fn profile_maps_activation_date_use_as_caller_owned_optional_capability() {
 // OASIS KMIP Specification v2.1 §4.1 paragraph 1.
 fn profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.1-001-002",
-        "KMIP-CLAUSE-SPEC-4.1-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "no_cryptographic_use_before_activation_date_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
@@ -26488,8 +26376,8 @@ fn profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §4.1 paragraph 1.
 fn profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.1-001-003",
-        "KMIP-CLAUSE-SPEC-4.1-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-003",
+        "KMIPKIT-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "activation_date_immutable_after_pre_active_until_destruction_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
@@ -26501,8 +26389,8 @@ fn profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition
 // OASIS KMIP Specification v2.1 §4.18 paragraph 1.
 fn profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.18-001-001",
-        "KMIP-CLAUSE-SPEC-4.18-001",
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "deactivation_date_exceptional_use_requires_special_permission_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
@@ -26514,8 +26402,8 @@ fn profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition() {
 // OASIS KMIP Specification v2.1 §4.18 paragraph 1.
 fn profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-4.18-001-002",
-        "KMIP-CLAUSE-SPEC-4.18-001",
+        "KMIPKIT-REQ-SPEC-4.18-001-002",
+        "KMIPKIT-CLAUSE-SPEC-4.18-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         "deactivation_date_change_only_in_pre_active_or_active_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
@@ -26527,8 +26415,8 @@ fn profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibiti
 // OASIS KMIP Specification v2.1 §9.11, Hashed Password paragraph before Table 415.
 fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-9.11-010-001",
-        "KMIP-CLAUSE-SPEC-9.11-010",
+        "KMIPKIT-REQ-SPEC-9.11-010-001",
+        "KMIPKIT-CLAUSE-SPEC-9.11-010",
         GeneratedVerificationCategory::RequiredBehavior,
         "hashed_password_timestamp_monotonicity_per_username",
         "crates/kmipkit-protocol/tests/credential_contract.rs::hashed_password_timestamp_sequence_accepts_strictly_increasing_values",
@@ -26537,7 +26425,7 @@ fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior(
 
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
-        .find(|mapping| mapping.requirement_id == "KMIP-REQ-SPEC-9.11-010-001")
+        .find(|mapping| mapping.requirement_id == "KMIPKIT-REQ-SPEC-9.11-010-001")
         .expect("Hashed Password Timestamp requirement has a typed mapping");
     assert!(mapping.test_evidence.iter().any(|evidence| {
         evidence.test_id
@@ -26550,8 +26438,8 @@ fn profile_maps_hashed_password_timestamp_monotonicity_as_caller_owned_behavior(
 // OASIS KMIP Specification v2.1 §9.20 paragraph 1.
 fn profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability() {
     assert_static_caller_owned_profile_rule_mapping(
-        "KMIP-REQ-SPEC-9.20-001-002",
-        "KMIP-CLAUSE-SPEC-9.20-001",
+        "KMIPKIT-REQ-SPEC-9.20-001-002",
+        "KMIPKIT-CLAUSE-SPEC-9.20-001",
         GeneratedVerificationCategory::OptionalCapability,
         "countdown_timer_relative_dates_from_server_timestamp_caller_asserted",
         "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_countdown_relative_date_use_as_caller_owned_optional_capability",

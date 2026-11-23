@@ -43,7 +43,7 @@ PARITY_EVIDENCE = {
 }
 OPERATION_TARGETS = {
     "Encrypt": {
-        "id": "KMIP-ELEM-OP-C2S-ENCRYPT",
+        "id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
         "request": {
             "rust": "kmipkit_client::ClientRequest::Encrypt",
             "c": "kmipkit_client_batch_item_encrypt",
@@ -64,7 +64,7 @@ OPERATION_TARGETS = {
         },
     },
     "Decrypt": {
-        "id": "KMIP-ELEM-OP-C2S-DECRYPT",
+        "id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
         "request": {
             "rust": "kmipkit_client::ClientRequest::Decrypt",
             "c": "kmipkit_client_batch_item_decrypt",
@@ -87,27 +87,27 @@ OPERATION_TARGETS = {
 }
 OPERATION_NORMATIVE_REQUIREMENTS = {
     "Encrypt": {
-        "KMIP-REQ-SPEC-4.16-001-001",
-        "KMIP-REQ-SPEC-4.16-001-002",
-        "KMIP-REQ-SPEC-4.16-002",
-        "KMIP-REQ-SPEC-4.16-003",
-        "KMIP-REQ-SPEC-6.1.17-001-001",
-        "KMIP-REQ-SPEC-6.1.17-001-002",
-        "KMIP-REQ-SPEC-6.1.17-005-001",
-        "KMIP-REQ-SPEC-6.1.17-005-002",
-        "KMIP-REQ-SPEC-6.1.17-006",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-001",
+        "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+        "KMIPKIT-REQ-SPEC-6.1.17-006",
     },
     "Decrypt": {
-        "KMIP-REQ-SPEC-4.16-001-001",
-        "KMIP-REQ-SPEC-4.16-001-002",
-        "KMIP-REQ-SPEC-4.16-002",
-        "KMIP-REQ-SPEC-4.16-003",
-        "KMIP-REQ-SPEC-6.1.11-001-001",
-        "KMIP-REQ-SPEC-6.1.11-001-002",
-        "KMIP-REQ-SPEC-6.1.11-004-001",
-        "KMIP-REQ-SPEC-6.1.11-004-002",
-        "KMIP-REQ-SPEC-6.1.11-005",
-        "KMIP-REQ-SPEC-6.1.11-006",
+        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIPKIT-REQ-SPEC-4.16-001-002",
+        "KMIPKIT-REQ-SPEC-4.16-002",
+        "KMIPKIT-REQ-SPEC-4.16-003",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+        "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+        "KMIPKIT-REQ-SPEC-6.1.11-005",
+        "KMIPKIT-REQ-SPEC-6.1.11-006",
     },
 }
 RESULT_CONTAINER_TARGETS = {

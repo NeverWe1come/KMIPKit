@@ -12,25 +12,25 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OASIS = ROOT / "verification" / "conformance" / "oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 OWNER_SPEC = "specs/017-managed-object-retrieval/spec.md"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-LOCATE"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
 CONTRACT_EVIDENCE = (
     "verification/api/tests/test_t102_locate_request_builder_mapping.py"
 )
 
 OWNER_REQUIREMENTS = {
     *(f"KMIPKIT-0017-FR-{number:03}" for number in (1, 2, 6, 7, 9, 13)),
-    "KMIP-REQ-SPEC-6.1.28-001",
-    "KMIP-REQ-SPEC-6.1.28-002",
-    "KMIP-REQ-SPEC-6.1.28-007",
-    "KMIP-REQ-SPEC-6.1.28-013-001",
-    "KMIP-REQ-SPEC-6.1.28-013-002",
+    "KMIPKIT-REQ-SPEC-6.1.28-001",
+    "KMIPKIT-REQ-SPEC-6.1.28-002",
+    "KMIPKIT-REQ-SPEC-6.1.28-007",
+    "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+    "KMIPKIT-REQ-SPEC-6.1.28-013-002",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{number:03}"
     for number in (4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 21, 22)
 }
-SERVER_ONLY_REQUIREMENT = "KMIP-REQ-SPEC-6.1.28-011"
-LOCATE_ATTRIBUTE_REQUIREMENT = "KMIP-REQ-SPEC-6.1.28-007"
+SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
+LOCATE_ATTRIBUTE_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
 
 LOCATE_EXISTING_OPERATION_DECLARATIONS = {
     "rust-observed-0ed7f834e1e763c2bd24",

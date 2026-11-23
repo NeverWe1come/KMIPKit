@@ -1341,7 +1341,7 @@ class BindingExportAuditTests(unittest.TestCase):
             if key[0] == "java-kmipkit"
             and key[1].startswith("org.kmipkit.NativeExtensionRegistry.")
         }
-        # The review tree carries code and verification tests without external design records.
+        # The review tree intentionally does not carry SDD approval records.
         # Keep validating every checked-in exclusion against the known JNI
         # bridge surface, and make sure bridge methods are not published as API
         # declarations. This avoids requiring one manifest exclusion per
@@ -1667,10 +1667,10 @@ class BindingExportAuditTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[3]
         report_dir = repo_root / "specs/043-public-api-bindings/reports"
         if not report_dir.is_dir():
-            self.skipTest("Historical audit report artifacts are not bundled with this source distribution")
+            self.skipTest("SDD report artifacts are intentionally excluded from this branch")
         reports = list(report_dir.glob("binding-export-report-*.json"))
         if not reports:
-            self.skipTest("no checked-in export report is present")
+            self.skipTest("no checked-in SDD export report is present")
         report_path = max(reports)
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertEqual(

@@ -272,7 +272,7 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
             operation = _operation_for_name(row["exportName"])
             with self.subTest(export=row["exportName"]):
                 self.assertEqual("verified", row["declarationState"])
-                self.assertEqual(f"KMIP-ELEM-OP-C2S-{operation.upper()}", row["capabilityId"])
+                self.assertEqual(f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}", row["capabilityId"])
                 self.assertEqual("four-language", row["parityScope"])
                 mappings = row["languageMappings"]
                 self.assertEqual(
@@ -315,7 +315,7 @@ class T098LifecycleReconciliationTests(unittest.TestCase):
             manifest_operation = next(
                 item
                 for item in self.manifest["operations"]
-                if item.get("operationId") == f"KMIP-ELEM-OP-C2S-{operation.upper()}"
+                if item.get("operationId") == f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"
             )
             with self.subTest(operation=operation):
                 self.assertTrue(

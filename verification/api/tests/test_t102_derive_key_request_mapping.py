@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/023-key-material-transfer/spec.md"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-DERIVE-KEY"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_derive_key_request_mapping.py"
 DECLARATIONS = (
     (
@@ -85,7 +85,7 @@ class T102DeriveKeyRequestMappingTests(unittest.TestCase):
     def test_mapping_is_grounded_in_the_approved_table_and_existing_wire_test(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Derive Key | KMIP-ELEM-OP-C2S-DERIVE-KEY | §6.1.14 | 205 | 206 | 207 |",
+            "| Derive Key | KMIPKIT-ELEM-OP-C2S-DERIVE-KEY | §6.1.14 | 205 | 206 | 207 |",
             owner,
         )
         request_source = (ROOT / "crates/kmipkit-protocol/src/derive_key.rs").read_text(

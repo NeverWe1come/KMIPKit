@@ -23,11 +23,11 @@ fn baseline_target_selection_requires_category_appropriate_evidence() {
         .expect("the generated catalog includes Baseline Client");
     assert!(target.selected_target);
     for attribute_requirement in [
-        "KMIP-REQ-SPEC-4.1-001-001",
-        "KMIP-REQ-SPEC-4.1-001-002",
-        "KMIP-REQ-SPEC-4.1-001-003",
-        "KMIP-REQ-SPEC-4.18-001-001",
-        "KMIP-REQ-SPEC-4.18-001-002",
+        "KMIPKIT-REQ-SPEC-4.1-001-001",
+        "KMIPKIT-REQ-SPEC-4.1-001-002",
+        "KMIPKIT-REQ-SPEC-4.1-001-003",
+        "KMIPKIT-REQ-SPEC-4.18-001-001",
+        "KMIPKIT-REQ-SPEC-4.18-001-002",
         "KMIPKIT-REQ-PROF-6-001",
     ] {
         assert!(target.requirement_ids.contains(&attribute_requirement));
@@ -38,18 +38,15 @@ fn baseline_target_selection_requires_category_appropriate_evidence() {
                 .any(|obligation| obligation.requirement_id == attribute_requirement)
         );
     }
-    assert!(target.requirement_ids.contains(&"KMIP-REQ-SPEC-2.3-001"));
+    assert!(target.requirement_ids.contains(&"KMIPKIT-REQ-SPEC-2.3-001"));
 
     // KMIP Profiles v2.1 §6.1 item 1 incorporates the entire KMIP
     // Specification. KMIP Specification v2.1 §14.1 supplies the client
     // profile prerequisite and complete-closure claim gate.
-    for whole_spec_requirement in ["KMIP-REQ-SPEC-14.1-001", "KMIP-REQ-SPEC-14.1-002"] {
+    for whole_spec_requirement in ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"] {
         assert!(target.requirement_ids.contains(&whole_spec_requirement));
     }
-    for whole_spec_clause in [
-        "KMIP-CLAUSE-SPEC-14.1-001",
-        "KMIP-CLAUSE-SPEC-14.1-002",
-    ] {
+    for whole_spec_clause in ["KMIPKIT-CLAUSE-SPEC-14.1-001", "KMIPKIT-CLAUSE-SPEC-14.1-002"] {
         assert!(target.source_clause_ids.contains(&whole_spec_clause));
     }
 
@@ -148,7 +145,7 @@ fn in_scope_non_target_profile_reports_its_own_unmapped_requirement() {
 
     assert_eq!(error.code(), ProfileValidationErrorCode::MissingRuleMapping);
     assert_eq!(error.profile_id(), Some(AES_XTS));
-    assert_ne!(error.requirement_id(), Some("KMIP-REQ-SPEC-4.38-003"));
+    assert_ne!(error.requirement_id(), Some("KMIPKIT-REQ-SPEC-4.38-003"));
     assert!(error.source_clause_id().is_some());
 }
 

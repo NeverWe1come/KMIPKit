@@ -28,8 +28,8 @@ TYPED_C_HEADER_OUTPUT_PATH = "bindings/c/include/kmipkit_standard_attributes_gen
 TYPED_JAVA_OUTPUT_PATH = "bindings/java/src/main/java/org/kmipkit/ttlv/StandardAttribute.java"
 TYPED_PYTHON_OUTPUT_PATH = "bindings/python/src/kmipkit/_generated/standard_attribute.py"
 CLIENT_ATTRIBUTE_TAG_OUTPUT_PATH = "crates/kmipkit-client/src/attribute_tags_generated.rs"
-_VENDOR_ATTRIBUTE_ID = "KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
-_CERTIFICATE_ATTRIBUTES_ID = "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
+_VENDOR_ATTRIBUTE_ID = "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
+_CERTIFICATE_ATTRIBUTES_ID = "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
 _VENDOR_ATTRIBUTE_TAG = 0x0042_0008
 _WIRE_VALUE = re.compile(r"(?:0x)?[0-9A-Fa-f]{6}\Z")
 _TYPE_NAMES = {
@@ -197,7 +197,7 @@ def _marker_from_words(words: list[str]) -> str:
 
 
 def _marker_identifier(element_id: str) -> str:
-    prefix = "KMIP-ELEM-ATTRIBUTE-"
+    prefix = "KMIPKIT-ELEM-ATTRIBUTE-"
     if not element_id.startswith(prefix):
         raise ValueError("catalog attribute has an invalid element identity")
     words = re.findall(r"[A-Za-z]+|[0-9]+", element_id[len(prefix) :])
@@ -362,7 +362,7 @@ def collect_typed_attributes(
         multiplicity = entry.get("source_multiplicity")
         if multiplicity is not None and (not isinstance(multiplicity, str) or not multiplicity.strip()):
             raise ValueError("versioned attribute has invalid multiplicity metadata")
-        element_id = f"KMIP-ELEM-ATTRIBUTE-V30-{_constant_name(marker_name).replace('_', '-')}"
+        element_id = f"KMIPKIT-ELEM-ATTRIBUTE-V30-{_constant_name(marker_name).replace('_', '-')}"
         definitions.append(
             TypedAttributeDefinition(
                 element_id=element_id,

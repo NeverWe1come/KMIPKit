@@ -233,8 +233,8 @@ class PublicApiParityTests(unittest.TestCase):
                             "KMIPKIT-0014-FR-",
                             "KMIPKIT-0008-FR-",
                             "KMIPKIT-0039-FR-",
-                            "KMIP-REQ-SPEC-9.11-",
-                            "KMIP-REQ-SPEC-6.1.23-",
+                            "KMIPKIT-REQ-SPEC-9.11-",
+                            "KMIPKIT-REQ-SPEC-6.1.23-",
                         ))
                         for requirement in case["requirementIds"]
                     ),
@@ -673,7 +673,7 @@ class PublicApiParityTests(unittest.TestCase):
         operation = next(
             item
             for item in self.manifest["operations"]
-            if item["operationId"] == "KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS"
+            if item["operationId"] == "KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS"
         )
 
         self.assertEqual(operation["apiState"], "verified")

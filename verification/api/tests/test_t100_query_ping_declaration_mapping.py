@@ -90,7 +90,7 @@ def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
     expected: dict[str, tuple[str, dict[str, str], set[str]]] = {}
     operations = {
         "Ping": {
-            "capability": "KMIP-ELEM-OP-C2S-PING",
+            "capability": "KMIPKIT-ELEM-OP-C2S-PING",
             "owner_requirements": {"KMIPKIT-0020-FR-001", "KMIPKIT-0020-FR-002", "KMIPKIT-0020-FR-008", "KMIPKIT-0020-FR-009"},
             "batch_item": {
                 "c": "kmipkit_client_batch_item_ping",
@@ -99,7 +99,7 @@ def _expected_mappings() -> dict[str, tuple[str, dict[str, str], set[str]]]:
             },
         },
         "Query": {
-            "capability": "KMIP-ELEM-OP-C2S-QUERY",
+            "capability": "KMIPKIT-ELEM-OP-C2S-QUERY",
             "owner_requirements": {"KMIPKIT-0020-FR-001", "KMIPKIT-0020-FR-003", "KMIPKIT-0020-FR-004", "KMIPKIT-0020-FR-005", "KMIPKIT-0020-FR-006", "KMIPKIT-0020-FR-007", "KMIPKIT-0020-FR-008", "KMIPKIT-0020-FR-009", "KMIPKIT-0020-FR-012"},
             "batch_item": {
                 "c": "kmipkit_client_batch_item_query",

@@ -143,7 +143,7 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
             ("0x42_01_72", "Rotate Latest"),
         ]:
             self.assertIn(
-                f'tag: {tag_hex},\n        element_id: "KMIP-ELEM-ATTRIBUTE-{name.upper().replace(" ", "-")}",\n        name: "{name}",\n        min_version: (2, 1),',
+                f'tag: {tag_hex},\n        element_id: "KMIPKIT-ELEM-ATTRIBUTE-{name.upper().replace(" ", "-")}",\n        name: "{name}",\n        min_version: (2, 1),',
                 rust,
             )
 

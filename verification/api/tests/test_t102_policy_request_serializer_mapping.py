@@ -15,9 +15,9 @@ PARITY_TEST_EVIDENCE_ID = (
 OPERATIONS = {
     "get_constraints": {
         "name": "Get Constraints",
-        "capability": "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS",
+        "capability": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
         "builder": "kmipkit_client_batch_item_get_constraints",
-        "table_row": "| Get Constraints | KMIP-ELEM-OP-C2S-GET-CONSTRAINTS | §6.1.22 | 229 | 230 | 231 |",
+        "table_row": "| Get Constraints | KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS | §6.1.22 | 229 | 230 | 231 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/get_constraints_tests.rs",
         "citation": ("§6.1.22", "Tables 229–231"),
         "targets": (
@@ -37,9 +37,9 @@ OPERATIONS = {
     },
     "set_constraints": {
         "name": "Set Constraints",
-        "capability": "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS",
+        "capability": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
         "builder": "kmipkit_client_batch_item_set_constraints",
-        "table_row": "| Set Constraints | KMIP-ELEM-OP-C2S-SET-CONSTRAINTS | §6.1.52 | 325 | 326 | 327 |",
+        "table_row": "| Set Constraints | KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS | §6.1.52 | 325 | 326 | 327 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/set_constraints_tests.rs",
         "citation": ("§6.1.52", "Tables 325–327"),
         "targets": (
@@ -59,9 +59,9 @@ OPERATIONS = {
     },
     "set_defaults": {
         "name": "Set Defaults",
-        "capability": "KMIP-ELEM-OP-C2S-SET-DEFAULTS",
+        "capability": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
         "builder": "kmipkit_client_batch_item_set_defaults",
-        "table_row": "| Set Defaults | KMIP-ELEM-OP-C2S-SET-DEFAULTS | §6.1.53 | 328 | 329 | 330 |",
+        "table_row": "| Set Defaults | KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS | §6.1.53 | 328 | 329 | 330 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/set_defaults_tests.rs",
         "citation": ("§6.1.53", "Tables 328–330"),
         "targets": (

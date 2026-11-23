@@ -15,9 +15,9 @@ PARITY_TEST_EVIDENCE_ID = (
 OPERATIONS = {
     "delegated_login": {
         "name": "Delegated Login",
-        "capability": "KMIP-ELEM-OP-C2S-DELEGATED-LOGIN",
+        "capability": "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN",
         "builder": "kmipkit_client_batch_item_delegated_login",
-        "table_row": "| Delegated Login | KMIP-ELEM-OP-C2S-DELEGATED-LOGIN | §6.1.12 | 199 | 200 | 201 |",
+        "table_row": "| Delegated Login | KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN | §6.1.12 | 199 | 200 | 201 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs",
         "citation": ("§6.1.12", "Tables 199–201"),
         "targets": (
@@ -37,9 +37,9 @@ OPERATIONS = {
     },
     "login": {
         "name": "Login",
-        "capability": "KMIP-ELEM-OP-C2S-LOGIN",
+        "capability": "KMIPKIT-ELEM-OP-C2S-LOGIN",
         "builder": "kmipkit_client_batch_item_login",
-        "table_row": "| Login | KMIP-ELEM-OP-C2S-LOGIN | §6.1.30 | 253 | 254 | 255 |",
+        "table_row": "| Login | KMIPKIT-ELEM-OP-C2S-LOGIN | §6.1.30 | 253 | 254 | 255 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/login_operation_tests.rs",
         "citation": ("§6.1.30", "Tables 253–255"),
         "targets": (
@@ -59,9 +59,9 @@ OPERATIONS = {
     },
     "logout": {
         "name": "Logout",
-        "capability": "KMIP-ELEM-OP-C2S-LOGOUT",
+        "capability": "KMIPKIT-ELEM-OP-C2S-LOGOUT",
         "builder": "kmipkit_client_batch_item_logout",
-        "table_row": "| Logout | KMIP-ELEM-OP-C2S-LOGOUT | §6.1.31 | 256 | 257 | 258 |",
+        "table_row": "| Logout | KMIPKIT-ELEM-OP-C2S-LOGOUT | §6.1.31 | 256 | 257 | 258 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/logout_operation_tests.rs",
         "citation": ("§6.1.31", "Tables 256–258"),
         "targets": (

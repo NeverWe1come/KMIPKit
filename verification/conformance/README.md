@@ -20,6 +20,6 @@ python verification/conformance/validate.py --repo-root .
 python verification/conformance/generate_fluent_operation_inventory.py --check --repo-root .
 ```
 
-The complete catalog validation also checks historical project policy provenance, feature approvals, and evidence paths. Some of those records refer to the project guide, `.specify/`, `specs/`, and `docs/` on the full development branch, which are not imported here. Those checks can therefore report missing provenance; copying reference data does not approve a policy, refresh a historical coverage report, or establish full KMIP conformance. Retain these failures until the associated records are reviewed.
+The complete catalog validation also checks historical project policy provenance, feature approvals, and evidence paths. Some of those records refer to `AGENTS.md`, `.specify/`, `specs/`, and `docs/` on the full development branch, which are not imported here. Those checks can therefore report missing provenance; copying reference data does not approve a policy, refresh a historical coverage report, or establish full KMIP conformance. Retain these failures until the associated records are reviewed.
 
 The imported public API schema also exposes existing declaration metadata differences in the review manifest. Resolve those differences by reviewing the declarations and their evidence, without automatically promoting their verification state.

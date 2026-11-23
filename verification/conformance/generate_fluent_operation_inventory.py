@@ -109,7 +109,7 @@ def build_inventory(
         for element in base_catalog.get("elements", [])
         if isinstance(element, dict)
         and element.get("kind") == "enumeration_value"
-        and "KMIP-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
+        and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
     }
     for name, wire_value in v21_values.items():
         if operation_values.get(name) != wire_value:

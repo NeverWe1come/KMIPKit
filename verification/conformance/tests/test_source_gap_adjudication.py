@@ -16,36 +16,36 @@ SPEC_SOURCE_PATH = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip
 
 
 AUDITED_REQUIREMENTS = {
-    "KMIPKIT-SOURCE-GAP-SPEC-3.1-KEY-FORMAT-TYPE": "KMIP-REQ-SPEC-3.1-007",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL": "KMIP-REQ-SPEC-3.2-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD": "KMIP-REQ-SPEC-3.3-010",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER": "KMIP-REQ-SPEC-3.3-011",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY": "KMIP-REQ-SPEC-3.4-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.5-P": "KMIP-REQ-SPEC-3.5-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q": "KMIP-REQ-SPEC-3.5-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.5-G": "KMIP-REQ-SPEC-3.5-004",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.5-X": "KMIP-REQ-SPEC-3.5-005",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.6-P": "KMIP-REQ-SPEC-3.6-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.6-G": "KMIP-REQ-SPEC-3.6-004",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y": "KMIP-REQ-SPEC-3.6-005",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS": "KMIP-REQ-SPEC-3.7-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS": "KMIP-REQ-SPEC-3.8-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT": "KMIP-REQ-SPEC-3.8-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.9-P": "KMIP-REQ-SPEC-3.9-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.9-G": "KMIP-REQ-SPEC-3.9-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.9-X": "KMIP-REQ-SPEC-3.9-004",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.10-P": "KMIP-REQ-SPEC-3.10-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.10-G": "KMIP-REQ-SPEC-3.10-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y": "KMIP-REQ-SPEC-3.10-004",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE": "KMIP-REQ-SPEC-3.11-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.11-D": "KMIP-REQ-SPEC-3.11-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE": "KMIP-REQ-SPEC-3.12-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING": "KMIP-REQ-SPEC-3.12-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION": "KMIP-REQ-SPEC-5.5-003",
-    "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME": "KMIP-REQ-SPEC-5.5-004",
-    "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG": "KMIP-REQ-SPEC-5.5-005",
-    "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE": "KMIP-REQ-SPEC-5.6-002",
-    "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE": "KMIP-REQ-SPEC-5.7-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.1-KEY-FORMAT-TYPE": "KMIPKIT-REQ-SPEC-3.1-007",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.2-KEY-MATERIAL": "KMIPKIT-REQ-SPEC-3.2-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.3-WRAPPING-METHOD": "KMIPKIT-REQ-SPEC-3.3-010",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.3-UNIQUE-IDENTIFIER": "KMIPKIT-REQ-SPEC-3.3-011",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.4-KEY": "KMIPKIT-REQ-SPEC-3.4-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.5-P": "KMIPKIT-REQ-SPEC-3.5-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.5-Q": "KMIPKIT-REQ-SPEC-3.5-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.5-G": "KMIPKIT-REQ-SPEC-3.5-004",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.5-X": "KMIPKIT-REQ-SPEC-3.5-005",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.6-P": "KMIPKIT-REQ-SPEC-3.6-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.6-G": "KMIPKIT-REQ-SPEC-3.6-004",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.6-Y": "KMIPKIT-REQ-SPEC-3.6-005",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.7-MODULUS": "KMIPKIT-REQ-SPEC-3.7-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.8-MODULUS": "KMIPKIT-REQ-SPEC-3.8-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.8-PUBLIC-EXPONENT": "KMIPKIT-REQ-SPEC-3.8-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.9-P": "KMIPKIT-REQ-SPEC-3.9-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.9-G": "KMIPKIT-REQ-SPEC-3.9-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.9-X": "KMIPKIT-REQ-SPEC-3.9-004",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.10-P": "KMIPKIT-REQ-SPEC-3.10-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.10-G": "KMIPKIT-REQ-SPEC-3.10-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.10-Y": "KMIPKIT-REQ-SPEC-3.10-004",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.11-RECOMMENDED-CURVE": "KMIPKIT-REQ-SPEC-3.11-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.11-D": "KMIPKIT-REQ-SPEC-3.11-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.12-RECOMMENDED-CURVE": "KMIPKIT-REQ-SPEC-3.12-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-3.12-Q-STRING": "KMIPKIT-REQ-SPEC-3.12-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION": "KMIPKIT-REQ-SPEC-5.5-003",
+    "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME": "KMIPKIT-REQ-SPEC-5.5-004",
+    "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG": "KMIPKIT-REQ-SPEC-5.5-005",
+    "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE": "KMIPKIT-REQ-SPEC-5.6-002",
+    "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE": "KMIPKIT-REQ-SPEC-5.7-002",
 }
 
 PROCEDURE_GAP_CONTEXT = {
@@ -108,7 +108,7 @@ def _normalized_html_source_span(lines: list[str], line_range: list[int]) -> str
     return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", source_span)).split())
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD sources are excluded from this branch")
 class SourceGapAdjudicationTests(unittest.TestCase):
     def test_section_4_21_lowercase_request_reuses_only_the_section_4_26_capability(self) -> None:
         catalog = _load_json(CATALOG_PATH)
@@ -116,9 +116,9 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        requirement_id = "KMIP-REQ-SPEC-4.26-001"
+        requirement_id = "KMIPKIT-REQ-SPEC-4.26-001"
         gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]
-        review = reviews["KMIP-CLAUSE-SPEC-4.21-001"]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.21-001"]
         client_atom, server_atom = review["source_obligations"][4:6]
         requirement = requirements[requirement_id]
 
@@ -147,7 +147,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             requirement["condition"],
             "The server produces cryptographic material for the client using Create, Create Key Pair, Create Split Key, Re-key, Re-key Key Pair, or Derive Key.",
         )
-        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-4.26-001"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.26-001"])
         self.assertNotIn("Register", requirement["condition"])
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(
@@ -177,9 +177,9 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"
-        requirement_id = "KMIP-REQ-SPEC-6.1-004"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1-004"
         gap = gaps[gap_id]
-        review = reviews["KMIP-CLAUSE-SPEC-4.24-001"]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.24-001"]
         client_atom = review["source_obligations"][1]
         requirement = requirements[requirement_id]
 
@@ -203,7 +203,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIsNone(client_atom["candidate_requirement_id"])
         self.assertEqual(client_atom["source_gap_id"], gap_id)
         self.assertEqual(requirement["source_keyword"], "MAY")
-        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-6.1-004"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1-004"])
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["scope_state"], "client_1_0")
@@ -218,10 +218,10 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
-        requirement_id = "KMIP-REQ-SPEC-4.31-002"
+        requirement_id = "KMIPKIT-REQ-SPEC-4.31-002"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"
         gap = gaps[gap_id]
-        review = reviews["KMIP-CLAUSE-SPEC-4.31-002"]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]
         atom = review["source_obligations"][0]
         self.assertTrue(
             requirement_id in requirements,
@@ -229,7 +229,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         )
         requirement = requirements[requirement_id]
 
-        self.assertEqual(gap["source_clause_id"], "KMIP-CLAUSE-SPEC-4.31-002")
+        self.assertEqual(gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-4.31-002")
         self.assertEqual(gap["html_line_range"], [15815, 15819])
         self.assertEqual(
             gap["source_excerpt"],
@@ -266,7 +266,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
             requirement["condition"],
             "associated cryptographic key material is unavailable to the server or client",
         )
-        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-4.31-002"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-002"])
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertEqual(
             requirement["implementation_refs"],
@@ -292,24 +292,24 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         self.assertIn("does not assign a message direction", requirement["review_note"])
         self.assertIn("every operation", requirement["review_note"])
 
-        clause = clauses["KMIP-CLAUSE-SPEC-4.31-002"]
+        clause = clauses["KMIPKIT-CLAUSE-SPEC-4.31-002"]
         self.assertEqual(clause["disposition"], "requirement")
         self.assertEqual(clause["requirement_ids"], [requirement_id])
         self.assertEqual(clause["role"], "client")
         self.assertEqual(clause["direction"], "unclear")
         self.assertEqual(clause["scope_state"], "client_1_0")
-        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-4.31-001"]["requirement_ids"], [])
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-4.31-001"]["requirement_ids"], [])
 
-        server_should = reviews["KMIP-CLAUSE-SPEC-4.31-001"]["source_obligations"][0]
+        server_should = reviews["KMIPKIT-CLAUSE-SPEC-4.31-001"]["source_obligations"][0]
         self.assertEqual(server_should["source_keyword"], "SHOULD")
         self.assertEqual(server_should["actor"], "server")
         self.assertEqual(server_should["scope_disposition"], "server_only")
         self.assertIsNone(server_should["candidate_requirement_id"])
 
-        header_requirement = requirements["KMIP-REQ-SPEC-4.31-003"]
+        header_requirement = requirements["KMIPKIT-REQ-SPEC-4.31-003"]
         self.assertEqual(header_requirement["role"], "not_applicable")
         self.assertEqual(header_requirement["scope_state"], "out_of_scope")
-        self.assertEqual(header_requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-4.31-003"])
+        self.assertEqual(header_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-4.31-003"])
 
     def test_section_4_31_table_91_required_members_have_distinct_client_mappings(self) -> None:
         catalog = _load_json(CATALOG_PATH)
@@ -324,17 +324,17 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         )
         expected_rows = {
             "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED": (
-                "KMIP-REQ-SPEC-4.31-004",
+                "KMIPKIT-REQ-SPEC-4.31-004",
                 "Link Type",
-                "KMIP-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINK-TYPE",
                 [15923, 15940],
                 "Link Type Enumeration Yes",
                 "KMIPKIT-TEST-CN01-2-66",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED": (
-                "KMIP-REQ-SPEC-4.31-005",
+                "KMIPKIT-REQ-SPEC-4.31-005",
                 "Linked Object Identifier",
-                "KMIP-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-31-LINKED-OBJECT-IDENTIFIER",
                 [15942, 15961],
                 "Linked Object Identifier Text String/Enumeration/Integer Yes",
                 "KMIPKIT-TEST-CN01-2-66",
@@ -386,12 +386,12 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertEqual(requirement["test_case_ids"], [test_case_id])
                 self.assertIsNone(requirement["feature_spec"])
                 expected_implementation_refs = {
-                    "KMIP-REQ-SPEC-4.31-004": [
+                    "KMIPKIT-REQ-SPEC-4.31-004": [
                         "crates/kmipkit-protocol/src/profile.rs::client_link_type_is_required_in_object_state",
                         "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
                         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
                     ],
-                    "KMIP-REQ-SPEC-4.31-005": [
+                    "KMIPKIT-REQ-SPEC-4.31-005": [
                         "crates/kmipkit-protocol/src/profile.rs::client_linked_object_identifier_is_required_in_object_state",
                         "crates/kmipkit-protocol/src/profile.rs::object_state_links_have_required_members",
                         "crates/kmipkit-protocol/src/profile.rs::TYPED_RULE_MAPPINGS",
@@ -433,7 +433,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         )
         self.assertEqual(official_case["official_case_id"], "TC-PGP-1-21")
         self.assertEqual(official_case["source_section"], "2.66")
-        self.assertEqual(official_case["requirement_ids"], ["KMIP-REQ-SPEC-4.31-004", "KMIP-REQ-SPEC-4.31-005"])
+        self.assertEqual(official_case["requirement_ids"], ["KMIPKIT-REQ-SPEC-4.31-004", "KMIPKIT-REQ-SPEC-4.31-005"])
         self.assertEqual(official_case["fixture_availability"], "unavailable")
         self.assertIsNone(official_case["fixture_path"])
 
@@ -483,15 +483,15 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_conditions = {
             "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION": (
-                "KMIP-REQ-SPEC-5.5-003",
+                "KMIPKIT-REQ-SPEC-5.5-003",
                 "vendor-name form of Attribute Reference",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME": (
-                "KMIP-REQ-SPEC-5.5-004",
+                "KMIPKIT-REQ-SPEC-5.5-004",
                 "vendor-name form of Attribute Reference",
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG": (
-                "KMIP-REQ-SPEC-5.5-005",
+                "KMIPKIT-REQ-SPEC-5.5-005",
                 "tag form of Attribute Reference",
             ),
         }
@@ -507,27 +507,27 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         mappings = {
-            "KMIP-REQ-SPEC-5.5-003": (
+            "KMIPKIT-REQ-SPEC-5.5-003": (
                 "KMIPKIT-SOURCE-GAP-SPEC-5.5-VENDOR-IDENTIFICATION",
                 "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
                 "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
             ),
-            "KMIP-REQ-SPEC-5.5-004": (
+            "KMIPKIT-REQ-SPEC-5.5-004": (
                 "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-NAME",
                 "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
                 "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_preserves_name_reference_order_and_omits_identifier_and_adjustment_value",
             ),
-            "KMIP-REQ-SPEC-5.5-005": (
+            "KMIPKIT-REQ-SPEC-5.5-005": (
                 "KMIPKIT-SOURCE-GAP-SPEC-5.5-ATTRIBUTE-REFERENCE-TAG",
                 "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::to_ttlv_item",
                 "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs::request_follows_table_170_field_order_and_preserves_tag_reference_and_parameter",
             ),
-            "KMIP-REQ-SPEC-5.6-002": (
+            "KMIPKIT-REQ-SPEC-5.6-002": (
                 "KMIPKIT-SOURCE-GAP-SPEC-5.6-CURRENT-ATTRIBUTE",
                 "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
                 "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
             ),
-            "KMIP-REQ-SPEC-5.7-002": (
+            "KMIPKIT-REQ-SPEC-5.7-002": (
                 "KMIPKIT-SOURCE-GAP-SPEC-5.7-NEW-ATTRIBUTE",
                 "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
                 "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
@@ -551,7 +551,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
     def test_tag_reference_response_mapping_cites_the_decoder(self) -> None:
         catalog = _load_json(CATALOG_PATH)
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        requirement = requirements["KMIP-REQ-SPEC-5.5-005"]
+        requirement = requirements["KMIPKIT-REQ-SPEC-5.5-005"]
 
         self.assertIn(
             "crates/kmipkit-protocol/src/attribute_reference.rs::AttributeReference::try_from_ttlv_item",
@@ -579,21 +579,21 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         affected_elements = set(discrepancy["affected_element_ids"])
         self.assertTrue(
             {
-                "KMIP-ELEM-OP-C2S-ENCRYPT",
-                "KMIP-ELEM-OP-C2S-DECRYPT",
-                "KMIP-ELEM-OP-C2S-HASH",
-                "KMIP-ELEM-OP-C2S-MAC",
-                "KMIP-ELEM-OP-C2S-SIGN",
-                "KMIP-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
-                "KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA",
-                "KMIP-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR",
-                "KMIP-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
-                "KMIP-ELEM-TAG-420107",
+                "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
+                "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+                "KMIPKIT-ELEM-OP-C2S-HASH",
+                "KMIPKIT-ELEM-OP-C2S-MAC",
+                "KMIPKIT-ELEM-OP-C2S-SIGN",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+                "KMIPKIT-ELEM-TAG-420107",
             } <= affected_elements,
             "all disputed operations and request fields must be recorded",
         )
-        self.assertNotIn("KMIP-ELEM-OP-C2S-MAC-VERIFY", affected_elements)
-        self.assertNotIn("KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY", affected_elements)
+        self.assertNotIn("KMIPKIT-ELEM-OP-C2S-MAC-VERIFY", affected_elements)
+        self.assertNotIn("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", affected_elements)
         self.assertEqual([], discrepancy["affected_requirement_ids"])
         self.assertEqual("normative_conflict", discrepancy["normative_status"])
         self.assertEqual("resolved_by_approved_decision", discrepancy["state"])
@@ -617,7 +617,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]}
 
         for ordinal in (6, 7, 8):
-            clause = clauses[f"KMIP-CLAUSE-SPEC-6.1-{ordinal:03d}"]
+            clause = clauses[f"KMIPKIT-CLAUSE-SPEC-6.1-{ordinal:03d}"]
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-{ordinal:03d}"]
             with self.subTest(clause=clause["clause_id"]):
                 self.assertEqual(gap["actor"], "client")
@@ -634,7 +634,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 self.assertIn("lowercase", clause["exclusion_rationale"].lower())
                 self.assertIn("standalone requirement id", clause["exclusion_rationale"].lower())
 
-        data_clause = clauses["KMIP-CLAUSE-SPEC-6.1-009"]
+        data_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1-009"]
         data_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009"]
         self.assertEqual(data_gap["actor"], "client")
         self.assertIn("request parameters", data_gap["direction"])
@@ -944,7 +944,7 @@ class SourceGapAdjudicationTests(unittest.TestCase):
                 else:
                     self.assertTrue(all(requirement_id not in ids for ids in profile_requirements.values()))
 
-        table_232_id = "KMIP-REQ-SPEC-6.1.23-002-001"
+        table_232_id = "KMIPKIT-REQ-SPEC-6.1.23-002-001"
         table_232_contract = contracts["KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"]
         self.assertNotIn(table_232_contract["gap_id"], gaps)
         self.assertEqual(table_232_contract["table_number"], 232)

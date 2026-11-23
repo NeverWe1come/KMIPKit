@@ -67,7 +67,7 @@ impl VendorAttributePolicy {
 pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     AttributePolicy {
         tag: 0x42_00_01,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
         name: "Activation Date",
         min_version: (2, 0),
         max_version: None,
@@ -99,7 +99,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_04,
-        element_id: "KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
         name: "Application Specific Information",
         min_version: (2, 0),
         max_version: None,
@@ -119,7 +119,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_05,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ARCHIVE-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
         name: "Archive Date",
         min_version: (2, 0),
         max_version: None,
@@ -139,7 +139,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_1D,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
         name: "Certificate Type",
         min_version: (2, 0),
         max_version: None,
@@ -172,7 +172,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_20,
-        element_id: "KMIP-ELEM-ATTRIBUTE-COMPROMISE-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
         name: "Compromise Date",
         min_version: (2, 0),
         max_version: None,
@@ -192,7 +192,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_21,
-        element_id: "KMIP-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
         name: "Compromise Occurrence Date",
         min_version: (2, 0),
         max_version: None,
@@ -212,7 +212,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_22,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
         name: "Contact Information",
         min_version: (2, 0),
         max_version: None,
@@ -232,7 +232,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_24,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
         name: "Credential Type",
         min_version: (3, 0),
         max_version: None,
@@ -251,7 +251,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_28,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
         name: "Cryptographic Algorithm",
         min_version: (2, 0),
         max_version: None,
@@ -283,7 +283,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_29,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
         name: "Cryptographic Domain Parameters",
         min_version: (2, 0),
         max_version: None,
@@ -303,7 +303,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_2A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
         name: "Cryptographic Length",
         min_version: (2, 0),
         max_version: None,
@@ -335,7 +335,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_2B,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
         name: "Cryptographic Parameters",
         min_version: (2, 0),
         max_version: None,
@@ -355,7 +355,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_2C,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
         name: "Cryptographic Usage Mask",
         min_version: (2, 0),
         max_version: None,
@@ -381,7 +381,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_2F,
-        element_id: "KMIP-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
         name: "Deactivation Date",
         min_version: (2, 0),
         max_version: None,
@@ -413,7 +413,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_33,
-        element_id: "KMIP-ELEM-ATTRIBUTE-DESTROY-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
         name: "Destroy Date",
         min_version: (2, 0),
         max_version: None,
@@ -433,7 +433,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_34,
-        element_id: "KMIP-ELEM-ATTRIBUTE-DIGEST",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
         name: "Digest",
         min_version: (2, 0),
         max_version: None,
@@ -465,7 +465,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_39,
-        element_id: "KMIP-ELEM-ATTRIBUTE-INITIAL-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
         name: "Initial Date",
         min_version: (2, 0),
         max_version: None,
@@ -498,7 +498,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_42,
-        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
         name: "Key Format Type",
         min_version: (2, 0),
         max_version: None,
@@ -525,7 +525,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_44,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
         name: "Key Part Identifier",
         min_version: (3, 0),
         max_version: None,
@@ -544,7 +544,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_48,
-        element_id: "KMIP-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
         name: "Last Change Date",
         min_version: (2, 0),
         max_version: None,
@@ -571,7 +571,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_49,
-        element_id: "KMIP-ELEM-ATTRIBUTE-LEASE-TIME",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
         name: "Lease Time",
         min_version: (2, 0),
         max_version: None,
@@ -624,7 +624,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_4A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LINK",
         name: "Link",
         min_version: (2, 0),
         max_version: Some((2, 1)),
@@ -644,7 +644,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_53,
-        element_id: "KMIP-ELEM-ATTRIBUTE-NAME",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NAME",
         name: "Name",
         min_version: (2, 0),
         max_version: None,
@@ -664,7 +664,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_56,
-        element_id: "KMIP-ELEM-ATTRIBUTE-OBJECT-GROUP",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
         name: "Object Group",
         min_version: (2, 0),
         max_version: None,
@@ -684,7 +684,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_57,
-        element_id: "KMIP-ELEM-ATTRIBUTE-OBJECT-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
         name: "Object Type",
         min_version: (2, 0),
         max_version: None,
@@ -717,7 +717,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_59,
-        element_id: "KMIP-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
         name: "Opaque Data Type",
         min_version: (2, 0),
         max_version: None,
@@ -750,7 +750,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_67,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PROCESS-START-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
         name: "Process Start Date",
         min_version: (2, 0),
         max_version: None,
@@ -782,7 +782,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_68,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
         name: "Protect Stop Date",
         min_version: (2, 0),
         max_version: None,
@@ -814,7 +814,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_81,
-        element_id: "KMIP-ELEM-ATTRIBUTE-REVOCATION-REASON",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
         name: "Revocation Reason",
         min_version: (2, 0),
         max_version: None,
@@ -834,7 +834,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_8A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
         name: "Split Key Method",
         min_version: (3, 0),
         max_version: None,
@@ -853,7 +853,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_8B,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
         name: "Split Key Parts",
         min_version: (3, 0),
         max_version: None,
@@ -872,7 +872,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_8C,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
         name: "Split Key Threshold",
         min_version: (3, 0),
         max_version: None,
@@ -891,7 +891,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_8D,
-        element_id: "KMIP-ELEM-ATTRIBUTE-STATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-STATE",
         name: "State",
         min_version: (2, 0),
         max_version: None,
@@ -936,7 +936,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_94,
-        element_id: "KMIP-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
         name: "Unique Identifier",
         min_version: (2, 0),
         max_version: None,
@@ -969,7 +969,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_95,
-        element_id: "KMIP-ELEM-ATTRIBUTE-USAGE-LIMITS",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
         name: "Usage Limits",
         min_version: (2, 0),
         max_version: None,
@@ -1015,7 +1015,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_A8,
-        element_id: "KMIP-ELEM-ATTRIBUTE-FRESH",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
         name: "Fresh",
         min_version: (2, 0),
         max_version: None,
@@ -1042,7 +1042,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_AD,
-        element_id: "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
         name: "Certificate Length",
         min_version: (2, 0),
         max_version: None,
@@ -1075,7 +1075,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_AE,
-        element_id: "KMIP-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
         name: "Digital Signature Algorithm",
         min_version: (2, 0),
         max_version: None,
@@ -1108,7 +1108,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_B5,
-        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
         name: "X.509 Certificate Identifier",
         min_version: (2, 0),
         max_version: Some((2, 1)),
@@ -1141,7 +1141,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_B6,
-        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
         name: "X.509 Certificate Issuer",
         min_version: (2, 0),
         max_version: Some((2, 1)),
@@ -1174,7 +1174,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_B7,
-        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
         name: "X.509 Certificate Subject",
         min_version: (2, 0),
         max_version: Some((2, 1)),
@@ -1207,7 +1207,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_B8,
-        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
         name: "Key Value Location",
         min_version: (2, 0),
         max_version: None,
@@ -1227,7 +1227,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_BB,
-        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
         name: "Key Value Present",
         min_version: (2, 0),
         max_version: None,
@@ -1259,7 +1259,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_BC,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
         name: "Original Creation Date",
         min_version: (2, 0),
         max_version: None,
@@ -1285,7 +1285,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_BF,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
         name: "Alternative Name",
         min_version: (2, 0),
         max_version: None,
@@ -1305,7 +1305,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_DE,
-        element_id: "KMIP-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
         name: "Random Number Generator",
         min_version: (2, 0),
         max_version: None,
@@ -1331,7 +1331,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_FB,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
         name: "PKCS#12 Friendly Name",
         min_version: (2, 0),
         max_version: None,
@@ -1351,7 +1351,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_FC,
-        element_id: "KMIP-ELEM-ATTRIBUTE-DESCRIPTION",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
         name: "Description",
         min_version: (2, 0),
         max_version: None,
@@ -1371,7 +1371,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_00_FD,
-        element_id: "KMIP-ELEM-ATTRIBUTE-COMMENT",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
         name: "Comment",
         min_version: (2, 0),
         max_version: None,
@@ -1391,7 +1391,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_20,
-        element_id: "KMIP-ELEM-ATTRIBUTE-SENSITIVE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
         name: "Sensitive",
         min_version: (2, 0),
         max_version: None,
@@ -1418,7 +1418,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_21,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
         name: "Always Sensitive",
         min_version: (2, 0),
         max_version: None,
@@ -1445,7 +1445,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_22,
-        element_id: "KMIP-ELEM-ATTRIBUTE-EXTRACTABLE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
         name: "Extractable",
         min_version: (2, 0),
         max_version: None,
@@ -1472,7 +1472,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_23,
-        element_id: "KMIP-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
         name: "Never Extractable",
         min_version: (2, 0),
         max_version: None,
@@ -1499,7 +1499,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_36,
-        element_id: "KMIP-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
         name: "Short Unique Identifier",
         min_version: (2, 0),
         max_version: None,
@@ -1532,7 +1532,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_3A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
         name: "NIST Key Type",
         min_version: (2, 0),
         max_version: None,
@@ -1558,7 +1558,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_45,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
         name: "Protection Level",
         min_version: (2, 0),
         max_version: None,
@@ -1578,7 +1578,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_46,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
         name: "Protection Period",
         min_version: (2, 0),
         max_version: None,
@@ -1598,7 +1598,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_47,
-        element_id: "KMIP-ELEM-ATTRIBUTE-QUANTUM-SAFE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
         name: "Quantum Safe",
         min_version: (2, 0),
         max_version: None,
@@ -1618,7 +1618,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_5E,
-        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
         name: "Protection Storage Mask",
         min_version: (2, 0),
         max_version: None,
@@ -1645,7 +1645,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
         name: "Rotate Interval",
         min_version: (2, 1),
         max_version: None,
@@ -1665,7 +1665,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6B,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
         name: "Rotate Automatic",
         min_version: (2, 1),
         max_version: None,
@@ -1685,7 +1685,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6C,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-OFFSET",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
         name: "Rotate Offset",
         min_version: (2, 1),
         max_version: None,
@@ -1705,7 +1705,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6D,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-DATE",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
         name: "Rotate Date",
         min_version: (2, 1),
         max_version: None,
@@ -1725,7 +1725,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6E,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-GENERATION",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
         name: "Rotate Generation",
         min_version: (2, 1),
         max_version: None,
@@ -1745,7 +1745,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_6F,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-NAME",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
         name: "Rotate Name",
         min_version: (2, 1),
         max_version: None,
@@ -1765,7 +1765,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_72,
-        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-LATEST",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
         name: "Rotate Latest",
         min_version: (2, 1),
         max_version: None,
@@ -1785,7 +1785,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_90,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
         name: "Certificate Link",
         min_version: (3, 0),
         max_version: None,
@@ -1804,7 +1804,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_91,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CHILD-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CHILD-LINK",
         name: "Child Link",
         min_version: (3, 0),
         max_version: None,
@@ -1823,7 +1823,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_92,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
         name: "Derivation Base Object Link",
         min_version: (3, 0),
         max_version: None,
@@ -1842,7 +1842,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_93,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
         name: "Derived Object Link",
         min_version: (3, 0),
         max_version: None,
@@ -1861,7 +1861,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_94,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-NEXT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NEXT-LINK",
         name: "Next Link",
         min_version: (3, 0),
         max_version: None,
@@ -1880,7 +1880,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_95,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PARENT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PARENT-LINK",
         name: "Parent Link",
         min_version: (3, 0),
         max_version: None,
@@ -1899,7 +1899,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_96,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PKCS-12-CERTIFICATE-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS-12-CERTIFICATE-LINK",
         name: "PKCS#12 Certificate Link",
         min_version: (3, 0),
         max_version: None,
@@ -1918,7 +1918,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_97,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PKCS-12-PASSWORD-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS-12-PASSWORD-LINK",
         name: "PKCS#12 Password Link",
         min_version: (3, 0),
         max_version: None,
@@ -1937,7 +1937,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_98,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
         name: "Previous Link",
         min_version: (3, 0),
         max_version: None,
@@ -1956,7 +1956,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_99,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
         name: "Private Key Link",
         min_version: (3, 0),
         max_version: None,
@@ -1975,7 +1975,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_9A,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
         name: "Public Key Link",
         min_version: (3, 0),
         max_version: None,
@@ -1994,7 +1994,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_9B,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
         name: "Replaced Object Link",
         min_version: (3, 0),
         max_version: None,
@@ -2013,7 +2013,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_9C,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
         name: "Replacement Object Link",
         min_version: (3, 0),
         max_version: None,
@@ -2032,7 +2032,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_9D,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
         name: "Wrapping Key Link",
         min_version: (3, 0),
         max_version: None,
@@ -2051,7 +2051,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_9E,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
         name: "Object Class",
         min_version: (3, 0),
         max_version: None,
@@ -2070,7 +2070,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_A0,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
         name: "Credential Link",
         min_version: (3, 0),
         max_version: None,
@@ -2089,7 +2089,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_A5,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
         name: "Password Link",
         min_version: (3, 0),
         max_version: None,
@@ -2108,7 +2108,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_AE,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
         name: "OTP Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2127,7 +2127,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_B3,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-GROUP-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-GROUP-LINK",
         name: "Group Link",
         min_version: (3, 0),
         max_version: None,
@@ -2146,7 +2146,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_B4,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
         name: "Split Key Base Link",
         min_version: (3, 0),
         max_version: None,
@@ -2165,7 +2165,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_B5,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
         name: "Joined Split Key Parts Link",
         min_version: (3, 0),
         max_version: None,
@@ -2184,7 +2184,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_B6,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
         name: "Split Key Polynomial",
         min_version: (3, 0),
         max_version: None,
@@ -2203,7 +2203,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_B8,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
         name: "Deactivation Reason",
         min_version: (3, 0),
         max_version: None,
@@ -2222,7 +2222,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BA,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
         name: "Certificate Subject DN",
         min_version: (3, 0),
         max_version: None,
@@ -2241,7 +2241,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BB,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
         name: "Certificate Issuer DN",
         min_version: (3, 0),
         max_version: None,
@@ -2260,7 +2260,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BC,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
         name: "Certificate Request Link",
         min_version: (3, 0),
         max_version: None,
@@ -2279,7 +2279,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BD,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
         name: "Certify Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2298,7 +2298,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BE,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
         name: "Decrypt Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2317,7 +2317,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_BF,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
         name: "Encrypt Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2336,7 +2336,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_C0,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
         name: "Sign Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2355,7 +2355,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_C1,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
         name: "Signature Verify Counter",
         min_version: (3, 0),
         max_version: None,
@@ -2374,7 +2374,7 @@ pub(super) const ATTRIBUTE_POLICIES: &[AttributePolicy] = &[
     },
     AttributePolicy {
         tag: 0x42_01_C2,
-        element_id: "KMIP-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
+        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
         name: "NIST Security Category",
         min_version: (3, 0),
         max_version: None,
@@ -2400,7 +2400,7 @@ pub(super) const VENDOR_ATTRIBUTE_POLICY: VendorAttributePolicy = VendorAttribut
     ],
     structure_table: "Table 150",
     source_text: "Vendor Attributes created by the server with Vendor Identification “y” are not created (provided during object creation), set, added, adjusted, modified or deleted by the client.",
-    member_element_id: "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
+    member_element_id: "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
     equals: "y",
     source_indicates_origin: "server_created",
     prohibited_client_operations: &[

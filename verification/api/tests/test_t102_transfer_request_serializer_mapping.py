@@ -15,9 +15,9 @@ PARITY_TEST_EVIDENCE_ID = (
 OPERATIONS = {
     "export": {
         "name": "Export",
-        "capability": "KMIP-ELEM-OP-C2S-EXPORT",
+        "capability": "KMIPKIT-ELEM-OP-C2S-EXPORT",
         "builder": "kmipkit_client_batch_item_export",
-        "table_row": "| Export | KMIP-ELEM-OP-C2S-EXPORT | §6.1.18 | 217 | 218 | 219 |",
+        "table_row": "| Export | KMIPKIT-ELEM-OP-C2S-EXPORT | §6.1.18 | 217 | 218 | 219 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/export_operation_tests.rs",
         "section": "§6.1.18",
         "target": (
@@ -28,9 +28,9 @@ OPERATIONS = {
     },
     "import": {
         "name": "Import",
-        "capability": "KMIP-ELEM-OP-C2S-IMPORT",
+        "capability": "KMIPKIT-ELEM-OP-C2S-IMPORT",
         "builder": "kmipkit_client_batch_item_import",
-        "table_row": "| Import | KMIP-ELEM-OP-C2S-IMPORT | §6.1.25 | 238 | 239 | 240 |",
+        "table_row": "| Import | KMIPKIT-ELEM-OP-C2S-IMPORT | §6.1.25 | 238 | 239 | 240 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
         "section": "§6.1.25",
         "target": (
@@ -41,9 +41,9 @@ OPERATIONS = {
     },
     "join_split_key": {
         "name": "Join Split Key",
-        "capability": "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "capability": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         "builder": "kmipkit_client_batch_item_join_split_key",
-        "table_row": "| Join Split Key | KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY | §6.1.27 | 244 | 245 | 246 |",
+        "table_row": "| Join Split Key | KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY | §6.1.27 | 244 | 245 | 246 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
         "section": "§6.1.27",
         "target": (

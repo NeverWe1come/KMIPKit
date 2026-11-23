@@ -214,7 +214,7 @@ class SharedRustInventoryTests(unittest.TestCase):
                     set(declaration["ownerRequirementIds"]) <= set(declaration["requirementIds"])
                 )
             else:
-                self.assertEqual(declaration["ownerAdrId"], "the transport architecture decision")
+                self.assertEqual(declaration["ownerAdrId"], "ADR-0014")
                 self.assertFalse(declaration["ownerRequirementIds"])
                 self.assertFalse(declaration["capabilityOwnerRequirementIds"])
                 self.assertIn("KMIPKIT-0043-FR-020", declaration["requirementIds"])

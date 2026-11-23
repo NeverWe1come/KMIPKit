@@ -11,7 +11,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-IMPORT"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-IMPORT"
 OWNER_SPEC = "specs/023-key-material-transfer/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 EXPECTED_MAPPINGS = {
@@ -53,9 +53,9 @@ EXPECTED_MAPPINGS = {
     },
 }
 REQUIREMENTS = {
-    "KMIP-REQ-SPEC-6.1.25-001",
-    "KMIP-REQ-SPEC-6.1.25-004",
-    "KMIP-REQ-SPEC-6.1.25-006",
+    "KMIPKIT-REQ-SPEC-6.1.25-001",
+    "KMIPKIT-REQ-SPEC-6.1.25-004",
+    "KMIPKIT-REQ-SPEC-6.1.25-006",
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
     "KMIPKIT-0043-FR-007",

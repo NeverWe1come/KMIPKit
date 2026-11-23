@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SPEC_SOURCE_PATH = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD sources are excluded from this branch")
 class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -66,9 +66,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
 
     def test_titlecase_may_candidates_are_explicitly_rejected_without_client_crosswalk(self) -> None:
         expected = {
-            "KMIP-REQ-SPEC-7.12-002": "KMIP-CLAUSE-SPEC-7.12-002",
-            "KMIP-REQ-SPEC-7.7-002": "KMIP-CLAUSE-SPEC-7.7-002",
-            "KMIP-REQ-SPEC-7.35-002": "KMIP-CLAUSE-SPEC-7.35-002",
+            "KMIPKIT-REQ-SPEC-7.12-002": "KMIPKIT-CLAUSE-SPEC-7.12-002",
+            "KMIPKIT-REQ-SPEC-7.7-002": "KMIPKIT-CLAUSE-SPEC-7.7-002",
+            "KMIPKIT-REQ-SPEC-7.35-002": "KMIPKIT-CLAUSE-SPEC-7.35-002",
         }
         crosswalk_ids = {row["requirement_id"] for row in self.oracle["requirement_crosswalk"]}
 
@@ -88,10 +88,10 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
 
     def test_server_predicates_keep_server_actor_and_stay_out_of_client_crosswalk(self) -> None:
         expected = {
-            "KMIP-REQ-SPEC-7.18-001-002",
-            "KMIP-REQ-SPEC-7.33-001",
-            "KMIP-REQ-SPEC-9.2-001",
-            "KMIP-REQ-SPEC-9.3-001-002",
+            "KMIPKIT-REQ-SPEC-7.18-001-002",
+            "KMIPKIT-REQ-SPEC-7.33-001",
+            "KMIPKIT-REQ-SPEC-9.2-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-002",
         }
         crosswalk = [
             row for row in self.oracle["requirement_crosswalk"] if row["requirement_id"] in expected
@@ -106,13 +106,13 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 self.assertEqual(requirement["role"], "server")
                 self.assertEqual(requirement["scope_state"], "server_only")
 
-        response_id = "KMIP-REQ-SPEC-9.21-001-002"
+        response_id = "KMIPKIT-REQ-SPEC-9.21-001-002"
         response_requirement = self.requirements[response_id]
         self.assertEqual(response_requirement["role"], "server")
         self.assertEqual(response_requirement["scope_state"], "server_only")
         self.assertEqual(response_requirement["decision_id"], "KMIPKIT-DEC-031")
         self.assertNotIn(response_id, {row["requirement_id"] for row in self.oracle["requirement_crosswalk"]})
-        response_review = self.reviews["KMIP-CLAUSE-SPEC-9.21-001"]
+        response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.21-001"]
         response_atom = next(
             atom for atom in response_review["source_obligations"]
             if atom["candidate_requirement_id"] == response_id
@@ -130,41 +130,41 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(error_gap["scope_disposition"], "mixed")
         self.assertIsNone(error_gap["candidate_requirement_id"])
         self.assertIsNone(error_gap["proposed_requirement_id"])
-        response_clause = self.clauses["KMIP-CLAUSE-SPEC-8.4-002"]
+        response_clause = self.clauses["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assertEqual(response_clause["direction"], "server_to_client")
 
-        error_clause = self.clauses["KMIP-CLAUSE-SPEC-9.17-001"]
+        error_clause = self.clauses["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         self.assertEqual(error_clause["disposition"], "source_discrepancy")
         self.assertEqual(error_clause["scope_state"], "mixed")
         self.assertEqual(error_clause["role"], "unclear")
         self.assertEqual(error_clause["direction"], "server_to_client")
-        self.assertEqual(error_clause["requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(error_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
         self.assertIsNone(error_clause["exclusion_rationale"])
         self.assertIn("second MAY is assigned", error_clause["condition"])
         self.assertEqual(error_clause["direction"], "server_to_client")
 
-        response_review = self.reviews["KMIP-CLAUSE-SPEC-8.4-002"]
+        response_review = self.reviews["KMIPKIT-CLAUSE-SPEC-8.4-002"]
         self.assert_server_response_classification(
-            "KMIP-CLAUSE-SPEC-8.4-002", response_review, response_gap
+            "KMIPKIT-CLAUSE-SPEC-8.4-002", response_review, response_gap
         )
         self.assertEqual(len(response_review["source_obligations"]), 1)
         self.assertEqual(response_review["source_obligations"][0]["source_keyword"], "MAY")
         self.assertIn("client-initiated 1.0", response_review["review_note"])
         self.assertIn("does not literally name the sender", response_review["review_note"])
 
-        error_review = self.reviews["KMIP-CLAUSE-SPEC-9.17-001"]
+        error_review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         error_atoms = error_review["source_obligations"]
         self.assertEqual([atom["source_keyword"] for atom in error_atoms], ["MAY", "MAY"])
         self.assertEqual([atom["actor"] for atom in error_atoms], ["unspecified", "client"])
         self.assertEqual([atom["direction"] for atom in error_atoms], ["server_to_client", "server_to_client"])
         self.assertEqual([atom["scope_disposition"] for atom in error_atoms], ["server_only", "client_1_0"])
         self.assertIsNone(error_atoms[0]["candidate_requirement_id"])
-        self.assertEqual(error_atoms[1]["candidate_requirement_id"], "KMIP-REQ-SPEC-9.17-001-002")
-        self.assertEqual(error_review["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(error_atoms[1]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.17-001-002")
+        self.assertEqual(error_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
 
     def test_response_header_and_batch_rows_are_server_output_only(self) -> None:
         rows = {
-            "KMIP-CLAUSE-SPEC-8.5-002": {
+            "KMIPKIT-CLAUSE-SPEC-8.5-002": {
                 "line_range": [43202, 43221],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.5-002",
                 "keywords": ["MAY", "REQUIRED"],
@@ -175,7 +175,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 ],
                 "separate_duty_refs": [],
             },
-            "KMIP-CLAUSE-SPEC-8.6-002": {
+            "KMIPKIT-CLAUSE-SPEC-8.6-002": {
                 "line_range": [43361, 43379],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-002",
                 "keywords": ["REQUIRED"],
@@ -183,7 +183,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "conditions": ["REQUIRED if present in Request Batch Item"],
                 "separate_duty_refs": ["§8.3"],
             },
-            "KMIP-CLAUSE-SPEC-8.6-003": {
+            "KMIPKIT-CLAUSE-SPEC-8.6-003": {
                 "line_range": [43399, 43419],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-003",
                 "keywords": ["REQUIRED", "OPTIONAL"],
@@ -191,7 +191,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "conditions": ["REQUIRED if Result Status is Failure", "otherwise OPTIONAL"],
                 "separate_duty_refs": [],
             },
-            "KMIP-CLAUSE-SPEC-8.6-004": {
+            "KMIPKIT-CLAUSE-SPEC-8.6-004": {
                 "line_range": [43420, 43439],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-004",
                 "keywords": ["OPTIONAL"],
@@ -199,7 +199,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                 "conditions": ["OPTIONAL if Result Status is not Pending or Success"],
                 "separate_duty_refs": [],
             },
-            "KMIP-CLAUSE-SPEC-8.6-005": {
+            "KMIPKIT-CLAUSE-SPEC-8.6-005": {
                 "line_range": [43440, 43459],
                 "gap_id": "KMIPKIT-SOURCE-GAP-SPEC-8.6-005",
                 "keywords": ["REQUIRED"],
@@ -241,7 +241,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
                     self.assertIn(source_section, review["review_note"])
 
     def test_time_stamp_may_atoms_keep_only_explicit_client_actor_mapped(self) -> None:
-        review = self.reviews["KMIP-CLAUSE-SPEC-9.20-001"]
+        review = self.reviews["KMIPKIT-CLAUSE-SPEC-9.20-001"]
         atoms = {atom["source_order"]: atom for atom in review["source_obligations"]}
         ambiguous = atoms[3]
         self.assertEqual(ambiguous["source_keyword"], "MAY")
@@ -254,19 +254,19 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertEqual(explicit_client["actor"], "client")
         self.assertEqual(explicit_client["direction"], "client_to_server")
         self.assertEqual(explicit_client["scope_disposition"], "client_1_0")
-        self.assertEqual(explicit_client["candidate_requirement_id"], "KMIP-REQ-SPEC-9.20-001-002")
+        self.assertEqual(explicit_client["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.20-001-002")
 
         crosswalk_orders = [
             row["source_obligation_order"]
             for row in self.oracle["requirement_crosswalk"]
-            if row["requirement_id"] == "KMIP-REQ-SPEC-9.20-001-002"
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.20-001-002"
         ]
         self.assertEqual(crosswalk_orders, [5])
-        requirement = self.requirements["KMIP-REQ-SPEC-9.20-001-002"]
+        requirement = self.requirements["KMIPKIT-REQ-SPEC-9.20-001-002"]
         self.assertNotIn("enforce reasonable time usage", requirement["summary"])
 
     def test_credential_reviews_separate_source_rules_from_approved_client_interpretation(self) -> None:
-        device_clause_id = "KMIP-CLAUSE-SPEC-9.11-004"
+        device_clause_id = "KMIPKIT-CLAUSE-SPEC-9.11-004"
         device_review = self.reviews[device_clause_id]
         device_excerpt = [44184, 44189]
         self.assertEqual(
@@ -276,11 +276,11 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         device_atoms = device_review["source_obligations"]
         uniqueness = next(
             atom for atom in device_atoms
-            if atom["candidate_requirement_id"] == "KMIP-REQ-SPEC-9.11-004-002"
+            if atom["candidate_requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-002"
         )
         minimum = next(
             atom for atom in device_atoms
-            if atom["candidate_requirement_id"] == "KMIP-REQ-SPEC-9.11-004-001"
+            if atom["candidate_requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-001"
         )
         self.assertEqual(
             uniqueness["source_text"],
@@ -294,7 +294,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertIn("comparison scope is unspecified", device_review["review_note"])
         self.assertIn("caller remains responsible for actual uniqueness", device_review["review_note"])
 
-        timestamp_clause_id = "KMIP-CLAUSE-SPEC-9.11-010"
+        timestamp_clause_id = "KMIPKIT-CLAUSE-SPEC-9.11-010"
         timestamp_review = self.reviews[timestamp_clause_id]
         self.assertEqual(
             timestamp_review["source_excerpt"],
@@ -306,7 +306,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             self.clauses[timestamp_clause_id]["condition"],
             "When Credential Type is Hashed Password.",
         )
-        timestamp_requirement = self.requirements["KMIP-REQ-SPEC-9.11-010-001"]
+        timestamp_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-001"]
         self.assertEqual(timestamp_requirement["condition"], "When Credential Type is Hashed Password.")
         for source_gap in ("comparison scope", "state owner", "clock behavior"):
             self.assertIn(source_gap, timestamp_review["review_note"])
@@ -314,7 +314,7 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
         self.assertIn("strict increase in hash-production order", timestamp_review["review_note"])
         self.assertIn("strict", timestamp_requirement["review_note"])
 
-        default_requirement = self.requirements["KMIP-REQ-SPEC-9.11-010-002"]
+        default_requirement = self.requirements["KMIPKIT-REQ-SPEC-9.11-010-002"]
         self.assertIn("no override", default_requirement["condition"])
         for default_fact in ("Table 415", "optional", "SHA-256", "omitted"):
             self.assertIn(default_fact.casefold(), timestamp_review["review_note"].casefold())
@@ -325,9 +325,9 @@ class ProfileSectionsSevenThroughElevenReviewContractTests(unittest.TestCase):
             for row in self.oracle["requirement_crosswalk"]
         }
         for requirement_id in (
-            "KMIP-REQ-SPEC-9.11-004-002",
-            "KMIP-REQ-SPEC-9.11-010-001",
-            "KMIP-REQ-SPEC-9.11-010-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-010-001",
+            "KMIPKIT-REQ-SPEC-9.11-010-002",
         ):
             with self.subTest(requirement_id=requirement_id):
                 row = crosswalk[requirement_id]

@@ -13,7 +13,9 @@
   ],
   "$defs": {
     "requirementId": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
+      "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
       "type": "array",
@@ -1390,7 +1392,7 @@
         },
         "legacyRegistry": {
           "type": "boolean",
-          "description": "Whether this full-manifest function belongs to the preserved vendor extension registry parity slice. Defaults to true when omitted."
+          "description": "Whether this full-manifest function belongs to the preserved KMIPKIT-0012 v1 registry parity slice. Defaults to true when omitted."
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
@@ -2355,7 +2357,8 @@
       "additionalProperties": false
     },
     "v2RequirementId": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
     },
     "v2RequirementIds": {
       "type": "array",
@@ -2445,8 +2448,7 @@
         "kind": {
           "enum": [
             "feature-specification",
-            "architecture-decision",
-            "accepted-architecture-decision"
+            "accepted-adr"
           ]
         },
         "path": {
@@ -2480,7 +2482,7 @@
         },
         "path": {
           "type": "string",
-          "pattern": "^docs/[a-zA-Z0-9_./-]+\\.md$"
+          "pattern": "^specs/[0-9]{3}-[a-z0-9-]+/spec\\.md$"
         },
         "status": {
           "const": "Draft"
@@ -2499,7 +2501,10 @@
         "packageId",
         "kind",
         "exportName",
-        "declarationState"
+        "capabilityId",
+        "requirementIds",
+        "declarationState",
+        "parityScope"
       ],
       "properties": {
         "declarationId": {
@@ -2520,19 +2525,18 @@
         },
         "kind": {
           "enum": [
-            "associated-item",
-            "c-symbol",
-            "constant",
-            "field",
-            "function",
-            "java-member",
-            "macro",
-            "method",
             "module",
-            "python-export",
-            "trait",
             "type",
-            "variant"
+            "variant",
+            "field",
+            "trait",
+            "function",
+            "associated-item",
+            "constant",
+            "macro",
+            "c-symbol",
+            "java-member",
+            "python-export"
           ]
         },
         "exportName": {
@@ -2569,17 +2573,11 @@
           "description": "Exact javap signatures for an overloaded Java export path."
         },
         "capabilityId": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string",
+          "minLength": 1
         },
         "requirementIds": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string"
-          }
+          "$ref": "#/$defs/v2RequirementIds"
         },
         "declarationState": {
           "enum": [
@@ -2592,9 +2590,8 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-transport",
-            "c-only",
-            "language-specific"
+            "rust-only-adr",
+            "c-only"
           ]
         },
         "mappingSemantics": {
@@ -2606,7 +2603,7 @@
             "normalized-client-protocol-error-outcome",
             "standard-attribute-tag-value"
           ],
-          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the HASH-MAC-SIGN-REQ-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
         },
         "lifecycleSemanticsByLanguage": {
           "type": "object",
@@ -2638,7 +2635,7 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
           "description": "Exact approved feature specification authorizing this declaration when it extends a capability owned by another specification."
         },
         "blockedReason": {
@@ -2741,7 +2738,7 @@
         },
         "ownerSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
           "description": "Semantic owner specification for a delegated public API capability."
         },
         "approvalEvidence": {
@@ -2889,6 +2886,24 @@
         {
           "if": {
             "properties": {
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "approvalSource",
+              "languageMappings"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
               "parityScope": {
                 "const": "four-language"
               }
@@ -2905,6 +2920,36 @@
                 ]
               }
             }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "parityScope": {
+                "const": "rust-only-adr"
+              },
+              "declarationState": {
+                "enum": [
+                  "declared",
+                  "verified"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "languageMappings": {
+                "required": [
+                  "rust"
+                ],
+                "propertyNames": {
+                  "const": "rust"
+                }
+              }
+            },
+            "required": [
+              "approvalSource"
+            ]
           }
         },
         {
@@ -3046,70 +3091,70 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$",
+          "pattern": "^KMIPKIT-[0-9]{4}$",
           "description": "Exact owner specification for an approved declaration exclusion."
         },
-        "rustArtifactKind": {
+    "rustArtifactKind": {
+      "enum": [
+        "rust-trait-implementation-member",
+        "rust-conditional-trait-implementation-member",
+        "exact-route",
+        "ownership-transfer-helper"
+      ],
+      "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
+    },
+    "identity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact serialized Rustdoc identity for a trait implementation member."
+    },
+    "condition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact conditional bound attached to a Rust trait implementation member."
+    },
+    "ownerExportName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "ownerDeclarationId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^*?]+$"
+    },
+    "exclusionScope": {
+      "const": "exact-route"
+    },
+    "exclusionCategory": {
+      "enum": [
+        "ownership-transfer-helper",
+        "test-support"
+      ]
+    },
+    "precedent": {
+      "type": "object",
+      "required": [
+        "packageId",
+        "exportName"
+      ],
+      "properties": {
+        "packageId": {
           "enum": [
-            "rust-trait-implementation-member",
-            "rust-conditional-trait-implementation-member",
-            "exact-route",
-            "ownership-transfer-helper"
-          ],
-          "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
-        },
-        "identity": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Exact serialized Rustdoc identity for a trait implementation member."
-        },
-        "condition": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Exact conditional bound attached to a Rust trait implementation member."
-        },
-        "ownerExportName": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[^*?]+$"
-        },
-        "ownerDeclarationId": {
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[^*?]+$"
-        },
-        "exclusionScope": {
-          "const": "exact-route"
-        },
-        "exclusionCategory": {
-          "enum": [
-            "ownership-transfer-helper",
-            "test-support"
+            "rust-kmipkit-ttlv",
+            "rust-kmipkit-protocol",
+            "rust-kmipkit-client",
+            "rust-kmipkit"
           ]
         },
-        "precedent": {
-          "type": "object",
-          "required": [
-            "packageId",
-            "exportName"
-          ],
-          "properties": {
-            "packageId": {
-              "enum": [
-                "rust-kmipkit-ttlv",
-                "rust-kmipkit-protocol",
-                "rust-kmipkit-client",
-                "rust-kmipkit"
-              ]
-            },
-            "exportName": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "^[^*?]+$"
-            }
-          },
-          "additionalProperties": false
-        },
+        "exportName": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$"
+        }
+      },
+      "additionalProperties": false
+    },
         "cType": {
           "$ref": "#/$defs/cTypeLayout",
           "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
@@ -3170,9 +3215,7 @@
         },
         {
           "if": {
-            "required": [
-              "artifactKind"
-            ]
+            "required": ["artifactKind"]
           },
           "then": {
             "required": [
@@ -3185,7 +3228,7 @@
             ],
             "properties": {
               "candidateSpecId": {
-                "const": "PARITY-FACADE"
+                "const": "KMIPKIT-0053"
               }
             }
           }
@@ -3295,11 +3338,11 @@
         },
         "featureSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$"
+          "pattern": "^KMIPKIT-[0-9]{4}$"
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$"
+          "pattern": "^KMIPKIT-[0-9]{4}$"
         },
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
@@ -3526,7 +3569,7 @@
           "oneOf": [
             {
               "type": "string",
-              "pattern": "^[A-Z0-9-]+$"
+              "pattern": "^KMIPKIT-[0-9]{4}$"
             },
             {
               "type": "null"
@@ -3599,16 +3642,17 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-transport",
+            "rust-only-adr",
             "c-only"
           ]
         },
         "ownerSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$"
+          "pattern": "^KMIPKIT-[0-9]{4}$"
         },
-        "ownerDecisionId": {
-          "type": "string"
+        "ownerAdrId": {
+          "type": "string",
+          "pattern": "^ADR-[0-9]{4}$"
         },
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
@@ -3637,7 +3681,7 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^[A-Z0-9-]+$"
+          "pattern": "^KMIPKIT-[0-9]{4}$"
         },
         "blockedReason": {
           "type": "string",
@@ -3670,7 +3714,7 @@
                 },
                 {
                   "required": [
-                    "ownerDecisionId"
+                    "ownerAdrId"
                   ]
                 },
                 {
@@ -3737,7 +3781,7 @@
                   "anyOf": [
                     {
                       "required": [
-                        "ownerDecisionId"
+                        "ownerAdrId"
                       ]
                     },
                     {
@@ -3750,17 +3794,14 @@
               },
               {
                 "required": [
-                  "ownerDecisionId",
+                  "ownerAdrId",
                   "acceptedEvidence"
                 ],
                 "properties": {
                   "acceptedEvidence": {
                     "properties": {
                       "kind": {
-                        "enum": [
-                          "architecture-decision",
-                          "accepted-architecture-decision"
-                        ]
+                        "const": "accepted-adr"
                       },
                       "status": {
                         "const": "Accepted"
@@ -3836,7 +3877,7 @@
           "if": {
             "properties": {
               "parityScope": {
-                "const": "rust-only-transport"
+                "const": "rust-only-adr"
               },
               "capabilityState": {
                 "enum": [
@@ -3858,7 +3899,7 @@
               }
             },
             "required": [
-              "ownerDecisionId",
+              "ownerAdrId",
               "acceptedEvidence"
             ]
           }
@@ -4300,7 +4341,7 @@
             }
           ],
           "items": false,
-          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from REQ-012. Each language maps the same logical limit to its declared field name."
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
         },
         "security": {
           "$ref": "#/$defs/security"
@@ -4333,7 +4374,7 @@
         "scope": {
           "type": "string",
           "const": "registry-slice",
-          "description": "This manifest covers the vendor extension registry surface only; it is not the complete KMIPKit 1.0 API inventory."
+          "description": "This manifest covers the KMIPKIT-0012 registry surface only; it is not the complete KMIPKit 1.0 API inventory."
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
@@ -4405,7 +4446,7 @@
             }
           ],
           "items": false,
-          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from REQ-012. Each language maps the same logical limit to its declared field name."
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
         },
         "security": {
           "$ref": "#/$defs/security"

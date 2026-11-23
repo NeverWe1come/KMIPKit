@@ -9,17 +9,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-CHECK"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-CHECK"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIP-REQ-SPEC-6.1.7-001",
-    "KMIP-REQ-SPEC-6.1.7-002-001",
-    "KMIP-REQ-SPEC-6.1.7-002-002",
-    "KMIP-REQ-SPEC-6.1.7-003",
-    "KMIP-REQ-SPEC-6.1.7-004-001",
-    "KMIP-REQ-SPEC-6.1.7-004-002",
-    "KMIP-REQ-SPEC-6.1.7-005",
+    "KMIPKIT-REQ-SPEC-6.1.7-001",
+    "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+    "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+    "KMIPKIT-REQ-SPEC-6.1.7-003",
+    "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+    "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+    "KMIPKIT-REQ-SPEC-6.1.7-005",
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",

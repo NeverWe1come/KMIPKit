@@ -34,7 +34,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
             element["name"]: element["wire_value"]
             for element in base["elements"]
             if element.get("kind") == "enumeration_value"
-            and "KMIP-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
         }
         expected = {
             (element["name"], operation_values[element["name"]], element["direction"], element["scope_state"])
@@ -198,7 +198,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
             element for element in base["elements"]
             if element.get("kind") == "enumeration_value"
             and element.get("name") == "Create"
-            and "KMIP-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
         )
         create_value["wire_value"] = "00000002"
         with self.assertRaisesRegex(ValueError, "duplicate KMIP 2.1 operation wire value"):

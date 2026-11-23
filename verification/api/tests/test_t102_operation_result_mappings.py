@@ -60,7 +60,7 @@ def _result(
         declaration_id=declaration_id,
         package_id=package_id,
         rust_name=rust_name,
-        operation_id=f"KMIP-ELEM-OP-C2S-{operation}",
+        operation_id=f"KMIPKIT-ELEM-OP-C2S-{operation}",
         owner_spec_id=owner_spec_id,
         owner_spec_path=OWNER_SPECS[owner_spec_id],
         section=section,

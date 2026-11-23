@@ -142,8 +142,8 @@ def _assert_source_literal(testcase: unittest.TestCase, record: str, value: str)
 def _copy_validated_catalog_repo(destination: Path) -> None:
     """Create the minimal committed input tree required by catalog validation."""
     (destination / "verification" / "conformance").mkdir(parents=True)
-    if (ROOT / "project-guide").is_file():
-        shutil.copy2(ROOT / "project-guide", destination / "project-guide")
+    if (ROOT / "AGENTS.md").is_file():
+        shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
     shutil.copytree(ROOT / "verification" / "conformance" / "oasis", destination / "verification" / "conformance" / "oasis")
     shutil.copytree(ROOT / "verification" / "conformance" / "catalog", destination / "verification" / "conformance" / "catalog")
     subprocess.run(["git", "init", "-q"], cwd=destination, check=True)
@@ -303,7 +303,7 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         self.assertEqual(certificate_attributes["source_conditional_rules"], [])
 
         # 0x4200A4 is Extension Information in §11.56, not a tag for Certificate Attributes.
-        extension_information_tag = _tag_value_by_id(self.catalog, "KMIP-ELEM-TAG-4200A4")
+        extension_information_tag = _tag_value_by_id(self.catalog, "KMIPKIT-ELEM-TAG-4200A4")
         self.assertEqual(extension_information_tag, "4200a4")
         rendered_records = [
             record
@@ -341,7 +341,7 @@ class AttributePolicyRenderingTests(unittest.TestCase):
             "elements": [
                 *self.catalog["elements"],
                 {
-                    "element_id": "KMIP-ELEM-TAG-54ABCD",
+                    "element_id": "KMIPKIT-ELEM-TAG-54ABCD",
                     "kind": "tag",
                     "name": "Unmapped Vendor Tag",
                     "wire_value": "54ABCD",
@@ -376,7 +376,7 @@ class AttributePolicyRenderingTests(unittest.TestCase):
         )
         # A message_field's allowed source_comment carries the request probe into renderer input.
         probe_field = {
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-NAME-FORM-PROBE",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-NAME-FORM-PROBE",
             "kind": "message_field",
             "name": "Attribute Reference",
             "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "5.5"}],

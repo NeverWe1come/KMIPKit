@@ -58,7 +58,7 @@ class OperationCatalogParityTests(unittest.TestCase):
         cases["missing"] = missing
 
         extra = copy.deepcopy(self.manifest)
-        extra["operations"][-1]["operationId"] = "KMIP-ELEM-OP-OUTSIDE-CATALOG"
+        extra["operations"][-1]["operationId"] = "KMIPKIT-ELEM-OP-OUTSIDE-CATALOG"
         cases["extra"] = extra
 
         out_of_scope = copy.deepcopy(self.manifest)

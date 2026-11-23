@@ -10,9 +10,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CREATION_OPERATIONS = {
-    "KMIP-ELEM-OP-C2S-CREATE",
-    "KMIP-ELEM-OP-C2S-CREATE-KEY-PAIR",
-    "KMIP-ELEM-OP-C2S-CREATE-SPLIT-KEY",
+    "KMIPKIT-ELEM-OP-C2S-CREATE",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-KEY-PAIR",
+    "KMIPKIT-ELEM-OP-C2S-CREATE-SPLIT-KEY",
 }
 CREATION_FUNCTIONS = {
     "kmipkit_client_batch_item_create",

@@ -76,9 +76,9 @@ final class SharedCapabilityParityFixtureTest {
         String fixture = Files.readString(sharedFixturePath());
         String typedMessage = caseById(
                 fixture, "typed-message.ordered-open-values-and-lifetime.v1");
-        assertEquals(List.of("shared binding capability parity", "shared binding capability parity",
-                        "shared binding capability parity", "shared binding capability parity",
-                        "shared binding capability parity", "shared binding capability parity"),
+        assertEquals(List.of("KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-011",
+                        "KMIPKIT-0043-FR-013", "KMIPKIT-0043-FR-017",
+                        "KMIPKIT-0043-FR-018", "KMIPKIT-0043-FR-022"),
                 stringArrayField(typedMessage, "requirementIds"));
         assertTrue(objectField(typedMessage, "request").contains("batchItems"));
         assertTrue(objectField(typedMessage, "response").contains("resultStatusRaw"));

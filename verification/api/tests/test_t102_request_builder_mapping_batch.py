@@ -22,17 +22,17 @@ OPERATIONS = {
     "check": {
         "owner": "specs/022-object-lifecycle/spec.md",
         "reference": "OASIS KMIP v2.1 §6.1.7 Tables 183–185",
-        "capability": "KMIP-ELEM-OP-C2S-CHECK",
+        "capability": "KMIPKIT-ELEM-OP-C2S-CHECK",
         "builder": "kmipkit_client_batch_item_check",
         "rust_package": "rust-kmipkit-protocol",
         "normative": {
-            "KMIP-REQ-SPEC-6.1.7-001",
-            "KMIP-REQ-SPEC-6.1.7-002-001",
-            "KMIP-REQ-SPEC-6.1.7-002-002",
-            "KMIP-REQ-SPEC-6.1.7-003",
-            "KMIP-REQ-SPEC-6.1.7-004-001",
-            "KMIP-REQ-SPEC-6.1.7-004-002",
-            "KMIP-REQ-SPEC-6.1.7-005",
+            "KMIPKIT-REQ-SPEC-6.1.7-001",
+            "KMIPKIT-REQ-SPEC-6.1.7-002-001",
+            "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+            "KMIPKIT-REQ-SPEC-6.1.7-003",
+            "KMIPKIT-REQ-SPEC-6.1.7-004-001",
+            "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+            "KMIPKIT-REQ-SPEC-6.1.7-005",
         },
         "targets": (
             ("rust-observed-3beea67907cb67493c50", "kmipkit_protocol::CheckRequest::new"),
@@ -45,12 +45,12 @@ OPERATIONS = {
     "get": {
         "owner": "specs/017-managed-object-retrieval/spec.md",
         "reference": "OASIS KMIP v2.1 §6.1.19 Tables 220–222",
-        "capability": "KMIP-ELEM-OP-C2S-GET",
+        "capability": "KMIPKIT-ELEM-OP-C2S-GET",
         "builder": "kmipkit_client_batch_item_get",
         "rust_package": "rust-kmipkit-protocol",
         "normative": {
-            "KMIP-REQ-SPEC-6.1.19-001",
-            "KMIP-REQ-SPEC-6.1.19-002",
+            "KMIPKIT-REQ-SPEC-6.1.19-001",
+            "KMIPKIT-REQ-SPEC-6.1.19-002",
         },
         "targets": (
             ("rust-observed-66a8b011f8175b8c04f5", "kmipkit_protocol::GetRequest::new"),
@@ -63,7 +63,7 @@ OPERATIONS = {
     "export": {
         "owner": "specs/023-key-material-transfer/spec.md",
         "reference": "OASIS KMIP v2.1 §6.1.18 Tables 217–219",
-        "capability": "KMIP-ELEM-OP-C2S-EXPORT",
+        "capability": "KMIPKIT-ELEM-OP-C2S-EXPORT",
         "builder": "kmipkit_client_batch_item_export",
         "rust_package": "rust-kmipkit-protocol",
         "normative": set(),
@@ -78,12 +78,12 @@ OPERATIONS = {
     "rekey": {
         "owner": "specs/022-object-lifecycle/spec.md",
         "reference": "OASIS KMIP v2.1 §6.1.46 Tables 305–307",
-        "capability": "KMIP-ELEM-OP-C2S-RE-KEY",
+        "capability": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
         "builder": "kmipkit_client_batch_item_rekey",
         "rust_package": "rust-kmipkit-protocol",
         "normative": {
-            "KMIP-REQ-SPEC-6.1.46-001",
-            "KMIP-REQ-SPEC-6.1.46-004-001",
+            "KMIPKIT-REQ-SPEC-6.1.46-001",
+            "KMIPKIT-REQ-SPEC-6.1.46-004-001",
         },
         "targets": (
             ("rust-observed-4781288042e981f6d3bd", "kmipkit_protocol::RekeyRequest::new"),
@@ -94,10 +94,10 @@ OPERATIONS = {
     "get_usage_allocation": {
         "owner": "specs/025-policy-controls/spec.md",
         "reference": "OASIS KMIP v2.1 §6.1.23 Tables 232–234",
-        "capability": "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "capability": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
         "builder": "kmipkit_client_batch_item_get_usage_allocation",
         "rust_package": "rust-kmipkit-protocol",
-        "normative": {"KMIP-REQ-SPEC-6.1.23-002-001"},
+        "normative": {"KMIPKIT-REQ-SPEC-6.1.23-002-001"},
         "targets": (
             ("rust-observed-51a60237c466a9503394", "kmipkit_protocol::GetUsageAllocationRequest::with_unique_identifier"),
             ("rust-observed-543f908844c7bb7b67bb", "kmipkit::GetUsageAllocationRequest::with_unique_identifier"),
@@ -156,7 +156,7 @@ class T102RequestBuilderMappingBatchTests(unittest.TestCase):
                     self.assertEqual(builder["requirementIds"], declaration["requirementIds"])
                     if operation_name == "rekey":
                         self.assertNotIn(
-                            "KMIP-REQ-SPEC-6.1.46-004-002",
+                            "KMIPKIT-REQ-SPEC-6.1.46-004-002",
                             declaration["requirementIds"],
                         )
                     expected_mappings = dict(builder["languageMappings"])

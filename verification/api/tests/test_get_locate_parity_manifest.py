@@ -20,7 +20,7 @@ LOCATE_RAW_SELECTOR_TYPES = {
 }
 
 OPERATIONS = {
-    "KMIP-ELEM-OP-C2S-GET": {
+    "KMIPKIT-ELEM-OP-C2S-GET": {
         "name": "Get",
         "section": "6.1.19",
         "expected": {
@@ -57,7 +57,7 @@ OPERATIONS = {
             },
         },
     },
-    "KMIP-ELEM-OP-C2S-LOCATE": {
+    "KMIPKIT-ELEM-OP-C2S-LOCATE": {
         "name": "Locate",
         "section": "6.1.28",
         "expected": {

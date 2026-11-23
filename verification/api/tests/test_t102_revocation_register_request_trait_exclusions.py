@@ -75,9 +75,9 @@ OWNER = {
             "KMIPKIT-0036-FR-001",
             "KMIPKIT-0036-FR-004",
             "KMIPKIT-0036-FR-006",
-            "KMIP-REQ-SPEC-6.1.44-001",
-            "KMIP-REQ-SPEC-6.1.44-003-001",
-            "KMIP-REQ-SPEC-6.1.44-003-002",
+            "KMIPKIT-REQ-SPEC-6.1.44-001",
+            "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+            "KMIPKIT-REQ-SPEC-6.1.44-003-002",
         ),
         "references": (
             "OASIS KMIP v2.1 Section 11.48, Table 481",
@@ -96,7 +96,7 @@ OWNER = {
         "requirements": (
             "KMIPKIT-0044-FR-001",
             "KMIPKIT-0044-FR-007",
-            "KMIP-REQ-SPEC-6.1.43-001",
+            "KMIPKIT-REQ-SPEC-6.1.43-001",
         ),
         "references": (
             "OASIS KMIP v2.1 Section 2.3 (Opaque Object)",

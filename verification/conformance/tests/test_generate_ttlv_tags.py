@@ -27,35 +27,35 @@ def small_catalog() -> dict[str, Any]:
     return {
         "elements": [
             {
-                "element_id": "KMIP-ELEM-TAG-420001",
+                "element_id": "KMIPKIT-ELEM-TAG-420001",
                 "kind": "tag",
                 "name": "Activation Date",
                 "wire_value": "420001",
                 "allocation": "assigned",
             },
             {
-                "element_id": "KMIP-ELEM-TAG-420009",
+                "element_id": "KMIPKIT-ELEM-TAG-420009",
                 "kind": "tag",
                 "name": "(Reserved)",
                 "wire_value": "420009",
                 "allocation": "reserved",
             },
             {
-                "element_id": "KMIP-ELEM-TAG-420174",
+                "element_id": "KMIPKIT-ELEM-TAG-420174",
                 "kind": "tag",
                 "name": "Submission Date",
                 "wire_value": "0x420174",
                 "allocation": "assigned",
             },
             {
-                "element_id": "KMIP-ELEM-TAG-420175",
+                "element_id": "KMIPKIT-ELEM-TAG-420175",
                 "kind": "tag",
                 "name": "Off-Line Extension",
                 "wire_value": "0x420175",
                 "allocation": "assigned",
             },
             {
-                "element_id": "KMIP-ELEM-TAG-420176",
+                "element_id": "KMIPKIT-ELEM-TAG-420176",
                 "kind": "tag",
                 "name": "Asynchronous Correlation Values",
                 "wire_value": "0x420176",
@@ -80,8 +80,8 @@ def small_catalog() -> dict[str, Any]:
 def _copy_validated_catalog_repo(destination: Path) -> None:
     """Create the minimal committed input tree required by catalog validation."""
     (destination / "verification" / "conformance").mkdir(parents=True)
-    if (ROOT / "project-guide").is_file():
-        shutil.copy2(ROOT / "project-guide", destination / "project-guide")
+    if (ROOT / "AGENTS.md").is_file():
+        shutil.copy2(ROOT / "AGENTS.md", destination / "AGENTS.md")
     shutil.copytree(ROOT / "verification" / "conformance" / "oasis", destination / "verification" / "conformance" / "oasis")
     shutil.copytree(ROOT / "verification" / "conformance" / "catalog", destination / "verification" / "conformance" / "catalog")
     subprocess.run(["git", "init", "-q"], cwd=destination, check=True)
@@ -304,7 +304,7 @@ class TagAllocationRenderingTests(unittest.TestCase):
     def test_rejects_duplicate_numeric_exact_tag_values(self) -> None:
         catalog = small_catalog()
         duplicate = dict(catalog["elements"][0])
-        duplicate.update(element_id="KMIP-ELEM-TAG-4200AA", wire_value="0x420001")
+        duplicate.update(element_id="KMIPKIT-ELEM-TAG-4200AA", wire_value="0x420001")
         catalog["elements"].append(duplicate)
 
         with self.assertRaises(ValueError):
@@ -415,7 +415,7 @@ class TagAllocationGeneratorCliTests(unittest.TestCase):
             root = self._repo_root(directory)
             catalog_path = root / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
             catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-            marker = "KMIP-ELEM-UNTRUSTED-CLI-ERROR"
+            marker = "KMIPKIT-ELEM-UNTRUSTED-CLI-ERROR"
             catalog["elements"][0]["element_id"] = marker
             catalog["elements"][1]["element_id"] = marker
             catalog_path.write_text(json.dumps(catalog, ensure_ascii=False), encoding="utf-8")

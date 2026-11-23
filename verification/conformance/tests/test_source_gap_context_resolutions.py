@@ -58,43 +58,43 @@ SINGLE_PART_PROCEDURE_TEST_REFS = {
 # feature assignments are checked against the catalog/spec below.
 EXPECTED_GENERIC_PARAMETER_CONTRACTS = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED": (
-        "KMIP-ELEM-OP-C2S-HASH",
+        "KMIPKIT-ELEM-OP-C2S-HASH",
         235,
         {"FR-002"},
         "always",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED": (
-        "KMIP-ELEM-OP-C2S-HASH",
+        "KMIPKIT-ELEM-OP-C2S-HASH",
         235,
         {"FR-002"},
         "single_part",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED": (
-        "KMIP-ELEM-OP-C2S-MAC",
+        "KMIPKIT-ELEM-OP-C2S-MAC",
         259,
         {"FR-004"},
         "single_part",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED": (
-        "KMIP-ELEM-OP-C2S-MAC-VERIFY",
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY",
         262,
         {"FR-007"},
         "single_part",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL": (
-        "KMIP-ELEM-OP-C2S-SIGN",
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
         334,
         {"FR-004"},
         "single_part",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL": (
-        "KMIP-ELEM-OP-C2S-SIGN",
+        "KMIPKIT-ELEM-OP-C2S-SIGN",
         334,
         {"FR-004"},
         "optional",
     ),
     "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL": (
-        "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY",
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY",
         337,
         {"FR-007"},
         "single_part",
@@ -104,12 +104,12 @@ EXPECTED_GENERIC_PARAMETER_CONTRACTS = {
 # KMIPKIT-0019 approves both client 1.0 operations. Only their optional
 # Correlation Value request rows are mapped; broader parameter mapping remains open.
 PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
-    "KMIP-ELEM-OP-C2S-DECRYPT": (
+    "KMIPKIT-ELEM-OP-C2S-DECRYPT": (
         "Decrypt",
         196,
         DECRYPT_CORRELATION_CONTRACT_ID,
     ),
-    "KMIP-ELEM-OP-C2S-ENCRYPT": (
+    "KMIPKIT-ELEM-OP-C2S-ENCRYPT": (
         "Encrypt",
         214,
         ENCRYPT_CORRELATION_CONTRACT_ID,
@@ -118,57 +118,57 @@ PARTIALLY_MAPPED_GENERIC_CONTEXT_OPERATION_TABLES = {
 
 EXPECTED_GENERIC_CONTEXT_OPERATIONS = {
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-006": {
-        "KMIP-ELEM-OP-C2S-DECRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
             DECRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-ENCRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
             ENCRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-HASH": {
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         },
-        "KMIP-ELEM-OP-C2S-MAC": set(),
-        "KMIP-ELEM-OP-C2S-MAC-VERIFY": set(),
-        "KMIP-ELEM-OP-C2S-SIGN": set(),
-        "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGN": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-007": {
-        "KMIP-ELEM-OP-C2S-DECRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
             DECRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-ENCRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
             ENCRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-HASH": {
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"
         },
-        "KMIP-ELEM-OP-C2S-MAC": set(),
-        "KMIP-ELEM-OP-C2S-MAC-VERIFY": set(),
-        "KMIP-ELEM-OP-C2S-SIGN": set(),
-        "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC": set(),
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGN": set(),
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": set(),
     },
     "KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-008": {
-        "KMIP-ELEM-OP-C2S-DECRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
             DECRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-ENCRYPT": {
+        "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
             ENCRYPT_CORRELATION_CONTRACT_ID
         },
-        "KMIP-ELEM-OP-C2S-HASH": {
+        "KMIPKIT-ELEM-OP-C2S-HASH": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED",
         },
-        "KMIP-ELEM-OP-C2S-MAC": {
+        "KMIPKIT-ELEM-OP-C2S-MAC": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED",
         },
-        "KMIP-ELEM-OP-C2S-MAC-VERIFY": {
+        "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED",
         },
-        "KMIP-ELEM-OP-C2S-SIGN": {
+        "KMIPKIT-ELEM-OP-C2S-SIGN": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL",
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL",
         },
-        "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY": {
+        "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL",
         },
     },
@@ -216,11 +216,11 @@ def _requiredness_matches(contract: dict[str, object], expected: str) -> bool:
     return False
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class SourceGapContextResolutionTests(unittest.TestCase):
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_result_message_research_states_validator_scope_boundary(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
@@ -241,7 +241,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         and HASH_MAC_SIGNATURE_TRACEABILITY_PATH.is_file()
         and ENCRYPT_DECRYPT_SPEC_PATH.is_file()
         and ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH.is_file(),
-        "External operation contract documents are not bundled with this source distribution",
+        "Spec Kit operation contracts are excluded from the code-only review branch",
     )
     def test_encrypt_decrypt_correlation_request_rows_have_optional_feature_contracts(self) -> None:
         """Tables 196 and 214 map only their optional Correlation Value request rows."""
@@ -252,7 +252,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 "source_section": "6.1.11",
                 "html_line_range": [25165, 25181],
                 "table_number": 196,
-                "operation_element_id": "KMIP-ELEM-OP-C2S-DECRYPT",
+                "operation_element_id": "KMIPKIT-ELEM-OP-C2S-DECRYPT",
                 "source_excerpt": (
                     "Correlation Value No Specifies the existing stream or by-parts "
                     "cryptographic operation (as returned from a previous call to this operation)."
@@ -267,7 +267,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
                 "source_section": "6.1.17",
                 "html_line_range": [26590, 26606],
                 "table_number": 214,
-                "operation_element_id": "KMIP-ELEM-OP-C2S-ENCRYPT",
+                "operation_element_id": "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
                 "source_excerpt": (
                     "Correlation Value No Specifies the existing stream or by-parts "
                     "cryptographic operation (as returned from a previous call to this operation)."
@@ -370,7 +370,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
         for number in (12, 14, 16):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
-            self.assertEqual(gap["source_resolution"]["related_requirement_ids"], ["KMIP-REQ-SPEC-7.8-001"])
+            self.assertEqual(gap["source_resolution"]["related_requirement_ids"], ["KMIPKIT-REQ-SPEC-7.8-001"])
 
     def test_procedure_context_requires_evidence_or_an_explicit_blocker(self) -> None:
         """KMIP Specification v2.1 §6.1 procedure steps need traceable evidence."""
@@ -430,7 +430,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
             with self.subTest(gap_id=gap_id):
                 if number in (12, 14, 16):
-                    self.assertEqual(linked_requirement_ids, ["KMIP-REQ-SPEC-7.8-001"])
+                    self.assertEqual(linked_requirement_ids, ["KMIPKIT-REQ-SPEC-7.8-001"])
                 self.assertTrue(
                     requirement_evidence or contract_evidence or verification_evidence or explicit_blocker,
                     f"{gap_id} is treated as closed by procedure_context without linked executable evidence or an explicit blocker",
@@ -441,7 +441,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         and HASH_MAC_SIGNATURE_TRACEABILITY_PATH.is_file()
         and ENCRYPT_DECRYPT_SPEC_PATH.is_file()
         and ENCRYPT_DECRYPT_PAYLOAD_CONTRACT_PATH.is_file(),
-        "External operation contract documents are not bundled with this source distribution",
+        "Spec Kit operation contracts are excluded from the code-only review branch",
     )
     def test_generic_parameter_context_links_operation_contract_evidence(self) -> None:
         """KMIP Specification v2.1 §6.1 generic instructions need request contracts."""
@@ -457,13 +457,13 @@ class SourceGapContextResolutionTests(unittest.TestCase):
             row["element_id"]: row
             for row in catalog["elements"]
             if row.get("feature_spec") in {"KMIPKIT-0019", "KMIPKIT-0021"}
-            and row.get("element_id", "").startswith("KMIP-ELEM-OP-C2S-")
+            and row.get("element_id", "").startswith("KMIPKIT-ELEM-OP-C2S-")
         }
         approved_operation_ids_021 = set(
-            re.findall(r"`(KMIP-ELEM-OP-C2S-[A-Z-]+)`", approved_traceability)
+            re.findall(r"`(KMIPKIT-ELEM-OP-C2S-[A-Z-]+)`", approved_traceability)
         )
         approved_operation_ids_019 = set(
-            re.findall(r"`(KMIP-ELEM-OP-C2S-[A-Z-]+)`", encrypt_decrypt_spec)
+            re.findall(r"`(KMIPKIT-ELEM-OP-C2S-[A-Z-]+)`", encrypt_decrypt_spec)
         )
         approved_operation_ids = approved_operation_ids_019 | approved_operation_ids_021
         approved_requirement_ids = set(re.findall(r"\bFR-\d{3}\b", approved_spec))
@@ -742,7 +742,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         lease_policy = gaps["KMIPKIT-SOURCE-GAP-SPEC-4.30-CLIENT-LEASE-READ-ONLY"]
         resolution = lease_policy["source_resolution"]
         self.assertEqual(resolution["kind"], "attribute_policy_mapping")
-        self.assertEqual(resolution["element_id"], "KMIP-ELEM-ATTRIBUTE-LEASE-TIME")
+        self.assertEqual(resolution["element_id"], "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME")
         self.assertIsNone(lease_policy["candidate_requirement_id"])
         self.assertIsNone(lease_policy["proposed_requirement_id"])
         lease_time = next(row for row in catalog["elements"] if row["element_id"] == resolution["element_id"])
@@ -788,10 +788,10 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         if not isinstance(resolution, dict):
             return
         self.assertEqual(resolution["kind"], "mixed_response_and_client_access")
-        self.assertEqual(resolution["related_requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(resolution["related_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
         self.assertEqual(gap["scope_disposition"], "mixed")
 
-        review = reviews["KMIP-CLAUSE-SPEC-9.17-001"]
+        review = reviews["KMIPKIT-CLAUSE-SPEC-9.17-001"]
         atoms = review["source_obligations"]
         self.assertEqual([atom["source_keyword"] for atom in atoms], ["MAY", "MAY"])
         self.assertEqual([atom["scope_disposition"] for atom in atoms], ["server_only", "client_1_0"])
@@ -799,12 +799,12 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertEqual(atoms[0]["actor"], "unspecified")
         self.assertEqual(atoms[1]["actor"], "client")
         self.assertEqual(atoms[1]["direction"], "server_to_client")
-        self.assertEqual(atoms[1]["candidate_requirement_id"], "KMIP-REQ-SPEC-9.17-001-002")
-        self.assertEqual(review["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(atoms[1]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-9.17-001-002")
+        self.assertEqual(review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
 
-        clause = clauses["KMIP-CLAUSE-SPEC-9.17-001"]
-        self.assertEqual(clause["requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
-        requirement = requirements.get("KMIP-REQ-SPEC-9.17-001-002")
+        clause = clauses["KMIPKIT-CLAUSE-SPEC-9.17-001"]
+        self.assertEqual(clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
+        requirement = requirements.get("KMIPKIT-REQ-SPEC-9.17-001-002")
         self.assertIsInstance(requirement, dict)
         if not isinstance(requirement, dict):
             return
@@ -827,11 +827,11 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.17-001"
+            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.17-001"
         )
         clause = next(
             row for row in catalog["source_clauses"]
-            if row["clause_id"] == "KMIP-CLAUSE-SPEC-9.17-001"
+            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.17-001"
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -848,7 +848,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_t002_research_describes_current_paragraph_009_source_force_and_context(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -863,7 +863,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         self.assertEqual(data_rule["source_keywords"], [])
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
-        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-6.1-009"]["source_keywords"], ["REQUIRED"])
+        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1-009"]["source_keywords"], ["REQUIRED"])
         self.assertIn("lowercase `required`", summary)
         self.assertIn("not a formal `REQUIRED` keyword", summary)
         self.assertIn("independent source-gap oracle records `source_keywords: []`", summary)
@@ -880,7 +880,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_research_inventory_table_matches_paragraph_006_to_008_scope(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
@@ -902,7 +902,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_t002_research_bounds_procedure_evidence_to_verified_request_contracts(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -927,13 +927,13 @@ class SourceGapContextResolutionTests(unittest.TestCase):
         for number in (12, 14, 16):
             gap = gaps[f"KMIPKIT-SOURCE-GAP-SPEC-6.1-PROCEDURE-{number:03d}"]
             resolution = gap["source_resolution"]
-            self.assertEqual(resolution["related_requirement_ids"], ["KMIP-REQ-SPEC-7.8-001"])
+            self.assertEqual(resolution["related_requirement_ids"], ["KMIPKIT-REQ-SPEC-7.8-001"])
             self.assertEqual(set(resolution["related_source_table_contract_ids"]), request_contract_ids)
             self.assertIn("do not establish response-to-follow-up correlation round-trip behavior", resolution["review_note"])
 
         for contract_id in request_contract_ids:
             self.assertIn(contract_id, contracts)
-        existing_requirement = requirements["KMIP-REQ-SPEC-7.8-001"]
+        existing_requirement = requirements["KMIPKIT-REQ-SPEC-7.8-001"]
         self.assertEqual(
             existing_requirement["source_refs"],
             [{"source_id": "KMIPKIT-SRC-spec", "section": "7.8"}],
@@ -991,7 +991,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_t002_research_index_matches_procedure_scope_dispositions(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
@@ -1013,7 +1013,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_t002_research_records_already_verified_profile_inclusion_edges(self) -> None:
         research = PROFILE_RESEARCH_PATH.read_text(encoding="utf-8")
@@ -1036,7 +1036,7 @@ class SourceGapContextResolutionTests(unittest.TestCase):
 
     @unittest.skipUnless(
         PROFILE_RESEARCH_PATH.is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_t002_reconciles_profile_source_gap_actor_and_scope_dispositions(self) -> None:
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))

@@ -75,7 +75,7 @@ Baseline Client is the selected initial 1.0 target and currently has
 `claim_state: evidence_incomplete`. Its 16 mandatory official XML fixtures
 are pinned, but remain unpassed until complete case execution evidence is
 recorded. The typed-rule registry is not empty: it includes a
-mapping for Wrapped Secret Data under KMIP-REQ-SPEC-2.7-001. Baseline's
+mapping for Wrapped Secret Data under KMIPKIT-REQ-SPEC-2.7-001. Baseline's
 294-requirement closure now has typed mappings and category-appropriate
 behavior tests, so runtime rule selection is available. Its catalog evidence
 remains incomplete: T036 records 13 complete replays and three typed preflight

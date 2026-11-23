@@ -107,9 +107,9 @@ def closure_catalog() -> dict[str, object]:
         "source_clauses": [
             {"clause_id": "KMIPKIT-CLAUSE-PROF-6.1-001", "source_id": "profiles", "section": "6.1"},
             {"clause_id": "KMIPKIT-CLAUSE-PROF-6.1.1-001", "source_id": "profiles", "section": "6.1.1"},
-            {"clause_id": "KMIP-CLAUSE-SPEC-1-001", "source_id": "spec", "section": "1"},
-            {"clause_id": "KMIP-CLAUSE-SPEC-1.1-001", "source_id": "spec", "section": "1.1"},
-            {"clause_id": "KMIP-CLAUSE-SPEC-2-001", "source_id": "spec", "section": "2"},
+            {"clause_id": "KMIPKIT-CLAUSE-SPEC-1-001", "source_id": "spec", "section": "1"},
+            {"clause_id": "KMIPKIT-CLAUSE-SPEC-1.1-001", "source_id": "spec", "section": "1.1"},
+            {"clause_id": "KMIPKIT-CLAUSE-SPEC-2-001", "source_id": "spec", "section": "2"},
             {"clause_id": "KMIPKIT-CLAUSE-PROF-3.1-001", "source_id": "profiles", "section": "3.1"},
             {"clause_id": "KMIPKIT-CLAUSE-PROF-3.1.1-001", "source_id": "profiles", "section": "3.1.1"},
         ],
@@ -122,27 +122,27 @@ def closure_catalog() -> dict[str, object]:
             },
             {
                 "inclusion_id": "KMIPKIT-INCLUSION-002",
-                "source_clause_id": "KMIP-CLAUSE-SPEC-1-001",
+                "source_clause_id": "KMIPKIT-CLAUSE-SPEC-1-001",
                 "included_source_id": "profiles",
                 "included_section": "3.1",
             },
         ],
         "requirements": [
             {
-                "requirement_id": "KMIP-REQ-SPEC-1-001",
-                "source_clause_ids": ["KMIP-CLAUSE-SPEC-1-001"],
+                "requirement_id": "KMIPKIT-REQ-SPEC-1-001",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1-001"],
                 "role": "client",
                 "scope_state": "client_1_0",
             },
             {
-                "requirement_id": "KMIP-REQ-SPEC-1.1-001",
-                "source_clause_ids": ["KMIP-CLAUSE-SPEC-1.1-001"],
+                "requirement_id": "KMIPKIT-REQ-SPEC-1.1-001",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1.1-001"],
                 "role": "client",
                 "scope_state": "client_1_0",
             },
             {
-                "requirement_id": "KMIP-REQ-SPEC-2-001",
-                "source_clause_ids": ["KMIP-CLAUSE-SPEC-2-001"],
+                "requirement_id": "KMIPKIT-REQ-SPEC-2-001",
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-2-001"],
                 "role": "server",
                 "scope_state": "server_only",
             },
@@ -160,7 +160,7 @@ def closure_catalog() -> dict[str, object]:
 class ProfileMetadataGeneratorTests(unittest.TestCase):
     @unittest.skipUnless(
         (ROOT / "specs" / "010-profile-conformance" / "research.md").is_file(),
-        "External research documents are not bundled with this source distribution",
+        "Spec Kit research files are excluded from the code-only review branch",
     )
     def test_current_baseline_condition_summary_matches_reviewed_structural_crosswalks(self) -> None:
         """The current T002 summary must not describe structurally reviewed items as pending."""
@@ -634,7 +634,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "specification_source": "KMIP Specification v2.1 §14.1",
                 "specification_line_ranges": [[66041, 66042], [66044, 66047]],
                 "inclusion_id": "KMIPKIT-INCLUSION-PROF-BASELINE-SPEC",
-                "covered_requirement_ids": ["KMIP-REQ-SPEC-14.1-001", "KMIP-REQ-SPEC-14.1-002"],
+                "covered_requirement_ids": ["KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"],
                 "additional_source_clause_ids": [],
                 "additional_requirement_ids": [],
             },
@@ -647,7 +647,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             item for item in oracle["profiles"] if item["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
         self.assertTrue(
-            {"KMIP-REQ-SPEC-14.1-001", "KMIP-REQ-SPEC-14.1-002"}.issubset(
+            {"KMIPKIT-REQ-SPEC-14.1-001", "KMIPKIT-REQ-SPEC-14.1-002"}.issubset(
                 baseline_profile["requirement_ids"]
             )
         )
@@ -735,12 +735,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             message_extension["requirement_ids"],
             [
-                "KMIP-REQ-SPEC-8.3-004",
-                "KMIP-REQ-SPEC-9.13-001-001",
-                "KMIP-REQ-SPEC-9.13-001-002",
-                "KMIP-REQ-SPEC-9.13-001-003",
-                "KMIP-REQ-SPEC-9.13-001-004",
-                "KMIP-REQ-SPEC-9.13-001-005",
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
             ],
         )
         self.assertTrue(set(message_extension["requirement_ids"]).isdisjoint(condition["source_review"]["additional_requirement_ids"]))
@@ -764,9 +764,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Attributes",
-            "element_id": "KMIP-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
-            "requirement_ids": ["KMIP-REQ-SPEC-5.1-002"],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-5.1-002"],
+            "element_id": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-5.1-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-5.1-002"],
             "mapping_status": "reviewed",
         }
         self.assertEqual(condition["supported_items"], ["Attributes"])
@@ -779,12 +779,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Attributes", profiles_text)
 
         source_line_ranges = {
-            "KMIP-CLAUSE-SPEC-5.1-002": [21800, 21820],
-            "KMIP-CLAUSE-SPEC-3.2-001": [7837, 7845],
+            "KMIPKIT-CLAUSE-SPEC-5.1-002": [21800, 21820],
+            "KMIPKIT-CLAUSE-SPEC-3.2-001": [7837, 7845],
         }
         expected_requirement_details = {
-            "KMIP-REQ-SPEC-5.1-002": {
-                "clause_id": "KMIP-CLAUSE-SPEC-5.1-002",
+            "KMIPKIT-REQ-SPEC-5.1-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-5.1-002",
                 "keyword": "MAY",
                 "direction": "both",
                 "locator": {"ordinal": 2, "block_kind": "table_row"},
@@ -857,14 +857,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Structure", table_13_attributes_text)
 
         repeated_item_ids = {
-            "KMIP-REQ-SPEC-4-001-001",
-            "KMIP-REQ-SPEC-4-001-002",
-            "KMIP-REQ-SPEC-4-001-003",
+            "KMIPKIT-REQ-SPEC-4-001-001",
+            "KMIPKIT-REQ-SPEC-4-001-002",
+            "KMIPKIT-REQ-SPEC-4-001-003",
         }
         self.assertTrue(repeated_item_ids.isdisjoint(expected_mapping["requirement_ids"]))
-        self.assertNotIn("KMIP-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIP-REQ-SPEC-5.1-002"]["element_ids"])
-        self.assertIn("KMIP-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIP-REQ-SPEC-3.2-001"]["element_ids"])
-        self.assertIn("KMIP-ELEM-OP-C2S-REGISTER", requirements["KMIP-REQ-SPEC-3.2-001"]["element_ids"])
+        self.assertNotIn("KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIPKIT-REQ-SPEC-5.1-002"]["element_ids"])
+        self.assertIn("KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE", requirements["KMIPKIT-REQ-SPEC-3.2-001"]["element_ids"])
+        self.assertIn("KMIPKIT-ELEM-OP-C2S-REGISTER", requirements["KMIPKIT-REQ-SPEC-3.2-001"]["element_ids"])
 
         repeated_attributes_element = expected_mapping["element_id"]
         test_case = next(item for item in catalog["test_cases"] if item["official_case_id"] == "BL-M-4-21")
@@ -890,8 +890,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(len(locate_attributes), 1)
         repeated_protect_stop_dates = locate_attributes[0].findall("./ProtectStopDate")
         self.assertEqual(len(repeated_protect_stop_dates), 2)
-        self.assertEqual(requirements["KMIP-REQ-SPEC-5.1-002"]["test_case_ids"], [])
-        self.assertEqual(requirements["KMIP-REQ-SPEC-3.2-001"]["test_case_ids"], [])
+        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-5.1-002"]["test_case_ids"], [])
+        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-3.2-001"]["test_case_ids"], [])
         self.assertEqual(condition["mapping_status"], "reviewed")
 
     def test_baseline_object_attributes_condition_has_exact_element_crosswalk(self) -> None:
@@ -911,14 +911,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-003"
         )
         expected_items = [
-            ("Activation Date", "KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE", "4.1", "Date-Time", "420001"),
-            ("Deactivation Date", "KMIP-ELEM-ATTRIBUTE-DEACTIVATION-DATE", "4.18", "Date-Time", "42002F"),
-            ("Digest", "KMIP-ELEM-ATTRIBUTE-DIGEST", "4.21", "Structure", "420034"),
-            ("Initial Date", "KMIP-ELEM-ATTRIBUTE-INITIAL-DATE", "4.25", "Date-Time", "420039"),
-            ("Last Change Date", "KMIP-ELEM-ATTRIBUTE-LAST-CHANGE-DATE", "4.29", "Date-Time", "420048"),
-            ("Object Type", "KMIP-ELEM-ATTRIBUTE-OBJECT-TYPE", "4.36", "Enumeration", "420057"),
-            ("State", "KMIP-ELEM-ATTRIBUTE-STATE", "4.57", "Enumeration", "42008D"),
-            ("Unique Identifier", "KMIP-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "4.58", "Text String, Enumeration or Integer", "420094"),
+            ("Activation Date", "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "4.1", "Date-Time", "420001"),
+            ("Deactivation Date", "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE", "4.18", "Date-Time", "42002F"),
+            ("Digest", "KMIPKIT-ELEM-ATTRIBUTE-DIGEST", "4.21", "Structure", "420034"),
+            ("Initial Date", "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE", "4.25", "Date-Time", "420039"),
+            ("Last Change Date", "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE", "4.29", "Date-Time", "420048"),
+            ("Object Type", "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE", "4.36", "Enumeration", "420057"),
+            ("State", "KMIPKIT-ELEM-ATTRIBUTE-STATE", "4.57", "Enumeration", "42008D"),
+            ("Unique Identifier", "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER", "4.58", "Text String, Enumeration or Integer", "420094"),
         ]
         expected_mappings = [
             {
@@ -950,7 +950,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             with self.subTest(item=item):
                 self.assertIn(item, profiles_text)
                 element = elements[element_id]
-                tag_id = f"KMIP-ELEM-TAG-{wire_value}"
+                tag_id = f"KMIPKIT-ELEM-TAG-{wire_value}"
                 self.assertEqual(element["name"], item)
                 self.assertEqual(element["kind"], "attribute")
                 self.assertEqual(
@@ -970,7 +970,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(tag["name"], item)
                 self.assertEqual(tag["wire_value"], wire_value)
                 self.assertEqual(tag["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}])
-                self.assertEqual(tag["parent_element_ids"], ["KMIP-ELEM-ENUMERATION-TAG"])
+                self.assertEqual(tag["parent_element_ids"], ["KMIPKIT-ELEM-ENUMERATION-TAG"])
 
     def test_baseline_query_operation_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """The four item mappings are source-backed; the parent is reviewed only as a crosswalk."""
@@ -991,9 +991,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Query",
-            "element_id": "KMIP-ELEM-OP-C2S-QUERY",
-            "requirement_ids": ["KMIP-REQ-SPEC-6.1.40-014", "KMIP-REQ-SPEC-6.1.40-016"],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-6.1.40-014", "KMIP-CLAUSE-SPEC-6.1.40-016"],
+            "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.40-014", "KMIPKIT-CLAUSE-SPEC-6.1.40-016"],
             "mapping_status": "reviewed",
         }
 
@@ -1026,16 +1026,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             if item["source_clause_id"] in expected_mapping["source_clause_ids"]
         }
         source_line_ranges = {
-            "KMIP-CLAUSE-SPEC-6.1.40-014": [31992, 31993],
-            "KMIP-CLAUSE-SPEC-6.1.40-016": [32025, 32042],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-014": [31992, 31993],
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-016": [32025, 32042],
         }
         expected_keywords = {
-            "KMIP-CLAUSE-SPEC-6.1.40-014": "SHALL",
-            "KMIP-CLAUSE-SPEC-6.1.40-016": "MAY",
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-014": "SHALL",
+            "KMIPKIT-CLAUSE-SPEC-6.1.40-016": "MAY",
         }
         expected_strengths = {
-            "KMIP-REQ-SPEC-6.1.40-014": "mandatory",
-            "KMIP-REQ-SPEC-6.1.40-016": "permission_or_optional",
+            "KMIPKIT-REQ-SPEC-6.1.40-014": "mandatory",
+            "KMIPKIT-REQ-SPEC-6.1.40-016": "permission_or_optional",
         }
         self.assertEqual(set(source_candidates), set(expected_mapping["source_clause_ids"]))
         self.assertEqual(set(source_reviews), set(expected_mapping["source_clause_ids"]))
@@ -1100,49 +1100,49 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         expected_mappings = [
             {
                 "item": "Get",
-                "element_id": "KMIP-ELEM-OP-C2S-GET",
-                "requirement_ids": ["KMIP-REQ-SPEC-6.1.19-002"],
-                "source_clause_ids": ["KMIP-CLAUSE-SPEC-6.1.19-002"],
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.19-002"],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.19-002"],
                 "mapping_status": "reviewed",
             },
             {
                 "item": "Get Attributes",
-                "element_id": "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
                 "requirement_ids": [
-                    "KMIP-REQ-SPEC-6.1.20-001-001",
-                    "KMIP-REQ-SPEC-6.1.20-004",
+                    "KMIPKIT-REQ-SPEC-6.1.20-001-001",
+                    "KMIPKIT-REQ-SPEC-6.1.20-004",
                 ],
                 "source_clause_ids": [
-                    "KMIP-CLAUSE-SPEC-6.1.20-001",
-                    "KMIP-CLAUSE-SPEC-6.1.20-004",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
                 ],
                 "mapping_status": "reviewed",
             },
             {
                 "item": "Locate",
-                "element_id": "KMIP-ELEM-OP-C2S-LOCATE",
+                "element_id": "KMIPKIT-ELEM-OP-C2S-LOCATE",
                 "requirement_ids": [
-                    "KMIP-REQ-SPEC-6.1.28-001",
-                    "KMIP-REQ-SPEC-6.1.28-002",
-                    "KMIP-REQ-SPEC-6.1.28-004-001",
-                    "KMIP-REQ-SPEC-6.1.28-007",
-                    "KMIP-REQ-SPEC-6.1.28-013-001",
-                    "KMIP-REQ-SPEC-6.1.28-013-002",
+                    "KMIPKIT-REQ-SPEC-6.1.28-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-002",
+                    "KMIPKIT-REQ-SPEC-6.1.28-004-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-007",
+                    "KMIPKIT-REQ-SPEC-6.1.28-013-001",
+                    "KMIPKIT-REQ-SPEC-6.1.28-013-002",
                 ],
                 "source_clause_ids": [
-                    "KMIP-CLAUSE-SPEC-6.1.28-001",
-                    "KMIP-CLAUSE-SPEC-6.1.28-002",
-                    "KMIP-CLAUSE-SPEC-6.1.28-004",
-                    "KMIP-CLAUSE-SPEC-6.1.28-007",
-                    "KMIP-CLAUSE-SPEC-6.1.28-013",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+                    "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
                 ],
                 "mapping_status": "reviewed",
             },
             {
                 "item": "Query",
-                "element_id": "KMIP-ELEM-OP-C2S-QUERY",
-                "requirement_ids": ["KMIP-REQ-SPEC-6.1.40-014", "KMIP-REQ-SPEC-6.1.40-016"],
-                "source_clause_ids": ["KMIP-CLAUSE-SPEC-6.1.40-014", "KMIP-CLAUSE-SPEC-6.1.40-016"],
+                "element_id": "KMIPKIT-ELEM-OP-C2S-QUERY",
+                "requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"],
+                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.40-014", "KMIPKIT-CLAUSE-SPEC-6.1.40-016"],
                 "mapping_status": "reviewed",
             },
         ]
@@ -1158,72 +1158,72 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             for requirement_id in mapping["requirement_ids"]
         }
         expected_requirements = {
-            "KMIP-REQ-SPEC-6.1.19-002": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.19-002",
+            "KMIPKIT-REQ-SPEC-6.1.19-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
                 "line_range": [27135, 27136],
                 "locator": {"ordinal": 2, "block_kind": "paragraph"},
                 "keyword": "SHALL",
                 "strength": "mandatory",
                 "source_phrase": "key format capabilities SHALL be assumed by the client",
             },
-            "KMIP-REQ-SPEC-6.1.20-001-001": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.20-001",
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
                 "line_range": [27440, 27447],
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
                 "keyword": "SHALL NOT",
                 "strength": "prohibited",
                 "source_phrase": "same Attribute Reference SHALL NOT be present more than once",
             },
-            "KMIP-REQ-SPEC-6.1.20-004": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.20-004",
+            "KMIPKIT-REQ-SPEC-6.1.20-004": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
                 "line_range": [27506, 27515],
                 "locator": {"ordinal": 4, "block_kind": "table_row"},
                 "keyword": "MAY",
                 "strength": "permission_or_optional",
                 "source_phrase": "MAY be repeated",
             },
-            "KMIP-REQ-SPEC-6.1.28-001": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-001",
+            "KMIPKIT-REQ-SPEC-6.1.28-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
                 "line_range": [29143, 29148],
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
                 "keyword": "MAY",
                 "strength": "permission_or_optional",
                 "source_phrase": "request MAY contain a Maximum Items field",
             },
-            "KMIP-REQ-SPEC-6.1.28-002": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-002",
+            "KMIPKIT-REQ-SPEC-6.1.28-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
                 "line_range": [29150, 29155],
                 "locator": {"ordinal": 2, "block_kind": "paragraph"},
                 "keyword": "MAY",
                 "strength": "permission_or_optional",
                 "source_phrase": "request MAY contain an Offset Items field",
             },
-            "KMIP-REQ-SPEC-6.1.28-004-001": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-004",
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
                 "line_range": [29168, 29170],
                 "locator": {"ordinal": 4, "block_kind": "paragraph"},
                 "keyword": "REQUIRED",
                 "strength": "mandatory",
                 "source_phrase": "Recover and Get operations are REQUIRED to be",
             },
-            "KMIP-REQ-SPEC-6.1.28-007": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-007",
+            "KMIPKIT-REQ-SPEC-6.1.28-007": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
                 "line_range": [29206, 29210],
                 "locator": {"ordinal": 7, "block_kind": "paragraph"},
                 "keyword": "REQUIRED",
                 "strength": "permission_or_optional",
                 "source_phrase": "all of the structure fields are not REQUIRED to be specified",
             },
-            "KMIP-REQ-SPEC-6.1.28-013-001": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-013",
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
                 "line_range": [29341, 29362],
                 "locator": {"ordinal": 13, "block_kind": "table_row"},
                 "keyword": "REQUIRED",
                 "strength": "mandatory",
                 "source_phrase": "REQUIRED to match those in a candidate object",
             },
-            "KMIP-REQ-SPEC-6.1.28-013-002": {
-                "clause_id": "KMIP-CLAUSE-SPEC-6.1.28-013",
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": {
+                "clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
                 "line_range": [29341, 29362],
                 "locator": {"ordinal": 13, "block_kind": "table_row"},
                 "keyword": "MAY",
@@ -1232,32 +1232,32 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             },
         }
         expected_requirement_conditions = {
-            "KMIP-REQ-SPEC-6.1.19-002": "When requesting the server to return an object in a particular format.",
-            "KMIP-REQ-SPEC-6.1.20-001-001": None,
-            "KMIP-REQ-SPEC-6.1.20-004": None,
-            "KMIP-REQ-SPEC-6.1.28-001": None,
-            "KMIP-REQ-SPEC-6.1.28-002": None,
-            "KMIP-REQ-SPEC-6.1.28-004-001": "When the client needs to obtain archived matches.",
-            "KMIP-REQ-SPEC-6.1.28-007": None,
-            "KMIP-REQ-SPEC-6.1.28-013-001": None,
-            "KMIP-REQ-SPEC-6.1.28-013-002": "When requesting an unrestricted match.",
+            "KMIPKIT-REQ-SPEC-6.1.19-002": "When requesting the server to return an object in a particular format.",
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.20-004": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-002": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": "When the client needs to obtain archived matches.",
+            "KMIPKIT-REQ-SPEC-6.1.28-007": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": "When requesting an unrestricted match.",
         }
         expected_source_obligation_conditions = {
-            "KMIP-REQ-SPEC-6.1.19-002": (
+            "KMIPKIT-REQ-SPEC-6.1.19-002": (
                 "When the client requests the server to return an object in a particular format."
             ),
-            "KMIP-REQ-SPEC-6.1.20-001-001": None,
-            "KMIP-REQ-SPEC-6.1.20-004": None,
-            "KMIP-REQ-SPEC-6.1.28-001": "Maximum Items is included in the Locate request.",
-            "KMIP-REQ-SPEC-6.1.28-002": "Offset Items may be specified; zero is equivalent to omission.",
-            "KMIP-REQ-SPEC-6.1.28-004-001": "The Located objects are archived.",
-            "KMIP-REQ-SPEC-6.1.28-007": (
+            "KMIPKIT-REQ-SPEC-6.1.20-001-001": None,
+            "KMIPKIT-REQ-SPEC-6.1.20-004": None,
+            "KMIPKIT-REQ-SPEC-6.1.28-001": "Maximum Items is included in the Locate request.",
+            "KMIPKIT-REQ-SPEC-6.1.28-002": "Offset Items may be specified; zero is equivalent to omission.",
+            "KMIPKIT-REQ-SPEC-6.1.28-004-001": "The Located objects are archived.",
+            "KMIPKIT-REQ-SPEC-6.1.28-007": (
                 "A structured attribute is specified in the request; not all fields need be supplied."
             ),
-            "KMIP-REQ-SPEC-6.1.28-013-001": (
+            "KMIPKIT-REQ-SPEC-6.1.28-013-001": (
                 "Attributes are supplied; their values are required to match a candidate object."
             ),
-            "KMIP-REQ-SPEC-6.1.28-013-002": (
+            "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
                 "Client chooses an empty Attributes structure; the lower-case 'should' is not an additional formal keyword."
             ),
         }
@@ -1335,7 +1335,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(clause["source_id"], "KMIPKIT-SRC-spec")
-                self.assertEqual(clause["section"], details["clause_id"].removeprefix("KMIP-CLAUSE-SPEC-").rsplit("-", 1)[0])
+                self.assertEqual(clause["section"], details["clause_id"].removeprefix("KMIPKIT-CLAUSE-SPEC-").rsplit("-", 1)[0])
                 self.assertEqual(clause["locator"], details["locator"])
                 self.assertIn(details["keyword"], clause["source_keywords"])
                 self.assertEqual(review["source_path"], spec_path)
@@ -1351,14 +1351,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(obligation["candidate_requirement_id"], requirement_id)
 
         excluded_server_requirements = {
-            "KMIP-REQ-SPEC-6.1.20-001-002": "KMIP-CLAUSE-SPEC-6.1.20-001",
-            "KMIP-REQ-SPEC-6.1.28-004-002": "KMIP-CLAUSE-SPEC-6.1.28-004",
-            "KMIP-REQ-SPEC-6.1.28-008-001": "KMIP-CLAUSE-SPEC-6.1.28-008",
-            "KMIP-REQ-SPEC-6.1.28-008-002": "KMIP-CLAUSE-SPEC-6.1.28-008",
-            "KMIP-REQ-SPEC-6.1.28-009-001": "KMIP-CLAUSE-SPEC-6.1.28-009",
-            "KMIP-REQ-SPEC-6.1.28-009-002": "KMIP-CLAUSE-SPEC-6.1.28-009",
-            "KMIP-REQ-SPEC-6.1.28-011": "KMIP-CLAUSE-SPEC-6.1.28-011",
-            "KMIP-REQ-SPEC-6.1.28-012": "KMIP-CLAUSE-SPEC-6.1.28-012",
+            "KMIPKIT-REQ-SPEC-6.1.20-001-002": "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+            "KMIPKIT-REQ-SPEC-6.1.28-004-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+            "KMIPKIT-REQ-SPEC-6.1.28-008-001": "KMIPKIT-CLAUSE-SPEC-6.1.28-008",
+            "KMIPKIT-REQ-SPEC-6.1.28-008-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-008",
+            "KMIPKIT-REQ-SPEC-6.1.28-009-001": "KMIPKIT-CLAUSE-SPEC-6.1.28-009",
+            "KMIPKIT-REQ-SPEC-6.1.28-009-002": "KMIPKIT-CLAUSE-SPEC-6.1.28-009",
+            "KMIPKIT-REQ-SPEC-6.1.28-011": "KMIPKIT-CLAUSE-SPEC-6.1.28-011",
+            "KMIPKIT-REQ-SPEC-6.1.28-012": "KMIPKIT-CLAUSE-SPEC-6.1.28-012",
         }
         for requirement_id, clause_id in excluded_server_requirements.items():
             with self.subTest(excluded_requirement_id=requirement_id):
@@ -1371,7 +1371,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertIn(requirement["scope_state"], {"server_only", "out_of_scope"})
                 self.assertNotIn(requirement_id, review["expected_client_requirement_ids"])
 
-        locate_007 = requirements["KMIP-REQ-SPEC-6.1.28-007"]
+        locate_007 = requirements["KMIPKIT-REQ-SPEC-6.1.28-007"]
         self.assertEqual(locate_007["source_keyword"], "REQUIRED")
         self.assertEqual(locate_007["normative_strength"], "permission_or_optional")
         self.assertIn("not REQUIRED to be specified", locate_007["review_note"])
@@ -1382,8 +1382,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
     def test_batch_item_client_scope_has_a_recorded_interpretation(self) -> None:
         """Client ownership of §9.7's actor-unspecified rule must be traceable."""
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
-        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == "KMIP-CLAUSE-SPEC-9.7-001")
-        requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == "KMIP-REQ-SPEC-9.7-001")
+        clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.7-001")
+        requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001")
 
         self.assertEqual(clause["role"], "unclear")
         self.assertEqual(clause["direction"], "unclear")
@@ -1416,9 +1416,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         condition = next(
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
         )
-        expected_async_requirement_ids = ["KMIP-REQ-SPEC-8-003-001"]
-        expected_async_clause_ids = ["KMIP-CLAUSE-SPEC-8-003", "KMIP-CLAUSE-SPEC-9.2-001"]
-        expected_async_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR"
+        expected_async_requirement_ids = ["KMIPKIT-REQ-SPEC-8-003-001"]
+        expected_async_clause_ids = ["KMIPKIT-CLAUSE-SPEC-8-003", "KMIPKIT-CLAUSE-SPEC-9.2-001"]
+        expected_async_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR"
         expected_async_mapping = {
             "item": "Asynchronous Indicator",
             "element_id": expected_async_element_id,
@@ -1427,11 +1427,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "mapping_status": "reviewed",
         }
         expected_requirement_ids = [
-            "KMIP-REQ-SPEC-9.5-001-001",
-            "KMIP-REQ-SPEC-9.5-001-002",
+            "KMIPKIT-REQ-SPEC-9.5-001-001",
+            "KMIPKIT-REQ-SPEC-9.5-001-002",
         ]
-        expected_clause_id = "KMIP-CLAUSE-SPEC-9.5-001"
-        expected_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"
+        expected_clause_id = "KMIPKIT-CLAUSE-SPEC-9.5-001"
+        expected_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"
         expected_mapping = {
             "item": "Batch Count",
             "element_id": expected_element_id,
@@ -1440,18 +1440,18 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "mapping_status": "reviewed",
         }
         expected_error_requirement_ids = [
-            "KMIP-REQ-SPEC-6.1.7-002-002",
-            "KMIP-REQ-SPEC-9.6-001-001",
-            "KMIP-REQ-SPEC-9.6-001-002",
-            "KMIP-REQ-SPEC-9.6-001-003",
+            "KMIPKIT-REQ-SPEC-6.1.7-002-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-001",
+            "KMIPKIT-REQ-SPEC-9.6-001-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-003",
         ]
         expected_error_item_requirement_ids = [
-            "KMIP-REQ-SPEC-9.6-001-001",
-            "KMIP-REQ-SPEC-9.6-001-002",
-            "KMIP-REQ-SPEC-9.6-001-003",
+            "KMIPKIT-REQ-SPEC-9.6-001-001",
+            "KMIPKIT-REQ-SPEC-9.6-001-002",
+            "KMIPKIT-REQ-SPEC-9.6-001-003",
         ]
-        expected_error_clause_id = "KMIP-CLAUSE-SPEC-9.6-001"
-        expected_error_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
+        expected_error_clause_id = "KMIPKIT-CLAUSE-SPEC-9.6-001"
+        expected_error_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION"
         expected_error_mapping = {
             "item": "Batch Error Continuation Option",
             "element_id": expected_error_element_id,
@@ -1459,8 +1459,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_error_clause_id],
             "mapping_status": "reviewed",
         }
-        expected_batch_item_clause_id = "KMIP-CLAUSE-SPEC-9.7-001"
-        expected_batch_item_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"
+        expected_batch_item_clause_id = "KMIPKIT-CLAUSE-SPEC-9.7-001"
+        expected_batch_item_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"
         expected_batch_item_mapping = {
             "item": "Batch Item",
             "element_id": expected_batch_item_element_id,
@@ -1468,8 +1468,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_batch_item_clause_id],
             "mapping_status": "reviewed",
         }
-        expected_batch_order_option_clause_id = "KMIP-CLAUSE-SPEC-9.8-001"
-        expected_batch_order_option_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
+        expected_batch_order_option_clause_id = "KMIPKIT-CLAUSE-SPEC-9.8-001"
+        expected_batch_order_option_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION"
         expected_batch_order_option_mapping = {
             "item": "Batch Order Option",
             "element_id": expected_batch_order_option_element_id,
@@ -1477,12 +1477,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "source_clause_ids": [expected_batch_order_option_clause_id],
             "mapping_status": "reviewed",
         }
-        expected_maximum_response_size_clause_id = "KMIP-CLAUSE-SPEC-9.12-001"
-        expected_maximum_response_size_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE"
+        expected_maximum_response_size_clause_id = "KMIPKIT-CLAUSE-SPEC-9.12-001"
+        expected_maximum_response_size_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE"
         expected_maximum_response_size_requirement_ids = [
-            "KMIP-REQ-SPEC-9.12-001-001",
-            "KMIP-REQ-SPEC-9.12-001-002",
-            "KMIP-REQ-SPEC-9.12-001-003",
+            "KMIPKIT-REQ-SPEC-9.12-001-001",
+            "KMIPKIT-REQ-SPEC-9.12-001-002",
+            "KMIPKIT-REQ-SPEC-9.12-001-003",
         ]
         expected_maximum_response_size_mapping = {
             "item": "Maximum Response Size",
@@ -1493,75 +1493,75 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         }
         expected_message_extension_mapping = {
             "item": "Message Extension",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
             "requirement_ids": [
-                "KMIP-REQ-SPEC-8.3-004",
-                "KMIP-REQ-SPEC-9.13-001-001",
-                "KMIP-REQ-SPEC-9.13-001-002",
-                "KMIP-REQ-SPEC-9.13-001-003",
-                "KMIP-REQ-SPEC-9.13-001-004",
-                "KMIP-REQ-SPEC-9.13-001-005",
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
             ],
             "source_clause_ids": [
-                "KMIP-CLAUSE-SPEC-8.3-004",
-                "KMIP-CLAUSE-SPEC-8.6-004",
-                "KMIP-CLAUSE-SPEC-9.13-001",
+                "KMIPKIT-CLAUSE-SPEC-8.3-004",
+                "KMIPKIT-CLAUSE-SPEC-8.6-004",
+                "KMIPKIT-CLAUSE-SPEC-9.13-001",
             ],
             "mapping_status": "reviewed",
         }
         expected_operation_mapping = {
             "item": "Operation",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
             "requirement_ids": [],
             "source_clause_ids": [],
             "mapping_status": "reviewed",
         }
         expected_protocol_version_mapping = {
             "item": "Protocol Version",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.16-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
             "mapping_status": "reviewed",
         }
         expected_result_reason_mapping = {
             "item": "Result Reason",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.18-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.18-001"],
             "mapping_status": "reviewed",
         }
         expected_result_status_mapping = {
             "item": "Result Status",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
-            "requirement_ids": ["KMIP-REQ-SPEC-9.19-002"],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.19-001", "KMIP-CLAUSE-SPEC-9.19-002"],
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.19-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.19-001", "KMIPKIT-CLAUSE-SPEC-9.19-002"],
             "mapping_status": "reviewed",
         }
         expected_server_correlation_value_mapping = {
             "item": "Server Correlation Value",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.10-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.10-001"],
             "mapping_status": "reviewed",
         }
         expected_time_stamp_mapping = {
             "item": "Time Stamp",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
-            "requirement_ids": ["KMIP-REQ-SPEC-9.20-001-001", "KMIP-REQ-SPEC-9.20-001-002"],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.20-001"],
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.20-001-001", "KMIPKIT-REQ-SPEC-9.20-001-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.20-001"],
             "mapping_status": "reviewed",
         }
         expected_unique_batch_item_id_mapping = {
             "item": "Unique Batch Item ID",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
             "requirement_ids": [
-                "KMIP-REQ-SPEC-8.3-003",
-                "KMIP-REQ-SPEC-9.21-001-001",
+                "KMIPKIT-REQ-SPEC-8.3-003",
+                "KMIPKIT-REQ-SPEC-9.21-001-001",
                 "KMIPKIT-REQ-PROF-4.1.2-007",
             ],
             "source_clause_ids": [
-                "KMIP-CLAUSE-SPEC-8.3-003",
-                "KMIP-CLAUSE-SPEC-9.21-001",
+                "KMIPKIT-CLAUSE-SPEC-8.3-003",
+                "KMIPKIT-CLAUSE-SPEC-9.21-001",
                 "KMIPKIT-CLAUSE-PROF-4.1.2-007",
             ],
             "mapping_status": "reviewed",
@@ -1654,16 +1654,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(async_element["direction"], "client_to_server")
         self.assertEqual(async_element["scope_state"], "client_1_0")
         self.assertEqual(
-            async_element["parent_element_ids"], ["KMIP-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"]
+            async_element["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR"]
         )
         self.assertEqual(async_element["source_encoding"], "Enumeration")
-        self.assertEqual(async_element["requirement_ids"], ["KMIP-REQ-SPEC-9.2-001"])
+        self.assertEqual(async_element["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.2-001"])
         self.assertEqual(async_element["profile_ids"], [])
 
         async_requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == expected_async_requirement_ids[0]
         )
-        self.assertEqual(async_requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-8-003"])
+        self.assertEqual(async_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-8-003"])
         self.assertEqual(async_requirement["source_keyword"], "MAY")
         self.assertEqual(async_requirement["normative_strength"], "permission_or_optional")
         self.assertEqual(async_requirement["role"], "client")
@@ -1678,7 +1678,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         async_clause_review = next(
             item
             for item in oracle["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-8-003"
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-8-003"
         )
         async_clause_excerpt = (
             "If the client is capable of accepting asynchronous responses, then it MAY set the Asynchronous "
@@ -1704,13 +1704,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(mixed_response_obligation["direction"], "server_to_client")
         self.assertEqual(mixed_response_obligation["scope_disposition"], "server_only")
         self.assertEqual(mixed_response_obligation["project_actor_interpretation"], "server")
-        self.assertEqual(mixed_response_obligation["candidate_requirement_id"], "KMIP-REQ-SPEC-8-003-002")
-        self.assertNotIn("KMIP-REQ-SPEC-8-003-002", expected_async_mapping["requirement_ids"])
+        self.assertEqual(mixed_response_obligation["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-8-003-002")
+        self.assertNotIn("KMIPKIT-REQ-SPEC-8-003-002", expected_async_mapping["requirement_ids"])
 
         async_field_review = next(
             item
             for item in oracle["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.2-001"
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.2-001"
         )
         self.assertEqual(async_field_review["html_line_range"], [43567, 43569])
         async_field_source = _normalized_html_source_span(spec_lines, [43563, 43569])
@@ -1719,7 +1719,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(async_field_review["expected_client_requirement_ids"], [])
         self.assertEqual(async_field_review["source_obligations"][0]["actor"], "server")
         self.assertEqual(async_field_review["source_obligations"][0]["scope_disposition"], "server_only")
-        self.assertNotIn("KMIP-REQ-SPEC-9.2-001", expected_async_mapping["requirement_ids"])
+        self.assertNotIn("KMIPKIT-REQ-SPEC-9.2-001", expected_async_mapping["requirement_ids"])
         self.assertIn(
             "Asynchronous Indicator 420007",
             _normalized_html_source_span(spec_lines, [59017, 59023]),
@@ -1738,8 +1738,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             batch_item_element["parent_element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
-                "KMIP-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM",
             ],
         )
         self.assertEqual(batch_item_element["requirement_ids"], [])
@@ -1751,12 +1751,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(batch_item_clause["role"], "unclear")
         self.assertEqual(batch_item_clause["direction"], "unclear")
         self.assertEqual(batch_item_clause["scope_state"], "client_1_0")
-        self.assertEqual(batch_item_clause["requirement_ids"], ["KMIP-REQ-SPEC-9.7-001"])
+        self.assertEqual(batch_item_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"])
 
         batch_item_requirement = next(
             item
             for item in catalog["requirements"]
-            if item["requirement_id"] == "KMIP-REQ-SPEC-9.7-001"
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.7-001"
         )
         self.assertEqual(batch_item_requirement["role"], "client")
         self.assertEqual(batch_item_requirement["direction"], "both")
@@ -1776,7 +1776,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             "and is REQUIRED. The contents of the batch items are described in Section 12.",
         )
         self.assertEqual(
-            batch_item_review["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-9.7-001"]
+            batch_item_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.7-001"]
         )
         self.assertEqual(batch_item_review["source_obligations"][0]["actor"], "unspecified")
         self.assertEqual(batch_item_review["source_obligations"][0]["direction"], "unspecified")
@@ -1793,10 +1793,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(batch_order_option_element["direction"], "client_to_server")
         self.assertEqual(batch_order_option_element["scope_state"], "client_1_0")
         self.assertEqual(
-            batch_order_option_element["parent_element_ids"], ["KMIP-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"]
+            batch_order_option_element["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"]
         )
         self.assertEqual(
-            batch_order_option_element["requirement_ids"], ["KMIP-REQ-SPEC-9.8-001-001"]
+            batch_order_option_element["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.8-001-001"]
         )
 
         batch_order_option_clause = next(
@@ -1811,24 +1811,24 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             batch_order_option_clause["requirement_ids"],
             [
-                "KMIP-REQ-SPEC-9.8-001-001",
-                "KMIP-REQ-SPEC-9.8-001-002",
-                "KMIP-REQ-SPEC-9.8-001-003",
+                "KMIPKIT-REQ-SPEC-9.8-001-001",
+                "KMIPKIT-REQ-SPEC-9.8-001-002",
+                "KMIPKIT-REQ-SPEC-9.8-001-003",
             ],
         )
         batch_order_option_requirements = {
             item["requirement_id"]: item
             for item in catalog["requirements"]
-            if item["requirement_id"].startswith("KMIP-REQ-SPEC-9.8-001-")
+            if item["requirement_id"].startswith("KMIPKIT-REQ-SPEC-9.8-001-")
         }
-        retired_client_candidate = batch_order_option_requirements["KMIP-REQ-SPEC-9.8-001-001"]
+        retired_client_candidate = batch_order_option_requirements["KMIPKIT-REQ-SPEC-9.8-001-001"]
         self.assertEqual(retired_client_candidate["status"], "retired")
         self.assertEqual(retired_client_candidate["role"], "not_applicable")
         self.assertEqual(retired_client_candidate["direction"], "not_applicable")
         self.assertEqual(retired_client_candidate["scope_state"], "out_of_scope")
         for requirement_id in (
-            "KMIP-REQ-SPEC-9.8-001-002",
-            "KMIP-REQ-SPEC-9.8-001-003",
+            "KMIPKIT-REQ-SPEC-9.8-001-002",
+            "KMIPKIT-REQ-SPEC-9.8-001-003",
         ):
             with self.subTest(server_requirement_id=requirement_id):
                 server_requirement = batch_order_option_requirements[requirement_id]
@@ -1855,7 +1855,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(
             batch_order_option_review["rejected_candidate_mappings"][0]["requirement_id"],
-            "KMIP-REQ-SPEC-9.8-001-001",
+            "KMIPKIT-REQ-SPEC-9.8-001-001",
         )
         self.assertEqual(
             [obligation["actor"] for obligation in batch_order_option_review["source_obligations"]],
@@ -1879,19 +1879,19 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         check_specific_should = next(
             item
             for item in catalog["requirements"]
-            if item["requirement_id"] == "KMIP-REQ-SPEC-6.1.7-002-001"
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.7-002-001"
         )
         self.assertEqual(check_specific_should["source_keyword"], "SHOULD")
         self.assertEqual(check_specific_should["condition"], "When a batch contains Check.")
         self.assertEqual(
             check_specific_should["element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
-                "KMIP-ELEM-OP-C2S-CHECK",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION",
+                "KMIPKIT-ELEM-OP-C2S-CHECK",
             ],
         )
         self.assertNotIn(
-            "KMIP-REQ-SPEC-6.1.7-002-001", expected_batch_order_option_mapping["requirement_ids"]
+            "KMIPKIT-REQ-SPEC-6.1.7-002-001", expected_batch_order_option_mapping["requirement_ids"]
         )
 
         maximum_response_size_element = next(
@@ -1909,11 +1909,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(maximum_response_size_element["scope_state"], "client_1_0")
         self.assertEqual(
             maximum_response_size_element["parent_element_ids"],
-            ["KMIP-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE"],
         )
         self.assertEqual(
             maximum_response_size_element["requirement_ids"],
-            ["KMIP-REQ-SPEC-9.12-001-001"],
+            ["KMIPKIT-REQ-SPEC-9.12-001-001"],
         )
         self.assertEqual(maximum_response_size_element["source_encoding"], "Integer")
 
@@ -1933,20 +1933,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         maximum_response_size_requirements = {
             item["requirement_id"]: item
             for item in catalog["requirements"]
-            if item["requirement_id"].startswith("KMIP-REQ-SPEC-9.12-001-")
+            if item["requirement_id"].startswith("KMIPKIT-REQ-SPEC-9.12-001-")
         }
         expected_maximum_response_size_ownership = {
-            "KMIP-REQ-SPEC-9.12-001-001": [
-                "KMIP-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+            "KMIPKIT-REQ-SPEC-9.12-001-001": [
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
                 expected_maximum_response_size_element_id,
             ],
-            "KMIP-REQ-SPEC-9.12-001-002": [],
-            "KMIP-REQ-SPEC-9.12-001-003": [],
+            "KMIPKIT-REQ-SPEC-9.12-001-002": [],
+            "KMIPKIT-REQ-SPEC-9.12-001-003": [],
         }
         expected_maximum_response_size_keywords = {
-            "KMIP-REQ-SPEC-9.12-001-001": "OPTIONAL",
-            "KMIP-REQ-SPEC-9.12-001-002": "SHALL",
-            "KMIP-REQ-SPEC-9.12-001-003": "SHOULD",
+            "KMIPKIT-REQ-SPEC-9.12-001-001": "OPTIONAL",
+            "KMIPKIT-REQ-SPEC-9.12-001-002": "SHALL",
+            "KMIPKIT-REQ-SPEC-9.12-001-003": "SHOULD",
         }
         for requirement_id, element_ids in expected_maximum_response_size_ownership.items():
             with self.subTest(maximum_response_size_requirement_id=requirement_id):
@@ -2046,12 +2046,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         requirements = {item["requirement_id"]: item for item in catalog["requirements"]}
         expected_requirements = {
-            "KMIP-REQ-SPEC-9.5-001-001": {
+            "KMIPKIT-REQ-SPEC-9.5-001-001": {
                 "source_keyword": "REQUIRED",
                 "summary": "Set Batch Count to the number of Batch Items in the message.",
                 "condition": None,
             },
-            "KMIP-REQ-SPEC-9.5-001-002": {
+            "KMIPKIT-REQ-SPEC-9.5-001-002": {
                 "source_keyword": "SHALL",
                 "summary": "Set Batch Count to one for a single requested operation.",
                 "condition": "For one operation.",
@@ -2071,8 +2071,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(requirement["condition"], expected["condition"])
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["element_ids"], [
-                    "KMIP-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
-                    "KMIP-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
                     expected_element_id,
                 ])
                 self.assertEqual(requirement["status"], "verified")
@@ -2152,11 +2152,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(error_clause["scope_state"], "client_1_0")
 
         expected_error_requirements = {
-            "KMIP-REQ-SPEC-9.6-001-001": {
+            "KMIPKIT-REQ-SPEC-9.6-001-001": {
                 "summary": "Include Batch Error Continuation Option only when Batch Count is greater than one.",
                 "condition": "When including the option.",
             },
-            "KMIP-REQ-SPEC-9.6-001-002": {
+            "KMIPKIT-REQ-SPEC-9.6-001-002": {
                 "summary": "Use Undo, Stop, or Continue as the option value.",
                 "condition": "When the option is present.",
                 "source_refs": [
@@ -2164,7 +2164,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     {"source_id": "KMIPKIT-SRC-spec", "section": "11.5"},
                 ],
             },
-            "KMIP-REQ-SPEC-9.6-001-003": {
+            "KMIPKIT-REQ-SPEC-9.6-001-003": {
                 "summary": "If omitted, the option defaults to Stop.",
                 "condition": "When omitted.",
             },
@@ -2191,7 +2191,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(
                     requirement["element_ids"],
                     [
-                        "KMIP-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION",
                         expected_error_element_id,
                     ],
                 )
@@ -2256,7 +2256,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             for mapping in condition["supported_item_mappings"]
             for requirement_id in mapping["requirement_ids"]
         }
-        self.assertNotIn("KMIP-REQ-SPEC-6.1.7-002-002", mapped_requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.7-002-002", mapped_requirement_ids)
 
     def test_baseline_message_extension_condition_has_exact_reviewed_client_crosswalk(self) -> None:
         """Message Extension cites both placements while only reviewed client duties enter the mapping."""
@@ -2276,26 +2276,26 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
         )
         requirement_ids = [
-            "KMIP-REQ-SPEC-8.3-004",
-            "KMIP-REQ-SPEC-9.13-001-004",
-            "KMIP-REQ-SPEC-9.13-001-005",
+            "KMIPKIT-REQ-SPEC-8.3-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-005",
         ]
         clause_ids = [
-            "KMIP-CLAUSE-SPEC-8.3-004",
-            "KMIP-CLAUSE-SPEC-8.6-004",
-            "KMIP-CLAUSE-SPEC-9.13-001",
+            "KMIPKIT-CLAUSE-SPEC-8.3-004",
+            "KMIPKIT-CLAUSE-SPEC-8.6-004",
+            "KMIPKIT-CLAUSE-SPEC-9.13-001",
         ]
-        element_id = "KMIP-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+        element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
         expected_mapping = {
             "item": "Message Extension",
             "element_id": element_id,
             "requirement_ids": [
-                "KMIP-REQ-SPEC-8.3-004",
-                "KMIP-REQ-SPEC-9.13-001-001",
-                "KMIP-REQ-SPEC-9.13-001-002",
-                "KMIP-REQ-SPEC-9.13-001-003",
-                "KMIP-REQ-SPEC-9.13-001-004",
-                "KMIP-REQ-SPEC-9.13-001-005",
+                "KMIPKIT-REQ-SPEC-8.3-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-004",
+                "KMIPKIT-REQ-SPEC-9.13-001-005",
             ],
             "source_clause_ids": clause_ids,
             "mapping_status": "reviewed",
@@ -2316,9 +2316,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         spec_lines = (ROOT / spec_path).read_text(encoding="cp1252").splitlines()
         source_ranges = {
-            "KMIP-CLAUSE-SPEC-8.3-004": [42956, 42974],
-            "KMIP-CLAUSE-SPEC-8.6-004": [43479, 43503],
-            "KMIP-CLAUSE-SPEC-9.13-001": [44858, 44872],
+            "KMIPKIT-CLAUSE-SPEC-8.3-004": [42956, 42974],
+            "KMIPKIT-CLAUSE-SPEC-8.6-004": [43479, 43503],
+            "KMIPKIT-CLAUSE-SPEC-9.13-001": [44858, 44872],
         }
         source_candidates = {
             item["clause_id"]: item
@@ -2343,9 +2343,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         request_review = next(
             item
             for item in oracle["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-8.3-004"
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-8.3-004"
         )
-        self.assertEqual(request_review["html_line_range"], source_ranges["KMIP-CLAUSE-SPEC-8.3-004"])
+        self.assertEqual(request_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-8.3-004"])
         self.assertEqual(request_review["source_locator"], {"ordinal": 4, "block_kind": "table_row"})
         self.assertEqual(request_review["expected_client_requirement_ids"], [requirement_ids[0]])
         request_obligation = request_review["source_obligations"][0]
@@ -2356,16 +2356,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(request_obligation["condition"], "A Request Message contains a Batch Item.")
         self.assertEqual(request_obligation["scope_disposition"], "client_1_0")
         self.assertEqual(
-            _normalized_html_source_span(spec_lines, source_ranges["KMIP-CLAUSE-SPEC-8.3-004"]),
+            _normalized_html_source_span(spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-8.3-004"]),
             request_review["source_excerpt"],
         )
         requirements_by_id = {item["requirement_id"]: item for item in catalog["requirements"]}
-        request_requirement = requirements_by_id["KMIP-REQ-SPEC-8.3-004"]
+        request_requirement = requirements_by_id["KMIPKIT-REQ-SPEC-8.3-004"]
         self.assertEqual(
             request_requirement["element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
-                "KMIP-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
             ],
         )
         elements_by_id = {item["element_id"]: item for item in catalog["elements"]}
@@ -2374,9 +2374,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             {elements_by_id[element_id]["direction"] for element_id in request_requirement["element_ids"]},
             {"client_to_server", "both"},
         )
-        request_element_id = "KMIP-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION"
-        structure_element_id = "KMIP-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
-        response_element_id = "KMIP-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"
+        request_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION"
+        structure_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"
+        response_element_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"
         for element_id in (request_element_id, structure_element_id):
             with self.subTest(element_id=element_id):
                 self.assertIn(request_requirement["requirement_id"], elements_by_id[element_id]["requirement_ids"])
@@ -2384,14 +2384,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(response_element["direction"], "server_to_client")
         self.assertEqual(
             response_element["requirement_ids"],
-            ["KMIP-REQ-SPEC-9.13-001-001", "KMIP-REQ-SPEC-9.13-001-002"],
+            ["KMIPKIT-REQ-SPEC-9.13-001-001", "KMIPKIT-REQ-SPEC-9.13-001-002"],
         )
 
-        response_clause = catalog_clauses["KMIP-CLAUSE-SPEC-8.6-004"]
+        response_clause = catalog_clauses["KMIPKIT-CLAUSE-SPEC-8.6-004"]
         self.assertEqual(response_clause["disposition"], "server_only")
         self.assertEqual(response_clause["requirement_ids"], [])
         response_placement_text = _normalized_html_source_span(
-            spec_lines, source_ranges["KMIP-CLAUSE-SPEC-8.6-004"]
+            spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-8.6-004"]
         )
         self.assertIn("Message Extension No", response_placement_text)
         self.assertIn("Table 399: Response Batch Item Structure", response_placement_text)
@@ -2399,27 +2399,27 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         extension_review = next(
             item
             for item in oracle["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.13-001"
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.13-001"
         )
         extension_text = _normalized_html_source_span(
-            spec_lines, source_ranges["KMIP-CLAUSE-SPEC-9.13-001"]
+            spec_lines, source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"]
         )
-        self.assertEqual(extension_review["html_line_range"], source_ranges["KMIP-CLAUSE-SPEC-9.13-001"])
+        self.assertEqual(extension_review["html_line_range"], source_ranges["KMIPKIT-CLAUSE-SPEC-9.13-001"])
         self.assertEqual(re.sub(r"\s+([.,;:])", r"\1", extension_text), extension_review["source_excerpt"])
         self.assertEqual(
             extension_review["expected_client_requirement_ids"],
             [
-                "KMIP-REQ-SPEC-9.13-001-001",
-                "KMIP-REQ-SPEC-9.13-001-002",
-                "KMIP-REQ-SPEC-9.13-001-003",
+                "KMIPKIT-REQ-SPEC-9.13-001-001",
+                "KMIPKIT-REQ-SPEC-9.13-001-002",
+                "KMIPKIT-REQ-SPEC-9.13-001-003",
                 *requirement_ids[1:],
             ],
         )
         obligations = extension_review["source_obligations"]
         sender_shape_ids = {
-            "KMIP-REQ-SPEC-9.13-001-001",
-            "KMIP-REQ-SPEC-9.13-001-002",
-            "KMIP-REQ-SPEC-9.13-001-003",
+            "KMIPKIT-REQ-SPEC-9.13-001-001",
+            "KMIPKIT-REQ-SPEC-9.13-001-002",
+            "KMIPKIT-REQ-SPEC-9.13-001-003",
         }
         sender_shape_obligations = [
             item for item in obligations if item["candidate_requirement_id"] in sender_shape_ids
@@ -2496,15 +2496,15 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             extension_element["parent_element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
-                "KMIP-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
             ],
         )
         tag_details = [
-            ("Message Extension", "KMIP-ELEM-TAG-420051", "420051", [59976, 59986]),
-            ("Vendor Identification", "KMIP-ELEM-TAG-42009D", "42009D", [60964, 60974]),
-            ("Criticality Indicator", "KMIP-ELEM-TAG-420026", "420026", [59416, 59427]),
-            ("Vendor Extension", "KMIP-ELEM-TAG-42009C", "42009C", [60950, 60961]),
+            ("Message Extension", "KMIPKIT-ELEM-TAG-420051", "420051", [59976, 59986]),
+            ("Vendor Identification", "KMIPKIT-ELEM-TAG-42009D", "42009D", [60964, 60974]),
+            ("Criticality Indicator", "KMIPKIT-ELEM-TAG-420026", "420026", [59416, 59427]),
+            ("Vendor Extension", "KMIPKIT-ELEM-TAG-42009C", "42009C", [60950, 60961]),
         ]
         for name, tag_id, wire_value, line_range in tag_details:
             with self.subTest(tag=tag_id):
@@ -2522,11 +2522,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         child_fields = [
             (
                 "Vendor Identification",
-                "KMIP-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION",
                 "Text String (with usage limited to alphanumeric, underscore and period – i.e. [A-Za-z0-9_.])",
             ),
-            ("Criticality Indicator", "KMIP-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR", "Boolean"),
-            ("Vendor Extension", "KMIP-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION", "Structure"),
+            ("Criticality Indicator", "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR", "Boolean"),
+            ("Vendor Extension", "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION", "Structure"),
         ]
         for name, child_id, encoding in child_fields:
             with self.subTest(child=child_id):
@@ -2557,7 +2557,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Operation",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
             "requirement_ids": [],
             "source_clause_ids": [],
             "mapping_status": "reviewed",
@@ -2586,12 +2586,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(_normalized_html_source_span(profiles_lines, [4597, 4598]), "Operation")
 
         source_ranges = {
-            "KMIP-CLAUSE-SPEC-8.3-001": [42882, 42890],
-            "KMIP-CLAUSE-SPEC-8.6-001": [43344, 43353],
+            "KMIPKIT-CLAUSE-SPEC-8.3-001": [42882, 42890],
+            "KMIPKIT-CLAUSE-SPEC-8.6-001": [43344, 43353],
         }
         expected_placements = {
-            "KMIP-CLAUSE-SPEC-8.3-001": "Operation Yes",
-            "KMIP-CLAUSE-SPEC-8.6-001": "Operation Yes, if specified in Request Batch Item",
+            "KMIPKIT-CLAUSE-SPEC-8.3-001": "Operation Yes",
+            "KMIPKIT-CLAUSE-SPEC-8.6-001": "Operation Yes, if specified in Request Batch Item",
         }
         source_candidates = {
             item["clause_id"]: item
@@ -2623,8 +2623,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "Heading, enum/table value, or field-name extractor hit rather than independent obligation.",
                 )
 
-        request_field = elements["KMIP-ELEM-MESSAGE-FIELD-8-3-OPERATION"]
-        response_field = elements["KMIP-ELEM-MESSAGE-FIELD-8-6-OPERATION"]
+        request_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION"]
+        response_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION"]
         self.assertEqual(request_field["source_requiredness"], "Yes")
         self.assertEqual(response_field["source_requiredness"], "Yes, if specified in Request Batch Item")
         self.assertEqual(request_field["direction"], "client_to_server")
@@ -2643,7 +2643,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(field["source_encoding"], "Enumeration")
         self.assertEqual(
             field["parent_element_ids"],
-            ["KMIP-ELEM-MESSAGE-FIELD-8-3-OPERATION", "KMIP-ELEM-MESSAGE-FIELD-8-6-OPERATION"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION", "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION"],
         )
         operation_definition = _normalized_html_source_span(spec_lines, [45042, 45080])
         self.assertIn(
@@ -2653,7 +2653,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("Operation Enumeration", operation_definition)
         self.assertIn("Table 420: Operation in Batch Item", operation_definition)
 
-        enumeration = elements["KMIP-ELEM-ENUMERATION-OPERATION"]
+        enumeration = elements["KMIPKIT-ELEM-ENUMERATION-OPERATION"]
         self.assertEqual(enumeration["kind"], "enumeration")
         self.assertEqual(enumeration["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "11.36"}])
         enum_span = "\n".join(spec_lines[52884:53697])
@@ -2673,7 +2673,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             (element["name"], element["wire_value"])
             for element in catalog["elements"]
             if element["kind"] == "enumeration_value"
-            and "KMIP-ELEM-ENUMERATION-OPERATION" in element["parent_element_ids"]
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element["parent_element_ids"]
         ]
         self.assertEqual(len(source_values), 60)
         self.assertEqual(sorted(catalog_values), sorted(source_values))
@@ -2689,7 +2689,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             <= dict(source_values).items()
         )
 
-        operation_tag = elements["KMIP-ELEM-TAG-42005C"]
+        operation_tag = elements["KMIPKIT-ELEM-TAG-42005C"]
         self.assertEqual(operation_tag["kind"], "tag")
         self.assertEqual(operation_tag["name"], "Operation")
         self.assertEqual(operation_tag["wire_value"], "42005C")
@@ -2700,13 +2700,13 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             same_name_ids,
             {
-                "KMIP-ELEM-ENUMERATION-OPERATION",
-                "KMIP-ELEM-MESSAGE-FIELD-8-3-OPERATION",
-                "KMIP-ELEM-MESSAGE-FIELD-8-6-OPERATION",
-                "KMIP-ELEM-MESSAGE-FIELD-9-15-OPERATION",
-                "KMIP-ELEM-STRUCTURE-MEMBER-7-2-OPERATION",
-                "KMIP-ELEM-STRUCTURE-MEMBER-7-25-OPERATION",
-                "KMIP-ELEM-TAG-42005C",
+                "KMIPKIT-ELEM-ENUMERATION-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-OPERATION",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-25-OPERATION",
+                "KMIPKIT-ELEM-TAG-42005C",
             },
         )
         feature_spec_path = ROOT / "specs" / "010-profile-conformance" / "spec.md"
@@ -2731,9 +2731,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Protocol Version",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.16-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.16-001"],
             "mapping_status": "reviewed",
         }
         protocol_version_mapping = next(
@@ -2772,8 +2772,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
-        request_field = elements["KMIP-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION"]
-        response_field = elements["KMIP-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"]
+        request_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION"]
+        response_field = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"]
         field = elements[expected_mapping["element_id"]]
         self.assertEqual(request_field["source_requiredness"], "Yes")
         self.assertEqual(request_field["direction"], "client_to_server")
@@ -2789,11 +2789,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(field["scope_state"], "client_1_0")
         self.assertEqual(
             field["parent_element_ids"],
-            ["KMIP-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION", "KMIP-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION"],
         )
         for child_id, child_name in (
-            ("KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR", "Protocol Version Major"),
-            ("KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR", "Protocol Version Minor"),
+            ("KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR", "Protocol Version Major"),
+            ("KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR", "Protocol Version Minor"),
         ):
             with self.subTest(protocol_version_child=child_name):
                 child = elements[child_id]
@@ -2801,7 +2801,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 self.assertEqual(child["source_encoding"], "Integer")
                 self.assertEqual(child["parent_element_ids"], [expected_mapping["element_id"]])
 
-        unresolved_clause_id = "KMIP-CLAUSE-SPEC-9.16-001"
+        unresolved_clause_id = "KMIPKIT-CLAUSE-SPEC-9.16-001"
         clause = next(item for item in catalog["source_clauses"] if item["clause_id"] == unresolved_clause_id)
         self.assertEqual(clause["disposition"], "source_discrepancy")
         self.assertEqual(clause["requirement_ids"], [])
@@ -2816,9 +2816,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             )
         )
         discover_versions_requirement_ids = {
-            "KMIP-REQ-SPEC-6.1.16-001-001",
-            "KMIP-REQ-SPEC-6.1.16-001-002",
-            "KMIP-REQ-SPEC-6.1.16-004",
+            "KMIPKIT-REQ-SPEC-6.1.16-001-001",
+            "KMIPKIT-REQ-SPEC-6.1.16-001-002",
+            "KMIPKIT-REQ-SPEC-6.1.16-004",
         }
         catalog_requirement_ids = {item["requirement_id"] for item in catalog["requirements"]}
         self.assertTrue(discover_versions_requirement_ids.issubset(catalog_requirement_ids))
@@ -2841,9 +2841,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Result Reason",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-18-RESULT-REASON",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.18-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.18-001"],
             "mapping_status": "reviewed",
         }
 
@@ -2872,7 +2872,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
-        response_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"]
         self.assertEqual(response_placement["direction"], "server_to_client")
         self.assertEqual(response_placement["scope_state"], "client_1_0")
         self.assertEqual(response_placement["source_requiredness"], "Yes, if Result Status is Failure")
@@ -2883,11 +2883,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.18"}])
         self.assertEqual(field["source_encoding"], "Enumeration")
         self.assertEqual(field["direction"], "server_to_client")
-        self.assertEqual(field["parent_element_ids"], ["KMIP-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"])
+        self.assertEqual(field["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-REASON"])
         self.assertEqual(field["requirement_ids"], [])
 
         clause = next(
-            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIP-CLAUSE-SPEC-9.18-001"
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.18-001"
         )
         self.assertEqual(clause["disposition"], "server_only")
         self.assertEqual(clause["requirement_ids"], [])
@@ -2915,9 +2915,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Result Status",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
-            "requirement_ids": ["KMIP-REQ-SPEC-9.19-002"],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.19-001", "KMIP-CLAUSE-SPEC-9.19-002"],
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-19-RESULT-STATUS",
+            "requirement_ids": ["KMIPKIT-REQ-SPEC-9.19-002"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.19-001", "KMIPKIT-CLAUSE-SPEC-9.19-002"],
             "mapping_status": "reviewed",
         }
 
@@ -2953,7 +2953,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
-        response_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"]
         self.assertEqual(response_placement["direction"], "server_to_client")
         self.assertEqual(response_placement["scope_state"], "client_1_0")
         self.assertEqual(response_placement["source_requiredness"], "Yes")
@@ -2963,17 +2963,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(field["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.19"}])
         self.assertEqual(field["source_encoding"], "Enumeration")
         self.assertEqual(field["direction"], "server_to_client")
-        self.assertEqual(field["parent_element_ids"], ["KMIP-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"])
+        self.assertEqual(field["parent_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS"])
         self.assertEqual(field["requirement_ids"], [])
 
         clauses = {item["clause_id"]: item for item in catalog["source_clauses"]}
-        server_clause = clauses["KMIP-CLAUSE-SPEC-9.19-001"]
+        server_clause = clauses["KMIPKIT-CLAUSE-SPEC-9.19-001"]
         self.assertEqual(server_clause["disposition"], "server_only")
         self.assertEqual(server_clause["requirement_ids"], [])
         self.assertEqual(server_clause["direction"], "server_to_client")
-        pending_clause = clauses["KMIP-CLAUSE-SPEC-9.19-002"]
+        pending_clause = clauses["KMIPKIT-CLAUSE-SPEC-9.19-002"]
         self.assertEqual(pending_clause["disposition"], "requirement")
-        self.assertEqual(pending_clause["requirement_ids"], ["KMIP-REQ-SPEC-9.19-002"])
+        self.assertEqual(pending_clause["requirement_ids"], ["KMIPKIT-REQ-SPEC-9.19-002"])
         self.assertEqual(pending_clause["role"], "client")
         self.assertEqual(pending_clause["direction"], "client_to_server")
         self.assertEqual(pending_clause["scope_state"], "client_1_0")
@@ -2982,25 +2982,25 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         requirement = next(
             item
             for item in catalog["requirements"]
-            if item["requirement_id"] == "KMIP-REQ-SPEC-9.19-002"
+            if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.19-002"
         )
-        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-9.19-002"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-9.19-002"])
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["scope_state"], "client_1_0")
         self.assertEqual(requirement["condition"], "When Result Status is Pending.")
 
         requirement_mapping = next(
-            item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == "KMIP-REQ-SPEC-9.19-002"
+            item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == "KMIPKIT-REQ-SPEC-9.19-002"
         )
         self.assertEqual(requirement_mapping["applies_to"], "all_client_profiles")
         self.assertEqual(requirement_mapping["role"], "client")
         self.assertEqual(requirement_mapping["scope_state"], "client_1_0")
         baseline = next(item for item in oracle["profiles"] if item["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT")
-        self.assertIn("KMIP-REQ-SPEC-9.19-002", baseline["requirement_ids"])
+        self.assertIn("KMIPKIT-REQ-SPEC-9.19-002", baseline["requirement_ids"])
 
         async_spec = (ROOT / "specs" / "009-asynchronous-operations" / "spec.md").read_text(encoding="utf-8")
-        self.assertIn("`KMIP-REQ-SPEC-9.19-002`", async_spec)
+        self.assertIn("`KMIPKIT-REQ-SPEC-9.19-002`", async_spec)
         self.assertIn("pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies", async_spec)
 
     def test_baseline_server_correlation_value_condition_maps_server_response_metadata(self) -> None:
@@ -3020,9 +3020,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         expected_mapping = {
             "item": "Server Correlation Value",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE",
             "requirement_ids": [],
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.10-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.10-001"],
             "mapping_status": "reviewed",
         }
 
@@ -3071,16 +3071,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             field["parent_element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE",
-                "KMIP-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE",
             ],
         )
         self.assertEqual(field["requirement_ids"], [])
-        self.assertEqual(elements["KMIP-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
-        self.assertEqual(elements["KMIP-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
+        self.assertEqual(elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
+        self.assertEqual(elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE"]["source_requiredness"], "No")
 
         clause = next(
-            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIP-CLAUSE-SPEC-9.10-001"
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.10-001"
         )
         self.assertEqual(clause["disposition"], "server_only")
         self.assertEqual(clause["scope_state"], "server_only")
@@ -3110,12 +3110,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         condition = next(
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
         )
-        expected_requirement_ids = ["KMIP-REQ-SPEC-9.20-001-001", "KMIP-REQ-SPEC-9.20-001-002"]
+        expected_requirement_ids = ["KMIPKIT-REQ-SPEC-9.20-001-001", "KMIPKIT-REQ-SPEC-9.20-001-002"]
         expected_mapping = {
             "item": "Time Stamp",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
             "requirement_ids": expected_requirement_ids,
-            "source_clause_ids": ["KMIP-CLAUSE-SPEC-9.20-001"],
+            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-9.20-001"],
             "mapping_status": "reviewed",
         }
 
@@ -3132,7 +3132,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         review = next(
             item
             for item in oracle["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.20-001"
+            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.20-001"
         )
         self.assertEqual(review["expected_client_requirement_ids"], expected_requirement_ids)
         obligations = review["source_obligations"]
@@ -3169,8 +3169,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("420092", _normalized_html_source_span(spec_lines, [60820, 60830]))
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
-        request_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"]
-        response_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"]
+        request_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"]
         self.assertEqual(request_placement["direction"], "client_to_server")
         self.assertEqual(request_placement["source_requiredness"], "No")
         self.assertEqual(response_placement["direction"], "server_to_client")
@@ -3182,7 +3182,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(field["direction"], "both")
         self.assertEqual(
             field["parent_element_ids"],
-            ["KMIP-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP", "KMIP-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"],
+            ["KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP", "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"],
         )
 
     def test_baseline_unique_batch_item_id_maps_client_request_and_server_echo_separately(self) -> None:
@@ -3201,17 +3201,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             item for item in inventory["conditions"] if item["condition_id"] == "KMIPKIT-PROF-COND-5.1.1-005"
         )
         expected_requirement_ids = [
-            "KMIP-REQ-SPEC-8.3-003",
-            "KMIP-REQ-SPEC-9.21-001-001",
+            "KMIPKIT-REQ-SPEC-8.3-003",
+            "KMIPKIT-REQ-SPEC-9.21-001-001",
             "KMIPKIT-REQ-PROF-4.1.2-007",
         ]
         expected_mapping = {
             "item": "Unique Batch Item ID",
-            "element_id": "KMIP-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+            "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
             "requirement_ids": expected_requirement_ids,
             "source_clause_ids": [
-                "KMIP-CLAUSE-SPEC-8.3-003",
-                "KMIP-CLAUSE-SPEC-9.21-001",
+                "KMIPKIT-CLAUSE-SPEC-8.3-003",
+                "KMIPKIT-CLAUSE-SPEC-9.21-001",
                 "KMIPKIT-CLAUSE-PROF-4.1.2-007",
             ],
             "mapping_status": "reviewed",
@@ -3228,21 +3228,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(condition["mapping_status"], "reviewed")
 
         reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
-        batch_count_review = reviews["KMIP-CLAUSE-SPEC-8.3-003"]
+        batch_count_review = reviews["KMIPKIT-CLAUSE-SPEC-8.3-003"]
         self.assertEqual(batch_count_review["expected_client_requirement_ids"], [expected_requirement_ids[0]])
         self.assertIn("REQUIRED if Batch Count > 1", batch_count_review["source_excerpt"])
         self.assertEqual(batch_count_review["source_obligations"][0]["actor"], "client")
         self.assertEqual(batch_count_review["source_obligations"][0]["direction"], "client_to_server")
         self.assertEqual(batch_count_review["source_obligations"][0]["scope_disposition"], "client_1_0")
 
-        request_optional_review = reviews["KMIP-CLAUSE-SPEC-9.21-001"]
+        request_optional_review = reviews["KMIPKIT-CLAUSE-SPEC-9.21-001"]
         self.assertEqual(
             request_optional_review["expected_client_requirement_ids"],
-            ["KMIP-REQ-SPEC-9.21-001-001"],
+            ["KMIPKIT-REQ-SPEC-9.21-001-001"],
         )
         self.assertEqual(
             [item["candidate_requirement_id"] for item in request_optional_review["source_obligations"]],
-            ["KMIP-REQ-SPEC-9.21-001-001", "KMIP-REQ-SPEC-9.21-001-002"],
+            ["KMIPKIT-REQ-SPEC-9.21-001-001", "KMIPKIT-REQ-SPEC-9.21-001-002"],
         )
         self.assertEqual(
             request_optional_review["source_obligations"][1]["actor"],
@@ -3250,7 +3250,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         self.assertEqual(request_optional_review["source_obligations"][1]["direction"], "server_to_client")
         self.assertEqual(request_optional_review["source_obligations"][1]["scope_disposition"], "server_only")
-        self.assertNotIn("KMIP-REQ-SPEC-9.21-001-002", unique_batch_mapping["requirement_ids"])
+        self.assertNotIn("KMIPKIT-REQ-SPEC-9.21-001-002", unique_batch_mapping["requirement_ids"])
 
         profile_may_review = reviews["KMIPKIT-CLAUSE-PROF-4.1.2-007"]
         self.assertEqual(profile_may_review["expected_client_requirement_ids"], [expected_requirement_ids[2]])
@@ -3279,12 +3279,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("420093", _normalized_html_source_span(spec_lines, [60833, 60844]))
 
         elements = {item["element_id"]: item for item in catalog["elements"]}
-        request_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"]
-        response_placement = elements["KMIP-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"]
+        request_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"]
+        response_placement = elements["KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"]
         self.assertEqual(request_placement["direction"], "client_to_server")
         self.assertEqual(response_placement["direction"], "server_to_client")
         response_clause = next(
-            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIP-CLAUSE-SPEC-8.6-003"
+            item for item in catalog["source_clauses"] if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-8.6-003"
         )
         self.assertEqual(response_clause["disposition"], "server_only")
 
@@ -3295,8 +3295,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(
             field["parent_element_ids"],
             [
-                "KMIP-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
-                "KMIP-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
             ],
         )
 
@@ -3352,9 +3352,9 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "item": "Transport",
                 "element_id": None,
                 "requirement_ids": [
-                    "KMIP-REQ-SPEC-10.4-001-001",
-                    "KMIP-REQ-SPEC-10.4-001-002",
-                    "KMIP-REQ-SPEC-10.4-001-003",
+                    "KMIPKIT-REQ-SPEC-10.4-001-001",
+                    "KMIPKIT-REQ-SPEC-10.4-001-002",
+                    "KMIPKIT-REQ-SPEC-10.4-001-003",
                     "KMIPKIT-REQ-PROF-3.2-001",
                     "KMIPKIT-REQ-PROF-3.2.1-001",
                     "KMIPKIT-REQ-PROF-3.2.2-001",
@@ -3368,7 +3368,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                     "KMIPKIT-REQ-PROF-5.3.1-009",
                 ],
                 "source_clause_ids": [
-                    "KMIP-CLAUSE-SPEC-10.4-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.4-001",
                     "KMIPKIT-CLAUSE-PROF-3.2-001",
                     "KMIPKIT-CLAUSE-PROF-3.2.1-001",
                     "KMIPKIT-CLAUSE-PROF-3.2.2-001",
@@ -3387,21 +3387,21 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "item": "TTLV",
                 "element_id": None,
                 "requirement_ids": [
-                    "KMIP-REQ-SPEC-10.1.2-001",
-                    "KMIP-REQ-SPEC-10.1.2-002-001",
-                    "KMIP-REQ-SPEC-10.1.2-002-002",
-                    "KMIP-REQ-SPEC-10.1.5-001-001",
-                    "KMIP-REQ-SPEC-10.1.5-001-002",
-                    "KMIP-REQ-SPEC-11.56-001",
+                    "KMIPKIT-REQ-SPEC-10.1.2-001",
+                    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+                    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+                    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+                    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+                    "KMIPKIT-REQ-SPEC-11.56-001",
                     "KMIPKIT-REQ-PROF-5.3.1-005",
                     "KMIPKIT-REQ-PROF-5.3.1-010",
                 ],
                 "source_clause_ids": [
-                    "KMIP-CLAUSE-SPEC-10.1.2-001",
-                    "KMIP-CLAUSE-SPEC-10.1.2-002",
-                    "KMIP-CLAUSE-SPEC-10.1.5-001",
-                    "KMIP-CLAUSE-SPEC-10.2-001",
-                    "KMIP-CLAUSE-SPEC-11.56-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+                    "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+                    "KMIPKIT-CLAUSE-SPEC-10.2-001",
+                    "KMIPKIT-CLAUSE-SPEC-11.56-001",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-005",
                     "KMIPKIT-CLAUSE-PROF-5.3.1-010",
                 ],
@@ -3417,10 +3417,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         server_authentication_clause = next(
             item
             for item in catalog["source_clauses"]
-            if item["clause_id"] == "KMIP-CLAUSE-SPEC-10.3-001"
+            if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-10.3-001"
         )
         self.assertEqual(server_authentication_clause["disposition"], "server_only")
-        self.assertNotIn("KMIP-CLAUSE-SPEC-10.3-001", expected_mappings[0]["source_clause_ids"])
+        self.assertNotIn("KMIPKIT-CLAUSE-SPEC-10.3-001", expected_mappings[0]["source_clause_ids"])
 
         reviews = {item["source_clause_id"]: item for item in oracle["source_requirement_reviews"]}
         unresolved_auth_ids = {
@@ -3462,12 +3462,12 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertEqual(https_authenticity_requirement["scope_state"], "profile_conditional")
         self.assertTrue(
             {
-                "KMIP-REQ-SPEC-10.1.2-001",
-                "KMIP-REQ-SPEC-10.1.2-002-001",
-                "KMIP-REQ-SPEC-10.1.2-002-002",
-                "KMIP-REQ-SPEC-10.1.5-001-001",
-                "KMIP-REQ-SPEC-10.1.5-001-002",
-                "KMIP-REQ-SPEC-11.56-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-002-001",
+                "KMIPKIT-REQ-SPEC-10.1.2-002-002",
+                "KMIPKIT-REQ-SPEC-10.1.5-001-001",
+                "KMIPKIT-REQ-SPEC-10.1.5-001-002",
+                "KMIPKIT-REQ-SPEC-11.56-001",
             }.issubset(requirement_ids)
         )
         self.assertNotIn("KMIPKIT-REQ-PROF-5.3.1-011", requirement_ids)
@@ -3497,16 +3497,16 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         self.assertIn("mandatory TTLV messaging protocol", _normalized_html_source_span(spec_lines, [45793, 45797]))
 
         for clause_id in (
-            "KMIP-CLAUSE-SPEC-10.1.2-001",
-            "KMIP-CLAUSE-SPEC-10.1.2-002",
-            "KMIP-CLAUSE-SPEC-10.1.5-001",
-            "KMIP-CLAUSE-SPEC-11.56-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+            "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+            "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+            "KMIPKIT-CLAUSE-SPEC-11.56-001",
         ):
             self.assertTrue(reviews[clause_id]["expected_client_requirement_ids"])
         informative_ttlv_context = next(
             item
             for item in catalog["source_clauses"]
-            if item["clause_id"] == "KMIP-CLAUSE-SPEC-10.2-001"
+            if item["clause_id"] == "KMIPKIT-CLAUSE-SPEC-10.2-001"
         )
         self.assertEqual(informative_ttlv_context["disposition"], "informative_context")
         self.assertEqual(informative_ttlv_context["requirement_ids"], [])
@@ -3634,8 +3634,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-        clause_id = "KMIP-CLAUSE-SPEC-4.57-003"
-        requirement_id = "KMIP-REQ-SPEC-4.57-003-004"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-003"
+        requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
         requirement = next(item for item in catalog["requirements"] if item["requirement_id"] == requirement_id)
         review = next(item for item in oracle["source_requirement_reviews"] if item["source_clause_id"] == clause_id)
         crosswalk = [item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id]
@@ -3691,8 +3691,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-        requirement_id = "KMIP-REQ-SPEC-4.31-002"
-        clause_id = "KMIP-CLAUSE-SPEC-4.31-002"
+        requirement_id = "KMIPKIT-REQ-SPEC-4.31-002"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-4.31-002"
         catalog_profiles = {item["profile_id"]: item for item in catalog["profiles"] if item["role"] == "client"}
         oracle_profiles = [item for item in oracle["profiles"] if item["role"] == "client"]
 
@@ -3761,10 +3761,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         requirement_ids = {
-            "KMIP-REQ-SPEC-7.36-001",
-            "KMIP-REQ-SPEC-7.36-002-001",
-            "KMIP-REQ-SPEC-7.36-002-002",
-            "KMIP-REQ-SPEC-7.36-003",
+            "KMIPKIT-REQ-SPEC-7.36-001",
+            "KMIPKIT-REQ-SPEC-7.36-002-001",
+            "KMIPKIT-REQ-SPEC-7.36-002-002",
+            "KMIPKIT-REQ-SPEC-7.36-003",
         }
         mappings = {
             row["requirement_id"]: row
@@ -3836,11 +3836,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 )
 
         baseline_attribute_requirement_ids = {
-            "KMIP-REQ-SPEC-4.1-001-001",
-            "KMIP-REQ-SPEC-4.1-001-002",
-            "KMIP-REQ-SPEC-4.1-001-003",
-            "KMIP-REQ-SPEC-4.18-001-001",
-            "KMIP-REQ-SPEC-4.18-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-REQ-SPEC-4.1-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-003",
+            "KMIPKIT-REQ-SPEC-4.18-001-001",
+            "KMIPKIT-REQ-SPEC-4.18-001-002",
         }
         mappings_by_requirement_id: dict[str, list[dict[str, object]]] = {}
         for mapping in oracle["requirement_crosswalk"]:
@@ -4055,11 +4055,11 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         explicitly_client_scoped_ids = {
             "KMIPKIT-REQ-PROF-6-001",
-            "KMIP-REQ-SPEC-4.1-001-001",
-            "KMIP-REQ-SPEC-4.1-001-002",
-            "KMIP-REQ-SPEC-4.1-001-003",
-            "KMIP-REQ-SPEC-4.18-001-001",
-            "KMIP-REQ-SPEC-4.18-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-001",
+            "KMIPKIT-REQ-SPEC-4.1-001-002",
+            "KMIPKIT-REQ-SPEC-4.1-001-003",
+            "KMIPKIT-REQ-SPEC-4.18-001-001",
+            "KMIPKIT-REQ-SPEC-4.18-001-002",
         }
         for requirement_id in explicitly_client_scoped_ids:
             with self.subTest(requirement_id=requirement_id):
@@ -4098,7 +4098,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-        requirement_id = "KMIP-REQ-SPEC-6.1.14-007-001"
+        requirement_id = "KMIPKIT-REQ-SPEC-6.1.14-007-001"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"
         mapping = next(item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id)
         clauses = {item["clause_id"]: item for item in oracle["source_clause_crosswalk"]}
@@ -4133,8 +4133,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         oracle_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(oracle_path.read_text(encoding="utf-8"))
-        requirement_id = "KMIP-REQ-SPEC-9.3-001-001"
-        clause_id = "KMIP-CLAUSE-SPEC-9.3-001"
+        requirement_id = "KMIPKIT-REQ-SPEC-9.3-001-001"
+        clause_id = "KMIPKIT-CLAUSE-SPEC-9.3-001"
         mapping = next(
             (item for item in oracle["requirement_crosswalk"] if item["requirement_id"] == requirement_id),
             None,
@@ -4257,14 +4257,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         # separate requirement IDs, even when they share a source clause.
         for clause_id, client_id, server_id in (
             (
-                "KMIP-CLAUSE-SPEC-6.1.5-001",
-                "KMIP-REQ-SPEC-6.1.5-001",
-                "KMIP-REQ-SPEC-6.1.5-002",
+                "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+                "KMIPKIT-REQ-SPEC-6.1.5-001",
+                "KMIPKIT-REQ-SPEC-6.1.5-002",
             ),
             (
-                "KMIP-CLAUSE-SPEC-6.1.7-005",
-                "KMIP-REQ-SPEC-6.1.7-005",
-                "KMIP-REQ-SPEC-6.1.7-006",
+                "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
+                "KMIPKIT-REQ-SPEC-6.1.7-005",
+                "KMIPKIT-REQ-SPEC-6.1.7-006",
             ),
         ):
             with self.subTest(requirement_id=client_id):
@@ -4401,17 +4401,17 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 "KMIPKIT-CLAUSE-PROF-3.1.1-001",
                 "KMIPKIT-CLAUSE-PROF-6.1-001",
                 "KMIPKIT-CLAUSE-PROF-6.1.1-001",
-                "KMIP-CLAUSE-SPEC-1-001",
-                "KMIP-CLAUSE-SPEC-1.1-001",
-                "KMIP-CLAUSE-SPEC-2-001",
+                "KMIPKIT-CLAUSE-SPEC-1-001",
+                "KMIPKIT-CLAUSE-SPEC-1.1-001",
+                "KMIPKIT-CLAUSE-SPEC-2-001",
             ),
         )
         self.assertEqual(
             closure.requirement_ids,
             (
                 "KMIPKIT-REQ-PROF-3.1.1-001",
-                "KMIP-REQ-SPEC-1-001",
-                "KMIP-REQ-SPEC-1.1-001",
+                "KMIPKIT-REQ-SPEC-1-001",
+                "KMIPKIT-REQ-SPEC-1.1-001",
             ),
         )
 
@@ -4419,7 +4419,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog = closure_catalog()
         catalog["requirements"].append(
             {
-                "requirement_id": "KMIP-REQ-SPEC-1.1-TABLE-OPTIONAL",
+                "requirement_id": "KMIPKIT-REQ-SPEC-1.1-TABLE-OPTIONAL",
                 "source_clause_ids": [],
                 "source_refs": [{"source_id": "spec", "section": "1.1"}],
                 "source_force": "optional_table_body_value",
@@ -4429,7 +4429,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         )
         catalog["requirements"].append(
             {
-                "requirement_id": "KMIP-REQ-SPEC-1-TABLE-OPTIONAL",
+                "requirement_id": "KMIPKIT-REQ-SPEC-1-TABLE-OPTIONAL",
                 "source_clause_ids": [],
                 "source_refs": [{"source_id": "spec", "section": "1"}],
                 "source_force": "optional_table_body_value",
@@ -4440,19 +4440,19 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
         closure = compute_profile_closure(
             catalog,
-            ["KMIP-CLAUSE-SPEC-1.1-001"],
+            ["KMIPKIT-CLAUSE-SPEC-1.1-001"],
             profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
         )
 
-        self.assertIn("KMIP-REQ-SPEC-1.1-TABLE-OPTIONAL", closure.requirement_ids)
-        self.assertNotIn("KMIP-REQ-SPEC-1-TABLE-OPTIONAL", closure.requirement_ids)
+        self.assertIn("KMIPKIT-REQ-SPEC-1.1-TABLE-OPTIONAL", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-TABLE-OPTIONAL", closure.requirement_ids)
 
     def test_closure_does_not_expand_informative_references(self) -> None:
         catalog = closure_catalog()
         catalog["normative_inclusions"] = catalog["normative_inclusions"][:1]
         catalog["informative_references"] = [
             {
-                "source_clause_id": "KMIP-CLAUSE-SPEC-1-001",
+                "source_clause_id": "KMIPKIT-CLAUSE-SPEC-1-001",
                 "included_source_id": "profiles",
                 "included_section": "3.1",
             }
@@ -4464,7 +4464,7 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
         )
 
-        self.assertIn("KMIP-CLAUSE-SPEC-1-001", closure.source_clause_ids)
+        self.assertIn("KMIPKIT-CLAUSE-SPEC-1-001", closure.source_clause_ids)
         self.assertNotIn("KMIPKIT-CLAUSE-PROF-3.1-001", closure.source_clause_ids)
 
     def test_conditional_requirement_applies_only_to_profiles_linked_by_the_catalog(self) -> None:
@@ -4512,14 +4512,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog["requirements"].extend(
             [
                 {
-                    "requirement_id": "KMIP-REQ-SPEC-1.1-UNCLEAR",
-                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-1.1-001"],
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1.1-UNCLEAR",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1.1-001"],
                     "role": "client",
                     "scope_state": "unclear",
                 },
                 {
-                    "requirement_id": "KMIP-REQ-SPEC-2-CONDITIONAL",
-                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-2-001"],
+                    "requirement_id": "KMIPKIT-REQ-SPEC-2-CONDITIONAL",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-2-001"],
                     "role": "both",
                     "scope_state": "profile_conditional",
                     "profile_ids": [],
@@ -4533,8 +4533,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
         )
 
-        self.assertNotIn("KMIP-REQ-SPEC-1.1-UNCLEAR", closure.requirement_ids)
-        self.assertNotIn("KMIP-REQ-SPEC-2-CONDITIONAL", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1.1-UNCLEAR", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-2-CONDITIONAL", closure.requirement_ids)
         blockers = getattr(closure, "unresolved_scope_obligations", ())
         self.assertEqual(
             [
@@ -4542,10 +4542,10 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
                 for item in blockers
             ],
             [
-                ("KMIP-REQ-SPEC-1.1-UNCLEAR", "KMIP-CLAUSE-SPEC-1.1-001", "unclear"),
+                ("KMIPKIT-REQ-SPEC-1.1-UNCLEAR", "KMIPKIT-CLAUSE-SPEC-1.1-001", "unclear"),
                 (
-                    "KMIP-REQ-SPEC-2-CONDITIONAL",
-                    "KMIP-CLAUSE-SPEC-2-001",
+                    "KMIPKIT-REQ-SPEC-2-CONDITIONAL",
+                    "KMIPKIT-CLAUSE-SPEC-2-001",
                     "profile_conditional",
                 ),
             ],
@@ -4596,14 +4596,14 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
         catalog["requirements"].extend(
             [
                 {
-                    "requirement_id": "KMIP-REQ-SPEC-1-SERVER-ROLE",
-                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-1-001"],
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1-SERVER-ROLE",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1-001"],
                     "role": "server",
                     "scope_state": "server_only",
                 },
                 {
-                    "requirement_id": "KMIP-REQ-SPEC-1-SERVER-SCOPE",
-                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-1-001"],
+                    "requirement_id": "KMIPKIT-REQ-SPEC-1-SERVER-SCOPE",
+                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-1-001"],
                     "role": "client",
                     "scope_state": "server_only",
                 },
@@ -4616,8 +4616,8 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
             profile_id="KMIPKIT-PROFILE-BASELINE-CLIENT",
         )
 
-        self.assertNotIn("KMIP-REQ-SPEC-1-SERVER-ROLE", closure.requirement_ids)
-        self.assertNotIn("KMIP-REQ-SPEC-1-SERVER-SCOPE", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-SERVER-ROLE", closure.requirement_ids)
+        self.assertNotIn("KMIPKIT-REQ-SPEC-1-SERVER-SCOPE", closure.requirement_ids)
         self.assertEqual(closure.unresolved_scope_obligations, ())
 
     def test_closure_rejects_recursive_normative_inclusion_cycles(self) -> None:
@@ -4934,7 +4934,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertIn('claim_state: "not_claimed"', generated)
         self.assertIn("selected_target: true", generated)
         self.assertIn('"unavailable"', generated)
-        self.assertNotIn('"KMIP-REQ-SPEC-2.1-001"', generated)
+        self.assertNotIn('"KMIPKIT-REQ-SPEC-2.1-001"', generated)
         self.assertNotIn('"KMIPKIT-REQ-PROF-3.1.1-004"', generated)
         self.assertNotIn("ProfileRuleMapping", generated)
 
@@ -5366,7 +5366,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
         )
         for index, keyword in enumerate(sorted(set(expected_categories) - observed_keywords), start=1):
             synthetic_requirement = template.copy()
-            synthetic_requirement["requirement_id"] = f"KMIP-REQ-SPEC-TEST-KEYWORD-{index:02}"
+            synthetic_requirement["requirement_id"] = f"KMIPKIT-REQ-SPEC-TEST-KEYWORD-{index:02}"
             synthetic_requirement["source_keyword"] = keyword
             catalog["requirements"].append(synthetic_requirement)
 

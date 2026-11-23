@@ -9,13 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-REVOKE"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-REVOKE"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIP-REQ-SPEC-6.1.44-001",
-    "KMIP-REQ-SPEC-6.1.44-003-001",
-    "KMIP-REQ-SPEC-6.1.44-003-002",
+    "KMIPKIT-REQ-SPEC-6.1.44-001",
+    "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+    "KMIPKIT-REQ-SPEC-6.1.44-003-002",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"
@@ -167,7 +167,7 @@ class RevokeParityManifestTests(unittest.TestCase):
         self.assertIn("§6.1.44, Tables 295–297", row)
         self.assertIn("§4.47, Table 123", row)
         self.assertIn("§11.48, Table 481", row)
-        self.assertIn("KMIP-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-MESSAGE", row)
+        self.assertIn("KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-MESSAGE", row)
         self.assertIn("request_encodes_optional_audit_message_inside_revocation_reason_structure", row)
 
 

@@ -62,8 +62,8 @@ KEYWORD_STRENGTH = {
     "OPTIONAL": "permission_or_optional",
 }
 SOURCE_REVIEWED_STRENGTH_OVERRIDES: dict[str, tuple[str, str]] = {
-    "KMIP-REQ-SPEC-6.1.28-007": (
-        "KMIP-CLAUSE-SPEC-6.1.28-007",
+    "KMIPKIT-REQ-SPEC-6.1.28-007": (
+        "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
         "permission_or_optional",
     ),
 }
@@ -110,18 +110,18 @@ CLAUSE_SCOPES = {
     "mixed",
     "unclear",
 }
-REQUIREMENT_ID_PATTERN = r"(?:KMIPKIT|KMIP)-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"
+REQUIREMENT_ID_PATTERN = r"KMIPKIT-REQ-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}(?:-[0-9]{3})?"
 TOP_LEVEL_ID_FIELDS = {
-    "source_clauses": ("clause_id", r"(?:KMIPKIT|KMIP)-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
-    "normative_inclusions": ("inclusion_id", r"(?:KMIPKIT|KMIP)-INCLUSION-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
-    "elements": ("element_id", r"KMIP-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
-    "tag_ranges": ("range_id", r"(?:KMIPKIT|KMIP)-RANGE-[0-9]{3}"),
+    "source_clauses": ("clause_id", r"KMIPKIT-CLAUSE-(?:SPEC|PROF)-[0-9]+(?:\.[0-9]+)*-[0-9]{3}"),
+    "normative_inclusions": ("inclusion_id", r"KMIPKIT-INCLUSION-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
+    "elements": ("element_id", r"KMIPKIT-ELEM-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
+    "tag_ranges": ("range_id", r"KMIPKIT-RANGE-[0-9]{3}"),
     "requirements": ("requirement_id", REQUIREMENT_ID_PATTERN),
-    "policies": ("policy_id", r"PROJECT-POLICY-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
-    "profiles": ("profile_id", r"(?:KMIPKIT|KMIP)-PROFILE-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
-    "test_cases": ("test_id", r"(?:KMIPKIT|KMIP)-TEST-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
-    "discrepancies": ("discrepancy_id", r"(?:KMIPKIT|KMIP)-DISC-[0-9]{3}"),
-    "decisions": ("decision_id", r"(?:KMIPKIT|KMIP)-DEC-[0-9]{3}"),
+    "policies": ("policy_id", r"KMIPKIT-POLICY-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
+    "profiles": ("profile_id", r"KMIPKIT-PROFILE-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
+    "test_cases": ("test_id", r"KMIPKIT-TEST-[A-Z0-9]+(?:-[A-Z0-9]+)*"),
+    "discrepancies": ("discrepancy_id", r"KMIPKIT-DISC-[0-9]{3}"),
+    "decisions": ("decision_id", r"KMIPKIT-DEC-[0-9]{3}"),
 }
 ELEMENT_FIELDS = {
     "element_id", "kind", "name", "source_refs", "wire_value", "allocation",
@@ -628,9 +628,9 @@ def _check_attribute_policy_metadata(catalog: dict[str, Any], repo_root: Path) -
         _fail("Vendor Attribute value policy does not match pinned §4.60 and Table 150")
 
     member_expectations = {
-        "KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME": "Attribute Name",
-        "KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE": "Attribute Value",
-        "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION": "Vendor Identification",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME": "Attribute Name",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE": "Attribute Value",
+        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION": "Vendor Identification",
     }
     by_id = {element["element_id"]: element for element in elements}
     for member_id, name in member_expectations.items():
@@ -654,7 +654,7 @@ def _check_attribute_policy_metadata(catalog: dict[str, Any], repo_root: Path) -
         source_test is None
         or source_test.get("official_case_id") != "TC-I18N-3-21"
         or source_test.get("source_id") != "KMIPKIT-SRC-testcases"
-        or "KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE" not in source_test.get("element_ids", [])
+        or "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE" not in source_test.get("element_ids", [])
     ):
         _fail("Vendor Attribute source-linked test case is not assigned to its Table 150 value member")
 
@@ -701,7 +701,7 @@ def _has_project_design_sources(repo_root: Path) -> bool:
     """Whether this checkout includes the project design sources used by policy evidence."""
     return any(
         (repo_root / relative_path).exists()
-        for relative_path in ("project-guide", ".specify", "specs", "docs/design-sources")
+        for relative_path in ("AGENTS.md", ".specify", "specs", "docs/adr")
     )
 
 
@@ -731,12 +731,14 @@ def _check_policy_provenance(
     heading = reference["heading"]
     if not isinstance(source_path, str) or not isinstance(heading, str) or not heading.strip():
         _fail("project policy provenance locator is malformed")
-    if provenance in ("constitution", "design", "specification", "policy", "architecture-decision", "decision"):
-        pass
-    elif provenance == "project-guide" and source_path != "project-guide":
-        _fail("project policy provenance path does not match project-guide")
+    if provenance == "AGENTS.md" and source_path != "AGENTS.md":
+        _fail("project policy provenance path does not match AGENTS.md")
+    if provenance == "constitution" and source_path != ".specify/memory/constitution.md":
+        _fail("project policy provenance path does not match the constitution")
+    if provenance == "ADR" and re.fullmatch(r"docs/adr/[0-9]{4}-[a-z0-9-]+\.md", source_path) is None:
+        _fail("project policy provenance path is not an ADR")
     if not _has_project_design_sources(repo_root):
-        # Source distributions omit external design and project policy files.
+        # Code-only review checkouts deliberately omit SDD and repository policy files.
         # Keep validating the catalog record shape, but do not require those excluded docs.
         return
     try:
@@ -746,6 +748,8 @@ def _check_policy_provenance(
     heading_pattern = re.compile(r"(?m)^#{1,6}[ \t]+" + re.escape(heading) + r"[ \t]*#*[ \t]*$")
     if heading_pattern.search(content) is None:
         _fail("project policy provenance heading does not exist in its source")
+    if provenance == "ADR" and re.search(r"(?m)^Status:[ \t]*Accepted[ \t]*$", content) is None:
+        _fail("project policy ADR provenance is not accepted")
 
 
 def _git_tree(root: Path) -> dict[str, tuple[str, str]]:
@@ -1401,7 +1405,7 @@ def _check_semantics(
             _fail("project policy has missing or unknown fields")
         _enum(
             policy.get("provenance"),
-            {"project-guide", "constitution", "approved_product_decision", "architecture-decision", "decision", "design", "policy"},
+            {"AGENTS.md", "constitution", "ADR", "approved_product_decision"},
             "project policy provenance",
         )
         if not isinstance(policy.get("summary"), str) or not policy["summary"].strip():
@@ -1622,7 +1626,7 @@ def _check_operation_inventory(elements: list[dict[str, Any]]) -> None:
             _fail(f"operation {name} has incorrect payload table references")
         if operation.get("asynchronous_response") != ASYNC_RESPONSE_BEHAVIORS.get(name):
             _fail(f"operation {name} has incorrect asynchronous response classification")
-    endpoint_role_enum_id = "KMIP-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032"
+    endpoint_role_enum_id = "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032"
     endpoint_role_enum = next((row for row in elements if row.get("element_id") == endpoint_role_enum_id), None)
     if endpoint_role_enum is None:
         _fail("operation inventory is missing the Set Endpoint Role enumeration value")
@@ -1693,7 +1697,7 @@ def _check_tag_registry(
         if normalized in observed_values:
             _fail("tag registry contains a duplicate single-value tag")
         observed_values.add(normalized)
-        if tag.get("element_id") != f"KMIP-ELEM-TAG-{normalized}":
+        if tag.get("element_id") != f"KMIPKIT-ELEM-TAG-{normalized}":
             _fail("tag registry element ID does not match its wire value")
         if tag.get("source_refs") != [{"source_id": "KMIPKIT-SRC-spec", "section": "11.56"}]:
             _fail("tag registry row has an incorrect source reference")

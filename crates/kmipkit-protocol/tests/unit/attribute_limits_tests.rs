@@ -302,8 +302,9 @@ fn received_reserved_tags_are_rejected_before_item_construction_for_all_operatio
     // this test does not attribute decoder rejection to OASIS.
     for (name, operation) in ATTRIBUTE_OPERATIONS {
         let wire = raw_response_wire(operation, true, None);
-        let error = decode_with_limits(&wire, &CodecLimits::defaults())
-            .expect_err("architectural decision rejects the peer's Reserved Tag before returning an Item tree");
+        let error = decode_with_limits(&wire, &CodecLimits::defaults()).expect_err(
+            "architectural decision rejects the peer's Reserved Tag before returning an Item tree",
+        );
         assert_payload_free_decode_error(error, DecodeErrorKind::ReservedTag, name);
     }
 }

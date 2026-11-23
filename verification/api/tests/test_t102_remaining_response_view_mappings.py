@@ -28,7 +28,7 @@ class ExpectedResponseView:
 EXPECTED = (
     ExpectedResponseView(
         "rust-observed-4812c1bbb95571e37e86", "delegated_login",
-        "KMIP-ELEM-OP-C2S-DELEGATED-LOGIN", "6.1.12", "KMIPKIT-0038",
+        "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN", "6.1.12", "KMIPKIT-0038",
         "specs/024-credential-sessions/spec.md", "Table 200",
         "kmipkit_client_batch_item_response_delegated_login",
         "org.kmipkit.extensions.ClientBatchItemResult.delegatedLoginResponse",
@@ -36,7 +36,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-8c336787323fbacf2a2d", "derive_key",
-        "KMIP-ELEM-OP-C2S-DERIVE-KEY", "6.1.14", "KMIPKIT-0037",
+        "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY", "6.1.14", "KMIPKIT-0037",
         "specs/023-key-material-transfer/spec.md", "Table 206",
         "kmipkit_client_batch_item_response_derive_key",
         "org.kmipkit.extensions.ClientBatchItemResult.deriveKeyResponse",
@@ -44,7 +44,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-22ecd2fc5338404d1d38", "export",
-        "KMIP-ELEM-OP-C2S-EXPORT", "6.1.18", "KMIPKIT-0037",
+        "KMIPKIT-ELEM-OP-C2S-EXPORT", "6.1.18", "KMIPKIT-0037",
         "specs/023-key-material-transfer/spec.md", "Table 218",
         "kmipkit_client_batch_item_response_export",
         "org.kmipkit.extensions.ClientBatchItemResult.exportResponse",
@@ -52,7 +52,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-56d69424436b5bc52713", "get",
-        "KMIP-ELEM-OP-C2S-GET", "6.1.19", "KMIPKIT-0017",
+        "KMIPKIT-ELEM-OP-C2S-GET", "6.1.19", "KMIPKIT-0017",
         "specs/017-managed-object-retrieval/spec.md", "Table 221",
         "kmipkit_client_batch_item_response_get",
         "org.kmipkit.extensions.ClientBatchItemResult.getResponse",
@@ -60,7 +60,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-0c30b411196334de84c2", "get_constraints",
-        "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS", "6.1.22", "KMIPKIT-0039",
+        "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS", "6.1.22", "KMIPKIT-0039",
         "specs/025-policy-controls/spec.md", "Table 230",
         "kmipkit_client_batch_item_response_get_constraints_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.getConstraintsResponse",
@@ -68,7 +68,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-95f9f5171659f51e66fd", "get_usage_allocation",
-        "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION", "6.1.23", "KMIPKIT-0039",
+        "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION", "6.1.23", "KMIPKIT-0039",
         "specs/025-policy-controls/spec.md", "Table 233",
         "kmipkit_client_batch_item_response_get_usage_allocation",
         "org.kmipkit.extensions.ClientBatchItemResult.getUsageAllocationResponse",
@@ -76,7 +76,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-69cf1abee3b40197e4bd", "import",
-        "KMIP-ELEM-OP-C2S-IMPORT", "6.1.25", "KMIPKIT-0037",
+        "KMIPKIT-ELEM-OP-C2S-IMPORT", "6.1.25", "KMIPKIT-0037",
         "specs/023-key-material-transfer/spec.md", "Table 239",
         "kmipkit_client_batch_item_response_import",
         "org.kmipkit.extensions.ClientBatchItemResult.importResponse",
@@ -84,7 +84,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-0f0e98b3c48648ff81ca", "interop",
-        "KMIP-ELEM-OP-C2S-INTEROP", "6.1.26", "KMIPKIT-0042",
+        "KMIPKIT-ELEM-OP-C2S-INTEROP", "6.1.26", "KMIPKIT-0042",
         "specs/028-diagnostics-interop/spec.md", "Table 242",
         "kmipkit_client_batch_item_response_interop_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.interopResponse",
@@ -92,7 +92,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-bbf36b0243e4b1d9d72c", "join_split_key",
-        "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY", "6.1.27", "KMIPKIT-0037",
+        "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", "6.1.27", "KMIPKIT-0037",
         "specs/023-key-material-transfer/spec.md", "Table 245",
         "kmipkit_client_batch_item_response_join_split_key",
         "org.kmipkit.extensions.ClientBatchItemResult.joinSplitKeyResponse",
@@ -100,7 +100,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-3af9b2ecd05ddeeb0b4e", "locate",
-        "KMIP-ELEM-OP-C2S-LOCATE", "6.1.28", "KMIPKIT-0017",
+        "KMIPKIT-ELEM-OP-C2S-LOCATE", "6.1.28", "KMIPKIT-0017",
         "specs/017-managed-object-retrieval/spec.md", "Table 248: Locate Response Payload",
         "kmipkit_client_batch_item_response_locate",
         "org.kmipkit.extensions.ClientBatchItemResult.locateResponse",
@@ -108,7 +108,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-141e4937511dd08558c7", "log",
-        "KMIP-ELEM-OP-C2S-LOG", "6.1.29", "KMIPKIT-0042",
+        "KMIPKIT-ELEM-OP-C2S-LOG", "6.1.29", "KMIPKIT-0042",
         "specs/028-diagnostics-interop/spec.md", "Table 251",
         "kmipkit_client_batch_item_response_log_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.logResponse",
@@ -116,7 +116,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-f3be85c48bde445fdb91", "login",
-        "KMIP-ELEM-OP-C2S-LOGIN", "6.1.30", "KMIPKIT-0038",
+        "KMIPKIT-ELEM-OP-C2S-LOGIN", "6.1.30", "KMIPKIT-0038",
         "specs/024-credential-sessions/spec.md", "Table 254",
         "kmipkit_client_batch_item_response_login",
         "org.kmipkit.extensions.ClientBatchItemResult.loginResponse",
@@ -124,7 +124,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-8fcba59b0e2f25ed8415", "logout",
-        "KMIP-ELEM-OP-C2S-LOGOUT", "6.1.31", "KMIPKIT-0038",
+        "KMIPKIT-ELEM-OP-C2S-LOGOUT", "6.1.31", "KMIPKIT-0038",
         "specs/024-credential-sessions/spec.md", "Table 257",
         "kmipkit_client_batch_item_response_logout",
         "org.kmipkit.extensions.ClientBatchItemResult.logoutResponse",
@@ -132,7 +132,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-a4870be478a8122547b4", "pkcs11",
-        "KMIP-ELEM-OP-C2S-PKCS-11", "6.1.37", "KMIPKIT-0040",
+        "KMIPKIT-ELEM-OP-C2S-PKCS-11", "6.1.37", "KMIPKIT-0040",
         "specs/026-pkcs11/spec.md", "Table 274",
         "kmipkit_client_batch_item_response_pkcs11_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.pkcs11Response",
@@ -140,7 +140,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-3efd3c9084931a73f361", "rng_retrieve",
-        "KMIP-ELEM-OP-C2S-RNG-RETRIEVE", "6.1.49", "KMIPKIT-0041",
+        "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE", "6.1.49", "KMIPKIT-0041",
         "specs/027-rng-operations/spec.md", "Table 317",
         "kmipkit_client_batch_item_response_rng_retrieve",
         "org.kmipkit.extensions.ClientBatchItemResult.rngRetrieveResponse",
@@ -148,7 +148,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-3c2fb9520a6cdfb64f0b", "rng_seed",
-        "KMIP-ELEM-OP-C2S-RNG-SEED", "6.1.50", "KMIPKIT-0041",
+        "KMIPKIT-ELEM-OP-C2S-RNG-SEED", "6.1.50", "KMIPKIT-0041",
         "specs/027-rng-operations/spec.md", "Table 320",
         "kmipkit_client_batch_item_response_rng_seed",
         "org.kmipkit.extensions.ClientBatchItemResult.rngSeedResponse",
@@ -156,7 +156,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-af5926f653d5286e1739", "set_constraints",
-        "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS", "6.1.52", "KMIPKIT-0039",
+        "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS", "6.1.52", "KMIPKIT-0039",
         "specs/025-policy-controls/spec.md", "Table 326",
         "kmipkit_client_batch_item_response_set_constraints_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.setConstraintsResponse",
@@ -164,7 +164,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-bc81c7514e2474dea773", "set_defaults",
-        "KMIP-ELEM-OP-C2S-SET-DEFAULTS", "6.1.53", "KMIPKIT-0039",
+        "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS", "6.1.53", "KMIPKIT-0039",
         "specs/025-policy-controls/spec.md", "Table 329",
         "kmipkit_client_batch_item_response_set_defaults_ttlv",
         "org.kmipkit.extensions.ClientBatchItemResult.setDefaultsResponse",
@@ -172,7 +172,7 @@ EXPECTED = (
     ),
     ExpectedResponseView(
         "rust-observed-a0692c89fb668b47105f", "validate",
-        "KMIP-ELEM-OP-C2S-VALIDATE", "6.1.57", "KMIPKIT-0042",
+        "KMIPKIT-ELEM-OP-C2S-VALIDATE", "6.1.57", "KMIPKIT-0042",
         "specs/028-diagnostics-interop/spec.md", "Table 341",
         "kmipkit_client_batch_item_response_validate",
         "org.kmipkit.extensions.ClientBatchItemResult.validateResponse",

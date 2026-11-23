@@ -104,7 +104,7 @@ class Reconcile0046AliasesTests(unittest.TestCase):
             (row["packageId"], row["exportName"]) for row in result["approvedExclusions"]
         })
         module = next(row for row in result["approvedExclusions"] if row["exportName"] == "kmipkit::protocol")
-        self.assertEqual(module["approvalSource"]["path"], "docs/architecture/ffi-and-bindings.md")
+        self.assertEqual(module["approvalSource"]["path"], "docs/adr/0017-single-dependency-rust-facade.md")
         self.assertEqual(len(names), 3)
 
     def test_reconciliation_is_deterministic_and_does_not_mutate_inputs(self) -> None:

@@ -1,4 +1,4 @@
-"""Contract checks for shared extension fixtures; KMIP 2.1 §11.56 Extensions range, the vendor extension architecture decision."""
+"""Contract checks for shared extension fixtures; KMIP 2.1 §11.56 Extensions range, ADR-0010."""
 
 from __future__ import annotations
 

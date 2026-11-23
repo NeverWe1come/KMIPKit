@@ -13,8 +13,8 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
-OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY"
-RETIRED_NO_OFFSET_REQUIREMENT = "KMIP-REQ-SPEC-6.1.46-004-002"
+OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+RETIRED_NO_OFFSET_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"
 REKEY_FUNCTION_IDS = {
     "client_batch_item_rekey",
     "client_batch_item_response_rekey",
@@ -23,8 +23,8 @@ REKEY_FUNCTION_IDS = {
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIP-REQ-SPEC-6.1.46-001",
-    "KMIP-REQ-SPEC-6.1.46-004-001",
+    "KMIPKIT-REQ-SPEC-6.1.46-001",
+    "KMIPKIT-REQ-SPEC-6.1.46-004-001",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"

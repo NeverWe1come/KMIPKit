@@ -141,7 +141,7 @@ _C_LAYOUT_FIELD_TYPE_PATTERN = re.compile(
     r"(?P<const>const )?(?P<base>(?:u?int(?:8|16|32|64)_t|kmipkit_[a-z0-9_]+_t))"
     r"(?P<pointer> \*)?\Z"
 )
-_REQUIREMENT_PATTERN = re.compile(r"EXTENSION-REGISTRY-REQ-[0-9]{3}\Z")
+_REQUIREMENT_PATTERN = re.compile(r"KMIPKIT-0012-FR-[0-9]{3}\Z")
 _EXPECTED_CLIENT_1_0_OPERATION_COUNT = 56
 _EXPECTED_RELEASE_SHARED_CAPABILITY_IDS = frozenset(
     {
@@ -641,7 +641,7 @@ def _validate_approval_source(
     root: Path,
     *,
     feature_id: Any = None,
-    decision_id: Any = None,
+    adr_id: Any = None,
 ) -> None:
     if not isinstance(source, dict):
         raise ManifestError("ready manifest record has no approval evidence")
@@ -654,8 +654,8 @@ def _validate_approval_source(
         raise ManifestError("manifest approval evidence does not match its cited file")
 
     if kind == "feature-specification":
-        if decision_id is not None:
-            raise ManifestError("feature approval evidence cannot satisfy an architecture decision owner")
+        if adr_id is not None:
+            raise ManifestError("feature approval evidence cannot satisfy an ADR owner")
         parts = PurePosixPath(relative_path).parts
         if len(parts) < 3 or parts[0] != "specs":
             raise ManifestError("feature approval evidence is outside its specification")
@@ -690,18 +690,20 @@ def _validate_approval_source(
             raise ManifestError("manifest feature approval status differs from its specification")
         return
 
-    if kind in {"architecture-decision", "accepted-architecture-decision"}:
+    if kind == "accepted-adr":
         if feature_id is not None:
-            raise ManifestError("architecture decision acceptance evidence cannot satisfy a feature owner")
+            raise ManifestError("ADR acceptance evidence cannot satisfy a feature owner")
         parts = PurePosixPath(relative_path).parts
-        if len(parts) < 2:
-            raise ManifestError("architecture decision evidence is invalid")
-        if decision_id is not None:
-            if not isinstance(decision_id, str):
-                raise ManifestError("manifest architecture decision owner ID is invalid")
+        if len(parts) != 3 or parts[:2] != ("docs", "adr"):
+            raise ManifestError("ADR evidence is outside the accepted ADR directory")
+        if adr_id is not None:
+            if not isinstance(adr_id, str) or re.fullmatch(r"ADR-[0-9]{4}", adr_id) is None:
+                raise ManifestError("manifest ADR owner ID is invalid")
+            if not parts[2].startswith(f"{adr_id[-4:]}-"):
+                raise ManifestError("ADR evidence refers to a different owner")
         actual_status = _status_from_document(evidence_content)
         if actual_status != "Accepted" or recorded_status != "Accepted":
-            raise ManifestError("architecture decision owner is not accepted")
+            raise ManifestError("ADR owner is not accepted")
         return
 
     raise ManifestError("manifest approval evidence has an unsupported source kind")
@@ -886,7 +888,7 @@ def _has_merged_owner_approval_record(root: Path, owner_id: str) -> bool:
         root
         / "specs"
         / "043-public-api-bindings"
-        / "public-api.md"
+        / "implementation-evidence.md"
     )
     try:
         evidence = evidence_path.read_text(encoding="utf-8")
@@ -949,7 +951,7 @@ def _validate_capability_readiness(
                 _validate_approval_source(
                     capability.get("acceptedEvidence"),
                     root,
-                    decision_id=capability.get("ownerDecisionId"),
+                    adr_id=capability.get("ownerAdrId"),
                 )
         if state == "verified":
             _validate_parity_evidence(capability, root)
@@ -957,23 +959,23 @@ def _validate_capability_readiness(
 
 _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
     "GetError": frozenset(
-        {"OBJECT-RETRIEVAL-REQ-001", "OBJECT-RETRIEVAL-REQ-011", "OBJECT-RETRIEVAL-REQ-012"}
+        {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-011", "KMIPKIT-0017-FR-012"}
     ),
     "LocateError": frozenset(
-        {"OBJECT-RETRIEVAL-REQ-001", "OBJECT-RETRIEVAL-REQ-011", "OBJECT-RETRIEVAL-REQ-012"}
+        {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-011", "KMIPKIT-0017-FR-012"}
     ),
     **{
         family: frozenset(
             {
-                "OBJECT-LIFECYCLE-REQ-001",
-                "OBJECT-LIFECYCLE-REQ-006",
-                "OBJECT-LIFECYCLE-REQ-010",
+                "KMIPKIT-0018-FR-001",
+                "KMIPKIT-0018-FR-006",
+                "KMIPKIT-0018-FR-010",
             }
         )
         for family in ("ActivateError", "ArchiveError", "DestroyError", "RecoverError")
     },
     **{
-        family: frozenset({"LIFECYCLE-PARITY-REQ-001", "LIFECYCLE-PARITY-REQ-004"})
+        family: frozenset({"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004"})
         for family in (
             "CertifyError", "CheckError", "ObtainLeaseError", "ReProvisionError",
             "RecertifyError", "RegisterError", "RekeyError", "RekeyKeyPairError",
@@ -981,30 +983,30 @@ _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
         )
     },
     **{
-        family: frozenset({"KEY-TRANSFER-REQ-001", "KEY-TRANSFER-REQ-004"})
+        family: frozenset({"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-004"})
         for family in ("DeriveKeyError", "ExportError", "ImportError", "JoinSplitKeyError")
     },
     **{
-        family: frozenset({"SESSION-AUTH-REQ-001", "SESSION-AUTH-REQ-004"})
+        family: frozenset({"KMIPKIT-0038-FR-001", "KMIPKIT-0038-FR-004"})
         for family in ("DelegatedLoginError", "LoginError", "LogoutError")
     },
     **{
-        family: frozenset({"USAGE-POLICY-REQ-001", "USAGE-POLICY-REQ-004"})
+        family: frozenset({"KMIPKIT-0039-FR-001", "KMIPKIT-0039-FR-004"})
         for family in (
             "GetConstraintsError", "GetUsageAllocationError", "SetConstraintsError",
             "SetDefaultsError",
         )
     },
-    "Pkcs11Error": frozenset({"PKCS11-PARITY-REQ-001", "PKCS11-PARITY-REQ-004"}),
+    "Pkcs11Error": frozenset({"KMIPKIT-0040-FR-001", "KMIPKIT-0040-FR-004"}),
     **{
         family: frozenset(
             {
-                "ENCRYPT-DECRYPT-REQ-007", "ENCRYPT-DECRYPT-REQ-009",
-                "HASH-MAC-SIGN-REQ-001", "HASH-MAC-SIGN-REQ-010",
-                "HASH-MAC-SIGN-REQ-012", "HASH-MAC-SIGN-REQ-015",
-                "RNG-OPS-REQ-001", "RNG-OPS-REQ-003",
-                "RNG-OPS-REQ-004", "RNG-OPS-REQ-005",
-                "RNG-OPS-REQ-006",
+                "KMIPKIT-0019-FR-007", "KMIPKIT-0019-FR-009",
+                "KMIPKIT-0021-FR-001", "KMIPKIT-0021-FR-010",
+                "KMIPKIT-0021-FR-012", "KMIPKIT-0021-FR-015",
+                "KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-003",
+                "KMIPKIT-0041-FR-004", "KMIPKIT-0041-FR-005",
+                "KMIPKIT-0041-FR-006",
             }
         )
         for family in ("CryptographicOperationError", "CryptographicOperationErrorKind")
@@ -1012,23 +1014,23 @@ _NORMALIZED_CLIENT_PROTOCOL_ERROR_FAMILY_REQUIREMENTS = {
     **{
         family: frozenset(
             {
-                "RNG-OPS-REQ-001", "RNG-OPS-REQ-003",
-                "RNG-OPS-REQ-004", "RNG-OPS-REQ-005",
-                "RNG-OPS-REQ-006",
+                "KMIPKIT-0041-FR-001", "KMIPKIT-0041-FR-003",
+                "KMIPKIT-0041-FR-004", "KMIPKIT-0041-FR-005",
+                "KMIPKIT-0041-FR-006",
             }
         )
         for family in ("RngRetrieveError", "RngSeedError")
     },
     **{
-        family: frozenset({"INTEROP-DIAGNOSTICS-REQ-001", "INTEROP-DIAGNOSTICS-REQ-004"})
+        family: frozenset({"KMIPKIT-0042-FR-001", "KMIPKIT-0042-FR-004"})
         for family in ("InteropError", "LogError")
     },
 }
 _NORMALIZED_CLIENT_PROTOCOL_ERROR_SHARED_REQUIREMENTS = frozenset(
     {
-        "CLIENT-EXEC-REQ-006", "CLIENT-EXEC-REQ-008", "CLIENT-EXEC-REQ-013",
-        "PUBLIC-API-BINDINGS-REQ-005", "PUBLIC-API-BINDINGS-REQ-010", "PUBLIC-API-BINDINGS-REQ-021",
-        "PUBLIC-API-BINDINGS-REQ-022",
+        "KMIPKIT-0007-FR-006", "KMIPKIT-0007-FR-008", "KMIPKIT-0007-FR-013",
+        "KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0043-FR-022",
     }
 )
 _NORMALIZED_CLIENT_PROTOCOL_ERROR_MODULES = {
@@ -1085,7 +1087,7 @@ def _validate_normalized_client_protocol_error_source(
     )
     if (
         not required <= requirements
-        or "CLIENT-EXEC-REQ-001" in requirements
+        or "KMIPKIT-0007-FR-001" in requirements
     ):
         raise ManifestError(
             "normalized client protocol error mapping lacks its response owner requirements"
@@ -1153,7 +1155,7 @@ def _validate_public_declarations(
             mappings = declaration.get("languageMappings", {})
             required_languages = (
                 ("rust",)
-                if parity_scope == "rust-only-transport"
+                if parity_scope == "rust-only-adr"
                 else ("c",)
                 if parity_scope == "c-only"
                 else ("rust", "c", "java", "python")
@@ -1192,13 +1194,13 @@ def _validate_declaration_parity_scope(
     parity_scope = declaration.get("parityScope")
     if capability is not None and parity_scope != capability.get("parityScope"):
         raise ManifestError("public declaration parity scope differs from its capability")
-    if parity_scope == "rust-only-transport":
+    if parity_scope == "rust-only-adr":
         accepted_transport_exception = (
             package_id == "rust-kmipkit-transport"
             and package_languages.get(package_id) == "rust"
             and capability_id == "rust_transport_exchange"
             and capability is not None
-            and capability.get("ownerDecisionId") == "the transport architecture decision"
+            and capability.get("ownerAdrId") == "ADR-0014"
             and capability.get("capabilityState") in {"declared", "verified"}
             and declaration.get("approvalSource") == capability.get("acceptedEvidence")
         )
@@ -1212,7 +1214,7 @@ def _validate_declaration_parity_scope(
                 declarations,
             )
         if not accepted_transport_exception:
-            raise ManifestError("Rust-only parity is reserved for accepted the transport architecture decision transport declarations")
+            raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
     elif parity_scope == "c-only":
         if (
             package_id != "c-kmipkit"
@@ -1242,7 +1244,7 @@ def _is_accepted_transport_root_alias(
         or package_languages.get(package_id) != "rust"
         or capability_id != "rust_transport_exchange"
         or capability is None
-        or capability.get("ownerDecisionId") != "the transport architecture decision"
+        or capability.get("ownerAdrId") != "ADR-0014"
         or capability.get("capabilityState") not in {"declared", "verified"}
         or declaration.get("approvalSource") != capability.get("acceptedEvidence")
         or not isinstance(export_name, str)
@@ -1256,7 +1258,7 @@ def _is_accepted_transport_root_alias(
         canonical.get("packageId") == "rust-kmipkit-transport"
         and canonical.get("exportName") == canonical_name
         and canonical.get("capabilityId") == capability_id
-        and canonical.get("parityScope") == "rust-only-transport"
+        and canonical.get("parityScope") == "rust-only-adr"
         and canonical.get("declarationState") in {"declared", "verified"}
         and canonical.get("approvalSource") == capability.get("acceptedEvidence")
         and canonical.get("requirementIds") == declaration.get("requirementIds")
@@ -1273,22 +1275,22 @@ def _validate_public_declaration_approval(
 ) -> None:
     if capability is not None:
         owner_spec_id = capability.get("ownerSpecId") or capability.get("candidateSpecId")
-        owner_decision_id = capability.get("ownerDecisionId")
+        owner_adr_id = capability.get("ownerAdrId")
     else:
         if operation is None or operation.get("apiState") not in {"declared", "verified"}:
             raise ManifestError("ready public declaration references a blocked operation")
         owner_spec_id = operation.get("featureSpecId")
-        owner_decision_id = None
+        owner_adr_id = None
 
     declaration_spec_id = declaration.get("candidateSpecId")
     if declaration_spec_id is not None:
         if (
-            owner_decision_id is not None
+            owner_adr_id is not None
             or not isinstance(declaration_spec_id, str)
             or re.fullmatch(r"KMIPKIT-[0-9]{4}", declaration_spec_id) is None
             or not any(
                 isinstance(requirement, str)
-                and requirement.startswith(f"{declaration_spec_id}-REQ-")
+                and requirement.startswith(f"{declaration_spec_id}-FR-")
                 for requirement in declaration.get("requirementIds", [])
             )
         ):
@@ -1297,11 +1299,11 @@ def _validate_public_declaration_approval(
             )
         owner_spec_id = declaration_spec_id
 
-    if owner_decision_id is not None:
-        if parity_scope != "rust-only-transport":
-            raise ManifestError("Architecture decision-owned public declaration is not scoped to its accepted Rust-only capability")
+    if owner_adr_id is not None:
+        if parity_scope != "rust-only-adr":
+            raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
         _validate_approval_source(
-            declaration.get("approvalSource"), root, decision_id=owner_decision_id
+            declaration.get("approvalSource"), root, adr_id=owner_adr_id
         )
     else:
         if parity_scope not in {"four-language", "c-only"} or (
@@ -1329,14 +1331,14 @@ def _validate_approved_exclusions(
         if not isinstance(exclusion, dict):
             raise ManifestError("manifest approved exclusion is malformed")
         _validate_approval_source(exclusion.get("approvalSource"), root)
-        if exclusion.get("candidateSpecId") != "PARITY-FACADE":
+        if exclusion.get("candidateSpecId") != "KMIPKIT-0053":
             continue
 
         artifact_kind = exclusion.get("artifactKind")
         if artifact_kind is not None:
             counterpart_ids = exclusion.get("counterpartDeclarationIds")
             if not isinstance(counterpart_ids, list) or not counterpart_ids:
-                raise ManifestError("PARITY-FACADE type-system exclusions need exact counterparts")
+                raise ManifestError("KMIPKIT-0053 type-system exclusions need exact counterparts")
             capability_id = exclusion.get("capabilityId")
             for counterpart_id in counterpart_ids:
                 counterpart = declarations_by_id.get(counterpart_id)
@@ -1347,14 +1349,14 @@ def _validate_approved_exclusions(
                     or counterpart.get("parityScope") != "four-language"
                 ):
                     raise ManifestError(
-                        "PARITY-FACADE type-system exclusions need verified counterparts "
+                        "KMIPKIT-0053 type-system exclusions need verified counterparts "
                         "for the same four-language capability"
                     )
         elif not all(
             isinstance(exclusion.get(key), str) and exclusion[key].strip()
             for key in ("reason", "evidence")
         ):
-            raise ManifestError("PARITY-FACADE exact route exclusions need a reason and evidence")
+            raise ManifestError("KMIPKIT-0053 exact route exclusions need a reason and evidence")
 
 
 def _validate_unique_public_export_identities(
@@ -1605,7 +1607,7 @@ def _validate_ready_mapping_targets(
                 )
         required_languages = (
             ("rust",)
-            if declaration.get("parityScope") == "rust-only-transport"
+            if declaration.get("parityScope") == "rust-only-adr"
             else ("c",)
             if declaration.get("parityScope") == "c-only"
             else ("rust", "c", "java", "python")
@@ -1759,12 +1761,12 @@ def _validate_standard_attribute_catalog_values(
             raise ManifestError("normative catalog contains an invalid attribute identity")
         if element.get("scope_state") not in {None, "client_1_0"}:
             continue
-        if element_id == "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
             continue
         if not element.get("source_encoding"):
             raise ManifestError("normative direct attribute has no source encoding")
 
-        if element_id == "KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
+        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
             tag = 0x0042_0008
             if not any(value == tag and assigned for value, assigned in tag_values.values()):
                 raise ManifestError("Vendor Attribute tag is not assigned in the catalog")
@@ -1777,7 +1779,7 @@ def _validate_standard_attribute_catalog_values(
                 raise ManifestError("normative direct attribute tag is not assigned")
             tag = parent_tag[0]
 
-        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-").removeprefix("KMIP-ELEM-ATTRIBUTE-")
+        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-")
         words = re.findall(r"[A-Za-z]+|[0-9]+", suffix)
         if not words:
             raise ManifestError("normative direct attribute has an invalid identity")
@@ -1843,7 +1845,7 @@ def _validate_standard_attribute_catalog_values(
         raise ManifestError(
             "standard attribute declarations require the typed-object-attributes capability"
         )
-    if any(k in actual and actual[k] != expected[k] for k in expected if k in actual):
+    if actual != expected:
         raise ManifestError(
             "standard attribute value does not match the normative catalog"
         )
@@ -1862,7 +1864,7 @@ def _validate_capability_mapping_inventories(
             continue
         language_scope = (
             ("rust",)
-            if capability.get("parityScope") == "rust-only-transport"
+            if capability.get("parityScope") == "rust-only-adr"
             else ("c",)
             if capability.get("parityScope") == "c-only"
             else ("rust", "c", "java", "python")
@@ -1992,8 +1994,7 @@ def _validate_v2_manifest(
     _validate_references(manifest)
     if require_complete:
         _validate_release_package_versions(manifest, root)
-    if (root / "specs").is_dir():
-        _validate_v2_readiness(manifest, root, require_complete=require_complete)
+    _validate_v2_readiness(manifest, root, require_complete=require_complete)
     if require_complete:
         _validate_release_export_inventories(root)
 
@@ -2628,7 +2629,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
             raise ManifestError("enum value does not fit its C storage type")
 
     if tuple(limit["id"] for limit in manifest["limits"]) != _FIXED_LIMIT_IDS:
-        raise ManifestError("manifest limits do not use the approved limit order")
+        raise ManifestError("manifest limits do not use the approved FR-012 order")
     generated_outputs = manifest["generatedOutputs"]
     if manifest.get("formatVersion") == 2:
         outputs_match = generated_outputs == [
@@ -2909,9 +2910,7 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
         if c_type["kind"] == "opaque-handle":
             lines.append(f"    pub fn {c_type['releaseFunction']}(handle: *mut {c_type['name']});")
     for function in manifest["functions"]:
-        clean_fn_reqs = [r for r in function["requirementIds"] if r.startswith("KMIP-ELEM-")]
-        if clean_fn_reqs:
-            lines.append(f"    // {', '.join(clean_fn_reqs)}")
+        lines.append(f"    // {', '.join(function['requirementIds'])}")
         parameters = function["c"]["parameters"]
         args = ", ".join(
             f"{_rust_identifier(parameter['name'])}: {_rust_c_type(parameter['type'])}"
@@ -3305,9 +3304,7 @@ def render_c_header(
                 " * Implementations must check the count before reading elements and return",
                 " * invalid_input when a NULL array has a nonzero count. */",
             ])
-        clean_fn_comment = ", ".join(r for r in function["requirementIds"] if r.startswith("KMIP-ELEM-"))
-        if clean_fn_comment:
-            lines.append(f"/* {clean_fn_comment} */")
+        lines.append(f"/* {requirement_comment} */")
         lines.append(_c_declaration(function))
     for declaration in manifest.get("publicDeclarations", []):
         signature = declaration.get("cSignature")
@@ -3327,10 +3324,7 @@ def render_c_header(
             lines.append("/* " + documentation[0])
             lines.extend(" * " + line for line in documentation[1:])
             lines.append(" */")
-                # Emit clean semantic requirement comments without internal KMIPKIT tags
-        clean_reqs = [r for r in declaration["requirementIds"] if r.startswith("KMIP-ELEM-")]
-        if clean_reqs:
-            lines.append("/* " + ", ".join(clean_reqs) + " */")
+        lines.append("/* " + ", ".join(declaration["requirementIds"]) + " */")
         lines.append(
             _c_declaration(
                 {
@@ -3390,7 +3384,7 @@ def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
     projected.get("c", {}).pop("documentation", None)
     projected["requirementIds"] = [
         requirement for requirement in projected["requirementIds"]
-        if requirement.startswith("EXTENSION-REGISTRY-")
+        if requirement.startswith("KMIPKIT-0012-")
     ]
     if projected["id"] == "client_batch_item_discover_versions":
         # The full v2 record uses the public Rust path and actual JNI bridge.
@@ -3402,10 +3396,10 @@ def _registry_function_v1_projection(record: dict[str, Any]) -> dict[str, Any]:
 
 
 def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
-    """Project the preserved EXTENSION-REGISTRY registry slice into its v1 renderer shape."""
+    """Project the preserved KMIPKIT-0012 registry slice into its v1 renderer shape."""
     registry_types = [
         deepcopy(record) for record in manifest["types"]
-        if any(requirement.startswith("EXTENSION-REGISTRY-") for requirement in record["requirementIds"])
+        if any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
     # The v1 registry metadata used the original top-level Java/Python names.
     # Keep that generated compatibility slice stable while the complete v2 API
@@ -3413,7 +3407,7 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
     for record in registry_types:
         record["requirementIds"] = [
             requirement for requirement in record["requirementIds"]
-            if requirement.startswith("EXTENSION-REGISTRY-")
+            if requirement.startswith("KMIPKIT-0012-")
         ]
         if record.get("id") == "ClientBatchItemOutcome":
             record["kind"] = "struct"
@@ -3423,12 +3417,12 @@ def _registry_manifest_v2(manifest: dict[str, Any]) -> dict[str, Any]:
     registry_functions = [
         _registry_function_v1_projection(record) for record in manifest["functions"]
         if record.get("legacyRegistry", True)
-        and any(requirement.startswith("EXTENSION-REGISTRY-") for requirement in record["requirementIds"])
+        and any(requirement.startswith("KMIPKIT-0012-") for requirement in record["requirementIds"])
     ]
     requirement_ids = [
         identifier
         for identifier in manifest["requirementIds"]
-        if identifier.startswith("EXTENSION-REGISTRY-")
+        if identifier.startswith("KMIPKIT-0012-")
     ]
     return {
         "formatVersion": 1,

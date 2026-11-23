@@ -12,7 +12,7 @@ FEATURE = ROOT / "specs/025-policy-controls"
 ENCODING_REFERENCE = re.compile(r"§7\.40(?:, |/| )(?:Table|Tabla) 392")
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD sources are excluded from this branch")
 class PolicyControlsEncodingReferencesTests(unittest.TestCase):
     def test_pinned_table_392_defines_usage_limits_count_as_long_integer(self):
         source = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
@@ -56,7 +56,7 @@ class PolicyControlsEncodingReferencesTests(unittest.TestCase):
 
     @unittest.skipUnless(
         (FEATURE / "tasks.md").is_file() and (FEATURE / "traceability.md").is_file(),
-        "External policy-control documents are not bundled with this source distribution",
+        "Spec Kit policy-control files are excluded from the code-only review branch",
     )
     def test_allocation_acceptance_and_requirement_traceability_agree_on_wire_type(self):
         tasks = (FEATURE / "tasks.md").read_text(encoding="utf-8")
@@ -66,7 +66,7 @@ class PolicyControlsEncodingReferencesTests(unittest.TestCase):
             (
                 " ".join(line.split())
                 for line in traceability.splitlines()
-                if "`KMIP-REQ-SPEC-6.1.23-002-001`" in line
+                if "`KMIPKIT-REQ-SPEC-6.1.23-002-001`" in line
             ),
             "",
         )

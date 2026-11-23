@@ -14,7 +14,7 @@ OWNER_SPEC = "specs/020-query-ping/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 
 OPERATIONS = {
-    "KMIP-ELEM-OP-C2S-PING": {
+    "KMIPKIT-ELEM-OP-C2S-PING": {
         "name": "Ping",
         "section": "6.1.36",
         "request": {
@@ -31,7 +31,7 @@ OPERATIONS = {
         },
         "normative_requirements": set(),
     },
-    "KMIP-ELEM-OP-C2S-QUERY": {
+    "KMIPKIT-ELEM-OP-C2S-QUERY": {
         "name": "Query",
         "section": "6.1.40",
         "request": {
@@ -47,8 +47,8 @@ OPERATIONS = {
             "python": "kmipkit.client.BatchItemResult.query_response",
         },
         "normative_requirements": {
-            "KMIP-REQ-SPEC-6.1.40-014",
-            "KMIP-REQ-SPEC-6.1.40-016",
+            "KMIPKIT-REQ-SPEC-6.1.40-014",
+            "KMIPKIT-REQ-SPEC-6.1.40-016",
         },
     },
 }
@@ -174,7 +174,7 @@ class PingQueryParityManifestTests(unittest.TestCase):
             if row["exportName"] == "kmipkit::ClientBatchItem::query_with_limits"
         )
         self.assertEqual("verified", root_alias["declarationState"])
-        self.assertEqual("KMIP-ELEM-OP-C2S-QUERY", root_alias["capabilityId"])
+        self.assertEqual("KMIPKIT-ELEM-OP-C2S-QUERY", root_alias["capabilityId"])
         self.assertEqual("four-language", root_alias["parityScope"])
         self.assertEqual(
             {

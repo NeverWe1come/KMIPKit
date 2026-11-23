@@ -763,7 +763,10 @@ fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
 fn validate_request_validation_rejects_an_empty_chain() {
     let report = ValidateRequest::new().validate();
     assert!(!report.is_valid());
-    assert_eq!(report.issues()[0].source().to_string(), "PAYLOAD-POLICY-P006");
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "PAYLOAD-POLICY-P006"
+    );
 }
 
 #[test]

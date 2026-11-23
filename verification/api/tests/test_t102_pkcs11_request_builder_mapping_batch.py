@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 T102_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 OWNER = "specs/026-pkcs11/spec.md"
-CAPABILITY = "KMIP-ELEM-OP-C2S-PKCS-11"
+CAPABILITY = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
 EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/extensions/Pkcs11MappingTest.java",

@@ -27,8 +27,8 @@ CATALOG_PATH = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 FEATURE_SPEC = "KMIPKIT-0003"
 PROFILE_CONFORMANCE_FEATURE_SPEC = "KMIPKIT-0010"
 PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS = {
-    "KMIP-REQ-SPEC-14.1-001",
-    "KMIP-REQ-SPEC-14.1-002",
+    "KMIPKIT-REQ-SPEC-14.1-001",
+    "KMIPKIT-REQ-SPEC-14.1-002",
 }
 MESSAGE_MODEL_FEATURE_SPEC = "KMIPKIT-0006"
 MESSAGE_MODEL_REQUIREMENTS_PATH = ROOT / "verification/conformance/requirements/KMIPKIT-0006.csv"
@@ -42,19 +42,19 @@ CLIENT_CREDENTIALS_REQUIREMENTS_PATH = (
 )
 CLIENT_CREDENTIALS_SPEC_PATH = ROOT / "specs/008-credentials-attestation/spec.md"
 CLIENT_EXECUTION_OWNED_REQUIREMENT_IDS = {
-    "KMIP-REQ-SPEC-8-003-001",
-    "KMIP-REQ-SPEC-9.12-001-002",
-    "KMIP-REQ-SPEC-9.12-001-003",
-    "KMIP-REQ-SPEC-9.13-001-004",
-    "KMIP-REQ-SPEC-9.13-001-005",
-    "KMIP-REQ-SPEC-9.20-001-002",
-    "KMIP-REQ-SPEC-9.21-001-002",
-    "KMIP-REQ-SPEC-9.6-001-002",
+    "KMIPKIT-REQ-SPEC-8-003-001",
+    "KMIPKIT-REQ-SPEC-9.12-001-002",
+    "KMIPKIT-REQ-SPEC-9.12-001-003",
+    "KMIPKIT-REQ-SPEC-9.13-001-004",
+    "KMIPKIT-REQ-SPEC-9.13-001-005",
+    "KMIPKIT-REQ-SPEC-9.20-001-002",
+    "KMIPKIT-REQ-SPEC-9.21-001-002",
+    "KMIPKIT-REQ-SPEC-9.6-001-002",
 }
 LIFECYCLE_TRACEABILITY_PATH = ROOT / "specs/018-managed-object-lifecycle/traceability.md"
 LIFECYCLE_SPEC_PATH = ROOT / "specs/018-managed-object-lifecycle/spec.md"
 LIFECYCLE_TASKS_PATH = ROOT / "specs/018-managed-object-lifecycle/tasks.md"
-CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID = "KMIP-REQ-SPEC-9.20-001-002"
+CLIENT_EXECUTION_DEFERRED_REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-9.20-001-002"
 CLIENT_EXECUTION_DEFERRED_PROFILE_IMPLEMENTATION_REFS = {
     "crates/kmipkit-protocol/src/profile.rs",
     "crates/kmipkit-protocol/src/message/header.rs",
@@ -65,17 +65,17 @@ CLIENT_EXECUTION_DEFERRED_PROFILE_VERIFICATION_REFS = {
     "crates/kmipkit-protocol/tests/message_accessors.rs::response_header_accessors_expose_every_represented_field",
 }
 RESULT_ELEMENT_IDS = {
-    "KMIP-ELEM-ENUMERATION-RESULT-REASON",
-    "KMIP-ELEM-ENUMERATION-RESULT-STATUS",
-    "KMIP-ELEM-RESULT-RESULT-MESSAGE",
-    "KMIP-ELEM-RESULT-RESULT-REASON",
-    "KMIP-ELEM-RESULT-RESULT-STATUS",
+    "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
+    "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
+    "KMIPKIT-ELEM-RESULT-RESULT-MESSAGE",
+    "KMIPKIT-ELEM-RESULT-RESULT-REASON",
+    "KMIPKIT-ELEM-RESULT-RESULT-STATUS",
 }
 LIFECYCLE_OPERATION_TABLES = {
-    "KMIP-ELEM-OP-C2S-ACTIVATE": ("6.1.1", "164–166"),
-    "KMIP-ELEM-OP-C2S-ARCHIVE": ("6.1.4", "173–175"),
-    "KMIP-ELEM-OP-C2S-DESTROY": ("6.1.15", "208–210"),
-    "KMIP-ELEM-OP-C2S-RECOVER": ("6.1.42", "288–290"),
+    "KMIPKIT-ELEM-OP-C2S-ACTIVATE": ("6.1.1", "164–166"),
+    "KMIPKIT-ELEM-OP-C2S-ARCHIVE": ("6.1.4", "173–175"),
+    "KMIPKIT-ELEM-OP-C2S-DESTROY": ("6.1.15", "208–210"),
+    "KMIPKIT-ELEM-OP-C2S-RECOVER": ("6.1.42", "288–290"),
 }
 LIFECYCLE_UNIQUE_IDENTIFIER_ENCODING_CLAIM = (
     "§4.58 Tables 145–146 define permitted Unique Identifier encodings"
@@ -92,46 +92,46 @@ LIFECYCLE_UNIQUE_IDENTIFIER_REFERENCES = {
     "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
 }
 LIFECYCLE_CLIENT_REQUIREMENT_IDS = {
-    "KMIP-REQ-SPEC-6.1.4-001",
-    "KMIP-REQ-SPEC-6.1.42-001-001",
-    "KMIP-REQ-SPEC-6.1.42-001-002",
+    "KMIPKIT-REQ-SPEC-6.1.4-001",
+    "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+    "KMIPKIT-REQ-SPEC-6.1.42-001-002",
 }
 LIFECYCLE_SERVER_ONLY_CLAUSE_IDS = {
-    "KMIP-CLAUSE-SPEC-6.1.1-001",
-    "KMIP-CLAUSE-SPEC-6.1.15-001",
+    "KMIPKIT-CLAUSE-SPEC-6.1.1-001",
+    "KMIPKIT-CLAUSE-SPEC-6.1.15-001",
 }
 LIFECYCLE_TEST_MODULES_BY_ROW = {
-    "KMIP-ELEM-OP-C2S-ACTIVATE": (
+    "KMIPKIT-ELEM-OP-C2S-ACTIVATE": (
         "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
     ),
-    "KMIP-ELEM-OP-C2S-ARCHIVE": (
+    "KMIPKIT-ELEM-OP-C2S-ARCHIVE": (
         "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
     ),
-    "KMIP-ELEM-OP-C2S-DESTROY": (
+    "KMIPKIT-ELEM-OP-C2S-DESTROY": (
         "crates/kmipkit-protocol/tests/unit/destroy_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
     ),
-    "KMIP-ELEM-OP-C2S-RECOVER": (
+    "KMIPKIT-ELEM-OP-C2S-RECOVER": (
         "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
     ),
-    "KMIP-CLAUSE-SPEC-6.1.1-001": (
+    "KMIPKIT-CLAUSE-SPEC-6.1.1-001": (
         "crates/kmipkit-client/tests/unit/activate_execution_tests.rs",
     ),
-    "KMIP-REQ-SPEC-6.1.4-001": (
+    "KMIPKIT-REQ-SPEC-6.1.4-001": (
         "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/archive_execution_tests.rs",
     ),
-    "KMIP-CLAUSE-SPEC-6.1.15-001": (
+    "KMIPKIT-CLAUSE-SPEC-6.1.15-001": (
         "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs",
     ),
-    "KMIP-REQ-SPEC-6.1.42-001-001": (
+    "KMIPKIT-REQ-SPEC-6.1.42-001-001": (
         "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
     ),
-    "KMIP-REQ-SPEC-6.1.42-001-002": (
+    "KMIPKIT-REQ-SPEC-6.1.42-001-002": (
         "crates/kmipkit-client/tests/unit/recover_execution_tests.rs",
     ),
 }
@@ -158,8 +158,8 @@ LIFECYCLE_PLANNED_CODE_PATHS = {
 
 def _result_element_ids(elements: list[dict[str, object]]) -> set[str]:
     result_enumerations = {
-        "KMIP-ELEM-ENUMERATION-RESULT-REASON",
-        "KMIP-ELEM-ENUMERATION-RESULT-STATUS",
+        "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON",
+        "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
     }
     return RESULT_ELEMENT_IDS | {
         element["element_id"]
@@ -745,7 +745,7 @@ def _missing_category_tests_without_accepted_deviation(
     }
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class FeatureTraceabilityTests(unittest.TestCase):
     def test_batched_rust_test_contexts_match_individual_context_checks(self) -> None:
         source = (
@@ -908,7 +908,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.27-001"
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.27-001"
         )
 
         source_sections = {
@@ -925,13 +925,13 @@ class FeatureTraceabilityTests(unittest.TestCase):
         self.assertIsNotNone(implementation)
         self.assertIn("Key Format Type", implementation[1] if implementation else "")
         self.assertIsNone(_read_confined_test_source(documentation_path))
-        self.assertIsNone(_read_confined_implementation_source("../project-guide"))
+        self.assertIsNone(_read_confined_implementation_source("../AGENTS.md"))
 
     @unittest.skipUnless(
         LIFECYCLE_TRACEABILITY_PATH.is_file()
         and LIFECYCLE_SPEC_PATH.is_file()
         and LIFECYCLE_TASKS_PATH.is_file(),
-        "External lifecycle specification documents are not bundled with this source distribution",
+        "Spec Kit lifecycle documents are excluded from the code-only review branch",
     )
     def test_lifecycle_traceability_covers_catalog_sources_and_planned_modules(self) -> None:
         traceability = LIFECYCLE_TRACEABILITY_PATH.read_text(encoding="utf-8")
@@ -1074,19 +1074,19 @@ class FeatureTraceabilityTests(unittest.TestCase):
             self.assertEqual(actual_feature_ids, expected_feature_ids)
 
         expected_oasis_ids = {
-            "KMIP-REQ-SPEC-9.3-001-001",
-            "KMIP-REQ-SPEC-9.3-001-002",
-            "KMIP-REQ-SPEC-9.4-001-001",
-            "KMIP-REQ-SPEC-9.4-001-002",
-            "KMIP-REQ-SPEC-9.4-001-003",
-            "KMIP-REQ-SPEC-9.4-002",
-            "KMIP-REQ-SPEC-9.11-001",
-            "KMIP-REQ-SPEC-9.11-004-001",
-            "KMIP-REQ-SPEC-9.11-004-002",
-            "KMIP-REQ-SPEC-9.11-004-003",
-            "KMIP-REQ-SPEC-9.11-006",
-            "KMIP-REQ-SPEC-9.11-010-001",
-            "KMIP-REQ-SPEC-9.11-010-002",
+            "KMIPKIT-REQ-SPEC-9.3-001-001",
+            "KMIPKIT-REQ-SPEC-9.3-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-001",
+            "KMIPKIT-REQ-SPEC-9.4-001-002",
+            "KMIPKIT-REQ-SPEC-9.4-001-003",
+            "KMIPKIT-REQ-SPEC-9.4-002",
+            "KMIPKIT-REQ-SPEC-9.11-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-001",
+            "KMIPKIT-REQ-SPEC-9.11-004-002",
+            "KMIPKIT-REQ-SPEC-9.11-004-003",
+            "KMIPKIT-REQ-SPEC-9.11-006",
+            "KMIPKIT-REQ-SPEC-9.11-010-001",
+            "KMIPKIT-REQ-SPEC-9.11-010-002",
         }
         actual_oasis_ids = {
             row["requirement_id"]
@@ -1095,7 +1095,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         }
         self.assertEqual(actual_oasis_ids, expected_oasis_ids)
 
-        attestation_requirement = by_id["KMIP-REQ-SPEC-9.3-001-001"]
+        attestation_requirement = by_id["KMIPKIT-REQ-SPEC-9.3-001-001"]
         self.assertIn(
             "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
             attestation_requirement["test_ids"],
@@ -1133,21 +1133,21 @@ class FeatureTraceabilityTests(unittest.TestCase):
                     )
 
         for requirement_id, status in (
-            ("KMIP-REQ-SPEC-9.4-001-003", "server_only"),
-            ("KMIP-REQ-SPEC-9.11-004-002", "scoped_verified"),
-            ("KMIP-REQ-SPEC-9.11-010-001", "verified"),
+            ("KMIPKIT-REQ-SPEC-9.4-001-003", "server_only"),
+            ("KMIPKIT-REQ-SPEC-9.11-004-002", "scoped_verified"),
+            ("KMIPKIT-REQ-SPEC-9.11-010-001", "verified"),
         ):
             self.assertEqual(by_id[requirement_id]["status"], status)
-        self.assertIn("OD-003", by_id["KMIP-REQ-SPEC-9.11-010-001"]["scope"])
-        self.assertIn("caller", by_id["KMIP-REQ-SPEC-9.11-004-002"]["statement"].lower())
-        self.assertIn("comparison scope", by_id["KMIP-REQ-SPEC-9.11-004-002"]["statement"].lower())
+        self.assertIn("OD-003", by_id["KMIPKIT-REQ-SPEC-9.11-010-001"]["scope"])
+        self.assertIn("caller", by_id["KMIPKIT-REQ-SPEC-9.11-004-002"]["statement"].lower())
+        self.assertIn("comparison scope", by_id["KMIPKIT-REQ-SPEC-9.11-004-002"]["statement"].lower())
 
         for row in rows:
             if row["requirement_id"] in {
-                "KMIP-REQ-SPEC-9.4-001-003",
+                "KMIPKIT-REQ-SPEC-9.4-001-003",
             }:
                 continue
-            if row["requirement_id"] == "KMIP-REQ-SPEC-9.11-004-002":
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.11-004-002":
                 continue
             self.assertEqual(row["status"], "verified", row["requirement_id"])
 
@@ -1202,9 +1202,9 @@ class FeatureTraceabilityTests(unittest.TestCase):
     def test_result_response_clause_directions_preserve_source_scope(self) -> None:
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         expected_clause_directions = {
-            "KMIP-CLAUSE-SPEC-9.17-001": "server_to_client",
-            "KMIP-CLAUSE-SPEC-9.18-001": "server_to_client",
-            "KMIP-CLAUSE-SPEC-9.19-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
+            "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
         clauses_by_id = {clause["clause_id"]: clause for clause in catalog["source_clauses"]}
         self.assertTrue(set(expected_clause_directions).issubset(clauses_by_id))
@@ -1426,7 +1426,7 @@ class FeatureTraceabilityTests(unittest.TestCase):
         incorrectly_owned_base_requirements = sorted(
             requirement_id
             for requirement_id in in_scope_requirement_ids
-            if requirement_id.startswith("KMIP-REQ-SPEC-")
+            if requirement_id.startswith("KMIPKIT-REQ-SPEC-")
             and requirements[requirement_id].get("feature_spec")
             == PROFILE_CONFORMANCE_FEATURE_SPEC
             and requirement_id not in PROFILE_CONFORMANCE_GATE_REQUIREMENT_IDS
@@ -1583,30 +1583,30 @@ class FeatureTraceabilityTests(unittest.TestCase):
                         self.assertIn(
                             requirement_id,
                             {
-                                "KMIP-REQ-SPEC-9.6-001-002",
-                                "KMIP-REQ-SPEC-9.12-001-003",
-                                "KMIP-REQ-SPEC-6.1.43-001",
-                                "KMIP-REQ-SPEC-6.1.43-007",
-                                "KMIP-REQ-SPEC-6.1.43-009-001",
-                                "KMIP-REQ-SPEC-6.1.43-010-001",
-                                "KMIP-REQ-SPEC-6.1.43-011",
-                                "KMIP-REQ-SPEC-6.1.5-001",
-                                "KMIP-REQ-SPEC-6.1.38-001-001",
-                                "KMIP-REQ-SPEC-9.1-001",
-                                "KMIP-REQ-SPEC-9.19-002",
-                                "KMIP-REQ-SPEC-6.1.19-002",
-                                "KMIP-REQ-SPEC-6.1.19-003",
-                                "KMIP-REQ-SPEC-6.1.19-004",
-                                "KMIP-REQ-SPEC-6.1.19-005",
-                                "KMIP-REQ-SPEC-6.1.19-006",
-                                "KMIP-REQ-SPEC-6.1.13-006",
-                                "KMIP-REQ-SPEC-3.3-001-001",
-                                "KMIP-REQ-SPEC-3.3-001-002",
-                                "KMIP-REQ-SPEC-7.18-006",
+                                "KMIPKIT-REQ-SPEC-9.6-001-002",
+                                "KMIPKIT-REQ-SPEC-9.12-001-003",
+                                "KMIPKIT-REQ-SPEC-6.1.43-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-007",
+                                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+                                "KMIPKIT-REQ-SPEC-6.1.43-011",
+                                "KMIPKIT-REQ-SPEC-6.1.5-001",
+                                "KMIPKIT-REQ-SPEC-6.1.38-001-001",
+                                "KMIPKIT-REQ-SPEC-9.1-001",
+                                "KMIPKIT-REQ-SPEC-9.19-002",
+                                "KMIPKIT-REQ-SPEC-6.1.19-002",
+                                "KMIPKIT-REQ-SPEC-6.1.19-003",
+                                "KMIPKIT-REQ-SPEC-6.1.19-004",
+                                "KMIPKIT-REQ-SPEC-6.1.19-005",
+                                "KMIPKIT-REQ-SPEC-6.1.19-006",
+                                "KMIPKIT-REQ-SPEC-6.1.13-006",
+                                "KMIPKIT-REQ-SPEC-3.3-001-001",
+                                "KMIPKIT-REQ-SPEC-3.3-001-002",
+                                "KMIPKIT-REQ-SPEC-7.18-006",
                                 # The KMIPKIT-0007 owner record remains deferred under OD-004;
                                 # the separate KMIPKIT-0010 OptionalCapability carries its own
                                 # typed profile evidence.
-                                "KMIP-REQ-SPEC-9.20-001-002",
+                                "KMIPKIT-REQ-SPEC-9.20-001-002",
                             },
                             "profile evaluator evidence is maintained in the typed rule registry, not the owning feature inventory",
                         )
@@ -1827,7 +1827,7 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         by_id = {row["requirement_id"]: row for row in rows}
         self.assertEqual(len(by_id), len(rows))
 
-        field_order_id = "KMIP-REQ-SPEC-10.1.2-001"
+        field_order_id = "KMIPKIT-REQ-SPEC-10.1.2-001"
         field_order_row = by_id[field_order_id]
         self.assertEqual(field_order_row["status"], "scoped_verified")
         self.assertIn("only the 0006 scope", field_order_row["statement"])
@@ -1897,20 +1897,20 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 for reference in record["source_refs"]
             )
         }
-        retired_false_client_claim = by_id["KMIP-REQ-SPEC-9.8-001-001"]
+        retired_false_client_claim = by_id["KMIPKIT-REQ-SPEC-9.8-001-001"]
         self.assertEqual(retired_false_client_claim["status"], "retired")
         self.assertEqual(retired_false_client_claim["scope"], "out_of_scope")
         self.assertIn("client candidate", retired_false_client_claim["statement"].lower())
         self.assertTrue(source_requirements.issubset(by_id))
         self.assertEqual(
-            by_id["KMIP-REQ-SPEC-8-003-002"]["status"],
+            by_id["KMIPKIT-REQ-SPEC-8-003-002"]["status"],
             "verified",
         )
         self.assertIn(
             "one_response_batch_can_mix_completed_and_pending_results",
-            by_id["KMIP-REQ-SPEC-8-003-002"]["test_ids"],
+            by_id["KMIPKIT-REQ-SPEC-8-003-002"]["test_ids"],
         )
-        result_message_requirement = by_id["KMIP-REQ-SPEC-9.17-001-002"]
+        result_message_requirement = by_id["KMIPKIT-REQ-SPEC-9.17-001-002"]
         self.assertEqual(result_message_requirement["status"], "scoped_verified")
         self.assertEqual(result_message_requirement["scope"], "client_1_0; owner=KMIPKIT-0006")
         self.assertIn("caller-controlled", result_message_requirement["statement"])
@@ -1920,19 +1920,19 @@ class MessageModelTraceabilityTests(unittest.TestCase):
             result_message_requirement["test_ids"],
         )
         for requirement_id in (
-            "KMIP-REQ-SPEC-9.8-001-002",
-            "KMIP-REQ-SPEC-9.8-001-003",
+            "KMIPKIT-REQ-SPEC-9.8-001-002",
+            "KMIPKIT-REQ-SPEC-9.8-001-003",
         ):
             self.assertEqual(by_id[requirement_id]["status"], "server_only")
         for requirement_id in (
-            "KMIP-REQ-SPEC-9.12-001-002",
-            "KMIP-REQ-SPEC-9.12-001-003",
-            "KMIP-REQ-SPEC-9.13-001-004",
-            "KMIP-REQ-SPEC-9.13-001-005",
+            "KMIPKIT-REQ-SPEC-9.12-001-002",
+            "KMIPKIT-REQ-SPEC-9.12-001-003",
+            "KMIPKIT-REQ-SPEC-9.13-001-004",
+            "KMIPKIT-REQ-SPEC-9.13-001-005",
         ):
             self.assertIn("owner=KMIPKIT-0007", by_id[requirement_id]["scope"])
             self.assertEqual(by_id[requirement_id]["status"], "deferred")
-        self.assertIn("owner=KMIPKIT-0009", by_id["KMIP-REQ-SPEC-9.19-002"]["scope"])
+        self.assertIn("owner=KMIPKIT-0009", by_id["KMIPKIT-REQ-SPEC-9.19-002"]["scope"])
         for discrepancy_id, owner in (
             ("KMIPKIT-DISC-001", "KMIPKIT-0007"),
             ("KMIPKIT-DISC-022", "KMIPKIT-0007"),
@@ -1994,7 +1994,7 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         requirement = next(
             record
             for record in catalog["requirements"]
-            if record["requirement_id"] == "KMIP-REQ-SPEC-8-001"
+            if record["requirement_id"] == "KMIPKIT-REQ-SPEC-8-001"
         )
         catalog_references = set(requirement["verification_refs"])
         self.assertNotIn(obsolete_reference, catalog_references)
@@ -2026,7 +2026,7 @@ class MessageModelTraceabilityTests(unittest.TestCase):
         requirement = next(
             row
             for row in rows
-            if row["requirement_id"] == "KMIP-REQ-SPEC-8.3-003"
+            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-8.3-003"
         )
 
         self.assertEqual(requirement["source_section"], "§8.3, Table 396")
@@ -2079,7 +2079,7 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                 and reference["section"] in message_sections
                 for reference in element.get("source_refs", [])
             )
-            and element["element_id"] != "KMIP-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
+            and element["element_id"] != "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"
         ]
         self.assertGreaterEqual(len(elements), 70)
         for element in elements:
@@ -2114,7 +2114,7 @@ class MessageModelTraceabilityTests(unittest.TestCase):
                     self.assertNotIn(token, source)
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
 class ClientExecutionTraceabilityTests(unittest.TestCase):
     def test_client_execution_csv_covers_oasis_project_and_policy_records(self) -> None:
         self.assertTrue(CLIENT_EXECUTION_REQUIREMENTS_PATH.is_file())
@@ -2162,9 +2162,9 @@ class ClientExecutionTraceabilityTests(unittest.TestCase):
             self.assertEqual(actual_feature_ids, expected_feature_ids)
 
         policy_record_ids = {
-            "PROJECT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
-            "PROJECT-POLICY-EXTENSION-PRESERVATION",
-            "PROJECT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
+            "KMIPKIT-POLICY-BATCH-ERROR-CONTINUATION-ASSIGNED-OUTBOUND",
+            "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
+            "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
         }
         discrepancy_and_decision_ids = {
             "KMIPKIT-DISC-001",
