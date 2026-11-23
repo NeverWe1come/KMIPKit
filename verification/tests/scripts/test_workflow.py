@@ -195,10 +195,9 @@ class WorkflowContractTests(unittest.TestCase):
         workflow_names = ("ci.yml", "codeql.yml", "zizmor.yml")
         for workflow_name in workflow_names:
             with self.subTest(workflow=workflow_name):
-                self.assertIn(
-                    "feature/KMIPKIT-*",
-                    self.require_stacked_pull_request_trigger(workflow_name),
-                )
+                trigger = self.require_stacked_pull_request_trigger(workflow_name)
+                self.assertIn("feature/KMIPKIT-*", trigger)
+                self.assertIn("feature/fluent-api-*", trigger)
 
     def test_workflow_has_no_secrets_or_repository_writes(self) -> None:
         contents = self.require_workflow()

@@ -6,6 +6,7 @@ on:
       - master
       - release/**
       - 'feature/KMIPKIT-*'
+      - 'feature/fluent-api-*'
   push:
     branches:
       - release/1.0.0
@@ -1104,7 +1105,7 @@ jobs:
         id: verify-fluent-operation-inventory
         run: |
           python3 -B verification/conformance/generate_fluent_operation_inventory.py --repo-root . --check
-          python3 -B -m unittest verification.conformance.tests.test_fluent_operation_inventory -v
+          python3 -B -m unittest verification.conformance.tests.test_fluent_operation_inventory verification.conformance.tests.test_fluent_field_inventory -v
 
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage
