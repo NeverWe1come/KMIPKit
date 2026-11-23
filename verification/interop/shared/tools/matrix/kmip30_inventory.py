@@ -5,20 +5,15 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import sys
 from collections import defaultdict
 from pathlib import Path
 
-from oasis_xml import FIXTURES, normalize, xml_rows
-
-# Script entry points run from shared/tools, while the source parser is repo-wide.
-sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
-from verification.conformance.attribute_policy_source import _SourceParser
 from verification.api.kmip30_draft_api import validate_kmip30_draft_api
-from verification.interop.shared.catalog.generate_matrix_catalog import (
-    _payload_presence_contract,
-    _pkcs11_referenced_targets,
-)
+from verification.conformance.attribute_policy_source import _SourceParser
+
+from .oasis_xml import normalize, xml_rows
+from .payload_contract import payload_presence_contract
+from .pkcs11 import HEADER_DIR, PKCS11_HEADERS, referenced_values
 
 SOURCE_DIR = Path("verification/conformance/oasis/kmip-3.0")
 SPEC = SOURCE_DIR / "upstream/kmip-spec-v3.0.html"
@@ -104,25 +99,22 @@ def source_inventory(root: Path) -> list[dict]:
                 "cells": cells,
             }
             if field:
-                branches, rules = _payload_presence_contract(cells[1], cells[2])
+                branches, rules = payload_presence_contract(cells[1], cells[2])
                 targets[target_id].update(role=role, presence_branches=branches, presence_rules=rules)
 
     # §§11.40–11.41 incorporate the same pinned PKCS #11 3.0 source as KMIP 2.x.
-    external, _ = _pkcs11_referenced_targets(root)
-    for entry in external:
-        section = "11.40" if entry["parent_name"] == "PKCS#11 Function" else "11.41"
+    for suffix, family, name, wire_value, allocation, artifact in referenced_values(root):
+        section = "11.40" if family == "PKCS#11 Function" else "11.41"
         heading = targets[f"kmip30-section-{section}"]["heading"]
-        target_id = f"kmip30-{entry['target_id'].removeprefix('KMIPKIT-').lower()}"
-        ref = entry["source_refs"][-1]
-        artifact = Path(ref["artifact"]).name
+        target_id = f"kmip30-pkcs11-{suffix.lower()}"
         targets[target_id] = {
-            "target_id": target_id, "kind": entry["kind"], "heading": heading,
+            "target_id": target_id, "kind": "referenced_enum_value", "heading": heading,
             "source": {"path": SPEC.as_posix(), "sha256": HASHES[SPEC], "section": section},
             "external_source": {
-                "path": (FIXTURES / "pkcs11-3.0/include" / artifact).as_posix(),
-                "sha256": ref["sha256"],
+                "path": (HEADER_DIR / artifact).as_posix(),
+                "sha256": PKCS11_HEADERS[artifact],
             },
-            "name": entry["name"], "wire_value": entry["wire_value"], "allocation": entry["allocation"],
+            "name": name, "wire_value": wire_value, "allocation": allocation,
         }
     return list(targets.values())
 

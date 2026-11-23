@@ -5,15 +5,20 @@ import json
 import copy
 import os
 from pathlib import Path
-import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
+from verification.interop.shared.tools.matrix.generator import (
+    _case_obligations,
+    _operation_ids,
+    _resolve_output_path,
+    build_matrix,
+    iter_cells,
+)
+
 
 SHARED = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(SHARED / "tools"))
-from coverage_matrix import _case_obligations, _operation_ids, _resolve_output_path, build_matrix, iter_cells  # noqa: E402
 
 
 class CoverageMatrixTests(unittest.TestCase):

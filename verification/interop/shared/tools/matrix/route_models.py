@@ -11,7 +11,7 @@ import ast
 import re
 import subprocess
 
-from cli_paths import validate_git_commit
+from .cli_paths import validate_git_commit
 
 _SCALAR_ENUM_FAMILY_ALIASES = {'RevocationReason': 'Revocation Reason Code'}
 _PROTOCOL_VERSION_TARGET_PREFIX = 'Protocol Version'

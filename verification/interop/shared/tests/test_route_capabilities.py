@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 from pathlib import Path
 import unittest
 import sys
 import subprocess
+
+from verification.interop.shared.tools.matrix import route_capabilities
+from verification.interop.shared.tools.matrix.route_models import target_ids
 
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[2]
@@ -15,18 +17,11 @@ PINNED_RELEASE_COMMIT = 'e710308d7bb4c2347ad5fd8c95553e2e9531c778'
 
 
 class RouteCapabilitiesTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        sys.path.insert(0, str(SHARED / 'tools'))
-        spec = importlib.util.spec_from_file_location('route_capabilities', SHARED / 'tools/route_capabilities.py')
-        cls.module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(cls.module)
-
     def setUp(self):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
     def _pinned_public_api(self):
-        source = self.module.source(
+        source = route_capabilities.source(
             ROOT,
             self.data['library_commit'],
             'bindings/shared/public-api.json',
@@ -34,9 +29,9 @@ class RouteCapabilitiesTests(unittest.TestCase):
         return json.loads(source)
 
     def test_manifest_and_generator_use_the_exact_release_commit(self):
-        self.assertEqual(PINNED_RELEASE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
+        self.assertEqual(PINNED_RELEASE_COMMIT, route_capabilities.PINNED_SOURCE_COMMIT)
         self.assertEqual(PINNED_RELEASE_COMMIT, self.data['library_commit'])
-        self.assertEqual(PINNED_RELEASE_COMMIT, self.module.build_manifest(ROOT)['library_commit'])
+        self.assertEqual(PINNED_RELEASE_COMMIT, route_capabilities.build_manifest(ROOT)['library_commit'])
 
     def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
         for language in ('rust', 'c', 'java', 'python'):
@@ -350,7 +345,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
 
     def test_operation_route_matching_uses_complete_name_tokens(self):
         operations = {operation['operationId']: operation
-                      for operation in self.module._api(ROOT, self.data['library_commit'])['operations']}
+                      for operation in route_capabilities._api(ROOT, self.data['library_commit'])['operations']}
         hash_id = next(operation_id for operation_id, operation in operations.items()
                        if operation['name'] == 'Hash')
         recertify_id = next(operation_id for operation_id, operation in operations.items()
@@ -359,14 +354,14 @@ class RouteCapabilitiesTests(unittest.TestCase):
                         if operation['name'] == 'Re-key')
         query_async_id = next(operation_id for operation_id, operation in operations.items()
                               if operation['name'] == 'Query Asynchronous Requests')
-        self.assertIsNone(self.module._function_operation_id('hashed_password_credential_into_ttlv', operations))
-        self.assertEqual(hash_id, self.module._function_operation_id('client_batch_item_hash', operations))
+        self.assertIsNone(route_capabilities._function_operation_id('hashed_password_credential_into_ttlv', operations))
+        self.assertEqual(hash_id, route_capabilities._function_operation_id('client_batch_item_hash', operations))
         self.assertEqual(recertify_id,
-                         self.module._function_operation_id('client_batch_item_response_recertify', operations))
+                         route_capabilities._function_operation_id('client_batch_item_response_recertify', operations))
         self.assertEqual(rekey_id,
-                         self.module._function_operation_id('client_batch_item_response_rekey', operations))
+                         route_capabilities._function_operation_id('client_batch_item_response_rekey', operations))
         self.assertEqual(query_async_id,
-                         self.module._function_operation_id('client_execute_query_async_requests', operations))
+                         route_capabilities._function_operation_id('client_execute_query_async_requests', operations))
         hashed_password = next(route for route in self.data['routes']
                                if route['language'] == 'rust'
                                and route['public_api_symbol'] ==
@@ -420,7 +415,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual('construct', route['actions'][0], key)
 
     def test_rust_batch_item_route_inventory_matches_public_methods(self):
-        inventory = self.module.construction_inventory(
+        inventory = route_capabilities.construction_inventory(
             ROOT, self.data['library_commit'])
         rust_network_symbols = {
             symbol for language, symbol, _, _, mode in inventory
@@ -684,7 +679,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
                               exclusion['source_paths'])
 
     def test_pinned_oasis_source_reader_accepts_windows_1252_html(self):
-        source = self.module.source(
+        source = route_capabilities.source(
             ROOT,
             PINNED_RELEASE_COMMIT,
             'verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
@@ -722,15 +717,15 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(target_ids, values)
 
     def test_installed_named_values_cannot_be_missing_or_have_the_wrong_wire_value(self):
-        self.assertTrue(hasattr(self.module, 'validate_installed_values'), 'installed named-value validation is missing')
+        self.assertTrue(hasattr(route_capabilities, 'validate_installed_values'), 'installed named-value validation is missing')
         with self.assertRaisesRegex(ValueError, 'named value'):
-            self.module.validate_installed_values(self.data, 'python', {})
+            route_capabilities.validate_installed_values(self.data, 'python', {})
         values = {row['public_api_symbol']: row['wire_value'] for row in self.data['value_symbols']
                   if row['language'] == 'python' and row['availability'] == 'named-constant'}
         first = next(iter(values))
         values[first] ^= 1
         with self.assertRaisesRegex(ValueError, 'named value'):
-            self.module.validate_installed_values(self.data, 'python', values)
+            route_capabilities.validate_installed_values(self.data, 'python', values)
 
     def test_generic_value_constructors_have_distinct_data_type_routes(self):
         symbols = {r['public_api_symbol'] for r in self.data['routes']}
@@ -751,7 +746,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
                     'to_batch_item', 'response_')):
                 continue
             for language in ('rust', 'c', 'java', 'python'):
-                symbol = self.module.function_entrypoint(function, language)
+                symbol = route_capabilities.function_entrypoint(function, language)
                 if symbol:
                     if (language, symbol) not in declared:
                         continue
@@ -813,12 +808,12 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertEqual(before, manifest.read_bytes())
 
     def test_checked_in_manifest_validates_against_public_api(self):
-        self.module.validate(self.data, ROOT)
+        route_capabilities.validate(self.data, ROOT)
         self.assertEqual({'rust', 'c', 'java', 'python'}, {r['language'] for r in self.data['routes']})
 
     def reject(self, data, message):
         with self.assertRaisesRegex(ValueError, message):
-            self.module.validate(data, ROOT)
+            route_capabilities.validate(data, ROOT)
 
     def test_unknown_language_is_rejected(self):
         self.data['routes'][0]['language'] = 'ruby'
@@ -882,26 +877,24 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.reject(self.data, 'execution route')
 
     def test_regeneration_matches_checked_in_capabilities(self):
-        self.assertEqual(self.data, self.module.build_manifest(ROOT, self.data['library_commit']))
+        self.assertEqual(self.data, route_capabilities.build_manifest(ROOT, self.data['library_commit']))
 
     def test_artifact_probe_requires_the_public_sender(self):
         symbols = {r['public_api_symbol'] for r in self.data['routes'] if r['language'] == 'python'}
         with self.assertRaisesRegex(ValueError, 'installed artifact.*missing'):
-            self.module.validate_installed_symbols(self.data, 'python', symbols)
+            route_capabilities.validate_installed_symbols(self.data, 'python', symbols)
 
     def test_artifact_probe_rejects_wrong_commit(self):
         with self.assertRaisesRegex(ValueError, 'artifact commit'):
-            self.module.validate_artifact_identity(self.data, {'library_commit': 'a' * 40})
+            route_capabilities.validate_artifact_identity(self.data, {'library_commit': 'a' * 40})
 
     def test_artifact_probe_requires_every_declared_symbol(self):
         with self.assertRaisesRegex(ValueError, 'installed artifact.*missing'):
-            self.module.validate_installed_symbols(self.data, 'python', set())
+            route_capabilities.validate_installed_symbols(self.data, 'python', set())
 
 
 class ModelApplicabilityTests(unittest.TestCase):
     def test_operation_scope_also_filters_descendant_payload_type_variants(self):
-        sys.path.insert(0, str(SHARED / 'tools'))
-        from route_models import target_ids
         targets = []
         for operation in ('activate', 'destroy'):
             field_id = operation + '-identifier'
@@ -917,8 +910,6 @@ class ModelApplicabilityTests(unittest.TestCase):
 
 class ManifestSerializationTests(unittest.TestCase):
     def test_generated_records_are_complete_json_before_atomic_replacement(self):
-        sys.path.insert(0, str(SHARED / 'tools'))
-        import route_capabilities
         data = {'schema_version': '1.0', 'routes': [{'route_id': 'a'}], 'value_symbols': []}
         serialized = route_capabilities.serialize_manifest(data)
         self.assertTrue(serialized.endswith('}\n'), 'serialized manifest must close its root object')

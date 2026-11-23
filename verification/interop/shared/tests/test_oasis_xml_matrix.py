@@ -3,17 +3,15 @@
 from collections import Counter
 import json
 from pathlib import Path
-import sys
 import unittest
 
 import jsonschema
 
+from verification.interop.shared.tools.matrix.generator import selected_cells, summarize_cells
+from verification.interop.shared.tools.matrix.oasis_xml import normalize
+
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[2]
-sys.path.insert(0, str(SHARED / "tools"))
-
-from coverage_matrix import selected_cells, summarize_cells
-from oasis_xml import normalize
 
 
 class LegacyXmlMatrixTests(unittest.TestCase):
