@@ -2,7 +2,7 @@
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.21, Tables
 //! 226–228, with Attribute Reference encoding from §5.5, Table 161.
-//! Traceability: KMIPKIT-0016-FR-007/FR-010/FR-011 and SC-002/SC-004/SC-005.
+//! Traceability: functional requirement/FR-010/FR-011 and SC-002/SC-004/SC-005.
 //! These are derived structural tests; they do not claim an official OASIS case passed.
 
 use crate::{

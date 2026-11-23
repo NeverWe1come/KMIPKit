@@ -143,9 +143,9 @@ impl ValidateRequest {
             // list. Requiring a non-empty chain is an explicit KMIPKit
             // semantic boundary, not a direct OASIS cardinality rule.
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Certificate",
-                ValidationSourceRef::ProjectRule("KMIPKIT-0051-P006"),
+                ValidationSourceRef::ProjectRule("PAYLOAD-POLICY-P006"),
             );
         }
         if self
@@ -154,7 +154,7 @@ impl ValidateRequest {
             .any(|certificate| validate_certificate_shape(certificate).is_err())
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Certificate",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

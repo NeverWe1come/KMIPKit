@@ -1,5 +1,5 @@
-//! Requirement traceability: KMIPKIT-0004-FR-012 and SC-006.
-//! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
+//! Requirement traceability: functional requirement and SC-006.
+//! Authority: approved specification requirement specification and Rust value-model contract.
 
 #![cfg(not(coverage))]
 #![allow(unexpected_cfgs, dead_code)]

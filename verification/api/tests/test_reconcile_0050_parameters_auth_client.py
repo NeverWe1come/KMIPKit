@@ -15,21 +15,21 @@ def _manifest() -> dict:
             "declarationId": "get-c",
             "packageId": "c-kmipkit",
             "exportName": "kmipkit_client_batch_item_get",
-            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+            "capabilityId": "KMIP-ELEM-OP-C2S-GET",
             "languageMappings": {"c": {"packageId": "c-kmipkit", "name": "kmipkit_client_batch_item_get"}},
         },
         {
             "declarationId": "get-java",
             "packageId": "java-kmipkit",
             "exportName": "org.kmipkit.extensions.ClientBatchItem.get",
-            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+            "capabilityId": "KMIP-ELEM-OP-C2S-GET",
             "languageMappings": {"java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ClientBatchItem.get"}},
         },
         {
             "declarationId": "get-python",
             "packageId": "python-kmipkit",
             "exportName": "kmipkit.extensions.client_batch_item_get",
-            "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+            "capabilityId": "KMIP-ELEM-OP-C2S-GET",
             "languageMappings": {"python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.client_batch_item_get"}},
         },
     ]
@@ -37,7 +37,7 @@ def _manifest() -> dict:
         "requirementIds": [],
         "operations": [
             {
-                "operationId": "KMIPKIT-ELEM-OP-C2S-GET",
+                "operationId": "KMIP-ELEM-OP-C2S-GET",
                 "name": "Get",
                 "apiState": "verified",
                 "approvalEvidence": {
@@ -79,7 +79,7 @@ class Reconcile0050Tests(unittest.TestCase):
         exclusions = {row["exportName"]: row for row in result["approvedExclusions"]}
 
         direct = rows["kmipkit_client::Client::get"]
-        self.assertEqual("KMIPKIT-ELEM-OP-C2S-GET", direct["capabilityId"])
+        self.assertEqual("KMIP-ELEM-OP-C2S-GET", direct["capabilityId"])
         self.assertEqual("verified", direct["declarationState"])
         self.assertEqual("org.kmipkit.extensions.ClientBatchItem.get", direct["languageMappings"]["java"]["name"])
         self.assertEqual("kmipkit.extensions.client_batch_item_get", direct["languageMappings"]["python"]["name"])
@@ -121,7 +121,7 @@ class Reconcile0050Tests(unittest.TestCase):
         for language, name in lookalikes.items():
             manifest["publicDeclarations"].insert(0, {
                 "declarationId": f"unlisted-{language}",
-                "capabilityId": "KMIPKIT-ELEM-OP-C2S-GET",
+                "capabilityId": "KMIP-ELEM-OP-C2S-GET",
                 "languageMappings": {language: {"packageId": f"{language}-kmipkit", "name": name}},
             })
         report = {"missingFromManifest": [{

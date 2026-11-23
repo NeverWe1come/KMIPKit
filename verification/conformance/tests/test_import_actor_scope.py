@@ -10,8 +10,8 @@ from verification.conformance.generate_profiles import compute_profile_closure
 
 
 ROOT = Path(__file__).resolve().parents[3]
-REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.25-001"
-SOURCE_CLAUSE_ID = "KMIPKIT-CLAUSE-SPEC-6.1.25-001"
+REQUIREMENT_ID = "KMIP-REQ-SPEC-6.1.25-001"
+SOURCE_CLAUSE_ID = "KMIP-CLAUSE-SPEC-6.1.25-001"
 
 
 class ImportActorScopeTests(unittest.TestCase):

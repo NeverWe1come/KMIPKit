@@ -13,9 +13,7 @@
   ],
   "$defs": {
     "requirementId": {
-      "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
-      "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
+      "type": "string"
     },
     "requirementIds": {
       "type": "array",
@@ -1392,7 +1390,7 @@
         },
         "legacyRegistry": {
           "type": "boolean",
-          "description": "Whether this full-manifest function belongs to the preserved KMIPKIT-0012 v1 registry parity slice. Defaults to true when omitted."
+          "description": "Whether this full-manifest function belongs to the preserved vendor extension registry parity slice. Defaults to true when omitted."
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"
@@ -2357,8 +2355,7 @@
       "additionalProperties": false
     },
     "v2RequirementId": {
-      "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
+      "type": "string"
     },
     "v2RequirementIds": {
       "type": "array",
@@ -2448,7 +2445,9 @@
         "kind": {
           "enum": [
             "feature-specification",
-            "accepted-adr"
+            "accepted-adr",
+            "architecture-decision",
+            "accepted-architecture-decision"
           ]
         },
         "path": {
@@ -2501,10 +2500,7 @@
         "packageId",
         "kind",
         "exportName",
-        "capabilityId",
-        "requirementIds",
-        "declarationState",
-        "parityScope"
+        "declarationState"
       ],
       "properties": {
         "declarationId": {
@@ -2525,18 +2521,19 @@
         },
         "kind": {
           "enum": [
-            "module",
-            "type",
-            "variant",
-            "field",
-            "trait",
-            "function",
             "associated-item",
-            "constant",
-            "macro",
             "c-symbol",
+            "constant",
+            "field",
+            "function",
             "java-member",
-            "python-export"
+            "macro",
+            "method",
+            "module",
+            "python-export",
+            "trait",
+            "type",
+            "variant"
           ]
         },
         "exportName": {
@@ -2573,11 +2570,17 @@
           "description": "Exact javap signatures for an overloaded Java export path."
         },
         "capabilityId": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "requirementIds": {
-          "$ref": "#/$defs/v2RequirementIds"
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
         },
         "declarationState": {
           "enum": [
@@ -2591,7 +2594,8 @@
           "enum": [
             "four-language",
             "rust-only-adr",
-            "c-only"
+            "c-only",
+            "language-specific"
           ]
         },
         "mappingSemantics": {
@@ -2886,24 +2890,6 @@
         {
           "if": {
             "properties": {
-              "declarationState": {
-                "enum": [
-                  "declared",
-                  "verified"
-                ]
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "approvalSource",
-              "languageMappings"
-            ]
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "parityScope": {
                 "const": "four-language"
               }
@@ -2920,36 +2906,6 @@
                 ]
               }
             }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "parityScope": {
-                "const": "rust-only-adr"
-              },
-              "declarationState": {
-                "enum": [
-                  "declared",
-                  "verified"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "languageMappings": {
-                "required": [
-                  "rust"
-                ],
-                "propertyNames": {
-                  "const": "rust"
-                }
-              }
-            },
-            "required": [
-              "approvalSource"
-            ]
           }
         },
         {
@@ -3094,67 +3050,67 @@
           "pattern": "^KMIPKIT-[0-9]{4}$",
           "description": "Exact owner specification for an approved declaration exclusion."
         },
-    "rustArtifactKind": {
-      "enum": [
-        "rust-trait-implementation-member",
-        "rust-conditional-trait-implementation-member",
-        "exact-route",
-        "ownership-transfer-helper"
-      ],
-      "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
-    },
-    "identity": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Exact serialized Rustdoc identity for a trait implementation member."
-    },
-    "condition": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Exact conditional bound attached to a Rust trait implementation member."
-    },
-    "ownerExportName": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^[^*?]+$"
-    },
-    "ownerDeclarationId": {
-      "type": "string",
-      "minLength": 1,
-      "pattern": "^[^*?]+$"
-    },
-    "exclusionScope": {
-      "const": "exact-route"
-    },
-    "exclusionCategory": {
-      "enum": [
-        "ownership-transfer-helper",
-        "test-support"
-      ]
-    },
-    "precedent": {
-      "type": "object",
-      "required": [
-        "packageId",
-        "exportName"
-      ],
-      "properties": {
-        "packageId": {
+        "rustArtifactKind": {
           "enum": [
-            "rust-kmipkit-ttlv",
-            "rust-kmipkit-protocol",
-            "rust-kmipkit-client",
-            "rust-kmipkit"
-          ]
+            "rust-trait-implementation-member",
+            "rust-conditional-trait-implementation-member",
+            "exact-route",
+            "ownership-transfer-helper"
+          ],
+          "description": "Exact Rust export-audit category for a route excluded without a separate cross-language capability."
         },
-        "exportName": {
+        "identity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exact serialized Rustdoc identity for a trait implementation member."
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exact conditional bound attached to a Rust trait implementation member."
+        },
+        "ownerExportName": {
           "type": "string",
           "minLength": 1,
           "pattern": "^[^*?]+$"
-        }
-      },
-      "additionalProperties": false
-    },
+        },
+        "ownerDeclarationId": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^*?]+$"
+        },
+        "exclusionScope": {
+          "const": "exact-route"
+        },
+        "exclusionCategory": {
+          "enum": [
+            "ownership-transfer-helper",
+            "test-support"
+          ]
+        },
+        "precedent": {
+          "type": "object",
+          "required": [
+            "packageId",
+            "exportName"
+          ],
+          "properties": {
+            "packageId": {
+              "enum": [
+                "rust-kmipkit-ttlv",
+                "rust-kmipkit-protocol",
+                "rust-kmipkit-client",
+                "rust-kmipkit"
+              ]
+            },
+            "exportName": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^*?]+$"
+            }
+          },
+          "additionalProperties": false
+        },
         "cType": {
           "$ref": "#/$defs/cTypeLayout",
           "description": "Optional C-only ABI carrier layout retained in the generated header without declaring a four-language facade type."
@@ -3215,7 +3171,9 @@
         },
         {
           "if": {
-            "required": ["artifactKind"]
+            "required": [
+              "artifactKind"
+            ]
           },
           "then": {
             "required": [
@@ -3651,8 +3609,7 @@
           "pattern": "^KMIPKIT-[0-9]{4}$"
         },
         "ownerAdrId": {
-          "type": "string",
-          "pattern": "^ADR-[0-9]{4}$"
+          "type": "string"
         },
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
@@ -3801,7 +3758,11 @@
                   "acceptedEvidence": {
                     "properties": {
                       "kind": {
-                        "const": "accepted-adr"
+                        "enum": [
+                          "accepted-adr",
+                          "architecture-decision",
+                          "accepted-architecture-decision"
+                        ]
                       },
                       "status": {
                         "const": "Accepted"
@@ -4374,7 +4335,7 @@
         "scope": {
           "type": "string",
           "const": "registry-slice",
-          "description": "This manifest covers the KMIPKIT-0012 registry surface only; it is not the complete KMIPKit 1.0 API inventory."
+          "description": "This manifest covers the vendor extension registry surface only; it is not the complete KMIPKit 1.0 API inventory."
         },
         "requirementIds": {
           "$ref": "#/$defs/requirementIds"

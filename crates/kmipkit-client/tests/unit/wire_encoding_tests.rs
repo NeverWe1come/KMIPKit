@@ -1,4 +1,4 @@
-//! Derived KMIPKIT-0057 selection tests, not official OASIS vectors.
+//! Derived specification requirement selection tests, not official OASIS vectors.
 //!
 //! OASIS KMIP Specification v2.1 §§10.1–10.2.3 and KMIP Profiles v2.1
 //! §§5.4.1 and 5.5.1 define the selected formats. Selection precedence,

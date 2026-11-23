@@ -1,6 +1,6 @@
 //! Derived API contract test for direct Rust users of `kmipkit-transport`.
 //!
-//! Traceability: KMIPKIT-0007-FR-005/-FR-009/-FR-013 and ADR-0014. This is not
+//! Traceability: functional requirement/-FR-009/-FR-013 and low-level transport exchange contract. This is not
 //! an official OASIS conformance test.
 
 use kmipkit_transport::{Transport, TransportError, TransportResponse};

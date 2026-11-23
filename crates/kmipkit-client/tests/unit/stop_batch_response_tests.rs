@@ -1,11 +1,11 @@
 //! Stop batch response cardinality tests derived from OASIS KMIP v2.1 §§8.3,
-//! 8.6, 9.6, 9.21, and 11.5/Table 434, and the KMIPKIT-0092
+//! 8.6, 9.6, 9.21, and 11.5/Table 434, and the specification requirement
 //! `test-batch-stop-on-first-failure` project scenario. OASIS does not
 //! explicitly require omission of unprocessed response items; the partial
-//! response rule is `KMIPKit` policy under KMIPKIT-0007-FR-018. These are
+//! response rule is `KMIPKit` policy under functional requirement. These are
 //! deterministic fake-transport tests, not official OASIS vectors.
 //!
-//! Traceability: KMIPKIT-0007-FR-006, FR-018, SC-010.
+//! Traceability: functional requirement, FR-018, SC-010.
 
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -131,7 +131,7 @@ fn partial_undo_response_remains_supported_under_kmipkit_0120() {
         Some(BATCH_ERROR_CONTINUATION_UNDO),
         &[ResponseItemFixture::failure(Some(FIRST_ID))],
     )
-    .expect("the KMIPKIT-0007 amendment preserves the approved Undo policy");
+    .expect("the specification requirement amendment preserves the approved Undo policy");
 
     assert_eq!(response.len(), 1);
     assert_eq!(

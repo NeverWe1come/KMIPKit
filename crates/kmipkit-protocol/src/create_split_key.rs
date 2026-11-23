@@ -258,7 +258,7 @@ impl CreateSplitKeyRequest {
     fn validation_report(&self) -> ValidationReport {
         if self.attributes_have_invalid_cardinality() {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -268,7 +268,7 @@ impl CreateSplitKeyRequest {
         }
         if self.validate_client_policy().is_err() {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Prime Field Size",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

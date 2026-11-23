@@ -1,5 +1,5 @@
 //! Raw TLS JSON/XML response framing under OASIS KMIP Profiles v2.1 §§5.4
-//! (XML) and 5.5 (JSON), with the connection lifecycle defined by ADR-0018.
+//! (XML) and 5.5 (JSON), with the connection lifecycle defined by multi-encoding support.
 
 use super::{ExchangeControl, minimum_response_bytes, read_response, read_text_response};
 use crate::{RequestDeliveryState, TransportCauseCategory, config::WireEncoding};

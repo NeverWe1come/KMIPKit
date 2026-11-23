@@ -1,4 +1,4 @@
-//! Open Telekom Cloud KMS / DEW, TMS, and CSMS Provider Bridge (KMIPKIT-0082).
+//! Open Telekom Cloud KMS / DEW, TMS, and CSMS Provider Bridge (Open Telekom Cloud KMS provider bridge).
 #![forbid(unsafe_code)]
 #![allow(
     clippy::missing_errors_doc,

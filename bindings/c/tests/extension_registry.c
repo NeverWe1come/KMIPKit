@@ -1,5 +1,5 @@
 /*
- * Internal FFI harness coverage for KMIPKIT-0012 User Story 3.
+ * Internal FFI harness coverage for vendor extension registry.
  *
  * This test checks that the shared corpus names and values remain present, then
  * constructs the C TTLV equivalent of `valid-recognized` from those values.
@@ -3736,6 +3736,6 @@ int main(int argc, char **argv)
     if (argc == 7) {
         puts("PASS T076 validated client returns ordered metadata and possibly-sent delivery state");
     }
-    puts("All KMIPKIT-0012 internal FFI harness tests passed.");
+    puts("All internal extension registry FFI harness tests passed.");
     return EXIT_SUCCESS;
 }

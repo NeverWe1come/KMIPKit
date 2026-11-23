@@ -9,9 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 BUILDER = ("c-kmipkit", "kmipkit_client_batch_item_get_usage_allocation")
-CAPABILITY = "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+CAPABILITY = "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
 OWNER = "specs/025-policy-controls/spec.md"
-NORMATIVE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.23-002-001"}
+NORMATIVE_REQUIREMENTS = {"KMIP-REQ-SPEC-6.1.23-002-001"}
 PARITY_TEST_EVIDENCE_ID = (
     "verification/api/tests/test_t102_get_usage_allocation_request_mapping.py"
 )
@@ -103,7 +103,7 @@ class T102GetUsageAllocationRequestMappingTests(unittest.TestCase):
         specification = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn("OASIS Key Management Interoperability Protocol Specification Version 2.1", specification)
         self.assertIn(
-            "| Get Usage Allocation | KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION | §6.1.23 | 232 | 233 | 234 |",
+            "| Get Usage Allocation | KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION | §6.1.23 | 232 | 233 | 234 |",
             specification,
         )
 

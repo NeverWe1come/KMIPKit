@@ -10,16 +10,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-CERTIFY"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.6-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-007",
+    "KMIP-REQ-SPEC-6.1.6-001",
+    "KMIP-REQ-SPEC-6.1.6-002-001",
+    "KMIP-REQ-SPEC-6.1.6-002-002",
+    "KMIP-REQ-SPEC-6.1.6-002-003",
+    "KMIP-REQ-SPEC-6.1.6-003",
+    "KMIP-REQ-SPEC-6.1.6-007",
     "KMIPKIT-0036-FR-001",
     "KMIPKIT-0036-FR-002",
     "KMIPKIT-0036-FR-003",
@@ -39,12 +39,12 @@ REQUIREMENTS = {
     "KMIPKIT-0043-FR-022",
 }
 OWNER_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.6-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-007",
+    "KMIP-REQ-SPEC-6.1.6-001",
+    "KMIP-REQ-SPEC-6.1.6-002-001",
+    "KMIP-REQ-SPEC-6.1.6-002-002",
+    "KMIP-REQ-SPEC-6.1.6-002-003",
+    "KMIP-REQ-SPEC-6.1.6-003",
+    "KMIP-REQ-SPEC-6.1.6-007",
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",

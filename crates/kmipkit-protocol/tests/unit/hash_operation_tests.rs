@@ -3,9 +3,9 @@
 //! 454. These tests do not claim an official Test Case pass.
 //!
 //! Traceability: FR-002, FR-003, FR-009, FR-010, and FR-011;
-//! `KMIPKIT-ELEM-OP-C2S-HASH`, `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-HASH-00000027`,
-//! `KMIPKIT-ELEM-ENUMERATION-HASHING-ALGORITHM`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! `KMIP-ELEM-OP-C2S-HASH`, `KMIP-ELEM-ENUM-VALUE-OPERATION-HASH-00000027`,
+//! `KMIP-ELEM-ENUMERATION-HASHING-ALGORITHM`, and
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::structure_contains_tag;

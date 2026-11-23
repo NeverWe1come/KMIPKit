@@ -280,7 +280,7 @@ impl DeriveKeyRequest {
         .is_err()
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -292,7 +292,7 @@ impl DeriveKeyRequest {
             || self.unique_identifiers.iter().any(is_id_placeholder)
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Unique Identifier",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -302,7 +302,7 @@ impl DeriveKeyRequest {
         }
         if !has_required_output_attributes(self.object_type, &self.attributes) {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -315,7 +315,7 @@ impl DeriveKeyRequest {
             .valid_for_method(self.derivation_method)
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Derivation Parameters",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -370,16 +370,16 @@ impl DerivationParameters {
                 CRYPTOGRAPHIC_PARAMETERS => (
                     "Cryptographic Parameters",
                     ItemType::Structure,
-                    "KMIPKIT-0051-R221",
+                    "PAYLOAD-RULE-R221",
                 ),
                 INITIALIZATION_VECTOR => (
                     "Initialization Vector",
                     ItemType::ByteString,
-                    "KMIPKIT-0051-R222",
+                    "PAYLOAD-RULE-R222",
                 ),
-                DERIVATION_DATA => ("Derivation Data", ItemType::ByteString, "KMIPKIT-0051-R223"),
-                SALT => ("Salt", ItemType::ByteString, "KMIPKIT-0051-R224"),
-                ITERATION_COUNT => ("Iteration Count", ItemType::Integer, "KMIPKIT-0051-R225"),
+                DERIVATION_DATA => ("Derivation Data", ItemType::ByteString, "PAYLOAD-RULE-R223"),
+                SALT => ("Salt", ItemType::ByteString, "PAYLOAD-RULE-R224"),
+                ITERATION_COUNT => ("Iteration Count", ItemType::Integer, "PAYLOAD-RULE-R225"),
                 _ => continue,
             };
             let path = crate::ValidationPath::root()
@@ -387,7 +387,7 @@ impl DerivationParameters {
                 .field("Derivation Parameters")
                 .field(name);
             let source = if item.item_type() == expected_type {
-                ValidationSourceRef::ProjectRule("KMIPKIT-0051-P005")
+                ValidationSourceRef::ProjectRule("PAYLOAD-POLICY-P005")
             } else {
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -395,7 +395,7 @@ impl DerivationParameters {
                 }
             };
             let issue_code = if item.item_type() == expected_type {
-                "KMIPKIT-0051-P005"
+                "PAYLOAD-POLICY-P005"
             } else {
                 code
             };

@@ -1,4 +1,4 @@
-"""Contract tests for the shared Python client facade (KMIPKIT-0043 T024).
+"""Contract tests for the shared Python client facade (public API binding surface T024).
 
 The client facade is a language adapter over the reviewed T076 C ABI. These
 tests intentionally do not create a real network connection; Rust/C tests own

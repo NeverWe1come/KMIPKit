@@ -2,7 +2,7 @@
 //! §6.1.41, Tables 285–287, §8.6, Table 399, and §9.12, Table 417; these are
 //! not official vectors.
 //!
-//! Traceability: KMIPKIT-0009-FR-006–FR-010. The typed Table 286 response
+//! Traceability: functional requirement–FR-010. The typed Table 286 response
 //! mapping remains excluded while KMIPKIT-DISC-039 is open.
 
 use std::cell::Cell;

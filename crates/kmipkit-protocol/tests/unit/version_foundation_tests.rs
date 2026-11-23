@@ -1,4 +1,4 @@
-//! Unit tests for multi-version protocol foundation (KMIPKIT-0069).
+//! Unit tests for multi-version protocol foundation (specification requirement).
 
 use std::cmp::Ordering;
 use std::error::Error;

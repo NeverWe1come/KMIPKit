@@ -77,7 +77,7 @@ EXCLUDED_READBACK_EXPORTS = {
 FOUR_LANGUAGE_EXPORTS = BASE_FUNCTIONAL_EXPORTS - RUST_ONLY_EXPORTS - EXCLUDED_READBACK_EXPORTS
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_SPEC_PATH = "specs/013-production-transport/spec.md"
-ADR_0014_PATH = "docs/adr/0014-public-transport-exchange-contract.md"
+ADR_0014_PATH = "docs/architecture/transport-security.md"
 T095_REQUIREMENT_IDS = {
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",

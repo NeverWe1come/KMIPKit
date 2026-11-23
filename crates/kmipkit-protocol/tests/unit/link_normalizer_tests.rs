@@ -1,4 +1,4 @@
-//! Unit tests for `LinkNormalizer` (KMIP 2.x generic link <-> KMIP 3.0 typed link) (KMIPKIT-0071).
+//! Unit tests for `LinkNormalizer` (KMIP 2.x generic link <-> KMIP 3.0 typed link) (specification requirement).
 
 use crate::link_normalizer::{LinkNormalizer, LinkType};
 use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Value};

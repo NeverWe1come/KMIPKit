@@ -3,9 +3,9 @@
 //!
 //! References: KMIP Specification v2.1 §6.1.11, Table 196; §6.1.17, Table
 //! 214; §7.9, Tables 360–361; §§8.6 and 9.17–9.18; §11.46.
-//! Traceability: `KMIPKIT-0019-FR-001`, `KMIPKIT-0019-FR-007`,
-//! `KMIPKIT-0019-FR-009`, `KMIPKIT-0019-FR-012`, and
-//! `KMIPKIT-REQ-SPEC-6.1-001-002`.
+//! Traceability: `functional requirement`, `functional requirement`,
+//! `functional requirement`, `functional requirement`, and
+//! `KMIP-REQ-SPEC-6.1-001-002`.
 
 use std::fmt;
 

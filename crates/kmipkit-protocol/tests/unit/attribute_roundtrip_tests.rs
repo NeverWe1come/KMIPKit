@@ -2,7 +2,7 @@
 
 //! Derived attribute preservation vectors for OASIS KMIP v2.1 §§4, 5.1,
 //! 5.5–5.7, §6.1.2 Tables 167–169, §6.1.20 Table 224, §11.1 Table 429, and
-//! §11.56. Traceability: KMIPKIT-0016-FR-011 and SC-005. These tests are
+//! §11.56. Traceability: functional requirement and SC-005. These tests are
 //! derived structural checks and do not claim official OASIS conformance.
 
 use crate::{
@@ -141,7 +141,7 @@ fn add_attribute_preserves_assigned_and_extension_tagged_new_values() {
     // OASIS KMIP v2.1 §5.7, Table 163 defines New Attribute as one direct
     // generic Item. §6.1.2, Table 167 carries it in Add Attribute. Assigned
     // tags and §11.56 Table 487 extension Tags keep their complete tag and value under
-    // the accepted KMIPKIT-0004/ADR-0010 allocation policy.
+    // the accepted specification requirement/tag allocation precedence allocation policy.
     let cases = [
         (
             COMMENT,
@@ -314,8 +314,8 @@ fn adjust_attribute_preserves_valid_extension_enumeration_values() {
 #[test]
 fn adjust_attribute_rejects_reserved_attribute_reference_tags() {
     // OASIS KMIP v2.1 §11.56 Table 487 classifies the KMIP Tag values. The outbound
-    // rejection of Reserved or unallocated raw tags follows KMIPKIT-0004 and
-    // accepted ADR-0010 allocation policy; this is not an OASIS conformance
+    // rejection of Reserved or unallocated raw tags follows specification requirement and
+    // accepted tag allocation precedence allocation policy; this is not an OASIS conformance
     // assertion about a receiver's behavior.
     let request = AdjustAttributeRequest::new(
         None,

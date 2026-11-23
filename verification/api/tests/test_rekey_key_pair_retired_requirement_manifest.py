@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
-REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.47-004-002"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+REQUIREMENT_ID = "KMIP-REQ-SPEC-6.1.47-004-002"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 EXPECTED_DECLARATION_IDS = {
     "rust-observed-b467bfa3e40d71f19254",
     "rust-observed-cc9dd6c8044970a53510",

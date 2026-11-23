@@ -2,7 +2,7 @@
 
 //! Fake-transport Obtain Lease contracts from OASIS KMIP v2.1 §6.1.35,
 //! Tables 268–270. Stable requirement coverage:
-//! `KMIPKIT-REQ-SPEC-6.1.35-001-001`, `-001-002`, `-002`, and `-005`.
+//! `KMIP-REQ-SPEC-6.1.35-001-001`, `-001-002`, `-002`, and `-005`.
 //! Shared Pending and delivery behavior follows KMIP v2.1 §§8.6, 9.1, and
 //! 9.2. These are derived tests, not official OASIS Test Case executions.
 

@@ -1,4 +1,4 @@
-//! Tape Library Alternative Name negative evidence (KMIPKIT-0125-FR-006).
+//! Tape Library Alternative Name negative evidence (functional requirement).
 //!
 //! OASIS KMIP Profiles v2.1 §5.12.3 (`KMIPKIT-REQ-PROF-5.12.3-003`) forbids a
 //! Tape Library client from using the barcode in Alternative Name to locate an

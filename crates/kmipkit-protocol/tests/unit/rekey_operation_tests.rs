@@ -1,5 +1,5 @@
 //! Re-key contracts from OASIS KMIP Specification v2.1 §6.1.46, Tables
-//! 303–307. Traceability: `KMIPKIT-REQ-SPEC-6.1.46-001`, `-004-001`, and
+//! 303–307. Traceability: `KMIP-REQ-SPEC-6.1.46-001`, `-004-001`, and
 //! `-004-002`. Catalog cases CN01-2-76 through -87 have no pinned fixtures;
 //! these are source-derived tests, not official OASIS Test Case executions.
 

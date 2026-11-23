@@ -1,4 +1,4 @@
-# KMIPKIT-0013 dependency review
+# Transport dependency review
 
 The initial dependency assessments below are historical and include Hickory.
 See [T003a current-graph re-review](#t003a-current-graph-re-review-2026-10-08)
@@ -173,7 +173,7 @@ manifest labels its workspace `0.27.0-alpha.1` and has updated
 0.10. This appears to address the Hickory side of the Core Foundation
 duplicate once a reviewed, published release is available, but
 `cargo info hickory-resolver@0.27.0-alpha.1` cannot resolve that version from
-crates.io today. A git dependency is prohibited by KMIPKIT-0011. The upstream
+crates.io today. A git dependency is prohibited by the specification. The upstream
 references checked were [Hickory releases](https://github.com/hickory-dns/hickory-dns/releases),
 the [Hickory 0.26.3 manifest](https://github.com/hickory-dns/hickory-dns/blob/v0.26.3/Cargo.toml),
 the [current Hickory manifest](https://github.com/hickory-dns/hickory-dns/blob/main/Cargo.toml),
@@ -203,7 +203,7 @@ that dependency pair. It does not remove the workspace's `syn` 2/3 duplicate,
 which remains reachable through Hickory's macro and ICU/IDNA dependency graph.
 The candidate also changes the security-framework major version from 3 to 2
 and downgrades the explicitly selected native-certificate loader. The accepted
-KMIPKIT-0013 platform-trust table selects `rustls-native-certs` 0.8.4, and
+the transport subsystem platform-trust table selects `rustls-native-certs` 0.8.4, and
 research decision D5 records the same version; this alternative therefore
 requires a specification review before replacing the approved selection. The
 probe ran in a temporary project; it did not modify the repository manifests
@@ -268,17 +268,17 @@ removal or renewal before expiry.
 
 | Exception | Exact scope | Current dependency path |
 |---|---|---|
-| `KMIPKIT-0011-EX-001` | `core-foundation@0.9.4` | Hickory 0.26.3 → `system-configuration` 0.7.0 |
-| `KMIPKIT-0011-EX-002` | `core-foundation@0.10.1` | `rustls-native-certs` 0.8.4 → `security-framework` 3.7.0 |
-| `KMIPKIT-0011-EX-003` | `syn@2.0.119` | JNI macros, `serde_derive`, and test dependencies |
-| `KMIPKIT-0011-EX-004` | `syn@3.0.6` | Hickory/ICU derive chain, including patched `zerovec-derive` 0.11.6 |
+| `the specification-EX-001` | `core-foundation@0.9.4` | Hickory 0.26.3 → `system-configuration` 0.7.0 |
+| `the specification-EX-002` | `core-foundation@0.10.1` | `rustls-native-certs` 0.8.4 → `security-framework` 3.7.0 |
+| `the specification-EX-003` | `syn@2.0.119` | JNI macros, `serde_derive`, and test dependencies |
+| `the specification-EX-004` | `syn@3.0.6` | Hickory/ICU derive chain, including patched `zerovec-derive` 0.11.6 |
 
 No global duplicate allowance or `skip-tree` entry was added. Reassess these
 exact scopes when the dependency graph changes and remove them when upstream
 constraints converge. Preserve `zerovec` 0.11.8 and `zerovec-derive` 0.11.6
 or later patched releases; do not align the `syn` versions by downgrading to
 the vulnerable releases described above. Changing the accepted resolver or
-platform-trust dependency design still requires review of KMIPKIT-0013.
+platform-trust dependency design still requires review of the transport subsystem.
 
 **Approved license decision (2026-10-07):** The KMIPKit maintainer
 (@NeverWe1come) reviewed the locked package license evidence and the standard
@@ -362,7 +362,7 @@ are absent from the active graph. Tokio still enables `net`, `rt`, `sync`,
 and `time` for the planned `ToSocketAddrs`/`spawn_blocking` implementation.
 
 The Hickory removal eliminated the two duplicated `core-foundation` versions
-that had motivated exception IDs `KMIPKIT-0011-EX-001` and `EX-002`. Both
+that had motivated exception IDs `the specification-EX-001` and `EX-002`. Both
 records were removed from the canonical exception register and `.cargo/deny.toml`
 because cargo-deny no longer reports either finding. No new exception was
 added. The current graph still requires the exact `syn` 2 and 3 versions;
@@ -384,7 +384,7 @@ Verification after the manifest and lockfile change:
   `x86_64-pc-windows-msvc` with cargo-deny 0.20.2. Root and fuzz scans both
   refreshed the RustSec database to
   `b8a1a33e246a0a9a3b5f377248c41a503defec74` (2026-10-07T16:40:27+02:00),
-  validated only `KMIPKIT-0011-EX-003` and `EX-004`, and confirmed both
+  validated only `the specification-EX-003` and `EX-004`, and confirmed both
   lockfiles were unchanged during the policy run.
 - `cargo check -p kmipkit-transport --lib --locked --offline` passed on
   Windows using rustc 1.99.0 and the AWS-LC native build path.

@@ -7,7 +7,7 @@
 //! §§5.6–5.7 Tables 162–163; Attribute Reference forms follow §5.5 Table 161;
 //! Vendor Attribute follows §4.60 Table 150. Standard attribute mutation
 //! policy is sourced from §4.1–§4.63 attribute tables and the generated
-//! catalog policy (KMIPKIT-0016 FR-003–FR-005, FR-008–FR-010, FR-012, FR-015;
+//! catalog policy (specification requirement FR-003–FR-005, FR-008–FR-010, FR-012, FR-015;
 //! SC-003, SC-007, SC-008). These are derived project tests, not official
 //! OASIS conformance-case claims.
 
@@ -32,7 +32,7 @@ use crate::{
     ClientOperation, ClientRequest,
 };
 
-// Consume the same generated source policy used by KMIPKit-0016 T040. Keeping
+// Consume the generated source attribute policy directly. Keeping
 // this test view tied to the generator output makes the rejection matrix
 // exhaustive for its unconditional entries without copying policy metadata.
 #[path = "../../../kmipkit-protocol/src/generated/attribute_policy.rs"]
@@ -1101,7 +1101,7 @@ fn every_inspectable_vendor_attribute_y_value_and_name_reference_is_rejected() {
     assert_eq!(VENDOR_ATTRIBUTE_POLICY.source_refs[0].section, "4.60");
     assert_eq!(
         VENDOR_ATTRIBUTE_POLICY.member_element_id,
-        "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
+        "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION"
     );
     assert_eq!(
         VENDOR_ATTRIBUTE_POLICY.source_indicates_origin,
@@ -1312,7 +1312,7 @@ fn known_attribute_type_mismatch_is_rejected_before_exchange() {
 fn tag_reference_and_unknown_attribute_cases() -> Vec<ServerAuthoritativeCase> {
     // Table 161 tag form carries no Vendor Identification. The unknown tag is
     // in the §11.56 Table 487 Extensions range 0x540000–0x54FFFF and is
-    // allocation-valid under KMIPKit-0004/ADR-0010, without a policy entry.
+    // allocation-valid under tag allocation precedence, without a policy entry.
     vec![
         (
             ClientRequest::adjust_attribute(AdjustAttributeRequest::new(

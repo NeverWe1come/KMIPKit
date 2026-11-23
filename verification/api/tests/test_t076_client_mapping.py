@@ -2372,7 +2372,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 declaration = declarations[export_name]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE",
+                    "KMIP-ELEM-OP-C2S-DELETE-ATTRIBUTE",
                     declaration["capabilityId"],
                 )
                 self.assertEqual(
@@ -2382,7 +2382,7 @@ class T076ClientMappingTests(unittest.TestCase):
         operation = next(
             row
             for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-DELETE-ATTRIBUTE"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-DELETE-ATTRIBUTE"
         )
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
@@ -2411,7 +2411,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 declaration = declarations[export_name]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+                    "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
                     declaration["capabilityId"],
                 )
                 self.assertEqual(
@@ -2421,7 +2421,7 @@ class T076ClientMappingTests(unittest.TestCase):
         operation = next(
             row
             for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE"
         )
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
@@ -2439,7 +2439,7 @@ class T076ClientMappingTests(unittest.TestCase):
 
     def test_add_and_adjust_attribute_operations_have_four_language_parity_evidence(self) -> None:
         evidence_by_operation = {
-            "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE": {
+            "KMIP-ELEM-OP-C2S-ADD-ATTRIBUTE": {
                 "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs",
                 "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
                 "crates/kmipkit-ffi/tests/support/add_attribute_abi_tests.rs",
@@ -2449,7 +2449,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 "bindings/python/tests/test_add_attribute_operation.py",
                 "verification/api/tests/test_t076_client_mapping.py",
             },
-            "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
+            "KMIP-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
                 "crates/kmipkit-protocol/tests/unit/adjust_attribute_tests.rs",
                 "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs",
                 "crates/kmipkit-ffi/tests/support/adjust_attribute_abi_tests.rs",
@@ -2479,7 +2479,7 @@ class T076ClientMappingTests(unittest.TestCase):
 
     def test_add_and_adjust_declarations_link_client_execution_parity(self) -> None:
         declaration_ids_by_operation = {
-            "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE": {
+            "KMIP-ELEM-OP-C2S-ADD-ATTRIBUTE": {
                 "T037:addAttribute:constructor:c",
                 "T037:addAttribute:result:typed:c",
                 "T037:addAttribute:constructor:java",
@@ -2491,7 +2491,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 "T037:addAttribute:result:type:python",
                 "T037:addAttribute:result:uniqueIdentifier:python",
             },
-            "KMIPKIT-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
+            "KMIP-ELEM-OP-C2S-ADJUST-ATTRIBUTE": {
                 "T037:adjustAttribute:constructor:c",
                 "T037:adjustAttribute:result:typed:c",
                 "T037:adjustAttribute:constructor:java",
@@ -2544,7 +2544,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 declaration = declarations[export_name]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
+                    "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE",
                     declaration["capabilityId"],
                 )
                 self.assertEqual(
@@ -2559,7 +2559,7 @@ class T076ClientMappingTests(unittest.TestCase):
         operation = next(
             row
             for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE"
         )
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
@@ -2633,7 +2633,7 @@ class T076ClientMappingTests(unittest.TestCase):
                 declaration = declarations[export_name]
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertEqual(
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                    "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES",
                     declaration["capabilityId"],
                 )
                 self.assertEqual(
@@ -2643,7 +2643,7 @@ class T076ClientMappingTests(unittest.TestCase):
         operation = next(
             row
             for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES"
         )
         self.assertEqual("verified", operation["apiState"])
         self.assertNotIn("blockedReason", operation)
@@ -4472,11 +4472,11 @@ class T076ClientMappingTests(unittest.TestCase):
         functions = {row["id"]: row for row in self.manifest["functions"]}
         operations = {row["name"]: row for row in self.manifest["operations"]}
         expected = {
-            "Poll": ("KMIPKIT-ELEM-OP-C2S-POLL", "client_execute_poll"),
-            "Cancel": ("KMIPKIT-ELEM-OP-C2S-CANCEL", "client_execute_cancel"),
-            "Process": ("KMIPKIT-ELEM-OP-C2S-PROCESS", "client_execute_process"),
+            "Poll": ("KMIP-ELEM-OP-C2S-POLL", "client_execute_poll"),
+            "Cancel": ("KMIP-ELEM-OP-C2S-CANCEL", "client_execute_cancel"),
+            "Process": ("KMIP-ELEM-OP-C2S-PROCESS", "client_execute_process"),
             "Query Asynchronous Requests": (
-                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+                "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
                 "client_execute_query_async_requests",
             ),
         }

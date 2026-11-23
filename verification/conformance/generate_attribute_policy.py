@@ -23,7 +23,7 @@ OUTPUT_PATH = "crates/kmipkit-protocol/src/generated/attribute_policy.rs"
 _TAG_VALUE = re.compile(r"(?:0[xX])?([0-9A-Fa-f]{6})\Z")
 _SOURCE_POLICY_COUNT = 62
 _RUNTIME_POLICY_COUNT = 61
-_CERTIFICATE_ATTRIBUTES_ID = "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
+_CERTIFICATE_ATTRIBUTES_ID = "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES"
 _MULTI_INSTANCE_POLICIES = {
     "No": "Single",
     "Yes": "Multiple",
@@ -321,7 +321,7 @@ def _versioned_policies(
                 continue
             seen_tags.add(tag)
             section = entry.get("attribute_section", "4")
-            elem_id = "KMIPKIT-ELEM-ATTRIBUTE-V30-" + re.sub(r"[^A-Z0-9]+", "-", entry["name"].upper()).strip("-")
+            elem_id = "KMIP-ELEM-ATTRIBUTE-V30-" + re.sub(r"[^A-Z0-9]+", "-", entry["name"].upper()).strip("-")
             merged.append(
                 {
                     "tag": tag,

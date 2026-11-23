@@ -2,14 +2,14 @@
 //! §6.1.50, Tables 319–321. These tests are source-derived, not official
 //! Test Case passes.
 //!
-//! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-002–SC-003. This is Rust-only
+//! Traceability: specification requirement FR-001–FR-008, SC-002–SC-003. This is Rust-only
 //! fake-transport evidence; it does not establish cross-language parity or
 //! two-server interoperability.
-//! `KMIPKIT-ELEM-OP-C2S-RNG-SEED`,
-//! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIPKIT-REQ-SPEC-6.1.50-001`.
+//! `KMIP-ELEM-OP-C2S-RNG-SEED`,
+//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`,
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
+//! `KMIP-REQ-SPEC-6.1.50-001`.
 
 use kmipkit_protocol::{ProtocolCauseCategory, RngSeedRequest, SecretBytes};
 use kmipkit_test_support::ExchangeScript;

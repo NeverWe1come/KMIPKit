@@ -61,7 +61,7 @@ PROFILE_EVIDENCE_FOR_DEFERRED_OWNER_REQUIREMENTS = frozenset(
     {
         # KMIPKIT-0007 defers countdown-derived timestamp generation, while
         # KMIPKIT-0010 separately verifies the caller-facing relative-date capability.
-        "KMIPKIT-REQ-SPEC-9.20-001-002",
+        "KMIP-REQ-SPEC-9.20-001-002",
     }
 )
 TABLE_HEADER_REJECTION_DISPOSITIONS = frozenset(
@@ -87,201 +87,201 @@ def _is_required_table_body_requirement(requirement: dict[str, Any]) -> bool:
 
 OPTIONAL_CAPABILITY_TEST_REQUIREMENTS = {
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_register_opaque_object_context_custom_attributes": (
-        "KMIPKIT-REQ-SPEC-2.3-001",
+        "KMIP-REQ-SPEC-2.3-001",
     ),
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_get_attributes_opaque_object_custom_context": (
-        "KMIPKIT-REQ-SPEC-2.3-001",
+        "KMIP-REQ-SPEC-2.3-001",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_preserves_key_value_attributes_associated_with_raw_key_material": (
-        "KMIPKIT-REQ-SPEC-3.2-001",
+        "KMIP-REQ-SPEC-3.2-001",
     ),
     "crates/kmipkit-client/tests/unit/create_key_pair_execution_tests.rs::create_key_pair_sends_client_supplied_dsa_domain_parameter_qlength": (
-        "KMIPKIT-REQ-SPEC-4.14-001-001",
+        "KMIP-REQ-SPEC-4.14-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_raw_key_format_for_server_generated_create": (
-        "KMIPKIT-REQ-SPEC-4.26-001",
+        "KMIP-REQ-SPEC-4.26-001",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_nist_symmetric_data_encryption_key_type": (
-        "KMIPKIT-REQ-SPEC-4.34-001-001",
+        "KMIP-REQ-SPEC-4.34-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_can_omit_original_creation_date_when_registering": (
-        "KMIPKIT-REQ-SPEC-4.38-001-001",
+        "KMIP-REQ-SPEC-4.38-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_client_supplied_original_creation_date_on_register": (
-        "KMIPKIT-REQ-SPEC-4.38-001-002",
+        "KMIP-REQ-SPEC-4.38-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_original_creation_date_as_new_attribute": (
-        "KMIPKIT-REQ-SPEC-4.38-001-003",
+        "KMIP-REQ-SPEC-4.38-001-003",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_encodes_application_namespace_without_application_data": (
-        "KMIPKIT-REQ-SPEC-4.4-001",
+        "KMIP-REQ-SPEC-4.4-001",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_encodes_rng_algorithm_directly_on_register": (
-        "KMIPKIT-REQ-SPEC-4.46-001-001",
+        "KMIP-REQ-SPEC-4.46-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/add_attribute_tests.rs::request_encodes_rng_algorithm_directly_in_new_attribute": (
-        "KMIPKIT-REQ-SPEC-4.46-001-002",
+        "KMIP-REQ-SPEC-4.46-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::property_roundtrips_ordered_repeated_direct_attribute_items": (
-        "KMIPKIT-REQ-SPEC-5.1-002",
+        "KMIP-REQ-SPEC-5.1-002",
     ),
     "crates/kmipkit-protocol/tests/unit/get_attributes_tests.rs::request_follows_table_223_order_and_allows_repeated_reference_fields": (
-        "KMIPKIT-REQ-SPEC-6.1.20-004",
+        "KMIP-REQ-SPEC-6.1.20-004",
     ),
     "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_omits_current_attribute_without_selecting_an_instance_locally": (
-        "KMIPKIT-REQ-SPEC-6.1.34-001-001",
+        "KMIP-REQ-SPEC-6.1.34-001-001",
     ),
     "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::single_item_request_may_include_or_omit_unique_batch_item_id": (
         "KMIPKIT-REQ-PROF-4.1.2-007",
     ),
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs::request_requires_key_algorithm_and_length_in_attributes_or_key_block": (
-        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
+        "KMIP-REQ-SPEC-6.1.43-009-001",
+        "KMIP-REQ-SPEC-6.1.43-010-001",
     ),
     "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs::request_without_request_value_requires_public_key_identifier_and_certificate_type_attribute": (
-        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
+        "KMIP-REQ-SPEC-6.1.6-002-001",
     ),
     "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_can_produce_the_placeholder_for_a_get_in_the_same_batch": (
-        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIP-REQ-SPEC-6.1.6-003",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::explicit_id_placeholder_get_after_certify_is_sent_once": (
-        "KMIPKIT-REQ-SPEC-6.1.6-003",
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1.6-003",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_and_no_placeholder_producer_is_rejected_before_send": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::get_without_identifier_is_rejected_when_batch_order_is_false": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_requires_a_placeholder_producer": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::attribute_lookup_without_identifier_is_allowed_after_a_placeholder_producer": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::export_without_identifier_and_no_placeholder_producer_is_rejected_before_send": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::create_split_key_can_select_a_preceding_placeholder_before_producing_its_result": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once": (
-        "KMIPKIT-REQ-SPEC-6.1.7-003",
-        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-        "KMIPKIT-REQ-SPEC-6.1.7-005",
+        "KMIP-REQ-SPEC-6.1.7-003",
+        "KMIP-REQ-SPEC-6.1.7-004-001",
+        "KMIP-REQ-SPEC-6.1.7-005",
     ),
     "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks": (
-        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
+        "KMIP-REQ-SPEC-6.1.7-004-002",
     ),
     "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs::request_emits_table_300_fields_once_in_order_and_preserves_values": (
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+        "KMIP-REQ-SPEC-6.1.45-006-001",
     ),
     "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs::request_emits_table_305_fields_once_in_order_and_preserves_values": (
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
+        "KMIP-REQ-SPEC-6.1.46-004-001",
     ),
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs::request_emits_table_310_fields_once_in_order_and_preserves_groups": (
-        "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+        "KMIP-REQ-SPEC-6.1.47-004-001",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::wrapped_pgp_key_accepts_key_wrap_type": (
-        "KMIPKIT-REQ-SPEC-3.3-001-001",
+        "KMIP-REQ-SPEC-3.3-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping": (
-        "KMIPKIT-REQ-SPEC-3.3-001-001",
+        "KMIP-REQ-SPEC-3.3-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices": (
-        "KMIPKIT-REQ-SPEC-3.3-001-002",
+        "KMIP-REQ-SPEC-3.3-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data": (
-        "KMIPKIT-REQ-SPEC-3.3-001-002",
+        "KMIP-REQ-SPEC-3.3-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::import_preserves_wrapped_secret_data_without_key_wrap_type": (
-        "KMIPKIT-REQ-SPEC-2.7-001",
+        "KMIP-REQ-SPEC-2.7-001",
     ),
     "crates/kmipkit-protocol/tests/unit/cryptographic_parameters_tests.rs::omitted_cryptographic_parameters_remain_absent_without_validation": (
-        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIP-REQ-SPEC-4.16-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them": (
-        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIP-REQ-SPEC-4.16-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them": (
-        "KMIPKIT-REQ-SPEC-4.16-001-001",
+        "KMIP-REQ-SPEC-4.16-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_emits_table_295_fields_in_order_and_preserves_open_reason": (
-        "KMIPKIT-REQ-SPEC-4.47-001-001",
+        "KMIP-REQ-SPEC-4.47-001-001",
     ),
     "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs::request_encodes_optional_audit_message_inside_revocation_reason_structure": (
-        "KMIPKIT-REQ-SPEC-4.47-001-002",
+        "KMIP-REQ-SPEC-4.47-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order": (
-        "KMIPKIT-REQ-SPEC-5.2-002",
+        "KMIP-REQ-SPEC-5.2-002",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response": (
-        "KMIPKIT-REQ-SPEC-6.1-001-001",
+        "KMIP-REQ-SPEC-6.1-001-001",
     ),
     "crates/kmipkit-client/tests/unit/encrypt_decrypt_id_placeholder_execution_tests.rs::later_encrypt_omits_identifier_with_batch_order_enabled": (
-        "KMIPKIT-REQ-SPEC-6.1-001-003",
+        "KMIP-REQ-SPEC-6.1-001-003",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::request_keeps_the_required_empty_attributes_structure_without_synthesizing_fields": (
-        "KMIPKIT-REQ-SPEC-6.1-004",
+        "KMIP-REQ-SPEC-6.1-004",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_only_oasis_fixtures_decode_with_the_expected_fields": (
-        "KMIPKIT-REQ-SPEC-6.1-004",
+        "KMIP-REQ-SPEC-6.1-004",
     ),
     "crates/kmipkit-protocol/tests/unit/create_tests.rs::create_preserves_two_repeated_object_group_text_values_in_order": (
-        "KMIPKIT-REQ-SPEC-4.35-001-001",
-        "KMIPKIT-REQ-SPEC-4.35-001-002",
+        "KMIP-REQ-SPEC-4.35-001-001",
+        "KMIP-REQ-SPEC-4.35-001-002",
     ),
     "crates/kmipkit-protocol/tests/unit/locate_tests.rs::locate_encodes_key_value_present_boolean_as_a_search_criterion": (
-        "KMIPKIT-REQ-SPEC-4.28-001-003",
+        "KMIP-REQ-SPEC-4.28-001-003",
     ),
     "crates/kmipkit-protocol/tests/unit/get_tests.rs::get_preserves_repeated_attribute_names_in_valid_wrapping_specification": (
-        "KMIPKIT-REQ-SPEC-7.18-006",
+        "KMIP-REQ-SPEC-7.18-006",
     ),
     "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions": (
-        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIP-REQ-SPEC-6.1.35-001-001",
+        "KMIP-REQ-SPEC-6.1.35-002",
     ),
     "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once": (
-        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.35-002",
+        "KMIP-REQ-SPEC-6.1.35-001-001",
+        "KMIP-REQ-SPEC-6.1.35-002",
     ),
     "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval": (
-        "KMIPKIT-REQ-SPEC-6.1.35-005",
+        "KMIP-REQ-SPEC-6.1.35-005",
     ),
     "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_produces_id_placeholder_for_a_later_identifier_omitting_operation": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion": (
-        "KMIPKIT-REQ-SPEC-6.1.4-001",
+        "KMIP-REQ-SPEC-6.1.4-001",
     ),
     "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation": (
-        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
+        "KMIP-REQ-SPEC-6.1.42-001-001",
     ),
     "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges": (
-        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        "KMIP-REQ-SPEC-6.1.42-001-002",
     ),
     "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_preserves_caller_supplied_opaque_key_value_bytes_with_wrapping_data_from_table_291": (
-        "KMIPKIT-REQ-SPEC-6.1.43-005",
+        "KMIP-REQ-SPEC-6.1.43-005",
     ),
 }
 
 
 ID_PLACEHOLDER_REGRESSION_TEST_REQUIREMENTS = {
     "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_in_certify_import_join_split_key_and_recertify_is_a_consumer": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-client/tests/unit/execute_id_placeholder_tests.rs::explicit_id_placeholder_consumers_including_certify_reject_false_batch_order_before_send": (
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
+        "KMIP-REQ-SPEC-6.1-003-002",
     ),
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_malformed_certify_identifier_for_omitted_request_value": (
-        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
+        "KMIP-REQ-SPEC-6.1.6-002-002",
     ),
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_without_a_preceding_producer": (
-        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIP-REQ-SPEC-6.1.6-003",
     ),
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_rejects_get_id_placeholder_when_batch_order_is_false": (
-        "KMIPKIT-REQ-SPEC-6.1.6-003",
+        "KMIP-REQ-SPEC-6.1.6-003",
     ),
 }
 
@@ -854,169 +854,169 @@ def pinned_source_excerpt(relative_path: str, line_range: list[int]) -> str:
 
 OFFICIAL_NON_OPERATION_TEST_ELEMENTS = {
             "KMIPKIT-TEST-CN01-2-11": {
-                "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-DISTINGUISHED-NAME",
-                "KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE",
+                "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES",
+                "KMIP-ELEM-STRUCTURE-MEMBER-4-63-SUBJECT-DISTINGUISHED-NAME",
+                "KMIP-ELEM-OBJECT-TYPE-CERTIFICATE",
             },
-            "KMIPKIT-TEST-CN01-2-12": {"KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"},
-            "KMIPKIT-TEST-CN01-2-13": {"KMIPKIT-ELEM-TAG-420105", "KMIPKIT-ELEM-TAG-420106"},
-            "KMIPKIT-TEST-CN01-2-14": {"KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006"},
-            "KMIPKIT-TEST-CN01-2-15": {"KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA256-00000009"},
-            "KMIPKIT-TEST-CN01-2-16": {"KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
-            "KMIPKIT-TEST-CN01-2-17": {"KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
+            "KMIPKIT-TEST-CN01-2-12": {"KMIP-ELEM-OBJECT-TYPE-SECRET-DATA"},
+            "KMIPKIT-TEST-CN01-2-13": {"KMIP-ELEM-TAG-420105", "KMIP-ELEM-TAG-420106"},
+            "KMIPKIT-TEST-CN01-2-14": {"KMIP-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006"},
+            "KMIPKIT-TEST-CN01-2-15": {"KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-HMAC-SHA256-00000009"},
+            "KMIPKIT-TEST-CN01-2-16": {"KMIP-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
+            "KMIPKIT-TEST-CN01-2-17": {"KMIP-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001"},
             "KMIPKIT-TEST-CN01-2-18": {
-                "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
-                "KMIPKIT-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006",
+                "KMIP-ELEM-ENUM-VALUE-DERIVATION-METHOD-PBKDF2-00000001",
+                "KMIP-ELEM-ENUM-VALUE-HASHING-ALGORITHM-SHA-256-00000006",
             },
             "KMIPKIT-TEST-CN01-2-19": {
-                "KMIPKIT-ELEM-ENUM-VALUE-DERIVATION-METHOD-ASYMMETRIC-KEY-00000008",
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDH-0000000E",
+                "KMIP-ELEM-ENUM-VALUE-DERIVATION-METHOD-ASYMMETRIC-KEY-00000008",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDH-0000000E",
             },
             "KMIPKIT-TEST-CN01-2-34": {
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-ECPRIVATEKEY-00000006",
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
-                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+                "KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-ECPRIVATEKEY-00000006",
+                "KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIP-ELEM-OBJECT-TYPE-PRIVATE-KEY",
             },
             "KMIPKIT-TEST-CN01-2-35": {
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-8-00000004",
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
-                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+                "KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-8-00000004",
+                "KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIP-ELEM-OBJECT-TYPE-PRIVATE-KEY",
             },
             "KMIPKIT-TEST-CN01-2-36": {
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
-                "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
+                "KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-X-509-00000005",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EC-0000001A",
+                "KMIP-ELEM-OBJECT-TYPE-PUBLIC-KEY",
             },
             "KMIPKIT-TEST-CN01-2-37": {
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
-                "KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY",
-                "KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+                "KMIP-ELEM-OBJECT-TYPE-PRIVATE-KEY",
+                "KMIP-ELEM-OBJECT-TYPE-PUBLIC-KEY",
             },
             "KMIPKIT-TEST-CN01-2-38": {
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
-                "KMIPKIT-ELEM-TAG-420107",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-ECDSA-00000006",
+                "KMIP-ELEM-TAG-420107",
             },
             "KMIPKIT-TEST-CN01-2-39": {
-                "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
-                "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
+                "KMIP-ELEM-ATTRIBUTE-EXTRACTABLE",
+                "KMIP-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
             },
-            "KMIPKIT-TEST-CN01-2-40": {"KMIPKIT-ELEM-ATTRIBUTE-NAME"},
-            "KMIPKIT-TEST-CN01-2-41": {"KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME"},
-            "KMIPKIT-TEST-CN01-2-42": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
-            "KMIPKIT-TEST-CN01-2-61": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
-            "KMIPKIT-TEST-CN01-2-62": {"KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
+            "KMIPKIT-TEST-CN01-2-40": {"KMIP-ELEM-ATTRIBUTE-NAME"},
+            "KMIPKIT-TEST-CN01-2-41": {"KMIP-ELEM-ATTRIBUTE-ALTERNATIVE-NAME"},
+            "KMIPKIT-TEST-CN01-2-42": {"KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
+            "KMIPKIT-TEST-CN01-2-61": {"KMIP-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
+            "KMIPKIT-TEST-CN01-2-62": {"KMIP-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL"},
             "KMIPKIT-TEST-CN01-2-63": {
-                "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+                "KMIP-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+                "KMIP-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
             },
-            "KMIPKIT-TEST-CN01-2-64": {"KMIPKIT-ELEM-TAG-420058"},
-            "KMIPKIT-TEST-CN01-2-65": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
-            "KMIPKIT-TEST-CN01-2-66": {"KMIPKIT-ELEM-ATTRIBUTE-LINK"},
-            "KMIPKIT-TEST-CN01-2-68": {"KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
-            "KMIPKIT-TEST-CN01-2-69": {"KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
-            "KMIPKIT-TEST-CN01-2-88": {"KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR"},
-            "KMIPKIT-TEST-CN01-2-89": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-64": {"KMIP-ELEM-TAG-420058"},
+            "KMIPKIT-TEST-CN01-2-65": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-66": {"KMIP-ELEM-ATTRIBUTE-LINK"},
+            "KMIPKIT-TEST-CN01-2-68": {"KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
+            "KMIPKIT-TEST-CN01-2-69": {"KMIP-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-PKCS-12-00000016"},
+            "KMIPKIT-TEST-CN01-2-88": {"KMIP-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR"},
+            "KMIPKIT-TEST-CN01-2-89": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
             "KMIPKIT-TEST-CN01-2-91": {
-                "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
-                "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+                "KMIP-ELEM-ATTRIBUTE-SENSITIVE",
+                "KMIP-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
             },
-            "KMIPKIT-TEST-CN01-2-95": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
-            "KMIPKIT-TEST-CN01-2-96": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
-            "KMIPKIT-TEST-CN01-2-97": {"KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY"},
+            "KMIPKIT-TEST-CN01-2-95": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-96": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-97": {"KMIP-ELEM-OBJECT-TYPE-SPLIT-KEY"},
             "KMIPKIT-TEST-CN01-2-98": {
-                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
-                "KMIPKIT-ELEM-ENUM-VALUE-SPLIT-KEY-METHOD-XOR-00000001",
+                "KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIP-ELEM-ENUM-VALUE-SPLIT-KEY-METHOD-XOR-00000001",
             },
-            "KMIPKIT-TEST-CN01-2-99": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
-            "KMIPKIT-TEST-CN01-2-100": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
-            "KMIPKIT-TEST-CN01-2-101": {"KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-99": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-100": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
+            "KMIPKIT-TEST-CN01-2-101": {"KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY"},
             "KMIPKIT-TEST-CN01-2-108": {
-                "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
+                "KMIP-ELEM-ENUMERATION-KEY-WRAP-TYPE",
+                "KMIP-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
             },
             "KMIPKIT-TEST-CN01-2-109": {
-                "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
-                "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001",
+                "KMIP-ELEM-ENUMERATION-KEY-WRAP-TYPE",
+                "KMIP-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001",
             },
             "KMIPKIT-TEST-PROF-5-3-3-1": {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIP-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
             },
             "KMIPKIT-TEST-PROF-5-4-4-1": {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIP-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
             },
             "KMIPKIT-TEST-PROF-5-5-4-1": {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
-                "KMIPKIT-ELEM-TAG-42000D",
-                "KMIPKIT-ELEM-TAG-42000F",
-                "KMIPKIT-ELEM-TAG-420050",
-                "KMIPKIT-ELEM-TAG-420057",
-                "KMIPKIT-ELEM-TAG-420069",
-                "KMIPKIT-ELEM-TAG-42006A",
-                "KMIPKIT-ELEM-TAG-42006B",
-                "KMIPKIT-ELEM-TAG-420074",
-                "KMIPKIT-ELEM-TAG-420077",
-                "KMIPKIT-ELEM-TAG-420078",
-                "KMIPKIT-ELEM-TAG-420079",
-                "KMIPKIT-ELEM-TAG-42007A",
-                "KMIPKIT-ELEM-TAG-42007B",
-                "KMIPKIT-ELEM-TAG-42007C",
-                "KMIPKIT-ELEM-TAG-42007D",
-                "KMIPKIT-ELEM-TAG-42007E",
-                "KMIPKIT-ELEM-TAG-42007F",
-                "KMIPKIT-ELEM-TAG-420092",
-                "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OPERATIONS-00000001",
-                "KMIPKIT-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OBJECTS-00000002",
-                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-FAILED-00000001",
-                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000",
-                "KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-RESPONSE-TOO-LARGE-00000002",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SYMMETRIC-KEY-00000002",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SECRET-DATA-00000007",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PUBLIC-KEY-00000003",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PRIVATE-KEY-00000004",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-OPAQUE-OBJECT-00000008",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-SPLIT-KEY-00000005",
-                "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-PGP-KEY-00000009",
+                "KMIP-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIP-ELEM-TAG-42000D",
+                "KMIP-ELEM-TAG-42000F",
+                "KMIP-ELEM-TAG-420050",
+                "KMIP-ELEM-TAG-420057",
+                "KMIP-ELEM-TAG-420069",
+                "KMIP-ELEM-TAG-42006A",
+                "KMIP-ELEM-TAG-42006B",
+                "KMIP-ELEM-TAG-420074",
+                "KMIP-ELEM-TAG-420077",
+                "KMIP-ELEM-TAG-420078",
+                "KMIP-ELEM-TAG-420079",
+                "KMIP-ELEM-TAG-42007A",
+                "KMIP-ELEM-TAG-42007B",
+                "KMIP-ELEM-TAG-42007C",
+                "KMIP-ELEM-TAG-42007D",
+                "KMIP-ELEM-TAG-42007E",
+                "KMIP-ELEM-TAG-42007F",
+                "KMIP-ELEM-TAG-420092",
+                "KMIP-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OPERATIONS-00000001",
+                "KMIP-ELEM-ENUM-VALUE-QUERY-FUNCTION-QUERY-OBJECTS-00000002",
+                "KMIP-ELEM-ENUM-VALUE-RESULT-STATUS-OPERATION-FAILED-00000001",
+                "KMIP-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000",
+                "KMIP-ELEM-ENUM-VALUE-RESULT-REASON-RESPONSE-TOO-LARGE-00000002",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-SYMMETRIC-KEY-00000002",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-SECRET-DATA-00000007",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-PUBLIC-KEY-00000003",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-PRIVATE-KEY-00000004",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-OPAQUE-OBJECT-00000008",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-SPLIT-KEY-00000005",
+                "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-PGP-KEY-00000009",
             },
             "KMIPKIT-TEST-PROF-5-11-3-1": {
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
             },
-            "KMIPKIT-TEST-PROF-5-11-3-2": {"KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA"},
+            "KMIPKIT-TEST-PROF-5-11-3-2": {"KMIP-ELEM-OBJECT-TYPE-SECRET-DATA"},
             "KMIPKIT-TEST-PROF-5-12-6-1": {
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
-                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-25-OPERATIONS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-21-OBJECTS",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                "KMIP-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION",
+                "KMIP-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
             },
             "KMIPKIT-TEST-PROF-5-12-6-2": {
-                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
-                "KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
-                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+                "KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIP-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003",
+                "KMIP-ELEM-STRUCTURE-MEMBER-4-4-APPLICATION-NAMESPACE",
+                "KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+                "KMIP-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
             },
             "KMIPKIT-TEST-PROF-5-12-6-3": {
-                "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
-                "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
-                "KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+                "KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+                "KMIP-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+                "KMIP-ELEM-OBJECT-TYPE-SYMMETRIC-KEY",
+                "KMIP-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
             },
-            "KMIPKIT-TEST-PROF-5-17-2": {"KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD"},
+            "KMIPKIT-TEST-PROF-5-17-2": {"KMIP-ELEM-ATTRIBUTE-PROTECTION-PERIOD"},
         }
 
 
@@ -1986,13 +1986,13 @@ def deviation_catalog(decision: dict[str, object]) -> dict[str, object]:
     document = minimal_catalog()
     document["source_clauses"] = [
         {
-            "clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "source_id": "KMIPKIT-SRC-spec",
             "section": "8.1",
             "locator": {"ordinal": 1, "block_kind": "paragraph"},
             "source_keywords": ["SHOULD"],
             "disposition": "requirement",
-            "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+            "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
             "exclusion_rationale": None,
             "role": "client",
             "direction": "client_to_server",
@@ -2002,8 +2002,8 @@ def deviation_catalog(decision: dict[str, object]) -> dict[str, object]:
     ]
     document["requirements"] = [
         {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
             "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
             "source_keyword": "SHOULD",
             "normative_strength": "recommended",
@@ -2105,7 +2105,7 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
                 caption = "PKCS#11 Response Payload"
             payload_tables.append({"role": role, "table_number": table_number, "caption": caption})
     record: dict[str, object] = {
-        "element_id": f"KMIPKIT-ELEM-OP-{direction_code}-{slug}",
+        "element_id": f"KMIP-ELEM-OP-{direction_code}-{slug}",
         "kind": "operation",
         "name": name,
         "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": section}],
@@ -2135,7 +2135,7 @@ def operation_element(name: str, section: str, direction: str) -> dict[str, obje
 
 def endpoint_role_operation_enum_element() -> dict[str, object]:
     return {
-        "element_id": "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032",
+        "element_id": "KMIP-ELEM-ENUM-VALUE-OPERATION-SET-ENDPOINT-ROLE-00000032",
         "kind": "enumeration_value",
         "name": "Set Endpoint Role",
         "scope_state": "client_1_1",
@@ -2156,15 +2156,15 @@ class CatalogValidationTests(unittest.TestCase):
     def test_request_attestation_repetition_does_not_cover_response_header_field(self) -> None:
         """Keep request and response header requirement links separate."""
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        requirement_id = "KMIPKIT-REQ-SPEC-8.2-002"
+        requirement_id = "KMIP-REQ-SPEC-8.2-002"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         request_field = next(
             row for row in catalog["elements"]
-            if row["element_id"] == "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE"
+            if row["element_id"] == "KMIP-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE"
         )
         response_field = next(
             row for row in catalog["elements"]
-            if row["element_id"] == "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE"
+            if row["element_id"] == "KMIP-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE"
         )
 
         self.assertEqual(requirement["direction"], "client_to_server")
@@ -2175,20 +2175,20 @@ class CatalogValidationTests(unittest.TestCase):
     def test_client_request_timestamp_requirement_does_not_cover_server_fields(self) -> None:
         """Keep optional client request timestamp scope separate from server fields."""
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        requirement_id = "KMIPKIT-REQ-SPEC-9.20-001-001"
+        requirement_id = "KMIP-REQ-SPEC-9.20-001-001"
         requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == requirement_id)
         fields = {
             row["element_id"]: row
             for row in catalog["elements"]
             if row["element_id"] in {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
+                "KMIP-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+                "KMIP-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP",
+                "KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP",
             }
         }
-        request_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"
-        response_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
-        generic_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"
+        request_id = "KMIP-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP"
+        response_id = "KMIP-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP"
+        generic_id = "KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP"
 
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
@@ -2200,9 +2200,9 @@ class CatalogValidationTests(unittest.TestCase):
     def test_unique_batch_item_id_requirements_link_to_directional_fields(self) -> None:
         """Keep request ID requirements separate from response correlation."""
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
-        request_optional_id = "KMIPKIT-REQ-SPEC-9.21-001-001"
-        request_required_id = "KMIPKIT-REQ-SPEC-8.3-003"
-        response_correlation_id = "KMIPKIT-REQ-SPEC-9.21-001-002"
+        request_optional_id = "KMIP-REQ-SPEC-9.21-001-001"
+        request_required_id = "KMIP-REQ-SPEC-8.3-003"
+        response_correlation_id = "KMIP-REQ-SPEC-9.21-001-002"
         requirements = {
             row["requirement_id"]: row
             for row in catalog["requirements"]
@@ -2212,14 +2212,14 @@ class CatalogValidationTests(unittest.TestCase):
             row["element_id"]: row
             for row in catalog["elements"]
             if row["element_id"] in {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
+                "KMIP-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+                "KMIP-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID",
+                "KMIP-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID",
             }
         }
-        request_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"
-        response_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
-        generic_id = "KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
+        request_id = "KMIP-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID"
+        response_id = "KMIP-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID"
+        generic_id = "KMIP-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID"
 
         self.assertEqual(requirements[request_optional_id]["role"], "client")
         self.assertEqual(requirements[request_optional_id]["direction"], "client_to_server")
@@ -2320,7 +2320,7 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement = next(
             row for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-2.3-003"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-2.3-003"
         )
 
         self.assertIsNone(requirement["source_keyword"])
@@ -2337,14 +2337,14 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         locate = next(
             row for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-007"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.28-007"
         )
         locate["normative_strength"] = "permission_or_optional"
 
         self.assertGreater(validate(catalog)["record_count"], 0)
         mismatched_clause = {
             "requirement_id": locate["requirement_id"],
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-6.1.28-004"],
+            "source_clause_ids": ["KMIP-CLAUSE-SPEC-6.1.28-004"],
             "source_keyword": locate["source_keyword"],
         }
         self.assertEqual(catalog_validate._expected_normative_strength(mismatched_clause), "mandatory")
@@ -2352,7 +2352,7 @@ class CatalogValidationTests(unittest.TestCase):
         unreviewed = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         another_required = next(
             row for row in unreviewed["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.28-004-001"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.28-004-001"
         )
         another_required["normative_strength"] = "permission_or_optional"
         with self.assertRaisesRegex(CatalogValidationError, "requirement keyword and normative strength disagree"):
@@ -2362,19 +2362,19 @@ class CatalogValidationTests(unittest.TestCase):
         """Reviewed optional request rows keep relationship IDs deterministic."""
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_ids = (
-            "KMIPKIT-REQ-SPEC-4.26-001",
-            "KMIPKIT-REQ-SPEC-4.34-001-001",
-            "KMIPKIT-REQ-SPEC-4.38-001-001",
-            "KMIPKIT-REQ-SPEC-4.38-001-002",
-            "KMIPKIT-REQ-SPEC-4.38-001-003",
-            "KMIPKIT-REQ-SPEC-4.4-001",
-            "KMIPKIT-REQ-SPEC-4.46-001-001",
-            "KMIPKIT-REQ-SPEC-4.46-001-002",
-            "KMIPKIT-REQ-SPEC-6.1-003-002",
-            "KMIPKIT-REQ-SPEC-6.1.4-001",
-            "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.43-005",
+            "KMIP-REQ-SPEC-4.26-001",
+            "KMIP-REQ-SPEC-4.34-001-001",
+            "KMIP-REQ-SPEC-4.38-001-001",
+            "KMIP-REQ-SPEC-4.38-001-002",
+            "KMIP-REQ-SPEC-4.38-001-003",
+            "KMIP-REQ-SPEC-4.4-001",
+            "KMIP-REQ-SPEC-4.46-001-001",
+            "KMIP-REQ-SPEC-4.46-001-002",
+            "KMIP-REQ-SPEC-6.1-003-002",
+            "KMIP-REQ-SPEC-6.1.4-001",
+            "KMIP-REQ-SPEC-6.1.42-001-001",
+            "KMIP-REQ-SPEC-6.1.42-001-002",
+            "KMIP-REQ-SPEC-6.1.43-005",
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
@@ -2388,15 +2388,15 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1-003-002"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1-003-002"
         )
         expected = {
-            "KMIPKIT-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
-            "KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
-            "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
-            "KMIPKIT-ELEM-TAG-420094",
+            "KMIP-ELEM-ENUM-VALUE-UNIQUE-IDENTIFIER-ID-PLACEHOLDER-00000001",
+            "KMIP-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM",
+            "KMIP-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+            "KMIP-ELEM-TAG-420094",
             *(
-                f"KMIPKIT-ELEM-OP-C2S-{name}"
+                f"KMIP-ELEM-OP-C2S-{name}"
                 for name in (
                     "ACTIVATE",
                     "ADD-ATTRIBUTE",
@@ -2447,11 +2447,11 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
-            "KMIPKIT-REQ-SPEC-6.1-003-002",
-            "KMIPKIT-REQ-SPEC-6.1.4-001",
-            "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.43-005",
+            "KMIP-REQ-SPEC-6.1-003-002",
+            "KMIP-REQ-SPEC-6.1.4-001",
+            "KMIP-REQ-SPEC-6.1.42-001-001",
+            "KMIP-REQ-SPEC-6.1.42-001-002",
+            "KMIP-REQ-SPEC-6.1.43-005",
         )
 
         for requirement_id in requirement_ids:
@@ -2471,7 +2471,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.43-005"
         )
 
         self.assertEqual(requirement["status"], "scoped_verified")
@@ -2518,7 +2518,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-005"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.43-005"
         )
 
         self.assertEqual(requirement["element_ids"], sorted(requirement["element_ids"]))
@@ -2563,35 +2563,35 @@ class CatalogValidationTests(unittest.TestCase):
         def link_cases(sections: range | tuple[int, ...], *element_ids: str) -> None:
             link(cases_source, sections, *element_ids)
 
-        sign = "KMIPKIT-ELEM-OP-C2S-SIGN"
-        verify = "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY"
-        link_cases(range(14, 20), "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY")
-        link_cases(range(21, 34), "KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN")
+        sign = "KMIP-ELEM-OP-C2S-SIGN"
+        verify = "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY"
+        link_cases(range(14, 20), "KMIP-ELEM-OP-C2S-DERIVE-KEY")
+        link_cases(range(21, 34), "KMIP-ELEM-OP-C2S-DELEGATED-LOGIN")
         link_cases((37,), sign, verify)
-        link_cases(range(43, 48), "KMIPKIT-ELEM-OP-C2S-IMPORT", "KMIPKIT-ELEM-OP-C2S-EXPORT")
-        link_cases(range(48, 51), "KMIPKIT-ELEM-OP-C2S-LOGIN")
-        link_cases(range(62, 66), "KMIPKIT-ELEM-OP-C2S-LOCATE")
-        link_cases((67,), "KMIPKIT-ELEM-OP-C2S-PING")
-        link_cases(range(68, 70), "KMIPKIT-ELEM-OP-C2S-GET")
-        link_cases(range(76, 88), "KMIPKIT-ELEM-OP-C2S-RE-KEY")
-        link_cases(range(92, 95), "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE")
-        link_cases((99, 101), "KMIPKIT-ELEM-OP-C2S-ENCRYPT")
-        link_cases((100,), "KMIPKIT-ELEM-OP-C2S-ENCRYPT", "KMIPKIT-ELEM-OP-C2S-DECRYPT")
-        link_cases(range(102, 105), "KMIPKIT-ELEM-OP-C2S-HASH")
-        link_cases((105,), "KMIPKIT-ELEM-OP-C2S-MAC")
+        link_cases(range(43, 48), "KMIP-ELEM-OP-C2S-IMPORT", "KMIP-ELEM-OP-C2S-EXPORT")
+        link_cases(range(48, 51), "KMIP-ELEM-OP-C2S-LOGIN")
+        link_cases(range(62, 66), "KMIP-ELEM-OP-C2S-LOCATE")
+        link_cases((67,), "KMIP-ELEM-OP-C2S-PING")
+        link_cases(range(68, 70), "KMIP-ELEM-OP-C2S-GET")
+        link_cases(range(76, 88), "KMIP-ELEM-OP-C2S-RE-KEY")
+        link_cases(range(92, 95), "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE")
+        link_cases((99, 101), "KMIP-ELEM-OP-C2S-ENCRYPT")
+        link_cases((100,), "KMIP-ELEM-OP-C2S-ENCRYPT", "KMIP-ELEM-OP-C2S-DECRYPT")
+        link_cases(range(102, 105), "KMIP-ELEM-OP-C2S-HASH")
+        link_cases((105,), "KMIP-ELEM-OP-C2S-MAC")
         link_cases((106, 38), sign)
         link_cases((107,), sign, verify)
 
         link(
             profiles_source,
             ("5.3.3.1", "5.4.4.1", "5.5.4.1", "5.17.1"),
-            "KMIPKIT-ELEM-OP-C2S-QUERY",
+            "KMIP-ELEM-OP-C2S-QUERY",
         )
         expected_by_source_section[(profiles_source, "5.12.6.3")] = {
-            "KMIPKIT-ELEM-OP-C2S-GET", "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
-            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
+            "KMIP-ELEM-OP-C2S-GET", "KMIP-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+            "KMIP-ELEM-OP-C2S-GET-ATTRIBUTES", "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
         }
-        link(profiles_source, ("5.17.2",), "KMIPKIT-ELEM-OP-C2S-CREATE")
+        link(profiles_source, ("5.17.2",), "KMIP-ELEM-OP-C2S-CREATE")
 
         operation_ids = {row["element_id"] for row in catalog["elements"] if row["kind"] == "operation"}
         for test_case in catalog["test_cases"]:
@@ -2631,11 +2631,11 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertEqual(
             set(cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"]),
-            {"KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
+            {"KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-VALUE"},
             "the source does not equate its customer-specific attribute with Vendor Attribute",
         )
         self.assertNotIn(
-            "KMIPKIT-ELEM-ATTRIBUTE-VENDOR",
+            "KMIP-ELEM-ATTRIBUTE-VENDOR",
             cases["KMIPKIT-TEST-CN01-2-42"]["element_ids"],
         )
 
@@ -2659,7 +2659,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
         )
         self.assertIn(
-            "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
+            "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
             discrepancy["affected_element_ids"],
         )
         self.assertEqual(
@@ -2670,9 +2670,9 @@ class CatalogValidationTests(unittest.TestCase):
         json_sample = next(
             row for row in catalog["test_cases"] if row["test_id"] == "KMIPKIT-TEST-PROF-5-5-4-1"
         )
-        self.assertIn("KMIPKIT-ELEM-TAG-420057", json_sample["element_ids"])
+        self.assertIn("KMIP-ELEM-TAG-420057", json_sample["element_ids"])
         self.assertNotIn(
-            "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
+            "KMIP-ELEM-ENUM-VALUE-OBJECT-TYPE-RESERVED-00000006",
             json_sample["element_ids"],
             "Template must not be treated as an assigned Object Type value",
         )
@@ -2695,11 +2695,11 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             discrepancy["affected_element_ids"],
-            ["KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"],
+            ["KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"],
         )
         operation = next(
             row for row in catalog["elements"]
-            if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
+            if row["element_id"] == "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS"
         )
         response_tables = [row for row in operation["payload_tables"] if row["role"] == "response"]
         self.assertEqual(response_tables, [{"role": "response", "table_number": 286, "caption": "PKCS#11 Response Payload"}])
@@ -2735,7 +2735,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             discrepancy["affected_element_ids"],
-            ["KMIPKIT-ELEM-OP-C2S-RE-PROVISION"],
+            ["KMIP-ELEM-OP-C2S-RE-PROVISION"],
         )
         self.assertIn("Table 315", discrepancy["summary"])
         self.assertIn("RNG Retrieve Errors", discrepancy["summary"])
@@ -2745,7 +2745,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.14-002"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.14-002"
         )
 
         self.assertEqual(requirement["test_case_ids"], [])
@@ -2909,7 +2909,7 @@ class CatalogValidationTests(unittest.TestCase):
                 name = record["name"]
                 slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
                 prefix = {"data_type": "DATA-TYPE", "object_type": "OBJECT-TYPE"}[kind]
-                self.assertEqual(record["element_id"], f"KMIPKIT-ELEM-{prefix}-{slug}")
+                self.assertEqual(record["element_id"], f"KMIP-ELEM-{prefix}-{slug}")
                 self.assertEqual(record["direction"], "both")
                 self.assertEqual(record["scope_state"], "client_1_0")
                 self.assertTrue(record["source_refs"])
@@ -2959,7 +2959,7 @@ class CatalogValidationTests(unittest.TestCase):
             suffix = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
             if name == "Key Material":
                 suffix = f"{section.replace('.', '-')}-{suffix}"
-            self.assertEqual(row["element_id"], f"KMIPKIT-ELEM-OBJECT-STRUCTURE-{suffix}")
+            self.assertEqual(row["element_id"], f"KMIP-ELEM-OBJECT-STRUCTURE-{suffix}")
             self.assertEqual(row["direction"], "both")
             self.assertEqual(row["scope_state"], "client_1_0")
 
@@ -2995,7 +2995,7 @@ class CatalogValidationTests(unittest.TestCase):
     def test_tag_inventory_reconciles_all_reserved_values_and_ranges(self) -> None:
         elements = [
             {
-                "element_id": f"KMIPKIT-ELEM-TAG-{value}",
+                "element_id": f"KMIP-ELEM-TAG-{value}",
                 "kind": "tag",
                 "name": name,
                 "wire_value": value,
@@ -3008,7 +3008,7 @@ class CatalogValidationTests(unittest.TestCase):
             value = f"A{index:05X}"
             elements.append(
                 {
-                    "element_id": f"KMIPKIT-ELEM-TAG-{value}",
+                    "element_id": f"KMIP-ELEM-TAG-{value}",
                     "kind": "tag",
                     "name": f"Test Tag {index}",
                     "wire_value": value,
@@ -3052,7 +3052,7 @@ class CatalogValidationTests(unittest.TestCase):
         tampered = [dict(row) for row in tags]
         assigned = next(row for row in tampered if row["allocation"] == "assigned")
         assigned["wire_value"] = "FF1234"
-        assigned["element_id"] = "KMIPKIT-ELEM-TAG-FF1234"
+        assigned["element_id"] = "KMIP-ELEM-TAG-FF1234"
         with self.assertRaisesRegex(CatalogValidationError, "tag registry source fingerprint"):
             catalog_validate._check_tag_registry_fingerprint(tampered)
 
@@ -3072,7 +3072,7 @@ class CatalogValidationTests(unittest.TestCase):
             if section == "11.56":
                 continue  # Table 487 is represented by the dedicated tag and tag-range records.
             definition_slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
-            parent_id = f"KMIPKIT-ELEM-ENUMERATION-{definition_slug}"
+            parent_id = f"KMIP-ELEM-ENUMERATION-{definition_slug}"
             for value_name, wire_value in rows:
                 allocation = (
                     "extension" if wire_value.startswith("8X")
@@ -3109,7 +3109,7 @@ class CatalogValidationTests(unittest.TestCase):
         expected_values: set[tuple[str, str, str, str]] = set()
         for section, (name, rows) in groups.items():
             definition_slug = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")
-            parent_id = f"KMIPKIT-ELEM-BITMASK-{definition_slug}"
+            parent_id = f"KMIP-ELEM-BITMASK-{definition_slug}"
             for value_name, wire_value in rows:
                 allocation = (
                     "extension" if "X" in wire_value
@@ -3137,7 +3137,7 @@ class CatalogValidationTests(unittest.TestCase):
         tag_ids = {row["name"]: row["element_id"] for row in catalog["elements"] if row.get("kind") == "tag"}
         for row in attributes:
             slug = re.sub(r"[^A-Z0-9]+", "-", row["name"].upper()).strip("-")
-            self.assertEqual(row["element_id"], f"KMIPKIT-ELEM-ATTRIBUTE-{slug}")
+            self.assertEqual(row["element_id"], f"KMIP-ELEM-ATTRIBUTE-{slug}")
             self.assertEqual(row["direction"], "both")
             self.assertEqual(row["scope_state"], "client_1_0")
             section = next(section for section, name in headings.items() if name == row["name"])
@@ -3897,7 +3897,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("missing policy source references", "source_refs", None),
             ("contradictory policy source text", "source_text", "unrelated source text"),
             ("contradictory structure table", "structure_table", "Table 149"),
-            ("wrong Vendor Identification member", "member_element_id", "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME"),
+            ("wrong Vendor Identification member", "member_element_id", "KMIP-ELEM-STRUCTURE-MEMBER-4-60-ATTRIBUTE-NAME"),
             ("wrong source predicate value", "equals", "x"),
             ("wrong origin meaning", "source_indicates_origin", "client_created"),
             ("missing prohibited operations", "prohibited_client_operations", None),
@@ -3941,7 +3941,7 @@ class CatalogValidationTests(unittest.TestCase):
                         "structure_table": "Table 150",
                         "source_text": source_text,
                         "value_predicate": {
-                            "member_element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
+                            "member_element_id": "KMIP-ELEM-STRUCTURE-MEMBER-4-60-VENDOR-IDENTIFICATION",
                             "equals": "y",
                             "source_indicates_origin": "server_created",
                         },
@@ -4092,7 +4092,7 @@ class CatalogValidationTests(unittest.TestCase):
         document["elements"] = [
             {
                 **common,
-                "element_id": "KMIPKIT-ELEM-OPTION-TEST",
+                "element_id": "KMIP-ELEM-OPTION-TEST",
                 "kind": "option",
                 "name": "Test Option",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.2"}],
@@ -4100,7 +4100,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             {
                 **common,
-                "element_id": "KMIPKIT-ELEM-RESULT-TEST",
+                "element_id": "KMIP-ELEM-RESULT-TEST",
                 "kind": "result",
                 "name": "Test Result",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.17"}],
@@ -4113,7 +4113,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-MESSAGE-FIELD-TEST",
+                "element_id": "KMIP-ELEM-MESSAGE-FIELD-TEST",
                 "kind": "message_field",
                 "name": "Test Message Field",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.2"}],
@@ -4136,7 +4136,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-CREDENTIAL-TEST",
+                "element_id": "KMIP-ELEM-CREDENTIAL-TEST",
                 "kind": "credential",
                 "name": "Test Credential",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "9.11"}],
@@ -4161,7 +4161,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_accepts_an_enumeration_extension_marker(self) -> None:
         document = minimal_catalog()
-        definition_id = "KMIPKIT-ELEM-ENUMERATION-TEST"
+        definition_id = "KMIP-ELEM-ENUMERATION-TEST"
         common = {
             "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.1"}],
             "direction": "both",
@@ -4183,7 +4183,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             {
                 **common,
-                "element_id": "KMIPKIT-ELEM-ENUM-VALUE-TEST-EXTENSIONS-8XXXXXXX",
+                "element_id": "KMIP-ELEM-ENUM-VALUE-TEST-EXTENSIONS-8XXXXXXX",
                 "kind": "enumeration_value",
                 "name": "Extensions",
                 "wire_value": "8XXXXXXX",
@@ -4195,7 +4195,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_accepts_structure_member_source_encoding_and_requiredness(self) -> None:
         document = minimal_catalog()
-        structure_id = "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-TEST"
+        structure_id = "KMIP-ELEM-ATTRIBUTE-STRUCTURE-TEST"
         common = {
             "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "5.1"}],
             "direction": "both",
@@ -4217,7 +4217,7 @@ class CatalogValidationTests(unittest.TestCase):
             },
             {
                 **common,
-                "element_id": "KMIPKIT-ELEM-STRUCTURE-MEMBER-TEST-FIELD",
+                "element_id": "KMIP-ELEM-STRUCTURE-MEMBER-TEST-FIELD",
                 "kind": "structure_member",
                 "name": "Test Field",
                 "source_encoding": "Text String",
@@ -4231,7 +4231,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-TEST",
+                "element_id": "KMIP-ELEM-ATTRIBUTE-TEST",
                 "kind": "attribute",
                 "name": "Test Attribute",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "4.2"}],
@@ -4254,7 +4254,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-ATTRIBUTE-TEST",
+                "element_id": "KMIP-ELEM-ATTRIBUTE-TEST",
                 "kind": "attribute",
                 "name": "Canonical Attribute",
                 "source_name": "Source Attribute Label",
@@ -4276,7 +4276,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-OPERATION-STRUCTURE-TEST",
+                "element_id": "KMIP-ELEM-OPERATION-STRUCTURE-TEST",
                 "kind": "operation_structure",
                 "name": "Test Structure",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "7.1"}],
@@ -4470,7 +4470,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
         discrepancies = {row["discrepancy_id"]: row for row in document["discrepancies"]}
 
-        clause = clauses["KMIPKIT-CLAUSE-SPEC-9.4-001"]
+        clause = clauses["KMIP-CLAUSE-SPEC-9.4-001"]
         self.assertEqual(clause["role"], "both")
         self.assertEqual(clause["direction"], "client_to_server")
         self.assertEqual(clause["scope_state"], "mixed")
@@ -4478,13 +4478,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             clause["requirement_ids"],
             [
-                "KMIPKIT-REQ-SPEC-9.4-001-001",
-                "KMIPKIT-REQ-SPEC-9.4-001-002",
-                "KMIPKIT-REQ-SPEC-9.4-001-003",
+                "KMIP-REQ-SPEC-9.4-001-001",
+                "KMIP-REQ-SPEC-9.4-001-002",
+                "KMIP-REQ-SPEC-9.4-001-003",
             ],
         )
 
-        requirement = requirements["KMIPKIT-REQ-SPEC-9.4-001-003"]
+        requirement = requirements["KMIP-REQ-SPEC-9.4-001-003"]
         self.assertEqual(requirement["role"], "server")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertEqual(requirement["scope_state"], "server_only")
@@ -4505,8 +4505,8 @@ class CatalogValidationTests(unittest.TestCase):
             {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
             {("KMIPKIT-SRC-spec", "1.2"), ("KMIPKIT-SRC-spec", "9.4")},
         )
-        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.4-001-003"])
-        self.assertEqual(discrepancy["affected_element_ids"], ["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"])
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIP-REQ-SPEC-9.4-001-003"])
+        self.assertEqual(discrepancy["affected_element_ids"], ["KMIP-ELEM-CREDENTIAL-CREDENTIAL"])
         alternatives = " ".join(discrepancy["alternatives"]).casefold()
         self.assertIn("case-insensitive", alternatives)
         self.assertIn("uppercase", alternatives)
@@ -4518,14 +4518,14 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_evidence = {
-            "KMIPKIT-REQ-SPEC-9.4-001-001": {
+            "KMIP-REQ-SPEC-9.4-001-001": {
                 "implementation": {"crates/kmipkit-client/src/execute.rs"},
                 "tests": {
                     "crates/kmipkit-client/tests/unit/attestation_indicator_tests.rs::execute_advertises_attestation_without_authentication_or_credential_payload",
                 },
                 "scope_note": "authentication omission",
             },
-            "KMIPKIT-REQ-SPEC-9.4-002": {
+            "KMIP-REQ-SPEC-9.4-002": {
                 "implementation": {"crates/kmipkit-protocol/src/credential/authentication.rs"},
                 "tests": {
                     "crates/kmipkit-protocol/tests/credential_contract.rs::authentication_preserves_nonempty_credential_order",
@@ -4560,8 +4560,8 @@ class CatalogValidationTests(unittest.TestCase):
             "request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order"
         )
         expected_elements = {
-            "KMIPKIT-REQ-SPEC-5.3-002": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-3-PRIVATE-KEY-ATTRIBUTES",
-            "KMIPKIT-REQ-SPEC-5.4-002": "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-4-PUBLIC-KEY-ATTRIBUTES",
+            "KMIP-REQ-SPEC-5.3-002": "KMIP-ELEM-ATTRIBUTE-STRUCTURE-5-3-PRIVATE-KEY-ATTRIBUTES",
+            "KMIP-REQ-SPEC-5.4-002": "KMIP-ELEM-ATTRIBUTE-STRUCTURE-5-4-PUBLIC-KEY-ATTRIBUTES",
         }
 
         for requirement_id, element_id in expected_elements.items():
@@ -4589,23 +4589,23 @@ class CatalogValidationTests(unittest.TestCase):
         elements = {row["element_id"]: row for row in document["elements"]}
         clauses = {row["clause_id"]: row for row in document["source_clauses"]}
 
-        credential_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-001"]
+        credential_requirement = requirements["KMIP-REQ-SPEC-9.11-001"]
         self.assertIn("identification", credential_requirement["summary"].casefold())
         self.assertIn("authentication", credential_requirement["summary"].casefold())
         self.assertIn("profile", credential_requirement["condition"].casefold())
         self.assertNotIn("profile", credential_requirement["summary"].casefold().split("identification")[0])
         self.assertEqual(credential_requirement["scope_state"], "client_1_0")
-        self.assertEqual(credential_requirement["element_ids"], ["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"])
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-9.11-001"]["scope_state"], "client_1_0")
+        self.assertEqual(credential_requirement["element_ids"], ["KMIP-ELEM-CREDENTIAL-CREDENTIAL"])
+        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-9.11-001"]["scope_state"], "client_1_0")
 
         expected_requirement_elements = {
-            "KMIPKIT-REQ-SPEC-9.4-001-001": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"},
-            "KMIPKIT-REQ-SPEC-9.4-001-002": {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
+            "KMIP-REQ-SPEC-9.4-001-001": {"KMIP-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION"},
+            "KMIP-REQ-SPEC-9.4-001-002": {
+                "KMIP-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION",
+                "KMIP-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
             },
-            "KMIPKIT-REQ-SPEC-9.4-001-003": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
-            "KMIPKIT-REQ-SPEC-9.4-002": {"KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
+            "KMIP-REQ-SPEC-9.4-001-003": {"KMIP-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
+            "KMIP-REQ-SPEC-9.4-002": {"KMIP-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED"},
         }
         for requirement_id, expected_element_ids in expected_requirement_elements.items():
             with self.subTest(requirement_id=requirement_id):
@@ -4614,8 +4614,8 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
 
         self.assertIn(
-            "KMIPKIT-REQ-SPEC-9.11-001",
-            elements["KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL"]["requirement_ids"],
+            "KMIP-REQ-SPEC-9.11-001",
+            elements["KMIP-ELEM-CREDENTIAL-CREDENTIAL"]["requirement_ids"],
         )
 
     def test_checked_in_device_credential_links_keep_field_set_ambiguity_open(self) -> None:
@@ -4625,15 +4625,15 @@ class CatalogValidationTests(unittest.TestCase):
         elements = {row["element_id"]: row for row in document["elements"]}
         discrepancies = {row["discrepancy_id"]: row for row in document["discrepancies"]}
         all_device_fields = {
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD",
         }
 
-        minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
+        minimum_requirement = requirements["KMIP-REQ-SPEC-9.11-004-001"]
         self.assertEqual(set(minimum_requirement["element_ids"]), all_device_fields)
         discrepancy = discrepancies["KMIPKIT-DISC-042"]
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
@@ -4642,28 +4642,28 @@ class CatalogValidationTests(unittest.TestCase):
             {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
             {("KMIPKIT-SRC-spec", "9.11")},
         )
-        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.11-004-001"])
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIP-REQ-SPEC-9.11-004-001"])
         self.assertEqual(set(discrepancy["affected_element_ids"]), all_device_fields)
         alternatives = " ".join(discrepancy["alternatives"]).casefold()
         self.assertIn("all six", alternatives)
         self.assertIn("four", alternatives)
 
         unique_fields = {
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER",
+            "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER",
         }
-        uniqueness_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-002"]
+        uniqueness_requirement = requirements["KMIP-REQ-SPEC-9.11-004-002"]
         self.assertEqual(set(uniqueness_requirement["element_ids"]), unique_fields)
 
-        password_id = "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
-        shared_secret_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-003"]
+        password_id = "KMIP-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD"
+        shared_secret_requirement = requirements["KMIP-REQ-SPEC-9.11-004-003"]
         self.assertEqual(shared_secret_requirement["element_ids"], [password_id])
         for requirement_id in (
-            "KMIPKIT-REQ-SPEC-9.11-004-001",
-            "KMIPKIT-REQ-SPEC-9.11-004-002",
-            "KMIPKIT-REQ-SPEC-9.11-004-003",
+            "KMIP-REQ-SPEC-9.11-004-001",
+            "KMIP-REQ-SPEC-9.11-004-002",
+            "KMIP-REQ-SPEC-9.11-004-003",
         ):
             for element_id in requirements[requirement_id]["element_ids"]:
                 self.assertIn(requirement_id, elements[element_id]["requirement_ids"])
@@ -4672,7 +4672,7 @@ class CatalogValidationTests(unittest.TestCase):
         catalog_path = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
         document = json.loads(catalog_path.read_bytes())
         requirements = {row["requirement_id"]: row for row in document["requirements"]}
-        minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
+        minimum_requirement = requirements["KMIP-REQ-SPEC-9.11-004-001"]
 
         self.assertEqual(
             minimum_requirement["summary"],
@@ -4685,17 +4685,17 @@ class CatalogValidationTests(unittest.TestCase):
         document = json.loads(catalog_path.read_bytes())
         policies = {row["policy_id"]: row for row in document["policies"]}
         expected_ids = {
-            "KMIPKIT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
-            "KMIPKIT-POLICY-VENDOR-VALUE-PRESERVATION",
-            "KMIPKIT-POLICY-EXTENSION-PRESERVATION",
+            "PROJECT-POLICY-UNKNOWN-FUTURE-VALUE-PRESERVATION",
+            "PROJECT-POLICY-VENDOR-VALUE-PRESERVATION",
+            "PROJECT-POLICY-EXTENSION-PRESERVATION",
         }
 
         self.assertTrue(expected_ids.issubset(policies))
         for policy_id in expected_ids:
             policy = policies[policy_id]
-            self.assertEqual(policy["provenance"], "AGENTS.md")
+            self.assertEqual(policy["provenance"], "project-guide")
             self.assertEqual(policy["provenance_ref"], {
-                "path": "AGENTS.md",
+                "path": "project-guide",
                 "heading": "9. Public API and compatibility",
             })
         summaries = " ".join(policies[policy_id]["summary"].casefold() for policy_id in expected_ids)
@@ -4713,9 +4713,9 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         expected_clause_directions = {
-            "KMIPKIT-CLAUSE-SPEC-9.17-001": "server_to_client",
-            "KMIPKIT-CLAUSE-SPEC-9.18-001": "server_to_client",
-            "KMIPKIT-CLAUSE-SPEC-9.19-001": "server_to_client",
+            "KMIP-CLAUSE-SPEC-9.17-001": "server_to_client",
+            "KMIP-CLAUSE-SPEC-9.18-001": "server_to_client",
+            "KMIP-CLAUSE-SPEC-9.19-001": "server_to_client",
         }
 
         self.assertTrue(set(expected_clause_directions).issubset(clauses))
@@ -4734,8 +4734,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNotNone(discrepancy, f"mixed §9.17 source scope requires {discrepancy_id}")
         self.assertEqual(discrepancy["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "9.17"}])
         self.assertEqual(discrepancy["normative_status"], "evidence_gap")
-        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIPKIT-REQ-SPEC-9.17-001-002"])
-        self.assertEqual(discrepancy["affected_element_ids"], ["KMIPKIT-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"])
+        self.assertEqual(discrepancy["affected_requirement_ids"], ["KMIP-REQ-SPEC-9.17-001-002"])
+        self.assertEqual(discrepancy["affected_element_ids"], ["KMIP-ELEM-MESSAGE-FIELD-9-17-RESULT-MESSAGE"])
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-016")
 
@@ -4797,7 +4797,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "prefix-KMIPKIT-ELEM-OP-CREATE",
+                "element_id": "prefix-KMIP-ELEM-OP-CREATE",
                 "kind": "operation",
                 "name": "Create",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.1"}],
@@ -4819,7 +4819,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-OP-CREATE",
+                "element_id": "KMIP-ELEM-OP-CREATE",
                 "kind": "operation",
                 "name": "Create",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.1"}],
@@ -4842,7 +4842,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-OP-CREATE",
+                "element_id": "KMIP-ELEM-OP-CREATE",
                 "kind": "operation",
                 "name": "Create",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.1"}],
@@ -4924,7 +4924,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["source_clauses"] = [
             {
-                "clause_id": "KMIPKIT-CLAUSE-SPEC-1.1-001",
+                "clause_id": "KMIP-CLAUSE-SPEC-1.1-001",
                 "source_id": "KMIPKIT-SRC-spec",
                 "section": "1.1",
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
@@ -4945,7 +4945,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["source_clauses"] = [
             {
-                "clause_id": "KMIPKIT-CLAUSE-SPEC-2.8-001",
+                "clause_id": "KMIP-CLAUSE-SPEC-2.8-001",
                 "source_id": "KMIPKIT-SRC-spec",
                 "section": "2.8",
                 "locator": {"ordinal": 1, "block_kind": "table_row"},
@@ -4977,7 +4977,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_accepts_stable_subrecords_for_multiple_obligations_in_one_clause(self) -> None:
         document = deviation_catalog(decision_record())
-        base_id = "KMIPKIT-REQ-SPEC-8.1-001"
+        base_id = "KMIP-REQ-SPEC-8.1-001"
         subrecord_id = f"{base_id}-002"
         document["requirements"][0]["requirement_id"] = subrecord_id
         document["source_clauses"][0]["requirement_ids"] = [subrecord_id]
@@ -4992,7 +4992,7 @@ class CatalogValidationTests(unittest.TestCase):
         clause = document["source_clauses"][0]
         first = document["requirements"][0]
         second = dict(first)
-        second["requirement_id"] = "KMIPKIT-REQ-SPEC-8.1-001-002"
+        second["requirement_id"] = "KMIP-REQ-SPEC-8.1-001-002"
         second["source_keyword"] = "MAY"
         second["normative_strength"] = "permission_or_optional"
         second["scope_state"] = "out_of_scope"
@@ -5014,7 +5014,7 @@ class CatalogValidationTests(unittest.TestCase):
         clause = document["source_clauses"][0]
         first = document["requirements"][0]
         second = dict(first)
-        second["requirement_id"] = "KMIPKIT-REQ-SPEC-8.1-001-002"
+        second["requirement_id"] = "KMIP-REQ-SPEC-8.1-001-002"
         second["source_keyword"] = "MAY"
         second["normative_strength"] = "permission_or_optional"
         second["scope_state"] = "out_of_scope"
@@ -5095,7 +5095,7 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["policies"] = [
             {
-                "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
+                "policy_id": "PROJECT-POLICY-UNKNOWN-VALUES",
                 "summary": "Preserve unknown values.",
                 "provenance": "a random note",
                 "affected_element_kinds": ["enumeration_value"],
@@ -5393,19 +5393,19 @@ class CatalogValidationTests(unittest.TestCase):
             for clause in pinned_spec_clauses
             if clause["section"] == "14.1" and clause["locator"] == {"ordinal": 2, "block_kind": "paragraph"}
         )
-        self.assertEqual(claim_clause["clause_id"], "KMIPKIT-CLAUSE-SPEC-14.1-002")
+        self.assertEqual(claim_clause["clause_id"], "KMIP-CLAUSE-SPEC-14.1-002")
         self.assertEqual(claim_clause["source_keywords"], ["SHALL"])
 
-        client_conformance_requirement_id = "KMIPKIT-REQ-SPEC-14.1-001"
+        client_conformance_requirement_id = "KMIP-REQ-SPEC-14.1-001"
         client_requirement = next(
             record
             for record in catalog["requirements"]
             if record["requirement_id"] == client_conformance_requirement_id
         )
-        self.assertEqual(client_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-14.1-001"])
+        self.assertEqual(client_requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-14.1-001"])
         self.assertEqual(client_requirement["scope_state"], "client_1_0")
 
-        claim_requirement_id = "KMIPKIT-REQ-SPEC-14.1-002"
+        claim_requirement_id = "KMIP-REQ-SPEC-14.1-002"
         requirement = next(
             record for record in catalog["requirements"] if record["requirement_id"] == claim_requirement_id
         )
@@ -5582,7 +5582,7 @@ class CatalogValidationTests(unittest.TestCase):
         review = next(
             record
             for record in oracle["source_requirement_reviews"]
-            if record["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.8-001"
+            if record["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.8-001"
         )
         raw_spec = (ROOT / review["source_path"]).read_bytes()
         self.assertIn(b"If True, then batched operations SHALL be executed", raw_spec)
@@ -5630,7 +5630,7 @@ class CatalogValidationTests(unittest.TestCase):
             if clause["section"] == "4.57"
             and clause["locator"] == {"ordinal": 3, "block_kind": "paragraph"}
         )
-        self.assertEqual(active_clause["clause_id"], "KMIPKIT-CLAUSE-SPEC-4.57-003")
+        self.assertEqual(active_clause["clause_id"], "KMIP-CLAUSE-SPEC-4.57-003")
         self.assertEqual(active_clause["source_keywords"], ["SHALL", "SHALL NOT"])
         pinned_lines = raw_spec.decode("utf-8", errors="replace").splitlines()
         source_ordered_modal_terms = re.findall(
@@ -5643,10 +5643,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn(b"after the Process Stop Date", raw_spec)
 
         expected_requirement_ids = {
-            "KMIPKIT-REQ-SPEC-4.57-003-001",
-            "KMIPKIT-REQ-SPEC-4.57-003-002",
-            "KMIPKIT-REQ-SPEC-4.57-003-003",
-            "KMIPKIT-REQ-SPEC-4.57-003-004",
+            "KMIP-REQ-SPEC-4.57-003-001",
+            "KMIP-REQ-SPEC-4.57-003-002",
+            "KMIP-REQ-SPEC-4.57-003-003",
+            "KMIP-REQ-SPEC-4.57-003-004",
         }
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
@@ -5658,7 +5658,7 @@ class CatalogValidationTests(unittest.TestCase):
             requirement["requirement_id"]: requirement
             for requirement in catalog["requirements"]
         }
-        fourth_predicate = requirements.get("KMIPKIT-REQ-SPEC-4.57-003-004")
+        fourth_predicate = requirements.get("KMIP-REQ-SPEC-4.57-003-004")
         self.assertIsNotNone(fourth_predicate)
         self.assertEqual(fourth_predicate["source_keyword"], "SHALL NOT")
         self.assertEqual(fourth_predicate["normative_strength"], "prohibited")
@@ -5673,7 +5673,7 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk = [
             row
             for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-003-004"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-4.57-003-004"
         ]
         self.assertEqual(len(crosswalk), 1)
         self.assertEqual(crosswalk[0]["source_obligation_order"], 4)
@@ -5697,7 +5697,7 @@ class CatalogValidationTests(unittest.TestCase):
             for row in catalog["discrepancies"]
             if row["discrepancy_id"] == "KMIPKIT-DISC-013"
         )
-        self.assertIn("KMIPKIT-REQ-SPEC-4.57-003-004", discrepancy["affected_requirement_ids"])
+        self.assertIn("KMIP-REQ-SPEC-4.57-003-004", discrepancy["affected_requirement_ids"])
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         included = {
             profile["profile_id"]: sorted(expected_requirement_ids & set(profile["requirement_ids"]))
@@ -5761,7 +5761,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(
             source_table_contract_requirement_ids,
-            {"KMIPKIT-REQ-SPEC-6.1.23-002-001"},
+            {"KMIP-REQ-SPEC-6.1.23-002-001"},
             "the approved Table 232 contract must remain linked to its existing stable label",
         )
         unaccounted_before_table_contracts = catalog_ids - reviewed_ids
@@ -5796,41 +5796,41 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_candidates = {
-            "KMIPKIT-REQ-SPEC-4.1-001-001",
-            "KMIPKIT-REQ-SPEC-4.1-001-002",
-            "KMIPKIT-REQ-SPEC-4.1-001-003",
-            "KMIPKIT-REQ-SPEC-4.4-001",
-            "KMIPKIT-REQ-SPEC-4.11-001",
-            "KMIPKIT-REQ-SPEC-4.14-001-001",
-            "KMIPKIT-REQ-SPEC-4.14-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
-            "KMIPKIT-REQ-SPEC-4.17-001-001",
-            "KMIPKIT-REQ-SPEC-4.17-001-002",
-            "KMIPKIT-REQ-SPEC-4.18-001-001",
-            "KMIPKIT-REQ-SPEC-4.18-001-002",
+            "KMIP-REQ-SPEC-4.1-001-001",
+            "KMIP-REQ-SPEC-4.1-001-002",
+            "KMIP-REQ-SPEC-4.1-001-003",
+            "KMIP-REQ-SPEC-4.4-001",
+            "KMIP-REQ-SPEC-4.11-001",
+            "KMIP-REQ-SPEC-4.14-001-001",
+            "KMIP-REQ-SPEC-4.14-001-002",
+            "KMIP-REQ-SPEC-4.16-001-001",
+            "KMIP-REQ-SPEC-4.16-001-002",
+            "KMIP-REQ-SPEC-4.16-002",
+            "KMIP-REQ-SPEC-4.16-003",
+            "KMIP-REQ-SPEC-4.17-001-001",
+            "KMIP-REQ-SPEC-4.17-001-002",
+            "KMIP-REQ-SPEC-4.18-001-001",
+            "KMIP-REQ-SPEC-4.18-001-002",
         }
         expected_rejected = {
-            "KMIPKIT-REQ-SPEC-4.2-002",
-            "KMIPKIT-REQ-SPEC-4.4-002",
+            "KMIP-REQ-SPEC-4.2-002",
+            "KMIP-REQ-SPEC-4.4-002",
         }
         expected_clauses = {
-            "KMIPKIT-CLAUSE-SPEC-4.1-001",
-            "KMIPKIT-CLAUSE-SPEC-4.2-001",
-            "KMIPKIT-CLAUSE-SPEC-4.2-002",
-            "KMIPKIT-CLAUSE-SPEC-4.4-001",
-            "KMIPKIT-CLAUSE-SPEC-4.4-002",
-            "KMIPKIT-CLAUSE-SPEC-4.11-001",
-            "KMIPKIT-CLAUSE-SPEC-4.14-001",
-            "KMIPKIT-CLAUSE-SPEC-4.16-001",
-            "KMIPKIT-CLAUSE-SPEC-4.16-002",
-            "KMIPKIT-CLAUSE-SPEC-4.16-003",
-            "KMIPKIT-CLAUSE-SPEC-4.16-004",
-            "KMIPKIT-CLAUSE-SPEC-4.17-001",
-            "KMIPKIT-CLAUSE-SPEC-4.17-002",
-            "KMIPKIT-CLAUSE-SPEC-4.18-001",
+            "KMIP-CLAUSE-SPEC-4.1-001",
+            "KMIP-CLAUSE-SPEC-4.2-001",
+            "KMIP-CLAUSE-SPEC-4.2-002",
+            "KMIP-CLAUSE-SPEC-4.4-001",
+            "KMIP-CLAUSE-SPEC-4.4-002",
+            "KMIP-CLAUSE-SPEC-4.11-001",
+            "KMIP-CLAUSE-SPEC-4.14-001",
+            "KMIP-CLAUSE-SPEC-4.16-001",
+            "KMIP-CLAUSE-SPEC-4.16-002",
+            "KMIP-CLAUSE-SPEC-4.16-003",
+            "KMIP-CLAUSE-SPEC-4.16-004",
+            "KMIP-CLAUSE-SPEC-4.17-001",
+            "KMIP-CLAUSE-SPEC-4.17-002",
+            "KMIP-CLAUSE-SPEC-4.18-001",
         }
         reviews = {
             review["source_clause_id"]: review
@@ -5858,21 +5858,21 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reviewed_rejections, expected_rejected)
 
         expected_source_scopes = {
-            "KMIPKIT-REQ-SPEC-4.1-001-001": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.1-001-002": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.1-001-003": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.4-001": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.11-001": "server_only",
-            "KMIPKIT-REQ-SPEC-4.14-001-001": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.14-001-002": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.16-001-001": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.16-001-002": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.16-002": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.16-003": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.17-001-001": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.17-001-002": "client_1_0",
-            "KMIPKIT-REQ-SPEC-4.18-001-001": "profile_conditional",
-            "KMIPKIT-REQ-SPEC-4.18-001-002": "profile_conditional",
+            "KMIP-REQ-SPEC-4.1-001-001": "profile_conditional",
+            "KMIP-REQ-SPEC-4.1-001-002": "profile_conditional",
+            "KMIP-REQ-SPEC-4.1-001-003": "profile_conditional",
+            "KMIP-REQ-SPEC-4.4-001": "client_1_0",
+            "KMIP-REQ-SPEC-4.11-001": "server_only",
+            "KMIP-REQ-SPEC-4.14-001-001": "profile_conditional",
+            "KMIP-REQ-SPEC-4.14-001-002": "profile_conditional",
+            "KMIP-REQ-SPEC-4.16-001-001": "client_1_0",
+            "KMIP-REQ-SPEC-4.16-001-002": "client_1_0",
+            "KMIP-REQ-SPEC-4.16-002": "profile_conditional",
+            "KMIP-REQ-SPEC-4.16-003": "profile_conditional",
+            "KMIP-REQ-SPEC-4.17-001-001": "client_1_0",
+            "KMIP-REQ-SPEC-4.17-001-002": "client_1_0",
+            "KMIP-REQ-SPEC-4.18-001-001": "profile_conditional",
+            "KMIP-REQ-SPEC-4.18-001-002": "profile_conditional",
         }
         self.assertEqual(
             {row["requirement_id"]: row["scope_state"] for row in crosswalk},
@@ -5881,17 +5881,17 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.4-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.4-001"]["source_obligations"]
             ],
             [(1, "client", "client_1_0"), (2, "server", "server_only"), (3, "server", "server_only")],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.2-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.2-001"]["source_obligations"]],
             ["server_only", "unresolved"],
             "the server MAY and the non-keyword MAY NOT statement remain distinct",
         )
         self.assertEqual(
-            [atom["actor"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.17-001"]["source_obligations"]],
+            [atom["actor"] for atom in reviews["KMIP-CLAUSE-SPEC-4.17-001"]["source_obligations"]],
             ["client", "client"],
         )
         self.assertFalse(oracle["counts"]["requirement_crosswalk_complete"])
@@ -5910,13 +5910,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.32" or row["section"].startswith("6.1.32.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.32-001": ("6.1.32", 1, "paragraph", ["MAY"], [29980, 29983]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32-002": ("6.1.32", 2, "table_row", ["REQUIRED"], [30002, 30020]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32-003": ("6.1.32", 3, "table_row", ["SHALL"], [30021, 30038]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32-004": ("6.1.32", 4, "table_row", ["SHALL"], [30039, 30059]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32-005": ("6.1.32", 5, "table_row", ["REQUIRED"], [30145, 30163]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32.1-001": ("6.1.32.1", 1, "paragraph", ["SHALL"], [30228, 30229]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.32.1-002": ("6.1.32.1", 2, "table_row", ["REQUIRED"], [30249, 30265]),
+            "KMIP-CLAUSE-SPEC-6.1.32-001": ("6.1.32", 1, "paragraph", ["MAY"], [29980, 29983]),
+            "KMIP-CLAUSE-SPEC-6.1.32-002": ("6.1.32", 2, "table_row", ["REQUIRED"], [30002, 30020]),
+            "KMIP-CLAUSE-SPEC-6.1.32-003": ("6.1.32", 3, "table_row", ["SHALL"], [30021, 30038]),
+            "KMIP-CLAUSE-SPEC-6.1.32-004": ("6.1.32", 4, "table_row", ["SHALL"], [30039, 30059]),
+            "KMIP-CLAUSE-SPEC-6.1.32-005": ("6.1.32", 5, "table_row", ["REQUIRED"], [30145, 30163]),
+            "KMIP-CLAUSE-SPEC-6.1.32.1-001": ("6.1.32.1", 1, "paragraph", ["SHALL"], [30228, 30229]),
+            "KMIP-CLAUSE-SPEC-6.1.32.1-002": ("6.1.32.1", 2, "table_row", ["REQUIRED"], [30249, 30265]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -5946,7 +5946,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        parameter_may = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-001"]
+        parameter_may = reviews["KMIP-CLAUSE-SPEC-6.1.32-001"]
         self.assertEqual(
             parameter_may["source_obligations"],
             [
@@ -5958,15 +5958,15 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "client→server request payload",
                     "condition": "The Cryptographic Parameters can be specified as associated attributes of the Managed Cryptographic Object.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-001",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.32-001",
                 }
             ],
         )
-        self.assertEqual(parameter_may["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.32-001"])
+        self.assertEqual(parameter_may["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.32-001"])
         self.assertEqual(parameter_may["source_request_rows"], [])
         self.assertEqual(parameter_may["source_payload_rows"], [])
 
-        unique_identifier = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-003"]
+        unique_identifier = reviews["KMIP-CLAUSE-SPEC-6.1.32-003"]
         self.assertEqual(
             unique_identifier["source_obligations"],
             [
@@ -5978,13 +5978,13 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "server-side MAC request placeholder resolution",
                     "condition": "The Unique Identifier is omitted.",
                     "scope_disposition": "server_only",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-003",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.32-003",
                 }
             ],
         )
         self.assertEqual(unique_identifier["expected_client_requirement_ids"], [])
 
-        cryptographic_parameters = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-004"]
+        cryptographic_parameters = reviews["KMIP-CLAUSE-SPEC-6.1.32-004"]
         self.assertEqual(
             cryptographic_parameters["source_obligations"],
             [
@@ -5996,7 +5996,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "server-to-client MAC error response",
                     "condition": "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the algorithm requires parameters.",
                     "scope_disposition": "server_only",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-004-002",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.32-004-002",
                 }
             ],
         )
@@ -6005,7 +6005,7 @@ class CatalogValidationTests(unittest.TestCase):
             cryptographic_parameters["rejected_candidate_mappings"],
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.32-004-001",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.32-004-001",
                     "claimed_keyword": "SHALL",
                     "source_review": "The Cryptographic Parameters table description identifies the requested method but states no client SHALL; the only formal SHALL in this locator assigns an error response to the server.",
                     "expected_disposition": "reject_candidate_non_normative_client_description",
@@ -6013,7 +6013,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-002"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.32-002"]
         self.assertEqual(request_header["source_obligations"], [])
         request_rows = request_header["source_request_rows"]
         self.assertEqual(
@@ -6026,8 +6026,8 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in request_rows
             ],
             [
-                ("Unique Identifier", "No", [30021, 30038], None, ["KMIPKIT-REQ-SPEC-6.1-003-002"], "optional_request_field_with_existing_conditional_capability"),
-                ("Cryptographic Parameters", "No", [30039, 30059], None, ["KMIPKIT-REQ-SPEC-6.1.32-001"], "optional_request_field_covered_by_client_may"),
+                ("Unique Identifier", "No", [30021, 30038], None, ["KMIP-REQ-SPEC-6.1-003-002"], "optional_request_field_with_existing_conditional_capability"),
+                ("Cryptographic Parameters", "No", [30039, 30059], None, ["KMIP-REQ-SPEC-6.1.32-001"], "optional_request_field_covered_by_client_may"),
                 ("Data", "Yes for single-part. No for multi-part.", [30060, 30076], "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED", [], "conditionally_required_request_table_contract"),
                 ("Correlation Value", "No", [30077, 30094], "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-CORRELATION-VALUE-OPTIONAL", [], "optional_request_table_contract"),
                 ("Init Indicator", "No", [30095, 30110], "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-INIT-INDICATOR-OPTIONAL", [], "optional_request_table_contract"),
@@ -6039,7 +6039,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32-005"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.32-005"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         response_rows = response_header["source_payload_rows"]
@@ -6058,7 +6058,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.32.1-001"]
         self.assertEqual(
             error_preamble["source_obligations"],
             [
@@ -6075,7 +6075,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.32.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.32.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         self.assertEqual(result_inventory["expected_client_requirement_ids"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
@@ -6115,12 +6115,12 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in crosswalk
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.32-001", "KMIPKIT-CLAUSE-SPEC-6.1.32-001", 1, "MAY", "client", "client_1_0"),
-                ("KMIPKIT-REQ-SPEC-6.1.32-003", "KMIPKIT-CLAUSE-SPEC-6.1.32-003", 1, "SHALL", "server", "server_only"),
-                ("KMIPKIT-REQ-SPEC-6.1.32-004-002", "KMIPKIT-CLAUSE-SPEC-6.1.32-004", 1, "SHALL", "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.32-001", "KMIP-CLAUSE-SPEC-6.1.32-001", 1, "MAY", "client", "client_1_0"),
+                ("KMIP-REQ-SPEC-6.1.32-003", "KMIP-CLAUSE-SPEC-6.1.32-003", 1, "SHALL", "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.32-004-002", "KMIP-CLAUSE-SPEC-6.1.32-004", 1, "SHALL", "server", "server_only"),
             },
         )
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.32-004-001", {row["requirement_id"] for row in crosswalk})
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.32-004-001", {row["requirement_id"] for row in crosswalk})
 
         expected_gaps = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-DATA-REQUIRED": (
@@ -6143,7 +6143,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertTrue(set(expected_gaps).isdisjoint(gaps))
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1.32-002",
+            "KMIP-REQ-SPEC-6.1.32-002",
             {gap["proposed_requirement_id"] for gap in oracle["source_only_requirement_gaps"]},
             "MAC UID omission reuses the generic §6.1 capability rather than proposing a duplicate requirement",
         )
@@ -6156,7 +6156,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_rows = next(
             review["source_request_rows"]
             for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.32-002"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.32-002"
         )
         audited_rows = {row["row_label"]: row for row in source_rows}
         for gap_id, (row_label, line_range, source_force, requiredness) in expected_gaps.items():
@@ -6206,14 +6206,14 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.33" or row["section"].startswith("6.1.33.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-001": ("6.1.33", 1, "paragraph", ["MAY"], [30281, 30286]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-002": ("6.1.33", 2, "paragraph", ["SHALL"], [30293, 30296]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-003": ("6.1.33", 3, "table_row", ["REQUIRED"], [30312, 30330]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-004": ("6.1.33", 4, "table_row", ["SHALL"], [30331, 30349]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-005": ("6.1.33", 5, "table_row", ["SHALL"], [30350, 30370]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33-006": ("6.1.33", 6, "table_row", ["REQUIRED"], [30472, 30490]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33.1-001": ("6.1.33.1", 1, "paragraph", ["SHALL"], [30556, 30557]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.33.1-002": ("6.1.33.1", 2, "table_row", ["REQUIRED"], [30577, 30594]),
+            "KMIP-CLAUSE-SPEC-6.1.33-001": ("6.1.33", 1, "paragraph", ["MAY"], [30281, 30286]),
+            "KMIP-CLAUSE-SPEC-6.1.33-002": ("6.1.33", 2, "paragraph", ["SHALL"], [30293, 30296]),
+            "KMIP-CLAUSE-SPEC-6.1.33-003": ("6.1.33", 3, "table_row", ["REQUIRED"], [30312, 30330]),
+            "KMIP-CLAUSE-SPEC-6.1.33-004": ("6.1.33", 4, "table_row", ["SHALL"], [30331, 30349]),
+            "KMIP-CLAUSE-SPEC-6.1.33-005": ("6.1.33", 5, "table_row", ["SHALL"], [30350, 30370]),
+            "KMIP-CLAUSE-SPEC-6.1.33-006": ("6.1.33", 6, "table_row", ["REQUIRED"], [30472, 30490]),
+            "KMIP-CLAUSE-SPEC-6.1.33.1-001": ("6.1.33.1", 1, "paragraph", ["SHALL"], [30556, 30557]),
+            "KMIP-CLAUSE-SPEC-6.1.33.1-002": ("6.1.33.1", 2, "table_row", ["REQUIRED"], [30577, 30594]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -6243,7 +6243,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        request_mays = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-001"]
+        request_mays = reviews["KMIP-CLAUSE-SPEC-6.1.33-001"]
         self.assertEqual(
             request_mays["source_obligations"],
             [
@@ -6255,7 +6255,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "client→server request payload",
                     "condition": "For algorithms which need the original data to verify a MAC.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.33-001-001",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.33-001-001",
                 },
                 {
                     "source_order": 2,
@@ -6265,16 +6265,16 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "client→server request payload",
                     "condition": "The Cryptographic Parameters can be specified as associated attributes of the Managed Cryptographic Object.",
                     "scope_disposition": "client_1_0",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.33-001-002",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.33-001-002",
                 },
             ],
         )
         self.assertEqual(
             request_mays["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.33-001-001", "KMIPKIT-REQ-SPEC-6.1.33-001-002"],
+            ["KMIP-REQ-SPEC-6.1.33-001-001", "KMIP-REQ-SPEC-6.1.33-001-002"],
         )
 
-        validity_prose = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-002"]
+        validity_prose = reviews["KMIP-CLAUSE-SPEC-6.1.33-002"]
         self.assertEqual(
             validity_prose["source_obligations"],
             [
@@ -6306,7 +6306,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("KMIPKIT-DISC-048", validity_prose["review_note"])
         self.assertIn("no interpretation", validity_prose["review_note"].lower())
 
-        identifier = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-004"]
+        identifier = reviews["KMIP-CLAUSE-SPEC-6.1.33-004"]
         self.assertEqual(
             identifier["source_obligations"],
             [
@@ -6318,13 +6318,13 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "server-side MAC Verify request placeholder resolution",
                     "condition": "The Unique Identifier is omitted.",
                     "scope_disposition": "server_only",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.33-004",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.33-004",
                 }
             ],
         )
         self.assertEqual(identifier["expected_client_requirement_ids"], [])
 
-        cryptographic_parameters = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-005"]
+        cryptographic_parameters = reviews["KMIP-CLAUSE-SPEC-6.1.33-005"]
         self.assertEqual(
             cryptographic_parameters["source_obligations"],
             [
@@ -6336,7 +6336,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "direction": "server-to-client MAC Verify error response",
                     "condition": "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the algorithm requires parameters.",
                     "scope_disposition": "server_only",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.33-005-002",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.33-005-002",
                 }
             ],
         )
@@ -6345,7 +6345,7 @@ class CatalogValidationTests(unittest.TestCase):
             cryptographic_parameters["rejected_candidate_mappings"],
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.33-005-001",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.33-005-001",
                     "claimed_keyword": "SHALL",
                     "source_review": "The Cryptographic Parameters table description identifies the requested MAC Verify method but states no separate client SHALL; the only formal SHALL in this locator assigns an error response to the server.",
                     "expected_disposition": "reject_candidate_non_normative_client_description",
@@ -6353,7 +6353,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.33-003"]
         self.assertEqual(request_header["source_obligations"], [])
         request_rows = request_header["source_request_rows"]
         self.assertEqual(
@@ -6369,9 +6369,9 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in request_rows
             ],
             [
-                ("Unique Identifier", "No", [30331, 30349], None, ["KMIPKIT-REQ-SPEC-6.1-003-002"], "optional_request_field_with_existing_conditional_capability"),
-                ("Cryptographic Parameters", "No", [30350, 30370], None, ["KMIPKIT-REQ-SPEC-6.1.33-001-002"], "optional_request_field_covered_by_client_may"),
-                ("Data", "No", [30371, 30386], None, ["KMIPKIT-REQ-SPEC-6.1.33-001-001"], "optional_request_field_covered_by_client_may"),
+                ("Unique Identifier", "No", [30331, 30349], None, ["KMIP-REQ-SPEC-6.1-003-002"], "optional_request_field_with_existing_conditional_capability"),
+                ("Cryptographic Parameters", "No", [30350, 30370], None, ["KMIP-REQ-SPEC-6.1.33-001-002"], "optional_request_field_covered_by_client_may"),
+                ("Data", "No", [30371, 30386], None, ["KMIP-REQ-SPEC-6.1.33-001-001"], "optional_request_field_covered_by_client_may"),
                 ("MAC Data", "Yes for single-part. No for multi-part.", [30387, 30403], "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-MAC-DATA-REQUIRED", [], "conditionally_required_request_table_contract"),
                 ("Correlation Value", "No", [30404, 30421], "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-CORRELATION-VALUE-OPTIONAL", [], "optional_request_table_contract"),
                 ("Init Indicator", "No", [30422, 30437], "KMIPKIT-SOURCE-GAP-SPEC-6.1.33-INIT-INDICATOR-OPTIONAL", [], "optional_request_table_contract"),
@@ -6383,11 +6383,11 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
         data_row = next(row for row in request_rows if row["row_label"] == "Data")
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.33-001-001", data_row.get("source_note", ""))
+        self.assertIn("KMIP-REQ-SPEC-6.1.33-001-001", data_row.get("source_note", ""))
         self.assertIn("KMIPKIT-SOURCE-GAP-SPEC-6.1-PARAGRAPH-009", data_row.get("source_note", ""))
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1-009-001",
+            "KMIP-REQ-SPEC-6.1-009-001",
             {requirement["requirement_id"] for requirement in catalog["requirements"]},
             "the unresolved paragraph-009 proposal must not become an accepted catalog requirement",
         )
@@ -6399,13 +6399,13 @@ class CatalogValidationTests(unittest.TestCase):
             identifier_row["reuse_condition"],
             "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
         )
-        self.assertEqual(identifier_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(identifier_row["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertIsNone(identifier_row.get("source_gap_id"))
-        self.assertEqual(identifier_row["server_fallback_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.33-004")
+        self.assertEqual(identifier_row["server_fallback_requirement_id"], "KMIP-REQ-SPEC-6.1.33-004")
         self.assertIn("does not establish standalone omission", identifier_row["source_note"])
         self.assertEqual(request_header["source_payload_rows"], [])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33-006"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.33-006"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         response_rows = response_header["source_payload_rows"]
@@ -6424,7 +6424,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.33.1-001"]
         self.assertEqual(
             error_preamble["source_obligations"],
             [
@@ -6441,7 +6441,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.33.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.33.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         self.assertEqual(result_inventory["expected_client_requirement_ids"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
@@ -6488,14 +6488,14 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in crosswalk
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.33-001-001", "KMIPKIT-CLAUSE-SPEC-6.1.33-001", 1, "MAY", "client", "client_1_0"),
-                ("KMIPKIT-REQ-SPEC-6.1.33-001-002", "KMIPKIT-CLAUSE-SPEC-6.1.33-001", 2, "MAY", "client", "client_1_0"),
-                ("KMIPKIT-REQ-SPEC-6.1.33-004", "KMIPKIT-CLAUSE-SPEC-6.1.33-004", 1, "SHALL", "server", "server_only"),
-                ("KMIPKIT-REQ-SPEC-6.1.33-005-002", "KMIPKIT-CLAUSE-SPEC-6.1.33-005", 1, "SHALL", "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.33-001-001", "KMIP-CLAUSE-SPEC-6.1.33-001", 1, "MAY", "client", "client_1_0"),
+                ("KMIP-REQ-SPEC-6.1.33-001-002", "KMIP-CLAUSE-SPEC-6.1.33-001", 2, "MAY", "client", "client_1_0"),
+                ("KMIP-REQ-SPEC-6.1.33-004", "KMIP-CLAUSE-SPEC-6.1.33-004", 1, "SHALL", "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.33-005-002", "KMIP-CLAUSE-SPEC-6.1.33-005", 1, "SHALL", "server", "server_only"),
             },
         )
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1.33-002",
+            "KMIP-REQ-SPEC-6.1.33-002",
             {row["requirement_id"] for row in crosswalk},
             "Validity Indicator response clauses are server duties, not client requirements",
         )
@@ -6556,11 +6556,11 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.34" or row["section"].startswith("6.1.34.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.34-001": ("6.1.34", 1, "paragraph", ["OPTIONAL", "SHALL", "MAY"], [30605, 30616]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.34-002": ("6.1.34", 2, "table_row", ["REQUIRED"], [30629, 30647]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.34-003": ("6.1.34", 3, "table_row", ["REQUIRED"], [30724, 30742]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.34.1-001": ("6.1.34.1", 1, "paragraph", ["SHALL"], [30772, 30773]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.34.1-002": ("6.1.34.1", 2, "table_row", ["REQUIRED"], [30793, 30808]),
+            "KMIP-CLAUSE-SPEC-6.1.34-001": ("6.1.34", 1, "paragraph", ["OPTIONAL", "SHALL", "MAY"], [30605, 30616]),
+            "KMIP-CLAUSE-SPEC-6.1.34-002": ("6.1.34", 2, "table_row", ["REQUIRED"], [30629, 30647]),
+            "KMIP-CLAUSE-SPEC-6.1.34-003": ("6.1.34", 3, "table_row", ["REQUIRED"], [30724, 30742]),
+            "KMIP-CLAUSE-SPEC-6.1.34.1-001": ("6.1.34.1", 1, "paragraph", ["SHALL"], [30772, 30773]),
+            "KMIP-CLAUSE-SPEC-6.1.34.1-002": ("6.1.34.1", 2, "table_row", ["REQUIRED"], [30793, 30808]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -6586,22 +6586,22 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        modify_attribute = reviews["KMIPKIT-CLAUSE-SPEC-6.1.34-001"]
+        modify_attribute = reviews["KMIP-CLAUSE-SPEC-6.1.34-001"]
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_text"], atom["source_keyword"], atom["actor"], atom["scope_disposition"], atom["candidate_requirement_id"])
                 for atom in modify_attribute["source_obligations"]
             ],
             [
-                (1, "the OPTIONAL Current Attribute existing value", "OPTIONAL", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.34-001-001"),
-                (2, "it SHALL be selected as the attribute instance to be modified to the New Attribute value", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.34-001-002"),
+                (1, "the OPTIONAL Current Attribute existing value", "OPTIONAL", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.34-001-001"),
+                (2, "it SHALL be selected as the attribute instance to be modified to the New Attribute value", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.34-001-002"),
                 (3, "an error SHALL be returned", "SHALL", "server", "server_only", None),
-                (4, "Only existing attributes MAY be changed via this operation.", "MAY", "unspecified", "profile_conditional", "KMIPKIT-REQ-SPEC-6.1.34-001-003"),
+                (4, "Only existing attributes MAY be changed via this operation.", "MAY", "unspecified", "profile_conditional", "KMIP-REQ-SPEC-6.1.34-001-003"),
                 (5, "Only the specified instance of the attribute SHALL be modified.", "SHALL", "server", "server_only", None),
-                (6, "Specifying a Current Attribute for which there exists no Attribute associated with the object SHALL result in an error.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.34-001-004"),
+                (6, "Specifying a Current Attribute for which there exists no Attribute associated with the object SHALL result in an error.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.34-001-004"),
             ],
         )
-        self.assertEqual(modify_attribute["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.34-001-001", "KMIPKIT-REQ-SPEC-6.1.34-001-003"])
+        self.assertEqual(modify_attribute["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.34-001-001", "KMIP-REQ-SPEC-6.1.34-001-003"])
         self.assertIn("omission does not require exactly one instance as a client precondition", modify_attribute["review_note"])
         self.assertIn("project recommends client attribution", modify_attribute["review_note"])
         self.assertEqual(
@@ -6611,10 +6611,10 @@ class CatalogValidationTests(unittest.TestCase):
                 if row["source_section"] in ("6.1.34", "6.1.34.1")
             ],
             [
-                ("KMIPKIT-REQ-SPEC-6.1.34-001-001", "OPTIONAL", 1, "client", "client_1_0"),
-                ("KMIPKIT-REQ-SPEC-6.1.34-001-002", "SHALL", 2, "server", "server_only"),
-                ("KMIPKIT-REQ-SPEC-6.1.34-001-003", "MAY", 4, "client", "profile_conditional"),
-                ("KMIPKIT-REQ-SPEC-6.1.34-001-004", "SHALL", 6, "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.34-001-001", "OPTIONAL", 1, "client", "client_1_0"),
+                ("KMIP-REQ-SPEC-6.1.34-001-002", "SHALL", 2, "server", "server_only"),
+                ("KMIP-REQ-SPEC-6.1.34-001-003", "MAY", 4, "client", "profile_conditional"),
+                ("KMIP-REQ-SPEC-6.1.34-001-004", "SHALL", 6, "server", "server_only"),
             ],
         )
         self.assertEqual(
@@ -6622,7 +6622,7 @@ class CatalogValidationTests(unittest.TestCase):
             set(expected_locators),
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.34-002"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.34-002"]
         self.assertEqual(request_header["source_obligations"], [])
         request_rows = request_header["source_request_rows"]
         self.assertEqual(
@@ -6631,8 +6631,8 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in request_rows
             ],
             [
-                ("Unique Identifier", "No", [30648, 30667], None, ["KMIPKIT-REQ-SPEC-6.1-003-002"]),
-                ("Current Attribute", "No", [30668, 30686], None, ["KMIPKIT-REQ-SPEC-6.1.34-001-001"]),
+                ("Unique Identifier", "No", [30648, 30667], None, ["KMIP-REQ-SPEC-6.1-003-002"]),
+                ("Current Attribute", "No", [30668, 30686], None, ["KMIP-REQ-SPEC-6.1.34-001-001"]),
                 ("New Attribute", "Yes", [30687, 30705], "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED", []),
             ],
         )
@@ -6641,7 +6641,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
             self.assertNotIn("style=", row["source_excerpt"])
         new_attribute_row = request_rows[2]
-        self.assertEqual(new_attribute_row["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute_row["source_element_id"], "KMIP-ELEM-TAG-42013D")
         self.assertEqual(new_attribute_row["source_requirement_ids"], [])
         self.assertEqual(new_attribute_row["disposition"], "required_request_table_contract")
         identifier_row = request_rows[0]
@@ -6653,7 +6653,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("does not establish standalone omission", identifier_row["source_note"])
         self.assertEqual(request_header["source_payload_rows"], [])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.34-003"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.34-003"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         self.assertEqual(
@@ -6666,7 +6666,7 @@ class CatalogValidationTests(unittest.TestCase):
         for row in response_header["source_payload_rows"]:
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.34.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.34.1-001"]
         self.assertEqual(
             error_preamble["source_obligations"],
             [
@@ -6683,7 +6683,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.34.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.34.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
@@ -6714,7 +6714,7 @@ class CatalogValidationTests(unittest.TestCase):
             gap["gap_id"] == "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"
             for gap in oracle["source_only_requirement_gaps"]
         ))
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.34-005", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.34-005", {
             row["requirement_id"]
             for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
@@ -6732,13 +6732,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] in ("6.1.35", "6.1.35.1")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.35-001": ("6.1.35", 1, "paragraph", ["MAY", "SHALL NOT", "SHALL"], [30819, 30828]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35-002": ("6.1.35", 2, "paragraph", ["MAY"], [30830, 30834]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35-003": ("6.1.35", 3, "table_row", ["REQUIRED"], [30847, 30865]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35-004": ("6.1.35", 4, "table_row", ["REQUIRED"], [30904, 30922]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35-005": ("6.1.35", 5, "table_row", ["MAY"], [30941, 30959]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35.1-001": ("6.1.35.1", 1, "paragraph", ["SHALL"], [30990, 30991]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.35.1-002": ("6.1.35.1", 2, "table_row", ["REQUIRED"], [31011, 31025]),
+            "KMIP-CLAUSE-SPEC-6.1.35-001": ("6.1.35", 1, "paragraph", ["MAY", "SHALL NOT", "SHALL"], [30819, 30828]),
+            "KMIP-CLAUSE-SPEC-6.1.35-002": ("6.1.35", 2, "paragraph", ["MAY"], [30830, 30834]),
+            "KMIP-CLAUSE-SPEC-6.1.35-003": ("6.1.35", 3, "table_row", ["REQUIRED"], [30847, 30865]),
+            "KMIP-CLAUSE-SPEC-6.1.35-004": ("6.1.35", 4, "table_row", ["REQUIRED"], [30904, 30922]),
+            "KMIP-CLAUSE-SPEC-6.1.35-005": ("6.1.35", 5, "table_row", ["MAY"], [30941, 30959]),
+            "KMIP-CLAUSE-SPEC-6.1.35.1-001": ("6.1.35.1", 1, "paragraph", ["SHALL"], [30990, 30991]),
+            "KMIP-CLAUSE-SPEC-6.1.35.1-002": ("6.1.35.1", 2, "table_row", ["REQUIRED"], [31011, 31025]),
         }
         self.assertEqual({row["clause_id"] for row in section_locators}, set(expected_locators))
         reviews = {
@@ -6759,10 +6759,10 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        lease_paragraph = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35-001"]
+        lease_paragraph = reviews["KMIP-CLAUSE-SPEC-6.1.35-001"]
         expected_atoms = [
-            (1, "If the returned value of the lease time is zero, then the server is indicating that no lease interval is effective, and the client MAY use the object without any lease time limit.", "MAY", "client", "client-local object use", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.35-001-001"),
-            (2, "If a client's lease expires, then the client SHALL NOT use the associated cryptographic object until a new lease is obtained.", "SHALL NOT", "client", "client-local object use", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.35-001-002"),
+            (1, "If the returned value of the lease time is zero, then the server is indicating that no lease interval is effective, and the client MAY use the object without any lease time limit.", "MAY", "client", "client-local object use", "client_1_0", "KMIP-REQ-SPEC-6.1.35-001-001"),
+            (2, "If a client's lease expires, then the client SHALL NOT use the associated cryptographic object until a new lease is obtained.", "SHALL NOT", "client", "client-local object use", "client_1_0", "KMIP-REQ-SPEC-6.1.35-001-002"),
             (3, "If the server determines that a new lease SHALL NOT be issued for the specified cryptographic object,", "SHALL NOT", "server", "server lease-issuance policy", "server_only", None),
             (4, "then the server SHALL respond to the Obtain Lease request with an error.", "SHALL", "server", "server→client error response", "server_only", None),
         ]
@@ -6775,34 +6775,34 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             lease_paragraph["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.35-001-001", "KMIPKIT-REQ-SPEC-6.1.35-001-002"],
+            ["KMIP-REQ-SPEC-6.1.35-001-001", "KMIP-REQ-SPEC-6.1.35-001-002"],
         )
-        last_change = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35-002"]
+        last_change = reviews["KMIP-CLAUSE-SPEC-6.1.35-002"]
         self.assertEqual(last_change["source_obligations"][0]["source_order"], 1)
         self.assertEqual(last_change["source_obligations"][0]["source_keyword"], "MAY")
         self.assertEqual(last_change["source_obligations"][0]["actor"], "client")
-        self.assertEqual(last_change["source_obligations"][0]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.35-002")
-        self.assertEqual(last_change["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.35-002"])
+        self.assertEqual(last_change["source_obligations"][0]["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.35-002")
+        self.assertEqual(last_change["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.35-002"])
 
         crosswalk = {
             row["requirement_id"]: row
             for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.35-")
+            if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.35-")
         }
         self.assertEqual(
             set(crosswalk),
             {
-                "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.35-002",
-                "KMIPKIT-REQ-SPEC-6.1.35-005",
+                "KMIP-REQ-SPEC-6.1.35-001-001",
+                "KMIP-REQ-SPEC-6.1.35-001-002",
+                "KMIP-REQ-SPEC-6.1.35-002",
+                "KMIP-REQ-SPEC-6.1.35-005",
             },
         )
         expected_crosswalk = {
-            "KMIPKIT-REQ-SPEC-6.1.35-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.35-001", "MAY", 1, "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.35-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.35-001", "SHALL NOT", 2, "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.35-002": ("KMIPKIT-CLAUSE-SPEC-6.1.35-002", "MAY", 1, "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.35-005": ("KMIPKIT-CLAUSE-SPEC-6.1.35-005", "MAY", 1, "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.35-001-001": ("KMIP-CLAUSE-SPEC-6.1.35-001", "MAY", 1, "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.35-001-002": ("KMIP-CLAUSE-SPEC-6.1.35-001", "SHALL NOT", 2, "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.35-002": ("KMIP-CLAUSE-SPEC-6.1.35-002", "MAY", 1, "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.35-005": ("KMIP-CLAUSE-SPEC-6.1.35-005", "MAY", 1, "client", "client_1_0"),
         }
         for requirement_id, (clause_id, keyword, order, actor, scope) in expected_crosswalk.items():
             row = crosswalk[requirement_id]
@@ -6812,7 +6812,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_actor"], actor)
             self.assertEqual(row["scope_state"], scope)
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.35-003"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(len(request_header["source_request_rows"]), 1)
         uid_request = request_header["source_request_rows"][0]
@@ -6821,12 +6821,12 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(uid_request["actor"], "client")
         self.assertEqual(uid_request["html_line_range"], [30866, 30885])
         self.assertEqual(uid_request["source_excerpt"], pinned_source_excerpt(source_path, [30866, 30885]))
-        self.assertEqual(uid_request["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(uid_request["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertIn("subsequent operation", uid_request["reuse_condition"])
         self.assertIn("ID Placeholder", uid_request["reuse_condition"])
         self.assertIn("fallback", uid_request["source_note"].lower())
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35-004"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.35-004"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["html_line_range"]) for row in response_header["source_payload_rows"]],
@@ -6839,7 +6839,7 @@ class CatalogValidationTests(unittest.TestCase):
         for row in response_header["source_payload_rows"]:
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
 
-        lease_time = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35-005"]
+        lease_time = reviews["KMIP-CLAUSE-SPEC-6.1.35-005"]
         self.assertEqual(lease_time["source_obligations"][0]["source_order"], 1)
         self.assertEqual(lease_time["source_obligations"][0]["source_keyword"], "MAY")
         self.assertEqual(lease_time["source_obligations"][0]["actor"], "client")
@@ -6848,11 +6848,11 @@ class CatalogValidationTests(unittest.TestCase):
             lease_time["source_obligations"][0]["condition"],
             "The returned Lease Time is a positive interval. A returned zero value is handled separately by the §6.1.35-001 MAY and has no effective lease interval.",
         )
-        self.assertEqual(lease_time["source_obligations"][0]["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.35-005")
+        self.assertEqual(lease_time["source_obligations"][0]["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.35-005")
         self.assertIn("zero", lease_time["review_note"].lower())
         self.assertIn("interval", lease_time["review_note"].lower())
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.35.1-001"]
         self.assertEqual(error_preamble["source_obligations"][0]["source_keyword"], "SHALL")
         self.assertEqual(error_preamble["source_obligations"][0]["actor"], "server")
         self.assertEqual(error_preamble["source_obligations"][0]["direction"], "server→client error response")
@@ -6860,7 +6860,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(error_preamble["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertIsNone(error_preamble["source_obligations"][0]["candidate_requirement_id"])
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.35.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.35.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         self.assertEqual(
             result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -6893,9 +6893,9 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         ping_locators = [row for row in pinned_locators if row["section"] == "6.1.36"]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.36-001": (1, "paragraph", ["MAY"], [31036, 31038]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.36-002": (2, "table_row", ["REQUIRED"], [31051, 31069]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.36-003": (3, "table_row", ["REQUIRED"], [31105, 31123]),
+            "KMIP-CLAUSE-SPEC-6.1.36-001": (1, "paragraph", ["MAY"], [31036, 31038]),
+            "KMIP-CLAUSE-SPEC-6.1.36-002": (2, "table_row", ["REQUIRED"], [31051, 31069]),
+            "KMIP-CLAUSE-SPEC-6.1.36-003": (3, "table_row", ["REQUIRED"], [31105, 31123]),
         }
         self.assertEqual({row["clause_id"] for row in ping_locators}, set(expected_locators))
         reviews = {
@@ -6914,7 +6914,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        operation = reviews["KMIPKIT-CLAUSE-SPEC-6.1.36-001"]
+        operation = reviews["KMIP-CLAUSE-SPEC-6.1.36-001"]
         self.assertEqual(len(operation["source_obligations"]), 1)
         self.assertEqual(operation["expected_client_requirement_ids"], [])
         self.assertIn("determine if a server is alive and responding", operation["source_excerpt"])
@@ -6926,8 +6926,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(server_may["scope_disposition"], "server_only")
         self.assertIsNone(server_may["candidate_requirement_id"])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.36-002"]
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.36-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.36-002"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.36-003"]
         for table_header in (request_header, response_header):
             self.assertEqual(table_header["source_obligations"], [])
             self.assertEqual(table_header["source_request_rows"], [])
@@ -6937,7 +6937,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("empty", response_header["review_note"].lower())
 
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-")],
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.36-")],
             [],
         )
         self.assertEqual(
@@ -6946,7 +6946,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertFalse(any(row["source_section"] == "6.1.36.1" for row in oracle["source_requirement_reviews"]))
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
-        self.assertFalse(any(row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
+        self.assertFalse(any(row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.36-") for row in catalog["requirements"]))
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_pkcs11_table_273_required_function_is_a_client_source_contract(self) -> None:
@@ -6987,7 +6987,7 @@ class CatalogValidationTests(unittest.TestCase):
             "include the caller-selected PKCS#11 Function Structure in the client request payload",
         )
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-PKCS-11")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-PKCS-11")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/pkcs11.rs::Pkcs11Request::into_ttlv_payload",
@@ -6996,11 +6996,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
         self.assertIn("opaque", contract["evidence_disposition"]["statement"].lower())
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.37-001", {
             row["requirement_id"]
             for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.37-001", {
             row["requirement_id"] for row in oracle["requirement_crosswalk"]
         })
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -7013,12 +7013,12 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         operation_locators = [row for row in pinned_locators if row["section"] in ("6.1.37", "6.1.37.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.37-001": ("6.1.37", 1, "table_row", ["REQUIRED"], [31165, 31183]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.37-002": ("6.1.37", 2, "table_row", ["MUST"], [31222, 31240]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.37-003": ("6.1.37", 3, "table_row", ["REQUIRED"], [31277, 31295]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.37-004": ("6.1.37", 4, "table_row", ["MUST"], [31340, 31359]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.37.1-001": ("6.1.37.1", 1, "paragraph", ["SHALL"], [31413, 31414]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.37.1-002": ("6.1.37.1", 2, "table_row", ["REQUIRED"], [31434, 31449]),
+            "KMIP-CLAUSE-SPEC-6.1.37-001": ("6.1.37", 1, "table_row", ["REQUIRED"], [31165, 31183]),
+            "KMIP-CLAUSE-SPEC-6.1.37-002": ("6.1.37", 2, "table_row", ["MUST"], [31222, 31240]),
+            "KMIP-CLAUSE-SPEC-6.1.37-003": ("6.1.37", 3, "table_row", ["REQUIRED"], [31277, 31295]),
+            "KMIP-CLAUSE-SPEC-6.1.37-004": ("6.1.37", 4, "table_row", ["MUST"], [31340, 31359]),
+            "KMIP-CLAUSE-SPEC-6.1.37.1-001": ("6.1.37.1", 1, "paragraph", ["SHALL"], [31413, 31414]),
+            "KMIP-CLAUSE-SPEC-6.1.37.1-002": ("6.1.37.1", 2, "table_row", ["REQUIRED"], [31434, 31449]),
         }
         self.assertEqual({row["clause_id"] for row in operation_locators}, set(expected_locators))
         reviews = {
@@ -7037,7 +7037,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        purpose = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-001"]
+        purpose = reviews["KMIP-CLAUSE-SPEC-6.1.37-001"]
         self.assertEqual(purpose["source_obligations"], [])
         self.assertIn("This operation enables the server to perform a PKCS#11 operation.", purpose["review_note"])
         request_rows = [row for review in reviews.values() for row in review["source_request_rows"]]
@@ -7059,7 +7059,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_correlation["source_excerpt"], "Correlation Value No Must be returned to the server if provided in a previous response.")
         self.assertIn("lowercase", request_correlation["source_note"].lower())
         self.assertIn("not a normative keyword", request_correlation["source_note"].lower())
-        request_correlation_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-002"]["source_obligations"][0]
+        request_correlation_atom = reviews["KMIP-CLAUSE-SPEC-6.1.37-002"]["source_obligations"][0]
         self.assertEqual(
             request_correlation_atom["source_keyword"],
             "Must (not uppercase RFC 2119 keyword; force unresolved)",
@@ -7083,7 +7083,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("client must provide", response_correlation["source_excerpt"])
         self.assertIn("lowercase", response_correlation["source_note"].lower())
         self.assertIn("not a normative keyword", response_correlation["source_note"].lower())
-        response_correlation_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37-004"]["source_obligations"][0]
+        response_correlation_atom = reviews["KMIP-CLAUSE-SPEC-6.1.37-004"]["source_obligations"][0]
         self.assertEqual(
             response_correlation_atom["source_keyword"],
             "must (lowercase; not a §1.2 formal keyword)",
@@ -7097,15 +7097,15 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.37"
         }
         self.assertEqual(set(gaps), set())
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.37-001", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.37-001", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
 
-        preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37.1-001"]
+        preamble = reviews["KMIP-CLAUSE-SPEC-6.1.37.1-001"]
         self.assertEqual(preamble["source_obligations"][0]["source_keyword"], "SHALL")
         self.assertEqual(preamble["source_obligations"][0]["actor"], "server")
         self.assertEqual(preamble["source_obligations"][0]["direction"], "server→client error response")
         self.assertEqual(preamble["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertEqual(preamble["expected_client_requirement_ids"], [])
-        error_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.37.1-002"]
+        error_rows = reviews["KMIP-CLAUSE-SPEC-6.1.37.1-002"]
         self.assertEqual(error_rows["source_obligations"], [])
         self.assertEqual(
             error_rows["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -7127,7 +7127,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Attestation Required", error_rows["review_note"])
         self.assertIn("non-exhaustive", error_rows["review_note"].lower())
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.37-")],
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.37-")],
             [],
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -7140,13 +7140,13 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         poll_locators = [row for row in pinned_locators if row["section"] in ("6.1.38", "6.1.38.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-001": ("6.1.38", 1, "paragraph", ["SHALL", "SHALL NOT"], [31460, 31463]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-002": ("6.1.38", 2, "table_row", ["REQUIRED"], [31476, 31494]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-003": ("6.1.38", 3, "paragraph", ["SHALL"], [31520, 31520]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-004": ("6.1.38", 4, "paragraph", ["SHALL"], [31522, 31523]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-005": ("6.1.38", 5, "paragraph", ["SHALL"], [31525, 31528]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38.1-001": ("6.1.38.1", 1, "paragraph", ["SHALL"], [31534, 31535]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.38.1-002": ("6.1.38.1", 2, "table_row", ["REQUIRED"], [31555, 31568]),
+            "KMIP-CLAUSE-SPEC-6.1.38-001": ("6.1.38", 1, "paragraph", ["SHALL", "SHALL NOT"], [31460, 31463]),
+            "KMIP-CLAUSE-SPEC-6.1.38-002": ("6.1.38", 2, "table_row", ["REQUIRED"], [31476, 31494]),
+            "KMIP-CLAUSE-SPEC-6.1.38-003": ("6.1.38", 3, "paragraph", ["SHALL"], [31520, 31520]),
+            "KMIP-CLAUSE-SPEC-6.1.38-004": ("6.1.38", 4, "paragraph", ["SHALL"], [31522, 31523]),
+            "KMIP-CLAUSE-SPEC-6.1.38-005": ("6.1.38", 5, "paragraph", ["SHALL"], [31525, 31528]),
+            "KMIP-CLAUSE-SPEC-6.1.38.1-001": ("6.1.38.1", 1, "paragraph", ["SHALL"], [31534, 31535]),
+            "KMIP-CLAUSE-SPEC-6.1.38.1-002": ("6.1.38.1", 2, "table_row", ["REQUIRED"], [31555, 31568]),
         }
         self.assertEqual({row["clause_id"] for row in poll_locators}, set(expected_locators))
         reviews = {
@@ -7165,21 +7165,21 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        poll_request = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-001"]
+        poll_request = reviews["KMIP-CLAUSE-SPEC-6.1.38-001"]
         self.assertEqual(
             [(atom["source_order"], atom["source_text"], atom["source_keyword"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in poll_request["source_obligations"]],
             [
-                (1, "The correlation value of the original operation SHALL be specified in the request.", "SHALL", "client", "client→server request payload", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.38-001-001"),
-                (2, "The response to this operation SHALL NOT be asynchronous.", "SHALL NOT", "server", "server→client response", "server_only", "KMIPKIT-REQ-SPEC-6.1.38-001-002"),
+                (1, "The correlation value of the original operation SHALL be specified in the request.", "SHALL", "client", "client→server request payload", "client_1_0", "KMIP-REQ-SPEC-6.1.38-001-001"),
+                (2, "The response to this operation SHALL NOT be asynchronous.", "SHALL NOT", "server", "server→client response", "server_only", "KMIP-REQ-SPEC-6.1.38-001-002"),
             ],
         )
-        self.assertEqual(poll_request["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.38-001-001"])
+        self.assertEqual(poll_request["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.38-001-001"])
         self.assertEqual(
             poll_request["rejected_candidate_mappings"],
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.38-001-002",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.38-001-002",
                     "claimed_keyword": "SHALL NOT",
                     "source_review": "The clause prohibits asynchronous Poll responses; it does not prohibit the client from treating the Poll request as asynchronous.",
                     "expected_disposition": "reject_catalog_client_actor_server_obligation",
@@ -7187,7 +7187,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-002"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.38-002"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["html_line_range"]) for row in request_header["source_request_rows"]],
@@ -7195,16 +7195,16 @@ class CatalogValidationTests(unittest.TestCase):
         )
         request_row = request_header["source_request_rows"][0]
         self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [31495, 31512]))
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.38-001-001", request_row["source_requirement_ids"])
+        self.assertIn("KMIP-REQ-SPEC-6.1.38-001-001", request_row["source_requirement_ids"])
 
         response_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-003": [
+            "KMIP-CLAUSE-SPEC-6.1.38-003": [
                 (1, "The server SHALL reply with one of two responses:", "SHALL", "server", "server→client response", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-004": [
+            "KMIP-CLAUSE-SPEC-6.1.38-004": [
                 (1, "If the operation has not completed, the response SHALL contain no payload and a Result Status of Pending.", "SHALL", "server", "server→client pending response", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.38-005": [
+            "KMIP-CLAUSE-SPEC-6.1.38-005": [
                 (1, "If the operation has completed, the response SHALL contain the appropriate payload for the operation.", "SHALL", "server", "server→client completed response payload", "server_only", None),
                 (2, "This response SHALL be identical to the response that would have been sent if the operation had completed synchronously.", "SHALL", "server", "server→client completed response", "server_only", None),
             ],
@@ -7225,20 +7225,20 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk = {
             row["requirement_id"]: row
             for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.38-")
+            if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.38-")
         }
-        self.assertEqual(set(crosswalk), {"KMIPKIT-REQ-SPEC-6.1.38-001-001", "KMIPKIT-REQ-SPEC-6.1.38-001-002"})
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.38-001-001"]["role"], "client")
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.38-001-001"]["scope_state"], "client_1_0")
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.38-001-002"]["role"], "server")
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.38-001-002"]["scope_state"], "server_only")
+        self.assertEqual(set(crosswalk), {"KMIP-REQ-SPEC-6.1.38-001-001", "KMIP-REQ-SPEC-6.1.38-001-002"})
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.38-001-001"]["role"], "client")
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.38-001-001"]["scope_state"], "client_1_0")
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.38-001-002"]["role"], "server")
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.38-001-002"]["scope_state"], "server_only")
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.38.1-001"]
         self.assertEqual(error_preamble["source_obligations"][0]["actor"], "server")
         self.assertEqual(error_preamble["source_obligations"][0]["direction"], "server→client error response")
         self.assertEqual(error_preamble["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38.1-002"]
+        error_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.38.1-002"]
         self.assertEqual(error_inventory["source_obligations"], [])
         self.assertEqual(
             error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -7270,11 +7270,11 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         process_locators = [row for row in pinned_locators if row["section"] in ("6.1.39", "6.1.39.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.39-001": ("6.1.39", 1, "paragraph", ["SHALL NOT", "MAY"], [31580, 31586]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.39-002": ("6.1.39", 2, "table_row", ["REQUIRED"], [31599, 31617]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.39-003": ("6.1.39", 3, "table_row", ["REQUIRED"], [31655, 31673]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.39.1-001": ("6.1.39.1", 1, "paragraph", ["SHALL"], [31701, 31702]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.39.1-002": ("6.1.39.1", 2, "table_row", ["REQUIRED"], [31722, 31736]),
+            "KMIP-CLAUSE-SPEC-6.1.39-001": ("6.1.39", 1, "paragraph", ["SHALL NOT", "MAY"], [31580, 31586]),
+            "KMIP-CLAUSE-SPEC-6.1.39-002": ("6.1.39", 2, "table_row", ["REQUIRED"], [31599, 31617]),
+            "KMIP-CLAUSE-SPEC-6.1.39-003": ("6.1.39", 3, "table_row", ["REQUIRED"], [31655, 31673]),
+            "KMIP-CLAUSE-SPEC-6.1.39.1-001": ("6.1.39.1", 1, "paragraph", ["SHALL"], [31701, 31702]),
+            "KMIP-CLAUSE-SPEC-6.1.39.1-002": ("6.1.39.1", 2, "table_row", ["REQUIRED"], [31722, 31736]),
         }
         self.assertEqual({row["clause_id"] for row in process_locators}, set(expected_locators))
         reviews = {
@@ -7293,7 +7293,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        process_semantics = reviews["KMIPKIT-CLAUSE-SPEC-6.1.39-001"]
+        process_semantics = reviews["KMIP-CLAUSE-SPEC-6.1.39-001"]
         self.assertEqual(len(process_semantics["source_obligations"]), 1)
         server_rule = process_semantics["source_obligations"][0]
         self.assertEqual(server_rule["source_keyword"], "SHALL NOT")
@@ -7305,7 +7305,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("lowercase `may`", process_semantics["review_note"])
         self.assertIn("not a normative MAY", process_semantics["review_note"])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.39-002"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.39-002"]
         self.assertEqual(request_header["source_obligations"], [])
         request_rows = request_header["source_request_rows"]
         self.assertEqual(
@@ -7316,7 +7316,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [31618, 31636]))
         self.assertEqual(request_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED")
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.39-003"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.39-003"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_payload_rows"], [])
         self.assertIn("empty", response_header["review_note"].lower())
@@ -7328,17 +7328,17 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(process_contract["html_line_range"], [31618, 31636])
         self.assertEqual(process_contract["source_excerpt"], pinned_source_excerpt(source_path, [31618, 31636]))
         self.assertEqual(process_contract["source_force"], "required_table_body_value")
-        self.assertEqual(process_contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-PROCESS")
+        self.assertEqual(process_contract["operation_element_id"], "KMIP-ELEM-OP-C2S-PROCESS")
         self.assertEqual(process_contract["functional_requirement_ids"], ["FR-005"])
         self.assertEqual(process_contract["status"], "mapped_to_approved_feature_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.39.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.39.1-001"]
         self.assertEqual(error_preamble["source_obligations"][0]["actor"], "server")
         self.assertEqual(error_preamble["source_obligations"][0]["direction"], "server→client error response")
         self.assertEqual(error_preamble["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.39.1-002"]
+        error_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.39.1-002"]
         self.assertEqual(error_inventory["source_obligations"], [])
         self.assertEqual(
             error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -7357,7 +7357,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Attestation Required", error_inventory["review_note"])
         self.assertIn("non-exhaustive", error_inventory["review_note"].lower())
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.39-")],
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.39-")],
             [],
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -7371,7 +7371,7 @@ class CatalogValidationTests(unittest.TestCase):
         query_locators = [row for row in pinned_locators if row["section"] in ("6.1.40", "6.1.40.1")]
         expected_locators = {
             **{
-                f"KMIPKIT-CLAUSE-SPEC-6.1.40-{ordinal:03d}": ("6.1.40", ordinal, block_kind, keywords, line_range)
+                f"KMIP-CLAUSE-SPEC-6.1.40-{ordinal:03d}": ("6.1.40", ordinal, block_kind, keywords, line_range)
                 for ordinal, block_kind, keywords, line_range in (
                     (1, "paragraph", ["SHALL"], [31750, 31751]),
                     (2, "table_row", ["SHALL"], [31769, 31782]),
@@ -7404,8 +7404,8 @@ class CatalogValidationTests(unittest.TestCase):
                     (29, "table_row", ["MAY"], [32345, 32364]),
                 )
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-001": ("6.1.40.1", 1, "paragraph", ["SHALL"], [32375, 32376]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002": ("6.1.40.1", 2, "table_row", ["REQUIRED"], [32396, 32410]),
+            "KMIP-CLAUSE-SPEC-6.1.40.1-001": ("6.1.40.1", 1, "paragraph", ["SHALL"], [32375, 32376]),
+            "KMIP-CLAUSE-SPEC-6.1.40.1-002": ("6.1.40.1", 2, "table_row", ["REQUIRED"], [32396, 32410]),
         }
         self.assertEqual({row["clause_id"] for row in query_locators}, set(expected_locators))
         reviews = {
@@ -7425,57 +7425,57 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_source_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-001": [("SHALL", "For each Query Function specified in the request, the corresponding items SHALL be returned in the response.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-002": [("SHALL", "Contains Operation enumerated values, which SHALL list all the operations that the server supports.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-003": [("SHALL", "Contains Object Type enumerated values, which SHALL list all the object types that the server supports.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-004": [("SHALL", "Contains the namespaces that the server SHALL generate values for if requested by the client.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-005": [("SHALL", "If the request contains a Query Extension List and/or Query Extension Map value in the Query Function field, then the Extensions Information fields SHALL be returned in the response.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-006": [("SHALL", "Contains Attestation Type enumerated values, which SHALL list all the attestation types that the server supports.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-007": [
+            "KMIP-CLAUSE-SPEC-6.1.40-001": [("SHALL", "For each Query Function specified in the request, the corresponding items SHALL be returned in the response.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-002": [("SHALL", "Contains Operation enumerated values, which SHALL list all the operations that the server supports.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-003": [("SHALL", "Contains Object Type enumerated values, which SHALL list all the object types that the server supports.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-004": [("SHALL", "Contains the namespaces that the server SHALL generate values for if requested by the client.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-005": [("SHALL", "If the request contains a Query Extension List and/or Query Extension Map value in the Query Function field, then the Extensions Information fields SHALL be returned in the response.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-006": [("SHALL", "Contains Attestation Type enumerated values, which SHALL list all the attestation types that the server supports.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-007": [
                 ("SHALL", "The response SHALL list all the Random Number Generators that the server supports."),
                 ("SHALL", "If the request contains a Query RNGs value in the Query Function field, then this field SHALL be returned in the response."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-008": [
+            "KMIP-CLAUSE-SPEC-6.1.40-008": [
                 ("SHALL", "If the request contains a Query Validations value, then zero or more Validation Information fields SHALL be returned in the response."),
                 ("MAY", "A server MAY elect to return no validation information in the response."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-009": [("SHALL", "If the request contains a Query Profiles value in the Query Function field, then this field SHALL be returned in the response if the server supports any Profiles.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-010": [
+            "KMIP-CLAUSE-SPEC-6.1.40-009": [("SHALL", "If the request contains a Query Profiles value in the Query Function field, then this field SHALL be returned in the response if the server supports any Profiles.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-010": [
                 ("SHALL", "Contains Client Registration Method enumerated values, which SHALL list all the client registration methods that the server supports."),
                 ("SHALL", "If the request contains a Query Client Registration Method value in the Query Function field, then this field SHALL be returned in the response if the server supports any Client Registration Methods."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-011": [("SHALL", "Defaults Information A structure containing Object Defaults structures, which list the default values that the server SHALL use on Cryptographic Objects if the client omits them.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-012": [
+            "KMIP-CLAUSE-SPEC-6.1.40-011": [("SHALL", "Defaults Information A structure containing Object Defaults structures, which list the default values that the server SHALL use on Cryptographic Objects if the client omits them.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-012": [
                 ("SHALL", "If both Query Extension List and Query Extension Map are specified in the request, then only the response to Query Extension Map SHALL be returned"),
                 ("SHALL", "the Query Extension List SHALL be ignored."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-013": [("SHALL", "If the server is unable to specify details of the RNG then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-014": [("SHALL", "The Query Function field in the request SHALL contain one or more of the following items:")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-016": [("MAY", "MAY be Repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-018": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-019": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-020": [
+            "KMIP-CLAUSE-SPEC-6.1.40-013": [("SHALL", "If the server is unable to specify details of the RNG then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-014": [("SHALL", "The Query Function field in the request SHALL contain one or more of the following items:")],
+            "KMIP-CLAUSE-SPEC-6.1.40-016": [("MAY", "MAY be Repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-018": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-019": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-020": [
                 ("SHALL", "Vendor Identification No SHALL be returned if Query Server Information is requested."),
                 ("SHALL", "The Vendor Identification SHALL be a text string that uniquely identifies the vendor."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-021": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-022": [
+            "KMIP-CLAUSE-SPEC-6.1.40-021": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-022": [
                 ("MAY", "MAY be repeated"),
                 ("SHALL", "SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the server."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-023": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-024": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-025": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-026": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-027": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-028": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-029": [("MAY", "A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-001": [("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Operation.")],
+            "KMIP-CLAUSE-SPEC-6.1.40-023": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-024": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-025": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-026": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-027": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-028": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.40-029": [("MAY", "A server MAY elect to provide an empty list in the Response if it is unable or unwilling to provide this information.")],
+            "KMIP-CLAUSE-SPEC-6.1.40.1-001": [("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Operation.")],
         }
         self.assertEqual(set(expected_source_atoms), set(reviews) - {
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-015",
-            "KMIPKIT-CLAUSE-SPEC-6.1.40-017",
-            "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.40-015",
+            "KMIP-CLAUSE-SPEC-6.1.40-017",
+            "KMIP-CLAUSE-SPEC-6.1.40.1-002",
         })
         for clause_id, expected_atoms in expected_source_atoms.items():
             with self.subTest(source_clause_id=clause_id, assertion="complete normative atom inventory"):
@@ -7491,11 +7491,11 @@ class CatalogValidationTests(unittest.TestCase):
             clause_id
             for clause_id in expected_locators
             if clause_id not in {
-                "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
-                "KMIPKIT-CLAUSE-SPEC-6.1.40-015",
-                "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
-                "KMIPKIT-CLAUSE-SPEC-6.1.40-017",
-                "KMIPKIT-CLAUSE-SPEC-6.1.40.1-002",
+                "KMIP-CLAUSE-SPEC-6.1.40-014",
+                "KMIP-CLAUSE-SPEC-6.1.40-015",
+                "KMIP-CLAUSE-SPEC-6.1.40-016",
+                "KMIP-CLAUSE-SPEC-6.1.40-017",
+                "KMIP-CLAUSE-SPEC-6.1.40.1-002",
             }
         }
         for clause_id in server_clause_ids:
@@ -7511,28 +7511,28 @@ class CatalogValidationTests(unittest.TestCase):
                 clause_id,
             )
 
-        query_count = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-014"]
+        query_count = reviews["KMIP-CLAUSE-SPEC-6.1.40-014"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in query_count["source_obligations"]],
-            [(1, "SHALL", "client", "client→server request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.40-014")],
+            [(1, "SHALL", "client", "client→server request", "client_1_0", "KMIP-REQ-SPEC-6.1.40-014")],
         )
-        self.assertEqual(query_count["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.40-014"])
-        query_function = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-016"]
+        self.assertEqual(query_count["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.40-014"])
+        query_function = reviews["KMIP-CLAUSE-SPEC-6.1.40-016"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in query_function["source_obligations"]],
-            [(1, "MAY", "client", "client→server request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.40-016")],
+            [(1, "MAY", "client", "client→server request", "client_1_0", "KMIP-REQ-SPEC-6.1.40-016")],
         )
-        self.assertEqual(query_function["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.40-016"])
+        self.assertEqual(query_function["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.40-016"])
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["html_line_range"], row["source_requirement_ids"])
              for row in query_function["source_request_rows"]],
-            [("Query Function", "Yes", "client", [32025, 32042], ["KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"])],
+            [("Query Function", "Yes", "client", [32025, 32042], ["KMIP-REQ-SPEC-6.1.40-014", "KMIP-REQ-SPEC-6.1.40-016"])],
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-015"]
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40-017"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.40-015"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.40-017"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertIn("header", request_header["review_note"].lower())
         self.assertEqual(response_header["source_obligations"], [])
@@ -7564,24 +7564,24 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.40"
         }
         self.assertEqual(query_gaps, {})
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.40-017", {row["requirement_id"] for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]})
 
         crosswalks = {
             row["requirement_id"]: row
             for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.40-")
+            if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.40-")
         }
-        self.assertEqual(set(crosswalks), {"KMIPKIT-REQ-SPEC-6.1.40-014", "KMIPKIT-REQ-SPEC-6.1.40-016"})
-        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-014"]["source_obligation_order"], 1)
-        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-014"]["source_actor"], "client")
-        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-016"]["source_obligation_order"], 1)
-        self.assertEqual(crosswalks["KMIPKIT-REQ-SPEC-6.1.40-016"]["source_actor"], "client")
+        self.assertEqual(set(crosswalks), {"KMIP-REQ-SPEC-6.1.40-014", "KMIP-REQ-SPEC-6.1.40-016"})
+        self.assertEqual(crosswalks["KMIP-REQ-SPEC-6.1.40-014"]["source_obligation_order"], 1)
+        self.assertEqual(crosswalks["KMIP-REQ-SPEC-6.1.40-014"]["source_actor"], "client")
+        self.assertEqual(crosswalks["KMIP-REQ-SPEC-6.1.40-016"]["source_obligation_order"], 1)
+        self.assertEqual(crosswalks["KMIP-REQ-SPEC-6.1.40-016"]["source_actor"], "client")
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.40.1-001"]
         self.assertEqual(error_preamble["source_obligations"][0]["actor"], "server")
         self.assertEqual(error_preamble["source_obligations"][0]["direction"], "server→client error response")
         self.assertEqual(error_preamble["source_obligations"][0]["scope_disposition"], "server_only")
-        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.40.1-002"]
+        error_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.40.1-002"]
         self.assertEqual(error_inventory["source_obligations"], [])
         self.assertEqual(
             error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -7589,7 +7589,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("non-exhaustive", error_inventory["review_note"].lower())
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.40-")],
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.40-")],
             list(crosswalks.values()),
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -7631,12 +7631,12 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["scope_disposition"], "client_1_0")
         self.assertEqual(contract["contract_kind"], "operation_request_table_field")
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-QUERY")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-QUERY")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-004"])
         self.assertEqual(contract["implementation_refs"], ["crates/kmipkit-protocol/src/query.rs::QueryRequest::to_ttlv_payload"])
         self.assertEqual(contract["verification_refs"], [*protocol_tests, client_test])
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.40-017", {
             row["requirement_id"]
             for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
@@ -7644,7 +7644,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gaps"], 112)
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         self.assertTrue({
-            "KMIPKIT-REQ-SPEC-6.1.40-017",
+            "KMIP-REQ-SPEC-6.1.40-017",
             gap_id,
         }.isdisjoint({
             value
@@ -7654,7 +7654,7 @@ class CatalogValidationTests(unittest.TestCase):
         }))
         request_review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.40-015"
+            if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.40-015"
         )
         self.assertEqual(request_review["source_obligations"], [])
         self.assertEqual(request_review["expected_client_requirement_ids"], [])
@@ -7672,12 +7672,12 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         query_async_locators = [row for row in pinned_locators if row["section"] in ("6.1.41", "6.1.41.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-001": ("6.1.41", 1, "table_row", ["REQUIRED"], [32437, 32455]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": ("6.1.41", 2, "paragraph", ["SHOULD"], [32500, 32505]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-003": ("6.1.41", 3, "table_row", ["REQUIRED"], [32518, 32536]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": ("6.1.41", 4, "table_row", ["MAY"], [32537, 32555]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": ("6.1.41.1", 1, "paragraph", ["SHALL"], [32566, 32567]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-002": ("6.1.41.1", 2, "table_row", ["REQUIRED"], [32587, 32600]),
+            "KMIP-CLAUSE-SPEC-6.1.41-001": ("6.1.41", 1, "table_row", ["REQUIRED"], [32437, 32455]),
+            "KMIP-CLAUSE-SPEC-6.1.41-002": ("6.1.41", 2, "paragraph", ["SHOULD"], [32500, 32505]),
+            "KMIP-CLAUSE-SPEC-6.1.41-003": ("6.1.41", 3, "table_row", ["REQUIRED"], [32518, 32536]),
+            "KMIP-CLAUSE-SPEC-6.1.41-004": ("6.1.41", 4, "table_row", ["MAY"], [32537, 32555]),
+            "KMIP-CLAUSE-SPEC-6.1.41.1-001": ("6.1.41.1", 1, "paragraph", ["SHALL"], [32566, 32567]),
+            "KMIP-CLAUSE-SPEC-6.1.41.1-002": ("6.1.41.1", 2, "table_row", ["REQUIRED"], [32587, 32600]),
         }
         self.assertEqual({row["clause_id"] for row in query_async_locators}, set(expected_locators))
         reviews = {
@@ -7697,20 +7697,20 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_source_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": [
+            "KMIP-CLAUSE-SPEC-6.1.41-002": [
                 ("SHOULD", "If no parameters are passed on this operation, the server SHOULD report any asynchronous requests whose results are still outstanding."),
                 ("SHOULD", "If Asynchronous Correlation Values are passed, the server SHOULD report the outstanding asynchronous requests whose values match."),
                 ("SHOULD", "If Operations are passed, the server SHOULD report the outstanding asynchronous requests whose Operation matches one of those contained in Operations."),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": [("MAY", "MAY be repeated")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.41-004": [("MAY", "MAY be repeated")],
+            "KMIP-CLAUSE-SPEC-6.1.41.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Query Asynchronous Requests Operation.")
             ],
         }
         expected_directions = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-002": "server→client response",
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-004": "server→client response payload",
-            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-001": "server→client error response",
+            "KMIP-CLAUSE-SPEC-6.1.41-002": "server→client response",
+            "KMIP-CLAUSE-SPEC-6.1.41-004": "server→client response payload",
+            "KMIP-CLAUSE-SPEC-6.1.41.1-001": "server→client error response",
         }
         for clause_id, expected_atoms in expected_source_atoms.items():
             with self.subTest(source_clause_id=clause_id, assertion="complete normative atom inventory"):
@@ -7731,27 +7731,27 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [])
 
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.41-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.41.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.41-001",
+            "KMIP-CLAUSE-SPEC-6.1.41-003",
+            "KMIP-CLAUSE-SPEC-6.1.41.1-002",
         ):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
-        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-001"]["review_note"].lower())
-        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-003"]["review_note"].lower())
-        self.assertIn("required", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIP-CLAUSE-SPEC-6.1.41-001"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIP-CLAUSE-SPEC-6.1.41-003"]["review_note"].lower())
+        self.assertIn("required", reviews["KMIP-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            reviews["KMIP-CLAUSE-SPEC-6.1.41.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
             ["Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
         )
-        self.assertIn("payload", reviews["KMIPKIT-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
+        self.assertIn("payload", reviews["KMIP-CLAUSE-SPEC-6.1.41.1-002"]["review_note"].lower())
 
         correlation_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL"
         operations_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL"
         expected_request_rows = [
-            ("Asynchronous Correlation Values", "No", [32456, 32474], correlation_gap_id, "KMIPKIT-REQ-SPEC-6.1.41-005"),
-            ("Operations", "No", [32475, 32492], operations_gap_id, "KMIPKIT-REQ-SPEC-6.1.41-006"),
+            ("Asynchronous Correlation Values", "No", [32456, 32474], correlation_gap_id, "KMIP-REQ-SPEC-6.1.41-005"),
+            ("Operations", "No", [32475, 32492], operations_gap_id, "KMIP-REQ-SPEC-6.1.41-006"),
         ]
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-001"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.41-001"]
         self.assertEqual(
             [
                 (row["row_label"], row["required"], row["html_line_range"], row["source_gap_id"], row["source_requirement_ids"])
@@ -7792,7 +7792,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(contract["functional_requirement_ids"], ["FR-006"])
             self.assertEqual(contract["gap_id"], gap_id)
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.41-003"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.41-003"]
         self.assertEqual(
             response_header["source_payload_rows"],
             [{
@@ -7807,14 +7807,14 @@ class CatalogValidationTests(unittest.TestCase):
         caption_discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-039")
         self.assertEqual(caption_discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(caption_discrepancy["decision_id"], "KMIPKIT-DEC-015")
-        async_operation = next(row for row in catalog["elements"] if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS")
+        async_operation = next(row for row in catalog["elements"] if row["element_id"] == "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS")
         self.assertEqual(
             next(table for table in async_operation["payload_tables"] if table["role"] == "response"),
             {"role": "response", "table_number": 286, "caption": "PKCS#11 Response Payload"},
         )
 
         self.assertEqual(
-            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.41-")],
+            [row for row in oracle["requirement_crosswalk"] if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.41-")],
             [],
             "server SHOULD/MAY/SHALL atoms and header keywords do not create client requirement mappings",
         )
@@ -7833,12 +7833,12 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text(source_bytes, "KMIPKIT-SRC-spec")
         revoke_locators = [row for row in pinned_locators if row["section"] in ("6.1.44", "6.1.44.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-001": ("6.1.44", 1, "paragraph", ["SHOULD"], [33132, 33144]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-002": ("6.1.44", 2, "table_row", ["REQUIRED"], [33158, 33175]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-003": ("6.1.44", 3, "table_row", ["SHOULD", "SHALL NOT"], [33216, 33231]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-004": ("6.1.44", 4, "table_row", ["REQUIRED"], [33253, 33270]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.44.1-001": ("6.1.44.1", 1, "paragraph", ["SHALL"], [33300, 33301]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.44.1-002": ("6.1.44.1", 2, "table_row", ["REQUIRED"], [33324, 33335]),
+            "KMIP-CLAUSE-SPEC-6.1.44-001": ("6.1.44", 1, "paragraph", ["SHOULD"], [33132, 33144]),
+            "KMIP-CLAUSE-SPEC-6.1.44-002": ("6.1.44", 2, "table_row", ["REQUIRED"], [33158, 33175]),
+            "KMIP-CLAUSE-SPEC-6.1.44-003": ("6.1.44", 3, "table_row", ["SHOULD", "SHALL NOT"], [33216, 33231]),
+            "KMIP-CLAUSE-SPEC-6.1.44-004": ("6.1.44", 4, "table_row", ["REQUIRED"], [33253, 33270]),
+            "KMIP-CLAUSE-SPEC-6.1.44.1-001": ("6.1.44.1", 1, "paragraph", ["SHALL"], [33300, 33301]),
+            "KMIP-CLAUSE-SPEC-6.1.44.1-002": ("6.1.44.1", 2, "table_row", ["REQUIRED"], [33324, 33335]),
         }
         self.assertEqual({row["clause_id"] for row in revoke_locators}, set(expected_locators))
         reviews = {
@@ -7857,7 +7857,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        paragraph = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-001"]
+        paragraph = reviews["KMIP-CLAUSE-SPEC-6.1.44-001"]
         paragraph_atoms = paragraph["source_obligations"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
@@ -7868,31 +7868,31 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(paragraph["expected_client_requirement_ids"], [])
         self.assertIn("catalog", paragraph["review_note"].lower())
 
-        date_row = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-003"]
+        date_row = reviews["KMIP-CLAUSE-SPEC-6.1.44-003"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in date_row["source_obligations"]],
             [
                 (1, "SHOULD", "SHOULD be specified if the Revocation Reason is 'key compromise' or ‘CA compromise’",
-                 "client", "include Compromise Occurrence Date in Revoke request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.44-003-001"),
+                 "client", "include Compromise Occurrence Date in Revoke request", "client_1_0", "KMIP-REQ-SPEC-6.1.44-003-001"),
                 (2, "SHALL NOT", "SHALL NOT be specified for other Revocation Reason enumerations",
-                 "client", "omit Compromise Occurrence Date from Revoke request for other reasons", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.44-003-002"),
+                 "client", "omit Compromise Occurrence Date from Revoke request for other reasons", "client_1_0", "KMIP-REQ-SPEC-6.1.44-003-002"),
             ],
         )
         self.assertEqual(
             date_row["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.44-003-001", "KMIPKIT-REQ-SPEC-6.1.44-003-002"],
+            ["KMIP-REQ-SPEC-6.1.44-003-001", "KMIP-REQ-SPEC-6.1.44-003-002"],
         )
 
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.44-004",
+            "KMIP-CLAUSE-SPEC-6.1.44-002",
+            "KMIP-CLAUSE-SPEC-6.1.44-004",
         ):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
             self.assertIn("column heading", reviews[clause_id]["review_note"].lower())
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["source_obligations"], [])
-        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["review_note"].lower())
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-001"]
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.44.1-002"]["source_obligations"], [])
+        self.assertIn("enum", reviews["KMIP-CLAUSE-SPEC-6.1.44.1-002"]["review_note"].lower())
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.44.1-001"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in error_review["source_obligations"]],
@@ -7901,15 +7901,15 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(error_review["expected_client_requirement_ids"], [])
 
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-002"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.44-002"]["source_request_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
              for row in request_rows],
             [
-                ("Unique Identifier", "No", [33179, 33192], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
+                ("Unique Identifier", "No", [33179, 33192], ["KMIP-REQ-SPEC-6.1-003-002"], None),
                 ("Revocation Reason", "Yes", [33198, 33210], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"),
                 ("Compromise Occurrence Date", "No", [33216, 33231],
-                 ["KMIPKIT-REQ-SPEC-6.1.44-003-001", "KMIPKIT-REQ-SPEC-6.1.44-003-002"], None),
+                 ["KMIP-REQ-SPEC-6.1.44-003-001", "KMIP-REQ-SPEC-6.1.44-003-002"], None),
             ],
         )
         for row in request_rows:
@@ -7917,7 +7917,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         identifier_row = request_rows[0]
         self.assertEqual(identifier_row["disposition"], "optional_request_field_with_existing_conditional_capability")
-        self.assertEqual(identifier_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(identifier_row["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertEqual(
             identifier_row["reuse_condition"],
             "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
@@ -7930,17 +7930,17 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(reason_row["disposition"], "required_request_table_contract")
         self.assertEqual(reason_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED")
         self.assertEqual(reason_row["source_note"],
-                         "Required Table 295 field mapped through KMIPKIT-ELEM-OP-C2S-REVOKE and KMIPKIT-0036 FR-001/FR-008; this row does not create a standalone REQ record.")
+                         "Required Table 295 field mapped through KMIP-ELEM-OP-C2S-REVOKE and KMIPKIT-0036 FR-001/FR-008; this row does not create a standalone REQ record.")
 
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.44-004"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.44-004"]["source_payload_rows"],
             [{
                 "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
                 "disposition": "response_payload_data", "html_line_range": [33271, 33288],
                 "source_excerpt": pinned_source_excerpt(source_path, [33271, 33288]),
             }],
         )
-        error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.44.1-002"]["source_excerpt"]
+        error_text = reviews["KMIP-CLAUSE-SPEC-6.1.44.1-002"]["source_excerpt"]
         self.assertEqual(
             error_text.split("Operation Failed ", 1)[1].split(", "),
             ["Invalid Field", "Invalid Object Type", "Object Not Found", "Wrong Key Lifecycle State", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
@@ -7964,11 +7964,11 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.44-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.44-")
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.44-003-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.44-003-002", 2),
+                ("KMIP-REQ-SPEC-6.1.44-003-001", 1),
+                ("KMIP-REQ-SPEC-6.1.44-003-002", 2),
             },
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -7979,7 +7979,7 @@ class CatalogValidationTests(unittest.TestCase):
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.44-REVOCATION-REASON-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.44-004"
+        proposed_id = "KMIP-REQ-SPEC-6.1.44-004"
         line_range = [33198, 33210]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
@@ -8000,7 +8000,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["requiredness"], "Yes")
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-REVOKE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-REVOKE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/revoke.rs::RevokeRequest::into_ttlv_payload",
@@ -8025,7 +8025,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        requirement = requirements["KMIPKIT-REQ-SPEC-6.1.44-003-002"]
+        requirement = requirements["KMIP-REQ-SPEC-6.1.44-003-002"]
 
         self.assertEqual(requirement["source_keyword"], "SHALL NOT")
         self.assertEqual(requirement["direction"], "client_to_server")
@@ -8036,11 +8036,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             requirement["element_ids"],
             [
-                "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
-                "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
-                "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
-                "KMIPKIT-ELEM-OP-C2S-REVOKE",
-                "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
+                "KMIP-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+                "KMIP-ELEM-ATTRIBUTE-REVOCATION-REASON",
+                "KMIP-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+                "KMIP-ELEM-OP-C2S-REVOKE",
+                "KMIP-ELEM-STRUCTURE-MEMBER-4-47-REVOCATION-REASON-CODE",
             ],
         )
         self.assertIn("crates/kmipkit-protocol/src/profile.rs", requirement["implementation_refs"])
@@ -8067,7 +8067,7 @@ class CatalogValidationTests(unittest.TestCase):
             )
         self.assertTrue(requirement["negative_verification_required"])
         self.assertEqual(requirement["test_case_ids"], [])
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.44-003-001", requirement["verification_refs"])
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.44-003-001", requirement["verification_refs"])
         self.assertIn("§6.1.44 Table 295", requirement["review_note"])
         self.assertIn("§11.48 Table 481", requirement["review_note"])
         self.assertIn("adjacent SHOULD", requirement["review_note"])
@@ -8081,14 +8081,14 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         rekey_locators = [row for row in pinned_locators if row["section"] in ("6.1.46", "6.1.46.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-001": ("6.1.46", 1, "paragraph", ["SHOULD"], [33878, 33879]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-002": ("6.1.46", 2, "paragraph", ["SHALL"], [33881, 33883]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-003": ("6.1.46", 3, "paragraph", ["SHALL"], [33884, 33887]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-004": ("6.1.46", 4, "paragraph", ["MAY", "SHALL"], [33889, 33894]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-005": ("6.1.46", 5, "table_row", ["REQUIRED"], [34203, 34221]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-006": ("6.1.46", 6, "table_row", ["REQUIRED"], [34318, 34336]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46.1-001": ("6.1.46.1", 1, "paragraph", ["SHALL"], [34368, 34369]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.46.1-002": ("6.1.46.1", 2, "table_row", ["REQUIRED"], [34389, 34404]),
+            "KMIP-CLAUSE-SPEC-6.1.46-001": ("6.1.46", 1, "paragraph", ["SHOULD"], [33878, 33879]),
+            "KMIP-CLAUSE-SPEC-6.1.46-002": ("6.1.46", 2, "paragraph", ["SHALL"], [33881, 33883]),
+            "KMIP-CLAUSE-SPEC-6.1.46-003": ("6.1.46", 3, "paragraph", ["SHALL"], [33884, 33887]),
+            "KMIP-CLAUSE-SPEC-6.1.46-004": ("6.1.46", 4, "paragraph", ["MAY", "SHALL"], [33889, 33894]),
+            "KMIP-CLAUSE-SPEC-6.1.46-005": ("6.1.46", 5, "table_row", ["REQUIRED"], [34203, 34221]),
+            "KMIP-CLAUSE-SPEC-6.1.46-006": ("6.1.46", 6, "table_row", ["REQUIRED"], [34318, 34336]),
+            "KMIP-CLAUSE-SPEC-6.1.46.1-001": ("6.1.46.1", 1, "paragraph", ["SHALL"], [34368, 34369]),
+            "KMIP-CLAUSE-SPEC-6.1.46.1-002": ("6.1.46.1", 2, "table_row", ["REQUIRED"], [34389, 34404]),
         }
         self.assertEqual({row["clause_id"] for row in rekey_locators}, set(expected_locators))
         reviews = {
@@ -8108,27 +8108,27 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-001": [
+            "KMIP-CLAUSE-SPEC-6.1.46-001": [
                 ("SHOULD", "Re-key SHOULD only be performed once on a given key.", "client",
-                 "KMIPKIT-REQ-SPEC-6.1.46-001", "client_1_0"),
+                 "KMIP-REQ-SPEC-6.1.46-001", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-002": [
+            "KMIP-CLAUSE-SPEC-6.1.46-002": [
                 ("SHALL", "The server SHALL copy the Unique Identifier of the replacement key returned by this operation into the ID Placeholder variable.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-003": [
+            "KMIP-CLAUSE-SPEC-6.1.46-003": [
                 ("SHALL", "For the existing key, the server SHALL create a Link attribute of Link Type Replacement Object pointing to the replacement key.",
                  "server", None, "server_only"),
                 ("SHALL", "For the replacement key, the server SHALL create a Link attribute of Link Type Replaced Key pointing to the existing key.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-004": [
+            "KMIP-CLAUSE-SPEC-6.1.46-004": [
                 ("MAY", "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key.",
-                 "client", "KMIPKIT-REQ-SPEC-6.1.46-004-001", "client_1_0"),
+                 "client", "KMIP-REQ-SPEC-6.1.46-004-001", "client_1_0"),
                 ("SHALL", "then the dates of the replacement key SHALL be set based on the dates of the existing key as follows:",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.46.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.46.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-key Operation.",
                  "server", None, "server_only"),
             ],
@@ -8142,48 +8142,48 @@ class CatalogValidationTests(unittest.TestCase):
                 expected,
             )
         self.assertEqual(
-            [row["requirement_id"] for row in reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-004"]["rejected_candidate_mappings"]],
-            ["KMIPKIT-REQ-SPEC-6.1.46-004-002"],
+            [row["requirement_id"] for row in reviews["KMIP-CLAUSE-SPEC-6.1.46-004"]["rejected_candidate_mappings"]],
+            ["KMIP-REQ-SPEC-6.1.46-004-002"],
         )
-        self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-004"]["review_note"].lower())
-        self.assertIn("condition", reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-004"]["review_note"].lower())
+        self.assertIn("actor", reviews["KMIP-CLAUSE-SPEC-6.1.46-004"]["review_note"].lower())
+        self.assertIn("condition", reviews["KMIP-CLAUSE-SPEC-6.1.46-004"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-004"]["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.46-004-001"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.46-004"]["expected_client_requirement_ids"],
+            ["KMIP-REQ-SPEC-6.1.46-004-001"],
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-004"]["source_context"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.46-004"]["source_context"],
             pinned_source_excerpt(source_path, [33889, 33991]),
         )
 
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-005",
-            "KMIPKIT-CLAUSE-SPEC-6.1.46-006",
+            "KMIP-CLAUSE-SPEC-6.1.46-005",
+            "KMIP-CLAUSE-SPEC-6.1.46-006",
         ):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
             self.assertIn("header", reviews[clause_id]["review_note"].lower())
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.46.1-002"]["source_obligations"], [])
-        self.assertIn("required", reviews["KMIPKIT-CLAUSE-SPEC-6.1.46.1-002"]["review_note"].lower())
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.46.1-002"]["source_obligations"], [])
+        self.assertIn("required", reviews["KMIP-CLAUSE-SPEC-6.1.46.1-002"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.46.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            reviews["KMIP-CLAUSE-SPEC-6.1.46.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
             ["Cryptographic Failure", "Invalid Field", "Invalid Message", "Invalid Object Type",
              "Key Value Not Present", "Object Not Found", "Attestation Failed", "Attestation Required",
              "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported",
              "Permission Denied", "Protection Storage Unavailable", "Response Too Large"],
         )
-        reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.46.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reasons = reviews["KMIP-CLAUSE-SPEC-6.1.46.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reasons), 15)
         self.assertEqual(len(set(reasons)), 13)
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-005"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.46-005"]
         self.assertEqual(request_header["source_context"], pinned_source_excerpt(source_path, [33993, 34191]))
         request_rows = request_header["source_request_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
              for row in request_rows],
             [
-                ("Unique Identifier", "No", [34222, 34241], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
-                ("Offset", "No", [34242, 34261], ["KMIPKIT-REQ-SPEC-6.1.46-004-001"], None),
+                ("Unique Identifier", "No", [34222, 34241], ["KMIP-REQ-SPEC-6.1-003-002"], None),
+                ("Offset", "No", [34242, 34261], ["KMIP-REQ-SPEC-6.1.46-004-001"], None),
                 ("Attributes", "No", [34262, 34279], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-ATTRIBUTES-OPTIONAL"),
                 ("Protection Storage Masks", "No", [34280, 34298], [],
                  "KMIPKIT-SOURCE-GAP-SPEC-6.1.46-PROTECTION-STORAGE-MASKS-OPTIONAL"),
@@ -8193,14 +8193,14 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         self.assertEqual(request_rows[0]["disposition"], "optional_request_field_with_existing_conditional_capability")
-        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertEqual(
             request_rows[0]["reuse_condition"],
             "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
         )
         self.assertEqual(request_rows[1]["disposition"], "optional_request_field_covered_by_client_may")
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.46-006"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.46-006"]
         self.assertEqual(response_header["source_context"], pinned_source_excerpt(source_path, [34311, 34362]))
         self.assertEqual(
             response_header["source_payload_rows"],
@@ -8234,11 +8234,11 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.46-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.46-")
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.46-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.46-004-001", 1),
+                ("KMIP-REQ-SPEC-6.1.46-001", 1),
+                ("KMIP-REQ-SPEC-6.1.46-004-001", 1),
             },
         )
         for line_range, caption in [
@@ -8282,10 +8282,10 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.46-005"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.46-005"
         )
         reviewed_rows = {row["row_label"]: row for row in request_review["source_request_rows"]}
-        operation_id = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
+        operation_id = "KMIP-ELEM-OP-C2S-RE-KEY"
         implementation_ref = "crates/kmipkit-protocol/src/rekey.rs::RekeyRequest::into_ttlv_payload"
         verification_refs = [protocol_test_ref, client_test_ref]
         for gap_id, (row_label, line_range) in expected.items():
@@ -8371,7 +8371,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected).isdisjoint(source_gap_ids))
-        operation_element_id = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+        operation_element_id = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
         implementation_ref = "crates/kmipkit-protocol/src/rekey_key_pair.rs::RekeyKeyPairRequest::into_ttlv_payload"
         for gap_id, (row_label, line_range) in expected.items():
             contract = contracts[gap_id]
@@ -8413,14 +8413,14 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         rekey_pair_locators = [row for row in pinned_locators if row["section"] in ("6.1.47", "6.1.47.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-001": ("6.1.47", 1, "paragraph", ["SHOULD"], [34425, 34427]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-002": ("6.1.47", 2, "paragraph", ["SHALL"], [34429, 34433]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-003": ("6.1.47", 3, "paragraph", ["SHALL"], [34435, 34437]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-004": ("6.1.47", 4, "paragraph", ["MAY", "SHALL"], [34439, 34444]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-005": ("6.1.47", 5, "table_row", ["REQUIRED"], [34738, 34756]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-006": ("6.1.47", 6, "table_row", ["REQUIRED"], [34943, 34961]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47.1-001": ("6.1.47.1", 1, "paragraph", ["SHALL"], [35015, 35016]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.47.1-002": ("6.1.47.1", 2, "table_row", ["REQUIRED"], [35036, 35052]),
+            "KMIP-CLAUSE-SPEC-6.1.47-001": ("6.1.47", 1, "paragraph", ["SHOULD"], [34425, 34427]),
+            "KMIP-CLAUSE-SPEC-6.1.47-002": ("6.1.47", 2, "paragraph", ["SHALL"], [34429, 34433]),
+            "KMIP-CLAUSE-SPEC-6.1.47-003": ("6.1.47", 3, "paragraph", ["SHALL"], [34435, 34437]),
+            "KMIP-CLAUSE-SPEC-6.1.47-004": ("6.1.47", 4, "paragraph", ["MAY", "SHALL"], [34439, 34444]),
+            "KMIP-CLAUSE-SPEC-6.1.47-005": ("6.1.47", 5, "table_row", ["REQUIRED"], [34738, 34756]),
+            "KMIP-CLAUSE-SPEC-6.1.47-006": ("6.1.47", 6, "table_row", ["REQUIRED"], [34943, 34961]),
+            "KMIP-CLAUSE-SPEC-6.1.47.1-001": ("6.1.47.1", 1, "paragraph", ["SHALL"], [35015, 35016]),
+            "KMIP-CLAUSE-SPEC-6.1.47.1-002": ("6.1.47.1", 2, "table_row", ["REQUIRED"], [35036, 35052]),
         }
         self.assertEqual({row["clause_id"] for row in rekey_pair_locators}, set(expected_locators))
         reviews = {
@@ -8440,27 +8440,27 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-001": [
+            "KMIP-CLAUSE-SPEC-6.1.47-001": [
                 ("SHOULD", "Re-key Key Pair SHOULD only be performed once on a given key pair.", "client",
-                 "KMIPKIT-REQ-SPEC-6.1.47-001", "client_1_0"),
+                 "KMIP-REQ-SPEC-6.1.47-001", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-002": [
+            "KMIP-CLAUSE-SPEC-6.1.47-002": [
                 ("SHALL", "For both the existing public key and private key, the server SHALL create a Link attribute of Link Type Replacement Key pointing to the replacement public and private key, respectively.",
                  "server", None, "server_only"),
                 ("SHALL", "For both the replacement public and private key, the server SHALL create a Link attribute of Link Type Replaced Key pointing to the existing public and private key, respectively.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-003": [
+            "KMIP-CLAUSE-SPEC-6.1.47-003": [
                 ("SHALL", "The server SHALL copy the Private Key Unique Identifier of the replacement private key returned by this operation into the ID Placeholder variable.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.47-004": [
+            "KMIP-CLAUSE-SPEC-6.1.47-004": [
                 ("MAY", "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the replacement key pair.",
-                 "client", "KMIPKIT-REQ-SPEC-6.1.47-004-001", "client_1_0"),
+                 "client", "KMIP-REQ-SPEC-6.1.47-004-001", "client_1_0"),
                 ("SHALL", "then the dates of the replacement key pair SHALL be set based on the dates of the existing key pair as follows",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.47.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.47.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-key Key Pair Operation.",
                  "server", None, "server_only"),
             ],
@@ -8474,11 +8474,11 @@ class CatalogValidationTests(unittest.TestCase):
                 expected,
             )
 
-        date_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.47-004"]
+        date_review = reviews["KMIP-CLAUSE-SPEC-6.1.47-004"]
         rejected_date_mapping = date_review["rejected_candidate_mappings"]
         self.assertEqual(
             [row["requirement_id"] for row in rejected_date_mapping],
-            ["KMIPKIT-REQ-SPEC-6.1.47-004-002"],
+            ["KMIP-REQ-SPEC-6.1.47-004-002"],
         )
         self.assertEqual(rejected_date_mapping[0]["claimed_keyword"], "SHALL")
         self.assertIn("Offset is omitted", rejected_date_mapping[0]["source_review"])
@@ -8488,7 +8488,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("condition", date_review["review_note"].lower())
         self.assertEqual(
             date_review["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.47-004-001"],
+            ["KMIP-REQ-SPEC-6.1.47-004-001"],
         )
         self.assertIn("Initial Date (IT2) > IT1", date_review["source_context"])
         self.assertIn("If no Offset is specified", date_review["source_context"])
@@ -8502,13 +8502,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertNotIn("replacement character", date_review["review_note"].lower())
         self.assertNotIn("U+FFFD", date_review["review_note"])
 
-        for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.47-005", "KMIPKIT-CLAUSE-SPEC-6.1.47-006"):
+        for clause_id in ("KMIP-CLAUSE-SPEC-6.1.47-005", "KMIP-CLAUSE-SPEC-6.1.47-006"):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
             self.assertIn("header", reviews[clause_id]["review_note"].lower())
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.47.1-002"]["source_obligations"], [])
-        self.assertIn("required", reviews["KMIPKIT-CLAUSE-SPEC-6.1.47.1-002"]["review_note"].lower())
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.47.1-002"]["source_obligations"], [])
+        self.assertIn("required", reviews["KMIP-CLAUSE-SPEC-6.1.47.1-002"]["review_note"].lower())
 
-        result_reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.47.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        result_reasons = reviews["KMIP-CLAUSE-SPEC-6.1.47.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             result_reasons,
             ["Cryptographic Failure", "Invalid Field", "Invalid Message", "Invalid Object Type",
@@ -8520,10 +8520,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(result_reasons), 16)
         self.assertEqual(len(set(result_reasons)), 14)
 
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.47-005"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.47-005"]["source_request_rows"]
         expected_request_rows = [
-            ("Private Key Unique Identifier", "No", [34757, 34775], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
-            ("Offset", "No", [34776, 34795], ["KMIPKIT-REQ-SPEC-6.1.47-004-001"], None),
+            ("Private Key Unique Identifier", "No", [34757, 34775], ["KMIP-REQ-SPEC-6.1-003-002"], None),
+            ("Offset", "No", [34776, 34795], ["KMIP-REQ-SPEC-6.1.47-004-001"], None),
             ("Common Attributes", "No", [34796, 34816], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-COMMON-ATTRIBUTES-OPTIONAL"),
             ("Private Key Attributes", "No", [34817, 34835], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PRIVATE-KEY-ATTRIBUTES-OPTIONAL"),
             ("Public Key Attributes", "No", [34836, 34854], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.47-PUBLIC-KEY-ATTRIBUTES-OPTIONAL"),
@@ -8540,14 +8540,14 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         self.assertEqual(request_rows[0]["disposition"], "optional_request_field_with_existing_conditional_capability")
-        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertEqual(request_rows[0]["reuse_condition"],
                          "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.")
         self.assertEqual(request_rows[1]["disposition"], "optional_request_field_covered_by_client_may")
         for row in request_rows[2:]:
             self.assertEqual(row["disposition"], "optional_request_table_contract")
 
-        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.47-006"]["source_payload_rows"]
+        response_rows = reviews["KMIP-CLAUSE-SPEC-6.1.47-006"]["source_payload_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
              for row in response_rows],
@@ -8577,11 +8577,11 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.47-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.47-")
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.47-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.47-004-001", 1),
+                ("KMIP-REQ-SPEC-6.1.47-001", 1),
+                ("KMIP-REQ-SPEC-6.1.47-004-001", 1),
             },
         )
         for line_range, caption in [
@@ -8602,19 +8602,19 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         reprovision_locators = [row for row in pinned_locators if row["section"] in ("6.1.48", "6.1.48.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-001": ("6.1.48", 1, "paragraph", ["SHALL"], [35070, 35073]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-002": ("6.1.48", 2, "paragraph", ["SHALL"], [35075, 35078]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-003": ("6.1.48", 3, "paragraph", ["SHALL"], [35080, 35083]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-004": ("6.1.48", 4, "paragraph", ["SHALL", "MAY"], [35085, 35088]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-005": ("6.1.48", 5, "paragraph", ["SHALL"], [35090, 35091]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-006": ("6.1.48", 6, "paragraph", ["SHALL"], [35093, 35094]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-007": ("6.1.48", 7, "paragraph", ["SHOULD"], [35096, 35097]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-008": ("6.1.48", 8, "paragraph", ["SHALL"], [35099, 35100]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-009": ("6.1.48", 9, "paragraph", ["SHALL"], [35102, 35103]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-010": ("6.1.48", 10, "table_row", ["REQUIRED"], [35119, 35132]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-011": ("6.1.48", 11, "table_row", ["REQUIRED"], [35191, 35204]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-001": ("6.1.48.1", 1, "paragraph", ["SHALL"], [35235, 35236]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-002": ("6.1.48.1", 2, "table_row", ["REQUIRED"], [35259, 35268]),
+            "KMIP-CLAUSE-SPEC-6.1.48-001": ("6.1.48", 1, "paragraph", ["SHALL"], [35070, 35073]),
+            "KMIP-CLAUSE-SPEC-6.1.48-002": ("6.1.48", 2, "paragraph", ["SHALL"], [35075, 35078]),
+            "KMIP-CLAUSE-SPEC-6.1.48-003": ("6.1.48", 3, "paragraph", ["SHALL"], [35080, 35083]),
+            "KMIP-CLAUSE-SPEC-6.1.48-004": ("6.1.48", 4, "paragraph", ["SHALL", "MAY"], [35085, 35088]),
+            "KMIP-CLAUSE-SPEC-6.1.48-005": ("6.1.48", 5, "paragraph", ["SHALL"], [35090, 35091]),
+            "KMIP-CLAUSE-SPEC-6.1.48-006": ("6.1.48", 6, "paragraph", ["SHALL"], [35093, 35094]),
+            "KMIP-CLAUSE-SPEC-6.1.48-007": ("6.1.48", 7, "paragraph", ["SHOULD"], [35096, 35097]),
+            "KMIP-CLAUSE-SPEC-6.1.48-008": ("6.1.48", 8, "paragraph", ["SHALL"], [35099, 35100]),
+            "KMIP-CLAUSE-SPEC-6.1.48-009": ("6.1.48", 9, "paragraph", ["SHALL"], [35102, 35103]),
+            "KMIP-CLAUSE-SPEC-6.1.48-010": ("6.1.48", 10, "table_row", ["REQUIRED"], [35119, 35132]),
+            "KMIP-CLAUSE-SPEC-6.1.48-011": ("6.1.48", 11, "table_row", ["REQUIRED"], [35191, 35204]),
+            "KMIP-CLAUSE-SPEC-6.1.48.1-001": ("6.1.48.1", 1, "paragraph", ["SHALL"], [35235, 35236]),
+            "KMIP-CLAUSE-SPEC-6.1.48.1-002": ("6.1.48.1", 2, "table_row", ["REQUIRED"], [35259, 35268]),
         }
         self.assertEqual({row["clause_id"] for row in reprovision_locators}, set(expected_locators))
         reviews = {
@@ -8634,47 +8634,47 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-001": [
+            "KMIP-CLAUSE-SPEC-6.1.48-001": [
                 ("SHALL", "The client requesting re-provisioning SHALL provide a certificate signing request, or a certificate, or no parameters if the server will create the client credential .",
-                 "client", "KMIPKIT-REQ-SPEC-6.1.48-001", "client_1_0"),
+                 "client", "KMIP-REQ-SPEC-6.1.48-001", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-002": [
+            "KMIP-CLAUSE-SPEC-6.1.48-002": [
                 ("SHALL", "the server SHALL process the certificate signing request and assign the new certificate to the be the client link level credential.",
                  "server", None, "server_only"),
                 ("SHALL", "The server SHALL return the unique identifier for the signed certificate stored on the server.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-003": [
+            "KMIP-CLAUSE-SPEC-6.1.48-003": [
                 ("SHALL", "the server SHALL associate the certificate with the client as the client\u2019s link level credential.",
                  "server", None, "server_only"),
                 ("SHALL", "The server SHALL return the unique identifier for the certificate stored on the server.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-004": [
+            "KMIP-CLAUSE-SPEC-6.1.48-004": [
                 ("SHALL", "The server SHALL return the unique identifier for the private key.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-005": [
+            "KMIP-CLAUSE-SPEC-6.1.48-005": [
                 ("SHALL", "The current client credential SHALL be made invalid and cannot be used in future KMIP requests.",
                  "unspecified", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-006": [
+            "KMIP-CLAUSE-SPEC-6.1.48-006": [
                 ("SHALL", "Re-Provision SHALL be called by the client that requires new credentials",
-                 "client", "KMIPKIT-REQ-SPEC-6.1.48-006", "client_1_0"),
+                 "client", "KMIP-REQ-SPEC-6.1.48-006", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-007": [
+            "KMIP-CLAUSE-SPEC-6.1.48-007": [
                 ("SHOULD", "Re-Provision SHOULD fail if the certificate that represents the client credential has expired.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-008": [
+            "KMIP-CLAUSE-SPEC-6.1.48-008": [
                 ("SHALL", "Re-Provision SHALL fail if the certificate that represents the client credential has been Revoked.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-009": [
+            "KMIP-CLAUSE-SPEC-6.1.48-009": [
                 ("SHALL", "Re-Provision SHALL fail if the certificate that represents the client credential has been compromised.",
                  "server", None, "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.48.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-Provision Operation.",
                  "server", None, "server_only"),
             ],
@@ -8691,75 +8691,75 @@ class CatalogValidationTests(unittest.TestCase):
             for atom in atoms:
                 self.assertIn(" ".join(atom["source_text"].split()), normalized_excerpt)
         for clause_id, requirement_id in (
-            ("KMIPKIT-CLAUSE-SPEC-6.1.48-001", "KMIPKIT-REQ-SPEC-6.1.48-001"),
-            ("KMIPKIT-CLAUSE-SPEC-6.1.48-006", "KMIPKIT-REQ-SPEC-6.1.48-006"),
+            ("KMIP-CLAUSE-SPEC-6.1.48-001", "KMIP-REQ-SPEC-6.1.48-001"),
+            ("KMIP-CLAUSE-SPEC-6.1.48-006", "KMIP-REQ-SPEC-6.1.48-006"),
         ):
             self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], [requirement_id])
 
-        no_parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-004"]
+        no_parameter_review = reviews["KMIP-CLAUSE-SPEC-6.1.48-004"]
         self.assertIn("client may then subsequently retrieve", no_parameter_review["source_excerpt"])
         self.assertEqual(
             [row["requirement_id"] for row in no_parameter_review["rejected_candidate_mappings"]],
-            ["KMIPKIT-REQ-SPEC-6.1.48-004"],
+            ["KMIP-REQ-SPEC-6.1.48-004"],
         )
         self.assertEqual(no_parameter_review["rejected_candidate_mappings"][0]["claimed_keyword"], "MAY")
         self.assertIn("lowercase", no_parameter_review["rejected_candidate_mappings"][0]["source_review"].lower())
         self.assertIn("KMIPKIT-DEC-014", no_parameter_review["review_note"])
         self.assertIn("actor", no_parameter_review["review_note"].lower())
-        self.assertIn("role=both", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-002"]["review_note"])
-        self.assertIn("normative actor is server", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-003"]["review_note"])
+        self.assertIn("role=both", reviews["KMIP-CLAUSE-SPEC-6.1.48-002"]["review_note"])
+        self.assertIn("normative actor is server", reviews["KMIP-CLAUSE-SPEC-6.1.48-003"]["review_note"])
         self.assertEqual(
             no_parameter_review["expected_client_requirement_ids"],
             [],
         )
-        self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
-        self.assertIn("unspecified", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
+        self.assertIn("actor", reviews["KMIP-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
+        self.assertIn("unspecified", reviews["KMIP-CLAUSE-SPEC-6.1.48-005"]["review_note"].lower())
 
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-010",
-            "KMIPKIT-CLAUSE-SPEC-6.1.48-011",
-            "KMIPKIT-CLAUSE-SPEC-6.1.48.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.48-010",
+            "KMIP-CLAUSE-SPEC-6.1.48-011",
+            "KMIP-CLAUSE-SPEC-6.1.48.1-002",
         ):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-010"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.48-010"]["source_request_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
              for row in request_rows],
             [
-                ("Certificate Request", "No", [35138, 35150], ["KMIPKIT-REQ-SPEC-6.1.48-001"], None),
-                ("Certificate", "No", [35156, 35168], ["KMIPKIT-REQ-SPEC-6.1.48-001"], None),
+                ("Certificate Request", "No", [35138, 35150], ["KMIP-REQ-SPEC-6.1.48-001"], None),
+                ("Certificate", "No", [35156, 35168], ["KMIP-REQ-SPEC-6.1.48-001"], None),
             ],
         )
         for row in request_rows:
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
-        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["source_payload_rows"]
+        response_rows = reviews["KMIP-CLAUSE-SPEC-6.1.48-011"]["source_payload_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
              for row in response_rows],
             [("Unique Identifier", "No", "server", "response_payload_data", [35210, 35222])],
         )
         self.assertEqual(response_rows[0]["source_excerpt"], pinned_source_excerpt(source_path, [35210, 35222]))
-        self.assertIn("KMIPKIT-DEC-014", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["review_note"])
-        self.assertIn("SHALL", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48-011"]["review_note"])
-        result_reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        self.assertIn("KMIPKIT-DEC-014", reviews["KMIP-CLAUSE-SPEC-6.1.48-011"]["review_note"])
+        self.assertIn("SHALL", reviews["KMIP-CLAUSE-SPEC-6.1.48-011"]["review_note"])
+        result_reasons = reviews["KMIP-CLAUSE-SPEC-6.1.48.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             result_reasons,
             ["Cryptographic Failure", "Attestation Failed", "Attestation Required", "Feature Not Supported",
              "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large"],
         )
-        self.assertIn("caption", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["review_note"].lower())
-        self.assertIn("RNG Retrieve Errors", reviews["KMIPKIT-CLAUSE-SPEC-6.1.48.1-002"]["review_note"])
+        self.assertIn("caption", reviews["KMIP-CLAUSE-SPEC-6.1.48.1-002"]["review_note"].lower())
+        self.assertIn("RNG Retrieve Errors", reviews["KMIP-CLAUSE-SPEC-6.1.48.1-002"]["review_note"])
 
         self.assertEqual(
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.48-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.48-")
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.48-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.48-006", 1),
+                ("KMIP-REQ-SPEC-6.1.48-001", 1),
+                ("KMIP-REQ-SPEC-6.1.48-006", 1),
             },
         )
         reprovision_gaps = [
@@ -8782,10 +8782,10 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.49-001": ("6.1.49", 1, "table_row", ["REQUIRED"], [35302, 35320]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.49-002": ("6.1.49", 2, "table_row", ["REQUIRED"], [35358, 35376]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001": ("6.1.49.1", 1, "paragraph", ["SHALL"], [35406, 35407]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.49.1-002": ("6.1.49.1", 2, "table_row", ["REQUIRED"], [35427, 35440]),
+            "KMIP-CLAUSE-SPEC-6.1.49-001": ("6.1.49", 1, "table_row", ["REQUIRED"], [35302, 35320]),
+            "KMIP-CLAUSE-SPEC-6.1.49-002": ("6.1.49", 2, "table_row", ["REQUIRED"], [35358, 35376]),
+            "KMIP-CLAUSE-SPEC-6.1.49.1-001": ("6.1.49.1", 1, "paragraph", ["SHALL"], [35406, 35407]),
+            "KMIP-CLAUSE-SPEC-6.1.49.1-002": ("6.1.49.1", 2, "table_row", ["REQUIRED"], [35427, 35440]),
         }
         selected = [row for row in locators if row["section"] in ("6.1.49", "6.1.49.1")]
         self.assertEqual({row["clause_id"] for row in selected}, set(expected))
@@ -8801,18 +8801,18 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49-001"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.49-001"]["source_request_rows"]
         self.assertEqual([(row["row_label"], row["required"], row["actor"], row["html_line_range"])
                           for row in request_rows], [("Data Length", "Yes", "client", [35321, 35339])])
-        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49-002"]["source_payload_rows"]
+        response_rows = reviews["KMIP-CLAUSE-SPEC-6.1.49-002"]["source_payload_rows"]
         self.assertEqual([(row["row_label"], row["required"], row["actor"], row["html_line_range"])
                           for row in response_rows], [("Data", "Yes", "server", [35377, 35394])])
-        reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49.1-002"]["source_excerpt"]
+        reason_text = reviews["KMIP-CLAUSE-SPEC-6.1.49.1-002"]["source_excerpt"]
         self.assertEqual(reason_text.split("Operation Failed ", 1)[1].split(", "),
                          ["Cryptographic Failure", "Attestation Failed", "Attestation Required",
                           "Feature Not Supported", "Invalid Field", "Invalid Message",
                           "Operation Not Supported", "Permission Denied", "Response Too Large"])
-        atoms = reviews["KMIPKIT-CLAUSE-SPEC-6.1.49.1-001"]["source_obligations"]
+        atoms = reviews["KMIP-CLAUSE-SPEC-6.1.49.1-001"]["source_obligations"]
         self.assertEqual([(atom["source_keyword"], atom["actor"], atom["scope_disposition"])
                           for atom in atoms], [("SHALL", "server", "server_only")])
 
@@ -8837,7 +8837,7 @@ class CatalogValidationTests(unittest.TestCase):
         fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.49-DATA-LENGTH-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.49-001"
+        proposed_id = "KMIP-REQ-SPEC-6.1.49-001"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
@@ -8860,7 +8860,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-RNG-RETRIEVE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/rng_retrieve.rs::RngRetrieveRequest::to_ttlv_payload",
@@ -8885,7 +8885,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.49-001"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.49-001"
         )
         request_row = next(row for row in request_review["source_request_rows"]
                            if row["row_label"] == "Data Length")
@@ -8901,7 +8901,7 @@ class CatalogValidationTests(unittest.TestCase):
         """The RNG Retrieve error Result Reason obligation describes server response output."""
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clause = next(row for row in catalog["source_clauses"]
-                      if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.49.1-001")
+                      if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.49.1-001")
         self.assertEqual(clause["disposition"], "server_only")
         self.assertEqual(clause["role"], "server")
         self.assertEqual(clause["direction"], "server_to_client")
@@ -8915,11 +8915,11 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.50-001": ("6.1.50", 1, "paragraph", ["MAY", "SHALL NOT"], [35462, 35466]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.50-002": ("6.1.50", 2, "table_row", ["REQUIRED"], [35479, 35497]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.50-003": ("6.1.50", 3, "table_row", ["REQUIRED"], [35535, 35553]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.50.1-001": ("6.1.50.1", 1, "paragraph", ["SHALL"], [35583, 35584]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.50.1-002": ("6.1.50.1", 2, "table_row", ["REQUIRED"], [35604, 35618]),
+            "KMIP-CLAUSE-SPEC-6.1.50-001": ("6.1.50", 1, "paragraph", ["MAY", "SHALL NOT"], [35462, 35466]),
+            "KMIP-CLAUSE-SPEC-6.1.50-002": ("6.1.50", 2, "table_row", ["REQUIRED"], [35479, 35497]),
+            "KMIP-CLAUSE-SPEC-6.1.50-003": ("6.1.50", 3, "table_row", ["REQUIRED"], [35535, 35553]),
+            "KMIP-CLAUSE-SPEC-6.1.50.1-001": ("6.1.50.1", 1, "paragraph", ["SHALL"], [35583, 35584]),
+            "KMIP-CLAUSE-SPEC-6.1.50.1-002": ("6.1.50.1", 2, "table_row", ["REQUIRED"], [35604, 35618]),
         }
         selected = [row for row in pinned if row["section"] in ("6.1.50", "6.1.50.1")]
         self.assertEqual({row["clause_id"] for row in selected}, set(expected))
@@ -8941,38 +8941,38 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        seed_behavior = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-001"]
+        seed_behavior = reviews["KMIP-CLAUSE-SPEC-6.1.50-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["scope_disposition"], row["candidate_requirement_id"])
              for row in seed_behavior["source_obligations"]],
-            [("MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.50-002"),
-             ("MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.50-003"),
-             ("SHALL NOT", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.50-001")],
+            [("MAY", "server", "server_only", "KMIP-REQ-SPEC-6.1.50-002"),
+             ("MAY", "server", "server_only", "KMIP-REQ-SPEC-6.1.50-003"),
+             ("SHALL NOT", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.50-001")],
         )
-        self.assertEqual(seed_behavior["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.50-001"])
+        self.assertEqual(seed_behavior["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.50-001"])
         self.assertEqual(len(seed_behavior["rejected_candidate_mappings"]), 0)
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         mixed_clause = next(row for row in catalog["source_clauses"]
-                            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.50-001")
+                            if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.50-001")
         self.assertEqual(mixed_clause["role"], "both")
         self.assertEqual(mixed_clause["direction"], "both")
         self.assertEqual(mixed_clause["scope_state"], "mixed")
         self.assertEqual(mixed_clause["disposition"], "requirement")
         self.assertEqual(mixed_clause["requirement_ids"], [
-            "KMIPKIT-REQ-SPEC-6.1.50-002",
-            "KMIPKIT-REQ-SPEC-6.1.50-003",
-            "KMIPKIT-REQ-SPEC-6.1.50-001",
+            "KMIP-REQ-SPEC-6.1.50-002",
+            "KMIP-REQ-SPEC-6.1.50-003",
+            "KMIP-REQ-SPEC-6.1.50-001",
         ])
         server_requirements = {
             row["requirement_id"]: row for row in catalog["requirements"]
             if row["requirement_id"] in {
-                "KMIPKIT-REQ-SPEC-6.1.50-002",
-                "KMIPKIT-REQ-SPEC-6.1.50-003",
+                "KMIP-REQ-SPEC-6.1.50-002",
+                "KMIP-REQ-SPEC-6.1.50-003",
             }
         }
         self.assertEqual(set(server_requirements), {
-            "KMIPKIT-REQ-SPEC-6.1.50-002",
-            "KMIPKIT-REQ-SPEC-6.1.50-003",
+            "KMIP-REQ-SPEC-6.1.50-002",
+            "KMIP-REQ-SPEC-6.1.50-003",
         })
         self.assertEqual(
             [(row["source_keyword"], row["role"], row["direction"], row["scope_state"])
@@ -8981,7 +8981,7 @@ class CatalogValidationTests(unittest.TestCase):
              ("MAY", "server", "server_to_client", "server_only")],
         )
 
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-002"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.50-002"]
         request_rows = request_review["source_request_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
@@ -8991,24 +8991,24 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_rows[0]["source_excerpt"], pinned_source_excerpt(source_path, [35498, 35516]))
         self.assertEqual(request_rows[0]["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.50-DATA-REQUIRED")
         self.assertEqual(request_rows[0]["source_requirement_ids"], [])
-        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-003"]["source_payload_rows"]
+        response_rows = reviews["KMIP-CLAUSE-SPEC-6.1.50-003"]["source_payload_rows"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
              for row in response_rows],
             [("Data Length", "Yes", "server", "response_payload_data", [35554, 35571])],
         )
         self.assertEqual(response_rows[0]["source_excerpt"], pinned_source_excerpt(source_path, [35554, 35571]))
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-002"]["source_obligations"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.50-003"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.50-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.50-003"]["source_obligations"], [])
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.50.1-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["scope_disposition"])
              for row in error_review["source_obligations"]],
             [("SHALL", "server", "server_only")],
         )
         self.assertEqual(error_review["expected_client_requirement_ids"], [])
-        reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.50.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reasons = reviews["KMIP-CLAUSE-SPEC-6.1.50.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             reasons,
             ["Cryptographic Failure", "Attestation Failed", "Attestation Required", "Feature Not Supported",
@@ -9028,9 +9028,9 @@ class CatalogValidationTests(unittest.TestCase):
             [(row["requirement_id"], row["source_clause_id"], row["source_obligation_order"], row["source_keyword"], row["source_actor"])
              for row in oracle["requirement_crosswalk"] if row["source_section"] == "6.1.50"],
             [
-                ("KMIPKIT-REQ-SPEC-6.1.50-002", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 1, "MAY", "server"),
-                ("KMIPKIT-REQ-SPEC-6.1.50-003", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 2, "MAY", "server"),
-                ("KMIPKIT-REQ-SPEC-6.1.50-001", "KMIPKIT-CLAUSE-SPEC-6.1.50-001", 3, "SHALL NOT", "client"),
+                ("KMIP-REQ-SPEC-6.1.50-002", "KMIP-CLAUSE-SPEC-6.1.50-001", 1, "MAY", "server"),
+                ("KMIP-REQ-SPEC-6.1.50-003", "KMIP-CLAUSE-SPEC-6.1.50-001", 2, "MAY", "server"),
+                ("KMIP-REQ-SPEC-6.1.50-001", "KMIP-CLAUSE-SPEC-6.1.50-001", 3, "SHALL NOT", "client"),
             ],
         )
         for caption, line_range in (("Table 319: RNG Seed Request Payload", [35522, 35522]),
@@ -9044,7 +9044,7 @@ class CatalogValidationTests(unittest.TestCase):
         fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.50-DATA-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.50-004"
+        proposed_id = "KMIP-REQ-SPEC-6.1.50-004"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
@@ -9067,7 +9067,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-RNG-SEED")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-RNG-SEED")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-005", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/rng_seed.rs::RngSeedRequest::to_ttlv_payload",
@@ -9098,7 +9098,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.50-002"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.50-002"
         )
         request_row = next(row for row in request_review["source_request_rows"] if row["row_label"] == "Data")
         self.assertEqual(request_row["source_gap_id"], gap_id)
@@ -9113,7 +9113,7 @@ class CatalogValidationTests(unittest.TestCase):
         """The RNG Seed Result Reason obligation describes server response output."""
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clause = next(row for row in catalog["source_clauses"]
-                      if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.50.1-001")
+                      if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.50.1-001")
         self.assertEqual(clause["disposition"], "server_only")
         self.assertEqual(clause["role"], "server")
         self.assertEqual(clause["direction"], "server_to_client")
@@ -9127,11 +9127,11 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.51-001": ("6.1.51", 1, "paragraph", ["SHALL NOT"], [35629, 35635]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.51-002": ("6.1.51", 2, "table_row", ["REQUIRED"], [35648, 35666]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.51-003": ("6.1.51", 3, "table_row", ["REQUIRED"], [35719, 35737]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.51.1-001": ("6.1.51.1", 1, "paragraph", ["SHALL"], [35766, 35767]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.51.1-002": ("6.1.51.1", 2, "table_row", ["REQUIRED"], [35787, 35802]),
+            "KMIP-CLAUSE-SPEC-6.1.51-001": ("6.1.51", 1, "paragraph", ["SHALL NOT"], [35629, 35635]),
+            "KMIP-CLAUSE-SPEC-6.1.51-002": ("6.1.51", 2, "table_row", ["REQUIRED"], [35648, 35666]),
+            "KMIP-CLAUSE-SPEC-6.1.51-003": ("6.1.51", 3, "table_row", ["REQUIRED"], [35719, 35737]),
+            "KMIP-CLAUSE-SPEC-6.1.51.1-001": ("6.1.51.1", 1, "paragraph", ["SHALL"], [35766, 35767]),
+            "KMIP-CLAUSE-SPEC-6.1.51.1-002": ("6.1.51.1", 2, "table_row", ["REQUIRED"], [35787, 35802]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned
                         if row["section"] in ("6.1.51", "6.1.51.1")}
@@ -9150,13 +9150,13 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        operation_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.51-001"]
+        operation_review = reviews["KMIP-CLAUSE-SPEC-6.1.51-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["scope_disposition"], row["candidate_requirement_id"])
              for row in operation_review["source_obligations"]],
-            [("SHALL NOT", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.51-001")],
+            [("SHALL NOT", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.51-001")],
         )
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.51-002"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.51-002"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
              for row in request_review["source_request_rows"]],
@@ -9168,11 +9168,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_review["source_request_rows"][1]["source_gap_id"],
                          "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED")
         self.assertEqual(request_review["source_request_rows"][0]["source_element_id"],
-                         "KMIPKIT-ELEM-TAG-420094")
+                         "KMIP-ELEM-TAG-420094")
         self.assertEqual(request_review["source_request_rows"][1]["source_element_id"],
-                         "KMIPKIT-ELEM-TAG-42013D")
+                         "KMIP-ELEM-TAG-42013D")
         self.assertEqual(request_review["source_obligations"], [])
-        response_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.51-003"]
+        response_review = reviews["KMIP-CLAUSE-SPEC-6.1.51-003"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
              for row in response_review["source_payload_rows"]],
@@ -9180,7 +9180,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(response_review["source_obligations"], [])
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.51.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.51.1-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"],
               row["candidate_requirement_id"])
@@ -9192,7 +9192,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Add Attribute", error_review["source_excerpt"])
         self.assertIn("KMIPKIT-DISC-019", error_review["review_note"])
         self.assertIn("unresolved", error_review["review_note"].lower())
-        reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.51.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reasons = reviews["KMIP-CLAUSE-SPEC-6.1.51.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             reasons,
             ["Invalid Attribute Value", "Invalid Attribute Value", "Multi Valued Attribute", "Non Unique Name Attribute",
@@ -9203,7 +9203,7 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-019")
         error_clause = next(row for row in catalog["source_clauses"]
-                            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51.1-001")
+                            if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.51.1-001")
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-038")
         self.assertEqual(error_clause["disposition"], "source_discrepancy")
@@ -9212,7 +9212,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [(row["requirement_id"], row["source_obligation_order"], row["source_keyword"], row["source_actor"])
              for row in crosswalk],
-            [("KMIPKIT-REQ-SPEC-6.1.51-001", 1, "SHALL NOT", "client")],
+            [("KMIP-REQ-SPEC-6.1.51-001", 1, "SHALL NOT", "client")],
         )
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]
                 if row["source_section"] == "6.1.51"}
@@ -9227,7 +9227,7 @@ class CatalogValidationTests(unittest.TestCase):
         fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-UNIQUE-IDENTIFIER-OPTIONAL"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.51-003"
+        proposed_id = "KMIP-REQ-SPEC-6.1.51-003"
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [35667, 35683]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -9250,7 +9250,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "optional_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-009"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload",
@@ -9277,11 +9277,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
 
         review = next(row for row in oracle["source_requirement_reviews"]
-                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51-002")
+                      if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.51-002")
         identifier = next(row for row in review["source_request_rows"]
                           if row["row_label"] == "Unique Identifier")
         self.assertEqual(identifier["source_gap_id"], gap_id)
-        self.assertEqual(identifier["source_element_id"], "KMIPKIT-ELEM-TAG-420094")
+        self.assertEqual(identifier["source_element_id"], "KMIP-ELEM-TAG-420094")
         self.assertEqual(identifier["source_requirement_ids"], [])
         self.assertEqual(identifier["disposition"], "optional_request_table_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -9291,7 +9291,7 @@ class CatalogValidationTests(unittest.TestCase):
         fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.51-NEW-ATTRIBUTE-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.51-002"
+        proposed_id = "KMIP-REQ-SPEC-6.1.51-002"
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [35685, 35699]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -9314,7 +9314,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SET-ATTRIBUTE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-009"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/set_attribute.rs::SetAttributeRequest::to_ttlv_payload",
@@ -9341,11 +9341,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
 
         review = next(row for row in oracle["source_requirement_reviews"]
-                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51-002")
+                      if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.51-002")
         new_attribute = next(row for row in review["source_request_rows"]
                              if row["row_label"] == "New Attribute")
         self.assertEqual(new_attribute["source_gap_id"], gap_id)
-        self.assertEqual(new_attribute["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute["source_element_id"], "KMIP-ELEM-TAG-42013D")
         self.assertEqual(new_attribute["source_requirement_ids"], [])
         self.assertEqual(new_attribute["disposition"], "required_request_table_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -9355,7 +9355,7 @@ class CatalogValidationTests(unittest.TestCase):
         fixture_path = ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json"
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.34-NEW-ATTRIBUTE-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.34-005"
+        proposed_id = "KMIP-REQ-SPEC-6.1.34-005"
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         line_range = [30687, 30705]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
@@ -9378,7 +9378,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-MODIFY-ATTRIBUTE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-002", "FR-008"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/modify_attribute.rs::ModifyAttributeRequest::to_ttlv_payload",
@@ -9405,11 +9405,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(oracle["counts"]["source_only_requirement_gap_proposals"], 2)
 
         review = next(row for row in oracle["source_requirement_reviews"]
-                      if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.34-002")
+                      if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.34-002")
         new_attribute = next(row for row in review["source_request_rows"]
                              if row["row_label"] == "New Attribute")
         self.assertEqual(new_attribute["source_gap_id"], gap_id)
-        self.assertEqual(new_attribute["source_element_id"], "KMIPKIT-ELEM-TAG-42013D")
+        self.assertEqual(new_attribute["source_element_id"], "KMIP-ELEM-TAG-42013D")
         self.assertEqual(new_attribute["source_requirement_ids"], [])
         self.assertEqual(new_attribute["disposition"], "required_request_table_contract")
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -9421,10 +9421,10 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.52-001": ("6.1.52", 1, "table_row", ["REQUIRED"], [35830, 35848]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.52-002": ("6.1.52", 2, "table_row", ["REQUIRED"], [35884, 35902]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.52.1-001": ("6.1.52.1", 1, "paragraph", ["SHALL"], [35927, 35928]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.52.1-002": ("6.1.52.1", 2, "table_row", ["REQUIRED"], [35950, 35966]),
+            "KMIP-CLAUSE-SPEC-6.1.52-001": ("6.1.52", 1, "table_row", ["REQUIRED"], [35830, 35848]),
+            "KMIP-CLAUSE-SPEC-6.1.52-002": ("6.1.52", 2, "table_row", ["REQUIRED"], [35884, 35902]),
+            "KMIP-CLAUSE-SPEC-6.1.52.1-001": ("6.1.52.1", 1, "paragraph", ["SHALL"], [35927, 35928]),
+            "KMIP-CLAUSE-SPEC-6.1.52.1-002": ("6.1.52.1", 2, "table_row", ["REQUIRED"], [35950, 35966]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned
                         if row["section"] in ("6.1.52", "6.1.52.1")}
@@ -9443,7 +9443,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.52-001"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.52-001"]
         self.assertEqual(request_review["source_obligations"], [])
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
@@ -9452,13 +9452,13 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             request_review["source_request_rows"][0]["source_element_id"],
-            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS",
+            "KMIP-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS",
         )
-        response_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.52-002"]
+        response_review = reviews["KMIP-CLAUSE-SPEC-6.1.52-002"]
         self.assertEqual(response_review["source_payload_rows"], [])
         self.assertIn("no operation-specific response fields", response_review["review_note"])
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.52.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.52.1-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["condition"],
               row["scope_disposition"], row["candidate_requirement_id"])
@@ -9470,7 +9470,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(error_review["source_context"], pinned_source_excerpt(source_path, [35927, 35930]))
         self.assertIn("Constraints Operation", error_review["source_context"])
         self.assertIn("KMIPKIT-DEC-006", error_review["review_note"])
-        reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.52.1-002"]["source_excerpt"].split(
+        reasons = reviews["KMIP-CLAUSE-SPEC-6.1.52.1-002"]["source_excerpt"].split(
             "Operation Failed ", 1
         )[1].split(", ")
         self.assertEqual(
@@ -9484,9 +9484,9 @@ class CatalogValidationTests(unittest.TestCase):
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-020")
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-006")
         constraints_element = next(row for row in catalog["elements"]
-                                  if row["element_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS")
+                                  if row["element_id"] == "KMIP-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS")
         error_clause = next(row for row in catalog["source_clauses"]
-                            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.52.1-001")
+                            if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.52.1-001")
         self.assertEqual(constraints_element["kind"], "operation_structure")
         self.assertEqual(constraints_element["source_requiredness"], "YES")
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
@@ -9514,7 +9514,7 @@ class CatalogValidationTests(unittest.TestCase):
         oracle = json.loads(fixture_path.read_text(encoding="utf-8"))
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.52-CONSTRAINTS-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.52-001"
+        proposed_id = "KMIP-REQ-SPEC-6.1.52-001"
         line_range = [35849, 35864]
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
@@ -9535,7 +9535,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["requiredness"], "Yes")
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/set_constraints.rs::SetConstraintsRequest::to_ttlv_payload",
@@ -9565,10 +9565,10 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.53-001": ("6.1.53", 1, "table_row", ["REQUIRED"], [35994, 36012]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.53-002": ("6.1.53", 2, "table_row", ["REQUIRED"], [36050, 36068]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.53.1-001": ("6.1.53.1", 1, "paragraph", ["SHALL"], [36093, 36094]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.53.1-002": ("6.1.53.1", 2, "table_row", ["REQUIRED"], [36114, 36126]),
+            "KMIP-CLAUSE-SPEC-6.1.53-001": ("6.1.53", 1, "table_row", ["REQUIRED"], [35994, 36012]),
+            "KMIP-CLAUSE-SPEC-6.1.53-002": ("6.1.53", 2, "table_row", ["REQUIRED"], [36050, 36068]),
+            "KMIP-CLAUSE-SPEC-6.1.53.1-001": ("6.1.53.1", 1, "paragraph", ["SHALL"], [36093, 36094]),
+            "KMIP-CLAUSE-SPEC-6.1.53.1-002": ("6.1.53.1", 2, "table_row", ["REQUIRED"], [36114, 36126]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned
                         if row["section"] in ("6.1.53", "6.1.53.1")}
@@ -9587,7 +9587,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.53-001"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.53-001"]
         self.assertEqual(request_review["source_obligations"], [])
         self.assertEqual(
             [(row["row_label"], row["required"], row["actor"], row["disposition"], row["html_line_range"])
@@ -9598,7 +9598,7 @@ class CatalogValidationTests(unittest.TestCase):
         defaults_row = request_review["source_request_rows"][0]
         self.assertEqual(
             defaults_row["source_element_id"],
-            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION",
+            "KMIP-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION",
         )
         self.assertEqual(
             defaults_row["source_gap_id"],
@@ -9612,11 +9612,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("remove all Object Defaults", defaults_row["source_excerpt"])
         self.assertEqual(defaults_row["source_requirement_ids"], [])
 
-        response_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.53-002"]
+        response_review = reviews["KMIP-CLAUSE-SPEC-6.1.53-002"]
         self.assertEqual(response_review["source_payload_rows"], [])
         self.assertIn("no operation-specific response fields", response_review["review_note"])
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.53.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.53.1-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["condition"],
               row["scope_disposition"], row["candidate_requirement_id"])
@@ -9634,7 +9634,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Set Defaults Operation", error_review["source_context"])
         self.assertIn("KMIPKIT-DEC-006", error_review["review_note"])
 
-        reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.53.1-002"]["source_excerpt"].split(
+        reasons = reviews["KMIP-CLAUSE-SPEC-6.1.53.1-002"]["source_excerpt"].split(
             "Operation Failed ", 1
         )[1].split(", ")
         self.assertEqual(
@@ -9648,11 +9648,11 @@ class CatalogValidationTests(unittest.TestCase):
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-020")
         decision = next(row for row in catalog["decisions"] if row["decision_id"] == "KMIPKIT-DEC-006")
         defaults_element = next(row for row in catalog["elements"]
-                                if row["element_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION")
+                                if row["element_id"] == "KMIP-ELEM-OPERATION-STRUCTURE-7-11-DEFAULTS-INFORMATION")
         set_defaults_operation = next(row for row in catalog["elements"]
-                                      if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS")
+                                      if row["element_id"] == "KMIP-ELEM-OP-C2S-SET-DEFAULTS")
         error_clause = next(row for row in catalog["source_clauses"]
-                            if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.53.1-001")
+                            if row["clause_id"] == "KMIP-CLAUSE-SPEC-6.1.53.1-001")
         self.assertEqual(defaults_element["kind"], "operation_structure")
         self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
         self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-006")
@@ -9692,7 +9692,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "optional_table_body_value")
         self.assertEqual(contract["contract_kind"], "operation_request_table_field")
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SET-DEFAULTS")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/set_defaults.rs::SetDefaultsRequest::to_ttlv_payload",
@@ -9702,7 +9702,7 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs::table_328_omission_and_explicit_empty_structure_are_distinct_on_the_wire",
         ])
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.53-001", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.53-001", {
             row["requirement_id"]
             for row in catalog["requirements"]
         })
@@ -9721,8 +9721,8 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.54-001": ("6.1.54", 1, "table_row", ["REQUIRED"], [36155, 36173]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.54-002": ("6.1.54", 2, "table_row", ["REQUIRED"], [36208, 36226]),
+            "KMIP-CLAUSE-SPEC-6.1.54-001": ("6.1.54", 1, "table_row", ["REQUIRED"], [36155, 36173]),
+            "KMIP-CLAUSE-SPEC-6.1.54-002": ("6.1.54", 2, "table_row", ["REQUIRED"], [36208, 36226]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"] == "6.1.54"}
         self.assertEqual(set(pinned_by_id), set(expected))
@@ -9741,7 +9741,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
             self.assertEqual(review["source_obligations"], [])
 
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54-001"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.54-001"]
         self.assertIn("header", request_review["review_note"])
         self.assertIn("Table 331", request_review["review_note"])
         self.assertEqual(len(request_review["source_request_rows"]), 1)
@@ -9754,7 +9754,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_row["disposition"], "required_request_field_with_source_only_proposal")
         self.assertEqual(request_row["html_line_range"], [36165, 36187])
         self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [36165, 36187]))
-        self.assertEqual(request_row["source_element_id"], "KMIPKIT-ELEM-TAG-420151")
+        self.assertEqual(request_row["source_element_id"], "KMIP-ELEM-TAG-420151")
         self.assertEqual(request_row["source_requirement_ids"], [])
         self.assertEqual(request_row["source_gap_id"], "KMIPKIT-SOURCE-GAP-SPEC-6.1.54-ENDPOINT-ROLE-REQUIRED")
 
@@ -9771,11 +9771,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual((gap["actor"], gap["direction"], gap["scope_disposition"]),
                          ("client", "client_to_server", "client_1_1"))
         self.assertIsNone(gap["candidate_requirement_id"])
-        self.assertEqual(gap["proposed_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.54-001")
+        self.assertEqual(gap["proposed_requirement_id"], "KMIP-REQ-SPEC-6.1.54-001")
         self.assertEqual(gap["status"], "stable_label_proposed_not_in_catalog")
         self.assertIn("No catalog ID is fabricated", gap["review_note"])
 
-        response_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54-002"]
+        response_review = reviews["KMIP-CLAUSE-SPEC-6.1.54-002"]
         self.assertEqual(response_review["source_request_rows"], [])
         self.assertEqual(len(response_review["source_payload_rows"]), 1)
         response_row = response_review["source_payload_rows"][0]
@@ -9786,20 +9786,20 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(response_row["html_line_range"], [36218, 36240])
         self.assertEqual(response_row["source_excerpt"], pinned_source_excerpt(source_path, [36218, 36240]))
-        self.assertEqual(response_row["source_element_id"], "KMIPKIT-ELEM-TAG-420151")
+        self.assertEqual(response_row["source_element_id"], "KMIP-ELEM-TAG-420151")
         self.assertEqual(response_row["source_requirement_ids"], [])
         self.assertIn("accepted endpoint role", response_review["source_context"])
         self.assertIn("KMIPKIT-DISC-052", response_review["review_note"])
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
-                   if row["clause_id"].startswith("KMIPKIT-CLAUSE-SPEC-6.1.54-")}
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.54-001"]["disposition"], "non_applicable")
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.54-002"]["disposition"], "non_applicable")
+                   if row["clause_id"].startswith("KMIP-CLAUSE-SPEC-6.1.54-")}
+        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-6.1.54-001"]["disposition"], "non_applicable")
+        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-6.1.54-002"]["disposition"], "non_applicable")
         client_operation = next(row for row in catalog["elements"]
-                                if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE")
+                                if row["element_id"] == "KMIP-ELEM-OP-C2S-SET-ENDPOINT-ROLE")
         server_operation = next(row for row in catalog["elements"]
-                                if row["element_id"] == "KMIPKIT-ELEM-OP-S2C-SET-ENDPOINT-ROLE")
+                                if row["element_id"] == "KMIP-ELEM-OP-S2C-SET-ENDPOINT-ROLE")
         self.assertEqual((client_operation["direction"], client_operation["scope_state"]),
                          ("client_to_server", "client_1_1"))
         self.assertIn("deferred to 1.1 under an approved specification", client_operation["scope_reason"])
@@ -9831,8 +9831,8 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001": ("6.1.54.1", 1, "paragraph", ["SHALL"], [36251, 36255]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.54.1-002": ("6.1.54.1", 2, "table_row", ["REQUIRED"], [36278, 36287]),
+            "KMIP-CLAUSE-SPEC-6.1.54.1-001": ("6.1.54.1", 1, "paragraph", ["SHALL"], [36251, 36255]),
+            "KMIP-CLAUSE-SPEC-6.1.54.1-002": ("6.1.54.1", 2, "table_row", ["REQUIRED"], [36278, 36287]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"] == "6.1.54.1"}
         self.assertEqual(set(pinned_by_id), set(expected))
@@ -9846,7 +9846,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_path"], source_path)
             self.assertEqual(review["source_locator"], {"ordinal": ordinal, "block_kind": kind})
             self.assertEqual(review["html_line_range"], line_range)
-            if clause_id == "KMIPKIT-CLAUSE-SPEC-6.1.54.1-001":
+            if clause_id == "KMIP-CLAUSE-SPEC-6.1.54.1-001":
                 self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
                 self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, [36254, 36255]))
             else:
@@ -9854,7 +9854,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.54.1-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["condition"],
               row["scope_disposition"], row["candidate_requirement_id"], row["source_order"])
@@ -9869,7 +9869,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(error_review["source_obligations"][0]["source_note"],
                          "The SHALL specifies Result Reasons returned by the server for an operation error; it creates no client request requirement.")
 
-        reason_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.54.1-002"]
+        reason_review = reviews["KMIP-CLAUSE-SPEC-6.1.54.1-002"]
         reasons = reason_review["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             reasons,
@@ -9886,14 +9886,14 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]
                    if row["clause_id"] in expected}
-        error_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.54.1-001"]
+        error_clause = clauses["KMIP-CLAUSE-SPEC-6.1.54.1-001"]
         self.assertEqual(error_clause["disposition"], "server_only")
         self.assertEqual(error_clause["role"], "server")
         self.assertEqual(error_clause["direction"], "server_to_client")
         self.assertEqual(error_clause["scope_state"], "server_only")
         self.assertEqual(error_clause["condition"], "Errors are detected during Set Endpoint Role.")
         self.assertEqual(error_clause["requirement_ids"], [])
-        false_positive_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.54.1-002"]
+        false_positive_clause = clauses["KMIP-CLAUSE-SPEC-6.1.54.1-002"]
         self.assertEqual(false_positive_clause["disposition"], "non_applicable")
         self.assertEqual(false_positive_clause["role"], "not_applicable")
         self.assertIn("Attestation Required", false_positive_clause["exclusion_rationale"])
@@ -9908,14 +9908,14 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-001": ("6.1.55", 1, "paragraph", ["MAY"], [36304, 36308]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-002": ("6.1.55", 2, "paragraph", ["SHALL"], [36310, 36314]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-003": ("6.1.55", 3, "table_row", ["REQUIRED"], [36333, 36351]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-004": ("6.1.55", 4, "table_row", ["SHALL"], [36352, 36369]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-005": ("6.1.55", 5, "table_row", ["SHALL"], [36370, 36390]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55-006": ("6.1.55", 6, "table_row", ["REQUIRED"], [36490, 36508]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55.1-001": ("6.1.55.1", 1, "paragraph", ["SHALL"], [36573, 36574]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.55.1-002": ("6.1.55.1", 2, "table_row", ["REQUIRED"], [36594, 36611]),
+            "KMIP-CLAUSE-SPEC-6.1.55-001": ("6.1.55", 1, "paragraph", ["MAY"], [36304, 36308]),
+            "KMIP-CLAUSE-SPEC-6.1.55-002": ("6.1.55", 2, "paragraph", ["SHALL"], [36310, 36314]),
+            "KMIP-CLAUSE-SPEC-6.1.55-003": ("6.1.55", 3, "table_row", ["REQUIRED"], [36333, 36351]),
+            "KMIP-CLAUSE-SPEC-6.1.55-004": ("6.1.55", 4, "table_row", ["SHALL"], [36352, 36369]),
+            "KMIP-CLAUSE-SPEC-6.1.55-005": ("6.1.55", 5, "table_row", ["SHALL"], [36370, 36390]),
+            "KMIP-CLAUSE-SPEC-6.1.55-006": ("6.1.55", 6, "table_row", ["REQUIRED"], [36490, 36508]),
+            "KMIP-CLAUSE-SPEC-6.1.55.1-001": ("6.1.55.1", 1, "paragraph", ["SHALL"], [36573, 36574]),
+            "KMIP-CLAUSE-SPEC-6.1.55.1-002": ("6.1.55.1", 2, "table_row", ["REQUIRED"], [36594, 36611]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"].startswith("6.1.55")}
         self.assertEqual(set(pinned_by_id), set(expected))
@@ -9934,16 +9934,16 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        parameter_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]
+        parameter_review = reviews["KMIP-CLAUSE-SPEC-6.1.55-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"],
               row["candidate_requirement_id"], row["source_order"])
              for row in parameter_review["source_obligations"]],
-            [("MAY", "client", "client_to_server", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.55-001", 1)],
+            [("MAY", "client", "client_to_server", "client_1_0", "KMIP-REQ-SPEC-6.1.55-001", 1)],
         )
-        self.assertEqual(parameter_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.55-001"])
+        self.assertEqual(parameter_review["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.55-001"])
 
-        usage_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]
+        usage_review = reviews["KMIP-CLAUSE-SPEC-6.1.55-002"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["scope_disposition"], row["source_order"])
              for row in usage_review["source_obligations"]],
@@ -9951,7 +9951,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(usage_review["expected_client_requirement_ids"], [])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.55-003"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertIn("header", request_header["review_note"])
         request_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
@@ -9961,13 +9961,13 @@ class CatalogValidationTests(unittest.TestCase):
              "Correlation Value", "Init Indicator", "Final Indicator"},
         )
         expected_request_rows = {
-            "Unique Identifier": ("No", [36352, 36369], "KMIPKIT-ELEM-TAG-420094", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL"),
-            "Cryptographic Parameters": ("No", [36370, 36390], "KMIPKIT-ELEM-TAG-42002B", None),
-            "Data": ("Yes for single-part, unless Digested Data is supplied.. No for multi-part.", [36391, 36406], "KMIPKIT-ELEM-TAG-4200C2", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"),
-            "Digested Data": ("No", [36407, 36422], "KMIPKIT-ELEM-TAG-420107", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL"),
-            "Correlation Value": ("No", [36423, 36439], "KMIPKIT-ELEM-TAG-4200D6", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL"),
-            "Init Indicator": ("No", [36440, 36455], "KMIPKIT-ELEM-TAG-4200D7", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL"),
-            "Final Indicator": ("No", [36456, 36471], "KMIPKIT-ELEM-TAG-4200D8", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL"),
+            "Unique Identifier": ("No", [36352, 36369], "KMIP-ELEM-TAG-420094", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-UNIQUE-IDENTIFIER-OPTIONAL"),
+            "Cryptographic Parameters": ("No", [36370, 36390], "KMIP-ELEM-TAG-42002B", None),
+            "Data": ("Yes for single-part, unless Digested Data is supplied.. No for multi-part.", [36391, 36406], "KMIP-ELEM-TAG-4200C2", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DATA-CONDITIONAL"),
+            "Digested Data": ("No", [36407, 36422], "KMIP-ELEM-TAG-420107", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-DIGESTED-DATA-OPTIONAL"),
+            "Correlation Value": ("No", [36423, 36439], "KMIP-ELEM-TAG-4200D6", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-CORRELATION-VALUE-OPTIONAL"),
+            "Init Indicator": ("No", [36440, 36455], "KMIP-ELEM-TAG-4200D7", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-INIT-INDICATOR-OPTIONAL"),
+            "Final Indicator": ("No", [36456, 36471], "KMIP-ELEM-TAG-4200D8", "KMIPKIT-SOURCE-GAP-SPEC-6.1.55-FINAL-INDICATOR-OPTIONAL"),
         }
         for label, (required, line_range, element_id, gap_id) in expected_request_rows.items():
             row = request_rows[label]
@@ -9984,46 +9984,46 @@ class CatalogValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(row["source_requirement_ids"], [])
         self.assertEqual(request_rows["Cryptographic Parameters"]["source_requirement_ids"],
-                         ["KMIPKIT-REQ-SPEC-6.1.55-001"])
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
+                         ["KMIP-REQ-SPEC-6.1.55-001"])
+        self.assertIn("KMIP-CLAUSE-SPEC-6.1-002", request_rows["Unique Identifier"]["source_note"])
         self.assertIn("DEC-034", request_rows["Data"]["source_note"])
         self.assertIn("neither indicator is true", request_rows["Data"]["source_note"])
         self.assertIn("single-part", request_rows["Digested Data"]["source_note"])
 
-        identifier_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-004"]
+        identifier_review = reviews["KMIP-CLAUSE-SPEC-6.1.55-004"]
         self.assertEqual(identifier_review["source_obligations"][0]["candidate_requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.55-004")
+                         "KMIP-REQ-SPEC-6.1.55-004")
         self.assertEqual(identifier_review["source_obligations"][0]["scope_disposition"], "server_only")
         self.assertEqual(
             identifier_review["source_obligations"][0]["condition"],
-            "The request omits Unique Identifier and the ID Placeholder remains available under KMIPKIT-CLAUSE-SPEC-6.1-002.",
+            "The request omits Unique Identifier and the ID Placeholder remains available under KMIP-CLAUSE-SPEC-6.1-002.",
         )
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["source_obligations"][0]["source_note"])
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", identifier_review["review_note"])
-        crypto_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]
+        self.assertIn("KMIP-CLAUSE-SPEC-6.1-002", identifier_review["source_obligations"][0]["source_note"])
+        self.assertIn("KMIP-CLAUSE-SPEC-6.1-002", identifier_review["review_note"])
+        crypto_review = reviews["KMIP-CLAUSE-SPEC-6.1.55-005"]
         self.assertEqual(crypto_review["source_obligations"][0]["candidate_requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.55-005-002")
+                         "KMIP-REQ-SPEC-6.1.55-005-002")
         self.assertEqual(crypto_review["source_obligations"][0]["direction"], "server_to_client")
         self.assertEqual(
             crypto_review["source_obligations"][0]["condition"],
             "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
         )
         self.assertEqual(crypto_review["rejected_candidate_mappings"], [{
-            "requirement_id": "KMIPKIT-REQ-SPEC-6.1.55-005-001",
+            "requirement_id": "KMIP-REQ-SPEC-6.1.55-005-001",
             "claimed_keyword": "SHALL",
             "candidate_claim": "The client has a separate SHALL to include Cryptographic Parameters.",
             "source_review": "The row marks Cryptographic Parameters optional; its SHALL requires a server failure only when the object has no associated parameters and the selected algorithm requires them.",
             "expected_disposition": "not_a_normative_client_requirement",
         }])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55-006"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.55-006"]
         self.assertEqual(response_header["source_obligations"], [])
         response_rows = {row["row_label"]: row for row in response_header["source_payload_rows"]}
         self.assertEqual(set(response_rows), {"Unique Identifier", "Signature Data", "Correlation Value"})
         for label, (required, span, element_id) in {
-            "Unique Identifier": ("Yes", [36509, 36526], "KMIPKIT-ELEM-TAG-420094"),
-            "Signature Data": ("Yes for single-part. No for multi-part.", [36527, 36543], "KMIPKIT-ELEM-TAG-4200C3"),
-            "Correlation Value": ("No", [36544, 36561], "KMIPKIT-ELEM-TAG-4200D6"),
+            "Unique Identifier": ("Yes", [36509, 36526], "KMIP-ELEM-TAG-420094"),
+            "Signature Data": ("Yes for single-part. No for multi-part.", [36527, 36543], "KMIP-ELEM-TAG-4200C3"),
+            "Correlation Value": ("No", [36544, 36561], "KMIP-ELEM-TAG-4200D6"),
         }.items():
             row = response_rows[label]
             self.assertEqual((row["required"], row["actor"], row["direction"], row["scope_disposition"]),
@@ -10032,44 +10032,44 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, span))
             self.assertEqual(row["source_element_id"], element_id)
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.55.1-001"]
         self.assertEqual(error_review["source_obligations"][0]["source_keyword"], "SHALL")
         self.assertEqual((error_review["source_obligations"][0]["actor"],
                           error_review["source_obligations"][0]["direction"],
                           error_review["source_obligations"][0]["scope_disposition"]),
                          ("server", "server_to_client", "server_only"))
-        error_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        error_values = reviews["KMIP-CLAUSE-SPEC-6.1.55.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(error_values.count("Invalid Object Type"), 2)
         self.assertIn("Attestation Required", error_values)
-        self.assertIn("enum value", reviews["KMIPKIT-CLAUSE-SPEC-6.1.55.1-002"]["review_note"])
+        self.assertIn("enum value", reviews["KMIP-CLAUSE-SPEC-6.1.55.1-002"]["review_note"])
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-001"]["scope_state"], "client_1_0")
-        self.assertEqual(clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-002"]["disposition"], "server_only")
-        for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.55-004", "KMIPKIT-CLAUSE-SPEC-6.1.55-005"):
+        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-6.1.55-001"]["scope_state"], "client_1_0")
+        self.assertEqual(clauses["KMIP-CLAUSE-SPEC-6.1.55-002"]["disposition"], "server_only")
+        for clause_id in ("KMIP-CLAUSE-SPEC-6.1.55-004", "KMIP-CLAUSE-SPEC-6.1.55-005"):
             self.assertEqual(clauses[clause_id]["disposition"], "requirement")
             self.assertEqual(clauses[clause_id]["role"], "server")
             self.assertEqual(clauses[clause_id]["scope_state"], "server_only")
-        crypto_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.55-005"]
+        crypto_clause = clauses["KMIP-CLAUSE-SPEC-6.1.55-005"]
         self.assertEqual(crypto_clause["direction"], "server_to_client")
         self.assertEqual(
             crypto_clause["condition"],
             "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        crypto_requirement = requirements["KMIPKIT-REQ-SPEC-6.1.55-005-002"]
+        crypto_requirement = requirements["KMIP-REQ-SPEC-6.1.55-005-002"]
         self.assertEqual(crypto_requirement["direction"], "server_to_client")
         self.assertEqual(crypto_requirement["condition"], crypto_clause["condition"])
-        self.assertEqual((clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["role"],
-                          clauses["KMIPKIT-CLAUSE-SPEC-6.1.55.1-001"]["direction"]),
+        self.assertEqual((clauses["KMIP-CLAUSE-SPEC-6.1.55.1-001"]["role"],
+                          clauses["KMIP-CLAUSE-SPEC-6.1.55.1-001"]["direction"]),
                          ("server", "server_to_client"))
         crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-001"]["source_actor"], "client")
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-004"]["source_actor"], "server")
-        self.assertEqual(crosswalk["KMIPKIT-REQ-SPEC-6.1.55-005-002"]["source_actor"], "server")
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", crosswalk["KMIPKIT-REQ-SPEC-6.1.55-004"]["review_note"])
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.55-005-001", crosswalk)
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.55-001"]["source_actor"], "client")
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.55-004"]["source_actor"], "server")
+        self.assertEqual(crosswalk["KMIP-REQ-SPEC-6.1.55-005-002"]["source_actor"], "server")
+        self.assertIn("KMIP-CLAUSE-SPEC-6.1-002", crosswalk["KMIP-REQ-SPEC-6.1.55-004"]["review_note"])
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.55-005-001", crosswalk)
 
         gaps = {row["gap_id"]: row for row in oracle["source_only_requirement_gaps"]
                 if row["source_section"] == "6.1.55"}
@@ -10097,7 +10097,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "No",
                 "source_force": "optional_table_body_value",
                 "html_line_range": [36687, 36700],
-                "element_id": "KMIPKIT-ELEM-TAG-420094",
+                "element_id": "KMIP-ELEM-TAG-420094",
                 "functional_requirement_ids": ["FR-005"],
                 "verification_refs": [emit_fields, single_part_client],
                 "asserted_field": "UNIQUE_IDENTIFIER",
@@ -10107,7 +10107,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "No",
                 "source_force": "optional_table_body_value",
                 "html_line_range": [36745, 36755],
-                "element_id": "KMIPKIT-ELEM-TAG-420107",
+                "element_id": "KMIP-ELEM-TAG-420107",
                 "functional_requirement_ids": ["FR-007"],
                 "verification_refs": [emit_fields, single_part_client],
                 "asserted_field": "DIGESTED_DATA",
@@ -10117,7 +10117,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "Yes for single-part. No for multi-part.",
                 "source_force": "conditional_required_table_body_value",
                 "html_line_range": [36761, 36772],
-                "element_id": "KMIPKIT-ELEM-TAG-4200C3",
+                "element_id": "KMIP-ELEM-TAG-4200C3",
                 "functional_requirement_ids": ["FR-007"],
                 "verification_refs": [emit_fields, multipart_fields, single_part_client],
                 "asserted_field": "SIGNATURE_DATA",
@@ -10127,7 +10127,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "No",
                 "source_force": "optional_table_body_value",
                 "html_line_range": [36778, 36790],
-                "element_id": "KMIPKIT-ELEM-TAG-4200D6",
+                "element_id": "KMIP-ELEM-TAG-4200D6",
                 "functional_requirement_ids": ["FR-007"],
                 "verification_refs": [multipart_fields, multipart_client],
                 "asserted_field": "CORRELATION_VALUE",
@@ -10137,7 +10137,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "No",
                 "source_force": "optional_table_body_value",
                 "html_line_range": [36796, 36806],
-                "element_id": "KMIPKIT-ELEM-TAG-4200D7",
+                "element_id": "KMIP-ELEM-TAG-4200D7",
                 "functional_requirement_ids": ["FR-007"],
                 "verification_refs": [emit_fields, multipart_fields, multipart_client],
                 "asserted_field": "INIT_INDICATOR",
@@ -10147,7 +10147,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "requiredness": "No",
                 "source_force": "optional_table_body_value",
                 "html_line_range": [36812, 36822],
-                "element_id": "KMIPKIT-ELEM-TAG-4200D8",
+                "element_id": "KMIP-ELEM-TAG-4200D8",
                 "functional_requirement_ids": ["FR-007"],
                 "verification_refs": [emit_fields, multipart_fields, multipart_client],
                 "asserted_field": "FINAL_INDICATOR",
@@ -10171,7 +10171,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_header = next(
             row for row in oracle["source_requirement_reviews"]
-            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.56-005"
+            if row.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.56-005"
         )
         reviewed_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
@@ -10211,7 +10211,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["direction"], "client→server Signature Verify request")
                 self.assertEqual(contract["scope_disposition"], "client_1_0")
                 self.assertEqual(contract["table_number"], 337)
-                self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY")
+                self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY")
                 self.assertEqual(contract["functional_requirement_ids"], values["functional_requirement_ids"])
                 self.assertEqual(contract["implementation_refs"], [
                     "crates/kmipkit-protocol/src/signature_verify.rs::SignatureVerifyRequest::to_ttlv_payload"
@@ -10252,12 +10252,12 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertTrue(
             {
-                "KMIPKIT-REQ-SPEC-6.1.56-008",
-                "KMIPKIT-REQ-SPEC-6.1.56-009",
-                "KMIPKIT-REQ-SPEC-6.1.56-010",
-                "KMIPKIT-REQ-SPEC-6.1.56-011",
-                "KMIPKIT-REQ-SPEC-6.1.56-012",
-                "KMIPKIT-REQ-SPEC-6.1.56-013",
+                "KMIP-REQ-SPEC-6.1.56-008",
+                "KMIP-REQ-SPEC-6.1.56-009",
+                "KMIP-REQ-SPEC-6.1.56-010",
+                "KMIP-REQ-SPEC-6.1.56-011",
+                "KMIP-REQ-SPEC-6.1.56-012",
+                "KMIP-REQ-SPEC-6.1.56-013",
             }.isdisjoint(proposed_ids)
         )
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -10363,7 +10363,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["actor"], "client")
                 self.assertEqual(contract["direction"], "client→server Sign request")
                 self.assertEqual(contract["scope_disposition"], "client_1_0")
-                self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-SIGN")
+                self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-SIGN")
                 self.assertEqual(contract["functional_requirement_ids"], feature_requirements)
                 self.assertEqual(contract["implementation_refs"], [implementation_ref])
                 self.assertEqual(contract["verification_refs"], verification_refs)
@@ -10420,17 +10420,17 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         pinned = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-001": ("6.1.56", 1, "paragraph", ["MAY"], [36630, 36634]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-002": ("6.1.56", 2, "paragraph", ["MAY"], [36636, 36638]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-003": ("6.1.56", 3, "paragraph", ["OPTIONAL"], [36640, 36644]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-004": ("6.1.56", 4, "paragraph", ["SHALL", "SHALL NOT"], [36646, 36649]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-005": ("6.1.56", 5, "table_row", ["REQUIRED"], [36665, 36683]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-006": ("6.1.56", 6, "table_row", ["SHALL"], [36687, 36700]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-007": ("6.1.56", 7, "table_row", ["SHALL"], [36706, 36723]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-008": ("6.1.56", 8, "table_row", ["REQUIRED"], [36843, 36859]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56-009": ("6.1.56", 9, "table_row", ["OPTIONAL"], [36898, 36912]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56.1-001": ("6.1.56.1", 1, "paragraph", ["SHALL"], [36946, 36947]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.56.1-002": ("6.1.56.1", 2, "table_row", ["REQUIRED"], [36967, 36983]),
+            "KMIP-CLAUSE-SPEC-6.1.56-001": ("6.1.56", 1, "paragraph", ["MAY"], [36630, 36634]),
+            "KMIP-CLAUSE-SPEC-6.1.56-002": ("6.1.56", 2, "paragraph", ["MAY"], [36636, 36638]),
+            "KMIP-CLAUSE-SPEC-6.1.56-003": ("6.1.56", 3, "paragraph", ["OPTIONAL"], [36640, 36644]),
+            "KMIP-CLAUSE-SPEC-6.1.56-004": ("6.1.56", 4, "paragraph", ["SHALL", "SHALL NOT"], [36646, 36649]),
+            "KMIP-CLAUSE-SPEC-6.1.56-005": ("6.1.56", 5, "table_row", ["REQUIRED"], [36665, 36683]),
+            "KMIP-CLAUSE-SPEC-6.1.56-006": ("6.1.56", 6, "table_row", ["SHALL"], [36687, 36700]),
+            "KMIP-CLAUSE-SPEC-6.1.56-007": ("6.1.56", 7, "table_row", ["SHALL"], [36706, 36723]),
+            "KMIP-CLAUSE-SPEC-6.1.56-008": ("6.1.56", 8, "table_row", ["REQUIRED"], [36843, 36859]),
+            "KMIP-CLAUSE-SPEC-6.1.56-009": ("6.1.56", 9, "table_row", ["OPTIONAL"], [36898, 36912]),
+            "KMIP-CLAUSE-SPEC-6.1.56.1-001": ("6.1.56.1", 1, "paragraph", ["SHALL"], [36946, 36947]),
+            "KMIP-CLAUSE-SPEC-6.1.56.1-002": ("6.1.56.1", 2, "table_row", ["REQUIRED"], [36967, 36983]),
         }
         pinned_by_id = {row["clause_id"]: row for row in pinned if row["section"].startswith("6.1.56")}
         self.assertEqual(set(pinned_by_id), set(expected))
@@ -10449,31 +10449,31 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned_by_id[clause_id]["source_text"])
             self.assertEqual(pinned_by_id[clause_id]["source_keywords"], keywords)
 
-        request_may = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-001"]
+        request_may = reviews["KMIP-CLAUSE-SPEC-6.1.56-001"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"],
               row["candidate_requirement_id"], row["source_order"])
              for row in request_may["source_obligations"]],
-            [("MAY", "client", "client_to_server", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.56-001-001", 1)],
+            [("MAY", "client", "client_to_server", "client_1_0", "KMIP-REQ-SPEC-6.1.56-001-001", 1)],
         )
-        self.assertEqual(request_may["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.56-001-001"])
+        self.assertEqual(request_may["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.56-001-001"])
         self.assertEqual(request_may["rejected_candidate_mappings"][0]["requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.56-001-002")
+                         "KMIP-REQ-SPEC-6.1.56-001-002")
         self.assertIn("Table 337", request_may["rejected_candidate_mappings"][0]["source_review"])
 
-        parameter_may = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-002"]
+        parameter_may = reviews["KMIP-CLAUSE-SPEC-6.1.56-002"]
         self.assertEqual(parameter_may["source_obligations"][0]["candidate_requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.56-002")
+                         "KMIP-REQ-SPEC-6.1.56-002")
         self.assertEqual((parameter_may["source_obligations"][0]["actor"],
                           parameter_may["source_obligations"][0]["direction"],
                           parameter_may["source_obligations"][0]["scope_disposition"]),
                          ("client", "client_to_server", "client_1_0"))
 
-        response_prose = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-003"]
+        response_prose = reviews["KMIP-CLAUSE-SPEC-6.1.56-003"]
         self.assertEqual(response_prose["expected_client_requirement_ids"], [])
         self.assertEqual(response_prose["source_obligations"], [])
         self.assertEqual(response_prose["applies_to"], "all_client_profiles")
-        validity_prose = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-004"]
+        validity_prose = reviews["KMIP-CLAUSE-SPEC-6.1.56-004"]
         self.assertEqual(
             [(row["source_keyword"], row["actor"], row["direction"], row["scope_disposition"], row["source_order"])
              for row in validity_prose["source_obligations"]],
@@ -10482,55 +10482,55 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(validity_prose["expected_client_requirement_ids"], [])
 
-        placeholder = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-006"]
+        placeholder = reviews["KMIP-CLAUSE-SPEC-6.1.56-006"]
         self.assertEqual(placeholder["source_obligations"][0]["candidate_requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.56-006")
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-6.1-002", placeholder["source_obligations"][0]["condition"])
-        crypto_failure = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-007"]
+                         "KMIP-REQ-SPEC-6.1.56-006")
+        self.assertIn("KMIP-CLAUSE-SPEC-6.1-002", placeholder["source_obligations"][0]["condition"])
+        crypto_failure = reviews["KMIP-CLAUSE-SPEC-6.1.56-007"]
         self.assertEqual(crypto_failure["source_obligations"][0]["candidate_requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.56-007-002")
+                         "KMIP-REQ-SPEC-6.1.56-007-002")
         self.assertEqual(crypto_failure["source_obligations"][0]["direction"], "server_to_client")
         self.assertEqual(
             crypto_failure["source_obligations"][0]["condition"],
             "No Cryptographic Parameters are associated with the Managed Cryptographic Object and the selected algorithm requires parameters.",
         )
         self.assertEqual(crypto_failure["rejected_candidate_mappings"][0]["requirement_id"],
-                         "KMIPKIT-REQ-SPEC-6.1.56-007-001")
+                         "KMIP-REQ-SPEC-6.1.56-007-001")
 
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.56.1-001"]["source_obligations"][0]["direction"],
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.56.1-001"]["source_obligations"][0]["direction"],
                          "server_to_client")
-        false_required = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56.1-002"]
+        false_required = reviews["KMIP-CLAUSE-SPEC-6.1.56.1-002"]
         self.assertEqual(false_required["source_obligations"], [])
         self.assertIn("Attestation Required", false_required["source_excerpt"])
         self.assertIn("enum value", false_required["review_note"])
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"] if row["clause_id"] in expected}
-        for clause_id in ("KMIPKIT-CLAUSE-SPEC-6.1.56-003", "KMIPKIT-CLAUSE-SPEC-6.1.56-009",
-                          "KMIPKIT-CLAUSE-SPEC-6.1.56.1-001"):
+        for clause_id in ("KMIP-CLAUSE-SPEC-6.1.56-003", "KMIP-CLAUSE-SPEC-6.1.56-009",
+                          "KMIP-CLAUSE-SPEC-6.1.56.1-001"):
             self.assertEqual(clauses[clause_id]["role"], "server")
             self.assertEqual(clauses[clause_id]["direction"], "server_to_client")
             self.assertEqual(clauses[clause_id]["scope_state"], "server_only")
-        validity_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.56-004"]
+        validity_clause = clauses["KMIP-CLAUSE-SPEC-6.1.56-004"]
         self.assertEqual(validity_clause["role"], "server")
         self.assertEqual(validity_clause["direction"], "server_to_client")
         self.assertEqual(validity_clause["scope_state"], "server_only")
-        crypto_clause = clauses["KMIPKIT-CLAUSE-SPEC-6.1.56-007"]
+        crypto_clause = clauses["KMIP-CLAUSE-SPEC-6.1.56-007"]
         self.assertEqual(crypto_clause["direction"], "server_to_client")
         self.assertIn("no cryptographic parameters", crypto_clause["condition"].casefold())
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-6.1.56-007-002"]["direction"], "server_to_client")
-        self.assertEqual(requirements["KMIPKIT-REQ-SPEC-6.1.56-007-002"]["condition"], crypto_clause["condition"])
+        self.assertEqual(requirements["KMIP-REQ-SPEC-6.1.56-007-002"]["direction"], "server_to_client")
+        self.assertEqual(requirements["KMIP-REQ-SPEC-6.1.56-007-002"]["condition"], crypto_clause["condition"])
         crosswalk = {row["requirement_id"]: row for row in oracle["requirement_crosswalk"]}
         for requirement_id, actor, scope in (
-            ("KMIPKIT-REQ-SPEC-6.1.56-001-001", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.56-002", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.56-006", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.56-007-002", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.56-001-001", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.56-002", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.56-006", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.56-007-002", "server", "server_only"),
         ):
             self.assertEqual(crosswalk[requirement_id]["source_actor"], actor)
             self.assertEqual(crosswalk[requirement_id]["scope_state"], scope)
-        for retired_id in ("KMIPKIT-REQ-SPEC-6.1.56-001-002", "KMIPKIT-REQ-SPEC-6.1.56-007-001"):
+        for retired_id in ("KMIP-REQ-SPEC-6.1.56-001-002", "KMIP-REQ-SPEC-6.1.56-007-001"):
             self.assertNotIn(retired_id, crosswalk)
 
     def test_spec_6_1_56_signature_verify_reviews_payload_gaps_and_open_discrepancy(self) -> None:
@@ -10540,33 +10540,33 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         reviews = {row["source_clause_id"]: row for row in oracle["source_requirement_reviews"]}
         self.assertEqual(
-            {clause_id for clause_id in reviews if clause_id.startswith("KMIPKIT-CLAUSE-SPEC-6.1.56")},
+            {clause_id for clause_id in reviews if clause_id.startswith("KMIP-CLAUSE-SPEC-6.1.56")},
             {
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-001",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-002",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-003",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-004",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-005",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-006",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-007",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-008",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56-009",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56.1-001",
-                "KMIPKIT-CLAUSE-SPEC-6.1.56.1-002",
+                "KMIP-CLAUSE-SPEC-6.1.56-001",
+                "KMIP-CLAUSE-SPEC-6.1.56-002",
+                "KMIP-CLAUSE-SPEC-6.1.56-003",
+                "KMIP-CLAUSE-SPEC-6.1.56-004",
+                "KMIP-CLAUSE-SPEC-6.1.56-005",
+                "KMIP-CLAUSE-SPEC-6.1.56-006",
+                "KMIP-CLAUSE-SPEC-6.1.56-007",
+                "KMIP-CLAUSE-SPEC-6.1.56-008",
+                "KMIP-CLAUSE-SPEC-6.1.56-009",
+                "KMIP-CLAUSE-SPEC-6.1.56.1-001",
+                "KMIP-CLAUSE-SPEC-6.1.56.1-002",
             },
         )
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-005"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.56-005"]
         self.assertEqual(request_header["source_obligations"], [])
         request_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
         expected_request_rows = {
-            "Unique Identifier": ("No", [36687, 36700], "KMIPKIT-ELEM-TAG-420094", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-UNIQUE-IDENTIFIER-OPTIONAL", []),
-            "Cryptographic Parameters": ("No", [36706, 36723], "KMIPKIT-ELEM-TAG-42002B", None, ["KMIPKIT-REQ-SPEC-6.1.56-002"]),
-            "Data": ("No", [36729, 36740], "KMIPKIT-ELEM-TAG-4200C2", None, ["KMIPKIT-REQ-SPEC-6.1.56-001-001"]),
-            "Digested Data": ("No", [36745, 36755], "KMIPKIT-ELEM-TAG-420107", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-DIGESTED-DATA-OPTIONAL", []),
-            "Signature Data": ("Yes for single-part. No for multi-part.", [36761, 36772], "KMIPKIT-ELEM-TAG-4200C3", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL", []),
-            "Correlation Value": ("No", [36778, 36790], "KMIPKIT-ELEM-TAG-4200D6", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL", []),
-            "Init Indicator": ("No", [36796, 36806], "KMIPKIT-ELEM-TAG-4200D7", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-INIT-INDICATOR-OPTIONAL", []),
-            "Final Indicator": ("No", [36812, 36822], "KMIPKIT-ELEM-TAG-4200D8", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-FINAL-INDICATOR-OPTIONAL", []),
+            "Unique Identifier": ("No", [36687, 36700], "KMIP-ELEM-TAG-420094", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-UNIQUE-IDENTIFIER-OPTIONAL", []),
+            "Cryptographic Parameters": ("No", [36706, 36723], "KMIP-ELEM-TAG-42002B", None, ["KMIP-REQ-SPEC-6.1.56-002"]),
+            "Data": ("No", [36729, 36740], "KMIP-ELEM-TAG-4200C2", None, ["KMIP-REQ-SPEC-6.1.56-001-001"]),
+            "Digested Data": ("No", [36745, 36755], "KMIP-ELEM-TAG-420107", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-DIGESTED-DATA-OPTIONAL", []),
+            "Signature Data": ("Yes for single-part. No for multi-part.", [36761, 36772], "KMIP-ELEM-TAG-4200C3", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-SIGNATURE-DATA-CONDITIONAL", []),
+            "Correlation Value": ("No", [36778, 36790], "KMIP-ELEM-TAG-4200D6", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-CORRELATION-VALUE-OPTIONAL", []),
+            "Init Indicator": ("No", [36796, 36806], "KMIP-ELEM-TAG-4200D7", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-INIT-INDICATOR-OPTIONAL", []),
+            "Final Indicator": ("No", [36812, 36822], "KMIP-ELEM-TAG-4200D8", "KMIPKIT-SOURCE-GAP-SPEC-6.1.56-FINAL-INDICATOR-OPTIONAL", []),
         }
         self.assertEqual(set(request_rows), set(expected_request_rows))
         for label, (required, span, element_id, gap_id, requirement_ids) in expected_request_rows.items():
@@ -10579,14 +10579,14 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_gap_id"], gap_id)
             self.assertEqual(row["source_requirement_ids"], requirement_ids)
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.56-008"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.56-008"]
         self.assertEqual(response_header["source_obligations"], [])
         response_rows = {row["row_label"]: row for row in response_header["source_payload_rows"]}
         expected_response_rows = {
-            "Unique Identifier": ("Yes", [36865, 36877], "KMIPKIT-ELEM-TAG-420094"),
-            "Validity Indicator": ("Yes for single-part. No for multi-part.", [36883, 36895], "KMIPKIT-ELEM-TAG-42009B"),
-            "Data": ("No", [36898, 36912], "KMIPKIT-ELEM-TAG-4200C2"),
-            "Correlation Value": ("No", [36918, 36930], "KMIPKIT-ELEM-TAG-4200D6"),
+            "Unique Identifier": ("Yes", [36865, 36877], "KMIP-ELEM-TAG-420094"),
+            "Validity Indicator": ("Yes for single-part. No for multi-part.", [36883, 36895], "KMIP-ELEM-TAG-42009B"),
+            "Data": ("No", [36898, 36912], "KMIP-ELEM-TAG-4200C2"),
+            "Correlation Value": ("No", [36918, 36930], "KMIP-ELEM-TAG-4200D6"),
         }
         self.assertEqual(set(response_rows), set(expected_response_rows))
         for label, (required, span, element_id) in expected_response_rows.items():
@@ -10605,9 +10605,9 @@ class CatalogValidationTests(unittest.TestCase):
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-048")
         self.assertEqual(discrepancy["state"], "open")
         self.assertIn({"source_id": "KMIPKIT-SRC-spec", "section": "6.1.56"}, discrepancy["source_refs"])
-        self.assertIn("KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY", discrepancy["affected_element_ids"])
+        self.assertIn("KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY", discrepancy["affected_element_ids"])
         operation = next(row for row in catalog["elements"]
-                         if row["element_id"] == "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY")
+                         if row["element_id"] == "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY")
         self.assertEqual(set(operation["test_case_ids"]), {"KMIPKIT-TEST-CN01-2-37", "KMIPKIT-TEST-CN01-2-107"})
 
     def test_recertify_table_300_optional_rows_have_typed_contracts(self) -> None:
@@ -10658,7 +10658,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.45-007"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.45-007"
         )
         reviewed_rows = {row["row_label"]: row for row in request_review["source_request_rows"]}
         for gap_id, (row_label, _line_range) in expected.items():
@@ -10668,7 +10668,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(row["source_requirement_ids"], [])
                 self.assertEqual(row["disposition"], "optional_request_table_contract")
 
-        operation_id = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+        operation_id = "KMIP-ELEM-OP-C2S-RE-CERTIFY"
         implementation_ref = "crates/kmipkit-protocol/src/recertify.rs::RecertifyRequest::into_ttlv_payload"
         verification_refs = [protocol_test_ref, client_test_ref]
         for gap_id, (row_label, line_range) in expected.items():
@@ -10714,17 +10714,17 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         recertify_locators = [row for row in pinned_locators if row["section"] in ("6.1.45", "6.1.45.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-001": ("6.1.45", 1, "paragraph", ["SHALL"], [33345, 33346]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-002": ("6.1.45", 2, "paragraph", ["MAY", "SHALL"], [33348, 33353]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-003": ("6.1.45", 3, "paragraph", ["SHALL"], [33359, 33360]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-004": ("6.1.45", 4, "paragraph", ["SHOULD"], [33366, 33368]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-005": ("6.1.45", 5, "paragraph", ["SHALL"], [33370, 33375]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-006": ("6.1.45", 6, "paragraph", ["MAY", "SHALL"], [33377, 33382]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-007": ("6.1.45", 7, "table_row", ["REQUIRED"], [33606, 33624]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-008": ("6.1.45", 8, "table_row", ["REQUIRED"], [33663, 33681]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-009": ("6.1.45", 9, "table_row", ["REQUIRED"], [33777, 33795]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-001": ("6.1.45.1", 1, "paragraph", ["SHALL"], [33825, 33826]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-002": ("6.1.45.1", 2, "table_row", ["REQUIRED"], [33846, 33861]),
+            "KMIP-CLAUSE-SPEC-6.1.45-001": ("6.1.45", 1, "paragraph", ["SHALL"], [33345, 33346]),
+            "KMIP-CLAUSE-SPEC-6.1.45-002": ("6.1.45", 2, "paragraph", ["MAY", "SHALL"], [33348, 33353]),
+            "KMIP-CLAUSE-SPEC-6.1.45-003": ("6.1.45", 3, "paragraph", ["SHALL"], [33359, 33360]),
+            "KMIP-CLAUSE-SPEC-6.1.45-004": ("6.1.45", 4, "paragraph", ["SHOULD"], [33366, 33368]),
+            "KMIP-CLAUSE-SPEC-6.1.45-005": ("6.1.45", 5, "paragraph", ["SHALL"], [33370, 33375]),
+            "KMIP-CLAUSE-SPEC-6.1.45-006": ("6.1.45", 6, "paragraph", ["MAY", "SHALL"], [33377, 33382]),
+            "KMIP-CLAUSE-SPEC-6.1.45-007": ("6.1.45", 7, "table_row", ["REQUIRED"], [33606, 33624]),
+            "KMIP-CLAUSE-SPEC-6.1.45-008": ("6.1.45", 8, "table_row", ["REQUIRED"], [33663, 33681]),
+            "KMIP-CLAUSE-SPEC-6.1.45-009": ("6.1.45", 9, "table_row", ["REQUIRED"], [33777, 33795]),
+            "KMIP-CLAUSE-SPEC-6.1.45.1-001": ("6.1.45.1", 1, "paragraph", ["SHALL"], [33825, 33826]),
+            "KMIP-CLAUSE-SPEC-6.1.45.1-002": ("6.1.45.1", 2, "table_row", ["REQUIRED"], [33846, 33861]),
         }
         self.assertEqual({row["clause_id"] for row in recertify_locators}, set(expected_locators))
         reviews = {
@@ -10744,34 +10744,34 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-001": [
+            "KMIP-CLAUSE-SPEC-6.1.45-001": [
                 ("SHALL", "Only a single certificate SHALL be renewed at a time.", "client",
                  "limit one certificate per Re-certify request", "Every Re-certify request.",
-                 "KMIPKIT-REQ-SPEC-6.1.45-001", None),
+                 "KMIP-REQ-SPEC-6.1.45-001", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-002": [
+            "KMIP-CLAUSE-SPEC-6.1.45-002": [
                 ("MAY", "The Certificate Request object MAY be omitted", "client",
                  "omit Certificate Request and identify the public key by Unique Identifier",
-                 "When Certificate Request is omitted.", "KMIPKIT-REQ-SPEC-6.1.45-002-001", None),
+                 "When Certificate Request is omitted.", "KMIP-REQ-SPEC-6.1.45-002-001", None),
                 ("SHALL", "the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only",
                  "client", "identify the public key only by Unique Identifier when Certificate Request is omitted",
-                 "When Certificate Request is omitted.", "KMIPKIT-REQ-SPEC-6.1.45-002-003", None),
+                 "When Certificate Request is omitted.", "KMIP-REQ-SPEC-6.1.45-002-003", None),
                 ("SHALL", "the Certificate Type of the new certificate SHALL be the same as that of the existing certificate",
                  "server", "use the existing certificate type for the new certificate when request type and Attributes omit it",
                  "Certificate Request Type and Certificate Request are omitted and Certificate Type is absent from Attributes.",
                  None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-003": [
+            "KMIP-CLAUSE-SPEC-6.1.45-003": [
                 ("SHALL", "The server SHALL copy the Unique Identifier of the new certificate returned by this operation into the ID Placeholder variable.",
                  "server", "copy the new certificate Unique Identifier into the server ID Placeholder",
                  "A Re-certify operation returns a new certificate Unique Identifier.", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-004": [
+            "KMIP-CLAUSE-SPEC-6.1.45-004": [
                 ("SHOULD", "Re-certify SHOULD only be performed once on a given (existing) certificate",
                  "client", "perform Re-certify no more than once for a given existing certificate",
-                 "A given existing certificate is being re-certified.", "KMIPKIT-REQ-SPEC-6.1.45-004", None),
+                 "A given existing certificate is being re-certified.", "KMIP-REQ-SPEC-6.1.45-004", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-005": [
+            "KMIP-CLAUSE-SPEC-6.1.45-005": [
                 ("SHALL", "For the existing certificate, the server SHALL create a Link attribute of Link Type Replacement pointing to the new certificate.",
                  "server", "set Replacement link from the existing certificate to the new certificate",
                  "A Re-certify operation creates a new certificate.", None, None),
@@ -10782,20 +10782,20 @@ class CatalogValidationTests(unittest.TestCase):
                  "server", "change the public key Certificate link to the new certificate",
                  "A Re-certify operation creates a new certificate.", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-006": [
+            "KMIP-CLAUSE-SPEC-6.1.45-006": [
                 ("MAY", "An Offset MAY be used to indicate the difference between the Initial Date and the Activation Date of the new certificate.",
                  "client", "include Offset in the Re-certify request to indicate the Initial Date and Activation Date difference",
-                 "A client elects to specify Offset.", "KMIPKIT-REQ-SPEC-6.1.45-006-001", None),
+                 "A client elects to specify Offset.", "KMIP-REQ-SPEC-6.1.45-006-001", None),
                 ("SHALL", "then the dates of the new certificate SHALL be set based on the dates of the existing certificate as follows:",
                  "server", "set new certificate dates from the existing certificate using Table 298",
                  "Offset is set and dates exist for the existing certificate.", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45-008": [
+            "KMIP-CLAUSE-SPEC-6.1.45-008": [
                 ("REQUIRED", "It is REQUIRED if the Certificate Request is present.", "client",
                  "include Certificate Request Type when Certificate Request is present",
-                 "Certificate Request is present.", "KMIPKIT-REQ-SPEC-6.1.45-008", None),
+                 "Certificate Request is present.", "KMIP-REQ-SPEC-6.1.45-008", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.45.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.45.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Re-certify Operation.",
                  "server", "return the specified Re-certify Result Reasons in error responses",
                  "An error is detected in a Re-certify operation.", None, None),
@@ -10820,22 +10820,22 @@ class CatalogValidationTests(unittest.TestCase):
                 )
 
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.45-002-001", "KMIPKIT-REQ-SPEC-6.1.45-002-003"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.45-002"]["expected_client_requirement_ids"],
+            ["KMIP-REQ-SPEC-6.1.45-002-001", "KMIP-REQ-SPEC-6.1.45-002-003"],
         )
-        self.assertIn("server", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
-        self.assertIn("mismatch", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
+        self.assertIn("server", reviews["KMIP-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
+        self.assertIn("mismatch", reviews["KMIP-CLAUSE-SPEC-6.1.45-002"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.45-006-001"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.45-006"]["expected_client_requirement_ids"],
+            ["KMIP-REQ-SPEC-6.1.45-006-001"],
         )
-        self.assertIn("mismatch", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["review_note"].lower())
+        self.assertIn("mismatch", reviews["KMIP-CLAUSE-SPEC-6.1.45-006"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-006"]["source_context"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.45-006"]["source_context"],
             pinned_source_excerpt(source_path, [33377, 33448]),
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-007"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.45-007"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertIn("header", request_header["review_note"].lower())
         self.assertEqual(request_header["source_context"], pinned_source_excerpt(source_path, [33450, 33593]))
@@ -10844,13 +10844,13 @@ class CatalogValidationTests(unittest.TestCase):
             [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"], row["source_gap_id"])
              for row in request_rows],
             [
-                ("Unique Identifier", "No", [33625, 33644], ["KMIPKIT-REQ-SPEC-6.1-003-002"], None),
+                ("Unique Identifier", "No", [33625, 33644], ["KMIP-REQ-SPEC-6.1-003-002"], None),
                 ("Certificate Request Unique Identifier", "No", [33645, 33662], [],
                  "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UNIQUE-IDENTIFIER-OPTIONAL"),
-                ("Certificate Request Type", "No", [33663, 33681], ["KMIPKIT-REQ-SPEC-6.1.45-008"], None),
+                ("Certificate Request Type", "No", [33663, 33681], ["KMIP-REQ-SPEC-6.1.45-008"], None),
                 ("Certificate Request Value", "No", [33682, 33699], [],
                  "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-VALUE-OPTIONAL"),
-                ("Offset", "No", [33700, 33719], ["KMIPKIT-REQ-SPEC-6.1.45-006-001"], None),
+                ("Offset", "No", [33700, 33719], ["KMIP-REQ-SPEC-6.1.45-006-001"], None),
                 ("Attributes", "No", [33720, 33739], [],
                  "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-ATTRIBUTES-OPTIONAL"),
                 ("Protection Storage Masks", "No", [33740, 33758], [],
@@ -10861,7 +10861,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         self.assertEqual(request_rows[0]["disposition"], "optional_request_field_with_existing_conditional_capability")
-        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
+        self.assertEqual(request_rows[0]["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
         self.assertEqual(
             request_rows[0]["reuse_condition"],
             "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
@@ -10871,24 +10871,24 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_rows[4]["disposition"], "optional_request_field_covered_by_client_may")
 
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45-009"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.45-009"]["source_payload_rows"],
             [{
                 "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
                 "disposition": "response_payload_data", "html_line_range": [33796, 33813],
                 "source_excerpt": pinned_source_excerpt(source_path, [33796, 33813]),
             }],
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["source_obligations"], [])
-        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["review_note"].lower())
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.45.1-002"]["source_obligations"], [])
+        self.assertIn("enum", reviews["KMIP-CLAUSE-SPEC-6.1.45.1-002"]["review_note"].lower())
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.45.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
+            reviews["KMIP-CLAUSE-SPEC-6.1.45.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
             ["Invalid CSR", "Invalid Message", "Invalid Object Type", "Object Not Found", "Attestation Failed",
              "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message",
              "Operation Not Supported", "Permission Denied", "Protection Storage Unavailable", "Response Too Large"],
         )
 
         expected_gaps = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY": ("KMIPKIT-REQ-SPEC-6.1.45-002-003", "normative_SHALL"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY": ("KMIP-REQ-SPEC-6.1.45-002-003", "normative_SHALL"),
         }
         recertify_gaps = {
             row["gap_id"]: row
@@ -10909,7 +10909,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_locator"]["html_line_range"], gap["html_line_range"])
                 self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, gap["html_line_range"]))
             else:
-                self.assertEqual(gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.45-002")
+                self.assertEqual(gap["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1.45-002")
                 self.assertEqual(gap["source_locator"], {"ordinal": 2, "block_kind": "paragraph"})
                 self.assertEqual(gap["html_line_range"], [33348, 33353])
 
@@ -10917,15 +10917,15 @@ class CatalogValidationTests(unittest.TestCase):
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.45-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.45-")
             },
             {
-                ("KMIPKIT-REQ-SPEC-6.1.45-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.45-002-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.45-002-003", 2),
-                ("KMIPKIT-REQ-SPEC-6.1.45-004", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.45-006-001", 1),
-                ("KMIPKIT-REQ-SPEC-6.1.45-008", 1),
+                ("KMIP-REQ-SPEC-6.1.45-001", 1),
+                ("KMIP-REQ-SPEC-6.1.45-002-001", 1),
+                ("KMIP-REQ-SPEC-6.1.45-002-003", 2),
+                ("KMIP-REQ-SPEC-6.1.45-004", 1),
+                ("KMIP-REQ-SPEC-6.1.45-006-001", 1),
+                ("KMIP-REQ-SPEC-6.1.45-008", 1),
             },
         )
         for line_range, caption in [
@@ -10946,19 +10946,19 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         register_locators = [row for row in pinned_locators if row["section"] in ("6.1.43", "6.1.43.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-001": ("6.1.43", 1, "paragraph", ["SHALL"], [32788, 32791]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": ("6.1.43", 2, "paragraph", ["SHALL"], [32793, 32795]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": ("6.1.43", 3, "paragraph", ["SHALL"], [32797, 32800]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-004": ("6.1.43", 4, "table_row", ["REQUIRED"], [32813, 32831]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-005": ("6.1.43", 5, "table_row", ["MAY"], [32871, 32889]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-006": ("6.1.43", 6, "table_row", ["REQUIRED"], [32928, 32946]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-007": ("6.1.43", 7, "paragraph", ["SHALL"], [32974, 32976]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-008": ("6.1.43", 8, "table_row", ["REQUIRED"], [32982, 32993]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-009": ("6.1.43", 9, "table_row", ["MAY", "SHALL"], [32994, 33009]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-010": ("6.1.43", 10, "table_row", ["MAY", "SHALL"], [33010, 33026]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-011": ("6.1.43", 11, "table_row", ["MAY"], [33053, 33067]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-001": ("6.1.43.1", 1, "paragraph", ["SHALL"], [33080, 33081]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-002": ("6.1.43.1", 2, "table_row", ["REQUIRED"], [33101, 33118]),
+            "KMIP-CLAUSE-SPEC-6.1.43-001": ("6.1.43", 1, "paragraph", ["SHALL"], [32788, 32791]),
+            "KMIP-CLAUSE-SPEC-6.1.43-002": ("6.1.43", 2, "paragraph", ["SHALL"], [32793, 32795]),
+            "KMIP-CLAUSE-SPEC-6.1.43-003": ("6.1.43", 3, "paragraph", ["SHALL"], [32797, 32800]),
+            "KMIP-CLAUSE-SPEC-6.1.43-004": ("6.1.43", 4, "table_row", ["REQUIRED"], [32813, 32831]),
+            "KMIP-CLAUSE-SPEC-6.1.43-005": ("6.1.43", 5, "table_row", ["MAY"], [32871, 32889]),
+            "KMIP-CLAUSE-SPEC-6.1.43-006": ("6.1.43", 6, "table_row", ["REQUIRED"], [32928, 32946]),
+            "KMIP-CLAUSE-SPEC-6.1.43-007": ("6.1.43", 7, "paragraph", ["SHALL"], [32974, 32976]),
+            "KMIP-CLAUSE-SPEC-6.1.43-008": ("6.1.43", 8, "table_row", ["REQUIRED"], [32982, 32993]),
+            "KMIP-CLAUSE-SPEC-6.1.43-009": ("6.1.43", 9, "table_row", ["MAY", "SHALL"], [32994, 33009]),
+            "KMIP-CLAUSE-SPEC-6.1.43-010": ("6.1.43", 10, "table_row", ["MAY", "SHALL"], [33010, 33026]),
+            "KMIP-CLAUSE-SPEC-6.1.43-011": ("6.1.43", 11, "table_row", ["MAY"], [33053, 33067]),
+            "KMIP-CLAUSE-SPEC-6.1.43.1-001": ("6.1.43.1", 1, "paragraph", ["SHALL"], [33080, 33081]),
+            "KMIP-CLAUSE-SPEC-6.1.43.1-002": ("6.1.43.1", 2, "table_row", ["REQUIRED"], [33101, 33118]),
         }
         self.assertEqual({row["clause_id"] for row in register_locators}, set(expected_locators))
         reviews = {
@@ -10978,34 +10978,34 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-001": [
-                ("SHALL", "This information SHALL be specified by the use of a Attributes object.", "client", "KMIPKIT-REQ-SPEC-6.1.43-001"),
+            "KMIP-CLAUSE-SPEC-6.1.43-001": [
+                ("SHALL", "This information SHALL be specified by the use of a Attributes object.", "client", "KMIP-REQ-SPEC-6.1.43-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": [
+            "KMIP-CLAUSE-SPEC-6.1.43-002": [
                 ("SHALL", "the server SHALL create a Link attribute of Link Type Wrapping Key Link pointing to the Managed Object with which the Managed Object being registered is wrapped.", "server", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": [
+            "KMIP-CLAUSE-SPEC-6.1.43-003": [
                 ("SHALL", "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "server", None),
                 ("SHALL", "The Initial Date attribute of the object SHALL be set to the current time.", "server", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-005": [
-                ("MAY", "The object and attributes MAY be wrapped.", "client", "KMIPKIT-REQ-SPEC-6.1.43-005"),
+            "KMIP-CLAUSE-SPEC-6.1.43-005": [
+                ("MAY", "The object and attributes MAY be wrapped.", "client", "KMIP-REQ-SPEC-6.1.43-005"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-007": [
-                ("SHALL", "If a Managed Cryptographic Object is registered, then the following attributes SHALL be included in the Register request.", "client", "KMIPKIT-REQ-SPEC-6.1.43-007"),
+            "KMIP-CLAUSE-SPEC-6.1.43-007": [
+                ("SHALL", "If a Managed Cryptographic Object is registered, then the following attributes SHALL be included in the Register request.", "client", "KMIP-REQ-SPEC-6.1.43-007"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-009": [
-                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIPKIT-REQ-SPEC-6.1.43-009-001"),
-                ("SHALL", "If present, then Cryptographic Length below SHALL also be present.", "client", "KMIPKIT-REQ-SPEC-6.1.43-009-002"),
+            "KMIP-CLAUSE-SPEC-6.1.43-009": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIP-REQ-SPEC-6.1.43-009-001"),
+                ("SHALL", "If present, then Cryptographic Length below SHALL also be present.", "client", "KMIP-REQ-SPEC-6.1.43-009-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-010": [
-                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIPKIT-REQ-SPEC-6.1.43-010-001"),
-                ("SHALL", "If present, then Cryptographic Algorithm above SHALL also be present.", "client", "KMIPKIT-REQ-SPEC-6.1.43-010-002"),
+            "KMIP-CLAUSE-SPEC-6.1.43-010": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Key Block.", "client", "KMIP-REQ-SPEC-6.1.43-010-001"),
+                ("SHALL", "If present, then Cryptographic Algorithm above SHALL also be present.", "client", "KMIP-REQ-SPEC-6.1.43-010-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-011": [
-                ("MAY", "MAY be omitted only if this information is encapsulated in the Certificate object.", "client", "KMIPKIT-REQ-SPEC-6.1.43-011"),
+            "KMIP-CLAUSE-SPEC-6.1.43-011": [
+                ("MAY", "MAY be omitted only if this information is encapsulated in the Certificate object.", "client", "KMIP-REQ-SPEC-6.1.43-011"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.43.1-001": [
                 ("SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Register Operation.", "server", None),
             ],
         }
@@ -11022,8 +11022,8 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertTrue(all(atom["scope_disposition"] == "client_1_0" for atom in atoms))
 
         expected_server_directions = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-002": ["set Wrapping Key Link attribute on the registered object"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-003": [
+            "KMIP-CLAUSE-SPEC-6.1.43-002": ["set Wrapping Key Link attribute on the registered object"],
+            "KMIP-CLAUSE-SPEC-6.1.43-003": [
                 "copy Unique Identifier into the server ID Placeholder",
                 "set Initial Date attribute on the object",
             ],
@@ -11035,22 +11035,22 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-004",
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-006",
-            "KMIPKIT-CLAUSE-SPEC-6.1.43-008",
-            "KMIPKIT-CLAUSE-SPEC-6.1.43.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.43-004",
+            "KMIP-CLAUSE-SPEC-6.1.43-006",
+            "KMIP-CLAUSE-SPEC-6.1.43-008",
+            "KMIP-CLAUSE-SPEC-6.1.43.1-002",
         ):
             self.assertEqual(reviews[clause_id]["source_obligations"], [])
-        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-004"]["review_note"].lower())
-        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-006"]["review_note"].lower())
-        self.assertIn("header", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-008"]["review_note"].lower())
-        self.assertIn("enum", reviews["KMIPKIT-CLAUSE-SPEC-6.1.43.1-002"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIP-CLAUSE-SPEC-6.1.43-004"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIP-CLAUSE-SPEC-6.1.43-006"]["review_note"].lower())
+        self.assertIn("header", reviews["KMIP-CLAUSE-SPEC-6.1.43-008"]["review_note"].lower())
+        self.assertIn("enum", reviews["KMIP-CLAUSE-SPEC-6.1.43.1-002"]["review_note"].lower())
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-004"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.43-004"]
         expected_request_rows = [
-            ("Object Type", "Yes", [32832, 32849], ["KMIPKIT-REQ-SPEC-6.1.43-001"], None),
-            ("Attributes", "Yes", [32850, 32870], ["KMIPKIT-REQ-SPEC-6.1.43-001"], None),
-            ("Any Object (Section 2)", "Yes", [32871, 32889], ["KMIPKIT-REQ-SPEC-6.1.43-005"], None),
+            ("Object Type", "Yes", [32832, 32849], ["KMIP-REQ-SPEC-6.1.43-001"], None),
+            ("Attributes", "Yes", [32850, 32870], ["KMIP-REQ-SPEC-6.1.43-001"], None),
+            ("Any Object (Section 2)", "Yes", [32871, 32889], ["KMIP-REQ-SPEC-6.1.43-005"], None),
             ("Protection Storage Masks", "No", [32890, 32908], [], "KMIPKIT-SOURCE-GAP-SPEC-6.1.43-PROTECTION-STORAGE-MASKS-OPTIONAL"),
         ]
         self.assertEqual(
@@ -11063,13 +11063,13 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         self.assertIn("wrapping", request_header["source_request_rows"][2]["source_note"].lower())
 
-        attribute_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-008"]
+        attribute_header = reviews["KMIP-CLAUSE-SPEC-6.1.43-008"]
         expected_attribute_rows = [
-            ("Cryptographic Algorithm", "Yes", [32994, 33009], ["KMIPKIT-REQ-SPEC-6.1.43-009-001", "KMIPKIT-REQ-SPEC-6.1.43-009-002"]),
-            ("Cryptographic Length", "Yes", [33010, 33026], ["KMIPKIT-REQ-SPEC-6.1.43-010-001", "KMIPKIT-REQ-SPEC-6.1.43-010-002"]),
-            ("Certificate Length", "Yes", [33027, 33039], ["KMIPKIT-REQ-SPEC-6.1.43-007"]),
-            ("Cryptographic Usage Mask", "Yes", [33040, 33052], ["KMIPKIT-REQ-SPEC-6.1.43-007"]),
-            ("Digital Signature Algorithm", "Yes", [33053, 33067], ["KMIPKIT-REQ-SPEC-6.1.43-011"]),
+            ("Cryptographic Algorithm", "Yes", [32994, 33009], ["KMIP-REQ-SPEC-6.1.43-009-001", "KMIP-REQ-SPEC-6.1.43-009-002"]),
+            ("Cryptographic Length", "Yes", [33010, 33026], ["KMIP-REQ-SPEC-6.1.43-010-001", "KMIP-REQ-SPEC-6.1.43-010-002"]),
+            ("Certificate Length", "Yes", [33027, 33039], ["KMIP-REQ-SPEC-6.1.43-007"]),
+            ("Cryptographic Usage Mask", "Yes", [33040, 33052], ["KMIP-REQ-SPEC-6.1.43-007"]),
+            ("Digital Signature Algorithm", "Yes", [33053, 33067], ["KMIP-REQ-SPEC-6.1.43-011"]),
         ]
         self.assertEqual(
             [(row["row_label"], row["required"], row["html_line_range"], row["source_requirement_ids"])
@@ -11082,14 +11082,14 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("managed cryptographic object", attribute_header["review_note"].lower())
 
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.43-006"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.43-006"]["source_payload_rows"],
             [{
                 "row_label": "Unique Identifier", "required": "Yes", "actor": "server",
                 "disposition": "response_payload_data", "html_line_range": [32947, 32965],
                 "source_excerpt": pinned_source_excerpt(source_path, [32947, 32965]),
             }],
         )
-        enum_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.43.1-002"]
+        enum_review = reviews["KMIP-CLAUSE-SPEC-6.1.43.1-002"]
         self.assertEqual(
             enum_review["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
             ["Attribute Read Only", "Attribute Single Valued", "Bad Password", "Encoding Option Error", "Invalid Attribute", "Invalid Attribute Value", "Invalid Object Type", "Non Unique Name Attribute", "Server Limit Exceeded", "Attestation Failed", "Attestation Required", "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Protection Storage Unavailable", "Response Too Large"],
@@ -11105,20 +11105,20 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
         expected_crosswalks = {
-            ("KMIPKIT-REQ-SPEC-6.1.43-001", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.43-005", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.43-007", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.43-009-001", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.43-009-002", 2),
-            ("KMIPKIT-REQ-SPEC-6.1.43-010-001", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.43-010-002", 2),
-            ("KMIPKIT-REQ-SPEC-6.1.43-011", 1),
+            ("KMIP-REQ-SPEC-6.1.43-001", 1),
+            ("KMIP-REQ-SPEC-6.1.43-005", 1),
+            ("KMIP-REQ-SPEC-6.1.43-007", 1),
+            ("KMIP-REQ-SPEC-6.1.43-009-001", 1),
+            ("KMIP-REQ-SPEC-6.1.43-009-002", 2),
+            ("KMIP-REQ-SPEC-6.1.43-010-001", 1),
+            ("KMIP-REQ-SPEC-6.1.43-010-002", 2),
+            ("KMIP-REQ-SPEC-6.1.43-011", 1),
         }
         self.assertEqual(
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.43-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.43-")
             },
             expected_crosswalks,
         )
@@ -11132,11 +11132,11 @@ class CatalogValidationTests(unittest.TestCase):
         pinned_locators = audit_document_with_text((ROOT / source_path).read_bytes(), "KMIPKIT-SRC-spec")
         recover_locators = [row for row in pinned_locators if row["section"] in ("6.1.42", "6.1.42.1")]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.42-001": ("6.1.42", 1, "paragraph", ["MAY", "SHOULD"], [32613, 32618]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.42-002": ("6.1.42", 2, "table_row", ["REQUIRED"], [32631, 32649]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.42-003": ("6.1.42", 3, "table_row", ["REQUIRED"], [32687, 32705]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.42.1-001": ("6.1.42.1", 1, "paragraph", ["SHALL"], [32735, 32736]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.42.1-002": ("6.1.42.1", 2, "table_row", ["REQUIRED"], [32756, 32770]),
+            "KMIP-CLAUSE-SPEC-6.1.42-001": ("6.1.42", 1, "paragraph", ["MAY", "SHOULD"], [32613, 32618]),
+            "KMIP-CLAUSE-SPEC-6.1.42-002": ("6.1.42", 2, "table_row", ["REQUIRED"], [32631, 32649]),
+            "KMIP-CLAUSE-SPEC-6.1.42-003": ("6.1.42", 3, "table_row", ["REQUIRED"], [32687, 32705]),
+            "KMIP-CLAUSE-SPEC-6.1.42.1-001": ("6.1.42.1", 1, "paragraph", ["SHALL"], [32735, 32736]),
+            "KMIP-CLAUSE-SPEC-6.1.42.1-002": ("6.1.42.1", 2, "table_row", ["REQUIRED"], [32756, 32770]),
         }
         self.assertEqual({row["clause_id"] for row in recover_locators}, set(expected_locators))
         reviews = {
@@ -11155,7 +11155,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        recover_atoms = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["source_obligations"]
+        recover_atoms = reviews["KMIP-CLAUSE-SPEC-6.1.42-001"]["source_obligations"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["source_text"]) for atom in recover_atoms],
             [
@@ -11165,8 +11165,8 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         expected_atom_dispositions = [
-            ("client", "client→server Recover request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-001"),
-            ("client", "client→server Get request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.42-001-002"),
+            ("client", "client→server Recover request", "client_1_0", "KMIP-REQ-SPEC-6.1.42-001-001"),
+            ("client", "client→server Get request", "client_1_0", "KMIP-REQ-SPEC-6.1.42-001-002"),
             ("server", "server-side authentication and authorization enforcement (actor inferred from §9.4)", "server_only", None),
         ]
         self.assertEqual(
@@ -11177,14 +11177,14 @@ class CatalogValidationTests(unittest.TestCase):
             expected_atom_dispositions,
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.42-001-001", "KMIPKIT-REQ-SPEC-6.1.42-001-002"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.42-001"]["expected_client_requirement_ids"],
+            ["KMIP-REQ-SPEC-6.1.42-001-001", "KMIP-REQ-SPEC-6.1.42-001-002"],
         )
-        self.assertIn("informative", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
-        self.assertIn("section 9.4", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
-        self.assertIn("actor", reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+        self.assertIn("informative", reviews["KMIP-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+        self.assertIn("section 9.4", reviews["KMIP-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
+        self.assertIn("actor", reviews["KMIP-CLAUSE-SPEC-6.1.42-001"]["review_note"].lower())
 
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-002"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.42-002"]["source_request_rows"]
         self.assertEqual(len(request_rows), 1)
         request_row = request_rows[0]
         self.assertEqual(request_row["row_label"], "Unique Identifier")
@@ -11193,13 +11193,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(request_row["disposition"], "optional_request_field_with_existing_conditional_capability")
         self.assertEqual(request_row["html_line_range"], [32650, 32668])
         self.assertEqual(request_row["source_excerpt"], pinned_source_excerpt(source_path, [32650, 32668]))
-        self.assertEqual(request_row["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1-003-002")
-        self.assertEqual(request_row["source_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1-003-002"])
+        self.assertEqual(request_row["reused_requirement_id"], "KMIP-REQ-SPEC-6.1-003-002")
+        self.assertEqual(request_row["source_requirement_ids"], ["KMIP-REQ-SPEC-6.1-003-002"])
         self.assertIn("subsequent", request_row["reuse_condition"])
         self.assertIn("ID Placeholder", request_row["source_note"])
         self.assertIsNone(request_row["source_gap_id"])
 
-        response_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42-003"]["source_payload_rows"]
+        response_rows = reviews["KMIP-CLAUSE-SPEC-6.1.42-003"]["source_payload_rows"]
         self.assertEqual(
             response_rows,
             [{
@@ -11209,14 +11209,14 @@ class CatalogValidationTests(unittest.TestCase):
             }],
         )
 
-        error_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42.1-001"]
+        error_review = reviews["KMIP-CLAUSE-SPEC-6.1.42.1-001"]
         self.assertEqual(
             [(atom["source_order"], atom["source_keyword"], atom["source_text"], atom["actor"], atom["direction"], atom["scope_disposition"], atom["candidate_requirement_id"])
              for atom in error_review["source_obligations"]],
             [(1, "SHALL", "This section details the specific Result Reasons that SHALL be returned for errors detected in a Recover Operation.",
               "server", "server→client error response", "server_only", None)],
         )
-        error_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.42.1-002"]
+        error_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.42.1-002"]
         self.assertEqual(error_inventory["source_obligations"], [])
         self.assertEqual(
             error_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", "),
@@ -11232,7 +11232,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(recover_gaps), {authentication_gap_id})
         auth_gap = recover_gaps[authentication_gap_id]
-        self.assertEqual(auth_gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.42-001")
+        self.assertEqual(auth_gap["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1.42-001")
         self.assertEqual(auth_gap["source_locator"], {"ordinal": 1, "block_kind": "paragraph"})
         self.assertEqual(auth_gap["html_line_range"], [32613, 32618])
         self.assertEqual(auth_gap["source_excerpt"], pinned_source_excerpt(source_path, [32613, 32618]))
@@ -11256,14 +11256,14 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertIn(caption, pinned_source_excerpt(source_path, line_range))
 
         expected_crosswalks = {
-            ("KMIPKIT-REQ-SPEC-6.1.42-001-001", 1),
-            ("KMIPKIT-REQ-SPEC-6.1.42-001-002", 2),
+            ("KMIP-REQ-SPEC-6.1.42-001-001", 1),
+            ("KMIP-REQ-SPEC-6.1.42-001-002", 2),
         }
         self.assertEqual(
             {
                 (row["requirement_id"], row["source_obligation_order"])
                 for row in oracle["requirement_crosswalk"]
-                if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.42-")
+                if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.42-")
             },
             expected_crosswalks,
         )
@@ -11275,7 +11275,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
-            f"KMIPKIT-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
+            f"KMIP-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
             for section, ordinal in (
                 ("19", 1),
                 ("20", 1),
@@ -11303,10 +11303,10 @@ class CatalogValidationTests(unittest.TestCase):
             "the §4.21 capability pointer does not add a source crosswalk to that clause",
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-4.21-002"]["rejected_candidate_mappings"],
+            reviews["KMIP-CLAUSE-SPEC-4.21-002"]["rejected_candidate_mappings"],
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-4.21-002",
+                    "requirement_id": "KMIP-REQ-SPEC-4.21-002",
                     "claimed_keyword": "REQUIRED",
                     "source_review": "The pinned §4.21 locator is the table heading Item / Encoding / REQUIRED. It does not express a client requirement; subsequent body rows carry the values.",
                     "expected_disposition": "reject_candidate_non_normative_table_header",
@@ -11316,7 +11316,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.21-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.21-001"]["source_obligations"]
             ],
             [
                 (1, "SHALL", "server", "server_only"),
@@ -11331,32 +11331,32 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.24-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.24-001"]["source_obligations"]
             ],
             [(1, "server", "server_only"), (2, "client", "client_1_0"), (3, "server", "server_only")],
             "the client input exception must remain distinct from server initialization and lifecycle duties",
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.22-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.22-001"]["source_obligations"]],
             ["server_only", "server_only"],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.23-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.23-001"]["source_obligations"]],
             ["server_only", "server_only"],
         )
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.19-001",
-            "KMIPKIT-CLAUSE-SPEC-4.20-001",
+            "KMIP-CLAUSE-SPEC-4.19-001",
+            "KMIP-CLAUSE-SPEC-4.20-001",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"], [])
                 self.assertIn("table property", reviews[clause_id]["review_note"])
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.21-003",
-            "KMIPKIT-CLAUSE-SPEC-4.22-002",
-            "KMIPKIT-CLAUSE-SPEC-4.23-002",
-            "KMIPKIT-CLAUSE-SPEC-4.24-002",
-            "KMIPKIT-CLAUSE-SPEC-4.25-002",
+            "KMIP-CLAUSE-SPEC-4.21-003",
+            "KMIP-CLAUSE-SPEC-4.22-002",
+            "KMIP-CLAUSE-SPEC-4.23-002",
+            "KMIP-CLAUSE-SPEC-4.24-002",
+            "KMIP-CLAUSE-SPEC-4.25-002",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(
@@ -11378,15 +11378,15 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["candidate_requirement_id"],
-            "KMIPKIT-REQ-SPEC-6.1-004",
+            "KMIP-REQ-SPEC-6.1-004",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["reused_requirement_id"],
-            "KMIPKIT-REQ-SPEC-6.1-004",
+            "KMIP-REQ-SPEC-6.1-004",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["candidate_requirement_id"],
-            "KMIPKIT-REQ-SPEC-4.26-001",
+            "KMIP-REQ-SPEC-4.26-001",
         )
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.21-CLIENT-LOWERCASE-MAY"]["proposed_requirement_id"])
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.24-CLIENT-FRESH-INPUT-EXCEPTION"]["proposed_requirement_id"])
@@ -11398,7 +11398,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
-            f"KMIPKIT-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
+            f"KMIP-CLAUSE-SPEC-4.{section}-{ordinal:03d}"
             for section, ordinal in (
                 ("26", 1), ("26", 2), ("26", 3),
                 ("27", 1), ("27", 2), ("27", 3),
@@ -11417,20 +11417,20 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(reviews), expected_clause_ids)
         expected_client_labels = {
-            "KMIPKIT-REQ-SPEC-4.26-001",
-            "KMIPKIT-REQ-SPEC-4.27-001",
-            "KMIPKIT-REQ-SPEC-4.28-001-001",
-            "KMIPKIT-REQ-SPEC-4.28-001-002",
-            "KMIPKIT-REQ-SPEC-4.28-001-003",
-            "KMIPKIT-REQ-SPEC-4.30-001",
-            "KMIPKIT-REQ-SPEC-4.31-002",
-            "KMIPKIT-REQ-SPEC-4.32-001",
+            "KMIP-REQ-SPEC-4.26-001",
+            "KMIP-REQ-SPEC-4.27-001",
+            "KMIP-REQ-SPEC-4.28-001-001",
+            "KMIP-REQ-SPEC-4.28-001-002",
+            "KMIP-REQ-SPEC-4.28-001-003",
+            "KMIP-REQ-SPEC-4.30-001",
+            "KMIP-REQ-SPEC-4.31-002",
+            "KMIP-REQ-SPEC-4.32-001",
         }
         rejected_labels = {
-            "KMIPKIT-REQ-SPEC-4.27-002",
-            "KMIPKIT-REQ-SPEC-4.28-002",
-            "KMIPKIT-REQ-SPEC-4.31-003",
-            "KMIPKIT-REQ-SPEC-4.32-002",
+            "KMIP-REQ-SPEC-4.27-002",
+            "KMIP-REQ-SPEC-4.28-002",
+            "KMIP-REQ-SPEC-4.31-003",
+            "KMIP-REQ-SPEC-4.32-002",
         }
         crosswalk = [
             row for row in oracle["requirement_crosswalk"] if row.get("source_clause_id") in expected_clause_ids
@@ -11454,19 +11454,19 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.26-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.26-001"]["source_obligations"]
             ],
             [(1, "MAY", "client", "client_1_0"), (2, "SHALL", "server", "server_only"), (3, "SHALL", "server", "server_only")],
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-4.27-001"]["source_obligations"][0]["scope_disposition"],
+            reviews["KMIP-CLAUSE-SPEC-4.27-001"]["source_obligations"][0]["scope_disposition"],
             "profile_conditional",
             "the Key Value Location capability is conditional on a Register representation with omitted Key Value",
         )
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.28-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.28-001"]["source_obligations"]
             ],
             [
                 (1, "client", "client_1_0"),
@@ -11481,7 +11481,7 @@ class CatalogValidationTests(unittest.TestCase):
         locate_capability = next(
             requirement
             for requirement in catalog["requirements"]
-            if requirement["requirement_id"] == "KMIPKIT-REQ-SPEC-4.28-001-003"
+            if requirement["requirement_id"] == "KMIP-REQ-SPEC-4.28-001-003"
         )
         self.assertEqual(
             locate_capability["direction"],
@@ -11504,45 +11504,45 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.30-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.30-001"]["source_obligations"]
             ],
             [(1, "client", "client_1_0"), (2, "server", "server_only"), (3, "server", "server_only")],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.31-002"]["source_obligations"]],
             ["client_1_0"],
             "the formal MAY maps the conditioned absent-Link state to a client capability",
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-4.31-002"]["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-4.31-002"],
+            reviews["KMIP-CLAUSE-SPEC-4.31-002"]["expected_client_requirement_ids"],
+            ["KMIP-REQ-SPEC-4.31-002"],
         )
         self.assertIn(
             "NOT REQUIRED to be globally unique",
-            reviews["KMIPKIT-CLAUSE-SPEC-4.32-001"]["source_excerpt"],
+            reviews["KMIP-CLAUSE-SPEC-4.32-001"]["source_excerpt"],
         )
         self.assertEqual(
             [
                 (atom["source_order"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.32-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.32-001"]["source_obligations"]
             ],
             [(1, "key management system/server", "server_only"), (2, "client assigns names; uniqueness is scoped to one server", "client_1_0")],
             "the NOT REQUIRED global-scope qualifier is not a second positive uniqueness obligation",
         )
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.27-003",
-            "KMIPKIT-CLAUSE-SPEC-4.28-003",
-            "KMIPKIT-CLAUSE-SPEC-4.30-002",
-            "KMIPKIT-CLAUSE-SPEC-4.31-004",
-            "KMIPKIT-CLAUSE-SPEC-4.32-003",
+            "KMIP-CLAUSE-SPEC-4.27-003",
+            "KMIP-CLAUSE-SPEC-4.28-003",
+            "KMIP-CLAUSE-SPEC-4.30-002",
+            "KMIP-CLAUSE-SPEC-4.31-004",
+            "KMIP-CLAUSE-SPEC-4.32-003",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"], [])
                 self.assertIn("value No", reviews[clause_id]["source_excerpt"])
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.26-002",
-            "KMIPKIT-CLAUSE-SPEC-4.29-001",
-            "KMIPKIT-CLAUSE-SPEC-4.33-003",
+            "KMIP-CLAUSE-SPEC-4.26-002",
+            "KMIP-CLAUSE-SPEC-4.29-001",
+            "KMIP-CLAUSE-SPEC-4.33-003",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"][0]["scope_disposition"], "server_only")
@@ -11556,7 +11556,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(readonly_gap["status"], "mapped_to_attribute_policy")
         self.assertEqual(
             readonly_gap["source_resolution"]["element_id"],
-            "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
+            "KMIP-ELEM-ATTRIBUTE-LEASE-TIME",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["scope_disposition"],
@@ -11565,7 +11565,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNone(gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["proposed_requirement_id"])
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.31-MAY-ABSENT-LINKS"]["candidate_requirement_id"],
-            "KMIPKIT-REQ-SPEC-4.31-002",
+            "KMIP-REQ-SPEC-4.31-002",
         )
         self.assertEqual(
             gaps["KMIPKIT-SOURCE-GAP-SPEC-4.28-001-SERVER-NONMUTATION"]["scope_disposition"],
@@ -11579,7 +11579,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
-            f"KMIPKIT-CLAUSE-SPEC-{section}-{ordinal:03d}"
+            f"KMIP-CLAUSE-SPEC-{section}-{ordinal:03d}"
             for section, ordinal in (
                 ("4.34", 1), ("4.34", 2),
                 ("4.35", 1), ("4.35", 2),
@@ -11600,18 +11600,18 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(reviews), expected_clause_ids)
 
         expected_candidate_ids = {
-            "KMIPKIT-REQ-SPEC-4.34-001-001",
-            "KMIPKIT-REQ-SPEC-4.34-001-002",
-            "KMIPKIT-REQ-SPEC-4.35-001-001",
-            "KMIPKIT-REQ-SPEC-4.35-001-002",
-            "KMIPKIT-REQ-SPEC-4.35-001-003",
-            "KMIPKIT-REQ-SPEC-4.38-001-001",
-            "KMIPKIT-REQ-SPEC-4.38-001-002",
-            "KMIPKIT-REQ-SPEC-4.38-001-003",
-            "KMIPKIT-REQ-SPEC-4.38-003",
-            "KMIPKIT-REQ-SPEC-4.39-002-001",
-            *(f"KMIPKIT-REQ-SPEC-4.40-001-{ordinal:03d}" for ordinal in range(1, 6)),
-            *(f"KMIPKIT-REQ-SPEC-4.41-001-{ordinal:03d}" for ordinal in range(1, 5)),
+            "KMIP-REQ-SPEC-4.34-001-001",
+            "KMIP-REQ-SPEC-4.34-001-002",
+            "KMIP-REQ-SPEC-4.35-001-001",
+            "KMIP-REQ-SPEC-4.35-001-002",
+            "KMIP-REQ-SPEC-4.35-001-003",
+            "KMIP-REQ-SPEC-4.38-001-001",
+            "KMIP-REQ-SPEC-4.38-001-002",
+            "KMIP-REQ-SPEC-4.38-001-003",
+            "KMIP-REQ-SPEC-4.38-003",
+            "KMIP-REQ-SPEC-4.39-002-001",
+            *(f"KMIP-REQ-SPEC-4.40-001-{ordinal:03d}" for ordinal in range(1, 6)),
+            *(f"KMIP-REQ-SPEC-4.41-001-{ordinal:03d}" for ordinal in range(1, 5)),
         }
         reviewed_candidate_ids = {
             atom["candidate_requirement_id"]
@@ -11630,38 +11630,38 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"], atom["candidate_requirement_id"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.34-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.34-001"]["source_obligations"]
             ],
             [
-                (1, "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-4.34-001-001"),
+                (1, "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-4.34-001-001"),
                 (2, "MAY", "client and server", "unresolved", None),
-                (3, "SHOULD", "unresolved", "client_1_0", "KMIPKIT-REQ-SPEC-4.34-001-002"),
+                (3, "SHOULD", "unresolved", "client_1_0", "KMIP-REQ-SPEC-4.34-001-002"),
             ],
             "§4.34's undefined compound MAY NOT must remain ambiguous rather than becoming SHALL NOT",
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.36-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.36-001"]["source_obligations"]],
             ["server_only", "server_only"],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.37-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.37-001"]["source_obligations"]],
             ["server_only", "server_only"],
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-4.38-003"]["source_obligations"][0]["scope_disposition"],
+            reviews["KMIP-CLAUSE-SPEC-4.38-003"]["source_obligations"][0]["scope_disposition"],
             "profile_conditional",
             "preserve the best client recommendation while leaving the pinned atom's actor unspecified",
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.40-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.40-001"]["source_obligations"]],
             ["client_1_0"] * 5,
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.41-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.41-001"]["source_obligations"]],
             ["client_1_0"] * 4,
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["source_obligations"], [])
-        self.assertIn("lowercase", reviews["KMIPKIT-CLAUSE-SPEC-4.42-001"]["review_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-4.42-001"]["source_obligations"], [])
+        self.assertIn("lowercase", reviews["KMIP-CLAUSE-SPEC-4.42-001"]["review_note"])
 
         lowercase_capability = next(
             gap for gap in oracle["source_only_requirement_gaps"]
@@ -11669,7 +11669,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(lowercase_capability["source_keywords"], ["SHOULD"])
         self.assertEqual(lowercase_capability["scope_disposition"], "client_1_0")
-        self.assertEqual(lowercase_capability["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-4.39-002-001")
+        self.assertEqual(lowercase_capability["candidate_requirement_id"], "KMIP-REQ-SPEC-4.39-002-001")
         self.assertIsNone(lowercase_capability["proposed_requirement_id"])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
@@ -11679,16 +11679,16 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-4.43-001",
-            "KMIPKIT-CLAUSE-SPEC-4.43-002",
-            "KMIPKIT-CLAUSE-SPEC-4.44-001",
-            "KMIPKIT-CLAUSE-SPEC-4.45-001",
-            "KMIPKIT-CLAUSE-SPEC-4.45-002",
-            *(f"KMIPKIT-CLAUSE-SPEC-4.46-{ordinal:03d}" for ordinal in range(1, 7)),
-            *(f"KMIPKIT-CLAUSE-SPEC-4.47-{ordinal:03d}" for ordinal in range(1, 4)),
-            "KMIPKIT-CLAUSE-SPEC-4.48-001",
-            "KMIPKIT-CLAUSE-SPEC-4.49-001",
-            "KMIPKIT-CLAUSE-SPEC-4.50-001",
+            "KMIP-CLAUSE-SPEC-4.43-001",
+            "KMIP-CLAUSE-SPEC-4.43-002",
+            "KMIP-CLAUSE-SPEC-4.44-001",
+            "KMIP-CLAUSE-SPEC-4.45-001",
+            "KMIP-CLAUSE-SPEC-4.45-002",
+            *(f"KMIP-CLAUSE-SPEC-4.46-{ordinal:03d}" for ordinal in range(1, 7)),
+            *(f"KMIP-CLAUSE-SPEC-4.47-{ordinal:03d}" for ordinal in range(1, 4)),
+            "KMIP-CLAUSE-SPEC-4.48-001",
+            "KMIP-CLAUSE-SPEC-4.49-001",
+            "KMIP-CLAUSE-SPEC-4.50-001",
         }
         reviews = {
             review["source_clause_id"]: review
@@ -11698,10 +11698,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(reviews), expected_clause_ids)
 
         expected_client_labels = {
-            "KMIPKIT-REQ-SPEC-4.46-001-001",
-            "KMIPKIT-REQ-SPEC-4.46-001-002",
-            "KMIPKIT-REQ-SPEC-4.47-001-001",
-            "KMIPKIT-REQ-SPEC-4.47-001-002",
+            "KMIP-REQ-SPEC-4.46-001-001",
+            "KMIP-REQ-SPEC-4.46-001-002",
+            "KMIP-REQ-SPEC-4.47-001-001",
+            "KMIP-REQ-SPEC-4.47-001-002",
         }
         reviewed_labels = {
             atom["candidate_requirement_id"]
@@ -11721,32 +11721,32 @@ class CatalogValidationTests(unittest.TestCase):
             for review in reviews.values()
             for candidate in review["rejected_candidate_mappings"]
         }
-        self.assertEqual(rejected_labels, {"KMIPKIT-REQ-SPEC-4.47-002"})
+        self.assertEqual(rejected_labels, {"KMIP-REQ-SPEC-4.47-002"})
 
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.43-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.43-001"]["source_obligations"]],
             ["out_of_scope"],
             "the Protection Period promise concerns cryptographic protection service behavior outside KMIPKit's role",
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-4.44-001"]["source_obligations"][0]["scope_disposition"],
+            reviews["KMIP-CLAUSE-SPEC-4.44-001"]["source_obligations"][0]["scope_disposition"],
             "server_only",
             "the Yes table property describes server-side attribute lifecycle",
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.45-001"]["source_obligations"], [])
-        self.assertIn("lowercase", reviews["KMIPKIT-CLAUSE-SPEC-4.45-001"]["review_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-4.45-001"]["source_obligations"], [])
+        self.assertIn("lowercase", reviews["KMIP-CLAUSE-SPEC-4.45-001"]["review_note"])
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.46-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.46-001"]["source_obligations"]
             ],
             [(1, "MAY", "client", "client_1_0"), (2, "MAY", "client", "client_1_0")],
         )
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.46-002",
-            "KMIPKIT-CLAUSE-SPEC-4.46-003",
-            "KMIPKIT-CLAUSE-SPEC-4.46-004",
-            "KMIPKIT-CLAUSE-SPEC-4.46-005",
+            "KMIP-CLAUSE-SPEC-4.46-002",
+            "KMIP-CLAUSE-SPEC-4.46-003",
+            "KMIP-CLAUSE-SPEC-4.46-004",
+            "KMIP-CLAUSE-SPEC-4.46-005",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertTrue(reviews[clause_id]["source_obligations"])
@@ -11756,22 +11756,22 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.47-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.47-001"]["source_obligations"]
             ],
             [(1, "OPTIONAL", "client", "client_1_0"), (2, "MAY", "client", "client_1_0")],
         )
         self.assertIn(
             "header",
-            reviews["KMIPKIT-CLAUSE-SPEC-4.47-002"]["rejected_candidate_mappings"][0]["expected_disposition"],
+            reviews["KMIP-CLAUSE-SPEC-4.47-002"]["rejected_candidate_mappings"][0]["expected_disposition"],
         )
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.43-002",
-            "KMIPKIT-CLAUSE-SPEC-4.45-002",
-            "KMIPKIT-CLAUSE-SPEC-4.46-006",
-            "KMIPKIT-CLAUSE-SPEC-4.47-003",
-            "KMIPKIT-CLAUSE-SPEC-4.48-001",
-            "KMIPKIT-CLAUSE-SPEC-4.49-001",
-            "KMIPKIT-CLAUSE-SPEC-4.50-001",
+            "KMIP-CLAUSE-SPEC-4.43-002",
+            "KMIP-CLAUSE-SPEC-4.45-002",
+            "KMIP-CLAUSE-SPEC-4.46-006",
+            "KMIP-CLAUSE-SPEC-4.47-003",
+            "KMIP-CLAUSE-SPEC-4.48-001",
+            "KMIP-CLAUSE-SPEC-4.49-001",
+            "KMIP-CLAUSE-SPEC-4.50-001",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"], [])
@@ -11784,16 +11784,16 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-4.51-001",
-            "KMIPKIT-CLAUSE-SPEC-4.52-001",
-            "KMIPKIT-CLAUSE-SPEC-4.53-001",
-            "KMIPKIT-CLAUSE-SPEC-4.53-002",
-            "KMIPKIT-CLAUSE-SPEC-4.54-001",
-            "KMIPKIT-CLAUSE-SPEC-4.55-001",
-            "KMIPKIT-CLAUSE-SPEC-4.55-002",
-            "KMIPKIT-CLAUSE-SPEC-4.56-001",
-            "KMIPKIT-CLAUSE-SPEC-4.56-002",
-            "KMIPKIT-CLAUSE-SPEC-4.56-003",
+            "KMIP-CLAUSE-SPEC-4.51-001",
+            "KMIP-CLAUSE-SPEC-4.52-001",
+            "KMIP-CLAUSE-SPEC-4.53-001",
+            "KMIP-CLAUSE-SPEC-4.53-002",
+            "KMIP-CLAUSE-SPEC-4.54-001",
+            "KMIP-CLAUSE-SPEC-4.55-001",
+            "KMIP-CLAUSE-SPEC-4.55-002",
+            "KMIP-CLAUSE-SPEC-4.56-001",
+            "KMIP-CLAUSE-SPEC-4.56-002",
+            "KMIP-CLAUSE-SPEC-4.56-003",
         }
         reviews = {
             review["source_clause_id"]: review
@@ -11802,16 +11802,16 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(set(reviews), expected_clause_ids)
         expected_line_ranges = {
-            "KMIPKIT-CLAUSE-SPEC-4.51-001": [19261, 19272],
-            "KMIPKIT-CLAUSE-SPEC-4.52-001": [19415, 19426],
-            "KMIPKIT-CLAUSE-SPEC-4.53-001": [19528, 19534],
-            "KMIPKIT-CLAUSE-SPEC-4.53-002": [19619, 19630],
-            "KMIPKIT-CLAUSE-SPEC-4.54-001": [19761, 19772],
-            "KMIPKIT-CLAUSE-SPEC-4.55-001": [19874, 19876],
-            "KMIPKIT-CLAUSE-SPEC-4.55-002": [19919, 19930],
-            "KMIPKIT-CLAUSE-SPEC-4.56-001": [20033, 20040],
-            "KMIPKIT-CLAUSE-SPEC-4.56-002": [20042, 20044],
-            "KMIPKIT-CLAUSE-SPEC-4.56-003": [20085, 20096],
+            "KMIP-CLAUSE-SPEC-4.51-001": [19261, 19272],
+            "KMIP-CLAUSE-SPEC-4.52-001": [19415, 19426],
+            "KMIP-CLAUSE-SPEC-4.53-001": [19528, 19534],
+            "KMIP-CLAUSE-SPEC-4.53-002": [19619, 19630],
+            "KMIP-CLAUSE-SPEC-4.54-001": [19761, 19772],
+            "KMIP-CLAUSE-SPEC-4.55-001": [19874, 19876],
+            "KMIP-CLAUSE-SPEC-4.55-002": [19919, 19930],
+            "KMIP-CLAUSE-SPEC-4.56-001": [20033, 20040],
+            "KMIP-CLAUSE-SPEC-4.56-002": [20042, 20044],
+            "KMIP-CLAUSE-SPEC-4.56-003": [20085, 20096],
         }
         pinned_source = {
             row["clause_id"]: row
@@ -11838,7 +11838,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.53-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.53-001"]["source_obligations"]
             ],
             [
                 (1, "MAY", "key management system", "server_only"),
@@ -11847,13 +11847,13 @@ class CatalogValidationTests(unittest.TestCase):
             "client assignment is descriptive; the MAY and undefined MAY NOT are distinct server/unresolved statements",
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.55-001"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.55-001"]["source_obligations"]],
             ["server_only", "server_only"],
         )
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.56-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.56-001"]["source_obligations"]
             ],
             [
                 (1, "REQUIRED", "server_only"),
@@ -11864,24 +11864,24 @@ class CatalogValidationTests(unittest.TestCase):
             "Short Unique Identifier assignment, uniqueness, and immutability are generated/managed by the key management system",
         )
         self.assertEqual(
-            [atom["source_keyword"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.56-002"]["source_obligations"]],
+            [atom["source_keyword"] for atom in reviews["KMIP-CLAUSE-SPEC-4.56-002"]["source_obligations"]],
             ["SHOULD", "SHALL"],
         )
         self.assertTrue(
-            all(atom["scope_disposition"] == "server_only" for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.56-002"]["source_obligations"])
+            all(atom["scope_disposition"] == "server_only" for atom in reviews["KMIP-CLAUSE-SPEC-4.56-002"]["source_obligations"])
         )
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.51-001",
-            "KMIPKIT-CLAUSE-SPEC-4.52-001",
-            "KMIPKIT-CLAUSE-SPEC-4.53-002",
-            "KMIPKIT-CLAUSE-SPEC-4.54-001",
+            "KMIP-CLAUSE-SPEC-4.51-001",
+            "KMIP-CLAUSE-SPEC-4.52-001",
+            "KMIP-CLAUSE-SPEC-4.53-002",
+            "KMIP-CLAUSE-SPEC-4.54-001",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"], [])
                 self.assertIn("value No", reviews[clause_id]["source_excerpt"])
         for clause_id in (
-            "KMIPKIT-CLAUSE-SPEC-4.55-002",
-            "KMIPKIT-CLAUSE-SPEC-4.56-003",
+            "KMIP-CLAUSE-SPEC-4.55-002",
+            "KMIP-CLAUSE-SPEC-4.56-003",
         ):
             with self.subTest(clause_id=clause_id):
                 self.assertEqual(reviews[clause_id]["source_obligations"][0]["source_keyword"], "table property")
@@ -11894,27 +11894,27 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_line_ranges = {
-            "KMIPKIT-CLAUSE-SPEC-4.57-003": [20225, 20231],
-            "KMIPKIT-CLAUSE-SPEC-4.58-001": [20515, 20521],
-            "KMIPKIT-CLAUSE-SPEC-4.58-002": [20623, 20634],
-            "KMIPKIT-CLAUSE-SPEC-4.59-001": [20738, 20747],
-            "KMIPKIT-CLAUSE-SPEC-4.59-002": [20765, 20780],
-            "KMIPKIT-CLAUSE-SPEC-4.59-003": [20820, 20829],
-            "KMIPKIT-CLAUSE-SPEC-4.59-004": [20835, 20845],
-            "KMIPKIT-CLAUSE-SPEC-4.60-001": [20968, 20984],
-            "KMIPKIT-CLAUSE-SPEC-4.61-001": [21074, 21081],
-            "KMIPKIT-CLAUSE-SPEC-4.61-002": [21087, 21103],
-            "KMIPKIT-CLAUSE-SPEC-4.61-003": [21173, 21184],
-            "KMIPKIT-CLAUSE-SPEC-4.62-001": [21291, 21300],
-            "KMIPKIT-CLAUSE-SPEC-4.62-002": [21306, 21322],
-            "KMIPKIT-CLAUSE-SPEC-4.62-003": [21360, 21379],
-            "KMIPKIT-CLAUSE-SPEC-4.62-004": [21392, 21403],
-            "KMIPKIT-CLAUSE-SPEC-4.63-001": [21513, 21523],
-            "KMIPKIT-CLAUSE-SPEC-4.63-002": [21525, 21529],
-            "KMIPKIT-CLAUSE-SPEC-4.63-003": [21535, 21551],
-            "KMIPKIT-CLAUSE-SPEC-4.63-004": [21570, 21589],
-            "KMIPKIT-CLAUSE-SPEC-4.63-005": [21590, 21610],
-            "KMIPKIT-CLAUSE-SPEC-4.63-006": [21623, 21634],
+            "KMIP-CLAUSE-SPEC-4.57-003": [20225, 20231],
+            "KMIP-CLAUSE-SPEC-4.58-001": [20515, 20521],
+            "KMIP-CLAUSE-SPEC-4.58-002": [20623, 20634],
+            "KMIP-CLAUSE-SPEC-4.59-001": [20738, 20747],
+            "KMIP-CLAUSE-SPEC-4.59-002": [20765, 20780],
+            "KMIP-CLAUSE-SPEC-4.59-003": [20820, 20829],
+            "KMIP-CLAUSE-SPEC-4.59-004": [20835, 20845],
+            "KMIP-CLAUSE-SPEC-4.60-001": [20968, 20984],
+            "KMIP-CLAUSE-SPEC-4.61-001": [21074, 21081],
+            "KMIP-CLAUSE-SPEC-4.61-002": [21087, 21103],
+            "KMIP-CLAUSE-SPEC-4.61-003": [21173, 21184],
+            "KMIP-CLAUSE-SPEC-4.62-001": [21291, 21300],
+            "KMIP-CLAUSE-SPEC-4.62-002": [21306, 21322],
+            "KMIP-CLAUSE-SPEC-4.62-003": [21360, 21379],
+            "KMIP-CLAUSE-SPEC-4.62-004": [21392, 21403],
+            "KMIP-CLAUSE-SPEC-4.63-001": [21513, 21523],
+            "KMIP-CLAUSE-SPEC-4.63-002": [21525, 21529],
+            "KMIP-CLAUSE-SPEC-4.63-003": [21535, 21551],
+            "KMIP-CLAUSE-SPEC-4.63-004": [21570, 21589],
+            "KMIP-CLAUSE-SPEC-4.63-005": [21590, 21610],
+            "KMIP-CLAUSE-SPEC-4.63-006": [21623, 21634],
         }
         reviews = {
             review["source_clause_id"]: review
@@ -11952,17 +11952,17 @@ class CatalogValidationTests(unittest.TestCase):
                     )
                     prior_offset = atom_offset
 
-        active = reviews["KMIPKIT-CLAUSE-SPEC-4.57-003"]
+        active = reviews["KMIP-CLAUSE-SPEC-4.57-003"]
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["candidate_requirement_id"])
                 for atom in active["source_obligations"]
             ],
             [
-                (1, "SHALL", "KMIPKIT-REQ-SPEC-4.57-003-001"),
-                (2, "SHALL", "KMIPKIT-REQ-SPEC-4.57-003-002"),
-                (3, "SHALL NOT", "KMIPKIT-REQ-SPEC-4.57-003-003"),
-                (4, "SHALL NOT", "KMIPKIT-REQ-SPEC-4.57-003-004"),
+                (1, "SHALL", "KMIP-REQ-SPEC-4.57-003-001"),
+                (2, "SHALL", "KMIP-REQ-SPEC-4.57-003-002"),
+                (3, "SHALL NOT", "KMIP-REQ-SPEC-4.57-003-003"),
+                (4, "SHALL NOT", "KMIP-REQ-SPEC-4.57-003-004"),
             ],
         )
         self.assertNotIn("source_gap_id", active["source_obligations"][3])
@@ -11970,30 +11970,30 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Process Stop Date", active["source_obligations"][3]["source_text"])
 
         self.assertEqual(
-            [atom["source_keyword"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.58-001"]["source_obligations"]],
+            [atom["source_keyword"] for atom in reviews["KMIP-CLAUSE-SPEC-4.58-001"]["source_obligations"]],
             ["REQUIRED", "SHOULD", "SHALL", "SHALL NOT"],
         )
         self.assertTrue(
             all(
                 atom["scope_disposition"] == "server_only"
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.58-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.58-001"]["source_obligations"]
             )
         )
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.59-003"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-4.59-003"]["source_obligations"]
             ],
             [(1, "SHALL", "server_only"), (2, "SHALL NOT", "profile_conditional"), (3, "SHALL NOT", "client_1_0")],
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-4.59-004"]["source_obligations"], [])
-        self.assertIn("value No", reviews["KMIPKIT-CLAUSE-SPEC-4.59-004"]["source_excerpt"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-4.59-004"]["source_obligations"], [])
+        self.assertIn("value No", reviews["KMIP-CLAUSE-SPEC-4.59-004"]["source_excerpt"])
 
         header_only_ids = {
-            "KMIPKIT-REQ-SPEC-4.60-001",
-            "KMIPKIT-REQ-SPEC-4.61-002",
-            "KMIPKIT-REQ-SPEC-4.62-002",
-            "KMIPKIT-REQ-SPEC-4.63-003",
+            "KMIP-REQ-SPEC-4.60-001",
+            "KMIP-REQ-SPEC-4.61-002",
+            "KMIP-REQ-SPEC-4.62-002",
+            "KMIP-REQ-SPEC-4.63-003",
         }
         rejected_ids = {
             rejected["requirement_id"]
@@ -12011,15 +12011,15 @@ class CatalogValidationTests(unittest.TestCase):
             if header_only_ids & set(profile["requirement_ids"])
         }
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.62-003"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.62-003"]["source_obligations"]],
             ["profile_conditional"],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.63-004"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.63-004"]["source_obligations"]],
             ["profile_conditional"],
         )
         self.assertEqual(
-            [atom["scope_disposition"] for atom in reviews["KMIPKIT-CLAUSE-SPEC-4.63-005"]["source_obligations"]],
+            [atom["scope_disposition"] for atom in reviews["KMIP-CLAUSE-SPEC-4.63-005"]["source_obligations"]],
             ["profile_conditional"],
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -12031,7 +12031,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_subject_alternative_name_repeatability_is_not_conditioned_on_empty_subject(self) -> None:
         """Table 155 separates repeatability from SAN presence when Subject DN is empty."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.63-005"
+        requirement_id = "KMIP-REQ-SPEC-4.63-005"
         oracle = json.loads(
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
@@ -12064,58 +12064,58 @@ class CatalogValidationTests(unittest.TestCase):
         )
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1-001": {
+            "KMIP-CLAUSE-SPEC-6.1-001": {
                 "lines": [22377, 22384],
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
                 "excerpt": "The following subsections describe the operations that MAY be requested by a key management client. Not all clients have to be capable of issuing all operation requests; however any client that issues a specific request SHALL be capable of understanding the response to the request. All Object Management operations are issued in requests from clients to servers, and results obtained in responses from servers to clients. Multiple operations MAY be combined within a batch, resulting in a single request/response message pair.",
                 "atoms": [
-                    (1, "The following subsections describe the operations that MAY be requested by a key management client.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-001-001"),
-                    (2, "Not all clients have to be capable of issuing all operation requests; however any client that issues a specific request SHALL be capable of understanding the response to the request.", "SHALL", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-001-002"),
-                    (3, "Multiple operations MAY be combined within a batch, resulting in a single request/response message pair.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-001-003"),
+                    (1, "The following subsections describe the operations that MAY be requested by a key management client.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-001-001"),
+                    (2, "Not all clients have to be capable of issuing all operation requests; however any client that issues a specific request SHALL be capable of understanding the response to the request.", "SHALL", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-001-002"),
+                    (3, "Multiple operations MAY be combined within a batch, resulting in a single request/response message pair.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-001-003"),
                 ],
                 "client_ids": [
-                    "KMIPKIT-REQ-SPEC-6.1-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1-001-003",
+                    "KMIP-REQ-SPEC-6.1-001-001",
+                    "KMIP-REQ-SPEC-6.1-001-002",
+                    "KMIP-REQ-SPEC-6.1-001-003",
                 ],
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1-002": {
+            "KMIP-CLAUSE-SPEC-6.1-002": {
                 "lines": [22389, 22395],
                 "locator": {"ordinal": 2, "block_kind": "paragraph"},
                 "excerpt": "The key management server SHALL implement a temporary variable called the ID Placeholder. This value consists of a single Unique Identifier. It is a variable stored inside the server that is only valid and preserved during the execution of a batch of operations. Once the batch of operations has been completed, the ID Placeholder value SHALL be discarded and/or invalidated by the server, so that subsequent requests do not find this previous ID Placeholder available.",
                 "atoms": [
-                    (1, "The key management server SHALL implement a temporary variable called the ID Placeholder. This value consists of a single Unique Identifier. It is a variable stored inside the server that is only valid and preserved during the execution of a batch of operations.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1-002-001"),
-                    (2, "Once the batch of operations has been completed, the ID Placeholder value SHALL be discarded and/or invalidated by the server, so that subsequent requests do not find this previous ID Placeholder available.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1-002-001"),
+                    (1, "The key management server SHALL implement a temporary variable called the ID Placeholder. This value consists of a single Unique Identifier. It is a variable stored inside the server that is only valid and preserved during the execution of a batch of operations.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1-002-001"),
+                    (2, "Once the batch of operations has been completed, the ID Placeholder value SHALL be discarded and/or invalidated by the server, so that subsequent requests do not find this previous ID Placeholder available.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1-002-001"),
                 ],
                 "client_ids": [],
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1-003": {
+            "KMIP-CLAUSE-SPEC-6.1-003": {
                 "lines": [22397, 22407],
                 "locator": {"ordinal": 3, "block_kind": "paragraph"},
                 "excerpt": "The ID Placeholder is obtained from the Unique Identifier returned in response to the Create, Create Pair, Register, Derive Key, Re-key, Re-key Key Pair, Certify, Re-Certify, Locate, and Recover operations. If any of these operations successfully completes and returns a Unique Identifier, then the server SHALL copy this Unique Identifier into the ID Placeholder variable, where it is held until the completion of the operations remaining in the batched request or until a subsequent operation in the batch causes the ID Placeholder to be replaced. If the Batch Order Option is set to true (or unspecified), then subsequent operations in the batched request MAY make use of the ID Placeholder by omitting the Unique Identifier field from the request payloads for these operations.",
                 "atoms": [
-                    (1, "If any of these operations successfully completes and returns a Unique Identifier, then the server SHALL copy this Unique Identifier into the ID Placeholder variable, where it is held until the completion of the operations remaining in the batched request or until a subsequent operation in the batch causes the ID Placeholder to be replaced.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1-003-001"),
-                    (2, "If the Batch Order Option is set to true (or unspecified), then subsequent operations in the batched request MAY make use of the ID Placeholder by omitting the Unique Identifier field from the request payloads for these operations.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-003-002"),
+                    (1, "If any of these operations successfully completes and returns a Unique Identifier, then the server SHALL copy this Unique Identifier into the ID Placeholder variable, where it is held until the completion of the operations remaining in the batched request or until a subsequent operation in the batch causes the ID Placeholder to be replaced.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1-003-001"),
+                    (2, "If the Batch Order Option is set to true (or unspecified), then subsequent operations in the batched request MAY make use of the ID Placeholder by omitting the Unique Identifier field from the request payloads for these operations.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-003-002"),
                 ],
-                "client_ids": ["KMIPKIT-REQ-SPEC-6.1-003-002"],
+                "client_ids": ["KMIP-REQ-SPEC-6.1-003-002"],
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1-004": {
+            "KMIP-CLAUSE-SPEC-6.1-004": {
                 "lines": [22409, 22411],
                 "locator": {"ordinal": 4, "block_kind": "paragraph"},
                 "excerpt": "Requests MAY contain attribute values to be assigned to the object. This information is specified with zero or more individual attributes.",
                 "atoms": [
-                    (1, "Requests MAY contain attribute values to be assigned to the object. This information is specified with zero or more individual attributes.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-004"),
+                    (1, "Requests MAY contain attribute values to be assigned to the object. This information is specified with zero or more individual attributes.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-004"),
                 ],
-                "client_ids": ["KMIPKIT-REQ-SPEC-6.1-004"],
+                "client_ids": ["KMIP-REQ-SPEC-6.1-004"],
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1-005": {
+            "KMIP-CLAUSE-SPEC-6.1-005": {
                 "lines": [22413, 22415],
                 "locator": {"ordinal": 5, "block_kind": "paragraph"},
                 "excerpt": "For any operations that operate on Managed Objects already stored on the server, any archived object SHALL first be made available by a Recover operation before they MAY be specified (i.e., as on-line objects).",
                 "atoms": [
-                    (1, "For any operations that operate on Managed Objects already stored on the server, any archived object SHALL first be made available by a Recover operation before they MAY be specified (i.e., as on-line objects).", "SHALL", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1-005"),
+                    (1, "For any operations that operate on Managed Objects already stored on the server, any archived object SHALL first be made available by a Recover operation before they MAY be specified (i.e., as on-line objects).", "SHALL", "client", "client_1_0", "KMIP-REQ-SPEC-6.1-005"),
                 ],
-                "client_ids": ["KMIPKIT-REQ-SPEC-6.1-005"],
+                "client_ids": ["KMIP-REQ-SPEC-6.1-005"],
             },
         }
         reviews = {
@@ -12177,27 +12177,27 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertEqual(mapping["source_actor"], actor)
                     self.assertEqual(mapping["scope_state"], scope)
 
-        lifecycle_atoms = reviews["KMIPKIT-CLAUSE-SPEC-6.1-002"]["source_obligations"]
+        lifecycle_atoms = reviews["KMIP-CLAUSE-SPEC-6.1-002"]["source_obligations"]
         self.assertIn("server SHALL implement a temporary variable", lifecycle_atoms[0]["source_text"])
         self.assertIn("SHALL be discarded and/or invalidated", lifecycle_atoms[1]["source_text"])
         self.assertNotEqual(lifecycle_atoms[0]["condition"], lifecycle_atoms[1]["condition"])
         self.assertTrue(all(atom["actor"] == "server" and atom["scope_disposition"] == "server_only" for atom in lifecycle_atoms))
         self.assertEqual(
-            [mapping["source_obligation_order"] for mapping in crosswalk if mapping["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1-002-001"],
+            [mapping["source_obligation_order"] for mapping in crosswalk if mapping["requirement_id"] == "KMIP-REQ-SPEC-6.1-002-001"],
             [1, 2],
             "one compound stable ID must preserve both distinct source predicates in source order",
         )
-        self.assertIn("catalog condition metadata", reviews["KMIPKIT-CLAUSE-SPEC-6.1-002"]["review_note"])
+        self.assertIn("catalog condition metadata", reviews["KMIP-CLAUSE-SPEC-6.1-002"]["review_note"])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1-001-001",
-            "KMIPKIT-REQ-SPEC-6.1-001-002",
-            "KMIPKIT-REQ-SPEC-6.1-001-003",
-            "KMIPKIT-REQ-SPEC-6.1-003-002",
-            "KMIPKIT-REQ-SPEC-6.1-004",
-            "KMIPKIT-REQ-SPEC-6.1-005",
+            "KMIP-REQ-SPEC-6.1-001-001",
+            "KMIP-REQ-SPEC-6.1-001-002",
+            "KMIP-REQ-SPEC-6.1-001-003",
+            "KMIP-REQ-SPEC-6.1-003-002",
+            "KMIP-REQ-SPEC-6.1-004",
+            "KMIP-REQ-SPEC-6.1-005",
         }
         missing_client_requirements = {
             profile["profile_id"]: sorted(expected_client_ids - set(profile["requirement_ids"]))
@@ -12241,97 +12241,97 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-001": ("6.1.1", 1, "paragraph", [22513, 22516]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-002": ("6.1.1", 2, "table_row", [22529, 22545]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-003": ("6.1.1", 3, "table_row", [22585, 22601]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.1.1-001": ("6.1.1.1", 1, "paragraph", [22633, 22634]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.1.1-002": ("6.1.1.1", 2, "table_row", [22654, 22666]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-001": ("6.1.2", 1, "paragraph", [22679, 22686]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-002": ("6.1.2", 2, "table_row", [22699, 22715]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-003": ("6.1.2", 3, "table_row", [22774, 22790]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.2.1-001": ("6.1.2.1", 1, "paragraph", [22822, 22823]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.2.1-002": ("6.1.2.1", 2, "table_row", [22843, 22857]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-001": ("6.1.3", 1, "paragraph", [22870, 22877]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-002": ("6.1.3", 2, "table_row", [22890, 22906]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-003": ("6.1.3", 3, "table_row", [23001, 23017]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.3.1-001": ("6.1.3.1", 1, "paragraph", [23049, 23050]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.3.1-002": ("6.1.3.1", 2, "table_row", [23068, 23082]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-001": ("6.1.4", 1, "paragraph", [23095, 23101]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-002": ("6.1.4", 2, "table_row", [23114, 23130]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-003": ("6.1.4", 3, "table_row", [23170, 23186]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.4.1-001": ("6.1.4.1", 1, "paragraph", [23218, 23219]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.4.1-002": ("6.1.4.1", 2, "table_row", [23237, 23249]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": ("6.1.5", 1, "paragraph", [23262, 23265]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-002": ("6.1.5", 2, "table_row", [23278, 23294]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-003": ("6.1.5", 3, "table_row", [23333, 23349]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-004": ("6.1.5", 4, "paragraph", [23396, 23397]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-005": ("6.1.5", 5, "table_row", [23415, 23427]),
+            "KMIP-CLAUSE-SPEC-6.1.1-001": ("6.1.1", 1, "paragraph", [22513, 22516]),
+            "KMIP-CLAUSE-SPEC-6.1.1-002": ("6.1.1", 2, "table_row", [22529, 22545]),
+            "KMIP-CLAUSE-SPEC-6.1.1-003": ("6.1.1", 3, "table_row", [22585, 22601]),
+            "KMIP-CLAUSE-SPEC-6.1.1.1-001": ("6.1.1.1", 1, "paragraph", [22633, 22634]),
+            "KMIP-CLAUSE-SPEC-6.1.1.1-002": ("6.1.1.1", 2, "table_row", [22654, 22666]),
+            "KMIP-CLAUSE-SPEC-6.1.2-001": ("6.1.2", 1, "paragraph", [22679, 22686]),
+            "KMIP-CLAUSE-SPEC-6.1.2-002": ("6.1.2", 2, "table_row", [22699, 22715]),
+            "KMIP-CLAUSE-SPEC-6.1.2-003": ("6.1.2", 3, "table_row", [22774, 22790]),
+            "KMIP-CLAUSE-SPEC-6.1.2.1-001": ("6.1.2.1", 1, "paragraph", [22822, 22823]),
+            "KMIP-CLAUSE-SPEC-6.1.2.1-002": ("6.1.2.1", 2, "table_row", [22843, 22857]),
+            "KMIP-CLAUSE-SPEC-6.1.3-001": ("6.1.3", 1, "paragraph", [22870, 22877]),
+            "KMIP-CLAUSE-SPEC-6.1.3-002": ("6.1.3", 2, "table_row", [22890, 22906]),
+            "KMIP-CLAUSE-SPEC-6.1.3-003": ("6.1.3", 3, "table_row", [23001, 23017]),
+            "KMIP-CLAUSE-SPEC-6.1.3.1-001": ("6.1.3.1", 1, "paragraph", [23049, 23050]),
+            "KMIP-CLAUSE-SPEC-6.1.3.1-002": ("6.1.3.1", 2, "table_row", [23068, 23082]),
+            "KMIP-CLAUSE-SPEC-6.1.4-001": ("6.1.4", 1, "paragraph", [23095, 23101]),
+            "KMIP-CLAUSE-SPEC-6.1.4-002": ("6.1.4", 2, "table_row", [23114, 23130]),
+            "KMIP-CLAUSE-SPEC-6.1.4-003": ("6.1.4", 3, "table_row", [23170, 23186]),
+            "KMIP-CLAUSE-SPEC-6.1.4.1-001": ("6.1.4.1", 1, "paragraph", [23218, 23219]),
+            "KMIP-CLAUSE-SPEC-6.1.4.1-002": ("6.1.4.1", 2, "table_row", [23237, 23249]),
+            "KMIP-CLAUSE-SPEC-6.1.5-001": ("6.1.5", 1, "paragraph", [23262, 23265]),
+            "KMIP-CLAUSE-SPEC-6.1.5-002": ("6.1.5", 2, "table_row", [23278, 23294]),
+            "KMIP-CLAUSE-SPEC-6.1.5-003": ("6.1.5", 3, "table_row", [23333, 23349]),
+            "KMIP-CLAUSE-SPEC-6.1.5-004": ("6.1.5", 4, "paragraph", [23396, 23397]),
+            "KMIP-CLAUSE-SPEC-6.1.5-005": ("6.1.5", 5, "table_row", [23415, 23427]),
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.1-001": [
                 (1, "The operation SHALL only be performed on an object in the Pre-Active state", "SHALL", "server", "server operation eligibility", "The object is in the Pre-Active state.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.1.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.1.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Activate Operation.", "SHALL", "server", "server_to_client response", "An error is detected in an Activate Operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-001": [
-                (1, "Existing attribute values SHALL NOT be changed by this operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.2-001-001"),
-                (2, "Read-Only attributes SHALL NOT be added using the Add Attribute operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.2-001-002"),
+            "KMIP-CLAUSE-SPEC-6.1.2-001": [
+                (1, "Existing attribute values SHALL NOT be changed by this operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIP-REQ-SPEC-6.1.2-001-001"),
+                (2, "Read-Only attributes SHALL NOT be added using the Add Attribute operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIP-REQ-SPEC-6.1.2-001-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.2.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.2.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Add Attribute Operation.", "SHALL", "server", "server_to_client response", "An error is detected in an Add Attribute Operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-001": [
-                (1, "Read-Only attributes SHALL NOT be added or modified using this operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.3-001"),
+            "KMIP-CLAUSE-SPEC-6.1.3-001": [
+                (1, "Read-Only attributes SHALL NOT be added or modified using this operation.", "SHALL NOT", "server", "server processing of client request", None, "server_only", "KMIP-REQ-SPEC-6.1.3-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.3.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.3.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Adjust Attribute Operation.", "SHALL", "server", "server_to_client response", "An error is detected in an Adjust Attribute Operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-001": [
-                (1, "This operation is used to specify that a Managed Object MAY be archived.", "MAY", "client", "client_to_server operation request", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.4-001"),
-                (2, "This request is only an indication from a client that, from its point of view, the key management system MAY archive the object.", "MAY", "client", "client_to_server operation request", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.4-001"),
+            "KMIP-CLAUSE-SPEC-6.1.4-001": [
+                (1, "This operation is used to specify that a Managed Object MAY be archived.", "MAY", "client", "client_to_server operation request", None, "client_1_0", "KMIP-REQ-SPEC-6.1.4-001"),
+                (2, "This request is only an indication from a client that, from its point of view, the key management system MAY archive the object.", "MAY", "client", "client_to_server operation request", None, "client_1_0", "KMIP-REQ-SPEC-6.1.4-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.4.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.4.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Archive Operation.", "SHALL", "server", "server_to_client response", "An error is detected in an Archive Operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": [
-                (1, "The correlation value of the original operation SHALL be specified in the request.", "SHALL", "client", "client_to_server operation request", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.5-001"),
-                (2, "The server SHALL respond with a Cancellation Result.", "SHALL", "server", "server_to_client response", None, "server_only", "KMIPKIT-REQ-SPEC-6.1.5-002"),
+            "KMIP-CLAUSE-SPEC-6.1.5-001": [
+                (1, "The correlation value of the original operation SHALL be specified in the request.", "SHALL", "client", "client_to_server operation request", None, "client_1_0", "KMIP-REQ-SPEC-6.1.5-001"),
+                (2, "The server SHALL respond with a Cancellation Result.", "SHALL", "server", "server_to_client response", None, "server_only", "KMIP-REQ-SPEC-6.1.5-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-004": [
+            "KMIP-CLAUSE-SPEC-6.1.5-004": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Cancel Operation.", "SHALL", "server", "server_to_client response", "An error is detected in a Cancel Operation.", "server_only", None),
             ],
         }
         expected_client_ids = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-001": ["KMIPKIT-REQ-SPEC-6.1.4-001"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": ["KMIPKIT-REQ-SPEC-6.1.5-001"],
+            "KMIP-CLAUSE-SPEC-6.1.4-001": ["KMIP-REQ-SPEC-6.1.4-001"],
+            "KMIP-CLAUSE-SPEC-6.1.5-001": ["KMIP-REQ-SPEC-6.1.5-001"],
         }
         expected_atom_counts = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.1-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.1.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.1.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-001": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.2-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.2.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.2.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.3-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.3.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.3.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-001": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.4-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.4.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.4.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-004": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-005": 0,
+            "KMIP-CLAUSE-SPEC-6.1.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.1-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.1.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.1.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.2-001": 2,
+            "KMIP-CLAUSE-SPEC-6.1.2-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.2-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.2.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.2.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.3-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.3-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.3-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.3.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.3.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.4-001": 2,
+            "KMIP-CLAUSE-SPEC-6.1.4-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.4-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.4.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.4.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.5-001": 2,
+            "KMIP-CLAUSE-SPEC-6.1.5-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.5-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.5-004": 1,
+            "KMIP-CLAUSE-SPEC-6.1.5-005": 0,
         }
         self.assertEqual(set(expected_locators), expected_clause_ids)
         self.assertEqual(set(expected_atom_counts), expected_clause_ids)
@@ -12391,11 +12391,11 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertEqual(mapping["source_actor"], actor)
                     self.assertEqual(mapping["scope_state"], scope)
 
-        expected_client_ids_union = {"KMIPKIT-REQ-SPEC-6.1.4-001", "KMIPKIT-REQ-SPEC-6.1.5-001"}
+        expected_client_ids_union = {"KMIP-REQ-SPEC-6.1.4-001", "KMIP-REQ-SPEC-6.1.5-001"}
         expected_server_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.2-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.2-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.3-001",
+            "KMIP-REQ-SPEC-6.1.2-001-001",
+            "KMIP-REQ-SPEC-6.1.2-001-002",
+            "KMIP-REQ-SPEC-6.1.3-001",
         }
         server_scope_leaks = {
             profile["profile_id"]: sorted(expected_server_ids & set(profile["requirement_ids"]))
@@ -12449,99 +12449,99 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-001": ("6.1.6", 1, "paragraph", [23439, 23444]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-002": ("6.1.6", 2, "paragraph", [23445, 23450]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-003": ("6.1.6", 3, "paragraph", [23455, 23458]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-004": ("6.1.6", 4, "paragraph", [23459, 23463]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-005": ("6.1.6", 5, "paragraph", [23464, 23467]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-006": ("6.1.6", 6, "table_row", [23482, 23500]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-007": ("6.1.6", 7, "table_row", [23522, 23540]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-008": ("6.1.6", 8, "table_row", [23616, 23634]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6.1-001": ("6.1.6.1", 1, "paragraph", [23666, 23668]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.6.1-002": ("6.1.6.1", 2, "table_row", [23684, 23699]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-001": ("6.1.7", 1, "paragraph", [23711, 23717]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-002": ("6.1.7", 2, "paragraph", [23730, 23734]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-003": ("6.1.7", 3, "table_row", [23750, 23766]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-004": ("6.1.7", 4, "table_row", [23767, 23787]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-005": ("6.1.7", 5, "table_row", [23788, 23805]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-006": ("6.1.7", 6, "table_row", [23827, 23845]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-007": ("6.1.7", 7, "table_row", [23941, 23959]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-008": ("6.1.7", 8, "table_row", [24018, 24037]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7.1-001": ("6.1.7.1", 1, "paragraph", [24050, 24052]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7.1-002": ("6.1.7.1", 2, "table_row", [24070, 24085]),
+            "KMIP-CLAUSE-SPEC-6.1.6-001": ("6.1.6", 1, "paragraph", [23439, 23444]),
+            "KMIP-CLAUSE-SPEC-6.1.6-002": ("6.1.6", 2, "paragraph", [23445, 23450]),
+            "KMIP-CLAUSE-SPEC-6.1.6-003": ("6.1.6", 3, "paragraph", [23455, 23458]),
+            "KMIP-CLAUSE-SPEC-6.1.6-004": ("6.1.6", 4, "paragraph", [23459, 23463]),
+            "KMIP-CLAUSE-SPEC-6.1.6-005": ("6.1.6", 5, "paragraph", [23464, 23467]),
+            "KMIP-CLAUSE-SPEC-6.1.6-006": ("6.1.6", 6, "table_row", [23482, 23500]),
+            "KMIP-CLAUSE-SPEC-6.1.6-007": ("6.1.6", 7, "table_row", [23522, 23540]),
+            "KMIP-CLAUSE-SPEC-6.1.6-008": ("6.1.6", 8, "table_row", [23616, 23634]),
+            "KMIP-CLAUSE-SPEC-6.1.6.1-001": ("6.1.6.1", 1, "paragraph", [23666, 23668]),
+            "KMIP-CLAUSE-SPEC-6.1.6.1-002": ("6.1.6.1", 2, "table_row", [23684, 23699]),
+            "KMIP-CLAUSE-SPEC-6.1.7-001": ("6.1.7", 1, "paragraph", [23711, 23717]),
+            "KMIP-CLAUSE-SPEC-6.1.7-002": ("6.1.7", 2, "paragraph", [23730, 23734]),
+            "KMIP-CLAUSE-SPEC-6.1.7-003": ("6.1.7", 3, "table_row", [23750, 23766]),
+            "KMIP-CLAUSE-SPEC-6.1.7-004": ("6.1.7", 4, "table_row", [23767, 23787]),
+            "KMIP-CLAUSE-SPEC-6.1.7-005": ("6.1.7", 5, "table_row", [23788, 23805]),
+            "KMIP-CLAUSE-SPEC-6.1.7-006": ("6.1.7", 6, "table_row", [23827, 23845]),
+            "KMIP-CLAUSE-SPEC-6.1.7-007": ("6.1.7", 7, "table_row", [23941, 23959]),
+            "KMIP-CLAUSE-SPEC-6.1.7-008": ("6.1.7", 8, "table_row", [24018, 24037]),
+            "KMIP-CLAUSE-SPEC-6.1.7.1-001": ("6.1.7.1", 1, "paragraph", [24050, 24052]),
+            "KMIP-CLAUSE-SPEC-6.1.7.1-002": ("6.1.7.1", 2, "table_row", [24070, 24085]),
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-001": [
-                (1, "Only a single certificate SHALL be requested at a time.", "SHALL", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-001"),
+            "KMIP-CLAUSE-SPEC-6.1.6-001": [
+                (1, "Only a single certificate SHALL be requested at a time.", "SHALL", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIP-REQ-SPEC-6.1.6-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-002": [
-                (1, "The Certificate Request object MAY be omitted,", "MAY", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-002-001"),
-                (2, "in which case the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only.", "SHALL", "client", "client→server request or client-side operation use", "The Certificate Request object is omitted", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-002-002"),
-                (3, "If the Certificate Request Type and the Certificate Request objects are omitted from the request, then the Certificate Type SHALL be specified using the Attributes object.", "SHALL", "client", "client→server request or client-side operation use", "The Certificate Request Type and the Certificate Request objects are omitted from the request", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-002-003"),
+            "KMIP-CLAUSE-SPEC-6.1.6-002": [
+                (1, "The Certificate Request object MAY be omitted,", "MAY", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIP-REQ-SPEC-6.1.6-002-001"),
+                (2, "in which case the public key for which a Certificate object is generated SHALL be specified by its Unique Identifier only.", "SHALL", "client", "client→server request or client-side operation use", "The Certificate Request object is omitted", "client_1_0", "KMIP-REQ-SPEC-6.1.6-002-002"),
+                (3, "If the Certificate Request Type and the Certificate Request objects are omitted from the request, then the Certificate Type SHALL be specified using the Attributes object.", "SHALL", "client", "client→server request or client-side operation use", "The Certificate Request Type and the Certificate Request objects are omitted from the request", "client_1_0", "KMIP-REQ-SPEC-6.1.6-002-003"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-003": [
-                (1, "The generated Certificate object whose Unique Identifier is returned MAY be obtained by the client via a Get operation in the same batch, using the ID Placeholder mechanism.", "MAY", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-003"),
+            "KMIP-CLAUSE-SPEC-6.1.6-003": [
+                (1, "The generated Certificate object whose Unique Identifier is returned MAY be obtained by the client via a Get operation in the same batch, using the ID Placeholder mechanism.", "MAY", "client", "client→server request or client-side operation use", None, "client_1_0", "KMIP-REQ-SPEC-6.1.6-003"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-004": [
+            "KMIP-CLAUSE-SPEC-6.1.6-004": [
                 (1, "For the public key, the server SHALL create a Link attribute of Link Type Certificate pointing to the generated certificate.", "SHALL", "server", "server processing of client request", None, "server_only", None),
                 (2, "For the generated certificate, the server SHALL create a Link attribute of Link Type Public Key pointing to the Public Key.", "SHALL", "server", "server processing of client request", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-005": [
+            "KMIP-CLAUSE-SPEC-6.1.6-005": [
                 (1, "The server SHALL copy the Unique Identifier of the generated certificate returned by this operation into the ID Placeholder variable.", "SHALL", "server", "server processing of client request", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-006": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-007": [
-                (1, "It is REQUIRED if the Certificate Request is present.", "REQUIRED", "client", "client→server request payload", "if the Certificate Request is present", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.6-007"),
+            "KMIP-CLAUSE-SPEC-6.1.6-006": [],
+            "KMIP-CLAUSE-SPEC-6.1.6-007": [
+                (1, "It is REQUIRED if the Certificate Request is present.", "REQUIRED", "client", "client→server request payload", "if the Certificate Request is present", "client_1_0", "KMIP-REQ-SPEC-6.1.6-007"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6-008": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.6-008": [],
+            "KMIP-CLAUSE-SPEC-6.1.6.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Certify Operation.", "SHALL", "server", "server_to_client response", "An error is detected in a Certify Operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.6.1-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-001": [
-                (1, "This operation SHOULD only be used when placed in a batched set of operations, usually following a Locate, Create, Create Pair, Derive Key, Certify, Re-Certify, Re-key or Re-key Key Pair operation, and followed by a Get operation.", "SHOULD", "client", "client→server request or client-side operation use", "when placed in a batched set of operations, usually following a Locate, Create, Create Pair, Derive Key, Certify, Re-Certify, Re-key or Re-key Key Pair operation, and followed by a Get operation", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-001"),
+            "KMIP-CLAUSE-SPEC-6.1.6.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.7-001": [
+                (1, "This operation SHOULD only be used when placed in a batched set of operations, usually following a Locate, Create, Create Pair, Derive Key, Certify, Re-Certify, Re-key or Re-key Key Pair operation, and followed by a Get operation.", "SHOULD", "client", "client→server request or client-side operation use", "when placed in a batched set of operations, usually following a Locate, Create, Create Pair, Derive Key, Certify, Re-Certify, Re-key or Re-key Key Pair operation, and followed by a Get operation", "client_1_0", "KMIP-REQ-SPEC-6.1.7-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-002": [
-                (1, "In a batch containing a Check operation the Batch Order Option SHOULD be set to true.", "SHOULD", "client", "client→server request payload", "In a batch containing a Check operation", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-001"),
-                (2, "Only STOP or UNDO Batch Error Continuation Option values SHOULD be used by the client in such a batch.", "SHOULD", "client", "client→server request payload", "in a batch containing a Check operation", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-002"),
-                (3, "Additional attributes that MAY be specified in the request are limited to:", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-002-003"),
+            "KMIP-CLAUSE-SPEC-6.1.7-002": [
+                (1, "In a batch containing a Check operation the Batch Order Option SHOULD be set to true.", "SHOULD", "client", "client→server request payload", "In a batch containing a Check operation", "client_1_0", "KMIP-REQ-SPEC-6.1.7-002-001"),
+                (2, "Only STOP or UNDO Batch Error Continuation Option values SHOULD be used by the client in such a batch.", "SHOULD", "client", "client→server request payload", "in a batch containing a Check operation", "client_1_0", "KMIP-REQ-SPEC-6.1.7-002-002"),
+                (3, "Additional attributes that MAY be specified in the request are limited to:", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.7-002-003"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-003": [
-                (1, "The request MAY contain the usage amount that the client deems necessary to complete its needed function.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-003"),
+            "KMIP-CLAUSE-SPEC-6.1.7-003": [
+                (1, "The request MAY contain the usage amount that the client deems necessary to complete its needed function.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.7-003"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-004": [
-                (1, "Note that this MAY be a different value from the one specified in a Locate operation that precedes this operation.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-004-002"),
-                (2, "Locate, for example, MAY specify a Cryptographic Usage Mask requesting a key that MAY be used for both Encryption and Decryption, but the value in the Check operation MAY specify that the client is only using the key for Encryption at this time.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-004-001"),
+            "KMIP-CLAUSE-SPEC-6.1.7-004": [
+                (1, "Note that this MAY be a different value from the one specified in a Locate operation that precedes this operation.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.7-004-002"),
+                (2, "Locate, for example, MAY specify a Cryptographic Usage Mask requesting a key that MAY be used for both Encryption and Decryption, but the value in the Check operation MAY specify that the client is only using the key for Encryption at this time.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.7-004-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-005": [
-                (1, "The client MAY use this to determine if the server allows the client to use the object with the specified lease or longer.", "MAY", "client", "client-side lease capability decision", "if the server allows the client to use the object with the specified lease or longer", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.7-005"),
-                (2, "Including this attribute in the Check operation does not actually cause the server to grant a lease, but only indicates that the requested lease time value MAY be granted if requested by a subsequent, batched Obtain Lease operation.", "MAY", "server", "server processing of client request", "if requested by a subsequent, batched Obtain Lease operation", "server_only", "KMIPKIT-REQ-SPEC-6.1.7-006"),
+            "KMIP-CLAUSE-SPEC-6.1.7-005": [
+                (1, "The client MAY use this to determine if the server allows the client to use the object with the specified lease or longer.", "MAY", "client", "client-side lease capability decision", "if the server allows the client to use the object with the specified lease or longer", "client_1_0", "KMIP-REQ-SPEC-6.1.7-005"),
+                (2, "Including this attribute in the Check operation does not actually cause the server to grant a lease, but only indicates that the requested lease time value MAY be granted if requested by a subsequent, batched Obtain Lease operation.", "MAY", "server", "server processing of client request", "if requested by a subsequent, batched Obtain Lease operation", "server_only", "KMIP-REQ-SPEC-6.1.7-006"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-006": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-007": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-008": [
+            "KMIP-CLAUSE-SPEC-6.1.7-006": [],
+            "KMIP-CLAUSE-SPEC-6.1.7-007": [],
+            "KMIP-CLAUSE-SPEC-6.1.7-008": [
                 (1, "the server MAY grant", "MAY", "server", "server processing of client request", "if the Lease Time value in the Request Payload is larger than a valid Lease Time", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.7.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Check Operation.", "SHALL", "server", "server_to_client response", "An error is detected in a Check Operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.7.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.7.1-002": [],
         }
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.6-001",
-            "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-            "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-            "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-            "KMIPKIT-REQ-SPEC-6.1.6-003",
-            "KMIPKIT-REQ-SPEC-6.1.6-007",
-            "KMIPKIT-REQ-SPEC-6.1.7-001",
-            "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-            "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-            "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-            "KMIPKIT-REQ-SPEC-6.1.7-003",
-            "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.7-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.7-005",
+            "KMIP-REQ-SPEC-6.1.6-001",
+            "KMIP-REQ-SPEC-6.1.6-002-001",
+            "KMIP-REQ-SPEC-6.1.6-002-002",
+            "KMIP-REQ-SPEC-6.1.6-002-003",
+            "KMIP-REQ-SPEC-6.1.6-003",
+            "KMIP-REQ-SPEC-6.1.6-007",
+            "KMIP-REQ-SPEC-6.1.7-001",
+            "KMIP-REQ-SPEC-6.1.7-002-001",
+            "KMIP-REQ-SPEC-6.1.7-002-002",
+            "KMIP-REQ-SPEC-6.1.7-002-003",
+            "KMIP-REQ-SPEC-6.1.7-003",
+            "KMIP-REQ-SPEC-6.1.7-004-001",
+            "KMIP-REQ-SPEC-6.1.7-004-002",
+            "KMIP-REQ-SPEC-6.1.7-005",
         }
         expected_gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.7-002-MAY-LIMITED-ATTRIBUTES"
         crosswalk = oracle["requirement_crosswalk"]
@@ -12666,98 +12666,98 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-001": ("6.1.8", 1, "paragraph", [24105, 24107]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-002": ("6.1.8", 2, "table_row", [24120, 24137]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-003": ("6.1.8", 3, "table_row", [24216, 24233]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.8.1-001": ("6.1.8.1", 1, "paragraph", [24283, 24284]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.8.1-002": ("6.1.8.1", 2, "table_row", [24304, 24320]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-001": ("6.1.9", 1, "paragraph", [24339, 24345]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-002": ("6.1.9", 2, "paragraph", [24347, 24352]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-003": ("6.1.9", 3, "table_row", [24365, 24382]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-004": ("6.1.9", 4, "paragraph", [24529, 24531]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-005": ("6.1.9", 5, "table_row", [24546, 24563]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-006": ("6.1.9", 6, "paragraph", [24611, 24612]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-007": ("6.1.9", 7, "table_row", [24618, 24629]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9.1-001": ("6.1.9.1", 1, "paragraph", [24704, 24705]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.9.1-002": ("6.1.9.1", 2, "table_row", [24725, 24741]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-001": ("6.1.10", 1, "paragraph", [24760, 24765]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-002": ("6.1.10", 2, "paragraph", [24767, 24769]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-003": ("6.1.10", 3, "table_row", [24782, 24799]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-004": ("6.1.10", 4, "table_row", [24948, 24965]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-005": ("6.1.10", 5, "table_row", [24967, 24983]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10.1-001": ("6.1.10.1", 1, "paragraph", [24996, 24997]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.10.1-002": ("6.1.10.1", 2, "table_row", [25017, 25033]),
+            "KMIP-CLAUSE-SPEC-6.1.8-001": ("6.1.8", 1, "paragraph", [24105, 24107]),
+            "KMIP-CLAUSE-SPEC-6.1.8-002": ("6.1.8", 2, "table_row", [24120, 24137]),
+            "KMIP-CLAUSE-SPEC-6.1.8-003": ("6.1.8", 3, "table_row", [24216, 24233]),
+            "KMIP-CLAUSE-SPEC-6.1.8.1-001": ("6.1.8.1", 1, "paragraph", [24283, 24284]),
+            "KMIP-CLAUSE-SPEC-6.1.8.1-002": ("6.1.8.1", 2, "table_row", [24304, 24320]),
+            "KMIP-CLAUSE-SPEC-6.1.9-001": ("6.1.9", 1, "paragraph", [24339, 24345]),
+            "KMIP-CLAUSE-SPEC-6.1.9-002": ("6.1.9", 2, "paragraph", [24347, 24352]),
+            "KMIP-CLAUSE-SPEC-6.1.9-003": ("6.1.9", 3, "table_row", [24365, 24382]),
+            "KMIP-CLAUSE-SPEC-6.1.9-004": ("6.1.9", 4, "paragraph", [24529, 24531]),
+            "KMIP-CLAUSE-SPEC-6.1.9-005": ("6.1.9", 5, "table_row", [24546, 24563]),
+            "KMIP-CLAUSE-SPEC-6.1.9-006": ("6.1.9", 6, "paragraph", [24611, 24612]),
+            "KMIP-CLAUSE-SPEC-6.1.9-007": ("6.1.9", 7, "table_row", [24618, 24629]),
+            "KMIP-CLAUSE-SPEC-6.1.9.1-001": ("6.1.9.1", 1, "paragraph", [24704, 24705]),
+            "KMIP-CLAUSE-SPEC-6.1.9.1-002": ("6.1.9.1", 2, "table_row", [24725, 24741]),
+            "KMIP-CLAUSE-SPEC-6.1.10-001": ("6.1.10", 1, "paragraph", [24760, 24765]),
+            "KMIP-CLAUSE-SPEC-6.1.10-002": ("6.1.10", 2, "paragraph", [24767, 24769]),
+            "KMIP-CLAUSE-SPEC-6.1.10-003": ("6.1.10", 3, "table_row", [24782, 24799]),
+            "KMIP-CLAUSE-SPEC-6.1.10-004": ("6.1.10", 4, "table_row", [24948, 24965]),
+            "KMIP-CLAUSE-SPEC-6.1.10-005": ("6.1.10", 5, "table_row", [24967, 24983]),
+            "KMIP-CLAUSE-SPEC-6.1.10.1-001": ("6.1.10.1", 1, "paragraph", [24996, 24997]),
+            "KMIP-CLAUSE-SPEC-6.1.10.1-002": ("6.1.10.1", 2, "table_row", [25017, 25033]),
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-001": [
+            "KMIP-CLAUSE-SPEC-6.1.8-001": [
                 (1, "The response contains the Unique Identifier of the created object.", "declarative response", "server", "server→client response content", None, "server_only", None),
                 (2, "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "SHALL", "server", "server-internal ID Placeholder state", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.8.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.8-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.8-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.8.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Create operation.", "SHALL", "server", "server→client response error selection", "An error is detected in a Create operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.8.1-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-001": [
-                (1, "Attributes MAY be specified for both keys at the same time by specifying a Common Attributes object in the request.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.9-001-001"),
-                (2, "Attributes not common to both keys (e.g., Name, Cryptographic Usage Mask) MAY be specified using the Private Key Attributes and Public Key Attributes objects in the request, which take precedence over the Common Attributes object.", "MAY", "client", "client→server request payload", "For attributes not common to both keys", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.9-001-002"),
+            "KMIP-CLAUSE-SPEC-6.1.8.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.9-001": [
+                (1, "Attributes MAY be specified for both keys at the same time by specifying a Common Attributes object in the request.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.9-001-001"),
+                (2, "Attributes not common to both keys (e.g., Name, Cryptographic Usage Mask) MAY be specified using the Private Key Attributes and Public Key Attributes objects in the request, which take precedence over the Common Attributes object.", "MAY", "client", "client→server request payload", "For attributes not common to both keys", "client_1_0", "KMIP-REQ-SPEC-6.1.9-001-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-002": [
+            "KMIP-CLAUSE-SPEC-6.1.9-002": [
                 (1, "For the Private Key, the server SHALL create a Link attribute of Link Type Public Key pointing to the Public Key.", "SHALL", "server", "server processing of client request", None, "server_only", None),
                 (2, "For the Public Key, the server SHALL create a Link attribute of Link Type Private Key pointing to the Private Key.", "SHALL", "server", "server processing of client request", None, "server_only", None),
                 (3, "The response contains the Unique Identifiers of both created objects.", "declarative response", "server", "server→client response content", None, "server_only", None),
                 (4, "The ID Placeholder value SHALL be set to the Unique Identifier of the Private Key.", "SHALL", "server", "server-internal ID Placeholder state", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-004": [
+            "KMIP-CLAUSE-SPEC-6.1.9-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.9-004": [
                 (1, "For multi-instance attributes, the union of the values found in the attributes of the Common, Private, and Public Key Attributes SHALL be used.", "SHALL", "server", "server processing of client request", "For a multi-instance attribute", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-006": [
-                (1, "Table 191 indicates which attributes SHALL have the same value for the Private and Public Key.", "SHALL", "client + server", "client request construction and server-side paired-key creation", None, "client_1_0 + server_only (split/shared)", "KMIPKIT-REQ-SPEC-6.1.9-006"),
+            "KMIP-CLAUSE-SPEC-6.1.9-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.9-006": [
+                (1, "Table 191 indicates which attributes SHALL have the same value for the Private and Public Key.", "SHALL", "client + server", "client request construction and server-side paired-key creation", None, "client_1_0 + server_only (split/shared)", "KMIP-REQ-SPEC-6.1.9-006"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-007": [
-                (1, "Attribute SHALL contain the same value for both Private and Public Key", "SHALL", "client + server", "client request construction and server-side paired-key creation", None, "client_1_0 + server_only (split/shared)", "KMIPKIT-REQ-SPEC-6.1.9-007"),
+            "KMIP-CLAUSE-SPEC-6.1.9-007": [
+                (1, "Attribute SHALL contain the same value for both Private and Public Key", "SHALL", "client + server", "client request construction and server-side paired-key creation", None, "client_1_0 + server_only (split/shared)", "KMIP-REQ-SPEC-6.1.9-007"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.9.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Create Key Pair Operation.", "SHALL", "server", "server→client response error selection", "An error is detected in a Create Key Pair Operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.9.1-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-001": [
-                (1, "The request MAY contain the Unique Identifier of an existing cryptographic object that the client requests be split by the server.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.10-001"),
+            "KMIP-CLAUSE-SPEC-6.1.9.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.10-001": [
+                (1, "The request MAY contain the Unique Identifier of an existing cryptographic object that the client requests be split by the server.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.10-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-002": [
+            "KMIP-CLAUSE-SPEC-6.1.10-002": [
                 (1, "The response contains the Unique Identifiers of all created objects.", "declarative response", "server", "server→client response content", None, "server_only", None),
                 (2, "The ID Placeholder value SHALL be set to the Unique Identifier of the split whose Key Part Identifier is 1.", "SHALL", "server", "server-internal ID Placeholder state", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-005": [
+            "KMIP-CLAUSE-SPEC-6.1.10-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.10-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.10-005": [
                 (1, "MAY be repeated", "MAY", "server", "server→client response field cardinality", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.10.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Create Split Key Operation.", "SHALL", "server", "server→client response error selection", "An error is detected in a Create Split Key Operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.10.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.10.1-002": [],
         }
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.9-006",
-            "KMIPKIT-REQ-SPEC-6.1.9-007",
-            "KMIPKIT-REQ-SPEC-6.1.10-001",
+            "KMIP-REQ-SPEC-6.1.9-001-001",
+            "KMIP-REQ-SPEC-6.1.9-001-002",
+            "KMIP-REQ-SPEC-6.1.9-006",
+            "KMIP-REQ-SPEC-6.1.9-007",
+            "KMIP-REQ-SPEC-6.1.10-001",
         }
         expected_empty_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.8-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.8.1-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.9-005",
-            "KMIPKIT-CLAUSE-SPEC-6.1.9.1-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.10-004",
-            "KMIPKIT-CLAUSE-SPEC-6.1.10.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.8-002",
+            "KMIP-CLAUSE-SPEC-6.1.8-003",
+            "KMIP-CLAUSE-SPEC-6.1.8.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.9-003",
+            "KMIP-CLAUSE-SPEC-6.1.9-005",
+            "KMIP-CLAUSE-SPEC-6.1.9.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.10-003",
+            "KMIP-CLAUSE-SPEC-6.1.10-004",
+            "KMIP-CLAUSE-SPEC-6.1.10.1-002",
         }
         pinned_by_clause = {row["clause_id"]: row for row in pinned_candidates}
         crosswalk = oracle["requirement_crosswalk"]
@@ -12858,15 +12858,15 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         expected_clause_ids = {row["clause_id"] for row in pinned_candidates}
         expected_ranges = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-001": [25049, 25054],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-002": [25074, 25091],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-003": [25093, 25109],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-004": [25111, 25130],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-005": [25214, 25230],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-006": [25232, 25248],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-007": [25268, 25285],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11.1-001": [25350, 25351],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11.1-002": [25371, 25387],
+            "KMIP-CLAUSE-SPEC-6.1.11-001": [25049, 25054],
+            "KMIP-CLAUSE-SPEC-6.1.11-002": [25074, 25091],
+            "KMIP-CLAUSE-SPEC-6.1.11-003": [25093, 25109],
+            "KMIP-CLAUSE-SPEC-6.1.11-004": [25111, 25130],
+            "KMIP-CLAUSE-SPEC-6.1.11-005": [25214, 25230],
+            "KMIP-CLAUSE-SPEC-6.1.11-006": [25232, 25248],
+            "KMIP-CLAUSE-SPEC-6.1.11-007": [25268, 25285],
+            "KMIP-CLAUSE-SPEC-6.1.11.1-001": [25350, 25351],
+            "KMIP-CLAUSE-SPEC-6.1.11.1-002": [25371, 25387],
         }
         reviews = {
             review["source_clause_id"]: review
@@ -12883,28 +12883,28 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-001": [
-                (1, "The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.11-001-001"),
-                (2, "The initialization vector/counter/nonce MAY also be omitted from the request if the algorithm does not use an IV/Counter/Nonce.", "MAY", "client", "client→server request payload", "if the algorithm does not use an IV/Counter/Nonce", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.11-001-002"),
+            "KMIP-CLAUSE-SPEC-6.1.11-001": [
+                (1, "The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object.", "MAY", "client", "client→server request payload", None, "client_1_0", "KMIP-REQ-SPEC-6.1.11-001-001"),
+                (2, "The initialization vector/counter/nonce MAY also be omitted from the request if the algorithm does not use an IV/Counter/Nonce.", "MAY", "client", "client→server request payload", "if the algorithm does not use an IV/Counter/Nonce", "client_1_0", "KMIP-REQ-SPEC-6.1.11-001-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-003": [
-                (1, "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.", "SHALL", "server", "server processing of client request", "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier", "server_only", "KMIPKIT-REQ-SPEC-6.1.11-003"),
+            "KMIP-CLAUSE-SPEC-6.1.11-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.11-003": [
+                (1, "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.", "SHALL", "server", "server processing of client request", "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier", "server_only", "KMIP-REQ-SPEC-6.1.11-003"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-004": [
-                (1, "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed.", "SHALL", "server", "server→client response", "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters", "server_only", "KMIPKIT-REQ-SPEC-6.1.11-004-002"),
+            "KMIP-CLAUSE-SPEC-6.1.11-004": [
+                (1, "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed.", "SHALL", "server", "server→client response", "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters", "server_only", "KMIP-REQ-SPEC-6.1.11-004-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-005": [
-                (1, "If supplied in multi-part decryption, this data MUST be supplied on the initial Decrypt request", "MUST", "client", "client→server request payload", "If supplied in multi-part decryption", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.11-005"),
+            "KMIP-CLAUSE-SPEC-6.1.11-005": [
+                (1, "If supplied in multi-part decryption, this data MUST be supplied on the initial Decrypt request", "MUST", "client", "client→server request payload", "If supplied in multi-part decryption", "client_1_0", "KMIP-REQ-SPEC-6.1.11-005"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-006": [
-                (1, "If supplied in multi-part decryption, this data MUST be supplied on the initial Decrypt request", "MUST", "client", "client→server request payload", "If supplied in multi-part decryption", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.11-006"),
+            "KMIP-CLAUSE-SPEC-6.1.11-006": [
+                (1, "If supplied in multi-part decryption, this data MUST be supplied on the initial Decrypt request", "MUST", "client", "client→server request payload", "If supplied in multi-part decryption", "client_1_0", "KMIP-REQ-SPEC-6.1.11-006"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11-007": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.11-007": [],
+            "KMIP-CLAUSE-SPEC-6.1.11.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Decrypt Operation.", "SHALL", "server", "server→client error/result selection", "for errors detected in a Decrypt Operation", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.11.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.11.1-002": [],
         }
         for clause_id, review in reviews.items():
             with self.subTest(clause_id=clause_id):
@@ -12930,14 +12930,14 @@ class CatalogValidationTests(unittest.TestCase):
                     expected_atoms[clause_id],
                 )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.11-003"]["review_note"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.11-003"]["review_note"],
             "Required: No records the client omission capability already represented by the general §6.1 MAY; the Unique Identifier row contributes only the server ID Placeholder SHALL.",
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.11-004"]["rejected_candidate_mappings"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.11-004"]["rejected_candidate_mappings"],
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.11-004-001",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.11-004-001",
                     "claimed_keyword": "SHALL",
                     "source_review": "The Cryptographic Parameters table description identifies the requested method but states no client SHALL; the only formal SHALL in this locator assigns an error response to the server.",
                     "expected_disposition": "reject_candidate_non_normative_client_description",
@@ -12945,23 +12945,23 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.11.1-002"]["review_note"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.11.1-002"]["review_note"],
             "The Result Reasons row inventories values returned by the server; it is data, not a separate client obligation.",
         )
         slice_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-003",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-005",
-            "KMIPKIT-REQ-SPEC-6.1.11-006",
+            "KMIP-REQ-SPEC-6.1.11-001-001",
+            "KMIP-REQ-SPEC-6.1.11-001-002",
+            "KMIP-REQ-SPEC-6.1.11-003",
+            "KMIP-REQ-SPEC-6.1.11-004-001",
+            "KMIP-REQ-SPEC-6.1.11-004-002",
+            "KMIP-REQ-SPEC-6.1.11-005",
+            "KMIP-REQ-SPEC-6.1.11-006",
         }
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-005",
-            "KMIPKIT-REQ-SPEC-6.1.11-006",
+            "KMIP-REQ-SPEC-6.1.11-001-001",
+            "KMIP-REQ-SPEC-6.1.11-001-002",
+            "KMIP-REQ-SPEC-6.1.11-005",
+            "KMIP-REQ-SPEC-6.1.11-006",
         }
         clients = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(clients), 18)
@@ -12975,8 +12975,8 @@ class CatalogValidationTests(unittest.TestCase):
                 if row.get("source_clause_id") in expected_clause_ids
             },
             expected_client_ids | {
-                "KMIPKIT-REQ-SPEC-6.1.11-003",
-                "KMIPKIT-REQ-SPEC-6.1.11-004-002",
+                "KMIP-REQ-SPEC-6.1.11-003",
+                "KMIP-REQ-SPEC-6.1.11-004-002",
             },
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -12993,7 +12993,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.12" or row["section"].startswith("6.1.12.")
         ]
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-001": {
+            "KMIP-CLAUSE-SPEC-6.1.12-001": {
                 "section": "6.1.12",
                 "ordinal": 1,
                 "block_kind": "paragraph",
@@ -13001,7 +13001,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [25399, 25402],
                 "source_text": "This operation requests the server to allow future requests to be authenticated using Ticket data that is returned by this operation. Requests using the ticket MUST only be permitted to perform the operations specified in the Rights section.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-002": {
+            "KMIP-CLAUSE-SPEC-6.1.12-002": {
                 "section": "6.1.12",
                 "ordinal": 2,
                 "block_kind": "table_row",
@@ -13009,7 +13009,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [25415, 25432],
                 "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-003": {
+            "KMIP-CLAUSE-SPEC-6.1.12-003": {
                 "section": "6.1.12",
                 "ordinal": 3,
                 "block_kind": "table_row",
@@ -13017,7 +13017,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [25489, 25507],
                 "source_text": "Rights Yes List of Rights granted to the ticket holder which may only perform operations allowed by at least one of the contained Right structures.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-004": {
+            "KMIP-CLAUSE-SPEC-6.1.12-004": {
                 "section": "6.1.12",
                 "ordinal": 4,
                 "block_kind": "table_row",
@@ -13025,7 +13025,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [25527, 25544],
                 "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.12.1-001": {
+            "KMIP-CLAUSE-SPEC-6.1.12.1-001": {
                 "section": "6.1.12.1",
                 "ordinal": 1,
                 "block_kind": "paragraph",
@@ -13033,7 +13033,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [25575, 25576],
                 "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Delegated Login Operation",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.12.1-002": {
+            "KMIP-CLAUSE-SPEC-6.1.12.1-002": {
                 "section": "6.1.12.1",
                 "ordinal": 2,
                 "block_kind": "table_row",
@@ -13080,15 +13080,15 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], locator["source_text"])
 
         expected_atom_dispositions = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-001": [("MUST", "server", "server_only")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-003": [
+            "KMIP-CLAUSE-SPEC-6.1.12-001": [("MUST", "server", "server_only")],
+            "KMIP-CLAUSE-SPEC-6.1.12-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.12-003": [
                 ("required_table_body_value", "client", "client_1_0"),
                 ("lowercase may only (not a §1.2 formal keyword)", "unresolved; source names the ticket holder but does not assign a client conformance actor", "unresolved"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.12-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.12.1-001": [("SHALL", "server", "server_only")],
-            "KMIPKIT-CLAUSE-SPEC-6.1.12.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.12-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.12.1-001": [("SHALL", "server", "server_only")],
+            "KMIP-CLAUSE-SPEC-6.1.12.1-002": [],
         }
         for clause_id, expected_atoms in expected_atom_dispositions.items():
             self.assertEqual(
@@ -13100,7 +13100,7 @@ class CatalogValidationTests(unittest.TestCase):
                 f"{clause_id} actor/scope and atom count must preserve the source disposition",
             )
 
-        rights_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.12-003"]
+        rights_review = reviews["KMIP-CLAUSE-SPEC-6.1.12-003"]
         rights_atoms = rights_review["source_obligations"]
         rights_gaps = {
             gap["gap_id"]: gap
@@ -13124,19 +13124,19 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertNotEqual(rights_atoms[1]["source_keyword"], "MAY")
         self.assertEqual(rights_atoms[1]["actor"], "unresolved; source names the ticket holder but does not assign a client conformance actor")
         self.assertNotIn("source_gap_id", rights_atoms[1])
-        self.assertEqual(rights_review["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.12-003"])
+        self.assertEqual(rights_review["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.12-003"])
         expected_gap_details = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED": (
-                "Rights", [25489, 25507], "required_table_body_value", "KMIPKIT-REQ-SPEC-6.1.12-003"
+                "Rights", [25489, 25507], "required_table_body_value", "KMIP-REQ-SPEC-6.1.12-003"
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL": (
-                "Lease Time", [25434, 25451], "optional_table_body_value", "KMIPKIT-REQ-SPEC-6.1.12-005"
+                "Lease Time", [25434, 25451], "optional_table_body_value", "KMIP-REQ-SPEC-6.1.12-005"
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL": (
-                "Request Count", [25452, 25470], "optional_table_body_value", "KMIPKIT-REQ-SPEC-6.1.12-006"
+                "Request Count", [25452, 25470], "optional_table_body_value", "KMIP-REQ-SPEC-6.1.12-006"
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL": (
-                "Usage Limits", [25471, 25488], "optional_table_body_value", "KMIPKIT-REQ-SPEC-6.1.12-007"
+                "Usage Limits", [25471, 25488], "optional_table_body_value", "KMIP-REQ-SPEC-6.1.12-007"
             ),
         }
         for gap_id, (row_label, line_range, force, proposal) in expected_gap_details.items():
@@ -13176,7 +13176,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertEqual(
             rights_gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"]["reused_requirement_id"],
-            "KMIPKIT-REQ-SPEC-6.1.12-003",
+            "KMIP-REQ-SPEC-6.1.12-003",
         )
         self.assertEqual(oracle["source_closure_status"], "complete")
 
@@ -13188,28 +13188,28 @@ class CatalogValidationTests(unittest.TestCase):
         source_path = "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
         uid_rows = {
             "6.1.13": (
-                "KMIPKIT-CLAUSE-SPEC-6.1.13-002",
+                "KMIP-CLAUSE-SPEC-6.1.13-002",
                 [25661, 25680],
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-UNIQUE-IDENTIFIER-OPTIONAL",
-                "KMIPKIT-REQ-SPEC-6.1.13-004",
+                "KMIP-REQ-SPEC-6.1.13-004",
             ),
             "6.1.15": (
-                "KMIPKIT-CLAUSE-SPEC-6.1.15-002",
+                "KMIP-CLAUSE-SPEC-6.1.15-002",
                 [26154, 26170],
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.15-UNIQUE-IDENTIFIER-OPTIONAL",
-                "KMIPKIT-REQ-SPEC-6.1.15-004",
+                "KMIP-REQ-SPEC-6.1.15-004",
             ),
             "6.1.17": (
-                "KMIPKIT-CLAUSE-SPEC-6.1.17-004",
+                "KMIP-CLAUSE-SPEC-6.1.17-004",
                 [26519, 26535],
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.17-UNIQUE-IDENTIFIER-OPTIONAL",
-                "KMIPKIT-REQ-SPEC-6.1.17-007",
+                "KMIP-REQ-SPEC-6.1.17-007",
             ),
             "6.1.32": (
-                "KMIPKIT-CLAUSE-SPEC-6.1.32-002",
+                "KMIP-CLAUSE-SPEC-6.1.32-002",
                 [30021, 30038],
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.32-UNIQUE-IDENTIFIER-OPTIONAL",
-                "KMIPKIT-REQ-SPEC-6.1.32-002",
+                "KMIP-REQ-SPEC-6.1.32-002",
             ),
         }
         local_uid_gap_ids = {
@@ -13233,12 +13233,12 @@ class CatalogValidationTests(unittest.TestCase):
                 "disposition": "optional_request_field_with_existing_conditional_capability",
                 "html_line_range": line_range,
                 "source_excerpt": source_excerpt,
-                "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                 "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
                 "source_note": "The body row says omission resolves through IDPlaceholder. It does not establish standalone omission or behavior when no placeholder exists.",
             }
             if section in {"6.1.17", "6.1.32"}:
-                expected_request_row["server_fallback_requirement_id"] = f"KMIPKIT-REQ-SPEC-{section}-003" if section == "6.1.32" else "KMIPKIT-REQ-SPEC-6.1.17-004"
+                expected_request_row["server_fallback_requirement_id"] = f"KMIP-REQ-SPEC-{section}-003" if section == "6.1.32" else "KMIP-REQ-SPEC-6.1.17-004"
             with self.subTest(section=section):
                 review = reviews[header_clause_id]
                 if section == "6.1.32":
@@ -13252,10 +13252,10 @@ class CatalogValidationTests(unittest.TestCase):
                     {gap["proposed_requirement_id"] for gap in oracle["source_only_requirement_gaps"]},
                 )
 
-        batch_omission_id = "KMIPKIT-REQ-SPEC-6.1-003-002"
+        batch_omission_id = "KMIP-REQ-SPEC-6.1-003-002"
         batch_rows = [row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == batch_omission_id]
         self.assertEqual(len(batch_rows), 1)
-        self.assertEqual(batch_rows[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1-003")
+        self.assertEqual(batch_rows[0]["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1-003")
         self.assertEqual(batch_rows[0]["source_obligation_order"], 2)
         self.assertEqual(batch_rows[0]["source_keyword"], "MAY")
         self.assertEqual(batch_rows[0]["source_actor"], "client")
@@ -13267,9 +13267,9 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(reused_capability_profile=profile["profile_id"]):
                 self.assertEqual(profile["requirement_ids"].count(batch_omission_id), 1)
         for fallback_id, source_clause_id in (
-            ("KMIPKIT-REQ-SPEC-6.1.11-003", "KMIPKIT-CLAUSE-SPEC-6.1.11-003"),
-            ("KMIPKIT-REQ-SPEC-6.1.17-004", "KMIPKIT-CLAUSE-SPEC-6.1.17-004"),
-            ("KMIPKIT-REQ-SPEC-6.1.32-003", "KMIPKIT-CLAUSE-SPEC-6.1.32-003"),
+            ("KMIP-REQ-SPEC-6.1.11-003", "KMIP-CLAUSE-SPEC-6.1.11-003"),
+            ("KMIP-REQ-SPEC-6.1.17-004", "KMIP-CLAUSE-SPEC-6.1.17-004"),
+            ("KMIP-REQ-SPEC-6.1.32-003", "KMIP-CLAUSE-SPEC-6.1.32-003"),
         ):
             with self.subTest(server_fallback_requirement_id=fallback_id):
                 fallback_atoms = [
@@ -13298,25 +13298,25 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.13" or row["section"].startswith("6.1.13.")
         ]
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.13-001": {
+            "KMIP-CLAUSE-SPEC-6.1.13-001": {
                 "section": "6.1.13", "ordinal": 1, "block_kind": "paragraph", "source_keywords": ["REQUIRED", "SHALL"],
                 "html_line_range": [25621, 25629],
                 "source_text": "This operation requests the server to delete an attribute associated with a Managed Object. The request contains the Unique Identifier of the Managed Object whose attribute is to be deleted, the Current Attribute of the attribute. Attributes that are always REQUIRED to have a value SHALL never be deleted by this operation. Attempting to delete a non-existent attribute or specifying an Current Attribute for which there exists no attribute value SHALL result in an error. If no Current Attribute is specified in the request, and an Attribute Reference is specified, then all instances of the specified attribute SHALL be deleted.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.13-002": {
+            "KMIP-CLAUSE-SPEC-6.1.13-002": {
                 "section": "6.1.13", "ordinal": 2, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [25642, 25659], "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.13-003": {
+            "KMIP-CLAUSE-SPEC-6.1.13-003": {
                 "section": "6.1.13", "ordinal": 3, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [25737, 25754], "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.13.1-001": {
+            "KMIP-CLAUSE-SPEC-6.1.13.1-001": {
                 "section": "6.1.13.1", "ordinal": 1, "block_kind": "paragraph", "source_keywords": ["SHALL"],
                 "html_line_range": [25785, 25786],
                 "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Delete Attribute Operation.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.13.1-002": {
+            "KMIP-CLAUSE-SPEC-6.1.13.1-002": {
                 "section": "6.1.13.1", "ordinal": 2, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [25806, 25820],
                 "source_text": "Operation Failed Attribute Instance Not Found, Attribute Not Found, Attribute Read Only, Invalid Attribute, Object Not Found, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large, Wrong Key Lifecycle State",
@@ -13359,16 +13359,16 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, locator["html_line_range"]))
                 self.assertEqual(review["source_excerpt"], locator["source_text"])
 
-        deletion = reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-001"]
+        deletion = reviews["KMIP-CLAUSE-SPEC-6.1.13-001"]
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"], atom["candidate_requirement_id"])
                 for atom in deletion["source_obligations"]
             ],
             [
-                (1, "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.13-001-001"),
+                (1, "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.13-001-001"),
                 (2, "SHALL", "server", "server_only", None),
-                (3, "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.13-001-002"),
+                (3, "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.13-001-002"),
             ],
         )
         self.assertEqual(
@@ -13380,7 +13380,7 @@ class CatalogValidationTests(unittest.TestCase):
         crosswalk = [
             mapping
             for mapping in oracle["requirement_crosswalk"]
-            if mapping.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.13-001"
+            if mapping.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.13-001"
         ]
         self.assertEqual(
             {
@@ -13388,8 +13388,8 @@ class CatalogValidationTests(unittest.TestCase):
                 for mapping in crosswalk
             },
             {
-                "KMIPKIT-REQ-SPEC-6.1.13-001-001": (1, "server", "server_only"),
-                "KMIPKIT-REQ-SPEC-6.1.13-001-002": (3, "server", "server_only"),
+                "KMIP-REQ-SPEC-6.1.13-001-001": (1, "server", "server_only"),
+                "KMIP-REQ-SPEC-6.1.13-001-002": (3, "server", "server_only"),
             },
         )
         table_gaps = {
@@ -13401,7 +13401,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL": {
                 "row_label": "Current Attribute",
                 "line_range": [25681, 25699],
-                "proposal": "KMIPKIT-REQ-SPEC-6.1.13-005",
+                "proposal": "KMIP-REQ-SPEC-6.1.13-005",
                 "direction": "optionally supply the Current Attribute selector in the request",
                 "condition": "Required=No; if Current Attribute is omitted while Attribute Reference is supplied, §6.1.13 paragraph 1 explicitly says all instances of the specified attribute are deleted.",
                 "source_note": "The operation paragraph says the request contains Current Attribute, while the request table marks it Required=No. The source explicitly gives the all-instances behavior only when Current Attribute is omitted and Attribute Reference is supplied; it does not state other selector-omission combinations. No broader selector semantics are inferred.",
@@ -13409,7 +13409,7 @@ class CatalogValidationTests(unittest.TestCase):
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL": {
                 "row_label": "Attribute Reference",
                 "line_range": [25700, 25718],
-                "proposal": "KMIPKIT-REQ-SPEC-6.1.13-006",
+                "proposal": "KMIP-REQ-SPEC-6.1.13-006",
                 "direction": "optionally supply an Attribute Reference selector in the request",
                 "condition": "Required=No; the row says this field specifies the reference for the attribute associated with the object, but the source does not state an omission condition for this field.",
                 "source_note": "The operation paragraph says the request contains Current Attribute, while the request table marks it Required=No. The source explicitly states only the all-instances result when Current Attribute is omitted and Attribute Reference is supplied; it does not state an omission condition for Attribute Reference. No broader selector semantics are inferred.",
@@ -13451,22 +13451,22 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             [
                 (atom["source_order"], atom["source_keyword"], atom["actor"], atom["scope_disposition"])
-                for atom in reviews["KMIPKIT-CLAUSE-SPEC-6.1.13.1-001"]["source_obligations"]
+                for atom in reviews["KMIP-CLAUSE-SPEC-6.1.13.1-001"]["source_obligations"]
             ],
             [(1, "SHALL", "server", "server_only")],
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13.1-002"]["source_obligations"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-002"]["source_obligations"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.13-003"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.13.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.13-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.13-003"]["source_obligations"], [])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirements = {
             requirement["requirement_id"]
             for requirement in catalog["requirements"]
-            if "KMIPKIT-CLAUSE-SPEC-6.1.13-001" in requirement["source_clause_ids"]
+            if "KMIP-CLAUSE-SPEC-6.1.13-001" in requirement["source_clause_ids"]
         }
-        self.assertEqual(catalog_requirements, {"KMIPKIT-REQ-SPEC-6.1.13-001-001", "KMIPKIT-REQ-SPEC-6.1.13-001-002"})
+        self.assertEqual(catalog_requirements, {"KMIP-REQ-SPEC-6.1.13-001-001", "KMIP-REQ-SPEC-6.1.13-001-002"})
         expected_client_ids: set[str] = set()
         for profile in (item for item in catalog["profiles"] if item["role"] == "client"):
             with self.subTest(profile_id=profile["profile_id"]):
@@ -13484,50 +13484,50 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.14" or row["section"].startswith("6.1.14.")
         ]
         expected = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-001": {
+            "KMIP-CLAUSE-SPEC-6.1.14-001": {
                 "section": "6.1.14", "ordinal": 1, "block_kind": "paragraph", "source_keywords": ["SHALL", "MAY"],
                 "html_line_range": [25832, 25846],
                 "source_text": "This request is used to derive a Symmetric Key or Secret Data object from keys or Secret Data objects that are already known to the key management system. The request SHALL only apply to Managed Objects that have the Derive Key bit set in the Cryptographic Usage Mask attribute of the specified Managed Object (i.e., are able to be used for key derivation). If the operation is issued for an object that does not have this bit set, then the server SHALL return an error. For all derivation methods, the client SHALL specify the desired length of the derived key or Secret Data object using the Cryptographic Length attribute. If a key is created, then the client SHALL specify both its Cryptographic Length and Cryptographic Algorithm. If the specified length exceeds the output of the derivation method, then the server SHALL return an error. Clients MAY derive multiple keys and IVs by requesting the creation of a Secret Data object and specifying a Cryptographic Length that is the total length of the derived object. If the specified length exceeds the output of the derivation method, then the server SHALL return an error.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-002": {
+            "KMIP-CLAUSE-SPEC-6.1.14-002": {
                 "section": "6.1.14", "ordinal": 2, "block_kind": "paragraph", "source_keywords": ["MAY"],
                 "html_line_range": [25848, 25852],
                 "source_text": "The fields in the Derive Key request specify the Unique Identifiers of the keys or Secret Data objects to be used for derivation (e.g., some derivation methods MAY use multiple keys or Secret Data objects to derive the result), the method to be used to perform the derivation, and any parameters needed by the specified method.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-003": {
+            "KMIP-CLAUSE-SPEC-6.1.14-003": {
                 "section": "6.1.14", "ordinal": 3, "block_kind": "paragraph", "source_keywords": ["SHALL"],
                 "html_line_range": [25854, 25857],
                 "source_text": "The server SHALL perform the derivation function, and then register the derived object as a new Managed Object, returning the new Unique Identifier for the new object in the response. The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-004": {
+            "KMIP-CLAUSE-SPEC-6.1.14-004": {
                 "section": "6.1.14", "ordinal": 4, "block_kind": "paragraph", "source_keywords": ["SHALL"],
                 "html_line_range": [25859, 25868],
                 "source_text": "For the keys or Secret Data objects from which the key or Secret Data object is derived, the server SHALL create a Link attribute of Link Type Derived Key pointing to the Symmetric Key or Secret Data object derived as a result of this operation. For the Symmetric Key or Secret Data object derived as a result of this operation, the server SHALL create a Link attribute of Link Type Derivation Base Object pointing to the keys or Secret Data objects from which the key or Secret Data object is derived.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-005": {
+            "KMIP-CLAUSE-SPEC-6.1.14-005": {
                 "section": "6.1.14", "ordinal": 5, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [25881, 25898], "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-006": {
+            "KMIP-CLAUSE-SPEC-6.1.14-006": {
                 "section": "6.1.14", "ordinal": 6, "block_kind": "table_row", "source_keywords": ["MAY", "SHALL NOT"],
                 "html_line_range": [25919, 25938],
                 "source_text": "Unique Identifier Yes. MAY be repeated Determines the object or objects to be used to derive a new key. Note that the current value of the ID Placeholder SHALL NOT be used in place of a Unique Identifier in this operation.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-007": {
+            "KMIP-CLAUSE-SPEC-6.1.14-007": {
                 "section": "6.1.14", "ordinal": 7, "block_kind": "table_row", "source_keywords": ["SHALL"],
                 "html_line_range": [25980, 26001],
                 "source_text": "Attributes Yes Specifies desired attributes to be associated with the new object; the length and algorithm SHALL always be specified for the creation of a symmetric key.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-008": {
+            "KMIP-CLAUSE-SPEC-6.1.14-008": {
                 "section": "6.1.14", "ordinal": 8, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [26021, 26038], "source_text": "Item REQUIRED Description",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-001": {
+            "KMIP-CLAUSE-SPEC-6.1.14.1-001": {
                 "section": "6.1.14.1", "ordinal": 1, "block_kind": "paragraph", "source_keywords": ["SHALL"],
                 "html_line_range": [26069, 26070],
                 "source_text": "This section details the specific Result Reasons that SHALL be returned for errors detected in a Derive Key Operation.",
             },
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-002": {
+            "KMIP-CLAUSE-SPEC-6.1.14.1-002": {
                 "section": "6.1.14.1", "ordinal": 2, "block_kind": "table_row", "source_keywords": ["REQUIRED"],
                 "html_line_range": [26090, 26106],
                 "source_text": "Operation Failed Bad Cryptographic parameters, Cryptographic Failure, Incompatible Cryptographic Usage Mask, Invalid Attribute, Invalid Field, Invalid Message, Invalid Object Type, Key Value Not Present, Non Unique Name Attribute, Object Not Found, Unsupported Cryptographic Parameters, Wrong Key Lifecycle State, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
@@ -13594,38 +13594,38 @@ class CatalogValidationTests(unittest.TestCase):
             }
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-001": [
-                source_atom(1, "The request SHALL only apply to Managed Objects that have the Derive Key bit set in the Cryptographic Usage Mask attribute of the specified Managed Object (i.e., are able to be used for key derivation).", "SHALL", "client", "client→server Derive Key request", "The selected source Managed Object has the Derive Key bit set in its Cryptographic Usage Mask.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-001-001"),
+            "KMIP-CLAUSE-SPEC-6.1.14-001": [
+                source_atom(1, "The request SHALL only apply to Managed Objects that have the Derive Key bit set in the Cryptographic Usage Mask attribute of the specified Managed Object (i.e., are able to be used for key derivation).", "SHALL", "client", "client→server Derive Key request", "The selected source Managed Object has the Derive Key bit set in its Cryptographic Usage Mask.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-001-001"),
                 source_atom(2, "If the operation is issued for an object that does not have this bit set, then the server SHALL return an error.", "SHALL", "server", "server→client error response", "The selected object does not have the Derive Key bit set.", "server_only"),
-                source_atom(3, "For all derivation methods, the client SHALL specify the desired length of the derived key or Secret Data object using the Cryptographic Length attribute.", "SHALL", "client", "client→server Derive Key request", "All derivation methods.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-001-002"),
-                source_atom(4, "If a key is created, then the client SHALL specify both its Cryptographic Length and Cryptographic Algorithm.", "SHALL", "client", "client→server Derive Key request", "If a key is created.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-001-003"),
+                source_atom(3, "For all derivation methods, the client SHALL specify the desired length of the derived key or Secret Data object using the Cryptographic Length attribute.", "SHALL", "client", "client→server Derive Key request", "All derivation methods.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-001-002"),
+                source_atom(4, "If a key is created, then the client SHALL specify both its Cryptographic Length and Cryptographic Algorithm.", "SHALL", "client", "client→server Derive Key request", "If a key is created.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-001-003"),
                 source_atom(5, "If the specified length exceeds the output of the derivation method, then the server SHALL return an error.", "SHALL", "server", "server→client error response", "The specified length exceeds the output of the derivation method.", "server_only"),
-                source_atom(6, "Clients MAY derive multiple keys and IVs by requesting the creation of a Secret Data object and specifying a Cryptographic Length that is the total length of the derived object.", "MAY", "client", "client→server Derive Key request", "The client requests a Secret Data result and its Cryptographic Length is the total length of the derived object.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-001-004"),
+                source_atom(6, "Clients MAY derive multiple keys and IVs by requesting the creation of a Secret Data object and specifying a Cryptographic Length that is the total length of the derived object.", "MAY", "client", "client→server Derive Key request", "The client requests a Secret Data result and its Cryptographic Length is the total length of the derived object.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-001-004"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-002": [
-                source_atom(1, "some derivation methods MAY use multiple keys or Secret Data objects to derive the result", "MAY", "unresolved", "unresolved", "The selected derivation method accepts multiple keys or Secret Data inputs.", "profile_conditional", "KMIPKIT-REQ-SPEC-6.1.14-002"),
+            "KMIP-CLAUSE-SPEC-6.1.14-002": [
+                source_atom(1, "some derivation methods MAY use multiple keys or Secret Data objects to derive the result", "MAY", "unresolved", "unresolved", "The selected derivation method accepts multiple keys or Secret Data inputs.", "profile_conditional", "KMIP-REQ-SPEC-6.1.14-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-003": [
+            "KMIP-CLAUSE-SPEC-6.1.14-003": [
                 source_atom(1, "The server SHALL perform the derivation function, and then register the derived object as a new Managed Object, returning the new Unique Identifier for the new object in the response.", "SHALL", "server", "server-side derivation and response production", "A Derive Key request is processed.", "server_only"),
                 source_atom(2, "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "SHALL", "server", "server-side ID Placeholder state update", "A Derive Key operation returns a new Unique Identifier.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-004": [
+            "KMIP-CLAUSE-SPEC-6.1.14-004": [
                 source_atom(1, "For the keys or Secret Data objects from which the key or Secret Data object is derived, the server SHALL create a Link attribute of Link Type Derived Key pointing to the Symmetric Key or Secret Data object derived as a result of this operation.", "SHALL", "server", "server-side derived-object link creation", "A Derive Key operation successfully derives an object.", "server_only"),
                 source_atom(2, "For the Symmetric Key or Secret Data object derived as a result of this operation, the server SHALL create a Link attribute of Link Type Derivation Base Object pointing to the keys or Secret Data objects from which the key or Secret Data object is derived.", "SHALL", "server", "server-side source-object link creation", "A Derive Key operation successfully derives an object.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-006": [
-                source_atom(2, "MAY be repeated", "MAY", "client", "include multiple Unique Identifiers in the Derive Key request", "More than one source key or Secret Data object is needed by the derivation method.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-006-001"),
-                source_atom(3, "Note that the current value of the ID Placeholder SHALL NOT be used in place of a Unique Identifier in this operation.", "SHALL NOT", "client", "client→server Derive Key request", "A Unique Identifier is supplied for this operation.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-006-002"),
+            "KMIP-CLAUSE-SPEC-6.1.14-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.14-006": [
+                source_atom(2, "MAY be repeated", "MAY", "client", "include multiple Unique Identifiers in the Derive Key request", "More than one source key or Secret Data object is needed by the derivation method.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-006-001"),
+                source_atom(3, "Note that the current value of the ID Placeholder SHALL NOT be used in place of a Unique Identifier in this operation.", "SHALL NOT", "client", "client→server Derive Key request", "A Unique Identifier is supplied for this operation.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-006-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-007": [
-                source_atom(2, "the length and algorithm SHALL always be specified for the creation of a symmetric key.", "SHALL", "client", "client→server Derive Key request", "When the created object is a symmetric key.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.14-007-002"),
+            "KMIP-CLAUSE-SPEC-6.1.14-007": [
+                source_atom(2, "the length and algorithm SHALL always be specified for the creation of a symmetric key.", "SHALL", "client", "client→server Derive Key request", "When the created object is a symmetric key.", "client_1_0", "KMIP-REQ-SPEC-6.1.14-007-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-008": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.14-008": [],
+            "KMIP-CLAUSE-SPEC-6.1.14.1-001": [
                 source_atom(1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Derive Key Operation.", "SHALL", "server", "server→client error response", "An error is detected in a Derive Key operation.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.14.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             actual_atoms = [
@@ -13638,23 +13638,23 @@ class CatalogValidationTests(unittest.TestCase):
             with self.subTest(source_clause_id=clause_id):
                 self.assertEqual(actual_atoms, atoms)
         expected_ids_by_clause = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-001": ["KMIPKIT-REQ-SPEC-6.1.14-001-001", "KMIPKIT-REQ-SPEC-6.1.14-001-002", "KMIPKIT-REQ-SPEC-6.1.14-001-003", "KMIPKIT-REQ-SPEC-6.1.14-001-004"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-002": ["KMIPKIT-REQ-SPEC-6.1.14-002"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-006": ["KMIPKIT-REQ-SPEC-6.1.14-006-001", "KMIPKIT-REQ-SPEC-6.1.14-006-002", "KMIPKIT-REQ-SPEC-6.1.14-010"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-007": ["KMIPKIT-REQ-SPEC-6.1.14-007-001", "KMIPKIT-REQ-SPEC-6.1.14-007-002"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14-008": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-001": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.14.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.14-001": ["KMIP-REQ-SPEC-6.1.14-001-001", "KMIP-REQ-SPEC-6.1.14-001-002", "KMIP-REQ-SPEC-6.1.14-001-003", "KMIP-REQ-SPEC-6.1.14-001-004"],
+            "KMIP-CLAUSE-SPEC-6.1.14-002": ["KMIP-REQ-SPEC-6.1.14-002"],
+            "KMIP-CLAUSE-SPEC-6.1.14-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.14-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.14-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.14-006": ["KMIP-REQ-SPEC-6.1.14-006-001", "KMIP-REQ-SPEC-6.1.14-006-002", "KMIP-REQ-SPEC-6.1.14-010"],
+            "KMIP-CLAUSE-SPEC-6.1.14-007": ["KMIP-REQ-SPEC-6.1.14-007-001", "KMIP-REQ-SPEC-6.1.14-007-002"],
+            "KMIP-CLAUSE-SPEC-6.1.14-008": [],
+            "KMIP-CLAUSE-SPEC-6.1.14.1-001": [],
+            "KMIP-CLAUSE-SPEC-6.1.14.1-002": [],
         }
         for clause_id, expected_ids in expected_ids_by_clause.items():
             self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], expected_ids)
 
         candidate_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.14-001-001", "KMIPKIT-REQ-SPEC-6.1.14-001-002", "KMIPKIT-REQ-SPEC-6.1.14-001-003", "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-            "KMIPKIT-REQ-SPEC-6.1.14-002", "KMIPKIT-REQ-SPEC-6.1.14-006-001", "KMIPKIT-REQ-SPEC-6.1.14-006-002", "KMIPKIT-REQ-SPEC-6.1.14-007-002",
+            "KMIP-REQ-SPEC-6.1.14-001-001", "KMIP-REQ-SPEC-6.1.14-001-002", "KMIP-REQ-SPEC-6.1.14-001-003", "KMIP-REQ-SPEC-6.1.14-001-004",
+            "KMIP-REQ-SPEC-6.1.14-002", "KMIP-REQ-SPEC-6.1.14-006-001", "KMIP-REQ-SPEC-6.1.14-006-002", "KMIP-REQ-SPEC-6.1.14-007-002",
         }
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
@@ -13665,23 +13665,23 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(catalog_ids_for_slice, candidate_ids)
         crosswalk = [mapping for mapping in oracle["requirement_crosswalk"] if mapping.get("source_clause_id") in expected_clause_ids]
         expected_crosswalk = {
-            "KMIPKIT-REQ-SPEC-6.1.14-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 1, "SHALL", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 3, "SHALL", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-001-003": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 4, "SHALL", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-001-004": ("KMIPKIT-CLAUSE-SPEC-6.1.14-001", 6, "MAY", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-002", 1, "MAY", "unresolved", "profile_conditional"),
-            "KMIPKIT-REQ-SPEC-6.1.14-006-001": ("KMIPKIT-CLAUSE-SPEC-6.1.14-006", 2, "MAY", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-006-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-006", 3, "SHALL NOT", "client", "client_1_0"),
-            "KMIPKIT-REQ-SPEC-6.1.14-007-002": ("KMIPKIT-CLAUSE-SPEC-6.1.14-007", 2, "SHALL", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-001-001": ("KMIP-CLAUSE-SPEC-6.1.14-001", 1, "SHALL", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-001-002": ("KMIP-CLAUSE-SPEC-6.1.14-001", 3, "SHALL", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-001-003": ("KMIP-CLAUSE-SPEC-6.1.14-001", 4, "SHALL", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-001-004": ("KMIP-CLAUSE-SPEC-6.1.14-001", 6, "MAY", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-002": ("KMIP-CLAUSE-SPEC-6.1.14-002", 1, "MAY", "unresolved", "profile_conditional"),
+            "KMIP-REQ-SPEC-6.1.14-006-001": ("KMIP-CLAUSE-SPEC-6.1.14-006", 2, "MAY", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-006-002": ("KMIP-CLAUSE-SPEC-6.1.14-006", 3, "SHALL NOT", "client", "client_1_0"),
+            "KMIP-REQ-SPEC-6.1.14-007-002": ("KMIP-CLAUSE-SPEC-6.1.14-007", 2, "SHALL", "client", "client_1_0"),
         }
         self.assertEqual(len(crosswalk), len(expected_crosswalk), "each source label maps to one reviewed source atom")
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.14-007-001", catalog_ids_for_slice)
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.14-007-001", catalog_ids_for_slice)
         self.assertEqual(
-            next(row for row in catalog["requirements"] if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.14-007-001")["source_gap_id"],
+            next(row for row in catalog["requirements"] if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.14-007-001")["source_gap_id"],
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED",
         )
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+            "KMIP-REQ-SPEC-6.1.14-007-001",
             {row["requirement_id"] for row in crosswalk},
             "the Required=Yes Attributes row is crosswalked by source gap, not as the formal SHALL atom",
         )
@@ -13697,18 +13697,18 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(all_client_profiles), 18)
         catalog_profiles = {profile["profile_id"]: profile for profile in catalog["profiles"] if profile["role"] == "client"}
         expected_closed_ids = candidate_ids | {
-            "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-            "KMIPKIT-REQ-SPEC-6.1.14-009",
-            "KMIPKIT-REQ-SPEC-6.1.14-010",
-            "KMIPKIT-REQ-SPEC-6.1.14-011",
-            "KMIPKIT-REQ-SPEC-6.1.14-012",
+            "KMIP-REQ-SPEC-6.1.14-007-001",
+            "KMIP-REQ-SPEC-6.1.14-009",
+            "KMIP-REQ-SPEC-6.1.14-010",
+            "KMIP-REQ-SPEC-6.1.14-011",
+            "KMIP-REQ-SPEC-6.1.14-012",
         }
         for profile in all_client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
                 expected_for_profile = expected_closed_ids
                 if profile["profile_id"] != "KMIPKIT-PROFILE-BASELINE-CLIENT":
                     expected_for_profile = expected_for_profile - {
-                        "KMIPKIT-REQ-SPEC-6.1.14-002"
+                        "KMIP-REQ-SPEC-6.1.14-002"
                     }
                 self.assertEqual(
                     set(catalog_profiles[profile["profile_id"]]["requirement_ids"])
@@ -13722,11 +13722,11 @@ class CatalogValidationTests(unittest.TestCase):
             if gap["source_section"] == "6.1.14"
         }
         expected_gaps = {
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED": ("Object Type", [25900, 25917], None, "KMIPKIT-REQ-SPEC-6.1.14-009", "KMIPKIT-REQ-SPEC-6.1.14-009"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED": ("Unique Identifier", [25919, 25938], None, "KMIPKIT-REQ-SPEC-6.1.14-010", "KMIPKIT-REQ-SPEC-6.1.14-010"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED": ("Derivation Method", [25940, 25958], None, "KMIPKIT-REQ-SPEC-6.1.14-011", "KMIPKIT-REQ-SPEC-6.1.14-011"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED": ("Derivation Parameters", [25960, 25978], None, "KMIPKIT-REQ-SPEC-6.1.14-012", "KMIPKIT-REQ-SPEC-6.1.14-012"),
-            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED": ("Attributes", [25980, 26001], None, "KMIPKIT-REQ-SPEC-6.1.14-007-001", "KMIPKIT-REQ-SPEC-6.1.14-007-001"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED": ("Object Type", [25900, 25917], None, "KMIP-REQ-SPEC-6.1.14-009", "KMIP-REQ-SPEC-6.1.14-009"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED": ("Unique Identifier", [25919, 25938], None, "KMIP-REQ-SPEC-6.1.14-010", "KMIP-REQ-SPEC-6.1.14-010"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED": ("Derivation Method", [25940, 25958], None, "KMIP-REQ-SPEC-6.1.14-011", "KMIP-REQ-SPEC-6.1.14-011"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED": ("Derivation Parameters", [25960, 25978], None, "KMIP-REQ-SPEC-6.1.14-012", "KMIP-REQ-SPEC-6.1.14-012"),
+            "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED": ("Attributes", [25980, 26001], None, "KMIP-REQ-SPEC-6.1.14-007-001", "KMIP-REQ-SPEC-6.1.14-007-001"),
         }
         self.assertEqual(set(gaps), set(expected_gaps))
         for gap_id, (label, span, proposal, candidate_id, reused_id) in expected_gaps.items():
@@ -13750,27 +13750,27 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(gap["source_excerpt"], pinned_source_excerpt(source_path, span))
         attributes_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"]
         self.assertIsNone(attributes_gap["source_clause_id"])
-        self.assertEqual(attributes_gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.14-007-001")
-        self.assertEqual(attributes_gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.14-007-001")
+        self.assertEqual(attributes_gap["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.14-007-001")
+        self.assertEqual(attributes_gap["reused_requirement_id"], "KMIP-REQ-SPEC-6.1.14-007-001")
         self.assertIsNone(attributes_gap["proposed_requirement_id"])
         self.assertEqual(attributes_gap["status"], "source_obligation_covered_by_existing_stable_label")
         self.assertIn("source_force=required_table_body_value", attributes_gap["review_note"])
         self.assertNotIn("Catalog source_keyword=SHALL", attributes_gap["review_note"])
         self.assertIn(
-            "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.14-007"]["expected_client_requirement_ids"],
+            "KMIP-REQ-SPEC-6.1.14-007-001",
+            reviews["KMIP-CLAUSE-SPEC-6.1.14-007"]["expected_client_requirement_ids"],
             "the client closure retains this ID through the Required=Yes row reuse",
         )
 
-        self.assertIn("The identical server error predicate occurs again", reviews["KMIPKIT-CLAUSE-SPEC-6.1.14-001"]["source_obligations"][4]["source_note"])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.14-005"]["source_obligations"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.14-008"]["source_obligations"], [])
+        self.assertIn("The identical server error predicate occurs again", reviews["KMIP-CLAUSE-SPEC-6.1.14-001"]["source_obligations"][4]["source_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.14-005"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.14-008"]["source_obligations"], [])
         response_header = pinned_source_excerpt(source_path, [26017, 26038])
         self.assertEqual(response_header, "Response Payload Item REQUIRED Description")
         response_uid = pinned_source_excerpt(source_path, [26040, 26056])
         self.assertEqual(response_uid, "Unique Identifier Yes The Unique Identifier of the newly derived key or Secret Data object.")
         self.assertNotIn("response UID", [gap["source_locator"]["row_label"] for gap in gaps.values()])
-        reason_items = expected["KMIPKIT-CLAUSE-SPEC-6.1.14.1-002"]["source_text"].split("Operation Failed ", 1)[1].split(", ")
+        reason_items = expected["KMIP-CLAUSE-SPEC-6.1.14.1-002"]["source_text"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_items), 20)
         self.assertEqual(len(set(reason_items)), 18)
         self.assertEqual(reason_items.count("Invalid Field"), 2)
@@ -13789,33 +13789,33 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.16" or row["section"].startswith("6.1.16.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-001": (
+            "KMIP-CLAUSE-SPEC-6.1.16-001": (
                 "6.1.16", 1, "paragraph", ["OPTIONAL", "SHALL"], [26285, 26288],
                 "This operation is used by the client to determine a list of protocol versions that is supported by the server. The request payload contains an OPTIONAL list of protocol versions that is supported by the client. The protocol versions SHALL be ranked in decreasing order of preference.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-002": (
+            "KMIP-CLAUSE-SPEC-6.1.16-002": (
                 "6.1.16", 2, "paragraph", ["SHALL", "SHOULD"], [26290, 26301],
                 "The response payload contains a list of protocol versions that are supported by the server. The protocol versions are ranked in decreasing order of preference. If the client provides the server with a list of supported protocol versions in the request payload, the server SHALL return only the protocol versions that are supported by both the client and server. The server SHOULD list all the protocol versions supported by both client and server. If the protocol version specified in the request header is not specified in the request payload and the server does not support any protocol version specified in the request payload, the server SHALL return an empty list in the response payload. If no protocol versions are specified in the request payload, the server SHOULD return all the protocol versions that are supported by the server.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-003": (
+            "KMIP-CLAUSE-SPEC-6.1.16-003": (
                 "6.1.16", 3, "table_row", ["REQUIRED"], [26314, 26331], "Item REQUIRED Description",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-004": (
+            "KMIP-CLAUSE-SPEC-6.1.16-004": (
                 "6.1.16", 4, "table_row", ["MAY"], [26333, 26350],
                 "Protocol Version No, MAY be Repeated The list of protocol versions supported by the client ordered in decreasing order of preference.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-005": (
+            "KMIP-CLAUSE-SPEC-6.1.16-005": (
                 "6.1.16", 5, "table_row", ["REQUIRED"], [26370, 26387], "Item REQUIRED Description",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-006": (
+            "KMIP-CLAUSE-SPEC-6.1.16-006": (
                 "6.1.16", 6, "table_row", ["MAY"], [26389, 26406],
                 "Protocol Version No, MAY be repeated The list of protocol versions supported by the server ordered in decreasing order of preference.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-001": (
+            "KMIP-CLAUSE-SPEC-6.1.16.1-001": (
                 "6.1.16.1", 1, "paragraph", ["SHALL"], [26419, 26420],
                 "This section details the specific Result Reasons that SHALL be returned for errors detected in a Discover Versions Operation.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-002": (
+            "KMIP-CLAUSE-SPEC-6.1.16.1-002": (
                 "6.1.16.1", 2, "table_row", ["REQUIRED"], [26438, 26449],
                 "Operation Failed Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
             ),
@@ -13856,28 +13856,28 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], source_text)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-001": [
-                (1, "The request payload contains an OPTIONAL list of protocol versions that is supported by the client.", "OPTIONAL", "client", "client→server Discover Versions request", "No additional condition is stated.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.16-001-001"),
-                (2, "The protocol versions SHALL be ranked in decreasing order of preference.", "SHALL", "client", "client→server Discover Versions request", "The client supplies protocol versions in the request payload.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.16-001-002"),
+            "KMIP-CLAUSE-SPEC-6.1.16-001": [
+                (1, "The request payload contains an OPTIONAL list of protocol versions that is supported by the client.", "OPTIONAL", "client", "client→server Discover Versions request", "No additional condition is stated.", "client_1_0", "KMIP-REQ-SPEC-6.1.16-001-001"),
+                (2, "The protocol versions SHALL be ranked in decreasing order of preference.", "SHALL", "client", "client→server Discover Versions request", "The client supplies protocol versions in the request payload.", "client_1_0", "KMIP-REQ-SPEC-6.1.16-001-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-002": [
+            "KMIP-CLAUSE-SPEC-6.1.16-002": [
                 (1, "If the client provides the server with a list of supported protocol versions in the request payload, the server SHALL return only the protocol versions that are supported by both the client and server.", "SHALL", "server", "server→client Discover Versions response", "The client provides a supported-version list in the request payload.", "server_only", None),
                 (2, "The server SHOULD list all the protocol versions supported by both client and server.", "SHOULD", "server", "server→client Discover Versions response", "Protocol versions are supported by both the client and server; no request-list condition is stated.", "server_only", None),
                 (3, "If the protocol version specified in the request header is not specified in the request payload and the server does not support any protocol version specified in the request payload, the server SHALL return an empty list in the response payload.", "SHALL", "server", "server→client Discover Versions response", "The request-header version is absent from the request payload and the server supports none of the versions specified in the request payload.", "server_only", None),
                 (4, "If no protocol versions are specified in the request payload, the server SHOULD return all the protocol versions that are supported by the server.", "SHOULD", "server", "server→client Discover Versions response", "No protocol versions are specified in the request payload.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-004": [
-                (1, "MAY be Repeated", "MAY", "client", "include repeated Protocol Version entries in the client request", "No additional condition is stated.", "out_of_scope", "KMIPKIT-REQ-SPEC-6.1.16-004"),
+            "KMIP-CLAUSE-SPEC-6.1.16-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-004": [
+                (1, "MAY be Repeated", "MAY", "client", "include repeated Protocol Version entries in the client request", "No additional condition is stated.", "out_of_scope", "KMIP-REQ-SPEC-6.1.16-004"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-006": [
+            "KMIP-CLAUSE-SPEC-6.1.16-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-006": [
                 (1, "MAY be repeated", "MAY", "server", "include repeated Protocol Version entries in the server response", "No additional condition is stated.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.16.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Discover Versions Operation.", "SHALL", "server", "server→client Discover Versions error response", "An error is detected in a Discover Versions operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.16.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -13892,29 +13892,29 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(actual_atoms, atoms)
 
         ids_by_clause = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-001": ["KMIPKIT-REQ-SPEC-6.1.16-001-001", "KMIPKIT-REQ-SPEC-6.1.16-001-002"],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16-006": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-001": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.16.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-001": ["KMIP-REQ-SPEC-6.1.16-001-001", "KMIP-REQ-SPEC-6.1.16-001-002"],
+            "KMIP-CLAUSE-SPEC-6.1.16-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.16-006": [],
+            "KMIP-CLAUSE-SPEC-6.1.16.1-001": [],
+            "KMIP-CLAUSE-SPEC-6.1.16.1-002": [],
         }
         for clause_id, ids in ids_by_clause.items():
             self.assertEqual(reviews[clause_id]["expected_client_requirement_ids"], ids)
-        result_reasons = reviews["KMIPKIT-CLAUSE-SPEC-6.1.16.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        result_reasons = reviews["KMIP-CLAUSE-SPEC-6.1.16.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(result_reasons), 8, "Table 213 has eight server-side Operation Failed reasons")
-        operation_note = reviews["KMIPKIT-CLAUSE-SPEC-6.1.16-002"]["review_note"]
+        operation_note = reviews["KMIP-CLAUSE-SPEC-6.1.16-002"]["review_note"]
         self.assertIn("descriptive", operation_note)
         self.assertIn("no precedence", operation_note)
-        response_note = reviews["KMIPKIT-CLAUSE-SPEC-6.1.16-006"]["review_note"]
+        response_note = reviews["KMIP-CLAUSE-SPEC-6.1.16-006"]["review_note"]
         self.assertIn("response", response_note)
         self.assertIn("empty list", response_note)
 
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.16-001-002",
+            "KMIP-REQ-SPEC-6.1.16-001-001",
+            "KMIP-REQ-SPEC-6.1.16-001-002",
         }
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
@@ -13935,9 +13935,9 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in crosswalk
             },
             {
-                "KMIPKIT-REQ-SPEC-6.1.16-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.16-001", 1, "OPTIONAL", "client", "client_1_0"),
-                "KMIPKIT-REQ-SPEC-6.1.16-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.16-001", 2, "SHALL", "client", "client_1_0"),
-                "KMIPKIT-REQ-SPEC-6.1.16-004": ("KMIPKIT-CLAUSE-SPEC-6.1.16-004", 1, "MAY", "client", "out_of_scope"),
+                "KMIP-REQ-SPEC-6.1.16-001-001": ("KMIP-CLAUSE-SPEC-6.1.16-001", 1, "OPTIONAL", "client", "client_1_0"),
+                "KMIP-REQ-SPEC-6.1.16-001-002": ("KMIP-CLAUSE-SPEC-6.1.16-001", 2, "SHALL", "client", "client_1_0"),
+                "KMIP-REQ-SPEC-6.1.16-004": ("KMIP-CLAUSE-SPEC-6.1.16-004", 1, "MAY", "client", "out_of_scope"),
             },
         )
         client_profiles = [profile for profile in oracle["profiles"] if profile["role"] == "client" and "6.1" in profile["direct_profiles_sections"]]
@@ -13960,15 +13960,15 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.17" or row["section"].startswith("6.1.17.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-001": ("6.1.17", 1, "paragraph", ["MAY", "SHALL"], [26466, 26474]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-002": ("6.1.17", 2, "paragraph", ["SHALL"], [26476, 26480]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-003": ("6.1.17", 3, "table_row", ["REQUIRED"], [26500, 26517]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-004": ("6.1.17", 4, "table_row", ["SHALL"], [26519, 26535]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-005": ("6.1.17", 5, "table_row", ["SHALL"], [26537, 26556]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-006": ("6.1.17", 6, "table_row", ["MUST"], [26639, 26655]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-007": ("6.1.17", 7, "table_row", ["REQUIRED"], [26675, 26692]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17.1-001": ("6.1.17.1", 1, "paragraph", ["SHALL"], [26791, 26792]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.17.1-002": ("6.1.17.1", 2, "table_row", ["REQUIRED"], [26812, 26829]),
+            "KMIP-CLAUSE-SPEC-6.1.17-001": ("6.1.17", 1, "paragraph", ["MAY", "SHALL"], [26466, 26474]),
+            "KMIP-CLAUSE-SPEC-6.1.17-002": ("6.1.17", 2, "paragraph", ["SHALL"], [26476, 26480]),
+            "KMIP-CLAUSE-SPEC-6.1.17-003": ("6.1.17", 3, "table_row", ["REQUIRED"], [26500, 26517]),
+            "KMIP-CLAUSE-SPEC-6.1.17-004": ("6.1.17", 4, "table_row", ["SHALL"], [26519, 26535]),
+            "KMIP-CLAUSE-SPEC-6.1.17-005": ("6.1.17", 5, "table_row", ["SHALL"], [26537, 26556]),
+            "KMIP-CLAUSE-SPEC-6.1.17-006": ("6.1.17", 6, "table_row", ["MUST"], [26639, 26655]),
+            "KMIP-CLAUSE-SPEC-6.1.17-007": ("6.1.17", 7, "table_row", ["REQUIRED"], [26675, 26692]),
+            "KMIP-CLAUSE-SPEC-6.1.17.1-001": ("6.1.17.1", 1, "paragraph", ["SHALL"], [26791, 26792]),
+            "KMIP-CLAUSE-SPEC-6.1.17.1-002": ("6.1.17.1", 2, "table_row", ["REQUIRED"], [26812, 26829]),
         }
         self.assertEqual({row["clause_id"] for row in pinned}, set(expected_sources))
         reviews = {
@@ -13993,29 +13993,29 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-001": [
+            "KMIP-CLAUSE-SPEC-6.1.17-001": [
                 (1, "The cryptographic parameters MAY be omitted from the request as they can be specified as associated attributes of the Managed Cryptographic Object.", "client", "client→server Encrypt request", "Cryptographic Parameters are specified as associated attributes of the Managed Cryptographic Object.", "client_1_0"),
                 (2, "The IV/Counter/Nonce MAY also be omitted from the request if the cryptographic parameters indicate that the server shall generate a Random IV on behalf of the client or the encryption algorithm does not need an IV/Counter/Nonce.", "client", "client→server Encrypt request", "The cryptographic parameters indicate that the server shall generate a Random IV on behalf of the client, or the encryption algorithm does not need an IV/Counter/Nonce.", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-002": [
+            "KMIP-CLAUSE-SPEC-6.1.17-002": [
                 (1, "If the Managed Cryptographic Object referenced has a Usage Limits attribute then the server SHALL obtain an allocation from the current Usage Limits value prior to performing the encryption operation.", "server", "server operation processing", "The referenced Managed Cryptographic Object has a Usage Limits attribute.", "server_only"),
                 (2, "If the allocation is unable to be obtained the operation SHALL return with a result status of Operation Failed and result reason of Permission Denied.", "server", "server error response", "The Usage Limits allocation is unable to be obtained.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-004": [
+            "KMIP-CLAUSE-SPEC-6.1.17-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.17-004": [
                 (1, "If omitted, then the ID Placeholder value SHALL be used by the server as the Unique Identifier.", "server", "server request processing", "Unique Identifier is omitted from the Encrypt request.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-005": [
+            "KMIP-CLAUSE-SPEC-6.1.17-005": [
                 (1, "If there are no Cryptographic Parameters associated with the Managed Cryptographic Object and the algorithm requires parameters then the operation SHALL return with a Result Status of Operation Failed.", "server", "server error response", "The Managed Cryptographic Object has no associated Cryptographic Parameters and the algorithm requires parameters.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-006": [
+            "KMIP-CLAUSE-SPEC-6.1.17-006": [
                 (1, "If supplied in multi-part encryption, this data MUST be supplied on the initial Encrypt request", "client", "client→server Encrypt request", "Authenticated Encryption Additional Data is supplied in a multi-part Encrypt operation.", "client_1_0"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17-007": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.17-007": [],
+            "KMIP-CLAUSE-SPEC-6.1.17.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Encrypt Operation.", "server", "server error response", "An error is detected in an Encrypt operation.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.17.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.17.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -14032,9 +14032,9 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.17-006",
+            "KMIP-REQ-SPEC-6.1.17-001-001",
+            "KMIP-REQ-SPEC-6.1.17-001-002",
+            "KMIP-REQ-SPEC-6.1.17-006",
         }
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids_for_slice = {
@@ -14045,9 +14045,9 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             catalog_ids_for_slice,
             expected_client_ids | {
-                "KMIPKIT-REQ-SPEC-6.1.17-004",
-                "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-                "KMIPKIT-REQ-SPEC-6.1.17-005-002",
+                "KMIP-REQ-SPEC-6.1.17-004",
+                "KMIP-REQ-SPEC-6.1.17-005-001",
+                "KMIP-REQ-SPEC-6.1.17-005-002",
             },
             "all current stable labels in the audited source locators are accounted for",
         )
@@ -14061,11 +14061,11 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in crosswalk
             },
             {
-                "KMIPKIT-REQ-SPEC-6.1.17-001-001": ("KMIPKIT-CLAUSE-SPEC-6.1.17-001", 1, "MAY", "client", "client_1_0"),
-                "KMIPKIT-REQ-SPEC-6.1.17-001-002": ("KMIPKIT-CLAUSE-SPEC-6.1.17-001", 2, "MAY", "client", "client_1_0"),
-                "KMIPKIT-REQ-SPEC-6.1.17-004": ("KMIPKIT-CLAUSE-SPEC-6.1.17-004", 1, "SHALL", "server", "server_only"),
-                "KMIPKIT-REQ-SPEC-6.1.17-005-002": ("KMIPKIT-CLAUSE-SPEC-6.1.17-005", 1, "SHALL", "server", "server_only"),
-                "KMIPKIT-REQ-SPEC-6.1.17-006": ("KMIPKIT-CLAUSE-SPEC-6.1.17-006", 1, "MUST", "client", "client_1_0"),
+                "KMIP-REQ-SPEC-6.1.17-001-001": ("KMIP-CLAUSE-SPEC-6.1.17-001", 1, "MAY", "client", "client_1_0"),
+                "KMIP-REQ-SPEC-6.1.17-001-002": ("KMIP-CLAUSE-SPEC-6.1.17-001", 2, "MAY", "client", "client_1_0"),
+                "KMIP-REQ-SPEC-6.1.17-004": ("KMIP-CLAUSE-SPEC-6.1.17-004", 1, "SHALL", "server", "server_only"),
+                "KMIP-REQ-SPEC-6.1.17-005-002": ("KMIP-CLAUSE-SPEC-6.1.17-005", 1, "SHALL", "server", "server_only"),
+                "KMIP-REQ-SPEC-6.1.17-006": ("KMIP-CLAUSE-SPEC-6.1.17-006", 1, "MUST", "client", "client_1_0"),
             },
         )
         rejected = {
@@ -14073,12 +14073,12 @@ class CatalogValidationTests(unittest.TestCase):
             for review in reviews.values()
             for row in review["rejected_candidate_mappings"]
         }
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.17-005-001", rejected)
-        self.assertEqual(rejected["KMIPKIT-REQ-SPEC-6.1.17-005-001"]["claimed_keyword"], "SHALL")
-        self.assertIn("description", rejected["KMIPKIT-REQ-SPEC-6.1.17-005-001"]["expected_disposition"].lower())
+        self.assertIn("KMIP-REQ-SPEC-6.1.17-005-001", rejected)
+        self.assertEqual(rejected["KMIP-REQ-SPEC-6.1.17-005-001"]["claimed_keyword"], "SHALL")
+        self.assertIn("description", rejected["KMIP-REQ-SPEC-6.1.17-005-001"]["expected_disposition"].lower())
         self.assertIn(
             "no client SHALL",
-            rejected["KMIPKIT-REQ-SPEC-6.1.17-005-001"]["source_review"],
+            rejected["KMIP-REQ-SPEC-6.1.17-005-001"]["source_review"],
         )
 
         gaps = {
@@ -14114,13 +14114,13 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn(
             "does not state that the response Unique Identifier is present in an error payload",
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.17-007"]["review_note"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.17-007"]["review_note"],
         )
         self.assertEqual(set(gaps), set())
-        result_reason_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.17.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        result_reason_values = reviews["KMIP-CLAUSE-SPEC-6.1.17.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(result_reason_values), 19)
         self.assertEqual(len(set(result_reason_values)), 19)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.17.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.17.1-002"]["source_obligations"], [])
 
         client_profiles = [profile for profile in oracle["profiles"] if profile["role"] == "client" and "6.1" in profile["direct_profiles_sections"]]
         self.assertEqual(len(client_profiles), 18)
@@ -14178,15 +14178,15 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.19" or row["section"].startswith("6.1.19.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-001": ("6.1.19", 1, "paragraph", ["MAY"], [27130, 27133]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-002": ("6.1.19", 2, "paragraph", ["SHALL"], [27134, 27137]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-003": ("6.1.19", 3, "paragraph", ["SHALL"], [27138, 27143]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-004": ("6.1.19", 4, "paragraph", ["MAY"], [27144, 27147]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-005": ("6.1.19", 5, "paragraph", ["SHALL"], [27148, 27159]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-006": ("6.1.19", 6, "table_row", ["REQUIRED"], [27170, 27188]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-007": ("6.1.19", 7, "table_row", ["REQUIRED"], [27301, 27319]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19.1-001": ("6.1.19.1", 1, "paragraph", ["SHALL"], [27386, 27388]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.19.1-002": ("6.1.19.1", 2, "table_row", ["REQUIRED"], [27406, 27425]),
+            "KMIP-CLAUSE-SPEC-6.1.19-001": ("6.1.19", 1, "paragraph", ["MAY"], [27130, 27133]),
+            "KMIP-CLAUSE-SPEC-6.1.19-002": ("6.1.19", 2, "paragraph", ["SHALL"], [27134, 27137]),
+            "KMIP-CLAUSE-SPEC-6.1.19-003": ("6.1.19", 3, "paragraph", ["SHALL"], [27138, 27143]),
+            "KMIP-CLAUSE-SPEC-6.1.19-004": ("6.1.19", 4, "paragraph", ["MAY"], [27144, 27147]),
+            "KMIP-CLAUSE-SPEC-6.1.19-005": ("6.1.19", 5, "paragraph", ["SHALL"], [27148, 27159]),
+            "KMIP-CLAUSE-SPEC-6.1.19-006": ("6.1.19", 6, "table_row", ["REQUIRED"], [27170, 27188]),
+            "KMIP-CLAUSE-SPEC-6.1.19-007": ("6.1.19", 7, "table_row", ["REQUIRED"], [27301, 27319]),
+            "KMIP-CLAUSE-SPEC-6.1.19.1-001": ("6.1.19.1", 1, "paragraph", ["SHALL"], [27386, 27388]),
+            "KMIP-CLAUSE-SPEC-6.1.19.1-002": ("6.1.19.1", 2, "table_row", ["REQUIRED"], [27406, 27425]),
         }
         self.assertEqual({row["clause_id"] for row in pinned}, set(expected_sources))
         reviews = {
@@ -14199,25 +14199,25 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-001": [
-                (1, "which MAY be wrapped using a wrapping key as specified in the request.", "MAY", "server", "server→client Get response wrapping", "A wrapping key is specified in the request.", "server_only", "KMIPKIT-REQ-SPEC-6.1.19-001", None),
+            "KMIP-CLAUSE-SPEC-6.1.19-001": [
+                (1, "which MAY be wrapped using a wrapping key as specified in the request.", "MAY", "server", "server→client Get response wrapping", "A wrapping key is specified in the request.", "server_only", "KMIP-REQ-SPEC-6.1.19-001", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-002": [
-                (1, "The following key format capabilities SHALL be assumed by the client; restrictions apply when the client requests the server to return an object in a particular format:", "SHALL", "client", "client key-format request interpretation", "When the client requests the server to return an object in a particular format.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.19-002", None),
+            "KMIP-CLAUSE-SPEC-6.1.19-002": [
+                (1, "The following key format capabilities SHALL be assumed by the client; restrictions apply when the client requests the server to return an object in a particular format:", "SHALL", "client", "client key-format request interpretation", "When the client requests the server to return an object in a particular format.", "client_1_0", "KMIP-REQ-SPEC-6.1.19-002", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-003": [
+            "KMIP-CLAUSE-SPEC-6.1.19-003": [
                 (1, "· If a client registered a key in a given format, the server SHALL be able to return the key during the Get operation in the same format that was used when the key was registered.", "SHALL", "server", "server→client Get response format", "The client registered the key in that format.", "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-004": [
+            "KMIP-CLAUSE-SPEC-6.1.19-004": [
                 (1, "· Any other format conversion MAY be supported by the server.", "MAY", "server", "server→client Get response format", None, "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-006": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19-007": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.19-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.19-006": [],
+            "KMIP-CLAUSE-SPEC-6.1.19-007": [],
+            "KMIP-CLAUSE-SPEC-6.1.19.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Get Operation.", "SHALL", "server", "server→client Get error response", "An error is detected in a Get operation.", "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.19.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.19.1-002": [],
         }
         for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_sources.items():
             candidate = next(row for row in pinned if row["clause_id"] == clause_id)
@@ -14246,19 +14246,19 @@ class CatalogValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     review["expected_client_requirement_ids"],
-                    ["KMIPKIT-REQ-SPEC-6.1.19-002"] if clause_id == "KMIPKIT-CLAUSE-SPEC-6.1.19-002" else [],
+                    ["KMIP-REQ-SPEC-6.1.19-002"] if clause_id == "KMIP-CLAUSE-SPEC-6.1.19-002" else [],
                 )
 
         self.assertIn(
             "lowercase shall",
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.19-005"]["review_note"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.19-005"]["review_note"],
             "the PKCS#12 paragraph uses lowercase modals and DEC-003 treats it as informative",
         )
         request_rows = {
-            "Key Format Type": ([27211, 27228], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.19-003"),
-            "Key Wrap Type": ([27229, 27247], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.19-004"),
-            "Key Compression Type": ([27248, 27266], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.19-005"),
-            "Key Wrapping Specification": ([27267, 27285], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.19-006"),
+            "Key Format Type": ([27211, 27228], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.19-003"),
+            "Key Wrap Type": ([27229, 27247], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.19-004"),
+            "Key Compression Type": ([27248, 27266], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.19-005"),
+            "Key Wrapping Specification": ([27267, 27285], "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIP-REQ-SPEC-6.1.19-006"),
         }
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -14272,7 +14272,7 @@ class CatalogValidationTests(unittest.TestCase):
             assert_gap_exists=True,
         )
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.19-006"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.19-006"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             request_header["source_request_rows"],
@@ -14284,7 +14284,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_request_field_with_existing_conditional_capability",
                     "html_line_range": [27192, 27210],
                     "source_excerpt": pinned_source_excerpt(source_path, [27192, 27210]),
-                    "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                     "reuse_condition": "The request is a subsequent operation in the batched request and the Batch Order Option is true or unspecified.",
                     "source_note": "The body row says omission resolves through ID Placeholder. It does not establish standalone omission or behavior when no placeholder exists.",
                 },
@@ -14303,12 +14303,12 @@ class CatalogValidationTests(unittest.TestCase):
                 ],
             ],
         )
-        batch_omission_id = "KMIPKIT-REQ-SPEC-6.1-003-002"
+        batch_omission_id = "KMIP-REQ-SPEC-6.1-003-002"
         batch_omission_crosswalk = [
             row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == batch_omission_id
         ]
         self.assertEqual(len(batch_omission_crosswalk), 1)
-        self.assertEqual(batch_omission_crosswalk[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1-003")
+        self.assertEqual(batch_omission_crosswalk[0]["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1-003")
         self.assertEqual(batch_omission_crosswalk[0]["source_obligation_order"], 2)
         self.assertEqual(batch_omission_crosswalk[0]["source_keyword"], "MAY")
         self.assertEqual(batch_omission_crosswalk[0]["source_actor"], "client")
@@ -14320,7 +14320,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("Unique Identifier", [27341, 27358]),
             ("Any Object (Section 2)", [27359, 27376]),
         ]
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.19-007"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.19-007"]
         self.assertEqual(
             response_header["source_payload_rows"],
             [
@@ -14336,7 +14336,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        result_reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.19.1-002"]["source_excerpt"]
+        result_reason_text = reviews["KMIP-CLAUSE-SPEC-6.1.19.1-002"]["source_excerpt"]
         reason_values = result_reason_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 24)
         self.assertEqual(len(set(reason_values)), 22)
@@ -14354,16 +14354,16 @@ class CatalogValidationTests(unittest.TestCase):
         for profile in client_profiles:
             ids = set(profile["requirement_ids"])
             with self.subTest(profile_id=profile["profile_id"]):
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.19-002", expected_profile_ids[profile["profile_id"]])
-                self.assertTrue("KMIPKIT-REQ-SPEC-6.1.19-001" not in expected_profile_ids[profile["profile_id"]])
+                self.assertIn("KMIP-REQ-SPEC-6.1.19-002", expected_profile_ids[profile["profile_id"]])
+                self.assertTrue("KMIP-REQ-SPEC-6.1.19-001" not in expected_profile_ids[profile["profile_id"]])
                 self.assertTrue(
                     optional_request_requirement_ids.issubset(expected_profile_ids[profile["profile_id"]]),
                     "each client profile closure includes all four reviewed optional Get request selectors",
                 )
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.19-002", ids)
+                self.assertIn("KMIP-REQ-SPEC-6.1.19-002", ids)
                 self.assertTrue(optional_request_requirement_ids.issubset(ids))
                 self.assertTrue(
-                    "KMIPKIT-REQ-SPEC-6.1.19-001" not in ids,
+                    "KMIP-REQ-SPEC-6.1.19-001" not in ids,
                     f"{profile['profile_id']} still includes the server-only Get response-wrap MAY",
                 )
         self.assertEqual(oracle["source_closure_status"], "complete")
@@ -14382,10 +14382,10 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.22" or row["section"].startswith("6.1.22.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.22-001": ("6.1.22", 1, "table_row", ["REQUIRED"], [27852, 27869]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.22-002": ("6.1.22", 2, "table_row", ["REQUIRED"], [27907, 27924]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.22.1-001": ("6.1.22.1", 1, "paragraph", ["SHALL"], [27955, 27956]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.22.1-002": ("6.1.22.1", 2, "table_row", ["REQUIRED"], [27976, 27993]),
+            "KMIP-CLAUSE-SPEC-6.1.22-001": ("6.1.22", 1, "table_row", ["REQUIRED"], [27852, 27869]),
+            "KMIP-CLAUSE-SPEC-6.1.22-002": ("6.1.22", 2, "table_row", ["REQUIRED"], [27907, 27924]),
+            "KMIP-CLAUSE-SPEC-6.1.22.1-001": ("6.1.22.1", 1, "paragraph", ["SHALL"], [27955, 27956]),
+            "KMIP-CLAUSE-SPEC-6.1.22.1-002": ("6.1.22.1", 2, "table_row", ["REQUIRED"], [27976, 27993]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -14420,12 +14420,12 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(pinned_by_clause[clause_id]["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.22-001": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.22-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.22.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.22-001": [],
+            "KMIP-CLAUSE-SPEC-6.1.22-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.22.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Get Constrains Operation.", "SHALL", "server", "server_to_client", "An error is detected in a Get Constrains Operation (the pinned source misspells Constraints as Constrains).", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.22.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.22.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -14457,9 +14457,9 @@ class CatalogValidationTests(unittest.TestCase):
             [],
             "this client-only product has no source-only client obligation in the server/requestless operation",
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.22.1-001"]["expected_client_requirement_ids"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.22.1-001"]["expected_client_requirement_ids"], [])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.22-001"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.22-001"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(request_header["source_request_rows"], [])
         self.assertEqual(
@@ -14483,7 +14483,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 229 has no request fields", request_header["review_note"])
         self.assertIn("No Unique Identifier", request_header["review_note"])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.22-002"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.22-002"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
             response_header["source_payload_rows"],
@@ -14500,11 +14500,11 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        reason_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.22.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reason_values = reviews["KMIP-CLAUSE-SPEC-6.1.22.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 10)
         self.assertEqual(len(set(reason_values)), 9)
         self.assertEqual(reason_values.count("Invalid Field"), 2)
-        self.assertIn("Get Constrains Operation", reviews["KMIPKIT-CLAUSE-SPEC-6.1.22.1-001"]["source_excerpt"])
+        self.assertIn("Get Constrains Operation", reviews["KMIP-CLAUSE-SPEC-6.1.22.1-001"]["source_excerpt"])
         self.assertTrue(all(review["expected_client_requirement_ids"] == [] for review in reviews.values()))
         self.assertEqual(oracle["source_closure_status"], "complete")
 
@@ -14522,12 +14522,12 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.23" or row["section"].startswith("6.1.23.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-001": ("6.1.23", 1, "paragraph", ["SHALL NOT", "SHALL", "MAY"], [28005, 28019]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-002": ("6.1.23", 2, "paragraph", ["SHALL", "SHALL NOT"], [28021, 28028]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-003": ("6.1.23", 3, "table_row", ["REQUIRED"], [28041, 28058]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-004": ("6.1.23", 4, "table_row", ["REQUIRED"], [28116, 28133]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.23.1-001": ("6.1.23.1", 1, "paragraph", ["SHALL"], [28164, 28165]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.23.1-002": ("6.1.23.1", 2, "table_row", ["REQUIRED"], [28185, 28199]),
+            "KMIP-CLAUSE-SPEC-6.1.23-001": ("6.1.23", 1, "paragraph", ["SHALL NOT", "SHALL", "MAY"], [28005, 28019]),
+            "KMIP-CLAUSE-SPEC-6.1.23-002": ("6.1.23", 2, "paragraph", ["SHALL", "SHALL NOT"], [28021, 28028]),
+            "KMIP-CLAUSE-SPEC-6.1.23-003": ("6.1.23", 3, "table_row", ["REQUIRED"], [28041, 28058]),
+            "KMIP-CLAUSE-SPEC-6.1.23-004": ("6.1.23", 4, "table_row", ["REQUIRED"], [28116, 28133]),
+            "KMIP-CLAUSE-SPEC-6.1.23.1-001": ("6.1.23.1", 1, "paragraph", ["SHALL"], [28164, 28165]),
+            "KMIP-CLAUSE-SPEC-6.1.23.1-002": ("6.1.23.1", 2, "table_row", ["REQUIRED"], [28185, 28199]),
         }
         expected_clause_ids = set(expected_locators)
         self.assertEqual(
@@ -14563,22 +14563,22 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(pinned_by_clause[clause_id]["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-001": [
-                (1, "A Managed Object that has a Usage Limits attribute SHALL NOT be used by a client for applying cryptographic protection unless an allocation has been obtained using this operation.", "SHALL NOT", "client", "client-side protection use", "The Managed Object has a Usage Limits attribute and the client applies cryptographic protection.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.23-001-001"),
-                (2, "The operation SHALL only be requested during the time that protection is enabled for these objects (i.e., after the Activation Date and before the Protect Stop Date).", "SHALL", "client", "client_to_server Get Usage Allocation request", "Protection is enabled after the Activation Date and before the Protect Stop Date.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.23-001-002"),
+            "KMIP-CLAUSE-SPEC-6.1.23-001": [
+                (1, "A Managed Object that has a Usage Limits attribute SHALL NOT be used by a client for applying cryptographic protection unless an allocation has been obtained using this operation.", "SHALL NOT", "client", "client-side protection use", "The Managed Object has a Usage Limits attribute and the client applies cryptographic protection.", "client_1_0", "KMIP-REQ-SPEC-6.1.23-001-001"),
+                (2, "The operation SHALL only be requested during the time that protection is enabled for these objects (i.e., after the Activation Date and before the Protect Stop Date).", "SHALL", "client", "client_to_server Get Usage Allocation request", "Protection is enabled after the Activation Date and before the Protect Stop Date.", "client_1_0", "KMIP-REQ-SPEC-6.1.23-001-002"),
                 (3, "If the operation is requested for an object that has no Usage Limits attribute, or is not an object that MAY be used for applying cryptographic protection, then the server SHALL return an error.", "SHALL", "server", "server_to_client error response", "The request names an object without Usage Limits or an object that MAY not be used for applying cryptographic protection.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-002": [
+            "KMIP-CLAUSE-SPEC-6.1.23-002": [
                 (1, "If the requested amount is not available or if the Managed Object is not able to be used for applying cryptographic protection at this time, then the server SHALL return an error.", "SHALL", "server", "server_to_client error response", "The requested amount is unavailable or the object cannot be used for protection at that time.", "server_only", None),
                 (2, "The server SHALL assume that the entire allocated amount is going to be consumed.", "SHALL", "server", "server processing of client request", None, "server_only", None),
-                (3, "Once the entire allocated amount has been consumed, the client SHALL NOT continue to use the Managed Object for applying cryptographic protection until a new allocation is obtained.", "SHALL NOT", "client", "client-side protection use", "The entire allocated amount has been consumed and no new allocation has been obtained.", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.23-002-002"),
+                (3, "Once the entire allocated amount has been consumed, the client SHALL NOT continue to use the Managed Object for applying cryptographic protection until a new allocation is obtained.", "SHALL NOT", "client", "client-side protection use", "The entire allocated amount has been consumed and no new allocation has been obtained.", "client_1_0", "KMIP-REQ-SPEC-6.1.23-002-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.23-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.23.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.23-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.23-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.23.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Get Usage Allocation Operation.", "SHALL", "server", "server_to_client error response", "An error is detected in a Get Usage Allocation operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.23.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.23.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -14606,24 +14606,24 @@ class CatalogValidationTests(unittest.TestCase):
                 for review in reviews.values()
             },
             {
-                "KMIPKIT-CLAUSE-SPEC-6.1.23-001": [
-                    "KMIPKIT-REQ-SPEC-6.1.23-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.23-001-002",
+                "KMIP-CLAUSE-SPEC-6.1.23-001": [
+                    "KMIP-REQ-SPEC-6.1.23-001-001",
+                    "KMIP-REQ-SPEC-6.1.23-001-002",
                 ],
-                "KMIPKIT-CLAUSE-SPEC-6.1.23-002": [
-                    "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+                "KMIP-CLAUSE-SPEC-6.1.23-002": [
+                    "KMIP-REQ-SPEC-6.1.23-002-002",
                 ],
-                "KMIPKIT-CLAUSE-SPEC-6.1.23-003": [],
-                "KMIPKIT-CLAUSE-SPEC-6.1.23-004": [],
-                "KMIPKIT-CLAUSE-SPEC-6.1.23.1-001": [],
-                "KMIPKIT-CLAUSE-SPEC-6.1.23.1-002": [],
+                "KMIP-CLAUSE-SPEC-6.1.23-003": [],
+                "KMIP-CLAUSE-SPEC-6.1.23-004": [],
+                "KMIP-CLAUSE-SPEC-6.1.23.1-001": [],
+                "KMIP-CLAUSE-SPEC-6.1.23.1-002": [],
             },
         )
 
         expected_crosswalk = {
-            ("KMIPKIT-REQ-SPEC-6.1.23-001-001", "KMIPKIT-CLAUSE-SPEC-6.1.23-001", 1, "SHALL NOT", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.23-001-002", "KMIPKIT-CLAUSE-SPEC-6.1.23-001", 2, "SHALL", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.23-002-002", "KMIPKIT-CLAUSE-SPEC-6.1.23-002", 3, "SHALL NOT", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.23-001-001", "KMIP-CLAUSE-SPEC-6.1.23-001", 1, "SHALL NOT", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.23-001-002", "KMIP-CLAUSE-SPEC-6.1.23-001", 2, "SHALL", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.23-002-002", "KMIP-CLAUSE-SPEC-6.1.23-002", 3, "SHALL NOT", "client", "client_1_0"),
         }
         actual_crosswalk = {
             (
@@ -14639,7 +14639,7 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(actual_crosswalk, expected_crosswalk)
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.23-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.23-003"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             request_header["source_request_rows"],
@@ -14651,7 +14651,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_request_field_with_existing_conditional_capability",
                     "html_line_range": [28060, 28078],
                     "source_excerpt": pinned_source_excerpt(source_path, [28060, 28078]),
-                    "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                     "reuse_condition": "The Batch Order Option is true or unspecified and the request is a subsequent operation in the batched request; the ID Placeholder must be available for the specified fallback.",
                     "source_note": "If omitted, the server substitutes the ID Placeholder. This is provenance for the existing generic §6.1 optional capability only when its eligible batch condition and placeholder availability hold; no standalone omission behavior is inferred.",
                 },
@@ -14663,7 +14663,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "html_line_range": [28080, 28097],
                     "source_excerpt": "Usage Limits Count Yes The number of Usage Limits Units to be protected.",
                     "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED",
-                    "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.23-002-001"],
+                    "source_requirement_ids": ["KMIP-REQ-SPEC-6.1.23-002-001"],
                     "source_note": "Table 232 requires the client request to include the Usage Limits Count. This row maps to the approved Get Usage Allocation FR-001 feature contract without creating a formal source-clause crosswalk ID or a new normative requirement.",
                 },
             ],
@@ -14687,7 +14687,7 @@ class CatalogValidationTests(unittest.TestCase):
         usage_count_requirement = next(
             requirement
             for requirement in catalog["requirements"]
-            if requirement["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.23-002-001"
+            if requirement["requirement_id"] == "KMIP-REQ-SPEC-6.1.23-002-001"
         )
         self.assertEqual(usage_count_requirement["source_clause_ids"], [])
         self.assertEqual(
@@ -14706,7 +14706,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(usage_count_requirement["source_locator"], usage_count_contract["source_locator"])
         self.assertEqual(usage_count_requirement["condition"], "A Get Usage Allocation request is sent.")
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.23-004"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.23-004"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
             response_header["source_payload_rows"],
@@ -14722,12 +14722,12 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        result_reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.23.1-002"]["source_excerpt"]
+        result_reason_text = reviews["KMIP-CLAUSE-SPEC-6.1.23.1-002"]["source_excerpt"]
         reason_values = result_reason_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 13)
         self.assertEqual(len(set(reason_values)), 12)
         self.assertEqual(reason_values.count("Invalid Message"), 2)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.23.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.23.1-002"]["source_obligations"], [])
 
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
@@ -14736,10 +14736,10 @@ class CatalogValidationTests(unittest.TestCase):
             for profile in oracle["profiles"]
         }
         client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.23-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.23-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-            "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+            "KMIP-REQ-SPEC-6.1.23-001-001",
+            "KMIP-REQ-SPEC-6.1.23-001-002",
+            "KMIP-REQ-SPEC-6.1.23-002-001",
+            "KMIP-REQ-SPEC-6.1.23-002-002",
         }
         for profile in client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
@@ -14779,7 +14779,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
         self.assertIn("KMIPKIT-0039 FR-001", contract["review_note"])
         self.assertEqual(contract["implementation_refs"], [
@@ -14808,12 +14808,12 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.21" or row["section"].startswith("6.1.21.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-001": ("6.1.21", 1, "paragraph", ["SHALL"], [27655, 27656]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-002": ("6.1.21", 2, "table_row", ["REQUIRED"], [27669, 27686]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-003": ("6.1.21", 3, "table_row", ["REQUIRED"], [27726, 27743]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-004": ("6.1.21", 4, "table_row", ["MAY"], [27763, 27779]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.21.1-001": ("6.1.21.1", 1, "paragraph", ["SHALL"], [27792, 27793]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.21.1-002": ("6.1.21.1", 2, "table_row", ["REQUIRED"], [27813, 27826]),
+            "KMIP-CLAUSE-SPEC-6.1.21-001": ("6.1.21", 1, "paragraph", ["SHALL"], [27655, 27656]),
+            "KMIP-CLAUSE-SPEC-6.1.21-002": ("6.1.21", 2, "table_row", ["REQUIRED"], [27669, 27686]),
+            "KMIP-CLAUSE-SPEC-6.1.21-003": ("6.1.21", 3, "table_row", ["REQUIRED"], [27726, 27743]),
+            "KMIP-CLAUSE-SPEC-6.1.21-004": ("6.1.21", 4, "table_row", ["MAY"], [27763, 27779]),
+            "KMIP-CLAUSE-SPEC-6.1.21.1-001": ("6.1.21.1", 1, "paragraph", ["SHALL"], [27792, 27793]),
+            "KMIP-CLAUSE-SPEC-6.1.21.1-002": ("6.1.21.1", 2, "table_row", ["REQUIRED"], [27813, 27826]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -14849,18 +14849,18 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(pinned_by_clause[clause_id]["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-001": [
+            "KMIP-CLAUSE-SPEC-6.1.21-001": [
                 (1, "If no Attribute Reference is provided, the server SHALL return all attributes.", "SHALL", "server", "server_to_client", "No Attribute Reference is provided.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.21-004": [
+            "KMIP-CLAUSE-SPEC-6.1.21-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.21-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.21-004": [
                 (1, "Attribute Reference Yes, MAY be repeated The attributes associated with the object.", "MAY", "server", "server_to_client", None, "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.21.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.21.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Get Attribute List Operation.", "SHALL", "server", "server_to_client", "An error is detected in a Get Attribute List operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.21.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.21.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -14891,10 +14891,10 @@ class CatalogValidationTests(unittest.TestCase):
             set(),
             "the pinned slice has no catalog requirement labels to crosswalk; server obligations remain visible as source atoms",
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.21-001"]["expected_client_requirement_ids"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.21-004"]["expected_client_requirement_ids"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.21-001"]["expected_client_requirement_ids"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.21-004"]["expected_client_requirement_ids"], [])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.21-002"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.21-002"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             request_header["source_request_rows"],
@@ -14906,7 +14906,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_request_field_with_existing_conditional_capability",
                     "html_line_range": [27688, 27707],
                     "source_excerpt": pinned_source_excerpt(source_path, [27688, 27707]),
-                    "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                     "reuse_condition": "The request is a subsequent operation in the batched request and the Batch Order Option is true or unspecified.",
                     "source_note": "If omitted, the server uses ID Placeholder as Unique Identifier. This only reuses the generic §6.1 omission capability under its eligible batch condition when an earlier operation populated the placeholder; Get Attribute List is not asserted to update the placeholder.",
                 },
@@ -14919,11 +14919,11 @@ class CatalogValidationTests(unittest.TestCase):
         reused_id = request_header["source_request_rows"][0]["reused_requirement_id"]
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         reused_requirement = next(row for row in catalog["requirements"] if row["requirement_id"] == reused_id)
-        self.assertEqual(reused_requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1-003"])
+        self.assertEqual(reused_requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-6.1-003"])
         general_uid_atoms = [
             atom
             for review in oracle["source_requirement_reviews"]
-            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1-003"
+            if review["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1-003"
             for atom in review["source_obligations"]
             if atom["candidate_requirement_id"] == reused_id
         ]
@@ -14937,7 +14937,7 @@ class CatalogValidationTests(unittest.TestCase):
         for profile in client_profiles:
             self.assertIn(reused_id, profile["requirement_ids"], "the generic conditional UID capability is already in the closure")
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.21-003"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.21-003"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
             response_header["source_payload_rows"],
@@ -14952,7 +14952,7 @@ class CatalogValidationTests(unittest.TestCase):
                 },
             ],
         )
-        attribute_reference = reviews["KMIPKIT-CLAUSE-SPEC-6.1.21-004"]
+        attribute_reference = reviews["KMIP-CLAUSE-SPEC-6.1.21-004"]
         self.assertEqual(
             attribute_reference["source_payload_rows"],
             [
@@ -14970,7 +14970,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("Table 226 lists only Unique Identifier", attribute_reference["review_note"])
         self.assertIn("unresolved", attribute_reference["review_note"].lower())
 
-        reason_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.21.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reason_values = reviews["KMIP-CLAUSE-SPEC-6.1.21.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             reason_values,
             [
@@ -14978,7 +14978,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large",
             ],
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.21.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.21.1-002"]["source_obligations"], [])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_20_get_attributes_and_errors_have_source_review_rows(self) -> None:
@@ -14995,13 +14995,13 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.20" or row["section"].startswith("6.1.20.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-001": ("6.1.20", 1, "paragraph", ["SHALL NOT", "SHALL"], [27440, 27447]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-002": ("6.1.20", 2, "paragraph", ["SHALL"], [27449, 27450]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-003": ("6.1.20", 3, "table_row", ["REQUIRED"], [27463, 27480]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-004": ("6.1.20", 4, "table_row", ["MAY"], [27502, 27518]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-005": ("6.1.20", 5, "table_row", ["REQUIRED"], [27538, 27555]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20.1-001": ("6.1.20.1", 1, "paragraph", ["SHALL"], [27605, 27606]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.20.1-002": ("6.1.20.1", 2, "table_row", ["REQUIRED"], [27626, 27639]),
+            "KMIP-CLAUSE-SPEC-6.1.20-001": ("6.1.20", 1, "paragraph", ["SHALL NOT", "SHALL"], [27440, 27447]),
+            "KMIP-CLAUSE-SPEC-6.1.20-002": ("6.1.20", 2, "paragraph", ["SHALL"], [27449, 27450]),
+            "KMIP-CLAUSE-SPEC-6.1.20-003": ("6.1.20", 3, "table_row", ["REQUIRED"], [27463, 27480]),
+            "KMIP-CLAUSE-SPEC-6.1.20-004": ("6.1.20", 4, "table_row", ["MAY"], [27502, 27518]),
+            "KMIP-CLAUSE-SPEC-6.1.20-005": ("6.1.20", 5, "table_row", ["REQUIRED"], [27538, 27555]),
+            "KMIP-CLAUSE-SPEC-6.1.20.1-001": ("6.1.20.1", 1, "paragraph", ["SHALL"], [27605, 27606]),
+            "KMIP-CLAUSE-SPEC-6.1.20.1-002": ("6.1.20.1", 2, "table_row", ["REQUIRED"], [27626, 27639]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -15033,23 +15033,23 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(pinned_by_clause[clause_id]["source_keywords"], keywords)
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-001": [
-                (1, "If a specified attribute does not exist (i.e., has no value), then it SHALL NOT be present in the returned response.", "SHALL NOT", "server", "server_to_client", "If a specified attribute does not exist (i.e., has no value).", "server_only", "KMIPKIT-REQ-SPEC-6.1.20-001-002"),
-                (2, "If none of the requested attributes exist, then the response SHALL consist only of the Unique Identifier.", "SHALL", "server", "server_to_client", "If none of the requested attributes exist.", "server_only", "KMIPKIT-REQ-SPEC-6.1.20-001-002"),
-                (3, "The same Attribute Reference SHALL NOT be present more than once in a request.", "SHALL NOT", "client", "client_to_server", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.20-001-001"),
+            "KMIP-CLAUSE-SPEC-6.1.20-001": [
+                (1, "If a specified attribute does not exist (i.e., has no value), then it SHALL NOT be present in the returned response.", "SHALL NOT", "server", "server_to_client", "If a specified attribute does not exist (i.e., has no value).", "server_only", "KMIP-REQ-SPEC-6.1.20-001-002"),
+                (2, "If none of the requested attributes exist, then the response SHALL consist only of the Unique Identifier.", "SHALL", "server", "server_to_client", "If none of the requested attributes exist.", "server_only", "KMIP-REQ-SPEC-6.1.20-001-002"),
+                (3, "The same Attribute Reference SHALL NOT be present more than once in a request.", "SHALL NOT", "client", "client_to_server", None, "client_1_0", "KMIP-REQ-SPEC-6.1.20-001-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-002": [
+            "KMIP-CLAUSE-SPEC-6.1.20-002": [
                 (1, "If no Attribute Reference is provided, the server SHALL return all attributes.", "SHALL", "server", "server_to_client", "No Attribute Reference is provided.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-004": [
-                (1, "Attribute Reference No, MAY be repeated Specifies an attribute associated with the object.", "MAY", "client", "client_to_server", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.20-004"),
+            "KMIP-CLAUSE-SPEC-6.1.20-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.20-004": [
+                (1, "Attribute Reference No, MAY be repeated Specifies an attribute associated with the object.", "MAY", "client", "client_to_server", None, "client_1_0", "KMIP-REQ-SPEC-6.1.20-004"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20-005": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.20-005": [],
+            "KMIP-CLAUSE-SPEC-6.1.20.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Get Attributes Operation.", "SHALL", "server", "server_to_client", "An error is detected in a Get Attributes operation.", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.20.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.20.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -15072,10 +15072,10 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
         expected_crosswalk = {
-            ("KMIPKIT-REQ-SPEC-6.1.20-001-001", "KMIPKIT-CLAUSE-SPEC-6.1.20-001", 3, "SHALL NOT", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.20-001-002", "KMIPKIT-CLAUSE-SPEC-6.1.20-001", 1, "SHALL NOT", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.20-001-002", "KMIPKIT-CLAUSE-SPEC-6.1.20-001", 2, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.20-004", "KMIPKIT-CLAUSE-SPEC-6.1.20-004", 1, "MAY", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.20-001-001", "KMIP-CLAUSE-SPEC-6.1.20-001", 3, "SHALL NOT", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.20-001-002", "KMIP-CLAUSE-SPEC-6.1.20-001", 1, "SHALL NOT", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.20-001-002", "KMIP-CLAUSE-SPEC-6.1.20-001", 2, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.20-004", "KMIP-CLAUSE-SPEC-6.1.20-004", 1, "MAY", "client", "client_1_0"),
         }
         actual_crosswalk = {
             (
@@ -15090,10 +15090,10 @@ class CatalogValidationTests(unittest.TestCase):
             if row["source_section"] == "6.1.20"
         }
         self.assertEqual(actual_crosswalk, expected_crosswalk)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.20-001"]["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.20-001-001"])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.20-004"]["expected_client_requirement_ids"], ["KMIPKIT-REQ-SPEC-6.1.20-004"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.20-001"]["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.20-001-001"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.20-004"]["expected_client_requirement_ids"], ["KMIP-REQ-SPEC-6.1.20-004"])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.20-003"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.20-003"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             request_header["source_request_rows"],
@@ -15105,7 +15105,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_request_field_with_existing_conditional_capability",
                     "html_line_range": [27482, 27501],
                     "source_excerpt": pinned_source_excerpt(source_path, [27482, 27501]),
-                    "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                     "reuse_condition": "The request is a subsequent operation in the batched request and the Batch Order Option is true or unspecified.",
                     "source_note": "If omitted, the server uses ID Placeholder. This reuses only the general §6.1 batch capability when a prior eligible operation populated the placeholder; it does not assert standalone omission or behavior when no placeholder exists. For a stored archived object, §6.1 requires Recover before the object is specified (HTML lines 22413-22415).",
                 },
@@ -15116,7 +15116,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_repeatable_request_field_with_existing_stable_label",
                     "html_line_range": [27502, 27518],
                     "source_excerpt": pinned_source_excerpt(source_path, [27502, 27518]),
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-6.1.20-004",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-6.1.20-004",
                     "source_note": "MAY be repeated permits multiple Attribute References; the paragraph separately prohibits repeating the same Attribute Reference, so repeated entries must identify distinct references.",
                 },
             ],
@@ -15126,7 +15126,7 @@ class CatalogValidationTests(unittest.TestCase):
             {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]},
         )
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.20-005"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.20-005"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(
             response_header["source_payload_rows"],
@@ -15153,13 +15153,13 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("only of the Unique Identifier", response_header["review_note"])
         self.assertIn("tension", response_header["review_note"].lower())
 
-        reason_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.20.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reason_values = reviews["KMIP-CLAUSE-SPEC-6.1.20.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(reason_values, [
             "Invalid Attribute", "Object Not Found", "Attestation Failed", "Attestation Required",
             "Feature Not Supported", "Invalid Field", "Invalid Message", "Operation Not Supported",
             "Permission Denied", "Response Too Large",
         ])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.20.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.20.1-002"]["source_obligations"], [])
 
         client_profiles = [profile for profile in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["profiles"] if profile["role"] == "client"]
         expected_profile_ids = {profile["profile_id"]: set(profile["requirement_ids_audited_subset"]) for profile in oracle["profiles"]}
@@ -15168,18 +15168,18 @@ class CatalogValidationTests(unittest.TestCase):
         for profile in client_profiles:
             with self.subTest(profile_id=profile["profile_id"]):
                 expected = expected_profile_ids[profile["profile_id"]]
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.20-001-001", expected)
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.20-004", expected)
-                self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.20-001-002", expected)
+                self.assertIn("KMIP-REQ-SPEC-6.1.20-001-001", expected)
+                self.assertIn("KMIP-REQ-SPEC-6.1.20-004", expected)
+                self.assertNotIn("KMIP-REQ-SPEC-6.1.20-001-002", expected)
                 actual = set(profile["requirement_ids"])
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.20-001-001", actual)
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1.20-004", actual)
+                self.assertIn("KMIP-REQ-SPEC-6.1.20-001-001", actual)
+                self.assertIn("KMIP-REQ-SPEC-6.1.20-004", actual)
                 self.assertNotIn(
-                    "KMIPKIT-REQ-SPEC-6.1.20-001-002",
+                    "KMIP-REQ-SPEC-6.1.20-001-002",
                     actual,
                     "the response-production SHALLs are server-only, despite the current catalog role label",
                 )
-                self.assertIn("KMIPKIT-REQ-SPEC-6.1-005", actual, "archived objects require generic Recover before use")
+                self.assertIn("KMIP-REQ-SPEC-6.1-005", actual, "archived objects require generic Recover before use")
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_18_export_and_error_handling_have_source_review_rows(self) -> None:
@@ -15194,12 +15194,12 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.18" or row["section"].startswith("6.1.18.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-001": ("6.1.18", 1, "paragraph", ["SHALL", "SHALL NOT"], [26846, 26849]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-002": ("6.1.18", 2, "paragraph", ["SHALL"], [26851, 26852]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-003": ("6.1.18", 3, "table_row", ["REQUIRED"], [26865, 26882]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-004": ("6.1.18", 4, "table_row", ["REQUIRED"], [26985, 27002]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.18.1-001": ("6.1.18.1", 1, "paragraph", ["SHALL"], [27080, 27081]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.18.1-002": ("6.1.18.1", 2, "table_row", ["REQUIRED"], [27099, 27116]),
+            "KMIP-CLAUSE-SPEC-6.1.18-001": ("6.1.18", 1, "paragraph", ["SHALL", "SHALL NOT"], [26846, 26849]),
+            "KMIP-CLAUSE-SPEC-6.1.18-002": ("6.1.18", 2, "paragraph", ["SHALL"], [26851, 26852]),
+            "KMIP-CLAUSE-SPEC-6.1.18-003": ("6.1.18", 3, "table_row", ["REQUIRED"], [26865, 26882]),
+            "KMIP-CLAUSE-SPEC-6.1.18-004": ("6.1.18", 4, "table_row", ["REQUIRED"], [26985, 27002]),
+            "KMIP-CLAUSE-SPEC-6.1.18.1-001": ("6.1.18.1", 1, "paragraph", ["SHALL"], [27080, 27081]),
+            "KMIP-CLAUSE-SPEC-6.1.18.1-002": ("6.1.18.1", 2, "table_row", ["REQUIRED"], [27099, 27116]),
         }
         self.assertEqual({row["clause_id"] for row in pinned}, set(expected_sources))
         reviews = {
@@ -15216,19 +15216,19 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-001": [
-                (1, "The Key Format Type, Key Wrap Type, Key Compression Type and Key Wrapping Specification SHALL have the same semantics as for the Get operation.", "SHALL", "client", "client→server Export request semantics", None, "client_1_0", "KMIPKIT-REQ-SPEC-6.1.18-001-001", None),
+            "KMIP-CLAUSE-SPEC-6.1.18-001": [
+                (1, "The Key Format Type, Key Wrap Type, Key Compression Type and Key Wrapping Specification SHALL have the same semantics as for the Get operation.", "SHALL", "client", "client→server Export request semantics", None, "client_1_0", "KMIP-REQ-SPEC-6.1.18-001-001", None),
                 (2, "If the Managed Object has been Destroyed then the key material for the specified managed object SHALL not be returned in the response.", "SHALL", "server", "server→client Export response content", "The Managed Object has been Destroyed.", "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-002": [
+            "KMIP-CLAUSE-SPEC-6.1.18-002": [
                 (1, "The server SHALL copy the Unique Identifier returned by this operations into the ID Placeholder variable.", "SHALL", "server", "server internal ID Placeholder state", "An Export operation returns a Unique Identifier.", "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.18-004": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.18.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.18-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.18-004": [],
+            "KMIP-CLAUSE-SPEC-6.1.18.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Export Operation.", "SHALL", "server", "server→client Export error response", "An error is detected in an Export operation.", "server_only", None, None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.18.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.18.1-002": [],
         }
         for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_sources.items():
             candidate = next(row for row in pinned if row["clause_id"] == clause_id)
@@ -15257,20 +15257,20 @@ class CatalogValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     review["expected_client_requirement_ids"],
-                    ["KMIPKIT-REQ-SPEC-6.1.18-001-001"] if clause_id == "KMIPKIT-CLAUSE-SPEC-6.1.18-001" else [],
+                    ["KMIP-REQ-SPEC-6.1.18-001-001"] if clause_id == "KMIP-CLAUSE-SPEC-6.1.18-001" else [],
                 )
                 self.assertEqual(review["rejected_candidate_mappings"], [])
 
         self.assertIn(
             "lowercase `not`",
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-001"]["review_note"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.18-001"]["review_note"],
             "preserve the source's SHALL not capitalization ambiguity without reclassifying its server actor",
         )
         request_rows = {
-            "Key Format Type": ([26902, 26917], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.18-005"),
-            "Key Wrap Type": ([26918, 26933], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.18-006"),
-            "Key Compression Type": ([26934, 26950], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.18-007"),
-            "Key Wrapping Specification": ([26951, 26966], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.18-008"),
+            "Key Format Type": ([26902, 26917], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.18-005"),
+            "Key Wrap Type": ([26918, 26933], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.18-006"),
+            "Key Compression Type": ([26934, 26950], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL", "KMIP-REQ-SPEC-6.1.18-007"),
+            "Key Wrapping Specification": ([26951, 26966], "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL", "KMIP-REQ-SPEC-6.1.18-008"),
         }
         gaps = {gap["gap_id"]: gap for gap in oracle["source_only_requirement_gaps"]}
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -15283,7 +15283,7 @@ class CatalogValidationTests(unittest.TestCase):
             section="6.1.18",
         )
 
-        uid_request_row = reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-003"]["source_request_rows"]
+        uid_request_row = reviews["KMIP-CLAUSE-SPEC-6.1.18-003"]["source_request_rows"]
         self.assertEqual(
             uid_request_row,
             [
@@ -15294,19 +15294,19 @@ class CatalogValidationTests(unittest.TestCase):
                     "disposition": "optional_request_field_with_existing_conditional_capability",
                     "html_line_range": [26884, 26901],
                     "source_excerpt": pinned_source_excerpt(source_path, [26884, 26901]),
-                    "reused_requirement_id": "KMIPKIT-REQ-SPEC-6.1-003-002",
+                    "reused_requirement_id": "KMIP-REQ-SPEC-6.1-003-002",
                     "reuse_condition": "The request is a subsequent operation in the batched request and the Batch Order Option is true or unspecified.",
                     "source_note": "The body row says omission resolves through IDPlaceholder. It does not establish standalone omission or behavior when no placeholder exists.",
                 }
             ],
             "Export Unique Identifier omission is provenance for the existing conditional §6.1 MAY, not a second client capability label",
         )
-        batch_omission_id = "KMIPKIT-REQ-SPEC-6.1-003-002"
+        batch_omission_id = "KMIP-REQ-SPEC-6.1-003-002"
         batch_omission_crosswalk = [
             row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == batch_omission_id
         ]
         self.assertEqual(len(batch_omission_crosswalk), 1)
-        self.assertEqual(batch_omission_crosswalk[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1-003")
+        self.assertEqual(batch_omission_crosswalk[0]["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1-003")
         self.assertEqual(batch_omission_crosswalk[0]["source_obligation_order"], 2)
         self.assertEqual(batch_omission_crosswalk[0]["source_keyword"], "MAY")
         self.assertEqual(batch_omission_crosswalk[0]["source_actor"], "client")
@@ -15314,7 +15314,7 @@ class CatalogValidationTests(unittest.TestCase):
         batch_omission_source = next(
             review
             for review in oracle["source_requirement_reviews"]
-            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1-003"
+            if review["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1-003"
         )
         self.assertEqual(
             next(
@@ -15329,15 +15329,15 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn(batch_omission_id, profile["requirement_ids"], profile["profile_id"])
 
         semantics_gap = gaps["KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS"]
-        self.assertEqual(semantics_gap["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.18-001")
+        self.assertEqual(semantics_gap["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1.18-001")
         self.assertEqual(semantics_gap["source_obligation_order"], 1)
         self.assertEqual(semantics_gap["source_force"], "SHALL")
         self.assertEqual(semantics_gap["actor"], "client")
         self.assertEqual(semantics_gap["scope_disposition"], "client_1_0")
-        self.assertEqual(semantics_gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.18-001-001")
+        self.assertEqual(semantics_gap["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.18-001-001")
         self.assertIsNone(semantics_gap["proposed_requirement_id"])
         self.assertIn(semantics_gap["candidate_requirement_id"], catalog_ids)
-        self.assertEqual(semantics_gap["source_excerpt"], reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-001"]["source_excerpt"])
+        self.assertEqual(semantics_gap["source_excerpt"], reviews["KMIP-CLAUSE-SPEC-6.1.18-001"]["source_excerpt"])
 
         response_rows = [
             ("Object Type", [27004, 27018]),
@@ -15345,7 +15345,7 @@ class CatalogValidationTests(unittest.TestCase):
             ("Attributes", [27036, 27051]),
             ("Any Object (Section 2)", [27052, 27068]),
         ]
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.18-004"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.18-004"]
         self.assertEqual(
             response_header["source_payload_rows"],
             [
@@ -15367,7 +15367,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
             response_rows,
         )
-        result_reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.18.1-002"]["source_excerpt"]
+        result_reason_text = reviews["KMIP-CLAUSE-SPEC-6.1.18.1-002"]["source_excerpt"]
         reason_values = result_reason_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 21)
         self.assertEqual(len(set(reason_values)), 20)
@@ -15380,7 +15380,7 @@ class CatalogValidationTests(unittest.TestCase):
                 for row in oracle["requirement_crosswalk"]
                 if row.get("source_clause_id") in slice_clause_ids
             ],
-            [("KMIPKIT-REQ-SPEC-6.1.18-001-001", "KMIPKIT-CLAUSE-SPEC-6.1.18-001", 1, "client")],
+            [("KMIP-REQ-SPEC-6.1.18-001-001", "KMIP-CLAUSE-SPEC-6.1.18-001", 1, "client")],
             "the direct Export request obligation is mapped while table-row capabilities remain gap-linked",
         )
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
@@ -15405,11 +15405,11 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.15" or row["section"].startswith("6.1.15.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-001": ("6.1.15", 1, "paragraph", ["SHALL"], [26118, 26122]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-002": ("6.1.15", 2, "table_row", ["REQUIRED"], [26135, 26152]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-003": ("6.1.15", 3, "table_row", ["REQUIRED"], [26191, 26208]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.15.1-001": ("6.1.15.1", 1, "paragraph", ["SHALL"], [26239, 26240]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.15.1-002": ("6.1.15.1", 2, "table_row", ["REQUIRED"], [26260, 26272]),
+            "KMIP-CLAUSE-SPEC-6.1.15-001": ("6.1.15", 1, "paragraph", ["SHALL"], [26118, 26122]),
+            "KMIP-CLAUSE-SPEC-6.1.15-002": ("6.1.15", 2, "table_row", ["REQUIRED"], [26135, 26152]),
+            "KMIP-CLAUSE-SPEC-6.1.15-003": ("6.1.15", 3, "table_row", ["REQUIRED"], [26191, 26208]),
+            "KMIP-CLAUSE-SPEC-6.1.15.1-001": ("6.1.15.1", 1, "paragraph", ["SHALL"], [26239, 26240]),
+            "KMIP-CLAUSE-SPEC-6.1.15.1-002": ("6.1.15.1", 2, "table_row", ["REQUIRED"], [26260, 26272]),
         }
         self.assertEqual({row["clause_id"] for row in pinned}, set(expected_sources))
         reviews = {
@@ -15435,17 +15435,17 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["expected_client_requirement_ids"], [])
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-001": [
+            "KMIP-CLAUSE-SPEC-6.1.15-001": [
                 (1, "the key material for the specified Managed Object SHALL be destroyed or rendered inaccessible.", "server", "server operation processing", "The client issues a Destroy request for the specified Managed Object.", "server_only"),
                 (2, "The meta-data for the key material SHALL be retained by the server.", "server", "server operation processing", "Key material is destroyed or rendered inaccessible.", "server_only"),
                 (3, "Objects SHALL only be destroyed if they are in either Pre-Active or Deactivated state.", "server", "server operation processing", "The object is to be destroyed; the source does not clarify whether this state restriction also governs rendering the key material inaccessible.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-002": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.15-003": [],
-            "KMIPKIT-CLAUSE-SPEC-6.1.15.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.15-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.15-003": [],
+            "KMIP-CLAUSE-SPEC-6.1.15.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Destroy Operation.", "server", "server result reason selection", "An error is detected during a Destroy operation.", "server_only"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.15.1-002": [],
+            "KMIP-CLAUSE-SPEC-6.1.15.1-002": [],
         }
         for clause_id, atoms in expected_atoms.items():
             review = reviews[clause_id]
@@ -15469,7 +15469,7 @@ class CatalogValidationTests(unittest.TestCase):
                 f"{clause_id} has no catalog requirement label for these server duties",
             )
 
-        operation = reviews["KMIPKIT-CLAUSE-SPEC-6.1.15-001"]
+        operation = reviews["KMIP-CLAUSE-SPEC-6.1.15-001"]
         self.assertIn("rendered inaccessible", operation["review_note"])
         self.assertIn("does not clarify", operation["review_note"])
         self.assertIn("Pre-Active or Deactivated", operation["review_note"])
@@ -15485,10 +15485,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertNotEqual(response_uid, request_uid, "response UID data is separate from request UID provenance")
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_requirement_ids = {row["requirement_id"] for row in catalog["requirements"]}
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1-003-002", catalog_requirement_ids)
+        self.assertIn("KMIP-REQ-SPEC-6.1-003-002", catalog_requirement_ids)
         client_profiles = [profile for profile in catalog["profiles"] if profile["role"] == "client"]
         self.assertEqual(len(client_profiles), 18)
-        self.assertTrue(all("KMIPKIT-REQ-SPEC-6.1-003-002" in profile["requirement_ids"] for profile in client_profiles))
+        self.assertTrue(all("KMIP-REQ-SPEC-6.1-003-002" in profile["requirement_ids"] for profile in client_profiles))
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_2_complete_section_has_source_review_rows(self) -> None:
@@ -15518,56 +15518,56 @@ class CatalogValidationTests(unittest.TestCase):
             return
 
         expected_atom_counts = {
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-001": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-002": 4,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-004": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-005": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-006": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.1.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.2-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.2-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.2-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.2.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.2.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-002": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-003": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-004": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-005": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-006": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.3.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-002": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-003": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-004": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-005": 4,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-006": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-007": 3,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-008": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-009": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-010": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-011": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-012": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-013": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-014": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-015": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-016": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-017": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-018": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-019": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-020": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-021": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-022": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-023": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.4.1-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.5-001": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.5-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.2.5.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.2.5.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.1-001": 2,
+            "KMIP-CLAUSE-SPEC-6.2.1-002": 4,
+            "KMIP-CLAUSE-SPEC-6.2.1-003": 0,
+            "KMIP-CLAUSE-SPEC-6.2.1-004": 1,
+            "KMIP-CLAUSE-SPEC-6.2.1-005": 0,
+            "KMIP-CLAUSE-SPEC-6.2.1-006": 1,
+            "KMIP-CLAUSE-SPEC-6.2.1.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.1.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.2-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.2-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.2-003": 0,
+            "KMIP-CLAUSE-SPEC-6.2.2.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.2.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.3-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3-002": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3-003": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3-004": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3-005": 0,
+            "KMIP-CLAUSE-SPEC-6.2.3-006": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.3.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.4-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-002": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-003": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-004": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-005": 4,
+            "KMIP-CLAUSE-SPEC-6.2.4-006": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-007": 3,
+            "KMIP-CLAUSE-SPEC-6.2.4-008": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-009": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-010": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-011": 0,
+            "KMIP-CLAUSE-SPEC-6.2.4-012": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-013": 0,
+            "KMIP-CLAUSE-SPEC-6.2.4-014": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-015": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-016": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-017": 2,
+            "KMIP-CLAUSE-SPEC-6.2.4-018": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-019": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-020": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-021": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-022": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4-023": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.4.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.5-001": 0,
+            "KMIP-CLAUSE-SPEC-6.2.5-002": 0,
+            "KMIP-CLAUSE-SPEC-6.2.5.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.2.5.1-002": 0,
         }
         self.assertEqual(set(expected_atom_counts), expected_clause_ids)
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -15616,20 +15616,20 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             empty_atom_rows,
             {
-                "KMIPKIT-CLAUSE-SPEC-6.2.1-003",
-                "KMIPKIT-CLAUSE-SPEC-6.2.1-005",
-                "KMIPKIT-CLAUSE-SPEC-6.2.1.1-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.2-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.2-003",
-                "KMIPKIT-CLAUSE-SPEC-6.2.2.1-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.3-005",
-                "KMIPKIT-CLAUSE-SPEC-6.2.3.1-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.4-011",
-                "KMIPKIT-CLAUSE-SPEC-6.2.4-013",
-                "KMIPKIT-CLAUSE-SPEC-6.2.4.1-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.5-001",
-                "KMIPKIT-CLAUSE-SPEC-6.2.5-002",
-                "KMIPKIT-CLAUSE-SPEC-6.2.5.1-002",
+                "KMIP-CLAUSE-SPEC-6.2.1-003",
+                "KMIP-CLAUSE-SPEC-6.2.1-005",
+                "KMIP-CLAUSE-SPEC-6.2.1.1-002",
+                "KMIP-CLAUSE-SPEC-6.2.2-002",
+                "KMIP-CLAUSE-SPEC-6.2.2-003",
+                "KMIP-CLAUSE-SPEC-6.2.2.1-002",
+                "KMIP-CLAUSE-SPEC-6.2.3-005",
+                "KMIP-CLAUSE-SPEC-6.2.3.1-002",
+                "KMIP-CLAUSE-SPEC-6.2.4-011",
+                "KMIP-CLAUSE-SPEC-6.2.4-013",
+                "KMIP-CLAUSE-SPEC-6.2.4.1-002",
+                "KMIP-CLAUSE-SPEC-6.2.5-001",
+                "KMIP-CLAUSE-SPEC-6.2.5-002",
+                "KMIP-CLAUSE-SPEC-6.2.5.1-002",
             },
             "headers, result-reason listings and the lowercase `may` row cannot become invented normative atoms",
         )
@@ -15642,19 +15642,19 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(client_may_atoms), 11)
         self.assertTrue(all(atom["scope_disposition"] == "out_of_scope" for atom in client_may_atoms))
         server_atom_orders = {
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-001": {1, 2},
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-004": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.1.1-001": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.2.1-001": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-002": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-004": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.3-006": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.3.1-001": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-001": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-007": {3},
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-012": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.4.1-001": {1},
-            "KMIPKIT-CLAUSE-SPEC-6.2.5.1-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.1-001": {1, 2},
+            "KMIP-CLAUSE-SPEC-6.2.1-004": {1},
+            "KMIP-CLAUSE-SPEC-6.2.1.1-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.2.1-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.3-002": {1},
+            "KMIP-CLAUSE-SPEC-6.2.3-004": {1},
+            "KMIP-CLAUSE-SPEC-6.2.3-006": {1},
+            "KMIP-CLAUSE-SPEC-6.2.3.1-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.4-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.4-007": {3},
+            "KMIP-CLAUSE-SPEC-6.2.4-012": {1},
+            "KMIP-CLAUSE-SPEC-6.2.4.1-001": {1},
+            "KMIP-CLAUSE-SPEC-6.2.5.1-001": {1},
         }
         for clause_id, review in reviews.items():
             for atom in review["source_obligations"]:
@@ -15665,52 +15665,52 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertEqual(atom["scope_disposition"], expected_scope)
 
         expected_multi_atom_rows = {
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-001": [
+            "KMIP-CLAUSE-SPEC-6.2.1-001": [
                 ("The request payload contains an OPTIONAL list of protocol versions that is supported by the server.", "OPTIONAL"),
                 ("The protocol versions SHALL be ranked in decreasing order of preference.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.1-002": [
+            "KMIP-CLAUSE-SPEC-6.2.1-002": [
                 ("If the server provides the client with a list of supported protocol versions in the request payload, the client SHALL return only the protocol versions that are supported by both the client and server.", "SHALL"),
                 ("The client SHOULD list all the protocol versions supported by both client and server.", "SHOULD"),
                 ("If the protocol version specified in the request header is not specified in the request payload and the client does not support any protocol version specified in the request payload, the client SHALL return an empty list in the response payload.", "SHALL"),
                 ("If no protocol versions are specified in the request payload, the client SHOULD return all the protocol versions that are supported by the client.", "SHOULD"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-002": [
+            "KMIP-CLAUSE-SPEC-6.2.4-002": [
                 ("which SHALL list all the operations that the client supports.", "SHALL"),
                 ("then these fields SHALL be returned in the response.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-003": [
+            "KMIP-CLAUSE-SPEC-6.2.4-003": [
                 ("which SHALL list all the object types that the client supports.", "SHALL"),
                 ("then these fields SHALL be returned in the response.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-005": [
+            "KMIP-CLAUSE-SPEC-6.2.4-005": [
                 ("then the Extensions Information fields SHALL be returned in the response.", "SHALL"),
                 ("then the Extension Tag and Extension Type fields SHALL be specified in the Extension Information values.", "SHALL"),
                 ("then only the response to Query Extension Map SHALL be returned", "SHALL"),
                 ("and the Query Extension List SHALL be ignored.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-006": [
+            "KMIP-CLAUSE-SPEC-6.2.4-006": [
                 ("which SHALL list all the attestation types that the client supports.", "SHALL"),
                 ("then this field SHALL be returned in the response if the server supports any Attestation Types.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-007": [
+            "KMIP-CLAUSE-SPEC-6.2.4-007": [
                 ("The RNG Parameters fields in the response SHALL list all the Random Number Generators that the client supports.", "SHALL"),
                 ("then this field SHALL be returned in the response.", "SHALL"),
                 ("then it SHALL return an RNG Parameters with the RNG Algorithm enumeration of Unspecified.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-008": [
+            "KMIP-CLAUSE-SPEC-6.2.4-008": [
                 ("then zero or more Validation Information fields SHALL be returned in the response.", "SHALL"),
                 ("A client MAY elect to return no validation information in the response.", "MAY"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-010": [
+            "KMIP-CLAUSE-SPEC-6.2.4-010": [
                 ("which SHALL list all the client registration methods that the client supports.", "SHALL"),
                 ("then this field SHALL be returned in the response if the server supports any Client Registration Methods.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-016": [
+            "KMIP-CLAUSE-SPEC-6.2.4-016": [
                 ("Vendor Identification No SHALL be returned if Query Server Information is requested.", "SHALL"),
                 ("The Vendor Identification SHALL be a text string that uniquely identifies the vendor.", "SHALL"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.2.4-017": [
+            "KMIP-CLAUSE-SPEC-6.2.4-017": [
                 ("Extension Information No, MAY be repeated", "MAY"),
                 ("SHALL be returned if Query Extension List or Query Extension Map is requested and supported by the client.", "SHALL"),
             ],
@@ -15724,20 +15724,20 @@ class CatalogValidationTests(unittest.TestCase):
             "mixed and multi-predicate locators must preserve the reviewed source atom sequence exactly",
         )
         expected_may_atoms = {
-            ("KMIPKIT-CLAUSE-SPEC-6.2.1-004", "Protocol Version No, MAY be Repeated The list of protocol versions supported by the server ordered in decreasing order of preference.", "server", "server_only"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.1-006", "Protocol Version No, MAY be repeated The list of protocol versions supported by the client ordered in decreasing order of preference.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.3-004", "The server MAY include the attributes associated with the object.", "server", "server_only"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-008", "A client MAY elect to return no validation information in the response.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-012", "Query Function Yes, MAY be Repeated Determines the information being queried.", "server", "server_only"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-014", "Operation No, MAY be repeated Specifies an Operation that is supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-015", "Object Type No, MAY be repeated Specifies a Managed Object Type that is supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-017", "Extension Information No, MAY be repeated", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-018", "Attestation Type No, MAY be repeated Specifies an Attestation Type that is supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-019", "RNG Parameters No, MAY be repeated Specifies the RNG that is supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-020", "Profile Information No, MAY be repeated Specifies the Profiles that are supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-021", "Validation Information No, MAY be repeated Specifies the validations that are supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-022", "Capability Information No, MAY be repeated Specifies the capabilities that are supported by the client.", "client", "out_of_scope"),
-            ("KMIPKIT-CLAUSE-SPEC-6.2.4-023", "Client Registration Method No, MAY be repeated Specifies a Client Registration Method that is supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.1-004", "Protocol Version No, MAY be Repeated The list of protocol versions supported by the server ordered in decreasing order of preference.", "server", "server_only"),
+            ("KMIP-CLAUSE-SPEC-6.2.1-006", "Protocol Version No, MAY be repeated The list of protocol versions supported by the client ordered in decreasing order of preference.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.3-004", "The server MAY include the attributes associated with the object.", "server", "server_only"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-008", "A client MAY elect to return no validation information in the response.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-012", "Query Function Yes, MAY be Repeated Determines the information being queried.", "server", "server_only"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-014", "Operation No, MAY be repeated Specifies an Operation that is supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-015", "Object Type No, MAY be repeated Specifies a Managed Object Type that is supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-017", "Extension Information No, MAY be repeated", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-018", "Attestation Type No, MAY be repeated Specifies an Attestation Type that is supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-019", "RNG Parameters No, MAY be repeated Specifies the RNG that is supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-020", "Profile Information No, MAY be repeated Specifies the Profiles that are supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-021", "Validation Information No, MAY be repeated Specifies the validations that are supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-022", "Capability Information No, MAY be repeated Specifies the capabilities that are supported by the client.", "client", "out_of_scope"),
+            ("KMIP-CLAUSE-SPEC-6.2.4-023", "Client Registration Method No, MAY be repeated Specifies a Client Registration Method that is supported by the client.", "client", "out_of_scope"),
         }
         actual_may_atoms = {
             (review["source_clause_id"], atom["source_text"], atom["actor"], atom["scope_disposition"])
@@ -15767,20 +15767,20 @@ class CatalogValidationTests(unittest.TestCase):
         )
         expected = {
             "5.1": {
-                "header": ("KMIPKIT-CLAUSE-SPEC-5.1-001", "KMIPKIT-REQ-SPEC-5.1-001", [21764, 21780]),
-                "capability": ("KMIPKIT-CLAUSE-SPEC-5.1-002", "KMIPKIT-REQ-SPEC-5.1-002", [21800, 21820], "Attributes"),
+                "header": ("KMIP-CLAUSE-SPEC-5.1-001", "KMIP-REQ-SPEC-5.1-001", [21764, 21780]),
+                "capability": ("KMIP-CLAUSE-SPEC-5.1-002", "KMIP-REQ-SPEC-5.1-002", [21800, 21820], "Attributes"),
             },
             "5.2": {
-                "header": ("KMIPKIT-CLAUSE-SPEC-5.2-001", "KMIPKIT-REQ-SPEC-5.2-001", [21843, 21859]),
-                "capability": ("KMIPKIT-CLAUSE-SPEC-5.2-002", "KMIPKIT-REQ-SPEC-5.2-002", [21879, 21899], "Common Attributes"),
+                "header": ("KMIP-CLAUSE-SPEC-5.2-001", "KMIP-REQ-SPEC-5.2-001", [21843, 21859]),
+                "capability": ("KMIP-CLAUSE-SPEC-5.2-002", "KMIP-REQ-SPEC-5.2-002", [21879, 21899], "Common Attributes"),
             },
             "5.3": {
-                "header": ("KMIPKIT-CLAUSE-SPEC-5.3-001", "KMIPKIT-REQ-SPEC-5.3-001", [21922, 21938]),
-                "capability": ("KMIPKIT-CLAUSE-SPEC-5.3-002", "KMIPKIT-REQ-SPEC-5.3-002", [21958, 21978], "Private Key Attributes"),
+                "header": ("KMIP-CLAUSE-SPEC-5.3-001", "KMIP-REQ-SPEC-5.3-001", [21922, 21938]),
+                "capability": ("KMIP-CLAUSE-SPEC-5.3-002", "KMIP-REQ-SPEC-5.3-002", [21958, 21978], "Private Key Attributes"),
             },
             "5.4": {
-                "header": ("KMIPKIT-CLAUSE-SPEC-5.4-001", "KMIPKIT-REQ-SPEC-5.4-001", [22002, 22018]),
-                "capability": ("KMIPKIT-CLAUSE-SPEC-5.4-002", "KMIPKIT-REQ-SPEC-5.4-002", [22038, 22058], "Public Key Attributes"),
+                "header": ("KMIP-CLAUSE-SPEC-5.4-001", "KMIP-REQ-SPEC-5.4-001", [22002, 22018]),
+                "capability": ("KMIP-CLAUSE-SPEC-5.4-002", "KMIP-REQ-SPEC-5.4-002", [22038, 22058], "Public Key Attributes"),
             },
         }
         selected_clause_ids = {
@@ -15910,13 +15910,13 @@ class CatalogValidationTests(unittest.TestCase):
             mappings.setdefault(row["requirement_id"], []).append(row)
 
         split_actor_mappings = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.5-001": (
-                "KMIPKIT-REQ-SPEC-6.1.5-001",
-                "KMIPKIT-REQ-SPEC-6.1.5-002",
+            "KMIP-CLAUSE-SPEC-6.1.5-001": (
+                "KMIP-REQ-SPEC-6.1.5-001",
+                "KMIP-REQ-SPEC-6.1.5-002",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.7-005": (
-                "KMIPKIT-REQ-SPEC-6.1.7-005",
-                "KMIPKIT-REQ-SPEC-6.1.7-006",
+            "KMIP-CLAUSE-SPEC-6.1.7-005": (
+                "KMIP-REQ-SPEC-6.1.7-005",
+                "KMIP-REQ-SPEC-6.1.7-006",
             ),
         }
         for clause_id, (client_id, server_id) in split_actor_mappings.items():
@@ -15933,13 +15933,13 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirements[server_id]["role"], "server")
                 self.assertEqual(requirements[server_id]["scope_state"], "server_only")
 
-        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.9-006", "KMIPKIT-REQ-SPEC-6.1.9-007"):
+        for requirement_id in ("KMIP-REQ-SPEC-6.1.9-006", "KMIP-REQ-SPEC-6.1.9-007"):
             self.assertTrue(
                 all("(split/shared)" in row["scope_state"] for row in mappings[requirement_id])
             )
             self.assertEqual(requirements[requirement_id]["scope_state"], "mixed")
 
-        conditional_requirement_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
+        conditional_requirement_id = "KMIP-REQ-SPEC-4.1-001-001"
         self.assertEqual(
             [row["scope_state"] for row in mappings[conditional_requirement_id]],
             ["profile_conditional"],
@@ -15950,10 +15950,10 @@ class CatalogValidationTests(unittest.TestCase):
             sorted(profile["profile_id"] for profile in oracle["profiles"]),
         )
 
-        verify_rows = mappings["KMIPKIT-REQ-SPEC-6.1.20-001-002"]
+        verify_rows = mappings["KMIP-REQ-SPEC-6.1.20-001-002"]
         verify_keywords = {row["source_keyword"] for row in verify_rows}
         self.assertEqual(verify_keywords, {"SHALL", "SHALL NOT"})
-        self.assertIn(requirements["KMIPKIT-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
+        self.assertIn(requirements["KMIP-REQ-SPEC-6.1.20-001-002"]["source_keyword"], verify_keywords)
 
     def test_check_limited_additional_attributes_have_scoped_client_evidence(self) -> None:
         """The client Check attribute limit has scoped, executable evidence."""
@@ -15963,11 +15963,11 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        requirement_id = "KMIPKIT-REQ-SPEC-6.1.7-002-003"
+        requirement_id = "KMIP-REQ-SPEC-6.1.7-002-003"
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         self.assertIn(requirement_id, requirements, "the proposed client MAY must be promoted to a stable requirement")
         requirement = requirements[requirement_id]
-        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.7-002"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-6.1.7-002"])
         self.assertEqual(requirement["source_keyword"], "MAY")
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
@@ -15978,7 +15978,7 @@ class CatalogValidationTests(unittest.TestCase):
         matching_rows = [
             row
             for row in oracle["requirement_crosswalk"]
-            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.7-002"
+            if row.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.7-002"
             and row["source_obligation_order"] == 3
         ]
         self.assertEqual(len(matching_rows), 1)
@@ -15989,7 +15989,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_check_additional_attributes_separates_local_evidence_from_official_case_gap(self) -> None:
         """The pinned Test Cases source does not justify an official case link for §6.1.7."""
-        requirement = self._requirement_record_from_catalog("KMIPKIT-REQ-SPEC-6.1.7-002-003")
+        requirement = self._requirement_record_from_catalog("KMIP-REQ-SPEC-6.1.7-002-003")
 
         self.assertEqual(requirement["test_case_ids"], [])
         with self.subTest(evidence="qualified local verification"):
@@ -16379,8 +16379,8 @@ class CatalogValidationTests(unittest.TestCase):
             for gap in gaps
             if gap["source_id"] == "KMIPKIT-SRC-spec" and gap["proposed_requirement_id"] is not None
         }
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.40-017", spec_proposals)
-        required_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.54-001"}
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.40-017", spec_proposals)
+        required_body_proposals = {"KMIP-REQ-SPEC-6.1.54-001"}
         conditional_body_proposals = set()
         self.assertEqual(spec_proposals, required_body_proposals)
         required_body_gaps = [
@@ -16449,8 +16449,8 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertIn("Yes", gap["source_excerpt"])
             self.assertEqual(gap["source_keywords"], [])
             self.assertEqual(gap["actor"], "client")
-            client_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.31-001"}
-            client_1_1_body_proposals = {"KMIPKIT-REQ-SPEC-6.1.54-001"}
+            client_body_proposals = {"KMIP-REQ-SPEC-6.1.31-001"}
+            client_1_1_body_proposals = {"KMIP-REQ-SPEC-6.1.54-001"}
             expected_scope = (
                 "client_1_0"
                 if gap["proposed_requirement_id"] in client_body_proposals
@@ -16470,15 +16470,15 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(
             reused_requirements,
             {
-                "11.46": "KMIPKIT-REQ-SPEC-6.1-005",
-                "6.1.12": "KMIPKIT-REQ-SPEC-6.1.12-007",
-                "6.1.13": "KMIPKIT-REQ-SPEC-6.1.13-006",
-                "6.1.14": "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-                "6.1.30": "KMIPKIT-REQ-SPEC-6.1.30-003",
-                "6.1.31": "KMIPKIT-REQ-SPEC-6.1.31-001",
-                "2.3": "KMIPKIT-REQ-SPEC-2.3-003",
-                "4.21": "KMIPKIT-REQ-SPEC-4.26-001",
-                "4.24": "KMIPKIT-REQ-SPEC-6.1-004",
+                "11.46": "KMIP-REQ-SPEC-6.1-005",
+                "6.1.12": "KMIP-REQ-SPEC-6.1.12-007",
+                "6.1.13": "KMIP-REQ-SPEC-6.1.13-006",
+                "6.1.14": "KMIP-REQ-SPEC-6.1.14-007-001",
+                "6.1.30": "KMIP-REQ-SPEC-6.1.30-003",
+                "6.1.31": "KMIP-REQ-SPEC-6.1.31-001",
+                "2.3": "KMIP-REQ-SPEC-2.3-003",
+                "4.21": "KMIP-REQ-SPEC-4.26-001",
+                "4.24": "KMIP-REQ-SPEC-6.1-004",
             },
         )
         attributes_required_reuse = next(
@@ -16493,11 +16493,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIsNone(attributes_required_reuse["proposed_requirement_id"])
         self.assertEqual(
             attributes_required_reuse["candidate_requirement_id"],
-            "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+            "KMIP-REQ-SPEC-6.1.14-007-001",
         )
         self.assertEqual(
             attributes_required_reuse["reused_requirement_id"],
-            "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+            "KMIP-REQ-SPEC-6.1.14-007-001",
         )
         self.assertIn("source_force=required_table_body_value", attributes_required_reuse["review_note"])
         for profile in catalog["profiles"]:
@@ -16528,15 +16528,15 @@ class CatalogValidationTests(unittest.TestCase):
     def test_source_rejected_client_candidates_are_out_of_scope(self) -> None:
         """Rejected source atoms cannot remain in any computed client closure."""
         rejected_client_candidates = {
-            "KMIPKIT-REQ-SPEC-9.8-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-            "KMIPKIT-REQ-SPEC-6.1.25-004",
-            "KMIPKIT-REQ-SPEC-6.1.27-002-001",
-            "KMIPKIT-REQ-SPEC-6.1.28-011",
-            "KMIPKIT-REQ-SPEC-6.1.46-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.47-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.48-004",
+            "KMIP-REQ-SPEC-9.8-001-001",
+            "KMIP-REQ-SPEC-6.1.11-004-001",
+            "KMIP-REQ-SPEC-6.1.17-005-001",
+            "KMIP-REQ-SPEC-6.1.25-004",
+            "KMIP-REQ-SPEC-6.1.27-002-001",
+            "KMIP-REQ-SPEC-6.1.28-011",
+            "KMIP-REQ-SPEC-6.1.46-004-002",
+            "KMIP-REQ-SPEC-6.1.47-004-002",
+            "KMIP-REQ-SPEC-6.1.48-004",
         }
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
@@ -16568,8 +16568,8 @@ class CatalogValidationTests(unittest.TestCase):
         for row in oracle["requirement_crosswalk"]:
             crosswalk_by_requirement.setdefault(row["requirement_id"], []).append(row)
         server_only_candidates = {
-            "KMIPKIT-REQ-SPEC-6.1.25-004": 2,
-            "KMIPKIT-REQ-SPEC-6.1.28-011": 1,
+            "KMIP-REQ-SPEC-6.1.25-004": 2,
+            "KMIP-REQ-SPEC-6.1.28-011": 1,
         }
 
         for requirement_id in sorted(rejected_client_candidates):
@@ -16671,10 +16671,10 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirement = next(
             row for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-9.3-001-001"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-9.3-001-001"
         )
 
-        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-9.3-001"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-9.3-001"])
         self.assertEqual(
             (requirement["role"], requirement["direction"], requirement["scope_state"]),
             ("client", "client_to_server", "client_1_0"),
@@ -16683,8 +16683,8 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["status"], "verified")
         self.assertTrue(
             {
-                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR",
-                "KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR",
+                "KMIP-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR",
+                "KMIP-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR",
             }.issubset(requirement["element_ids"])
         )
         self.assertIn("crates/kmipkit-client/src/execute.rs", requirement["implementation_refs"])
@@ -16702,7 +16702,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_attestation_indicator_separates_local_evidence_from_official_case_gap(self) -> None:
         """Pinned sources leave §9.3 without an official test-case link."""
-        requirement = self._requirement_record_from_catalog("KMIPKIT-REQ-SPEC-9.3-001-001")
+        requirement = self._requirement_record_from_catalog("KMIP-REQ-SPEC-9.3-001-001")
 
         self.assertEqual(requirement["test_case_ids"], [])
         with self.subTest(evidence="existing local verification"):
@@ -16732,15 +16732,15 @@ class CatalogValidationTests(unittest.TestCase):
             row["source_clause_id"]: row
             for row in oracle["source_requirement_reviews"]
         }
-        header_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-002"]
-        operative_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.38-001"]
+        header_review = reviews["KMIP-CLAUSE-SPEC-6.1.38-002"]
+        operative_review = reviews["KMIP-CLAUSE-SPEC-6.1.38-001"]
 
         self.assertEqual(header_review["source_excerpt"], "Item REQUIRED Description")
         self.assertEqual(header_review["source_obligations"], [])
         self.assertEqual(header_review["expected_client_requirement_ids"], [])
         self.assertEqual(
             operative_review["expected_client_requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.38-001-001"],
+            ["KMIP-REQ-SPEC-6.1.38-001-001"],
         )
 
     def test_reviewed_source_requirement_mappings_match_pinned_locators_and_scope(self) -> None:
@@ -16784,7 +16784,7 @@ class CatalogValidationTests(unittest.TestCase):
 
             reviewed_client_ids = set()
             source_excerpt = pinned_clause["source_text"]
-            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.53.1-001":
+            if review["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.53.1-001":
                 source_excerpt = review["source_context"]
             normalized_source_text = str(source_excerpt)
             previous_source_offset = -1
@@ -16904,11 +16904,11 @@ class CatalogValidationTests(unittest.TestCase):
                     if candidate is None:
                         violations.append(f"contextual source label is unresolved: {reused_id}")
                         continue
-                    if reused_id != "KMIPKIT-REQ-SPEC-6.1-004":
+                    if reused_id != "KMIP-REQ-SPEC-6.1-004":
                         violations.append(f"{gap['gap_id']} uses an unapproved contextual capability label")
                     if candidate.get("role") != "client" or candidate.get("source_keyword") != "MAY":
                         violations.append(f"{gap['gap_id']} contextual label is not a client MAY capability")
-                    if "KMIPKIT-CLAUSE-SPEC-6.1-004" not in candidate.get("source_clause_ids", []):
+                    if "KMIP-CLAUSE-SPEC-6.1-004" not in candidate.get("source_clause_ids", []):
                         violations.append(f"{gap['gap_id']} contextual label lost its generic source owner")
                     if review["source_clause_id"] in candidate.get("source_clause_ids", []):
                         violations.append(f"{gap['gap_id']} contextual reuse incorrectly maps the Fresh exception clause")
@@ -17089,8 +17089,8 @@ class CatalogValidationTests(unittest.TestCase):
         expected = (
             (
                 "KMIPKIT-SOURCE-GAP-SPEC-4.39-LOWERCASE-FRIENDLY-NAME",
-                "KMIPKIT-CLAUSE-SPEC-4.39-002",
-                "KMIPKIT-REQ-SPEC-4.39-002-001",
+                "KMIP-CLAUSE-SPEC-4.39-002",
+                "KMIP-REQ-SPEC-4.39-002-001",
                 3,
                 "SHOULD",
                 "client_to_server",
@@ -17100,8 +17100,8 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-GET-SEMANTICS",
-                "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
-                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
+                "KMIP-CLAUSE-SPEC-6.1.18-001",
+                "KMIP-REQ-SPEC-6.1.18-001-001",
                 1,
                 "SHALL",
                 "client_to_server",
@@ -17111,8 +17111,8 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.45-CERTIFICATE-REQUEST-UID-ONLY",
-                "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
-                "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+                "KMIP-CLAUSE-SPEC-6.1.45-002",
+                "KMIP-REQ-SPEC-6.1.45-002-003",
                 2,
                 "SHALL",
                 "client_to_server",
@@ -17144,11 +17144,11 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 expected_status = (
                     "verified"
-                    if requirement_id == "KMIPKIT-REQ-SPEC-6.1.18-001-001"
+                    if requirement_id == "KMIP-REQ-SPEC-6.1.18-001-001"
                     else "scoped_verified"
-                    if requirement_id == "KMIPKIT-REQ-SPEC-4.39-002-001"
+                    if requirement_id == "KMIP-REQ-SPEC-4.39-002-001"
                     else "scoped_verified"
-                    if requirement_id == "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+                    if requirement_id == "KMIP-REQ-SPEC-6.1.45-002-003"
                     else "unassigned"
                 )
                 self.assertEqual(requirement["status"], expected_status)
@@ -17491,7 +17491,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_validate_validity_date_may_has_typed_optional_traceability(self) -> None:
         """The §6.1.57 date MAY links to its typed request representation rule."""
-        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-002-002"
+        requirement_id = "KMIP-REQ-SPEC-6.1.57-002-002"
         positive_test = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_validate_validity_date_as_optional_capability"
@@ -17516,12 +17516,12 @@ class CatalogValidationTests(unittest.TestCase):
         ]
 
         self.assertEqual(
-            requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-6.1.57-002"]
+            requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-6.1.57-002"]
         )
         self.assertEqual(requirement["source_refs"], [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.57"}])
         self.assertEqual(requirement["source_keyword"], "MAY")
         self.assertEqual(requirement["direction"], "client_to_server")
-        self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
+        self.assertEqual(requirement["element_ids"], ["KMIP-ELEM-OP-C2S-VALIDATE"])
         self.assertTrue(
             {
                 "crates/kmipkit-protocol/src/validate.rs",
@@ -17537,7 +17537,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn(malformed_test, requirement["verification_refs"])
         self.assertEqual(len(mappings), 1)
         self.assertEqual(
-            mappings[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.57-002"
+            mappings[0]["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1.57-002"
         )
         self.assertEqual(mappings[0]["verification_category"], "OptionalCapability")
         self.assertEqual(mappings[0]["test_kind"], "OptionalCapabilityUsable")
@@ -17546,8 +17546,8 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_validate_repeated_certificate_may_has_typed_optional_traceability(self) -> None:
         """The Table 340 Certificate row links to its typed request capability."""
-        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-004"
-        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.57-004"
+        requirement_id = "KMIP-REQ-SPEC-6.1.57-004"
+        clause_id = "KMIP-CLAUSE-SPEC-6.1.57-004"
         positive_test = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_validate_repeated_certificates_as_optional_capability"
@@ -17586,7 +17586,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertIsNone(requirement["condition"])
-        self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
+        self.assertEqual(requirement["element_ids"], ["KMIP-ELEM-OP-C2S-VALIDATE"])
         self.assertTrue(
             {
                 "crates/kmipkit-protocol/src/validate.rs",
@@ -17604,8 +17604,8 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_validate_repeated_unique_identifier_may_has_typed_optional_traceability(self) -> None:
         """The Table 340 Unique Identifier row links to a typed request capability."""
-        requirement_id = "KMIPKIT-REQ-SPEC-6.1.57-005"
-        clause_id = "KMIPKIT-CLAUSE-SPEC-6.1.57-005"
+        requirement_id = "KMIP-REQ-SPEC-6.1.57-005"
+        clause_id = "KMIP-CLAUSE-SPEC-6.1.57-005"
         positive_test = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_validate_repeated_unique_identifiers_as_optional_capability"
@@ -17648,7 +17648,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["role"], "client")
         self.assertEqual(requirement["direction"], "client_to_server")
         self.assertIsNone(requirement["condition"])
-        self.assertEqual(requirement["element_ids"], ["KMIPKIT-ELEM-OP-C2S-VALIDATE"])
+        self.assertEqual(requirement["element_ids"], ["KMIP-ELEM-OP-C2S-VALIDATE"])
         self.assertTrue(
             {
                 "crates/kmipkit-protocol/src/validate.rs",
@@ -17667,7 +17667,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_opaque_object_context_capability_evidence_has_a_bounded_typed_rule(self) -> None:
         """The §2.3 capability is limited to tested client encode/decode paths."""
-        requirement_id = "KMIPKIT-REQ-SPEC-2.3-001"
+        requirement_id = "KMIP-REQ-SPEC-2.3-001"
         expected_mapping_tests = {
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_register_opaque_object_context_custom_attributes",
@@ -17697,7 +17697,7 @@ class CatalogValidationTests(unittest.TestCase):
             if mapping["requirement_id"] == requirement_id
         ]
 
-        self.assertEqual(requirement["source_clause_ids"], ["KMIPKIT-CLAUSE-SPEC-2.3-001"])
+        self.assertEqual(requirement["source_clause_ids"], ["KMIP-CLAUSE-SPEC-2.3-001"])
         self.assertEqual(requirement["source_keyword"], "MAY")
         self.assertEqual(requirement["scope_state"], "profile_conditional")
         self.assertEqual(requirement["direction"], "both")
@@ -17708,7 +17708,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(requirement["test_case_ids"], [])
         self.assertIn("§4.60", requirement["review_note"])
         self.assertIn("do not establish server storage or acceptance", requirement["review_note"])
-        self.assertEqual({mapping["source_clause_id"] for mapping in mappings}, {"KMIPKIT-CLAUSE-SPEC-2.3-001"})
+        self.assertEqual({mapping["source_clause_id"] for mapping in mappings}, {"KMIP-CLAUSE-SPEC-2.3-001"})
         self.assertEqual({mapping["verification_category"] for mapping in mappings}, {"OptionalCapability"})
         self.assertEqual({mapping["test_kind"] for mapping in mappings}, {"OptionalCapabilityUsable"})
         self.assertTrue(all(mapping["evaluator_present"] for mapping in mappings))
@@ -17716,7 +17716,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_q_length_integer_negative_validation_has_named_requirement_evidence(self) -> None:
         """The Qlength field-type rejection test is linked to its normative requirement."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.14-001-001"
+        requirement_id = "KMIP-REQ-SPEC-4.14-001-001"
         verification_ref = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters"
@@ -17735,7 +17735,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_type_applicable_domain_parameter_evidence_has_a_bounded_typed_rule(self) -> None:
         """The §4.14 optional mapping covers only the tested DSA Qlength representation."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.14-001-002"
+        requirement_id = "KMIP-REQ-SPEC-4.14-001-002"
         expected_tests = {
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_type_applicable_dsa_q_length_domain_parameter",
@@ -17766,7 +17766,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual({mapping["test_id"] for mapping in mappings}, expected_tests)
         self.assertTrue(
             all(
-                mapping["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-4.14-001"
+                mapping["source_clause_id"] == "KMIP-CLAUSE-SPEC-4.14-001"
                 and mapping["verification_category"] == "OptionalCapability"
                 and mapping["evaluator_present"] is True
                 and mapping["test_kind"] == "OptionalCapabilityUsable"
@@ -17784,7 +17784,7 @@ class CatalogValidationTests(unittest.TestCase):
         self,
     ) -> None:
         """Get request selector evidence is scoped; profile-wide readiness is validated separately."""
-        requirement_id = "KMIPKIT-REQ-SPEC-3.1-001"
+        requirement_id = "KMIP-REQ-SPEC-3.1-001"
         expected_implementation_refs = {
             "crates/kmipkit-protocol/src/get.rs::GetRequest::with_key_compression_type",
             "crates/kmipkit-protocol/src/get.rs::GetRequest::to_ttlv_payload",
@@ -17848,7 +17848,7 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_unclear_direction_client_optional_requires_typed_positive_evidence(self) -> None:
         """Client evidence with an unclear direction is eligible only with a typed rule and test."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.16-001-002"
+        requirement_id = "KMIP-REQ-SPEC-4.16-001-002"
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
@@ -17905,8 +17905,8 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_client_response_optional_evidence_requires_a_linked_typed_rule(self) -> None:
         """Response-side client capabilities need their own executable positive evidence."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.62-003"
-        source_clause_id = "KMIPKIT-CLAUSE-SPEC-4.62-003"
+        requirement_id = "KMIP-REQ-SPEC-4.62-003"
+        source_clause_id = "KMIP-CLAUSE-SPEC-4.62-003"
         test_id = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_get_attributes_response_x509_values"
@@ -17953,8 +17953,8 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_conditional_client_response_optional_evidence_is_not_request_only(self) -> None:
         """A profile-conditional decoder capability may be evidenced on the response path."""
-        requirement_id = "KMIPKIT-REQ-SPEC-4.63-004"
-        source_clause_id = "KMIPKIT-CLAUSE-SPEC-4.63-004"
+        requirement_id = "KMIP-REQ-SPEC-4.63-004"
+        source_clause_id = "KMIP-CLAUSE-SPEC-4.63-004"
         test_id = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_maps_client_get_attributes_response_x509_values"
@@ -18003,15 +18003,15 @@ class CatalogValidationTests(unittest.TestCase):
     def test_wrapped_secret_data_import_has_scoped_implementation_and_positive_test_evidence(
         self,
     ) -> None:
-        requirement_id = "KMIPKIT-REQ-SPEC-2.7-001"
+        requirement_id = "KMIP-REQ-SPEC-2.7-001"
         expected_implementation_refs = {
             "crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload",
             "crates/kmipkit-protocol/src/import.rs::key_wrap_type_matches_object",
         }
         expected_element_ids = {
-            "KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
+            "KMIP-ELEM-OBJECT-STRUCTURE-SECRET-DATA",
+            "KMIP-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK",
+            "KMIP-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-VALUE",
         }
         expected_verification_ref = (
             "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::"
@@ -18083,8 +18083,8 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        requirement_id = "KMIPKIT-REQ-SPEC-5.1-002"
-        element_id = "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
+        requirement_id = "KMIP-REQ-SPEC-5.1-002"
+        element_id = "KMIP-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES"
         requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
         )
@@ -18092,7 +18092,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         self.assertIn(element_id, requirement["element_ids"])
         self.assertIn(requirement_id, element["requirement_ids"])
-        self.assertIn("KMIPKIT-REQ-SPEC-3.2-001", element["requirement_ids"])
+        self.assertIn("KMIP-REQ-SPEC-3.2-001", element["requirement_ids"])
 
     def test_optional_attribute_evidence_rows_are_client_to_server_requests(self) -> None:
         """Attribute request permissions remain client-originated catalog evidence."""
@@ -18101,16 +18101,16 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         requirement_ids = (
-            "KMIPKIT-REQ-SPEC-3.2-001",
-            "KMIPKIT-REQ-SPEC-4.14-001-001",
-            "KMIPKIT-REQ-SPEC-4.26-001",
-            "KMIPKIT-REQ-SPEC-4.34-001-001",
-            "KMIPKIT-REQ-SPEC-4.38-001-001",
-            "KMIPKIT-REQ-SPEC-4.38-001-002",
-            "KMIPKIT-REQ-SPEC-4.38-001-003",
-            "KMIPKIT-REQ-SPEC-4.4-001",
-            "KMIPKIT-REQ-SPEC-4.46-001-001",
-            "KMIPKIT-REQ-SPEC-4.46-001-002",
+            "KMIP-REQ-SPEC-3.2-001",
+            "KMIP-REQ-SPEC-4.14-001-001",
+            "KMIP-REQ-SPEC-4.26-001",
+            "KMIP-REQ-SPEC-4.34-001-001",
+            "KMIP-REQ-SPEC-4.38-001-001",
+            "KMIP-REQ-SPEC-4.38-001-002",
+            "KMIP-REQ-SPEC-4.38-001-003",
+            "KMIP-REQ-SPEC-4.4-001",
+            "KMIP-REQ-SPEC-4.46-001-001",
+            "KMIP-REQ-SPEC-4.46-001-002",
         )
 
         for requirement_id in requirement_ids:
@@ -18122,14 +18122,14 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_key_value_attributes_register_evidence_is_narrow_and_source_linked(self) -> None:
         """Plaintext Register evidence links source shape without claiming server acceptance."""
-        requirement_id = "KMIPKIT-REQ-SPEC-3.2-001"
+        requirement_id = "KMIP-REQ-SPEC-3.2-001"
         expected_element_ids = {
-            "KMIPKIT-ELEM-OP-C2S-REGISTER",
-            "KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
-            "KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+            "KMIP-ELEM-OP-C2S-REGISTER",
+            "KMIP-ELEM-OBJECT-STRUCTURE-KEY-VALUE",
+            "KMIP-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES",
+            "KMIP-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL",
+            "KMIP-ELEM-ATTRIBUTE-STRUCTURE-5-1-ATTRIBUTES",
+            "KMIP-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
         }
         implementation_ref = (
             "crates/kmipkit-protocol/src/register.rs::into_ttlv_payload"
@@ -18172,10 +18172,10 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_fragments = {
-            "KMIPKIT-REQ-SPEC-3.1-004-001": ("pinned", "official test case"),
-            "KMIPKIT-REQ-SPEC-3.1-005-001": ("pinned", "official test case"),
-            "KMIPKIT-REQ-SPEC-4.27-001": ("pinned", "official test case"),
-            "KMIPKIT-REQ-SPEC-6.1.43-005": (
+            "KMIP-REQ-SPEC-3.1-004-001": ("pinned", "official test case"),
+            "KMIP-REQ-SPEC-3.1-005-001": ("pinned", "official test case"),
+            "KMIP-REQ-SPEC-4.27-001": ("pinned", "official test case"),
+            "KMIP-REQ-SPEC-6.1.43-005": (
                 "associated attributes",
                 "server acceptance",
             ),
@@ -18194,15 +18194,15 @@ class CatalogValidationTests(unittest.TestCase):
         )
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
         expected_refs = {
-            "KMIPKIT-REQ-SPEC-6.1.35-001-001": {
+            "KMIP-REQ-SPEC-6.1.35-001-001": {
                 "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
                 "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
             },
-            "KMIPKIT-REQ-SPEC-6.1.35-002": {
+            "KMIP-REQ-SPEC-6.1.35-002": {
                 "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_preserves_identifier_zero_lease_time_date_and_extensions",
                 "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
             },
-            "KMIPKIT-REQ-SPEC-6.1.35-005": {
+            "KMIP-REQ-SPEC-6.1.35-005": {
                 "crates/kmipkit-protocol/tests/unit/obtain_lease_operation_tests.rs::successful_response_exposes_positive_lease_interval",
             },
         }
@@ -18238,7 +18238,7 @@ class CatalogValidationTests(unittest.TestCase):
         requirement = next(
             row
             for row in catalog["requirements"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.43-011"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.43-011"
         )
         named_test = (
             "crates/kmipkit-client/tests/unit/register_execution_tests.rs::"
@@ -18292,14 +18292,14 @@ class CatalogValidationTests(unittest.TestCase):
             unselected_capability in optional_capabilities,
             f"{unselected_capability} is catalogued for another profile, not the selected Baseline closure",
         )
-        profile_conditional_id = "KMIPKIT-REQ-SPEC-4.1-001-001"
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-4.1-001", selected_clause_ids)
+        profile_conditional_id = "KMIP-REQ-SPEC-4.1-001-001"
+        self.assertIn("KMIP-CLAUSE-SPEC-4.1-001", selected_clause_ids)
         self.assertIn(
             profile_conditional_id,
             optional_capabilities,
             "Baseline Client explicitly selects Activation Date through Profiles §5.1.1 item 3",
         )
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.43-009-001", optional_capabilities)
+        self.assertIn("KMIP-REQ-SPEC-6.1.43-009-001", optional_capabilities)
 
     def test_conditional_optional_source_evidence_requires_a_reviewed_condition_and_client_actor(
         self,
@@ -18313,7 +18313,7 @@ class CatalogValidationTests(unittest.TestCase):
                 obligation: dict[str, Any] = {
                     "source_keyword": "MAY",
                     "scope_disposition": "profile_conditional",
-                    "candidate_requirement_id": "KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY",
+                    "candidate_requirement_id": "KMIP-REQ-SPEC-TEST-CONDITIONAL-MAY",
                     "condition": "The caller selects the optional request capability.",
                     "actor": "client",
                 }
@@ -18321,7 +18321,7 @@ class CatalogValidationTests(unittest.TestCase):
                 oracle = {
                     "source_requirement_reviews": [
                         {
-                            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-TEST-CONDITIONAL",
+                            "source_clause_id": "KMIP-CLAUSE-SPEC-TEST-CONDITIONAL",
                             "source_obligations": [obligation],
                         }
                     ],
@@ -18330,17 +18330,17 @@ class CatalogValidationTests(unittest.TestCase):
 
                 capabilities, gaps = _reviewed_profile_optional_capabilities(
                     oracle,
-                    {"KMIPKIT-CLAUSE-SPEC-TEST-CONDITIONAL"},
+                    {"KMIP-CLAUSE-SPEC-TEST-CONDITIONAL"},
                     set(),
                 )
 
-                self.assertIn("KMIPKIT-REQ-SPEC-TEST-CONDITIONAL-MAY", capabilities)
+                self.assertIn("KMIP-REQ-SPEC-TEST-CONDITIONAL-MAY", capabilities)
                 self.assertTrue(gaps, "unknown or missing condition evidence must fail closed")
 
     def test_conditional_optional_source_accepts_a_descriptive_reviewed_client_actor(self) -> None:
         """Reviewed client decoder descriptions identify client obligations without a role field."""
-        requirement_id = "KMIPKIT-REQ-SPEC-TEST-CERTIFICATE-ATTRIBUTE-MAY"
-        source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-CERTIFICATE-ATTRIBUTE"
+        requirement_id = "KMIP-REQ-SPEC-TEST-CERTIFICATE-ATTRIBUTE-MAY"
+        source_clause_id = "KMIP-CLAUSE-SPEC-TEST-CERTIFICATE-ATTRIBUTE"
         actor = "client decoder when the X.509 Certificate Subject attribute is supported"
         oracle = {
             "source_requirement_reviews": [
@@ -18380,8 +18380,8 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_conditional_source_only_gap_requires_a_typed_client_actor(self) -> None:
         """Conditional source gaps with unknown or server actors cannot authorize a client capability."""
-        requirement_id = "KMIPKIT-REQ-SPEC-TEST-SOURCE-GAP-MAY"
-        source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-SOURCE-GAP"
+        requirement_id = "KMIP-REQ-SPEC-TEST-SOURCE-GAP-MAY"
+        source_clause_id = "KMIP-CLAUSE-SPEC-TEST-SOURCE-GAP"
         for label, actor in (
             ("missing actor", None),
             ("unresolved actor", "unresolved"),
@@ -18432,14 +18432,14 @@ class CatalogValidationTests(unittest.TestCase):
 
     def test_optional_evidence_gate_accepts_only_scoped_client_exchange_evidence(self) -> None:
         """Scoped evidence counts only for representable in-scope client exchanges."""
-        requirement_id = "KMIPKIT-REQ-SPEC-TEST-CLIENT-MAY"
+        requirement_id = "KMIP-REQ-SPEC-TEST-CLIENT-MAY"
         test_reference = "tests/positive_capability.rs::request_capability_is_available"
 
         def requirement(**overrides: Any) -> dict[str, Any]:
             row: dict[str, Any] = {
                 "requirement_id": requirement_id,
                 "scope_state": "client_1_0",
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-TEST-OPTIONAL"],
                 "condition": "The client elects to include this request capability.",
                 "implementation_refs": [
                     "src/request.rs",
@@ -18477,7 +18477,7 @@ class CatalogValidationTests(unittest.TestCase):
                 test_path_reference = first_test_reference.partition("::")[0]
                 test_path = root / test_path_reference
 
-                source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL"
+                source_clause_id = "KMIP-CLAUSE-SPEC-TEST-OPTIONAL"
                 test_name = first_test_reference.partition("::")[2]
                 typed_rule_test_reference = (
                     first_test_reference
@@ -18672,7 +18672,7 @@ class CatalogValidationTests(unittest.TestCase):
             "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
             "    TypedRuleMapping {\n"
             f'        requirement_id: "{requirement_id}",\n'
-            f'        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            f'        source_clause_id: "KMIP-CLAUSE-SPEC-TEST-OPTIONAL",\n'
             "        source_gap_id: None,\n"
             "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
             "        evaluator: Some(response_capability_rule),\n"
@@ -18743,7 +18743,7 @@ class CatalogValidationTests(unittest.TestCase):
             "const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[\n"
             "    TypedRuleMapping {\n"
             f'        requirement_id: "{requirement_id}",\n'
-            '        source_clause_id: "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL",\n'
+            '        source_clause_id: "KMIP-CLAUSE-SPEC-TEST-OPTIONAL",\n'
             "        source_gap_id: None,\n"
             "        verification_category: GeneratedVerificationCategory::OptionalCapability,\n"
             "        evaluator: Some(request_capability_rule),\n"
@@ -18760,7 +18760,7 @@ class CatalogValidationTests(unittest.TestCase):
             (
                 "conditional typed rule references another source clause",
                 correct_conditional_rule.replace(
-                    "KMIPKIT-CLAUSE-SPEC-TEST-OPTIONAL", "KMIPKIT-CLAUSE-SPEC-OTHER"
+                    "KMIP-CLAUSE-SPEC-TEST-OPTIONAL", "KMIP-CLAUSE-SPEC-OTHER"
                 ),
             ),
             (
@@ -18938,8 +18938,8 @@ class CatalogValidationTests(unittest.TestCase):
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
 
         for requirement_id in (
-            "KMIPKIT-REQ-SPEC-4.35-001-001",
-            "KMIPKIT-REQ-SPEC-4.35-001-002",
+            "KMIP-REQ-SPEC-4.35-001-001",
+            "KMIP-REQ-SPEC-4.35-001-002",
         ):
             with self.subTest(requirement_id=requirement_id):
                 self.assertEqual(requirements[requirement_id]["direction"], "client_to_server")
@@ -19023,16 +19023,16 @@ class CatalogValidationTests(unittest.TestCase):
                 gaps.append(f"{requirement_id}: no eligible implementation and positive-test evidence")
 
         self.assertFalse(
-            any(gap.startswith("KMIPKIT-REQ-SPEC-4.14-001-001:") for gap in gaps),
+            any(gap.startswith("KMIP-REQ-SPEC-4.14-001-001:") for gap in gaps),
             "the selected Baseline Qlength capability has a reviewed conditional rule and positive request evidence",
         )
 
         if expected_blocked_requirement_ids is None:
             expected_blocked_requirement_ids = {
-                "KMIPKIT-REQ-SPEC-4.1-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.14-002",
-                "KMIPKIT-REQ-SPEC-6.1.34-001-003",
-                "KMIPKIT-REQ-SPEC-7.31-001",
+                "KMIP-REQ-SPEC-4.1-001-001",
+                "KMIP-REQ-SPEC-6.1.14-002",
+                "KMIP-REQ-SPEC-6.1.34-001-003",
+                "KMIP-REQ-SPEC-7.31-001",
             }
         observed_blocked_requirement_ids = {gap.partition(":")[0] for gap in gaps}
         self.assertEqual(
@@ -19092,7 +19092,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertFalse(
             any(
-                blocker.endswith("KMIPKIT-REQ-SPEC-9.20-001-002")
+                blocker.endswith("KMIP-REQ-SPEC-9.20-001-002")
                 and blocker.startswith(("missing implementation assignment:", "missing verification assignment:"))
                 for blocker in readiness["blockers"]
             )
@@ -19109,7 +19109,7 @@ class CatalogValidationTests(unittest.TestCase):
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
         omissions = (
-            ("source_clause_ids", "KMIPKIT-CLAUSE-SPEC-0-001"),
+            ("source_clause_ids", "KMIP-CLAUSE-SPEC-0-001"),
             ("requirement_ids", "KMIPKIT-REQ-PROF-3.1.1-002"),
             ("requirement_ids", "KMIPKIT-REQ-PROF-3.1.1-005"),
             ("requirement_ids", "KMIPKIT-REQ-PROF-3.1.2-002"),
@@ -19296,9 +19296,9 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["policies"] = [
             {
-                "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
+                "policy_id": "PROJECT-POLICY-UNKNOWN-VALUES",
                 "summary": "Preserve unknown values.",
-                "provenance": "AGENTS.md",
+                "provenance": "project-guide",
                 "affected_element_kinds": ["enumeration_value"],
                 "requirement_ids": [],
             }
@@ -19310,10 +19310,10 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["policies"] = [
             {
-                "policy_id": "KMIPKIT-POLICY-UNKNOWN-VALUES",
+                "policy_id": "PROJECT-POLICY-UNKNOWN-VALUES",
                 "summary": "Preserve unknown values.",
-                "provenance": "AGENTS.md",
-                "provenance_ref": {"path": "AGENTS.md", "heading": "9. Public API and compatibility"},
+                "provenance": "project-guide",
+                "provenance_ref": {"path": "project-guide", "heading": "9. Public API and compatibility"},
                 "affected_element_kinds": ["enumeration_value"],
                 "requirement_ids": [],
             }
@@ -19324,8 +19324,8 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["requirements"] = [
             {
-                "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-404"],
+                "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-404"],
                 "source_refs": [{"source_id": "KMIPKIT-SRC-missing", "section": "8.1"}],
                 "source_keyword": "MUST",
                 "normative_strength": "mandatory",
@@ -19354,13 +19354,13 @@ class CatalogValidationTests(unittest.TestCase):
         document = minimal_catalog()
         document["source_clauses"] = [
             {
-                "clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+                "clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
                 "source_id": "KMIPKIT-SRC-spec",
                 "section": "8.1",
                 "locator": {"ordinal": 1, "block_kind": "paragraph"},
                 "source_keywords": ["MUST NOT"],
                 "disposition": "requirement",
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "exclusion_rationale": None,
                 "role": "client",
                 "direction": "client_to_server",
@@ -19370,8 +19370,8 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         document["requirements"] = [
             {
-                "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
                 "source_keyword": "MUST NOT",
                 "normative_strength": "prohibited",
@@ -19403,26 +19403,26 @@ class CatalogValidationTests(unittest.TestCase):
         clauses = {row["clause_id"]: row for row in catalog["source_clauses"]}
         elements = {row["element_id"]: row for row in catalog["elements"]}
         opaque_child_elements = {
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": (
+            "KMIP-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-TYPE": (
                 "Opaque Data Type", "Enumeration",
             ),
-            "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": (
+            "KMIP-ELEM-STRUCTURE-MEMBER-2-3-OPAQUE-OBJECT-OPAQUE-DATA-VALUE": (
                 "Opaque Data Value", "Byte String",
             ),
         }
         expected_clause_links = {
-            "KMIPKIT-REQ-SPEC-2.3-002": (
-                "KMIPKIT-CLAUSE-SPEC-2.3-002",
+            "KMIP-REQ-SPEC-2.3-002": (
+                "KMIP-CLAUSE-SPEC-2.3-002",
                 {"ordinal": 2, "block_kind": "paragraph"},
             ),
         }
         register_requirement_ids = (
-            "KMIPKIT-REQ-SPEC-6.1.43-001",
-            "KMIPKIT-REQ-SPEC-6.1.43-007",
-            "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-            "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-            "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-            "KMIPKIT-REQ-SPEC-6.1.43-010-002",
+            "KMIP-REQ-SPEC-6.1.43-001",
+            "KMIP-REQ-SPEC-6.1.43-007",
+            "KMIP-REQ-SPEC-6.1.43-009-001",
+            "KMIP-REQ-SPEC-6.1.43-009-002",
+            "KMIP-REQ-SPEC-6.1.43-010-001",
+            "KMIP-REQ-SPEC-6.1.43-010-002",
         )
         implementation_refs = {
             "crates/kmipkit-protocol/src/register.rs",
@@ -19459,7 +19459,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        for requirement_id in ("KMIPKIT-REQ-SPEC-2.3-002",):
+        for requirement_id in ("KMIP-REQ-SPEC-2.3-002",):
             with self.subTest(requirement_id=requirement_id):
                 requirement = requirements[requirement_id]
                 clause_id, expected_locator = expected_clause_links[requirement_id]
@@ -19467,7 +19467,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["direction"], "client_to_server")
                 self.assertEqual(requirement["status"], "scoped_verified")
-                self.assertIn("KMIPKIT-ELEM-OP-C2S-REGISTER", requirement["element_ids"])
+                self.assertIn("KMIP-ELEM-OP-C2S-REGISTER", requirement["element_ids"])
                 self.assertTrue(requirement["implementation_refs"])
                 self.assertTrue(requirement["verification_refs"])
                 self.assertEqual(requirement["test_case_ids"], [])
@@ -19493,7 +19493,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(clause["locator"], expected_locator)
                 self.assertIn(requirement_id, clause["requirement_ids"])
 
-        opaque_structure_requirement = requirements["KMIPKIT-REQ-SPEC-2.3-003"]
+        opaque_structure_requirement = requirements["KMIP-REQ-SPEC-2.3-003"]
         self.assertEqual(opaque_structure_requirement["feature_spec"], "KMIPKIT-0044")
         self.assertEqual(opaque_structure_requirement["role"], "client")
         self.assertEqual(opaque_structure_requirement["direction"], "client_to_server")
@@ -19522,7 +19522,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "html_line_range": [6927, 6945],
             },
         )
-        header_clause = clauses["KMIPKIT-CLAUSE-SPEC-2.3-003"]
+        header_clause = clauses["KMIP-CLAUSE-SPEC-2.3-003"]
         self.assertEqual(header_clause["role"], "not_applicable")
         self.assertEqual(header_clause["direction"], "not_applicable")
         self.assertEqual(header_clause["scope_state"], "out_of_scope")
@@ -19616,7 +19616,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
 
         legacy_proposals = {
-            f"KMIPKIT-REQ-SPEC-6.1.24-{ordinal:03d}"
+            f"KMIP-REQ-SPEC-6.1.24-{ordinal:03d}"
             for ordinal in range(1, 6)
         }
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -19663,7 +19663,7 @@ class CatalogValidationTests(unittest.TestCase):
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         hash_operation = next(
             element for element in catalog["elements"]
-            if element["element_id"] == "KMIPKIT-ELEM-OP-C2S-HASH"
+            if element["element_id"] == "KMIP-ELEM-OP-C2S-HASH"
         )
         self.assertEqual(hash_operation["feature_spec"], "KMIPKIT-0021")
         self.assertEqual(hash_operation["direction"], "client_to_server")
@@ -19694,7 +19694,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["direction"], "client→server Hash request")
                 self.assertEqual(contract["condition"], condition)
                 self.assertEqual(contract["scope_disposition"], "client_1_0")
-                self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-HASH")
+                self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-HASH")
                 self.assertIn("FR-002", contract["functional_requirement_ids"])
                 self.assertTrue(contract["implementation_refs"])
                 self.assertTrue(contract["verification_refs"])
@@ -19719,7 +19719,7 @@ class CatalogValidationTests(unittest.TestCase):
         contracts = broken.get("source_table_contracts", [])
         del contracts[0]["source_excerpt"]
         del contracts[0]["source_path"]
-        contracts[1]["operation_element_id"] = "KMIPKIT-ELEM-OP-C2S-MAC"
+        contracts[1]["operation_element_id"] = "KMIP-ELEM-OP-C2S-MAC"
         contracts[2]["verification_refs"] = [
             "crates/kmipkit-protocol/tests/unit/hash_operation_tests.rs::missing_hash_table_test"
         ]
@@ -19742,47 +19742,47 @@ class CatalogValidationTests(unittest.TestCase):
         )
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-OBJECT-TYPE-REQUIRED": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-REPLACE-EXISTING-OPTIONAL": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-KEY-WRAP-TYPE-CONDITIONAL": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::key_wrap_type_is_present_if_and_only_if_key_block_has_wrapping_data"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ATTRIBUTES-REQUIRED": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::request_preserves_required_fields_and_only_explicit_optional_choices"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-ANY-OBJECT-REQUIRED": (
-                "KMIPKIT-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-IMPORT", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/import.rs::ImportRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/import_operation_tests.rs::replacement_and_conditional_wrap_type_are_preserved_without_unwrapping"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-OBJECT-TYPE-REQUIRED": (
-                "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001", "FR-002", "FR-008"],
+                "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001", "FR-002", "FR-008"],
                 ["crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-ATTRIBUTES-OPTIONAL": (
-                "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001"],
+                "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001"],
                 ["crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-PROTECTION-STORAGE-MASKS-OPTIONAL": (
-                "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001"],
+                "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY", ["FR-001"],
                 ["crates/kmipkit-protocol/src/join_split_key.rs::JoinSplitKeyRequest::into_ttlv_payload"],
                 ["crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs::request_preserves_repeated_identifiers_in_order_and_keeps_thresholds_off_wire"],
             ),
@@ -19884,7 +19884,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         source_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.32-002"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.32-002"
         )
         reviewed_rows = {row["row_label"]: row for row in source_review["source_request_rows"]}
         for gap_id, (row_label, *_rest) in expected.items():
@@ -19897,7 +19897,7 @@ class CatalogValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(reviewed_row["source_requirement_ids"], [])
 
-        operation_id = "KMIPKIT-ELEM-OP-C2S-MAC"
+        operation_id = "KMIP-ELEM-OP-C2S-MAC"
         implementation_ref = "crates/kmipkit-protocol/src/mac.rs::MacRequest::to_ttlv_payload"
         for gap_id, (row_label, line_range, requiredness, source_force, requirement, verification_ref) in expected.items():
             contract = contracts[gap_id]
@@ -20003,7 +20003,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["direction"], "client→server Register request")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-REGISTER")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-REGISTER")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001"])
         self.assertEqual(
             contract["implementation_refs"],
@@ -20027,12 +20027,12 @@ class CatalogValidationTests(unittest.TestCase):
         source_gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
         self.assertNotIn(gap_id, source_gap_ids)
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1.43-012",
+            "KMIP-REQ-SPEC-6.1.43-012",
             {row["proposed_requirement_id"] for row in oracle["source_only_requirement_gaps"]},
         )
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.43-004"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.43-004"
         )
         reviewed_row = next(
             row for row in request_review["source_request_rows"]
@@ -20093,7 +20093,7 @@ class CatalogValidationTests(unittest.TestCase):
             "table cells must not become per-cell normative requirement identifiers",
         )
 
-        operation_id = "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY"
+        operation_id = "KMIP-ELEM-OP-C2S-MAC-VERIFY"
         implementation_ref = "crates/kmipkit-protocol/src/mac_verify.rs::MacVerifyRequest::to_ttlv_payload"
         for gap_id, (row_label, line_range, requiredness, source_force, operation_test_ref, execution_test_ref) in expected.items():
             contract = contracts[gap_id]
@@ -20127,7 +20127,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_header = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.33-003"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.33-003"
         )
         reviewed_rows = {row["row_label"]: row for row in request_header["source_request_rows"]}
         for gap_id, (row_label, *_rest) in expected.items():
@@ -20149,7 +20149,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         request_clause = next(
             review for review in oracle["source_requirement_reviews"]
-            if review["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.24-001"
+            if review["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.24-001"
         )
         data_row = next(row for row in request_clause["source_request_rows"] if row["row_label"] == "Data")
         data_contract = next(
@@ -20175,17 +20175,17 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.24" or row["section"].startswith("6.1.24.")
         ]
         expected_sources = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.24-001": (
+            "KMIP-CLAUSE-SPEC-6.1.24-001": (
                 "6.1.24", 1, "table_row", ["REQUIRED"], [28233, 28250], "Item REQUIRED Description",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.24-002": (
+            "KMIP-CLAUSE-SPEC-6.1.24-002": (
                 "6.1.24", 2, "table_row", ["REQUIRED"], [28355, 28372], "Item REQUIRED Description",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.24.1-001": (
+            "KMIP-CLAUSE-SPEC-6.1.24.1-001": (
                 "6.1.24.1", 1, "paragraph", ["SHALL"], [28420, 28421],
                 "This section details the specific Result Reasons that SHALL be returned for errors detected in a Hash Operation.",
             ),
-            "KMIPKIT-CLAUSE-SPEC-6.1.24.1-002": (
+            "KMIP-CLAUSE-SPEC-6.1.24.1-002": (
                 "6.1.24.1", 2, "table_row", ["REQUIRED"], [28441, 28454],
                 "Operation Failed Cryptographic Failure, Invalid Correlation Value, Attestation Failed, Attestation Required, Feature Not Supported, Invalid Field, Invalid Message, Operation Not Supported, Permission Denied, Response Too Large",
             ),
@@ -20229,10 +20229,10 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(review["source_excerpt"], pinned_source_excerpt(source_path, line_range))
                 self.assertEqual(review["source_excerpt"], source_text)
                 self.assertEqual(review["source_excerpt"], pinned_by_clause[clause_id]["source_text"])
-                if clause_id != "KMIPKIT-CLAUSE-SPEC-6.1.24.1-001":
+                if clause_id != "KMIP-CLAUSE-SPEC-6.1.24.1-001":
                     self.assertEqual(review["source_obligations"], [])
 
-        result_clause = reviews["KMIPKIT-CLAUSE-SPEC-6.1.24.1-001"]
+        result_clause = reviews["KMIP-CLAUSE-SPEC-6.1.24.1-001"]
         self.assertEqual(
             [
                 (
@@ -20252,7 +20252,7 @@ class CatalogValidationTests(unittest.TestCase):
             "the operation-specific error preamble is conditional server behavior, not a client requirement",
         )
 
-        request_clause = reviews["KMIPKIT-CLAUSE-SPEC-6.1.24-001"]
+        request_clause = reviews["KMIP-CLAUSE-SPEC-6.1.24-001"]
         expected_request_rows = [
             ("Cryptographic Parameters", "Yes", "required_request_table_contract", [28255, 28267], "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-CRYPTOGRAPHIC-PARAMETERS-REQUIRED"),
             ("Data", "Yes for single-part. No for multi-part.", "conditionally_required_request_table_contract", [28273, 28284], "KMIPKIT-SOURCE-GAP-SPEC-6.1.24-DATA-REQUIRED"),
@@ -20273,7 +20273,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
 
-        response_clause = reviews["KMIPKIT-CLAUSE-SPEC-6.1.24-002"]
+        response_clause = reviews["KMIP-CLAUSE-SPEC-6.1.24-002"]
         expected_response_rows = [
             ("Data", "Yes for single-part. No for multi-part.", [28377, 28388], "server"),
             ("Correlation Value", "No", [28394, 28406], "server"),
@@ -20345,10 +20345,10 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertIn("no unique identifier row", request_clause["review_note"].lower())
         self.assertIn("multi-part", response_clause["review_note"].lower())
 
-        reason_values = reviews["KMIPKIT-CLAUSE-SPEC-6.1.24.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
+        reason_values = reviews["KMIP-CLAUSE-SPEC-6.1.24.1-002"]["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 10)
         self.assertEqual(len(set(reason_values)), 10)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.24.1-002"]["source_obligations"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.24.1-002"]["source_obligations"], [])
 
         crosswalk = [
             row for row in oracle["requirement_crosswalk"]
@@ -20356,7 +20356,7 @@ class CatalogValidationTests(unittest.TestCase):
         ]
         self.assertEqual(crosswalk, [], "no stable catalog requirement label maps to this source slice yet")
         legacy_proposals = {
-            f"KMIPKIT-REQ-SPEC-6.1.24-{ordinal:03d}"
+            f"KMIP-REQ-SPEC-6.1.24-{ordinal:03d}"
             for ordinal in range(1, 6)
         }
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
@@ -20382,15 +20382,15 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.25" or row["section"].startswith("6.1.25.")
         ]
         expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-004",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-005",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-006",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-007",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25.1-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.25.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.25-001",
+            "KMIP-CLAUSE-SPEC-6.1.25-002",
+            "KMIP-CLAUSE-SPEC-6.1.25-003",
+            "KMIP-CLAUSE-SPEC-6.1.25-004",
+            "KMIP-CLAUSE-SPEC-6.1.25-005",
+            "KMIP-CLAUSE-SPEC-6.1.25-006",
+            "KMIP-CLAUSE-SPEC-6.1.25-007",
+            "KMIP-CLAUSE-SPEC-6.1.25.1-001",
+            "KMIP-CLAUSE-SPEC-6.1.25.1-002",
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -20412,15 +20412,15 @@ class CatalogValidationTests(unittest.TestCase):
 
         pinned_by_clause = {row["clause_id"]: row for row in audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")}
         expected_atom_counts = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-001": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-002": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-004": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-005": 2,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-006": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-007": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.25.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.25-001": 2,
+            "KMIP-CLAUSE-SPEC-6.1.25-002": 1,
+            "KMIP-CLAUSE-SPEC-6.1.25-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.25-004": 2,
+            "KMIP-CLAUSE-SPEC-6.1.25-005": 2,
+            "KMIP-CLAUSE-SPEC-6.1.25-006": 1,
+            "KMIP-CLAUSE-SPEC-6.1.25-007": 0,
+            "KMIP-CLAUSE-SPEC-6.1.25.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.25.1-002": 0,
         }
         self.assertEqual(set(expected_atom_counts), expected_clause_ids)
         for clause_id, expected_count in expected_atom_counts.items():
@@ -20440,25 +20440,25 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertIn(atom["source_keyword"], atom["source_text"])
 
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-001": [
+            "KMIP-CLAUSE-SPEC-6.1.25-001": [
                 (1, "The attribute rules for each attribute for “Initially set by” and “When implicitly set” SHALL NOT be enforced", "SHALL NOT", "server", "server_only", None),
-                (2, "all attributes MUST be set to the supplied values rather than any server generated values.", "MUST", "server/actor-ambiguous", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-001"),
+                (2, "all attributes MUST be set to the supplied values rather than any server generated values.", "MUST", "server/actor-ambiguous", "server_only", "KMIP-REQ-SPEC-6.1.25-001"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-002": [
+            "KMIP-CLAUSE-SPEC-6.1.25-002": [
                 (1, "The server SHALL copy the Unique Identifier returned by this operations into the ID Placeholder variable.", "SHALL", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-004": [
-                (1, "If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-004"),
-                (2, "If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.25-004"),
+            "KMIP-CLAUSE-SPEC-6.1.25-004": [
+                (1, "If specified and true then any existing object with the same Unique Identifier SHALL be replaced by this operation.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.25-004"),
+                (2, "If absent or false and an object exists with the same Unique Identifier then an error SHALL be returned.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.25-004"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-005": [
+            "KMIP-CLAUSE-SPEC-6.1.25-005": [
                 (1, "If Not Wrapped then the server SHALL unwrap the object before storing it, and return an error if the wrapping key is not available.", "SHALL", "server", "server_only", None),
                 (2, "Otherwise the server SHALL store the object as provided.", "SHALL", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.25-006": [
-                (1, "The object and attributes MAY be wrapped.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.25-006"),
+            "KMIP-CLAUSE-SPEC-6.1.25-006": [
+                (1, "The object and attributes MAY be wrapped.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.25-006"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.25.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.25.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Import Operation.", "SHALL", "server", "server_only", None),
             ],
         }
@@ -20480,21 +20480,21 @@ class CatalogValidationTests(unittest.TestCase):
                 f"{clause_id} must retain the source-ordered actor and client-scope decisions",
             )
 
-        paragraph = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]
+        paragraph = reviews["KMIP-CLAUSE-SPEC-6.1.25-001"]
         self.assertIn("KMIPKIT-DEC-033 assigns the supplied-value enforcement to the server", paragraph["review_note"])
         self.assertIn("server/actor-ambiguous", paragraph["review_note"])
         self.assertEqual(paragraph["rejected_candidate_mappings"], [])
         self.assertEqual(
-            [row["requirement_id"] for row in reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-004"]["rejected_candidate_mappings"]],
+            [row["requirement_id"] for row in reviews["KMIP-CLAUSE-SPEC-6.1.25-004"]["rejected_candidate_mappings"]],
             [],
         )
         replace_crosswalk = [
             row for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.25-004"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.25-004"
         ]
         self.assertEqual([row["source_obligation_order"] for row in replace_crosswalk], [1, 2])
         self.assertTrue(all(row["role"] == "server" and row["scope_state"] == "server_only" for row in replace_crosswalk))
-        self.assertIn("separate Attributes Required request-table row remains client-side", reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-001"]["review_note"])
+        self.assertIn("separate Attributes Required request-table row remains client-side", reviews["KMIP-CLAUSE-SPEC-6.1.25-001"]["review_note"])
 
         expected_request_rows = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.25-UNIQUE-IDENTIFIER-REQUIRED": (
@@ -20548,15 +20548,15 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertNotIn("proposed_requirement_id", contract)
                 self.assertNotIn("requirement_id", contract)
         legacy_proposals = {
-            "KMIPKIT-REQ-SPEC-6.1.25-005",
-            "KMIPKIT-REQ-SPEC-6.1.25-007",
-            "KMIPKIT-REQ-SPEC-6.1.25-008",
-            "KMIPKIT-REQ-SPEC-6.1.25-009",
-            "KMIPKIT-REQ-SPEC-6.1.25-010",
-            "KMIPKIT-REQ-SPEC-6.1.25-011",
+            "KMIP-REQ-SPEC-6.1.25-005",
+            "KMIP-REQ-SPEC-6.1.25-007",
+            "KMIP-REQ-SPEC-6.1.25-008",
+            "KMIP-REQ-SPEC-6.1.25-009",
+            "KMIP-REQ-SPEC-6.1.25-010",
+            "KMIP-REQ-SPEC-6.1.25-011",
         }
         self.assertTrue(legacy_proposals.isdisjoint(catalog_ids))
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-003"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.25-003"]["source_request_rows"]
         self.assertEqual(
             [
                 (
@@ -20588,7 +20588,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-007"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.25-007"]["source_payload_rows"],
             [
                 {
                     "row_label": "Unique Identifier",
@@ -20600,26 +20600,26 @@ class CatalogValidationTests(unittest.TestCase):
                 }
             ],
         )
-        error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25.1-002"]["source_excerpt"]
+        error_text = reviews["KMIP-CLAUSE-SPEC-6.1.25.1-002"]["source_excerpt"]
         reason_values = error_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reason_values), 18)
         self.assertEqual(len(set(reason_values)), 17)
         self.assertEqual(reason_values.count("Invalid Field"), 2)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.25.1-002"]["source_obligations"], [])
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["role"], "server")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["direction"], "not_applicable")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["scope_state"], "server_only")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-001"]["status"], "unassigned")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-004"]["role"], "server")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.25-006"]["source_keyword"], "MAY")
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.25.1-002"]["source_obligations"], [])
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-001"]["role"], "server")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-001"]["direction"], "not_applicable")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-001"]["scope_state"], "server_only")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-001"]["status"], "unassigned")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-004"]["role"], "server")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.25-006"]["source_keyword"], "MAY")
 
-        wrapped_atom = reviews["KMIPKIT-CLAUSE-SPEC-6.1.25-006"]["source_obligations"][0]
-        self.assertEqual(wrapped_atom["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.25-006")
+        wrapped_atom = reviews["KMIP-CLAUSE-SPEC-6.1.25-006"]["source_obligations"][0]
+        self.assertEqual(wrapped_atom["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.25-006")
         mapping = [
-            row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == "KMIPKIT-REQ-SPEC-6.1.25-006"
+            row for row in oracle["requirement_crosswalk"] if row["requirement_id"] == "KMIP-REQ-SPEC-6.1.25-006"
         ]
         self.assertEqual(len(mapping), 1)
-        self.assertEqual(mapping[0]["source_clause_id"], "KMIPKIT-CLAUSE-SPEC-6.1.25-006")
+        self.assertEqual(mapping[0]["source_clause_id"], "KMIP-CLAUSE-SPEC-6.1.25-006")
         self.assertEqual(mapping[0]["source_obligation_order"], 1)
         self.assertEqual(mapping[0]["source_keyword"], "MAY")
         self.assertEqual(mapping[0]["source_actor"], "client")
@@ -20630,13 +20630,13 @@ class CatalogValidationTests(unittest.TestCase):
             if profile["role"] == "client"
         }
         for profile in (row for row in catalog["profiles"] if row["role"] == "client"):
-            self.assertIn("KMIPKIT-REQ-SPEC-6.1.25-006", oracle_subsets[profile["profile_id"]])
-            self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.25-001", oracle_subsets[profile["profile_id"]])
-            self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.25-004", oracle_subsets[profile["profile_id"]])
+            self.assertIn("KMIP-REQ-SPEC-6.1.25-006", oracle_subsets[profile["profile_id"]])
+            self.assertNotIn("KMIP-REQ-SPEC-6.1.25-001", oracle_subsets[profile["profile_id"]])
+            self.assertNotIn("KMIP-REQ-SPEC-6.1.25-004", oracle_subsets[profile["profile_id"]])
             actual_ids = set(profile["requirement_ids"])
-            self.assertIn("KMIPKIT-REQ-SPEC-6.1.25-006", actual_ids)
+            self.assertIn("KMIP-REQ-SPEC-6.1.25-006", actual_ids)
             rejected_client_labels = {
-                "KMIPKIT-REQ-SPEC-6.1.25-004",
+                "KMIP-REQ-SPEC-6.1.25-004",
             }
             self.assertEqual(
                 actual_ids & rejected_client_labels,
@@ -20659,11 +20659,11 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.26" or row["section"].startswith("6.1.26.")
         ]
         expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.26-001",
+            "KMIP-CLAUSE-SPEC-6.1.26-002",
+            "KMIP-CLAUSE-SPEC-6.1.26-003",
+            "KMIP-CLAUSE-SPEC-6.1.26.1-001",
+            "KMIP-CLAUSE-SPEC-6.1.26.1-002",
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -20688,17 +20688,17 @@ class CatalogValidationTests(unittest.TestCase):
             for row in audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         }
         expected_locator_evidence = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-001": ("6.1.26", 1, "paragraph", ["SHALL NOT"], [28727, 28729]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-002": ("6.1.26", 2, "table_row", ["REQUIRED"], [28744, 28762]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-003": ("6.1.26", 3, "table_row", ["REQUIRED"], [28812, 28830]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-001": ("6.1.26.1", 1, "paragraph", ["SHALL"], [28855, 28856]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-002": ("6.1.26.1", 2, "table_row", ["REQUIRED"], [28874, 28887]),
+            "KMIP-CLAUSE-SPEC-6.1.26-001": ("6.1.26", 1, "paragraph", ["SHALL NOT"], [28727, 28729]),
+            "KMIP-CLAUSE-SPEC-6.1.26-002": ("6.1.26", 2, "table_row", ["REQUIRED"], [28744, 28762]),
+            "KMIP-CLAUSE-SPEC-6.1.26-003": ("6.1.26", 3, "table_row", ["REQUIRED"], [28812, 28830]),
+            "KMIP-CLAUSE-SPEC-6.1.26.1-001": ("6.1.26.1", 1, "paragraph", ["SHALL"], [28855, 28856]),
+            "KMIP-CLAUSE-SPEC-6.1.26.1-002": ("6.1.26.1", 2, "table_row", ["REQUIRED"], [28874, 28887]),
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-001": [
+            "KMIP-CLAUSE-SPEC-6.1.26-001": [
                 (1, "It SHALL NOT be available in a production server.", "SHALL NOT", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.26.1-001": [
                 (
                     1,
                     "This section details the specific Result Reasons that SHALL be returned for errors detected in an Interop Operation.",
@@ -20710,11 +20710,11 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         }
         expected_atom_counts = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-002": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.26-003": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.26.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.26-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.26-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.26-003": 0,
+            "KMIP-CLAUSE-SPEC-6.1.26.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.26.1-002": 0,
         }
         self.assertEqual(set(expected_atom_counts), expected_clause_ids)
         for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locator_evidence.items():
@@ -20752,11 +20752,11 @@ class CatalogValidationTests(unittest.TestCase):
                 expected,
                 f"{clause_id} must retain the source actor and avoid creating client obligations",
             )
-        operation_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-001"]
+        operation_review = reviews["KMIP-CLAUSE-SPEC-6.1.26-001"]
         self.assertIn("interoperability-test status", operation_review["review_note"])
         self.assertIn("production-server", operation_review["review_note"])
         self.assertEqual(operation_review["expected_client_requirement_ids"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-001"]["rejected_candidate_mappings"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.26-001"]["rejected_candidate_mappings"], [])
 
         gaps = [
             gap
@@ -20776,7 +20776,7 @@ class CatalogValidationTests(unittest.TestCase):
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-IDENTIFIER-REQUIRED",
             },
         )
-        source_request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-002"]["source_request_rows"]
+        source_request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.26-002"]["source_request_rows"]
         self.assertEqual(len(source_request_rows), 2)
         expected_rows = {
             "Interop Function": ("KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-FUNCTION-REQUIRED", [28763, 28778]),
@@ -20803,11 +20803,11 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual(contract["source_force"], "required_table_body_value")
                 self.assertEqual(contract["actor"], "client")
                 self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-003"]["source_payload_rows"], [])
-        self.assertIn("body row", reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-003"]["review_note"])
-        self.assertIn("is empty", reviews["KMIPKIT-CLAUSE-SPEC-6.1.26-003"]["review_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.26-003"]["source_payload_rows"], [])
+        self.assertIn("body row", reviews["KMIP-CLAUSE-SPEC-6.1.26-003"]["review_note"])
+        self.assertIn("is empty", reviews["KMIP-CLAUSE-SPEC-6.1.26-003"]["review_note"])
 
-        error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.26.1-002"]["source_excerpt"]
+        error_text = reviews["KMIP-CLAUSE-SPEC-6.1.26.1-002"]["source_excerpt"]
         reasons = error_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
             reasons,
@@ -20819,14 +20819,14 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(len(reasons), 9)
         self.assertEqual(len(set(reasons)), 8)
         self.assertEqual(reasons.count("Invalid Field"), 2)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.26.1-002"]["source_obligations"], [])
-        self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.26.1-002"]["review_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.26.1-002"]["source_obligations"], [])
+        self.assertIn("non-exhaustive", reviews["KMIP-CLAUSE-SPEC-6.1.26.1-002"]["review_note"])
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_ids = {row["requirement_id"] for row in catalog["requirements"]}
         proposed_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.26-001",
-            "KMIPKIT-REQ-SPEC-6.1.26-002",
+            "KMIP-REQ-SPEC-6.1.26-001",
+            "KMIP-REQ-SPEC-6.1.26-002",
         }
         self.assertFalse(proposed_ids & catalog_ids)
         client_profiles = [row for row in catalog["profiles"] if row["role"] == "client"]
@@ -20845,7 +20845,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.26-INTEROP-FUNCTION-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.26-001"
+        proposed_id = "KMIP-REQ-SPEC-6.1.26-001"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
@@ -20868,7 +20868,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-INTEROP")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
         self.assertNotIn("KMIPKIT-0028", contract["review_note"])
@@ -20894,7 +20894,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.26-002"
+            if row.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.26-002"
         )
         request_row = next(row for row in review["source_request_rows"] if row["row_label"] == "Interop Function")
         self.assertEqual(request_row["source_gap_id"], gap_id)
@@ -20907,14 +20907,14 @@ class CatalogValidationTests(unittest.TestCase):
 
     @unittest.skipUnless(
         (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").is_file(),
-        "Spec Kit traceability files are excluded from the code-only review branch",
+        "External traceability documents are not bundled with this source distribution",
     )
     def test_interop_feature_traceability_uses_approved_feature_id(self) -> None:
         """The Interop feature traceability row names the owning approved spec."""
         traceability = (ROOT / "specs" / "028-diagnostics-interop" / "traceability.md").read_text(encoding="utf-8")
         function_trace = next(
             line for line in traceability.splitlines()
-            if line.startswith("| KMIPKIT-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION |")
+            if line.startswith("| KMIP-ELEM-OPERATION-STRUCTURE-7-15-INTEROP-FUNCTION |")
         )
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", function_trace)
         self.assertNotIn("KMIPKIT-0028", function_trace)
@@ -20952,7 +20952,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-INTEROP")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
         self.assertNotIn("KMIPKIT-0028", contract["review_note"])
@@ -20966,11 +20966,11 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["status"], "mapped_to_approved_feature_contract")
         self.assertEqual(contract["evidence_disposition"]["status"], "mapped_to_feature_contract")
         self.assertIn("forward", contract["evidence_disposition"]["statement"].lower())
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.26-002", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.26-002", {
             row["requirement_id"]
             for row in json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))["requirements"]
         })
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.26-002", {
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.26-002", {
             row["requirement_id"] for row in oracle["requirement_crosswalk"]
         })
         self.assertEqual(validate_source_table_contracts(oracle, ROOT), [])
@@ -20981,7 +20981,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.29-LOG-MESSAGE-REQUIRED"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.29-003"
+        proposed_id = "KMIP-REQ-SPEC-6.1.29-003"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
@@ -21010,7 +21010,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "required_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "profile_conditional")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOG")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-LOG")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-008"])
         self.assertIn("KMIPKIT-0042 FR-001/FR-008", contract["review_note"])
         self.assertIn("conditional", contract["review_note"].lower())
@@ -21035,7 +21035,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         review = next(
             row for row in oracle["source_requirement_reviews"]
-            if row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.29-001"
+            if row.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.29-001"
         )
         request_row = next(row for row in review["source_request_rows"] if row["row_label"] == "Log Message")
         self.assertEqual(request_row["source_gap_id"], gap_id)
@@ -21061,14 +21061,14 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.27" or row["section"].startswith("6.1.27.")
         ]
         expected_clause_ids = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-002",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-003",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-004",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-005",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-006",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-001",
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-002",
+            "KMIP-CLAUSE-SPEC-6.1.27-001",
+            "KMIP-CLAUSE-SPEC-6.1.27-002",
+            "KMIP-CLAUSE-SPEC-6.1.27-003",
+            "KMIP-CLAUSE-SPEC-6.1.27-004",
+            "KMIP-CLAUSE-SPEC-6.1.27-005",
+            "KMIP-CLAUSE-SPEC-6.1.27-006",
+            "KMIP-CLAUSE-SPEC-6.1.27.1-001",
+            "KMIP-CLAUSE-SPEC-6.1.27.1-002",
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -21093,47 +21093,47 @@ class CatalogValidationTests(unittest.TestCase):
             for row in audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         }
         expected_locator_evidence = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-001": ("6.1.27", 1, "paragraph", ["SHALL"], [28899, 28902]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-002": ("6.1.27", 2, "paragraph", ["MAY"], [28904, 28907]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-003": ("6.1.27", 3, "paragraph", ["SHALL"], [28909, 28911]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-004": ("6.1.27", 4, "table_row", ["REQUIRED"], [28924, 28942]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-005": ("6.1.27", 5, "table_row", ["MAY"], [28959, 28979]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-006": ("6.1.27", 6, "table_row", ["REQUIRED"], [29047, 29065]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-001": ("6.1.27.1", 1, "paragraph", ["SHALL"], [29093, 29094]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-002": ("6.1.27.1", 2, "table_row", ["REQUIRED"], [29117, 29130]),
+            "KMIP-CLAUSE-SPEC-6.1.27-001": ("6.1.27", 1, "paragraph", ["SHALL"], [28899, 28902]),
+            "KMIP-CLAUSE-SPEC-6.1.27-002": ("6.1.27", 2, "paragraph", ["MAY"], [28904, 28907]),
+            "KMIP-CLAUSE-SPEC-6.1.27-003": ("6.1.27", 3, "paragraph", ["SHALL"], [28909, 28911]),
+            "KMIP-CLAUSE-SPEC-6.1.27-004": ("6.1.27", 4, "table_row", ["REQUIRED"], [28924, 28942]),
+            "KMIP-CLAUSE-SPEC-6.1.27-005": ("6.1.27", 5, "table_row", ["MAY"], [28959, 28979]),
+            "KMIP-CLAUSE-SPEC-6.1.27-006": ("6.1.27", 6, "table_row", ["REQUIRED"], [29047, 29065]),
+            "KMIP-CLAUSE-SPEC-6.1.27.1-001": ("6.1.27.1", 1, "paragraph", ["SHALL"], [29093, 29094]),
+            "KMIP-CLAUSE-SPEC-6.1.27.1-002": ("6.1.27.1", 2, "table_row", ["REQUIRED"], [29117, 29130]),
         }
         expected_atom_counts = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-002": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-003": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-004": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-005": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-006": 0,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-001": 1,
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-002": 0,
+            "KMIP-CLAUSE-SPEC-6.1.27-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.27-002": 1,
+            "KMIP-CLAUSE-SPEC-6.1.27-003": 1,
+            "KMIP-CLAUSE-SPEC-6.1.27-004": 0,
+            "KMIP-CLAUSE-SPEC-6.1.27-005": 1,
+            "KMIP-CLAUSE-SPEC-6.1.27-006": 0,
+            "KMIP-CLAUSE-SPEC-6.1.27.1-001": 1,
+            "KMIP-CLAUSE-SPEC-6.1.27.1-002": 0,
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-001": [
+            "KMIP-CLAUSE-SPEC-6.1.27-001": [
                 (
                     1,
                     "The number of Unique Identifiers in the request SHALL be at least the value of the Split Key Threshold defined in the Split Keys.",
                     "SHALL",
                     "client",
                     "client_1_0",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-001",
                 ),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-002": [
+            "KMIP-CLAUSE-SPEC-6.1.27-002": [
                 (
                     1,
                     "If the Object Type formed is Secret Data, the client MAY include the Secret Data Type in the request.",
                     "MAY",
                     "client",
                     "client_1_0",
-                    "KMIPKIT-REQ-SPEC-6.1.27-002-002",
+                    "KMIP-REQ-SPEC-6.1.27-002-002",
                 ),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-003": [
+            "KMIP-CLAUSE-SPEC-6.1.27-003": [
                 (
                     1,
                     "The server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.",
@@ -21143,10 +21143,10 @@ class CatalogValidationTests(unittest.TestCase):
                     None,
                 ),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.27-005": [
-                (1, "Unique Identifier Yes, MAY be repeated", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.27-005"),
+            "KMIP-CLAUSE-SPEC-6.1.27-005": [
+                (1, "Unique Identifier Yes, MAY be repeated", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.27-005"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.27.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.27.1-001": [
                 (
                     1,
                     "This section details the specific Result Reasons that SHALL be returned for errors detected in a Join Split Key Operation.",
@@ -21195,17 +21195,17 @@ class CatalogValidationTests(unittest.TestCase):
             )
 
         self.assertEqual(
-            [row["requirement_id"] for row in reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-002"]["rejected_candidate_mappings"]],
-            ["KMIPKIT-REQ-SPEC-6.1.27-002-001"],
+            [row["requirement_id"] for row in reviews["KMIP-CLAUSE-SPEC-6.1.27-002"]["rejected_candidate_mappings"]],
+            ["KMIP-REQ-SPEC-6.1.27-002-001"],
         )
-        rejected_object_type_may = reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-002"]["rejected_candidate_mappings"][0]
+        rejected_object_type_may = reviews["KMIP-CLAUSE-SPEC-6.1.27-002"]["rejected_candidate_mappings"][0]
         self.assertEqual(rejected_object_type_may["claimed_keyword"], "MAY")
         self.assertEqual(rejected_object_type_may["expected_disposition"], "reject_false_object_type_may_label")
         self.assertIn("only formal MAY in this paragraph applies to Secret Data Type", rejected_object_type_may["source_review"])
         self.assertIn("Required=Yes", rejected_object_type_may["source_review"])
-        self.assertIn("Split Key Threshold", reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-001"]["review_note"])
-        self.assertIn("threshold values differ", reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-001"]["review_note"])
-        self.assertIn("does not list Join Split Key", reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-003"]["review_note"])
+        self.assertIn("Split Key Threshold", reviews["KMIP-CLAUSE-SPEC-6.1.27-001"]["review_note"])
+        self.assertIn("threshold values differ", reviews["KMIP-CLAUSE-SPEC-6.1.27-001"]["review_note"])
+        self.assertIn("does not list Join Split Key", reviews["KMIP-CLAUSE-SPEC-6.1.27-003"]["review_note"])
 
         expected_request_rows = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-OBJECT-TYPE-REQUIRED": (
@@ -21226,7 +21226,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(set(contracts), set(expected_request_rows))
         source_gap_ids = {gap["gap_id"] for gap in oracle["source_only_requirement_gaps"]}
         self.assertTrue(set(expected_request_rows).isdisjoint(source_gap_ids))
-        request_rows = reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-004"]["source_request_rows"]
+        request_rows = reviews["KMIP-CLAUSE-SPEC-6.1.27-004"]["source_request_rows"]
         self.assertEqual(len(request_rows), 5)
         row_expectations = [
             (
@@ -21234,9 +21234,9 @@ class CatalogValidationTests(unittest.TestCase):
             ),
             (
                 "Unique Identifier", "Yes, MAY be repeated", [28959, 28979], None,
-                ["KMIPKIT-REQ-SPEC-6.1.27-001", "KMIPKIT-REQ-SPEC-6.1.27-005"],
+                ["KMIP-REQ-SPEC-6.1.27-001", "KMIP-REQ-SPEC-6.1.27-005"],
             ),
-            ("Secret Data Type", "No", [28980, 28995], None, ["KMIPKIT-REQ-SPEC-6.1.27-002-002"]),
+            ("Secret Data Type", "No", [28980, 28995], None, ["KMIP-REQ-SPEC-6.1.27-002-002"]),
             (
                 "Attributes", "No", [28996, 29011], "KMIPKIT-SOURCE-GAP-SPEC-6.1.27-ATTRIBUTES-OPTIONAL", []
             ),
@@ -21292,7 +21292,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertNotIn("requirement_id", contract)
 
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.27-006"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.27-006"]["source_payload_rows"],
             [
                 {
                     "row_label": "Unique Identifier",
@@ -21304,30 +21304,30 @@ class CatalogValidationTests(unittest.TestCase):
                 }
             ],
         )
-        error_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.27.1-002"]["source_excerpt"]
+        error_text = reviews["KMIP-CLAUSE-SPEC-6.1.27.1-002"]["source_excerpt"]
         reasons = error_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(len(reasons), 21)
         self.assertEqual(len(set(reasons)), 20)
         self.assertEqual(reasons.count("Cryptographic Failure"), 2)
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.27.1-002"]["source_obligations"], [])
-        self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.27.1-002"]["review_note"])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.27.1-002"]["source_obligations"], [])
+        self.assertIn("non-exhaustive", reviews["KMIP-CLAUSE-SPEC-6.1.27.1-002"]["review_note"])
 
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         catalog_by_id = {row["requirement_id"]: row for row in catalog["requirements"]}
         accepted_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.27-001",
-            "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-            "KMIPKIT-REQ-SPEC-6.1.27-005",
+            "KMIP-REQ-SPEC-6.1.27-001",
+            "KMIP-REQ-SPEC-6.1.27-002-002",
+            "KMIP-REQ-SPEC-6.1.27-005",
         }
         for requirement_id in accepted_ids:
             self.assertIn(requirement_id, catalog_by_id)
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.27-001"]["source_keyword"], "SHALL")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.27-002-002"]["source_keyword"], "MAY")
-        self.assertEqual(catalog_by_id["KMIPKIT-REQ-SPEC-6.1.27-005"]["source_keyword"], "MAY")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.27-001"]["source_keyword"], "SHALL")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.27-002-002"]["source_keyword"], "MAY")
+        self.assertEqual(catalog_by_id["KMIP-REQ-SPEC-6.1.27-005"]["source_keyword"], "MAY")
         crosswalk = {
             row["requirement_id"]: row
             for row in oracle["requirement_crosswalk"]
-            if row["requirement_id"].startswith("KMIPKIT-REQ-SPEC-6.1.27-")
+            if row["requirement_id"].startswith("KMIP-REQ-SPEC-6.1.27-")
         }
         self.assertEqual(set(crosswalk), accepted_ids)
         self.assertEqual(
@@ -21339,14 +21339,14 @@ class CatalogValidationTests(unittest.TestCase):
                 for requirement_id, row in crosswalk.items()
             },
             {
-                "KMIPKIT-REQ-SPEC-6.1.27-001": (
-                    "KMIPKIT-CLAUSE-SPEC-6.1.27-001", 1, "SHALL", "client", "client_1_0"
+                "KMIP-REQ-SPEC-6.1.27-001": (
+                    "KMIP-CLAUSE-SPEC-6.1.27-001", 1, "SHALL", "client", "client_1_0"
                 ),
-                "KMIPKIT-REQ-SPEC-6.1.27-002-002": (
-                    "KMIPKIT-CLAUSE-SPEC-6.1.27-002", 1, "MAY", "client", "client_1_0"
+                "KMIP-REQ-SPEC-6.1.27-002-002": (
+                    "KMIP-CLAUSE-SPEC-6.1.27-002", 1, "MAY", "client", "client_1_0"
                 ),
-                "KMIPKIT-REQ-SPEC-6.1.27-005": (
-                    "KMIPKIT-CLAUSE-SPEC-6.1.27-005", 1, "MAY", "client", "client_1_0"
+                "KMIP-REQ-SPEC-6.1.27-005": (
+                    "KMIP-CLAUSE-SPEC-6.1.27-005", 1, "MAY", "client", "client_1_0"
                 ),
             },
         )
@@ -21360,10 +21360,10 @@ class CatalogValidationTests(unittest.TestCase):
             expected_ids = oracle_profiles[profile["profile_id"]]
             actual_ids = set(profile["requirement_ids"])
             self.assertTrue(accepted_ids <= expected_ids)
-            self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.27-002-001", expected_ids)
+            self.assertNotIn("KMIP-REQ-SPEC-6.1.27-002-001", expected_ids)
             self.assertTrue(accepted_ids <= actual_ids)
             self.assertNotIn(
-                "KMIPKIT-REQ-SPEC-6.1.27-002-001",
+                "KMIP-REQ-SPEC-6.1.27-002-001",
                 actual_ids,
                 f"{profile['profile_id']} still includes a source-rejected Object Type MAY label",
             )
@@ -21375,7 +21375,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         gap_id = "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL"
-        proposed_id = "KMIPKIT-REQ-SPEC-6.1.28-014"
+        proposed_id = "KMIP-REQ-SPEC-6.1.28-014"
         contracts = source_table_contracts_for_gap(oracle["source_table_contracts"], gap_id)
 
         self.assertEqual(len(contracts), 1)
@@ -21398,7 +21398,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["source_force"], "optional_table_body_value")
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-LOCATE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-006", "FR-009"])
         self.assertEqual(contract["implementation_refs"], [
             "crates/kmipkit-protocol/src/locate.rs::LocateRequest::to_ttlv_payload",
@@ -21422,7 +21422,7 @@ class CatalogValidationTests(unittest.TestCase):
 
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.28-010"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.28-010"
         )
         row = next(
             row for row in request_review["source_request_rows"]
@@ -21473,7 +21473,7 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(contract["actor"], "client")
         self.assertEqual(contract["direction"], "client→server Locate request")
         self.assertEqual(contract["scope_disposition"], "client_1_0")
-        self.assertEqual(contract["operation_element_id"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+        self.assertEqual(contract["operation_element_id"], "KMIP-ELEM-OP-C2S-LOCATE")
         self.assertEqual(contract["functional_requirement_ids"], ["FR-001", "FR-006"])
         self.assertEqual(
             contract["implementation_refs"],
@@ -21501,16 +21501,16 @@ class CatalogValidationTests(unittest.TestCase):
         source_gap_ids = {row["gap_id"] for row in oracle["source_only_requirement_gaps"]}
         proposed_ids = {row["proposed_requirement_id"] for row in oracle["source_only_requirement_gaps"]}
         self.assertNotIn(gap_id, source_gap_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.28-015", proposed_ids)
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.28-015", proposed_ids)
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertNotIn(
-            "KMIPKIT-REQ-SPEC-6.1.28-015",
+            "KMIP-REQ-SPEC-6.1.28-015",
             {row["requirement_id"] for row in catalog["requirements"]},
         )
 
         request_review = next(
             review for review in oracle["source_requirement_reviews"]
-            if review.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-6.1.28-010"
+            if review.get("source_clause_id") == "KMIP-CLAUSE-SPEC-6.1.28-010"
         )
         reviewed_row = next(
             row for row in request_review["source_request_rows"]
@@ -21535,24 +21535,24 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.28" or row["section"].startswith("6.1.28.")
         ]
         expected_locator_evidence = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-001": ("6.1.28", 1, "paragraph", ["MAY"], [29143, 29148]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-002": ("6.1.28", 2, "paragraph", ["MAY"], [29150, 29155]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-003": ("6.1.28", 3, "paragraph", ["MAY", "SHALL"], [29157, 29166]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-004": ("6.1.28", 4, "paragraph", ["MAY", "REQUIRED", "SHALL"], [29168, 29179]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-005": ("6.1.28", 5, "paragraph", ["MAY"], [29191, 29200]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-006": ("6.1.28", 6, "paragraph", ["SHALL"], [29202, 29204]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-007": ("6.1.28", 7, "paragraph", ["REQUIRED"], [29206, 29210]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-008": ("6.1.28", 8, "paragraph", ["SHALL", "MAY"], [29212, 29218]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-009": ("6.1.28", 9, "paragraph", ["SHALL NOT", "SHALL"], [29220, 29226]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-010": ("6.1.28", 10, "table_row", ["REQUIRED"], [29239, 29256]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-011": ("6.1.28", 11, "table_row", ["MAY"], [29258, 29275]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-012": ("6.1.28", 12, "table_row", ["SHALL"], [29297, 29316]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-013": ("6.1.28", 13, "table_row", ["REQUIRED", "MAY", "SHOULD"], [29337, 29358]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-014": ("6.1.28", 14, "table_row", ["REQUIRED"], [29378, 29395]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-015": ("6.1.28", 15, "table_row", ["MAY"], [29397, 29419]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-016": ("6.1.28", 16, "table_row", ["MAY"], [29421, 29437]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28.1-001": ("6.1.28.1", 1, "paragraph", ["SHALL"], [29450, 29451]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.28.1-002": ("6.1.28.1", 2, "table_row", ["REQUIRED"], [29471, 29484]),
+            "KMIP-CLAUSE-SPEC-6.1.28-001": ("6.1.28", 1, "paragraph", ["MAY"], [29143, 29148]),
+            "KMIP-CLAUSE-SPEC-6.1.28-002": ("6.1.28", 2, "paragraph", ["MAY"], [29150, 29155]),
+            "KMIP-CLAUSE-SPEC-6.1.28-003": ("6.1.28", 3, "paragraph", ["MAY", "SHALL"], [29157, 29166]),
+            "KMIP-CLAUSE-SPEC-6.1.28-004": ("6.1.28", 4, "paragraph", ["MAY", "REQUIRED", "SHALL"], [29168, 29179]),
+            "KMIP-CLAUSE-SPEC-6.1.28-005": ("6.1.28", 5, "paragraph", ["MAY"], [29191, 29200]),
+            "KMIP-CLAUSE-SPEC-6.1.28-006": ("6.1.28", 6, "paragraph", ["SHALL"], [29202, 29204]),
+            "KMIP-CLAUSE-SPEC-6.1.28-007": ("6.1.28", 7, "paragraph", ["REQUIRED"], [29206, 29210]),
+            "KMIP-CLAUSE-SPEC-6.1.28-008": ("6.1.28", 8, "paragraph", ["SHALL", "MAY"], [29212, 29218]),
+            "KMIP-CLAUSE-SPEC-6.1.28-009": ("6.1.28", 9, "paragraph", ["SHALL NOT", "SHALL"], [29220, 29226]),
+            "KMIP-CLAUSE-SPEC-6.1.28-010": ("6.1.28", 10, "table_row", ["REQUIRED"], [29239, 29256]),
+            "KMIP-CLAUSE-SPEC-6.1.28-011": ("6.1.28", 11, "table_row", ["MAY"], [29258, 29275]),
+            "KMIP-CLAUSE-SPEC-6.1.28-012": ("6.1.28", 12, "table_row", ["SHALL"], [29297, 29316]),
+            "KMIP-CLAUSE-SPEC-6.1.28-013": ("6.1.28", 13, "table_row", ["REQUIRED", "MAY", "SHOULD"], [29337, 29358]),
+            "KMIP-CLAUSE-SPEC-6.1.28-014": ("6.1.28", 14, "table_row", ["REQUIRED"], [29378, 29395]),
+            "KMIP-CLAUSE-SPEC-6.1.28-015": ("6.1.28", 15, "table_row", ["MAY"], [29397, 29419]),
+            "KMIP-CLAUSE-SPEC-6.1.28-016": ("6.1.28", 16, "table_row", ["MAY"], [29421, 29437]),
+            "KMIP-CLAUSE-SPEC-6.1.28.1-001": ("6.1.28.1", 1, "paragraph", ["SHALL"], [29450, 29451]),
+            "KMIP-CLAUSE-SPEC-6.1.28.1-002": ("6.1.28.1", 2, "table_row", ["REQUIRED"], [29471, 29484]),
         }
         expected_clause_ids = set(expected_locator_evidence)
         self.assertEqual(
@@ -21578,66 +21578,66 @@ class CatalogValidationTests(unittest.TestCase):
             for row in audit_document_with_text(raw_source, "KMIPKIT-SRC-spec")
         }
         expected_atoms = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-001": [
-                (1, "The request MAY contain a Maximum Items field, which specifies the maximum number of objects to be returned.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-001"),
+            "KMIP-CLAUSE-SPEC-6.1.28-001": [
+                (1, "The request MAY contain a Maximum Items field, which specifies the maximum number of objects to be returned.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-001"),
                 (2, "If the Maximum Items field is omitted, then the server MAY return all objects matched, or MAY impose an internal maximum limit due to resource limitations.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-002": [
-                (1, "The request MAY contain an Offset Items field, which specifies the number of objects to skip that satisfy the identification criteria specified in the request. An Offset Items field of 0 is the same as omitting the Offset Items field. If both Offset Items and Maximum Items are specified in the request, the server skips Offset Items objects and returns up to Maximum Items objects.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-002"),
+            "KMIP-CLAUSE-SPEC-6.1.28-002": [
+                (1, "The request MAY contain an Offset Items field, which specifies the number of objects to skip that satisfy the identification criteria specified in the request. An Offset Items field of 0 is the same as omitting the Offset Items field. If both Offset Items and Maximum Items are specified in the request, the server skips Offset Items objects and returns up to Maximum Items objects.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-003": [
+            "KMIP-CLAUSE-SPEC-6.1.28-003": [
                 (1, "If more than one object satisfies the identification criteria specified in the request, then the response MAY contain Unique Identifiers for multiple Managed Objects.", "MAY", "server", "server_only", None),
                 (2, "Responses containing Unique Identifiers for multiple objects SHALL be returned in descending order of object creation (most recently created object first).", "SHALL", "server", "server_only", None),
                 (3, "Returned objects SHALL match all of the attributes in the request.", "SHALL", "server", "server_only", None),
                 (4, "If no attribute is specified in the request, any object SHALL be deemed to match the Locate request.", "SHALL", "server", "server_only", None),
                 (5, "The response MAY include Located Items which is the count of all objects that satisfy the identification criteria.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-004": [
+            "KMIP-CLAUSE-SPEC-6.1.28-004": [
                 (1, "which then MAY be retrieved using the Get operation.", "MAY", "server", "server_only", None),
-                (2, "If the objects are archived, then the Recover and Get operations are REQUIRED to be used to obtain those objects.", "REQUIRED", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-004-001"),
-                (3, "If a single Unique Identifier is returned to the client, then the server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-004-002"),
-                (4, "If the Locate operation matches more than one object, and the Maximum Items value is omitted in the request, or is set to a value larger than one, then the server SHALL empty the ID Placeholder, causing any subsequent operations that are batched with the Locate, and which do not specify a Unique Identifier explicitly, to fail.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-004-002"),
-                (5, "This ensures that these batched operations SHALL proceed only if a single object is returned by Locate.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-004-002"),
+                (2, "If the objects are archived, then the Recover and Get operations are REQUIRED to be used to obtain those objects.", "REQUIRED", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-004-001"),
+                (3, "If a single Unique Identifier is returned to the client, then the server SHALL copy the Unique Identifier returned by this operation into the ID Placeholder variable.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-004-002"),
+                (4, "If the Locate operation matches more than one object, and the Maximum Items value is omitted in the request, or is set to a value larger than one, then the server SHALL empty the ID Placeholder, causing any subsequent operations that are batched with the Locate, and which do not specify a Unique Identifier explicitly, to fail.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-004-002"),
+                (5, "This ensures that these batched operations SHALL proceed only if a single object is returned by Locate.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-004-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-005": [
+            "KMIP-CLAUSE-SPEC-6.1.28-005": [
                 (1, "but MAY have additional bits set.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-006": [
+            "KMIP-CLAUSE-SPEC-6.1.28-006": [
                 (1, "When the Usage Limits attribute is specified in the request, matching candidate objects SHALL have a Usage Limits Count and Usage Limits Total equal to or larger than the values specified in the request.", "SHALL", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-007": [
-                (1, "When an attribute that is defined as a structure is specified, all of the structure fields are not REQUIRED to be specified.", "REQUIRED", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-007"),
+            "KMIP-CLAUSE-SPEC-6.1.28-007": [
+                (1, "When an attribute that is defined as a structure is specified, all of the structure fields are not REQUIRED to be specified.", "REQUIRED", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-007"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-008": [
-                (1, "When the Object Group attribute and the Object Group Member flag are specified in the request, and the value specified for Object Group Member is ‘Group Member Fresh’, matching candidate objects SHALL be fresh objects from the object group.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-008-001"),
+            "KMIP-CLAUSE-SPEC-6.1.28-008": [
+                (1, "When the Object Group attribute and the Object Group Member flag are specified in the request, and the value specified for Object Group Member is ‘Group Member Fresh’, matching candidate objects SHALL be fresh objects from the object group.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-008-001"),
                 (2, "If there are no more fresh objects in the group, the server MAY choose to generate a new object on-the-fly, based on server policy.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-009": [
-                (1, "The server SHALL NOT return unique identifiers for objects that are destroyed unless the Storage Status Mask field includes the Destroyed Storage indicator.", "SHALL NOT", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-009-001"),
-                (2, "The server SHALL NOT return unique identifiers for objects that are archived unless the Storage Status Mask field includes the Archived Storage indicator.", "SHALL NOT", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-009-002"),
+            "KMIP-CLAUSE-SPEC-6.1.28-009": [
+                (1, "The server SHALL NOT return unique identifiers for objects that are destroyed unless the Storage Status Mask field includes the Destroyed Storage indicator.", "SHALL NOT", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-009-001"),
+                (2, "The server SHALL NOT return unique identifiers for objects that are archived unless the Storage Status Mask field includes the Archived Storage indicator.", "SHALL NOT", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-009-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-011": [
-                (1, "Maximum Items No An Integer object that indicates the maximum number of object identifiers the server MAY return.", "MAY", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-011"),
+            "KMIP-CLAUSE-SPEC-6.1.28-011": [
+                (1, "Maximum Items No An Integer object that indicates the maximum number of object identifiers the server MAY return.", "MAY", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-011"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-012": [
-                (1, "If omitted, then only on-line objects SHALL be returned.", "SHALL", "server", "server_only", "KMIPKIT-REQ-SPEC-6.1.28-012"),
+            "KMIP-CLAUSE-SPEC-6.1.28-012": [
+                (1, "If omitted, then only on-line objects SHALL be returned.", "SHALL", "server", "server_only", "KMIP-REQ-SPEC-6.1.28-012"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-013": [
-                (1, "Attributes Yes Specifies an attribute and its value(s) that are REQUIRED to match those in a candidate object (according to the matching rules defined above).", "REQUIRED", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-013-001"),
-                (2, "Note: the Attributes structure MAY be empty indicating all objects should match.", "MAY", "client", "client_1_0", "KMIPKIT-REQ-SPEC-6.1.28-013-002"),
+            "KMIP-CLAUSE-SPEC-6.1.28-013": [
+                (1, "Attributes Yes Specifies an attribute and its value(s) that are REQUIRED to match those in a candidate object (according to the matching rules defined above).", "REQUIRED", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-013-001"),
+                (2, "Note: the Attributes structure MAY be empty indicating all objects should match.", "MAY", "client", "client_1_0", "KMIP-REQ-SPEC-6.1.28-013-002"),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-015": [
+            "KMIP-CLAUSE-SPEC-6.1.28-015": [
                 (1, "A server MAY elect to omit this value from the Response if it is unable or unwilling to determine the total count of matched items.", "MAY", "server", "server_only", None),
                 (2, "A server MAY elect to return the Located Items value even if Offset Items is not present in the Request.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28-016": [
+            "KMIP-CLAUSE-SPEC-6.1.28-016": [
                 (1, "Unique Identifier No, MAY be repeated The Unique Identifier of the located objects.", "MAY", "server", "server_only", None),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.28.1-001": [
+            "KMIP-CLAUSE-SPEC-6.1.28.1-001": [
                 (1, "This section details the specific Result Reasons that SHALL be returned for errors detected in a Locate Operation.", "SHALL", "server", "server_only", None),
             ],
         }
-        self.assertEqual(set(expected_atoms) | {f"KMIPKIT-CLAUSE-SPEC-6.1.28-{n:03d}" for n in (10, 14)} | {"KMIPKIT-CLAUSE-SPEC-6.1.28.1-002"}, expected_clause_ids)
+        self.assertEqual(set(expected_atoms) | {f"KMIP-CLAUSE-SPEC-6.1.28-{n:03d}" for n in (10, 14)} | {"KMIP-CLAUSE-SPEC-6.1.28.1-002"}, expected_clause_ids)
         for clause_id, (section, ordinal, block_kind, keywords, line_range) in expected_locator_evidence.items():
             review = reviews[clause_id]
             pinned = pinned_by_clause[clause_id]
@@ -21666,28 +21666,28 @@ class CatalogValidationTests(unittest.TestCase):
                     self.assertIn(atom["source_keyword"], atom["source_text"])
 
         expected_client_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.28-001",
-            "KMIPKIT-REQ-SPEC-6.1.28-002",
-            "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.28-007",
-            "KMIPKIT-REQ-SPEC-6.1.28-013-001",
-            "KMIPKIT-REQ-SPEC-6.1.28-013-002",
+            "KMIP-REQ-SPEC-6.1.28-001",
+            "KMIP-REQ-SPEC-6.1.28-002",
+            "KMIP-REQ-SPEC-6.1.28-004-001",
+            "KMIP-REQ-SPEC-6.1.28-007",
+            "KMIP-REQ-SPEC-6.1.28-013-001",
+            "KMIP-REQ-SPEC-6.1.28-013-002",
         }
         expected_crosswalk = {
-            ("KMIPKIT-REQ-SPEC-6.1.28-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-001", 1, "MAY", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-002", 1, "MAY", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-004-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-004", 2, "REQUIRED", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-004-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-004", 3, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-004-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-004", 4, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-004-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-004", 5, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-007", "KMIPKIT-CLAUSE-SPEC-6.1.28-007", 1, "REQUIRED", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-008-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-008", 1, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-009-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-009", 1, "SHALL NOT", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-009-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-009", 2, "SHALL NOT", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-012", "KMIPKIT-CLAUSE-SPEC-6.1.28-012", 1, "SHALL", "server", "server_only"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-013-001", "KMIPKIT-CLAUSE-SPEC-6.1.28-013", 1, "REQUIRED", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-013-002", "KMIPKIT-CLAUSE-SPEC-6.1.28-013", 2, "MAY", "client", "client_1_0"),
-            ("KMIPKIT-REQ-SPEC-6.1.28-011", "KMIPKIT-CLAUSE-SPEC-6.1.28-011", 1, "MAY", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-001", "KMIP-CLAUSE-SPEC-6.1.28-001", 1, "MAY", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-002", "KMIP-CLAUSE-SPEC-6.1.28-002", 1, "MAY", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-004-001", "KMIP-CLAUSE-SPEC-6.1.28-004", 2, "REQUIRED", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-004-002", "KMIP-CLAUSE-SPEC-6.1.28-004", 3, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-004-002", "KMIP-CLAUSE-SPEC-6.1.28-004", 4, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-004-002", "KMIP-CLAUSE-SPEC-6.1.28-004", 5, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-007", "KMIP-CLAUSE-SPEC-6.1.28-007", 1, "REQUIRED", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-008-001", "KMIP-CLAUSE-SPEC-6.1.28-008", 1, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-009-001", "KMIP-CLAUSE-SPEC-6.1.28-009", 1, "SHALL NOT", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-009-002", "KMIP-CLAUSE-SPEC-6.1.28-009", 2, "SHALL NOT", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-012", "KMIP-CLAUSE-SPEC-6.1.28-012", 1, "SHALL", "server", "server_only"),
+            ("KMIP-REQ-SPEC-6.1.28-013-001", "KMIP-CLAUSE-SPEC-6.1.28-013", 1, "REQUIRED", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-013-002", "KMIP-CLAUSE-SPEC-6.1.28-013", 2, "MAY", "client", "client_1_0"),
+            ("KMIP-REQ-SPEC-6.1.28-011", "KMIP-CLAUSE-SPEC-6.1.28-011", 1, "MAY", "server", "server_only"),
         }
         crosswalk = {
             (
@@ -21709,15 +21709,15 @@ class CatalogValidationTests(unittest.TestCase):
             expected_subset = next(row["requirement_ids_audited_subset"] for row in oracle["profiles"] if row["profile_id"] == client_profile["profile_id"])
             self.assertTrue(expected_client_ids <= set(expected_subset))
             self.assertTrue(expected_client_ids <= set(client_profile["requirement_ids"]))
-            self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.28-011", expected_subset)
-            self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.28-008-002", expected_subset)
+            self.assertNotIn("KMIP-REQ-SPEC-6.1.28-011", expected_subset)
+            self.assertNotIn("KMIP-REQ-SPEC-6.1.28-008-002", expected_subset)
             self.assertNotIn(
-                "KMIPKIT-REQ-SPEC-6.1.28-011",
+                "KMIP-REQ-SPEC-6.1.28-011",
                 client_profile["requirement_ids"],
                 f"{client_profile['profile_id']} maps the server response MAY label as a client request capability",
             )
             self.assertNotIn(
-                "KMIPKIT-REQ-SPEC-6.1.28-008-002",
+                "KMIP-REQ-SPEC-6.1.28-008-002",
                 client_profile["requirement_ids"],
                 f"{client_profile['profile_id']} retains the retired Group Member Default SHALL label",
             )
@@ -21729,37 +21729,37 @@ class CatalogValidationTests(unittest.TestCase):
         }
         self.assertEqual(gaps, {})
 
-        request_review = reviews["KMIPKIT-CLAUSE-SPEC-6.1.28-010"]
+        request_review = reviews["KMIP-CLAUSE-SPEC-6.1.28-010"]
         self.assertEqual(
             [(row["row_label"], row["required"], row["html_line_range"], row["source_gap_id"], row["source_requirement_ids"]) for row in request_review["source_request_rows"]],
             [
-                ("Maximum Items", "No", [29258, 29275], None, ["KMIPKIT-REQ-SPEC-6.1.28-001"]),
-                ("Offset Items", "No", [29277, 29294], None, ["KMIPKIT-REQ-SPEC-6.1.28-002"]),
+                ("Maximum Items", "No", [29258, 29275], None, ["KMIP-REQ-SPEC-6.1.28-001"]),
+                ("Offset Items", "No", [29277, 29294], None, ["KMIP-REQ-SPEC-6.1.28-002"]),
                 ("Storage Status Mask", "No", [29297, 29316], "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-STORAGE-STATUS-MASK-OPTIONAL", []),
                 ("Object Group Member", "No", [29318, 29336], "KMIPKIT-SOURCE-GAP-SPEC-6.1.28-OBJECT-GROUP-MEMBER-OPTIONAL", []),
-                ("Attributes", "Yes", [29337, 29358], None, ["KMIPKIT-REQ-SPEC-6.1.28-013-001"]),
+                ("Attributes", "Yes", [29337, 29358], None, ["KMIP-REQ-SPEC-6.1.28-013-001"]),
             ],
         )
         for row in request_review["source_request_rows"]:
             self.assertEqual(row["actor"], "client")
             self.assertEqual(row["source_excerpt"], pinned_source_excerpt(source_path, row["html_line_range"]))
         self.assertEqual(
-            reviews["KMIPKIT-CLAUSE-SPEC-6.1.28-014"]["source_payload_rows"],
+            reviews["KMIP-CLAUSE-SPEC-6.1.28-014"]["source_payload_rows"],
             [
                 {"row_label": "Located Items", "required": "No", "actor": "server", "disposition": "optional_response_payload", "html_line_range": [29397, 29419], "source_excerpt": pinned_source_excerpt(source_path, [29397, 29419])},
                 {"row_label": "Unique Identifier", "required": "No, MAY be repeated", "actor": "server", "disposition": "optional_repeatable_response_payload", "html_line_range": [29421, 29437], "source_excerpt": pinned_source_excerpt(source_path, [29421, 29437])},
             ],
         )
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.28-010"]["source_payload_rows"], [])
-        self.assertEqual(reviews["KMIPKIT-CLAUSE-SPEC-6.1.28.1-002"]["source_obligations"], [])
-        result_reason_text = reviews["KMIPKIT-CLAUSE-SPEC-6.1.28.1-002"]["source_excerpt"]
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.28-010"]["source_payload_rows"], [])
+        self.assertEqual(reviews["KMIP-CLAUSE-SPEC-6.1.28.1-002"]["source_obligations"], [])
+        result_reason_text = reviews["KMIP-CLAUSE-SPEC-6.1.28.1-002"]["source_excerpt"]
         reasons = result_reason_text.split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(reasons, [
             "Invalid Attribute", "Attestation Failed", "Attestation Required", "Feature Not Supported",
             "Invalid Field", "Invalid Message", "Operation Not Supported", "Permission Denied", "Response Too Large",
         ])
         self.assertEqual(len(set(reasons)), 9)
-        self.assertIn("non-exhaustive", reviews["KMIPKIT-CLAUSE-SPEC-6.1.28.1-002"]["review_note"])
+        self.assertIn("non-exhaustive", reviews["KMIP-CLAUSE-SPEC-6.1.28.1-002"]["review_note"])
         self.assertEqual(oracle["source_closure_status"], "complete")
 
     def test_spec_6_1_29_log_and_errors_have_source_review_rows(self) -> None:
@@ -21775,10 +21775,10 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.29" or row["section"].startswith("6.1.29.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.29-001": ("6.1.29", 1, "table_row", ["REQUIRED"], [29510, 29528]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.29-002": ("6.1.29", 2, "table_row", ["REQUIRED"], [29563, 29581]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.29.1-001": ("6.1.29.1", 1, "paragraph", ["SHALL"], [29595, 29596]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.29.1-002": ("6.1.29.1", 2, "table_row", ["REQUIRED"], [29616, 29629]),
+            "KMIP-CLAUSE-SPEC-6.1.29-001": ("6.1.29", 1, "table_row", ["REQUIRED"], [29510, 29528]),
+            "KMIP-CLAUSE-SPEC-6.1.29-002": ("6.1.29", 2, "table_row", ["REQUIRED"], [29563, 29581]),
+            "KMIP-CLAUSE-SPEC-6.1.29.1-001": ("6.1.29.1", 1, "paragraph", ["SHALL"], [29595, 29596]),
+            "KMIP-CLAUSE-SPEC-6.1.29.1-002": ("6.1.29.1", 2, "table_row", ["REQUIRED"], [29616, 29629]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -21807,7 +21807,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.29-001"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.29-001"]
         self.assertEqual(request_header["source_obligations"], [])
         self.assertEqual(
             request_header["source_request_rows"],
@@ -21825,12 +21825,12 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(request_header["source_payload_rows"], [])
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.29-002"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.29-002"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         self.assertEqual(response_header["source_payload_rows"], [])
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.29.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.29.1-001"]
         self.assertEqual(
             error_preamble["source_obligations"],
             [
@@ -21853,7 +21853,7 @@ class CatalogValidationTests(unittest.TestCase):
         )
         self.assertIn("KMIPKIT-DEC-006", error_preamble["review_note"])
         self.assertNotIn("do not infer Log-specific result reasons", error_preamble["review_note"])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.29.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.29.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
@@ -21890,10 +21890,10 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.30" or row["section"].startswith("6.1.30.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.30-001": ("6.1.30", 1, "table_row", ["REQUIRED"], [29654, 29672]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.30-002": ("6.1.30", 2, "table_row", ["REQUIRED"], [29739, 29757]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.30.1-001": ("6.1.30.1", 1, "paragraph", ["SHALL"], [29785, 29786]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.30.1-002": ("6.1.30.1", 2, "table_row", ["REQUIRED"], [29806, 29820]),
+            "KMIP-CLAUSE-SPEC-6.1.30-001": ("6.1.30", 1, "table_row", ["REQUIRED"], [29654, 29672]),
+            "KMIP-CLAUSE-SPEC-6.1.30-002": ("6.1.30", 2, "table_row", ["REQUIRED"], [29739, 29757]),
+            "KMIP-CLAUSE-SPEC-6.1.30.1-001": ("6.1.30.1", 1, "paragraph", ["SHALL"], [29785, 29786]),
+            "KMIP-CLAUSE-SPEC-6.1.30.1-002": ("6.1.30.1", 2, "table_row", ["REQUIRED"], [29806, 29820]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -21923,12 +21923,12 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(pinned["source_keywords"], keywords)
             self.assertNotIn("MAY", pinned["source_keywords"])
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.30-001"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.30-001"]
         self.assertEqual(request_header["source_obligations"], [])
         expected_request_rows = [
-            ("Lease Time", [29673, 29688], "Lease Time No The lease time Interval or Date Time for the ticket", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.30-001"),
-            ("Request Count", [29689, 29704], "Request Count No The integer count of the number of requests that can be made with the ticket", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.30-002"),
-            ("Usage Limits", [29705, 29720], "Usage Limits No The usage limits for the operations performed", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL", "KMIPKIT-REQ-SPEC-6.1.30-003"),
+            ("Lease Time", [29673, 29688], "Lease Time No The lease time Interval or Date Time for the ticket", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL", "KMIP-REQ-SPEC-6.1.30-001"),
+            ("Request Count", [29689, 29704], "Request Count No The integer count of the number of requests that can be made with the ticket", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL", "KMIP-REQ-SPEC-6.1.30-002"),
+            ("Usage Limits", [29705, 29720], "Usage Limits No The usage limits for the operations performed", "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL", "KMIP-REQ-SPEC-6.1.30-003"),
         ]
         self.assertEqual(
             request_header["source_request_rows"],
@@ -21947,7 +21947,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(request_header["source_payload_rows"], [])
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.30-002"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.30-002"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         self.assertEqual(
@@ -21964,7 +21964,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.30.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.30.1-001"]
         preamble_text = "This section details the specific Result Reasons that SHALL be returned for errors detected in an Login Operation."
         self.assertEqual(
             error_preamble["source_obligations"],
@@ -21982,7 +21982,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.30.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.30.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
@@ -22046,10 +22046,10 @@ class CatalogValidationTests(unittest.TestCase):
             if row["section"] == "6.1.31" or row["section"].startswith("6.1.31.")
         ]
         expected_locators = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.31-001": ("6.1.31", 1, "table_row", ["REQUIRED"], [29847, 29865]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.31-002": ("6.1.31", 2, "table_row", ["REQUIRED"], [29900, 29918]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.31.1-001": ("6.1.31.1", 1, "paragraph", ["SHALL"], [29930, 29931]),
-            "KMIPKIT-CLAUSE-SPEC-6.1.31.1-002": ("6.1.31.1", 2, "table_row", ["REQUIRED"], [29951, 29965]),
+            "KMIP-CLAUSE-SPEC-6.1.31-001": ("6.1.31", 1, "table_row", ["REQUIRED"], [29847, 29865]),
+            "KMIP-CLAUSE-SPEC-6.1.31-002": ("6.1.31", 2, "table_row", ["REQUIRED"], [29900, 29918]),
+            "KMIP-CLAUSE-SPEC-6.1.31.1-001": ("6.1.31.1", 1, "paragraph", ["SHALL"], [29930, 29931]),
+            "KMIP-CLAUSE-SPEC-6.1.31.1-002": ("6.1.31.1", 2, "table_row", ["REQUIRED"], [29951, 29965]),
         }
         self.assertEqual(
             {row["clause_id"] for row in pinned_locators},
@@ -22078,7 +22078,7 @@ class CatalogValidationTests(unittest.TestCase):
             self.assertEqual(review["source_excerpt"], pinned["source_text"])
             self.assertEqual(pinned["source_keywords"], keywords)
 
-        request_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.31-001"]
+        request_header = reviews["KMIP-CLAUSE-SPEC-6.1.31-001"]
         self.assertEqual(request_header["source_obligations"], [])
         ticket_row = {
             "row_label": "Ticket",
@@ -22088,17 +22088,17 @@ class CatalogValidationTests(unittest.TestCase):
             "html_line_range": [29866, 29881],
             "source_excerpt": "Ticket Yes The ticket to be invalidated",
             "source_gap_id": "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
-            "source_requirement_ids": ["KMIPKIT-REQ-SPEC-6.1.31-001"],
+            "source_requirement_ids": ["KMIP-REQ-SPEC-6.1.31-001"],
         }
         self.assertEqual(request_header["source_request_rows"], [ticket_row])
         self.assertEqual(request_header["source_payload_rows"], [])
 
-        response_header = reviews["KMIPKIT-CLAUSE-SPEC-6.1.31-002"]
+        response_header = reviews["KMIP-CLAUSE-SPEC-6.1.31-002"]
         self.assertEqual(response_header["source_obligations"], [])
         self.assertEqual(response_header["source_request_rows"], [])
         self.assertEqual(response_header["source_payload_rows"], [])
 
-        error_preamble = reviews["KMIPKIT-CLAUSE-SPEC-6.1.31.1-001"]
+        error_preamble = reviews["KMIP-CLAUSE-SPEC-6.1.31.1-001"]
         preamble_text = "This section details the specific Result Reasons that SHALL be returned for errors detected in an Logout Operation."
         self.assertEqual(
             error_preamble["source_obligations"],
@@ -22116,7 +22116,7 @@ class CatalogValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(error_preamble["expected_client_requirement_ids"], [])
-        result_inventory = reviews["KMIPKIT-CLAUSE-SPEC-6.1.31.1-002"]
+        result_inventory = reviews["KMIP-CLAUSE-SPEC-6.1.31.1-002"]
         self.assertEqual(result_inventory["source_obligations"], [])
         result_reasons = result_inventory["source_excerpt"].split("Operation Failed ", 1)[1].split(", ")
         self.assertEqual(
@@ -22162,9 +22162,9 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual(ticket_gap["source_keywords"], [])
         self.assertEqual(ticket_gap["actor"], "client")
         self.assertEqual(ticket_gap["scope_disposition"], "client_1_0")
-        self.assertEqual(ticket_gap["candidate_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.31-001")
+        self.assertEqual(ticket_gap["candidate_requirement_id"], "KMIP-REQ-SPEC-6.1.31-001")
         self.assertIsNone(ticket_gap["proposed_requirement_id"])
-        self.assertEqual(ticket_gap["reused_requirement_id"], "KMIPKIT-REQ-SPEC-6.1.31-001")
+        self.assertEqual(ticket_gap["reused_requirement_id"], "KMIP-REQ-SPEC-6.1.31-001")
         self.assertEqual(ticket_gap["status"], "source_obligation_covered_by_existing_stable_label")
         self.assertEqual(oracle["source_closure_status"], "complete")
 
@@ -22190,7 +22190,7 @@ class CatalogValidationTests(unittest.TestCase):
             if row.get("source_gap_id") is not None
         }
         expected_rows = {
-            "KMIPKIT-REQ-SPEC-6.1.30-001": (
+            "KMIP-REQ-SPEC-6.1.30-001": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
                 "6.1.30",
                 "Lease Time",
@@ -22206,7 +22206,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_lease_time_as_optional_interval_or_date_time",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.30-002": (
+            "KMIP-REQ-SPEC-6.1.30-002": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
                 "6.1.30",
                 "Request Count",
@@ -22222,7 +22222,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_request_count_as_integer",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.30-003": (
+            "KMIP-REQ-SPEC-6.1.30-003": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
                 "6.1.30",
                 "Usage Limits",
@@ -22239,7 +22239,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_login_optional_usage_limits_as_table_392_structure",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.31-001": (
+            "KMIP-REQ-SPEC-6.1.31-001": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
                 "6.1.31",
                 "Ticket",
@@ -22276,7 +22276,7 @@ class CatalogValidationTests(unittest.TestCase):
             }
 
         expected_review_rows = {
-            "KMIPKIT-CLAUSE-SPEC-6.1.30-001": [
+            "KMIP-CLAUSE-SPEC-6.1.30-001": [
                 expected_client_request_row(
                     row_label="Lease Time",
                     required="No",
@@ -22284,7 +22284,7 @@ class CatalogValidationTests(unittest.TestCase):
                     html_line_range=[29673, 29688],
                     source_excerpt="Lease Time No The lease time Interval or Date Time for the ticket",
                     source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL",
-                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-001",
+                    requirement_id="KMIP-REQ-SPEC-6.1.30-001",
                 ),
                 expected_client_request_row(
                     row_label="Request Count",
@@ -22293,7 +22293,7 @@ class CatalogValidationTests(unittest.TestCase):
                     html_line_range=[29689, 29704],
                     source_excerpt="Request Count No The integer count of the number of requests that can be made with the ticket",
                     source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL",
-                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-002",
+                    requirement_id="KMIP-REQ-SPEC-6.1.30-002",
                 ),
                 expected_client_request_row(
                     row_label="Usage Limits",
@@ -22302,10 +22302,10 @@ class CatalogValidationTests(unittest.TestCase):
                     html_line_range=[29705, 29720],
                     source_excerpt="Usage Limits No The usage limits for the operations performed",
                     source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL",
-                    requirement_id="KMIPKIT-REQ-SPEC-6.1.30-003",
+                    requirement_id="KMIP-REQ-SPEC-6.1.30-003",
                 ),
             ],
-            "KMIPKIT-CLAUSE-SPEC-6.1.31-001": [
+            "KMIP-CLAUSE-SPEC-6.1.31-001": [
                 expected_client_request_row(
                     row_label="Ticket",
                     required="Yes",
@@ -22313,7 +22313,7 @@ class CatalogValidationTests(unittest.TestCase):
                     html_line_range=[29866, 29881],
                     source_excerpt="Ticket Yes The ticket to be invalidated",
                     source_gap_id="KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED",
-                    requirement_id="KMIPKIT-REQ-SPEC-6.1.31-001",
+                    requirement_id="KMIP-REQ-SPEC-6.1.31-001",
                 )
             ],
         }
@@ -22405,109 +22405,109 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         evidence_requirements = {
-            "KMIPKIT-REQ-SPEC-6.1.12-003": (
+            "KMIP-REQ-SPEC-6.1.12-003": (
                 "crates/kmipkit-protocol/src/delegated_login.rs",
                 "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-005": (
+            "KMIP-REQ-SPEC-6.1.12-005": (
                 "crates/kmipkit-protocol/src/delegated_login.rs",
                 "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-006": (
+            "KMIP-REQ-SPEC-6.1.12-006": (
                 "crates/kmipkit-protocol/src/delegated_login.rs",
                 "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-007": (
+            "KMIP-REQ-SPEC-6.1.12-007": (
                 "crates/kmipkit-protocol/src/delegated_login.rs",
                 "crates/kmipkit-protocol/tests/unit/delegated_login_operation_tests.rs::request_emits_table_199_fields_in_order_and_preserves_both_lease_time_forms",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.13-005": (
+            "KMIP-REQ-SPEC-6.1.13-005": (
                 "crates/kmipkit-protocol/src/delete_attribute.rs",
                 "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.13-006": (
+            "KMIP-REQ-SPEC-6.1.13-006": (
                 "crates/kmipkit-protocol/src/delete_attribute.rs",
                 "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::request_omits_current_attribute_and_preserves_name_reference",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-009": (
+            "KMIP-REQ-SPEC-6.1.14-009": (
                 "crates/kmipkit-protocol/src/derive_key.rs",
                 "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-010": (
+            "KMIP-REQ-SPEC-6.1.14-010": (
                 "crates/kmipkit-protocol/src/derive_key.rs",
                 "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-011": (
+            "KMIP-REQ-SPEC-6.1.14-011": (
                 "crates/kmipkit-protocol/src/derive_key.rs",
                 "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-012": (
+            "KMIP-REQ-SPEC-6.1.14-012": (
                 "crates/kmipkit-protocol/src/derive_key.rs",
                 "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.9-001-001": (
+            "KMIP-REQ-SPEC-6.1.9-001-001": (
                 "crates/kmipkit-protocol/src/create_key_pair.rs",
                 "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_preserves_six_distinct_optional_groups_and_repeated_items_in_wire_order",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.9-001-002": (
+            "KMIP-REQ-SPEC-6.1.9-001-002": (
                 "crates/kmipkit-protocol/src/create_key_pair.rs",
                 "crates/kmipkit-protocol/tests/unit/create_key_pair_tests.rs::request_distinguishes_absent_groups_from_present_empty_groups_without_synthesizing_choices",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.10-001": (
+            "KMIP-REQ-SPEC-6.1.10-001": (
                 "crates/kmipkit-protocol/src/create_split_key.rs",
                 "crates/kmipkit-protocol/tests/unit/create_split_key_tests.rs::request_preserves_table_193_fields_order_and_exact_input_identifier",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001": (
+            "KMIP-REQ-SPEC-6.1.11-001-001": (
                 "crates/kmipkit-protocol/src/decrypt.rs",
                 "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002": (
+            "KMIP-REQ-SPEC-6.1.11-001-002": (
                 "crates/kmipkit-protocol/src/decrypt.rs",
                 "crates/kmipkit-protocol/tests/unit/decrypt_tests.rs::request_omits_cryptographic_parameters_and_iv_when_the_caller_omits_them",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.16-001-001": (
+            "KMIP-REQ-SPEC-6.1.16-001-001": (
                 "crates/kmipkit-protocol/src/discover_versions.rs",
                 "crates/kmipkit-protocol/tests/unit/discover_versions_tests.rs::request_advertises_only_kmip_2_1",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.17-001-001": (
+            "KMIP-REQ-SPEC-6.1.17-001-001": (
                 "crates/kmipkit-protocol/src/encrypt.rs",
                 "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.17-001-002": (
+            "KMIP-REQ-SPEC-6.1.17-001-002": (
                 "crates/kmipkit-protocol/src/encrypt.rs",
                 "crates/kmipkit-protocol/tests/unit/encrypt_tests.rs::request_omits_cryptographic_parameters_when_the_caller_omits_them",
             ),
         }
 
         expected_table_rows = {
-            "KMIPKIT-REQ-SPEC-6.1.12-003": (
+            "KMIP-REQ-SPEC-6.1.12-003": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED", "Rights", "required_table_body_value", [25489, 25507]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-005": (
+            "KMIP-REQ-SPEC-6.1.12-005": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL", "Lease Time", "optional_table_body_value", [25434, 25451]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-006": (
+            "KMIP-REQ-SPEC-6.1.12-006": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL", "Request Count", "optional_table_body_value", [25452, 25470]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.12-007": (
+            "KMIP-REQ-SPEC-6.1.12-007": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL", "Usage Limits", "optional_table_body_value", [25471, 25488]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.13-005": (
+            "KMIP-REQ-SPEC-6.1.13-005": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL", "Current Attribute", "optional_table_body_value", [25681, 25699]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.13-006": (
+            "KMIP-REQ-SPEC-6.1.13-006": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL", "Attribute Reference", "optional_table_body_value", [25700, 25718]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-009": (
+            "KMIP-REQ-SPEC-6.1.14-009": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED", "Object Type", "required_table_body_value", [25900, 25917]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-010": (
+            "KMIP-REQ-SPEC-6.1.14-010": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED", "Unique Identifier", "required_table_body_value", [25919, 25938]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-011": (
+            "KMIP-REQ-SPEC-6.1.14-011": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED", "Derivation Method", "required_table_body_value", [25940, 25958]
             ),
-            "KMIPKIT-REQ-SPEC-6.1.14-012": (
+            "KMIP-REQ-SPEC-6.1.14-012": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED", "Derivation Parameters", "required_table_body_value", [25960, 25978]
             ),
         }
@@ -22559,12 +22559,12 @@ class CatalogValidationTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/unit/delete_attribute_tests.rs::"
             "request_preserves_both_optional_selectors_as_absent"
         )
-        for requirement_id in ("KMIPKIT-REQ-SPEC-6.1.13-005", "KMIPKIT-REQ-SPEC-6.1.13-006"):
+        for requirement_id in ("KMIP-REQ-SPEC-6.1.13-005", "KMIP-REQ-SPEC-6.1.13-006"):
             self.assertIn(absent_selectors_test, requirements[requirement_id]["verification_refs"])
         self.assertTrue((ROOT / absent_selectors_test.split("::", 1)[0]).is_file())
 
         self.assertEqual(
-            requirements["KMIPKIT-REQ-SPEC-6.1.16-004"]["scope_state"],
+            requirements["KMIP-REQ-SPEC-6.1.16-004"]["scope_state"],
             "out_of_scope",
             "KMIPKit 1.0 advertises only its fixed KMIP 2.1 protocol version",
         )
@@ -22572,24 +22572,24 @@ class CatalogValidationTests(unittest.TestCase):
     def test_operation_request_evidence_records_the_official_test_case_gap(self) -> None:
         catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         requirement_ids = {
-            "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.10-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.12-003",
-            "KMIPKIT-REQ-SPEC-6.1.12-005",
-            "KMIPKIT-REQ-SPEC-6.1.12-006",
-            "KMIPKIT-REQ-SPEC-6.1.12-007",
-            "KMIPKIT-REQ-SPEC-6.1.13-005",
-            "KMIPKIT-REQ-SPEC-6.1.13-006",
-            "KMIPKIT-REQ-SPEC-6.1.14-009",
-            "KMIPKIT-REQ-SPEC-6.1.14-010",
-            "KMIPKIT-REQ-SPEC-6.1.14-011",
-            "KMIPKIT-REQ-SPEC-6.1.14-012",
-            "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
+            "KMIP-REQ-SPEC-6.1.9-001-001",
+            "KMIP-REQ-SPEC-6.1.9-001-002",
+            "KMIP-REQ-SPEC-6.1.10-001",
+            "KMIP-REQ-SPEC-6.1.11-001-001",
+            "KMIP-REQ-SPEC-6.1.11-001-002",
+            "KMIP-REQ-SPEC-6.1.12-003",
+            "KMIP-REQ-SPEC-6.1.12-005",
+            "KMIP-REQ-SPEC-6.1.12-006",
+            "KMIP-REQ-SPEC-6.1.12-007",
+            "KMIP-REQ-SPEC-6.1.13-005",
+            "KMIP-REQ-SPEC-6.1.13-006",
+            "KMIP-REQ-SPEC-6.1.14-009",
+            "KMIP-REQ-SPEC-6.1.14-010",
+            "KMIP-REQ-SPEC-6.1.14-011",
+            "KMIP-REQ-SPEC-6.1.14-012",
+            "KMIP-REQ-SPEC-6.1.16-001-001",
+            "KMIP-REQ-SPEC-6.1.17-001-001",
+            "KMIP-REQ-SPEC-6.1.17-001-002",
         }
         requirements = {
             row["requirement_id"]: row
@@ -22647,7 +22647,7 @@ class CatalogValidationTests(unittest.TestCase):
             locate_implementation_refs[2],
         ]
         expected_evidence = {
-            "KMIPKIT-REQ-SPEC-6.1.28-001": (
+            "KMIP-REQ-SPEC-6.1.28-001": (
                 locate_implementation_refs,
                 [
                     locate_batch_test,
@@ -22657,7 +22657,7 @@ class CatalogValidationTests(unittest.TestCase):
                 ],
                 "do not assert how many identifiers a server returns",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.28-002": (
+            "KMIP-REQ-SPEC-6.1.28-002": (
                 locate_implementation_refs,
                 [
                     locate_quickstart_test,
@@ -22668,7 +22668,7 @@ class CatalogValidationTests(unittest.TestCase):
                 ],
                 "do not assert server-side zero-equivalence behavior",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.28-013-002": (
+            "KMIP-REQ-SPEC-6.1.28-013-002": (
                 attributes_implementation_refs,
                 [
                     locate_quickstart_test,
@@ -22678,7 +22678,7 @@ class CatalogValidationTests(unittest.TestCase):
                 ],
                 "do not assert that a server returns every matching object",
             ),
-            "KMIPKIT-REQ-SPEC-6.1.28-013-001": (
+            "KMIP-REQ-SPEC-6.1.28-013-001": (
                 attributes_implementation_refs,
                 [
                     locate_batch_test,
@@ -22721,7 +22721,7 @@ class CatalogValidationTests(unittest.TestCase):
             (ROOT / "verification" / "conformance" / "tests" / "fixtures" / "profile-closure-v2.1.json").read_text(encoding="utf-8")
         )
         expected_rows = {
-            "KMIPKIT-REQ-SPEC-6.1.18-005": (
+            "KMIP-REQ-SPEC-6.1.18-005": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL",
                 "6.1.18",
                 "Key Format Type",
@@ -22736,7 +22736,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.18-006": (
+            "KMIP-REQ-SPEC-6.1.18-006": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL",
                 "6.1.18",
                 "Key Wrap Type",
@@ -22751,7 +22751,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_format_and_wrap_selectors",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.18-007": (
+            "KMIP-REQ-SPEC-6.1.18-007": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL",
                 "6.1.18",
                 "Key Compression Type",
@@ -22766,7 +22766,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_key_compression_type_selector",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.18-008": (
+            "KMIP-REQ-SPEC-6.1.18-008": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
                 "6.1.18",
                 "Key Wrapping Specification",
@@ -22781,7 +22781,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_client_export_optional_wrapping_specification",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.19-003": (
+            "KMIP-REQ-SPEC-6.1.19-003": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL",
                 "6.1.19",
                 "Key Format Type",
@@ -22794,7 +22794,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.19-004": (
+            "KMIP-REQ-SPEC-6.1.19-004": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL",
                 "6.1.19",
                 "Key Wrap Type",
@@ -22807,7 +22807,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.19-005": (
+            "KMIP-REQ-SPEC-6.1.19-005": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL",
                 "6.1.19",
                 "Key Compression Type",
@@ -22820,7 +22820,7 @@ class CatalogValidationTests(unittest.TestCase):
                     "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_optional_get_return_format_controls",
                 ],
             ),
-            "KMIPKIT-REQ-SPEC-6.1.19-006": (
+            "KMIP-REQ-SPEC-6.1.19-006": (
                 "KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL",
                 "6.1.19",
                 "Key Wrapping Specification",
@@ -22889,8 +22889,8 @@ class CatalogValidationTests(unittest.TestCase):
     def test_pgp_optional_evidence_is_scoped_to_client_import(self) -> None:
         """PGP MAY evidence is outbound only when supplied through client Import."""
         expected_evidence = {
-            "KMIPKIT-REQ-SPEC-2.4-001-001": "evidence covers opaque Key Value byte preservation",
-            "KMIPKIT-REQ-SPEC-2.4-001-002": "evidence exercises Integer versions 3 and 4",
+            "KMIP-REQ-SPEC-2.4-001-001": "evidence covers opaque Key Value byte preservation",
+            "KMIP-REQ-SPEC-2.4-001-002": "evidence exercises Integer versions 3 and 4",
         }
         catalog = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
         requirements = {
@@ -22904,7 +22904,7 @@ class CatalogValidationTests(unittest.TestCase):
         source_review = next(
             row
             for row in fixture["source_requirement_reviews"]
-            if row["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-2.4-001"
+            if row["source_clause_id"] == "KMIP-CLAUSE-SPEC-2.4-001"
         )
 
         self.assertEqual(set(requirements), set(expected_evidence))

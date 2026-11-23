@@ -5,7 +5,7 @@
 //! They do not encode TTLV bytes, apply client execution policy, or claim
 //! operation-schema validity.
 //!
-//! Traceability: KMIPKIT-0006-FR-001 through FR-007, FR-009, FR-012, FR-018,
+//! Traceability: functional requirement through FR-007, FR-009, FR-012, FR-018,
 //! FR-019; SC-001 and SC-002.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};

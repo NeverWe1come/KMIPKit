@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.20, Tables
-//! 223–225. Traceability: KMIPKIT-0016-FR-006/FR-010/FR-011 and
+//! 223–225. Traceability: functional requirement/FR-010/FR-011 and
 //! SC-002/SC-004/SC-005.
 //! These are derived structural tests; they do not claim an official OASIS case passed.
 
@@ -253,7 +253,7 @@ fn request_rejects_a_repeated_identical_attribute_reference() {
 
 #[test]
 fn request_rejects_a_reserved_tag_form_reference_before_encoding() {
-    // OASIS KMIP v2.1 §11.56 and ADR-0010 require outbound raw tags to pass
+    // OASIS KMIP v2.1 §11.56 and tag allocation precedence require outbound raw tags to pass
     // the tag-allocation gate; an unknown Enumeration remains representable,
     // but a reserved Raw Tag cannot be emitted as an Item.
     let request = GetAttributesRequest::try_new(None, [AttributeReference::tag(0x0042_0009)])
@@ -267,7 +267,7 @@ fn request_rejects_a_reserved_tag_form_reference_before_encoding() {
 
 #[test]
 fn request_preserves_an_accepted_extension_tag_form_reference() {
-    // OASIS KMIP v2.1 §11.56 and ADR-0010 allow this accepted Extension tag.
+    // OASIS KMIP v2.1 §11.56 and tag allocation precedence allow this accepted Extension tag.
     const EXTENSION_TAG: u32 = 0x0054_0000;
 
     let request = GetAttributesRequest::try_new(None, [AttributeReference::tag(EXTENSION_TAG)])

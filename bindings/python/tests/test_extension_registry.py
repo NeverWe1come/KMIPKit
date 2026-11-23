@@ -1,6 +1,6 @@
 """Python adapter parity tests for the KMIP 2.1 vendor extension registry.
 
-Traceability: KMIPKIT-0012-FR-001, FR-005 through FR-012, and SC-001
+Traceability: vendor extension registry, FR-005 through FR-012, and SC-001
 through SC-007. Wire preservation follows KMIP 2.1 §8.3, Table 396;
 §9.13, Table 418; §7.13, Table 365; and §11.44, Table 476.
 """
@@ -417,7 +417,7 @@ class ExtensionRegistryTests(unittest.TestCase):
                             )
                             if case_id == "valid-recognized":
                                 preserved = _normalize_structure(generic_view)
-                                # KMIP 2.1 §11.56 and ADR-0010 require preserving this tag
+                                # KMIP 2.1 §11.56 and the relevant architectural decision require preserving this tag
                                 # even though the registered schema does not declare it.
                                 self.assertEqual(
                                     [child["tag"] for child in preserved["children"]],

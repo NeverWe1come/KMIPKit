@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 //! Fake-transport Revoke checks from OASIS KMIP v2.1 §6.1.44, Tables 295–297,
-//! and §11.48, Table 481. Traceability: `KMIPKIT-REQ-SPEC-6.1.44-001`,
+//! and §11.48, Table 481. Traceability: `KMIP-REQ-SPEC-6.1.44-001`,
 //! `-003-001`, and `-003-002`. These are derived tests, not official fixture passes.
 
 use kmipkit_protocol::{

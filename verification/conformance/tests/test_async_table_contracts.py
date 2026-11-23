@@ -71,15 +71,15 @@ class AsyncTableContractTests(unittest.TestCase):
         expected = {
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.39-ASYNC-CORRELATION-VALUE-REQUIRED": (
                 "6.1.39", "Asynchronous Correlation Value", [31618, 31636], 278,
-                "KMIPKIT-ELEM-OP-C2S-PROCESS", ["FR-005"],
+                "KMIP-ELEM-OP-C2S-PROCESS", ["FR-005"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-ASYNC-CORRELATION-VALUES-OPTIONAL": (
                 "6.1.41", "Asynchronous Correlation Values", [32456, 32474], 285,
-                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", ["FR-006"],
+                "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", ["FR-006"],
             ),
             "KMIPKIT-SOURCE-GAP-SPEC-6.1.41-OPERATIONS-OPTIONAL": (
                 "6.1.41", "Operations", [32475, 32492], 285,
-                "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", ["FR-006"],
+                "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS", ["FR-006"],
             ),
         }
         contracts = {
@@ -97,8 +97,8 @@ class AsyncTableContractTests(unittest.TestCase):
         self.assertEqual(gaps, {})
         operations = {row["element_id"]: row for row in catalog["elements"] if row.get("kind") == "operation"}
         for operation_id in {
-            "KMIPKIT-ELEM-OP-C2S-PROCESS",
-            "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+            "KMIP-ELEM-OP-C2S-PROCESS",
+            "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
         }:
             with self.subTest(operation_id=operation_id):
                 self.assertEqual(operations[operation_id]["feature_spec"], "KMIPKIT-0009")
@@ -182,8 +182,8 @@ class AsyncTableContractTests(unittest.TestCase):
         oracle = json.loads(ORACLE_PATH.read_text(encoding="utf-8"))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         operation_ids = (
-            "KMIPKIT-ELEM-OP-C2S-PROCESS",
-            "KMIPKIT-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
+            "KMIP-ELEM-OP-C2S-PROCESS",
+            "KMIP-ELEM-OP-C2S-QUERY-ASYNCHRONOUS-REQUESTS",
         )
 
         for operation_id in operation_ids:

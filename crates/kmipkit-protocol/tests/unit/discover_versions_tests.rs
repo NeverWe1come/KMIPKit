@@ -1,10 +1,10 @@
 //! Derived operation-schema tests for OASIS KMIP Specification v2.1 §6.1.16,
 //! Tables 211–213, and §9.16, Table 421. The source records are
-//! `KMIPKIT-REQ-SPEC-6.1.16-001-001`, `KMIPKIT-REQ-SPEC-6.1.16-001-002`,
-//! `KMIPKIT-REQ-SPEC-6.1.16-004`, and
-//! `KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS`,
-//! `KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR/-MINOR`; the client
-//! contract is KMIPKIT-0007 FR-001/002/003. Table 212 permits repeated Protocol
+//! `KMIP-REQ-SPEC-6.1.16-001-001`, `KMIP-REQ-SPEC-6.1.16-001-002`,
+//! `KMIP-REQ-SPEC-6.1.16-004`, and
+//! `KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS`,
+//! `KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR/-MINOR`; the client
+//! contract is specification requirement FR-001/002/003. Table 212 permits repeated Protocol
 //! Version fields and states no uniqueness rule. These are derived tests, not
 //! official OASIS vectors.
 

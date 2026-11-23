@@ -5162,7 +5162,7 @@ impl ProfileExchangeValidator for ProfileValidationResult {
     fn includes_original_creation_date_rule(&self) -> bool {
         self.requirement_ids()
             .iter()
-            .any(|id| id == "KMIPKIT-REQ-SPEC-4.38-003")
+            .any(|id| id == "KMIP-REQ-SPEC-4.38-003")
     }
 
     fn validate_response(
@@ -8345,7 +8345,7 @@ fn validate_typed_request_preflight(
         let only_profile_owned_creation_date_findings = profile_validates_original_creation_date
             && !report.is_valid()
             && report.issues().iter().all(|issue| {
-                issue.code().as_str() == "KMIPKIT-0051-R282"
+                issue.code().as_str() == "PAYLOAD-RULE-R282"
                     && issue.path().to_string().ends_with("tag(0x4200bc)")
             });
         if !report.is_valid() && !only_profile_owned_creation_date_findings {

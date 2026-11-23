@@ -384,8 +384,8 @@ durante la preparación, con estado de entrega `NotSent` y antes de que el
 transporte escriba bytes. El servidor decide si acepta el objeto y sus
 atributos; este contexto no autoriza operaciones criptográficas posteriores.
 Estas reglas se trazan a OASIS KMIP 2.1 §2.3/Tabla 4, §6.1.43/Tablas 291 y 293,
-y §11.34/Tabla 468 (`KMIPKIT-REQ-SPEC-2.3-002` y
-`KMIPKIT-REQ-SPEC-2.3-003`).
+y §11.34/Tabla 468 (`KMIP-REQ-SPEC-2.3-002` y
+`KMIP-REQ-SPEC-2.3-003`).
 
 ### Mapeo de la respuesta Register
 

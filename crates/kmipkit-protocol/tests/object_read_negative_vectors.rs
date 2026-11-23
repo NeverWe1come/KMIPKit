@@ -2,9 +2,9 @@
 //!
 //! Get and Locate payload shapes follow OASIS KMIP v2.1 §6.1.19 Table 221
 //! and §6.1.28 Table 248. Structure fields follow their described order under
-//! §10.1.2. Field presence and ordering apply KMIPKIT-0017-FR-002; sanitized Get
+//! §10.1.2. Field presence and ordering apply functional requirement; sanitized Get
 //! errors apply FR-004 and FR-012. Decoder bounds and payload-free diagnostics
-//! apply FR-012 and the shared KMIPKIT-0005-FR-006–FR-009 decoder contract.
+//! apply FR-012 and the shared functional requirement–FR-009 decoder contract.
 //! These are project-derived negative vectors, not official OASIS test cases.
 
 use std::{error::Error, fmt::Write as _};
@@ -367,7 +367,7 @@ fn assert_wire_error(wire: &[u8], limits: &CodecLimits, expected: DecodeErrorKin
 #[test]
 fn truncated_and_malformed_get_and_locate_wire_vectors_are_sanitized() {
     // Generic TTLV structure and length rules come from the shared decoder
-    // contract, KMIPKIT-0005-FR-006 and FR-008; they are not operation-specific.
+    // contract, functional requirement and FR-008; they are not operation-specific.
     for operation in [GET_OPERATION, LOCATE_OPERATION] {
         let complete = response_wire(operation, true);
         let default_limits = CodecLimits::defaults();
@@ -397,8 +397,8 @@ fn truncated_and_malformed_get_and_locate_wire_vectors_are_sanitized() {
 
 #[test]
 fn configured_response_wire_byte_limit_rejects_get_and_locate_before_parsing() {
-    // KMIPKIT-0005-FR-007 defines the shared configurable message-size limit;
-    // KMIPKIT-0017-FR-012 applies it to object-reading response payloads.
+    // functional requirement defines the shared configurable message-size limit;
+    // functional requirement applies it to object-reading response payloads.
     for operation in [GET_OPERATION, LOCATE_OPERATION] {
         let wire = response_wire(operation, false);
         let limits = CodecLimits::new(wire.len() - 1, 64, 100_000)

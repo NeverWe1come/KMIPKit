@@ -17,23 +17,23 @@ SOURCE_IDS = {"KMIPKIT-SRC-spec", "KMIPKIT-SRC-profiles"}
 TARGET_MAJOR_SECTIONS = {"2", "3", "4", "5"}
 SOURCE_PATH = ROOT / "verification/conformance/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html"
 EXPECTED_LINES = {
-    "KMIPKIT-CLAUSE-SPEC-2.1-001": [6700, 6716],
-    "KMIPKIT-CLAUSE-SPEC-2.2-001": [6792, 6808],
-    "KMIPKIT-CLAUSE-SPEC-2.3-003": [6891, 6907],
-    "KMIPKIT-CLAUSE-SPEC-2.4-003": [6992, 7008],
-    "KMIPKIT-CLAUSE-SPEC-2.5-001": [7084, 7100],
-    "KMIPKIT-CLAUSE-SPEC-2.6-001": [7157, 7173],
-    "KMIPKIT-CLAUSE-SPEC-2.7-002": [7232, 7248],
-    "KMIPKIT-CLAUSE-SPEC-2.8-002": [7331, 7347],
-    "KMIPKIT-CLAUSE-SPEC-2.9-001": [7499, 7515],
-    "KMIPKIT-CLAUSE-SPEC-4-001": [9594, 9605],
-    "KMIPKIT-CLAUSE-SPEC-4.57-001": [20200, 20204],
-    "KMIPKIT-CLAUSE-SPEC-4.57-002": [20218, 20221],
-    "KMIPKIT-CLAUSE-SPEC-4.57-003": [20225, 20231],
-    "KMIPKIT-CLAUSE-SPEC-4.57-004": [20233, 20241],
-    "KMIPKIT-CLAUSE-SPEC-4.57-005": [20243, 20251],
-    "KMIPKIT-CLAUSE-SPEC-4.57-006": [20253, 20256],
-    "KMIPKIT-CLAUSE-SPEC-4.57-007": [20258, 20262],
+    "KMIP-CLAUSE-SPEC-2.1-001": [6700, 6716],
+    "KMIP-CLAUSE-SPEC-2.2-001": [6792, 6808],
+    "KMIP-CLAUSE-SPEC-2.3-003": [6891, 6907],
+    "KMIP-CLAUSE-SPEC-2.4-003": [6992, 7008],
+    "KMIP-CLAUSE-SPEC-2.5-001": [7084, 7100],
+    "KMIP-CLAUSE-SPEC-2.6-001": [7157, 7173],
+    "KMIP-CLAUSE-SPEC-2.7-002": [7232, 7248],
+    "KMIP-CLAUSE-SPEC-2.8-002": [7331, 7347],
+    "KMIP-CLAUSE-SPEC-2.9-001": [7499, 7515],
+    "KMIP-CLAUSE-SPEC-4-001": [9594, 9605],
+    "KMIP-CLAUSE-SPEC-4.57-001": [20200, 20204],
+    "KMIP-CLAUSE-SPEC-4.57-002": [20218, 20221],
+    "KMIP-CLAUSE-SPEC-4.57-003": [20225, 20231],
+    "KMIP-CLAUSE-SPEC-4.57-004": [20233, 20241],
+    "KMIP-CLAUSE-SPEC-4.57-005": [20243, 20251],
+    "KMIP-CLAUSE-SPEC-4.57-006": [20253, 20256],
+    "KMIP-CLAUSE-SPEC-4.57-007": [20258, 20262],
 }
 
 
@@ -124,15 +124,15 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
         candidate_req_ids_by_header_clause = {
-            "KMIPKIT-CLAUSE-SPEC-2.1-001": "KMIPKIT-REQ-SPEC-2.1-001",
-            "KMIPKIT-CLAUSE-SPEC-2.2-001": "KMIPKIT-REQ-SPEC-2.2-001",
-            "KMIPKIT-CLAUSE-SPEC-2.3-003": "KMIPKIT-REQ-SPEC-2.3-003",
-            "KMIPKIT-CLAUSE-SPEC-2.4-003": "KMIPKIT-REQ-SPEC-2.4-003",
-            "KMIPKIT-CLAUSE-SPEC-2.5-001": "KMIPKIT-REQ-SPEC-2.5-001",
-            "KMIPKIT-CLAUSE-SPEC-2.6-001": "KMIPKIT-REQ-SPEC-2.6-001",
-            "KMIPKIT-CLAUSE-SPEC-2.7-002": "KMIPKIT-REQ-SPEC-2.7-002",
-            "KMIPKIT-CLAUSE-SPEC-2.8-002": "KMIPKIT-REQ-SPEC-2.8-002",
-            "KMIPKIT-CLAUSE-SPEC-2.9-001": "KMIPKIT-REQ-SPEC-2.9-001",
+            "KMIP-CLAUSE-SPEC-2.1-001": "KMIP-REQ-SPEC-2.1-001",
+            "KMIP-CLAUSE-SPEC-2.2-001": "KMIP-REQ-SPEC-2.2-001",
+            "KMIP-CLAUSE-SPEC-2.3-003": "KMIP-REQ-SPEC-2.3-003",
+            "KMIP-CLAUSE-SPEC-2.4-003": "KMIP-REQ-SPEC-2.4-003",
+            "KMIP-CLAUSE-SPEC-2.5-001": "KMIP-REQ-SPEC-2.5-001",
+            "KMIP-CLAUSE-SPEC-2.6-001": "KMIP-REQ-SPEC-2.6-001",
+            "KMIP-CLAUSE-SPEC-2.7-002": "KMIP-REQ-SPEC-2.7-002",
+            "KMIP-CLAUSE-SPEC-2.8-002": "KMIP-REQ-SPEC-2.8-002",
+            "KMIP-CLAUSE-SPEC-2.9-001": "KMIP-REQ-SPEC-2.9-001",
         }
 
         self.assertTrue(
@@ -163,9 +163,9 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             for row in fixture["source_requirement_reviews"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
-        review = reviews["KMIPKIT-CLAUSE-SPEC-4.57-003"]
+        review = reviews["KMIP-CLAUSE-SPEC-4.57-003"]
         fourth = review["source_obligations"][3]
-        requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
+        requirement_id = "KMIP-REQ-SPEC-4.57-003-004"
 
         self.assertEqual(
             fourth["source_text"],
@@ -192,9 +192,9 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             for row in fixture["source_requirement_reviews"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
         }
-        review = reviews["KMIPKIT-CLAUSE-SPEC-4.57-007"]
+        review = reviews["KMIP-CLAUSE-SPEC-4.57-007"]
         retention = review["source_obligations"][1]
-        requirement_id = "KMIPKIT-REQ-SPEC-4.57-007-002"
+        requirement_id = "KMIP-REQ-SPEC-4.57-007-002"
 
         self.assertEqual(
             retention["source_text"],
@@ -217,9 +217,9 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         # Source actor/direction stay unresolved for these three §4 definitions.
         # DEC-023 assigns only their client request/response representation scope.
         attribute_definition_ids = {
-            *(f"KMIPKIT-REQ-SPEC-4-001-{ordinal:03d}" for ordinal in range(1, 4)),
+            *(f"KMIP-REQ-SPEC-4-001-{ordinal:03d}" for ordinal in range(1, 4)),
         }
-        trusted_client_id = "KMIPKIT-REQ-SPEC-4.57-005-002"
+        trusted_client_id = "KMIP-REQ-SPEC-4.57-005-002"
         review_by_requirement = {
             atom["candidate_requirement_id"]: (review, atom)
             for review in fixture["source_requirement_reviews"]
@@ -273,10 +273,10 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
             row["requirement_id"]: row
             for row in fixture["requirement_crosswalk"]
             if row["source_id"] == "KMIPKIT-SRC-spec"
-            and row.get("source_clause_id") == "KMIPKIT-CLAUSE-SPEC-4-001"
+            and row.get("source_clause_id") == "KMIP-CLAUSE-SPEC-4-001"
         }
-        self.assertTrue("KMIPKIT-CLAUSE-SPEC-4-001" in reviews)
-        review = reviews["KMIPKIT-CLAUSE-SPEC-4-001"]
+        self.assertTrue("KMIP-CLAUSE-SPEC-4-001" in reviews)
+        review = reviews["KMIP-CLAUSE-SPEC-4-001"]
         atoms = review["source_obligations"]
 
         self.assertEqual(
@@ -292,27 +292,27 @@ class SourceCoverageSectionsTwoThroughFiveTests(unittest.TestCase):
         self.assertEqual(
             set(review["expected_client_requirement_ids"]),
             {
-                "KMIPKIT-REQ-SPEC-4-001-001",
-                "KMIPKIT-REQ-SPEC-4-001-002",
-                "KMIPKIT-REQ-SPEC-4-001-003",
-                "KMIPKIT-REQ-SPEC-4-001-004",
-                "KMIPKIT-REQ-SPEC-4-001-005",
+                "KMIP-REQ-SPEC-4-001-001",
+                "KMIP-REQ-SPEC-4-001-002",
+                "KMIP-REQ-SPEC-4-001-003",
+                "KMIP-REQ-SPEC-4-001-004",
+                "KMIP-REQ-SPEC-4-001-005",
             },
         )
         self.assertEqual(
             {requirement_id: row["role"] for requirement_id, row in crosswalk.items()},
             {
-                "KMIPKIT-REQ-SPEC-4-001-001": "client",
-                "KMIPKIT-REQ-SPEC-4-001-002": "client",
-                "KMIPKIT-REQ-SPEC-4-001-003": "client",
-                "KMIPKIT-REQ-SPEC-4-001-004": "both",
-                "KMIPKIT-REQ-SPEC-4-001-005": "client",
+                "KMIP-REQ-SPEC-4-001-001": "client",
+                "KMIP-REQ-SPEC-4-001-002": "client",
+                "KMIP-REQ-SPEC-4-001-003": "client",
+                "KMIP-REQ-SPEC-4-001-004": "both",
+                "KMIP-REQ-SPEC-4-001-005": "client",
             },
         )
         for requirement_id in (
-            "KMIPKIT-REQ-SPEC-4-001-001",
-            "KMIPKIT-REQ-SPEC-4-001-002",
-            "KMIPKIT-REQ-SPEC-4-001-003",
+            "KMIP-REQ-SPEC-4-001-001",
+            "KMIP-REQ-SPEC-4-001-002",
+            "KMIP-REQ-SPEC-4-001-003",
         ):
             self.assertEqual(crosswalk[requirement_id]["source_actor"], "unresolved")
             self.assertEqual(crosswalk[requirement_id]["scope_state"], "mixed")

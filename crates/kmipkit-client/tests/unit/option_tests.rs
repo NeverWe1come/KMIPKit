@@ -7,11 +7,11 @@
 //! `KMIPKIT-DEC-002` applies only the assigned-value outbound policy and does
 //! not call the §11.5 extension allocation invalid.
 //!
-//! Traceability: `KMIPKIT-0007-FR-007`, `-FR-008`, `-FR-010`, `-SC-002`,
-//! `KMIPKIT-REQ-SPEC-8-003-002`, `KMIPKIT-REQ-SPEC-9.2-001`,
-//! `KMIPKIT-REQ-SPEC-9.6-001-001`, `-001-002`, `-001-003`,
-//! `KMIPKIT-REQ-SPEC-9.13-001-004`, `-001-005`,
-//! `KMIPKIT-REQ-SPEC-9.19-002`, `KMIPKIT-DISC-001`, and
+//! Traceability: `functional requirement`, `-FR-008`, `-FR-010`, `-SC-002`,
+//! `KMIP-REQ-SPEC-8-003-002`, `KMIP-REQ-SPEC-9.2-001`,
+//! `KMIP-REQ-SPEC-9.6-001-001`, `-001-002`, `-001-003`,
+//! `KMIP-REQ-SPEC-9.13-001-004`, `-001-005`,
+//! `KMIP-REQ-SPEC-9.19-002`, `KMIPKIT-DISC-001`, and
 //! `KMIPKIT-DISC-043` / `KMIPKIT-DEC-002`.
 
 use kmipkit_protocol::RequestMessage;
@@ -370,8 +370,8 @@ fn mixed_batch_rejects_pending_when_asynchronous_responses_are_prohibited() {
 
 /// A Pending response carries the field required by OASIS KMIP Specification
 /// v2.1 §8.6, Table 399 (with related context in §9.1), catalog element
-/// `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`. The
-/// separately cited §9.19 / `KMIPKIT-REQ-SPEC-9.19-002` concerns using that
+/// `KMIP-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`. The
+/// separately cited §9.19 / `KMIP-REQ-SPEC-9.19-002` concerns using that
 /// value in a subsequent Poll request.
 #[test]
 fn pending_response_requires_its_asynchronous_correlation_value() {

@@ -225,7 +225,7 @@ fn configured_item_count_accepts_exact_and_rejects_one_over() {
 
 #[test]
 fn synthetic_u32_item_length_header_is_big_endian_and_truncation_is_bounded() {
-    // OASIS KMIP Specification v2.1 §10.1.3, KMIPKIT-0005-NR-004; KMIPKit
+    // OASIS KMIP Specification v2.1 §10.1.3, specification requirement-NR-004; KMIPKit
     // FR-008 requires checking available input before declared-length allocation.
     let header = wire_header(0x08, u32::MAX);
     assert_eq!(header.len(), 8);

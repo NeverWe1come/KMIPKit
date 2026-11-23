@@ -1,5 +1,5 @@
 //! Exercise public attribute diagnostics and generic value-copy paths.
-//! Traceability: KMIPKIT-0016-FR-001/FR-011/FR-013 and SC-001/SC-005.
+//! Traceability: functional requirement/FR-011/FR-013 and SC-001/SC-005.
 
 use std::error::Error;
 use std::fmt::Debug;

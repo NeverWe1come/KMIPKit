@@ -1,4 +1,4 @@
-//! Integration tests for Scaleway Key Manager and Secret Manager provider bridge (KMIPKIT-0081).
+//! Integration tests for Scaleway Key Manager and Secret Manager provider bridge (specification requirement).
 #![forbid(unsafe_code)]
 #![allow(
     clippy::missing_errors_doc,

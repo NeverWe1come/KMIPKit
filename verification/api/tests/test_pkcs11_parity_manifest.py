@@ -20,7 +20,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 PARITY_FIXTURE = (
     ROOT / "bindings" / "shared" / "fixtures" / "api" / "pkcs11-parity.json"
 )
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-PKCS-11"
 OWNER_SPEC = ROOT / "specs" / "026-pkcs11" / "spec.md"
 OWNER_REQUIREMENTS = {
     f"KMIPKIT-0040-FR-{number:03d}" for number in range(1, 9)

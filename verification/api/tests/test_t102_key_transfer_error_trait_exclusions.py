@@ -44,25 +44,25 @@ CONDITIONAL = {
 }
 OPERATIONS = {
     "DeriveKeyError": {
-        "module": "derive_key", "element": "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
+        "module": "derive_key", "element": "KMIP-ELEM-OP-C2S-DERIVE-KEY",
         "reference": "OASIS KMIP v2.1 Section 6.1.14, Tables 205-207",
         "captions": ("Table 205: Derive Key Request Payload", "Table 206: Derive Key Response Payload", "Table 207: Derive Key Errors"),
         "request": ("DeriveKeyRequest", "blocked"), "response": ("DeriveKeyResponse", "verified"), "token": "derive_key",
     },
     "ExportError": {
-        "module": "export", "element": "KMIPKIT-ELEM-OP-C2S-EXPORT",
+        "module": "export", "element": "KMIP-ELEM-OP-C2S-EXPORT",
         "reference": "OASIS KMIP v2.1 Section 6.1.18, Tables 217-219",
         "captions": ("Table 217: Export Request Payload", "Table 218: Export Response Payload", "Table 219: Export Errors"),
         "request": ("ExportRequest", "verified"), "response": ("ExportResponse", "verified"), "token": "export",
     },
     "ImportError": {
-        "module": "import", "element": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "module": "import", "element": "KMIP-ELEM-OP-C2S-IMPORT",
         "reference": "OASIS KMIP v2.1 Section 6.1.25, Tables 238-240",
         "captions": ("Table 238: Import Request Payload", "Table 239: Import Response Payload", "Table 240: Import Errors"),
         "request": ("ImportRequest", "verified"), "response": ("ImportResponse", "verified"), "token": "import",
     },
     "JoinSplitKeyError": {
-        "module": "join_split_key", "element": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "module": "join_split_key", "element": "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         "reference": "OASIS KMIP v2.1 Section 6.1.27, Tables 244-246",
         "captions": ("Table 244: Join Split Key Request Payload", "Table 245: Join Split Key Response Payload", "Table 246: Join Split Key Errors"),
         "request": ("JoinSplitKeyRequest", "verified"), "response": ("JoinSplitKeyResponse", "verified"), "token": "join_split_key",

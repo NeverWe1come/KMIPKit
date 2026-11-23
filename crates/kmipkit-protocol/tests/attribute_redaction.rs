@@ -2,7 +2,7 @@
 //!
 //! OASIS KMIP v2.1 §§5.6–5.7, Tables 162–163, define the Current/New Attribute
 //! wrappers around one direct attribute Item. Redaction is a `KMIPKit` security
-//! requirement from KMIPKIT-0016-FR-013 and AGENTS.md §8, not an OASIS
+//! requirement from functional requirement and security zeroization policy, not an OASIS
 //! conformance requirement; these tests do not claim official OASIS coverage.
 
 use std::error::Error;
@@ -99,7 +99,7 @@ fn current_and_new_attribute_values_remain_typed_while_wrapper_debug_redacts_the
 
 #[test]
 fn direct_and_wrapped_attribute_validation_errors_redact_values_in_diagnostics() {
-    // FR-013 and AGENTS.md §8 require diagnostics to omit secret-bearing
+    // FR-013 and security zeroization policy require diagnostics to omit secret-bearing
     // attribute values. The OASIS structure sources are §4 and §4.60 Table 150.
     let invalid_direct = item(
         KNOWN_ENUM_ATTRIBUTE_TAG,

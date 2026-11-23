@@ -174,7 +174,7 @@ class T102Pkcs11ClientRootTraitExclusionTests(unittest.TestCase):
         operation_rows = [
             row
             for row in self.manifest["operations"]
-            if row.get("operationId") == "KMIPKIT-ELEM-OP-C2S-PKCS-11"
+            if row.get("operationId") == "KMIP-ELEM-OP-C2S-PKCS-11"
         ]
         self.assertEqual(len(operation_rows), 1)
         operation = operation_rows[0]

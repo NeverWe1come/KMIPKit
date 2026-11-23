@@ -1,4 +1,4 @@
-"""Python 3.12 consumer checks for the shared KMIPKIT-0043 parity cases."""
+"""Python 3.12 consumer checks for the shared public API binding surface parity cases."""
 
 from __future__ import annotations
 

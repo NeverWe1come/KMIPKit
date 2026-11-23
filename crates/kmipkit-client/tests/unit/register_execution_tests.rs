@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 //! Fake-transport Register contracts from OASIS KMIP v2.1 §6.1.43,
-//! Tables 291–294. Traceability: all `KMIPKIT-REQ-SPEC-6.1.43-*` rows.
+//! Tables 291–294. Traceability: all `KMIP-REQ-SPEC-6.1.43-*` rows.
 //! These are derived execution tests, not official fixture passes.
 
 use kmipkit_protocol::{

@@ -75,7 +75,7 @@ cases remain visible as case-level evidence gaps but do not by themselves
 invalidate that minimum. Seventy-seven other linked profile cases have no
 local fixture. Local runtime validation and fixture replay do not establish
 server interoperability or profile conformance. No profile conformance claim
-is published by KMIPKIT-0010.
+is published by the profile conformance model.
 Other profile records retain their own catalog states; none of these fields is
 itself a public claim.
 
@@ -130,8 +130,8 @@ incomplete; per-exchange validation rejects the selected target before
 network I/O. This gate does not establish server interoperability or close the
 external evidence gates.
 The registry also includes a mapping for Wrapped Secret Data under
-KMIPKIT-REQ-SPEC-2.7-001. See the
-KMIPKIT-0010 specification for
+KMIP-REQ-SPEC-2.7-001. See the
+the profile conformance model specification for
 its exact scope and acceptance criteria.
 
 The same report lists each tag range separately, groups named tags by their

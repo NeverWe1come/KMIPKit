@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 use super::*;
 use crate::kmipkit_protocol_version_v1_t;
 use kmipkit_protocol::MessageExtensionView;
@@ -105,12 +105,12 @@ fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
     assert_eq!(
         case["requirementIds"],
         serde_json::json!([
-            "KMIPKIT-0043-FR-010",
-            "KMIPKIT-0043-FR-011",
-            "KMIPKIT-0043-FR-013",
-            "KMIPKIT-0043-FR-017",
-            "KMIPKIT-0043-FR-018",
-            "KMIPKIT-0043-FR-022"
+            "functional requirement",
+            "functional requirement",
+            "functional requirement",
+            "functional requirement",
+            "functional requirement",
+            "functional requirement"
         ])
     );
     assert_eq!(case["consumerTests"]["rust"]["status"], "available");

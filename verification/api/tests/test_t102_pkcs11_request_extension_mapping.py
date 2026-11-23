@@ -16,7 +16,7 @@ from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-CAPABILITY = "KMIPKIT-ELEM-OP-C2S-PKCS-11"
+CAPABILITY = "KMIP-ELEM-OP-C2S-PKCS-11"
 OWNER = "specs/026-pkcs11/spec.md"
 TARGETS = (
     (

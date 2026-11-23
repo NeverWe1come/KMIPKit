@@ -8,10 +8,10 @@
 //! `KMIPKit` associates response items by their IDs regardless of response
 //! order. These derived tests are not official OASIS vectors.
 //!
-//! Traceability: `KMIPKIT-0007-FR-004`, `-FR-006`, and `-FR-016`;
-//! `KMIPKIT-REQ-SPEC-8.3-003`, `KMIPKIT-REQ-SPEC-9.21-001-001`,
-//! `KMIPKIT-REQ-SPEC-9.21-001-002`, `KMIPKIT-DISC-022`,
-//! `KMIPKIT-0006-FR-008`, and `KMIPKIT-0006-FR-022`.
+//! Traceability: `functional requirement`, `-FR-006`, and `-FR-016`;
+//! `KMIP-REQ-SPEC-8.3-003`, `KMIP-REQ-SPEC-9.21-001-001`,
+//! `KMIP-REQ-SPEC-9.21-001-002`, `KMIPKIT-DISC-022`,
+//! `functional requirement`, and `functional requirement`.
 
 use kmipkit_protocol::ProtocolVersion;
 use kmipkit_ttlv::codec::CodecLimits;

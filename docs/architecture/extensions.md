@@ -16,7 +16,7 @@ building vendor policy into the core.
 - Avoid bundled vendor-specific semantic knowledge.
 
 The common typed execution path implements unknown-extension criticality and
-preservation first. KMIPKIT-0012 owns the immutable per-client registry,
+preservation first. the extension registry owns the immutable per-client registry,
 validated typed extension values, and generated Rust, C, Java, and Python
 adapters before the 1.0 API is frozen; this keeps the 1.0 commitments above
 without adding vendor schema handling to the initial Discover Versions slice.

@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = REPOSITORY_ROOT / "bindings" / "shared" / "public-api.json"
-ADR_PATH = "docs/adr/0014-public-transport-exchange-contract.md"
+ADR_PATH = "docs/architecture/transport-security.md"
 EXPECTED_TRANSPORT_RESPONSE_TRAITS = {
     "<kmipkit_transport::TransportResponse as core::any::Any>::type_id",
     "<kmipkit_transport::TransportResponse as core::borrow::Borrow<kmipkit_transport::response::TransportResponse>>::borrow",
@@ -65,7 +65,7 @@ class T102TransportResponseTraitExclusionTests(unittest.TestCase):
                         "evidence": "**Status**: Accepted under delegated maintainer authorization on 2026-10-06.",
                     },
                 )
-                self.assertIn("ADR-0014 Decision 1/6", row["evidence"])
+                self.assertIn("the transport architecture decision Decision 1/6", row["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-020", row["evidence"])
                 self.assertIn("KMIPKIT-0043-FR-021", row["evidence"])
                 self.assertIn("redacted Debug", row["evidence"])

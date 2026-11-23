@@ -12,7 +12,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 LANGUAGES = {"rust", "c", "java", "python"}
 OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-ENCRYPT": {
+    "KMIP-ELEM-OP-C2S-ENCRYPT": {
         "name": "Encrypt",
         "section": "6.1.17",
         "request": {
@@ -28,24 +28,24 @@ OPERATIONS = {
             "python": "kmipkit.client.BatchItemResult.encrypt_response",
         },
         "normative_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.17-005-001",
-            "KMIPKIT-REQ-SPEC-6.1.17-005-002",
-            "KMIPKIT-REQ-SPEC-6.1.17-006",
+            "KMIP-REQ-SPEC-4.16-001-001",
+            "KMIP-REQ-SPEC-4.16-001-002",
+            "KMIP-REQ-SPEC-4.16-002",
+            "KMIP-REQ-SPEC-4.16-003",
+            "KMIP-REQ-SPEC-6.1.17-001-001",
+            "KMIP-REQ-SPEC-6.1.17-001-002",
+            "KMIP-REQ-SPEC-6.1.17-005-001",
+            "KMIP-REQ-SPEC-6.1.17-005-002",
+            "KMIP-REQ-SPEC-6.1.17-006",
         },
         "request_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
+            "KMIP-REQ-SPEC-4.16-001-001",
+            "KMIP-REQ-SPEC-4.16-001-002",
+            "KMIP-REQ-SPEC-4.16-002",
+            "KMIP-REQ-SPEC-4.16-003",
         },
     },
-    "KMIPKIT-ELEM-OP-C2S-DECRYPT": {
+    "KMIP-ELEM-OP-C2S-DECRYPT": {
         "name": "Decrypt",
         "section": "6.1.11",
         "request": {
@@ -61,22 +61,22 @@ OPERATIONS = {
             "python": "kmipkit.client.BatchItemResult.decrypt_response",
         },
         "normative_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-001",
-            "KMIPKIT-REQ-SPEC-6.1.11-004-002",
-            "KMIPKIT-REQ-SPEC-6.1.11-005",
-            "KMIPKIT-REQ-SPEC-6.1.11-006",
+            "KMIP-REQ-SPEC-4.16-001-001",
+            "KMIP-REQ-SPEC-4.16-001-002",
+            "KMIP-REQ-SPEC-4.16-002",
+            "KMIP-REQ-SPEC-4.16-003",
+            "KMIP-REQ-SPEC-6.1.11-001-001",
+            "KMIP-REQ-SPEC-6.1.11-001-002",
+            "KMIP-REQ-SPEC-6.1.11-004-001",
+            "KMIP-REQ-SPEC-6.1.11-004-002",
+            "KMIP-REQ-SPEC-6.1.11-005",
+            "KMIP-REQ-SPEC-6.1.11-006",
         },
         "request_requirements": {
-            "KMIPKIT-REQ-SPEC-4.16-001-001",
-            "KMIPKIT-REQ-SPEC-4.16-001-002",
-            "KMIPKIT-REQ-SPEC-4.16-002",
-            "KMIPKIT-REQ-SPEC-4.16-003",
+            "KMIP-REQ-SPEC-4.16-001-001",
+            "KMIP-REQ-SPEC-4.16-001-002",
+            "KMIP-REQ-SPEC-4.16-002",
+            "KMIP-REQ-SPEC-4.16-003",
         },
     },
 }
@@ -208,15 +208,15 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
         for declaration in declarations:
             with self.subTest(export=declaration["exportName"]):
                 self.assertEqual(
-                    "KMIPKIT-ELEM-OP-C2S-DECRYPT", declaration["capabilityId"]
+                    "KMIP-ELEM-OP-C2S-DECRYPT", declaration["capabilityId"]
                 )
                 self.assertNotIn(
-                    "KMIPKIT-REQ-SPEC-6.1.17-001-001",
+                    "KMIP-REQ-SPEC-6.1.17-001-001",
                     declaration["requirementIds"],
                 )
                 self.assertTrue(
                     any(
-                        requirement.startswith("KMIPKIT-REQ-SPEC-6.1.11-")
+                        requirement.startswith("KMIP-REQ-SPEC-6.1.11-")
                         for requirement in declaration["requirementIds"]
                     )
                 )
@@ -244,7 +244,7 @@ class EncryptDecryptParityManifestTests(unittest.TestCase):
             "python": "wipe-owned-copy-on-close",
         }
         for operation, section in (("Encrypt", "6.1.17"), ("Decrypt", "6.1.11")):
-            operation_id = f"KMIPKIT-ELEM-OP-C2S-{operation.upper()}"
+            operation_id = f"KMIP-ELEM-OP-C2S-{operation.upper()}"
             with self.subTest(operation=operation):
                 for language in ("java", "python"):
                     declaration_id = f"T040:{operation.lower()}:response-close:{language}"

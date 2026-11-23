@@ -1,7 +1,7 @@
 //! Derived low-level transport contract tests; these do not exercise
 //! `Client::execute` or establish behavior for a production network adapter.
 //!
-//! Traceability: KMIPKIT-0007-FR-005/-FR-009/-FR-013 and SC-003; ADR-0014;
+//! Traceability: functional requirement/-FR-009/-FR-013 and SC-003; low-level transport exchange contract;
 //! OASIS KMIP Specification v2.1 §9.12 and Table 417 for the response limit.
 
 use std::sync::Arc;

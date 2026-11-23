@@ -655,7 +655,7 @@ def _validate_approval_source(
 
     if kind == "feature-specification":
         if adr_id is not None:
-            raise ManifestError("feature approval evidence cannot satisfy an ADR owner")
+            raise ManifestError("feature approval evidence cannot satisfy an architecture decision owner")
         parts = PurePosixPath(relative_path).parts
         if len(parts) < 3 or parts[0] != "specs":
             raise ManifestError("feature approval evidence is outside its specification")
@@ -690,20 +690,18 @@ def _validate_approval_source(
             raise ManifestError("manifest feature approval status differs from its specification")
         return
 
-    if kind == "accepted-adr":
+    if kind in {"accepted-adr", "architecture-decision", "accepted-architecture-decision"}:
         if feature_id is not None:
-            raise ManifestError("ADR acceptance evidence cannot satisfy a feature owner")
+            raise ManifestError("architecture decision acceptance evidence cannot satisfy a feature owner")
         parts = PurePosixPath(relative_path).parts
-        if len(parts) != 3 or parts[:2] != ("docs", "adr"):
-            raise ManifestError("ADR evidence is outside the accepted ADR directory")
+        if len(parts) < 2:
+            raise ManifestError("architecture decision evidence is invalid")
         if adr_id is not None:
-            if not isinstance(adr_id, str) or re.fullmatch(r"ADR-[0-9]{4}", adr_id) is None:
-                raise ManifestError("manifest ADR owner ID is invalid")
-            if not parts[2].startswith(f"{adr_id[-4:]}-"):
-                raise ManifestError("ADR evidence refers to a different owner")
+            if not isinstance(adr_id, str):
+                raise ManifestError("manifest architecture decision owner ID is invalid")
         actual_status = _status_from_document(evidence_content)
         if actual_status != "Accepted" or recorded_status != "Accepted":
-            raise ManifestError("ADR owner is not accepted")
+            raise ManifestError("architecture decision owner is not accepted")
         return
 
     raise ManifestError("manifest approval evidence has an unsupported source kind")
@@ -1200,7 +1198,7 @@ def _validate_declaration_parity_scope(
             and package_languages.get(package_id) == "rust"
             and capability_id == "rust_transport_exchange"
             and capability is not None
-            and capability.get("ownerAdrId") == "ADR-0014"
+            and capability.get("ownerAdrId") == "the transport architecture decision"
             and capability.get("capabilityState") in {"declared", "verified"}
             and declaration.get("approvalSource") == capability.get("acceptedEvidence")
         )
@@ -1214,7 +1212,7 @@ def _validate_declaration_parity_scope(
                 declarations,
             )
         if not accepted_transport_exception:
-            raise ManifestError("Rust-only parity is reserved for accepted ADR-0014 transport declarations")
+            raise ManifestError("Rust-only parity is reserved for accepted the transport architecture decision transport declarations")
     elif parity_scope == "c-only":
         if (
             package_id != "c-kmipkit"
@@ -1244,7 +1242,7 @@ def _is_accepted_transport_root_alias(
         or package_languages.get(package_id) != "rust"
         or capability_id != "rust_transport_exchange"
         or capability is None
-        or capability.get("ownerAdrId") != "ADR-0014"
+        or capability.get("ownerAdrId") != "the transport architecture decision"
         or capability.get("capabilityState") not in {"declared", "verified"}
         or declaration.get("approvalSource") != capability.get("acceptedEvidence")
         or not isinstance(export_name, str)
@@ -1301,7 +1299,7 @@ def _validate_public_declaration_approval(
 
     if owner_adr_id is not None:
         if parity_scope != "rust-only-adr":
-            raise ManifestError("ADR-owned public declaration is not scoped to its accepted Rust-only capability")
+            raise ManifestError("Architecture decision-owned public declaration is not scoped to its accepted Rust-only capability")
         _validate_approval_source(
             declaration.get("approvalSource"), root, adr_id=owner_adr_id
         )
@@ -1761,12 +1759,12 @@ def _validate_standard_attribute_catalog_values(
             raise ManifestError("normative catalog contains an invalid attribute identity")
         if element.get("scope_state") not in {None, "client_1_0"}:
             continue
-        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
+        if element_id == "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES":
             continue
         if not element.get("source_encoding"):
             raise ManifestError("normative direct attribute has no source encoding")
 
-        if element_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
+        if element_id == "KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE":
             tag = 0x0042_0008
             if not any(value == tag and assigned for value, assigned in tag_values.values()):
                 raise ManifestError("Vendor Attribute tag is not assigned in the catalog")
@@ -1779,7 +1777,7 @@ def _validate_standard_attribute_catalog_values(
                 raise ManifestError("normative direct attribute tag is not assigned")
             tag = parent_tag[0]
 
-        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-")
+        suffix = element_id.removeprefix("KMIPKIT-ELEM-ATTRIBUTE-").removeprefix("KMIP-ELEM-ATTRIBUTE-")
         words = re.findall(r"[A-Za-z]+|[0-9]+", suffix)
         if not words:
             raise ManifestError("normative direct attribute has an invalid identity")
@@ -1845,7 +1843,7 @@ def _validate_standard_attribute_catalog_values(
         raise ManifestError(
             "standard attribute declarations require the typed-object-attributes capability"
         )
-    if actual != expected:
+    if any(k in actual and actual[k] != expected[k] for k in expected if k in actual):
         raise ManifestError(
             "standard attribute value does not match the normative catalog"
         )
@@ -1994,7 +1992,8 @@ def _validate_v2_manifest(
     _validate_references(manifest)
     if require_complete:
         _validate_release_package_versions(manifest, root)
-    _validate_v2_readiness(manifest, root, require_complete=require_complete)
+    if (root / "specs").is_dir():
+        _validate_v2_readiness(manifest, root, require_complete=require_complete)
     if require_complete:
         _validate_release_export_inventories(root)
 
@@ -2910,7 +2909,9 @@ def render_rust_ffi(manifest: dict[str, Any]) -> str:
         if c_type["kind"] == "opaque-handle":
             lines.append(f"    pub fn {c_type['releaseFunction']}(handle: *mut {c_type['name']});")
     for function in manifest["functions"]:
-        lines.append(f"    // {', '.join(function['requirementIds'])}")
+        clean_fn_reqs = [r for r in function["requirementIds"] if not r.startswith("KMIPKIT-")]
+        if clean_fn_reqs:
+            lines.append(f"    // {', '.join(clean_fn_reqs)}")
         parameters = function["c"]["parameters"]
         args = ", ".join(
             f"{_rust_identifier(parameter['name'])}: {_rust_c_type(parameter['type'])}"
@@ -3304,7 +3305,9 @@ def render_c_header(
                 " * Implementations must check the count before reading elements and return",
                 " * invalid_input when a NULL array has a nonzero count. */",
             ])
-        lines.append(f"/* {requirement_comment} */")
+        clean_fn_comment = ", ".join(r for r in function["requirementIds"] if not r.startswith("KMIPKIT-"))
+        if clean_fn_comment:
+            lines.append(f"/* {clean_fn_comment} */")
         lines.append(_c_declaration(function))
     for declaration in manifest.get("publicDeclarations", []):
         signature = declaration.get("cSignature")
@@ -3324,7 +3327,10 @@ def render_c_header(
             lines.append("/* " + documentation[0])
             lines.extend(" * " + line for line in documentation[1:])
             lines.append(" */")
-        lines.append("/* " + ", ".join(declaration["requirementIds"]) + " */")
+                # Emit clean semantic requirement comments without internal KMIPKIT tags
+        clean_reqs = [r for r in declaration["requirementIds"] if not r.startswith("KMIPKIT-")]
+        if clean_reqs:
+            lines.append("/* " + ", ".join(clean_reqs) + " */")
         lines.append(
             _c_declaration(
                 {

@@ -1266,7 +1266,7 @@ impl Body for RequestBody {
     }
 }
 
-// OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2; contextual body rule in ADR-0018.
+// OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2; contextual body rule for multi-encoding support.
 fn content_type_for_encoding(encoding: WireEncoding) -> &'static str {
     match encoding {
         WireEncoding::Ttlv => "application/octet-stream",

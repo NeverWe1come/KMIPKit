@@ -11,7 +11,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-LOG"
 OWNER_SPEC = "specs/028-diagnostics-interop/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OPERATION_REQUIREMENTS = {

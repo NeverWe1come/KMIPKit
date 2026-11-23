@@ -85,7 +85,7 @@ después de Get Usage Allocation, según DEC-024. Un Set que cambie Total exige
 Usage Limits presente y conocido, los valores actuales de Total y Count,
 conserva Count y rechaza una estructura mal formada que omita un miembro
 obligatorio de §7.40 Tabla 392. Sigue vigente la restricción independiente de
-KMIPKIT-0016 para Add/Modify Usage Limits. La aplicación es responsable de
+attribute operations para Add/Modify Usage Limits. La aplicación es responsable de
 aportar un estado fiable.
 
 ## Estado actual
@@ -150,7 +150,7 @@ de la aplicación: esta debería elegir y conservar el uso único previsto. KMIP
 no consulta el estado remoto ni aplica el límite de usos. El requisito
 obligatorio de monotonicidad de Hashed Password Timestamp (§9.11) está mapeado
 a una función de secuencia a cargo de la aplicación según la decisión resuelta
-OD-003 de KMIPKIT-0008. Exige marcas de tiempo que aumenten estrictamente por
+OD-003 de the credentials and attestation model. Exige marcas de tiempo que aumenten estrictamente por
 Username y productor lógico de credenciales; la aplicación mantiene la
 persistencia entre reinicios. La función no calcula hashes ni envía
 credenciales, y el mapeo no establece el orden del cable ni la conformidad
@@ -223,7 +223,7 @@ la publicación pertenece al proceso de versión revisado por separado.
 
 Consulta la [estrategia de conformidad](../../compliance/conformance.md), el
 [inventario KMIP 2.1](../../../verification/conformance/catalog/README.md) y la
-especificación KMIPKIT-0010
+especificación de diseño
 para conocer el modelo de evidencia y su alcance.
 
 ## Informes locales de evidencia y catálogo

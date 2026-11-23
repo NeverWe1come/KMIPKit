@@ -14,39 +14,39 @@ ROOT = Path(__file__).resolve().parents[3]
 BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
 
 SERVER_ONLY_REQUIREMENT_DIRECTIONS = {
-    "KMIPKIT-REQ-SPEC-4.57-003-001": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-003-002": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-003-003": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-003-004": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-004-001": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-004-002": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-004-003": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-005-001": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-005-003": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-006": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-007": "unclear",
-    "KMIPKIT-REQ-SPEC-4.57-007-002": "unclear",
-    "KMIPKIT-REQ-SPEC-6.1.25-001": "not_applicable",
-    "KMIPKIT-REQ-SPEC-7.12-005-002": "server_to_client",
-    "KMIPKIT-REQ-SPEC-7.18-002": "server_to_client",
-    "KMIPKIT-REQ-SPEC-8-003-002": "server_to_client",
-    "KMIPKIT-REQ-SPEC-9.21-001-002": "server_to_client",
+    "KMIP-REQ-SPEC-4.57-003-001": "unclear",
+    "KMIP-REQ-SPEC-4.57-003-002": "unclear",
+    "KMIP-REQ-SPEC-4.57-003-003": "unclear",
+    "KMIP-REQ-SPEC-4.57-003-004": "unclear",
+    "KMIP-REQ-SPEC-4.57-004-001": "unclear",
+    "KMIP-REQ-SPEC-4.57-004-002": "unclear",
+    "KMIP-REQ-SPEC-4.57-004-003": "unclear",
+    "KMIP-REQ-SPEC-4.57-005-001": "unclear",
+    "KMIP-REQ-SPEC-4.57-005-003": "unclear",
+    "KMIP-REQ-SPEC-4.57-006": "unclear",
+    "KMIP-REQ-SPEC-4.57-007": "unclear",
+    "KMIP-REQ-SPEC-4.57-007-002": "unclear",
+    "KMIP-REQ-SPEC-6.1.25-001": "not_applicable",
+    "KMIP-REQ-SPEC-7.12-005-002": "server_to_client",
+    "KMIP-REQ-SPEC-7.18-002": "server_to_client",
+    "KMIP-REQ-SPEC-8-003-002": "server_to_client",
+    "KMIP-REQ-SPEC-9.21-001-002": "server_to_client",
 }
 
 SHARED_RNG_PARAMETER_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-7.36-001",
-    "KMIPKIT-REQ-SPEC-7.36-002-001",
-    "KMIPKIT-REQ-SPEC-7.36-002-002",
-    "KMIPKIT-REQ-SPEC-7.36-003",
+    "KMIP-REQ-SPEC-7.36-001",
+    "KMIP-REQ-SPEC-7.36-002-001",
+    "KMIP-REQ-SPEC-7.36-002-002",
+    "KMIP-REQ-SPEC-7.36-003",
 }
 
 PKCS11_CONDITIONAL_REQUIREMENT_IDS = {
-    f"KMIPKIT-REQ-SPEC-7.{section}-001" for section in range(26, 31)
+    f"KMIP-REQ-SPEC-7.{section}-001" for section in range(26, 31)
 }
 
 PROCESS_DATE_REQUIREMENT_IDS = {
-    *(f"KMIPKIT-REQ-SPEC-4.40-001-{ordinal:03}" for ordinal in range(1, 6)),
-    *(f"KMIPKIT-REQ-SPEC-4.41-001-{ordinal:03}" for ordinal in range(1, 5)),
+    *(f"KMIP-REQ-SPEC-4.40-001-{ordinal:03}" for ordinal in range(1, 6)),
+    *(f"KMIP-REQ-SPEC-4.41-001-{ordinal:03}" for ordinal in range(1, 5)),
 }
 
 def load_catalog() -> dict[str, Any]:
@@ -90,7 +90,7 @@ class BaselineServerScopeTests(unittest.TestCase):
                             for marker in ("oasis", "pinned", "source")
                         )
                     )
-                if requirement_id == "KMIPKIT-REQ-SPEC-4.57-003-001":
+                if requirement_id == "KMIP-REQ-SPEC-4.57-003-001":
                     self.assertIn("active state transition", requirement["review_note"].lower())
                     self.assertNotIn("§4.57 says", requirement["review_note"])
                     self.assertIn(
@@ -157,9 +157,9 @@ class BaselineServerScopeTests(unittest.TestCase):
     def test_vendor_extension_structure_is_client_1_0_profile_scope(self) -> None:
         catalog = load_catalog()
         requirement_ids = {
-            "KMIPKIT-REQ-SPEC-9.13-001-001",
-            "KMIPKIT-REQ-SPEC-9.13-001-002",
-            "KMIPKIT-REQ-SPEC-9.13-001-003",
+            "KMIP-REQ-SPEC-9.13-001-001",
+            "KMIP-REQ-SPEC-9.13-001-002",
+            "KMIP-REQ-SPEC-9.13-001-003",
         }
         requirements = {
             item["requirement_id"]: item
@@ -198,16 +198,16 @@ class BaselineServerScopeTests(unittest.TestCase):
         review = next(
             item
             for item in fixture["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-9.13-001"
+            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-9.13-001"
         )
         self.assertEqual(
             review["expected_client_requirement_ids"],
             [
-                "KMIPKIT-REQ-SPEC-9.13-001-001",
-                "KMIPKIT-REQ-SPEC-9.13-001-002",
-                "KMIPKIT-REQ-SPEC-9.13-001-003",
-                "KMIPKIT-REQ-SPEC-9.13-001-004",
-                "KMIPKIT-REQ-SPEC-9.13-001-005",
+                "KMIP-REQ-SPEC-9.13-001-001",
+                "KMIP-REQ-SPEC-9.13-001-002",
+                "KMIP-REQ-SPEC-9.13-001-003",
+                "KMIP-REQ-SPEC-9.13-001-004",
+                "KMIP-REQ-SPEC-9.13-001-005",
             ],
         )
         source_obligations = {
@@ -222,7 +222,7 @@ class BaselineServerScopeTests(unittest.TestCase):
 
     def test_nist_key_single_usage_recommendation_is_client_scope(self) -> None:
         catalog = load_catalog()
-        requirement_id = "KMIPKIT-REQ-SPEC-4.34-001-002"
+        requirement_id = "KMIP-REQ-SPEC-4.34-001-002"
         requirement = next(
             item
             for item in catalog["requirements"]
@@ -256,7 +256,7 @@ class BaselineServerScopeTests(unittest.TestCase):
         review = next(
             item
             for item in fixture["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-4.34-001"
+            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-4.34-001"
         )
         obligation = next(
             item

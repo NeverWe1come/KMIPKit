@@ -1,4 +1,4 @@
-// Requirement traceability: KMIPKIT-0006-FR-017, SC-006.
+// Requirement traceability: functional requirement, SC-006.
 use kmipkit_ttlv::{Item, Structure};
 
 fn main() {

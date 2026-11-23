@@ -7,9 +7,9 @@
 //! 6, 7, and 8. They are operation-item evidence, not a complete official-case
 //! pass.
 //!
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.11-001-001`,
-//! `KMIPKIT-REQ-SPEC-6.1.11-001-002`, `KMIPKIT-REQ-SPEC-6.1.11-005`,
-//! `KMIPKIT-REQ-SPEC-6.1.11-006`, and `KMIPKIT-ELEM-OP-C2S-DECRYPT`.
+//! Traceability: `KMIP-REQ-SPEC-6.1.11-001-001`,
+//! `KMIP-REQ-SPEC-6.1.11-001-002`, `KMIP-REQ-SPEC-6.1.11-005`,
+//! `KMIP-REQ-SPEC-6.1.11-006`, and `KMIP-ELEM-OP-C2S-DECRYPT`.
 
 use crate::operation_test_support::item;
 use crate::{

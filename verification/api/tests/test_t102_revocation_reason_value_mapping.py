@@ -25,7 +25,7 @@ from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
-REVOKE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-REVOKE"
+REVOKE_OPERATION_ID = "KMIP-ELEM-OP-C2S-REVOKE"
 
 EXPECTED_REASONS = (
     ("rust-observed-1e1ac0cb1af003e02031", "UNSPECIFIED", 1),

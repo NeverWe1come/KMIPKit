@@ -12,25 +12,25 @@ TRACEABILITY = ROOT / "specs" / "023-key-material-transfer" / "traceability.md"
 FEATURE = "KMIPKIT-0037"
 
 REQUIREMENT_IDS = (
-    "KMIPKIT-REQ-SPEC-6.1.14-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.14-001-002",
-    "KMIPKIT-REQ-SPEC-6.1.14-001-003",
-    "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-    "KMIPKIT-REQ-SPEC-6.1.14-002",
-    "KMIPKIT-REQ-SPEC-6.1.14-006-001",
-    "KMIPKIT-REQ-SPEC-6.1.14-006-002",
-    "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-    "KMIPKIT-REQ-SPEC-6.1.14-007-002",
-    "KMIPKIT-REQ-SPEC-7.12-003",
-    "KMIPKIT-REQ-SPEC-7.12-005-001",
-    "KMIPKIT-REQ-SPEC-6.1.25-006",
-    "KMIPKIT-REQ-SPEC-6.1.27-001",
-    "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.27-005",
+    "KMIP-REQ-SPEC-6.1.14-001-001",
+    "KMIP-REQ-SPEC-6.1.14-001-002",
+    "KMIP-REQ-SPEC-6.1.14-001-003",
+    "KMIP-REQ-SPEC-6.1.14-001-004",
+    "KMIP-REQ-SPEC-6.1.14-002",
+    "KMIP-REQ-SPEC-6.1.14-006-001",
+    "KMIP-REQ-SPEC-6.1.14-006-002",
+    "KMIP-REQ-SPEC-6.1.14-007-001",
+    "KMIP-REQ-SPEC-6.1.14-007-002",
+    "KMIP-REQ-SPEC-7.12-003",
+    "KMIP-REQ-SPEC-7.12-005-001",
+    "KMIP-REQ-SPEC-6.1.25-006",
+    "KMIP-REQ-SPEC-6.1.27-001",
+    "KMIP-REQ-SPEC-6.1.27-002-002",
+    "KMIP-REQ-SPEC-6.1.27-005",
 )
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
 class KeyDerivationTransferTraceabilityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -56,29 +56,29 @@ class KeyDerivationTransferTraceabilityTests(unittest.TestCase):
 
     def test_operation_and_import_recover_elements_capture_the_implementation(self) -> None:
         operation_ids = (
-            "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY",
-            "KMIPKIT-ELEM-OP-C2S-EXPORT",
-            "KMIPKIT-ELEM-OP-C2S-IMPORT",
-            "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+            "KMIP-ELEM-OP-C2S-DERIVE-KEY",
+            "KMIP-ELEM-OP-C2S-EXPORT",
+            "KMIP-ELEM-OP-C2S-IMPORT",
+            "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         )
         for element_id in operation_ids:
             with self.subTest(element_id=element_id):
                 element = self.elements[element_id]
                 self.assertEqual(element["feature_spec"], FEATURE)
-                if element_id != "KMIPKIT-ELEM-OP-C2S-EXPORT":
+                if element_id != "KMIP-ELEM-OP-C2S-EXPORT":
                     self.assertTrue(element["requirement_ids"])
                 self.assertTrue(element["implementation_refs"])
                 self.assertTrue(element["verification_refs"])
 
-        import_value = self.elements["KMIPKIT-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A"]
-        recover_value = self.elements["KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016"]
+        import_value = self.elements["KMIP-ELEM-ENUM-VALUE-OPERATION-IMPORT-0000002A"]
+        recover_value = self.elements["KMIP-ELEM-ENUM-VALUE-OPERATION-RECOVER-00000016"]
         self.assertEqual(import_value["wire_value"], "0000002A")
         self.assertEqual(recover_value["wire_value"], "00000016")
         self.assertTrue(recover_value["verification_refs"])
 
     @unittest.skipUnless(
         TRACEABILITY.is_file(),
-        "Spec Kit traceability files are excluded from the code-only review branch",
+        "External traceability documents are not bundled with this source distribution",
     )
     def test_traceability_rows_use_executable_references(self) -> None:
         lines = TRACEABILITY.read_text(encoding="utf-8").splitlines()

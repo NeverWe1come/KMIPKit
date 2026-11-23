@@ -1,4 +1,4 @@
-//! KMIPKIT-0017-FR-004, FR-005, and FR-012 secret-handling contracts.
+//! functional requirement, FR-005, and FR-012 secret-handling contracts.
 //!
 //! Get field shapes follow OASIS KMIP v2.1 §6.1.19, Tables 220–221; the Any
 //! Object remains opaque as described in §2. Payload redaction and zeroization

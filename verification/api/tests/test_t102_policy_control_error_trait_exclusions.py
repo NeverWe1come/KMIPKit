@@ -71,7 +71,7 @@ MODULES = {
 }
 OPERATIONS = {
     "GetConstraintsError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+        "element": "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS",
         "reference": "OASIS KMIP v2.1 Section 6.1.22, Table 231",
         "caption": "Table 231: Get Constraints Errors",
         "method": "get_constraints",
@@ -79,7 +79,7 @@ OPERATIONS = {
         "response": "GetConstraintsResponse",
     },
     "GetUsageAllocationError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+        "element": "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
         "reference": "OASIS KMIP v2.1 Section 6.1.23, Table 234",
         "caption": "Table 234: Get Usage Allocation Errors",
         "method": "get_usage_allocation",
@@ -87,7 +87,7 @@ OPERATIONS = {
         "response": "GetUsageAllocationResponse",
     },
     "SetConstraintsError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+        "element": "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS",
         "reference": "OASIS KMIP v2.1 Section 6.1.52, Table 327",
         "caption": "Table 327: Set Constraints Errors",
         "method": "set_constraints",
@@ -95,7 +95,7 @@ OPERATIONS = {
         "response": "SetConstraintsResponse",
     },
     "SetDefaultsError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS",
+        "element": "KMIP-ELEM-OP-C2S-SET-DEFAULTS",
         "reference": "OASIS KMIP v2.1 Section 6.1.53, Table 330",
         "caption": "Table 330: Set Defaults Errors",
         "method": "set_defaults",

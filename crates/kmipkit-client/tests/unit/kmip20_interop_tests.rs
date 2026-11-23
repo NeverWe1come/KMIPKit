@@ -1,6 +1,6 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
-//! Commercial and independent KMS interoperability tests for OASIS KMIP 2.0 (KMIPKIT-0070).
+//! Commercial and independent KMS interoperability tests for OASIS KMIP 2.0 (specification requirement).
 //!
 //! Validates client behavior against the published conformance profiles for:
 //! 1. Cosmian KMS

@@ -1,4 +1,4 @@
-//! Payload tests for the KMIP 3.0 client operations in KMIPKIT-0050.
+//! Payload tests for the KMIP 3.0 client operations in specification requirement.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 

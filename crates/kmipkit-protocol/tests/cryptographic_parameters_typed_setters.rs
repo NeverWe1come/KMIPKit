@@ -1,4 +1,4 @@
-//! KMIPKIT-0050 typed Cryptographic Parameters operation integration contracts.
+//! specification requirement typed Cryptographic Parameters operation integration contracts.
 
 use kmipkit_protocol::{
     AttributeSet, CryptographicParameters, CryptographicParametersBuilder, DecryptRequest,

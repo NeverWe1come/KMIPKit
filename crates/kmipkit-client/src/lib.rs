@@ -53,14 +53,14 @@
 #![forbid(unsafe_code)]
 
 /// Private catalog-derived names shared by the JSON and XML codecs.
-#[allow(dead_code)] // KMIPKIT-0054 supplies the table before either codec lands.
+#[allow(dead_code)] // The multi-encoding specification supplies the table before codecs are wired.
 pub(crate) mod wire_names_generated;
 
-#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
+#[allow(dead_code)] // Connected by multi-encoding client integration.
 mod json_encoding;
 #[allow(dead_code)] // The common error contract is consumed by both codecs.
 mod wire_codec_common;
-#[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
+#[allow(dead_code)] // Connected by multi-encoding client integration.
 mod xml_codec;
 
 mod attribute_tags_generated;

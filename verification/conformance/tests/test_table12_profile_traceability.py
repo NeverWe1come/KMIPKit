@@ -9,12 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 REQUIREMENT_IDS = (
-    "KMIPKIT-REQ-SPEC-3.1-004-002",
-    "KMIPKIT-REQ-SPEC-3.1-005-002",
+    "KMIP-REQ-SPEC-3.1-004-002",
+    "KMIP-REQ-SPEC-3.1-005-002",
 )
 ELEMENT_IDS = {
-    "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
-    "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
+    "KMIP-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+    "KMIP-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
 }
 POSITIVE_TEST = (
     "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
@@ -99,9 +99,9 @@ class Table12ProfileTraceabilityTests(unittest.TestCase):
                     expected_source_refs,
                 )
                 self.assertEqual(requirement["source_clause_ids"], [
-                    "KMIPKIT-CLAUSE-SPEC-3.1-004"
+                    "KMIP-CLAUSE-SPEC-3.1-004"
                     if requirement_id.endswith("004-002")
-                    else "KMIPKIT-CLAUSE-SPEC-3.1-005"
+                    else "KMIP-CLAUSE-SPEC-3.1-005"
                 ])
                 self.assertEqual(requirement["role"], "client")
                 self.assertEqual(requirement["source_keyword"], "SHALL")

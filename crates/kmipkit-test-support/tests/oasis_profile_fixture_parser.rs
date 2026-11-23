@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
 use kmipkit_test_support::oasis_crypto_fixtures::{
     OasisCryptoFixtureError, OasisProfileFixture, OasisProfileFixtureBindings,

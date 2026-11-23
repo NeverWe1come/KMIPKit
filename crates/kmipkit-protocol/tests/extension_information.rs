@@ -1,6 +1,6 @@
 //! OASIS KMIP 2.1 §7.13, Table 365 Extension Information model tests.
 //!
-//! Traceability: KMIPKIT-0012-FR-009.
+//! Traceability: functional requirement.
 
 use kmipkit_protocol::{ProtocolErrorKind, extension};
 use kmipkit_ttlv::{ItemType, ValueView};

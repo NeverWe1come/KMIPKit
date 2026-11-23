@@ -12,7 +12,7 @@ from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/028-diagnostics-interop/spec.md"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOG"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-LOG"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_log_request_members_mapping.py"
 DECLARATIONS = (
     (
@@ -86,7 +86,7 @@ class T102LogRequestMemberMappingTests(unittest.TestCase):
     def test_mapping_is_grounded_in_oasis_tables_redaction_and_binding_builders(self) -> None:
         self.assert_source_contains(
             tuple(OWNER.split("/")),
-            "| Log | KMIPKIT-ELEM-OP-C2S-LOG | §6.1.29 | 250 | 251 | 252 |",
+            "| Log | KMIP-ELEM-OP-C2S-LOG | §6.1.29 | 250 | 251 | 252 |",
         )
         self.assert_source_contains(
             ("crates", "kmipkit-protocol", "tests", "unit", "log_operation_tests.rs"),

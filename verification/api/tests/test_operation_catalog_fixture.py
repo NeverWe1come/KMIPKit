@@ -64,7 +64,7 @@ class OperationCatalogFixtureTests(unittest.TestCase):
         mismatches = find_language_value_mismatches(manifest, catalog, operation_values)
 
         self.assertEqual(len(mismatches), 1)
-        self.assertIn("KMIPKIT-ELEM-OP-C2S-ACTIVATE", mismatches[0])
+        self.assertIn("KMIP-ELEM-OP-C2S-ACTIVATE", mismatches[0])
         self.assertIn("0x00000012", mismatches[0])
         self.assertIn("0x00000013", mismatches[0])
 

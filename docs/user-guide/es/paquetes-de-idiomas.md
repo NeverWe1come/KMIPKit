@@ -198,7 +198,7 @@ tabla.
 | `generic_ttlv_model` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ttlv_wire_codec` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ffi_runtime_metadata` | declared | Los metadatos de versión y consulta de capacidades están mapeados en Rust, C, Java y Python. |
-| `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
+| `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según el contrato de transporte de bajo nivel exclusivo de Rust; no es una operación de cliente para otros lenguajes. |
 | `public_binding_surface` | verified | T108/T109 y T011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado y los 56 mapeos de API de operaciones cliente están verificados. El inventario verificado no afirma conformidad KMIP, interoperabilidad ni preparación para publicar la versión. |
 | `vendor_extension_registry` | declared | Los mapeos exactos incluyen Rust drop, C release, Java close y Python close para los handles nativos; falta verificar la paridad. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
@@ -248,7 +248,7 @@ MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
 Verify. Estos estados verificados describen solo los mapeos de API de los
 cuatro lenguajes; no acreditan la paridad completa de operaciones, la
 conformidad KMIP ni la interoperabilidad con servidores.
-Las API asíncronas siguen el alcance aprobado de KMIPKIT-0009; el trabajo
+Las API asíncronas siguen el alcance aprobado de asynchronous client operations; el trabajo
 separado sobre el catálogo y la revisión de Process Table 278 continúa
 registrado independientemente. No se debe inferir que una operación está
 disponible solo porque haya tipos o código en otra parte del repositorio.

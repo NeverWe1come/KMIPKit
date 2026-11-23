@@ -517,7 +517,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
             source = outputs[language]
             self.assertIn("AES", source)
             self.assertIn("ENCRYPT", source)
-        self.assertIn("KMIPKIT-ELEM-ENUM", outputs["traceability"])
+        self.assertIn("KMIP-ELEM-ENUM", outputs["traceability"])
 
     def test_rust_output_is_clippy_clean_for_numeric_literals_and_pure_lookups(self) -> None:
         catalog: dict[str, Any] = json.loads(

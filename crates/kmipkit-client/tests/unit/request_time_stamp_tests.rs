@@ -4,9 +4,9 @@
 //! include the optional Time Stamp as a Date-Time. These tests use a caller
 //! supplied raw Date-Time and do not test countdown-derived values.
 //!
-//! Traceability: `KMIPKIT-0007-FR-015`, `KMIPKIT-0007-SC-007`,
-//! `KMIPKIT-REQ-SPEC-9.20-001-001`, and
-//! `KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`.
+//! Traceability: `functional requirement`, `success criterion`,
+//! `KMIP-REQ-SPEC-9.20-001-001`, and
+//! `KMIP-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`.
 
 use std::error::Error;
 

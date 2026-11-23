@@ -15,11 +15,11 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-HASH": ("Hash", "6.1.24"),
-    "KMIPKIT-ELEM-OP-C2S-MAC": ("MAC", "6.1.32"),
-    "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": ("MAC Verify", "6.1.33"),
-    "KMIPKIT-ELEM-OP-C2S-SIGN": ("Sign", "6.1.55"),
-    "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": ("Signature Verify", "6.1.56"),
+    "KMIP-ELEM-OP-C2S-HASH": ("Hash", "6.1.24"),
+    "KMIP-ELEM-OP-C2S-MAC": ("MAC", "6.1.32"),
+    "KMIP-ELEM-OP-C2S-MAC-VERIFY": ("MAC Verify", "6.1.33"),
+    "KMIP-ELEM-OP-C2S-SIGN": ("Sign", "6.1.55"),
+    "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY": ("Signature Verify", "6.1.56"),
 }
 LANGUAGES = {"rust", "c", "java", "python"}
 T101_VERIFIED_IDENTITIES = _expected_mapping_identities()
@@ -68,12 +68,12 @@ T053_VERIFIED_OPERATION_IDENTITIES: set[tuple[str, str]] = {
     ("rust-kmipkit-client", "kmipkit_client::ClientOperation::SignatureVerify"),
 }
 NORMATIVE_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.32-001",
-    "KMIPKIT-REQ-SPEC-6.1.33-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.33-001-002",
-    "KMIPKIT-REQ-SPEC-6.1.55-001",
-    "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.56-002",
+    "KMIP-REQ-SPEC-6.1.32-001",
+    "KMIP-REQ-SPEC-6.1.33-001-001",
+    "KMIP-REQ-SPEC-6.1.33-001-002",
+    "KMIP-REQ-SPEC-6.1.55-001",
+    "KMIP-REQ-SPEC-6.1.56-001-001",
+    "KMIP-REQ-SPEC-6.1.56-002",
 }
 PUBLIC_FUNCTIONS = {
     "client_batch_item_hash": (
@@ -295,11 +295,11 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
 
     def test_t101_success_response_ttlv_is_inventoried_under_each_operation(self) -> None:
         expected = {
-            "KMIPKIT-ELEM-OP-C2S-HASH": "T101:hash:response-ttlv",
-            "KMIPKIT-ELEM-OP-C2S-MAC": "T101:mac:response-ttlv",
-            "KMIPKIT-ELEM-OP-C2S-MAC-VERIFY": "T101:mac_verify:response-ttlv",
-            "KMIPKIT-ELEM-OP-C2S-SIGN": "T101:sign:response-ttlv",
-            "KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY": "T101:signature_verify:response-ttlv",
+            "KMIP-ELEM-OP-C2S-HASH": "T101:hash:response-ttlv",
+            "KMIP-ELEM-OP-C2S-MAC": "T101:mac:response-ttlv",
+            "KMIP-ELEM-OP-C2S-MAC-VERIFY": "T101:mac_verify:response-ttlv",
+            "KMIP-ELEM-OP-C2S-SIGN": "T101:sign:response-ttlv",
+            "KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY": "T101:signature_verify:response-ttlv",
         }
         for operation_id, prefix in expected.items():
             with self.subTest(operation=operation_id):
@@ -337,7 +337,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
         declaration_id = "rust-observed-7cc46b70a35514bf0bf6"
         declaration = self.declarations[declaration_id]
 
-        self.assertEqual("KMIPKIT-ELEM-OP-C2S-HASH", declaration["capabilityId"])
+        self.assertEqual("KMIP-ELEM-OP-C2S-HASH", declaration["capabilityId"])
         self.assertEqual("declared", declaration["declarationState"])
         self.assertEqual("four-language", declaration["parityScope"])
         self.assertEqual(
@@ -367,7 +367,7 @@ class HashMacSignatureParityManifestTests(unittest.TestCase):
         )
         self.assertIn(
             declaration_id,
-            self.operations["KMIPKIT-ELEM-OP-C2S-HASH"]["declarations"]["rust"],
+            self.operations["KMIP-ELEM-OP-C2S-HASH"]["declarations"]["rust"],
         )
 
 

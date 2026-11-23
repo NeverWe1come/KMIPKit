@@ -2,7 +2,7 @@
 
 //! Cross-operation execution contracts for OASIS KMIP v2.1 §6.1.2, §6.1.3,
 //! §6.1.13, §6.1.20, §6.1.21, §6.1.34, and §6.1.51. These derived fake-
-//! transport tests verify KMIPKIT-0016 FR-012 and SC-007; they are not official
+//! transport tests verify specification requirement FR-012 and SC-007; they are not official
 //! conformance vectors.
 
 use kmipkit_protocol::{

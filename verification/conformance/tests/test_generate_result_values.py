@@ -7,8 +7,8 @@ import unittest
 from verification.conformance.generate_result_values import render_rust
 
 
-STATUS_ID = "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS"
-REASON_ID = "KMIPKIT-ELEM-ENUMERATION-RESULT-REASON"
+STATUS_ID = "KMIP-ELEM-ENUMERATION-RESULT-STATUS"
+REASON_ID = "KMIP-ELEM-ENUMERATION-RESULT-REASON"
 
 
 def small_catalog() -> dict[str, object]:

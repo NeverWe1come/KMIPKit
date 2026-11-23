@@ -13,8 +13,8 @@ from verification.conformance.tests.test_validate import (
 class ProjectActorInterpretationTests(unittest.TestCase):
     def test_explicit_project_actor_interpretation_preserves_source_actor(self) -> None:
         """An explicit project recommendation does not overwrite the pinned source actor."""
-        requirement_id = "KMIPKIT-REQ-SPEC-TEST-PROJECT-ACTOR-MAY"
-        source_clause_id = "KMIPKIT-CLAUSE-SPEC-TEST-PROJECT-ACTOR"
+        requirement_id = "KMIP-REQ-SPEC-TEST-PROJECT-ACTOR-MAY"
+        source_clause_id = "KMIP-CLAUSE-SPEC-TEST-PROJECT-ACTOR"
         obligation = {
             "source_keyword": "MAY",
             "scope_disposition": "profile_conditional",

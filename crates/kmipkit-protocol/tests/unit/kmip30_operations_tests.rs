@@ -1,4 +1,4 @@
-//! Unit tests for OASIS KMIP 3.0 operations, system objects, and `VersionGate` (KMIPKIT-0071).
+//! Unit tests for OASIS KMIP 3.0 operations, system objects, and `VersionGate` (specification requirement).
 
 use crate::{ObjectClass, ObjectType, ProtocolVersion, VersionGate, VersionGateError};
 

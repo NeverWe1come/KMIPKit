@@ -28,7 +28,7 @@ MANIFEST_REQUIREMENTS = {
 }
 OPERATIONS = {
     "RngRetrieve": {
-        "capability": "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE",
+        "capability": "KMIP-ELEM-OP-C2S-RNG-RETRIEVE",
         "owner_requirements": {
             "KMIPKIT-0041-FR-001",
             "KMIPKIT-0041-FR-003",
@@ -45,7 +45,7 @@ OPERATIONS = {
         },
     },
     "RngSeed": {
-        "capability": "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+        "capability": "KMIP-ELEM-OP-C2S-RNG-SEED",
         "owner_requirements": {
             "KMIPKIT-0041-FR-001",
             "KMIPKIT-0041-FR-003",

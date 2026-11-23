@@ -32,16 +32,16 @@ role handling; and Rust, C, Java, and Python APIs.
   controls.
 - JSON and XML codecs integrated with the client and transport paths alongside
   default TTLV encoding.
-- Rust, C, Java, and Python API parity work integrated through KMIPKIT-0053.
+- Rust, C, Java, and Python API parity work integrated through multi-language API parity facade.
 - Server-to-client listeners, dispatch, and role-handling work under
-  KMIPKIT-0066.
-- Version-gated KMIP 2.0 and KMIP 3.0 support under KMIPKIT-0069–0071. The
+  server-to-client operations.
+- Version-gated KMIP 2.0 and KMIP 3.0 support under multi-version foundation–0071. The
   KMIP 3.0 work remains bounded by its draft specification and source revision.
 - Shared interoperability tooling and standalone Rust, C, Java, and Python
-  validators under KMIPKIT-0058–0062.
+  validators under the specification–0062.
 - A separate stateless proxy workspace and provider bridges for AWS, Azure,
   Google Cloud, Oracle OCI, Vault/OpenBao, Infisical, IBM, Alibaba, Scaleway,
-  and Open Telekom Cloud under KMIPKIT-0072–0082. The proxy is a separate
+  and Open Telekom Cloud under stateless proxy foundation–0082. The proxy is a separate
   deliverable from the core client packages.
 
 These entries describe code integrated into this branch. They do not establish
@@ -50,7 +50,7 @@ distribution package has passed external verification.
 
 ## Release readiness observed on 2026-11-10
 
-- The packaging dry-run pull request, KMIPKIT-0068 / PR #138, was open as a
+- The packaging dry-run pull request, the specification / PR #138, was open as a
   draft at the time of review.
 - The CI run for this snapshot was still in progress. Its Rust, adapter,
   platform coverage, normative-inventory, dependency-policy, and coverage-gate

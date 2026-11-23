@@ -15,9 +15,9 @@ PARITY_TEST_EVIDENCE_ID = (
 OPERATIONS = {
     "interop": {
         "name": "Interop",
-        "capability": "KMIPKIT-ELEM-OP-C2S-INTEROP",
+        "capability": "KMIP-ELEM-OP-C2S-INTEROP",
         "builder": "kmipkit_client_batch_item_interop",
-        "table_row": "| Interop | KMIPKIT-ELEM-OP-C2S-INTEROP | §6.1.26 | 241 | 242 | 243 |",
+        "table_row": "| Interop | KMIP-ELEM-OP-C2S-INTEROP | §6.1.26 | 241 | 242 | 243 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/interop_operation_tests.rs",
         "section": "§6.1.26",
         "target": (
@@ -28,9 +28,9 @@ OPERATIONS = {
     },
     "log": {
         "name": "Log",
-        "capability": "KMIPKIT-ELEM-OP-C2S-LOG",
+        "capability": "KMIP-ELEM-OP-C2S-LOG",
         "builder": "kmipkit_client_batch_item_log",
-        "table_row": "| Log | KMIPKIT-ELEM-OP-C2S-LOG | §6.1.29 | 250 | 251 | 252 |",
+        "table_row": "| Log | KMIP-ELEM-OP-C2S-LOG | §6.1.29 | 250 | 251 | 252 |",
         "source_test": "crates/kmipkit-protocol/tests/unit/log_operation_tests.rs",
         "section": "§6.1.29",
         "target": (

@@ -17,7 +17,7 @@ pub(crate) struct AttributeMetadata {
 #[cfg(test)]
 pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ACTIVATION-DATE",
         source_name: "Activation Date",
         marker_name: "ActivationDate",
         tag: 0x42_00_01,
@@ -27,7 +27,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
+        element_id: "KMIP-ELEM-ATTRIBUTE-APPLICATION-SPECIFIC-INFORMATION",
         source_name: "Application Specific Information",
         marker_name: "ApplicationSpecificInformation",
         tag: 0x42_00_04,
@@ -37,7 +37,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ARCHIVE-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ARCHIVE-DATE",
         source_name: "Archive Date",
         marker_name: "ArchiveDate",
         tag: 0x42_00_05,
@@ -47,7 +47,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE",
         source_name: "Attribute",
         marker_name: "VendorAttribute",
         tag: 0x42_00_08,
@@ -57,7 +57,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-TYPE",
         source_name: "Certificate Type",
         marker_name: "CertificateType",
         tag: 0x42_00_1D,
@@ -67,7 +67,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-COMPROMISE-DATE",
         source_name: "Compromise Date",
         marker_name: "CompromiseDate",
         tag: 0x42_00_20,
@@ -77,7 +77,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-COMPROMISE-OCCURRENCE-DATE",
         source_name: "Compromise Occurrence Date",
         marker_name: "CompromiseOccurrenceDate",
         tag: 0x42_00_21,
@@ -87,7 +87,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CONTACT-INFORMATION",
         source_name: "Contact Information",
         marker_name: "ContactInformation",
         tag: 0x42_00_22,
@@ -97,7 +97,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
         source_name: "Credential Type",
         marker_name: "CredentialType",
         tag: 0x42_00_24,
@@ -107,7 +107,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
         source_name: "Cryptographic Algorithm",
         marker_name: "CryptographicAlgorithm",
         tag: 0x42_00_28,
@@ -117,7 +117,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-DOMAIN-PARAMETERS",
         source_name: "Cryptographic Domain Parameters",
         marker_name: "CryptographicDomainParameters",
         tag: 0x42_00_29,
@@ -127,7 +127,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH",
         source_name: "Cryptographic Length",
         marker_name: "CryptographicLength",
         tag: 0x42_00_2A,
@@ -137,7 +137,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS",
         source_name: "Cryptographic Parameters",
         marker_name: "CryptographicParameters",
         tag: 0x42_00_2B,
@@ -147,7 +147,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-USAGE-MASK",
         source_name: "Cryptographic Usage Mask",
         marker_name: "CryptographicUsageMask",
         tag: 0x42_00_2C,
@@ -157,7 +157,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-DEACTIVATION-DATE",
         source_name: "Deactivation Date",
         marker_name: "DeactivationDate",
         tag: 0x42_00_2F,
@@ -167,7 +167,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESTROY-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-DESTROY-DATE",
         source_name: "Destroy Date",
         marker_name: "DestroyDate",
         tag: 0x42_00_33,
@@ -177,7 +177,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGEST",
+        element_id: "KMIP-ELEM-ATTRIBUTE-DIGEST",
         source_name: "Digest",
         marker_name: "Digest",
         tag: 0x42_00_34,
@@ -187,7 +187,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-INITIAL-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-INITIAL-DATE",
         source_name: "Initial Date",
         marker_name: "InitialDate",
         tag: 0x42_00_39,
@@ -197,7 +197,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-FORMAT-TYPE",
         source_name: "Key Format Type",
         marker_name: "KeyFormatType",
         tag: 0x42_00_42,
@@ -207,7 +207,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
         source_name: "Key Part Identifier",
         marker_name: "KeyPartIdentifier",
         tag: 0x42_00_44,
@@ -217,7 +217,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
         source_name: "Last Change Date",
         marker_name: "LastChangeDate",
         tag: 0x42_00_48,
@@ -227,7 +227,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LEASE-TIME",
+        element_id: "KMIP-ELEM-ATTRIBUTE-LEASE-TIME",
         source_name: "Lease Time",
         marker_name: "LeaseTime",
         tag: 0x42_00_49,
@@ -237,7 +237,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-LINK",
         source_name: "Link",
         marker_name: "Link",
         tag: 0x42_00_4A,
@@ -247,7 +247,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: Some((2, 1)),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NAME",
+        element_id: "KMIP-ELEM-ATTRIBUTE-NAME",
         source_name: "Name",
         marker_name: "Name",
         tag: 0x42_00_53,
@@ -257,7 +257,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-GROUP",
+        element_id: "KMIP-ELEM-ATTRIBUTE-OBJECT-GROUP",
         source_name: "Object Group",
         marker_name: "ObjectGroup",
         tag: 0x42_00_56,
@@ -267,7 +267,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OBJECT-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-OBJECT-TYPE",
         source_name: "Object Type",
         marker_name: "ObjectType",
         tag: 0x42_00_57,
@@ -277,7 +277,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-OPAQUE-DATA-TYPE",
         source_name: "Opaque Data Type",
         marker_name: "OpaqueDataType",
         tag: 0x42_00_59,
@@ -287,7 +287,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROCESS-START-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PROCESS-START-DATE",
         source_name: "Process Start Date",
         marker_name: "ProcessStartDate",
         tag: 0x42_00_67,
@@ -297,7 +297,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECT-STOP-DATE",
         source_name: "Protect Stop Date",
         marker_name: "ProtectStopDate",
         tag: 0x42_00_68,
@@ -307,7 +307,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON",
+        element_id: "KMIP-ELEM-ATTRIBUTE-REVOCATION-REASON",
         source_name: "Revocation Reason",
         marker_name: "RevocationReason",
         tag: 0x42_00_81,
@@ -317,7 +317,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
         source_name: "Split Key Method",
         marker_name: "SplitKeyMethod",
         tag: 0x42_00_8A,
@@ -327,7 +327,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
         source_name: "Split Key Parts",
         marker_name: "SplitKeyParts",
         tag: 0x42_00_8B,
@@ -337,7 +337,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
         source_name: "Split Key Threshold",
         marker_name: "SplitKeyThreshold",
         tag: 0x42_00_8C,
@@ -347,7 +347,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-STATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-STATE",
         source_name: "State",
         marker_name: "State",
         tag: 0x42_00_8D,
@@ -357,7 +357,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
         source_name: "Unique Identifier",
         marker_name: "UniqueIdentifier",
         tag: 0x42_00_94,
@@ -367,7 +367,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-USAGE-LIMITS",
+        element_id: "KMIP-ELEM-ATTRIBUTE-USAGE-LIMITS",
         source_name: "Usage Limits",
         marker_name: "UsageLimits",
         tag: 0x42_00_95,
@@ -377,7 +377,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-FRESH",
+        element_id: "KMIP-ELEM-ATTRIBUTE-FRESH",
         source_name: "Fresh",
         marker_name: "Fresh",
         tag: 0x42_00_A8,
@@ -387,7 +387,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
+        element_id: "KMIP-ELEM-ATTRIBUTE-CERTIFICATE-LENGTH",
         source_name: "Certificate Length",
         marker_name: "CertificateLength",
         tag: 0x42_00_AD,
@@ -397,7 +397,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
+        element_id: "KMIP-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM",
         source_name: "Digital Signature Algorithm",
         marker_name: "DigitalSignatureAlgorithm",
         tag: 0x42_00_AE,
@@ -407,7 +407,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-IDENTIFIER",
         source_name: "X.509 Certificate Identifier",
         marker_name: "X509CertificateIdentifier",
         tag: 0x42_00_B5,
@@ -417,7 +417,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: Some((2, 1)),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-ISSUER",
         source_name: "X.509 Certificate Issuer",
         marker_name: "X509CertificateIssuer",
         tag: 0x42_00_B6,
@@ -427,7 +427,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: Some((2, 1)),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
+        element_id: "KMIP-ELEM-ATTRIBUTE-X-509-CERTIFICATE-SUBJECT",
         source_name: "X.509 Certificate Subject",
         marker_name: "X509CertificateSubject",
         tag: 0x42_00_B7,
@@ -437,7 +437,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: Some((2, 1)),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
+        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-VALUE-LOCATION",
         source_name: "Key Value Location",
         marker_name: "KeyValueLocation",
         tag: 0x42_00_B8,
@@ -447,7 +447,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
+        element_id: "KMIP-ELEM-ATTRIBUTE-KEY-VALUE-PRESENT",
         source_name: "Key Value Present",
         marker_name: "KeyValuePresent",
         tag: 0x42_00_BB,
@@ -457,7 +457,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ORIGINAL-CREATION-DATE",
         source_name: "Original Creation Date",
         marker_name: "OriginalCreationDate",
         tag: 0x42_00_BC,
@@ -467,7 +467,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ALTERNATIVE-NAME",
         source_name: "Alternative Name",
         marker_name: "AlternativeName",
         tag: 0x42_00_BF,
@@ -477,7 +477,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
+        element_id: "KMIP-ELEM-ATTRIBUTE-RANDOM-NUMBER-GENERATOR",
         source_name: "Random Number Generator",
         marker_name: "RandomNumberGenerator",
         tag: 0x42_00_DE,
@@ -487,7 +487,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PKCS-12-FRIENDLY-NAME",
         source_name: "PKCS#12 Friendly Name",
         marker_name: "Pkcs12FriendlyName",
         tag: 0x42_00_FB,
@@ -497,7 +497,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION",
+        element_id: "KMIP-ELEM-ATTRIBUTE-DESCRIPTION",
         source_name: "Description",
         marker_name: "Description",
         tag: 0x42_00_FC,
@@ -507,7 +507,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-COMMENT",
+        element_id: "KMIP-ELEM-ATTRIBUTE-COMMENT",
         source_name: "Description",
         marker_name: "Comment",
         tag: 0x42_00_FD,
@@ -517,7 +517,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-SENSITIVE",
         source_name: "Sensitive",
         marker_name: "Sensitive",
         tag: 0x42_01_20,
@@ -527,7 +527,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ALWAYS-SENSITIVE",
         source_name: "Sensitive",
         marker_name: "AlwaysSensitive",
         tag: 0x42_01_21,
@@ -537,7 +537,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-EXTRACTABLE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-EXTRACTABLE",
         source_name: "Extractable",
         marker_name: "Extractable",
         tag: 0x42_01_22,
@@ -547,7 +547,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-NEVER-EXTRACTABLE",
         source_name: "Never Extractable",
         marker_name: "NeverExtractable",
         tag: 0x42_01_23,
@@ -557,7 +557,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-SHORT-UNIQUE-IDENTIFIER",
         source_name: "Short Unique Identifier",
         marker_name: "ShortUniqueIdentifier",
         tag: 0x42_01_36,
@@ -567,7 +567,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-NIST-KEY-TYPE",
         source_name: "NIST Key Type",
         marker_name: "NistKeyType",
         tag: 0x42_01_3A,
@@ -577,7 +577,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-LEVEL",
         source_name: "Protection Level",
         marker_name: "ProtectionLevel",
         tag: 0x42_01_45,
@@ -587,7 +587,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-PERIOD",
         source_name: "Protection Period",
         marker_name: "ProtectionPeriod",
         tag: 0x42_01_46,
@@ -597,7 +597,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-QUANTUM-SAFE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-QUANTUM-SAFE",
         source_name: "Quantum Safe",
         marker_name: "QuantumSafe",
         tag: 0x42_01_47,
@@ -607,7 +607,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-PROTECTION-STORAGE-MASK",
         source_name: "Protection Storage Mask",
         marker_name: "ProtectionStorageMask",
         tag: 0x42_01_5E,
@@ -617,7 +617,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-INTERVAL",
         source_name: "Rotate Interval",
         marker_name: "RotateInterval",
         tag: 0x42_01_6A,
@@ -627,7 +627,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-AUTOMATIC",
         source_name: "Rotate Automatic",
         marker_name: "RotateAutomatic",
         tag: 0x42_01_6B,
@@ -637,7 +637,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-OFFSET",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-OFFSET",
         source_name: "Rotate Offset",
         marker_name: "RotateOffset",
         tag: 0x42_01_6C,
@@ -647,7 +647,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-DATE",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-DATE",
         source_name: "Rotate Date",
         marker_name: "RotateDate",
         tag: 0x42_01_6D,
@@ -657,7 +657,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-GENERATION",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-GENERATION",
         source_name: "Rotate Generation",
         marker_name: "RotateGeneration",
         tag: 0x42_01_6E,
@@ -667,7 +667,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-NAME",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-NAME",
         source_name: "Rotate Name",
         marker_name: "RotateName",
         tag: 0x42_01_6F,
@@ -677,7 +677,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-ROTATE-LATEST",
+        element_id: "KMIP-ELEM-ATTRIBUTE-ROTATE-LATEST",
         source_name: "Rotate Latest",
         marker_name: "RotateLatest",
         tag: 0x42_01_72,
@@ -687,7 +687,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
         source_name: "Certificate Link",
         marker_name: "CertificateLink",
         tag: 0x42_01_90,
@@ -697,7 +697,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CHILD-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CHILD-LINK",
         source_name: "Child Link",
         marker_name: "ChildLink",
         tag: 0x42_01_91,
@@ -707,7 +707,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
         source_name: "Derivation Base Object Link",
         marker_name: "DerivationBaseObjectLink",
         tag: 0x42_01_92,
@@ -717,7 +717,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
         source_name: "Derived Object Link",
         marker_name: "DerivedObjectLink",
         tag: 0x42_01_93,
@@ -727,7 +727,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NEXT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-NEXT-LINK",
         source_name: "Next Link",
         marker_name: "NextLink",
         tag: 0x42_01_94,
@@ -737,7 +737,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PARENT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PARENT-LINK",
         source_name: "Parent Link",
         marker_name: "ParentLink",
         tag: 0x42_01_95,
@@ -747,7 +747,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-CERTIFICATE-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PKCS12-CERTIFICATE-LINK",
         source_name: "PKCS#12 Certificate Link",
         marker_name: "Pkcs12CertificateLink",
         tag: 0x42_01_96,
@@ -757,7 +757,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-PASSWORD-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PKCS12-PASSWORD-LINK",
         source_name: "PKCS#12 Password Link",
         marker_name: "Pkcs12PasswordLink",
         tag: 0x42_01_97,
@@ -767,7 +767,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
         source_name: "Previous Link",
         marker_name: "PreviousLink",
         tag: 0x42_01_98,
@@ -777,7 +777,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
         source_name: "Private Key Link",
         marker_name: "PrivateKeyLink",
         tag: 0x42_01_99,
@@ -787,7 +787,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
         source_name: "Public Key Link",
         marker_name: "PublicKeyLink",
         tag: 0x42_01_9A,
@@ -797,7 +797,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
         source_name: "Replaced Object Link",
         marker_name: "ReplacedObjectLink",
         tag: 0x42_01_9B,
@@ -807,7 +807,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
         source_name: "Replacement Object Link",
         marker_name: "ReplacementObjectLink",
         tag: 0x42_01_9C,
@@ -817,7 +817,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
         source_name: "Wrapping Key Link",
         marker_name: "WrappingKeyLink",
         tag: 0x42_01_9D,
@@ -827,7 +827,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
         source_name: "Object Class",
         marker_name: "ObjectClass",
         tag: 0x42_01_9E,
@@ -837,7 +837,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
         source_name: "Credential Link",
         marker_name: "CredentialLink",
         tag: 0x42_01_A0,
@@ -847,7 +847,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
         source_name: "Password Link",
         marker_name: "PasswordLink",
         tag: 0x42_01_A5,
@@ -857,7 +857,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
         source_name: "OTP Counter",
         marker_name: "OtpCounter",
         tag: 0x42_01_AE,
@@ -867,7 +867,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-GROUP-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-GROUP-LINK",
         source_name: "Group Link",
         marker_name: "GroupLink",
         tag: 0x42_01_B3,
@@ -877,7 +877,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
         source_name: "Split Key Base Link",
         marker_name: "SplitKeyBaseLink",
         tag: 0x42_01_B4,
@@ -887,7 +887,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
         source_name: "Joined Split Key Parts Link",
         marker_name: "JoinedSplitKeyPartsLink",
         tag: 0x42_01_B5,
@@ -897,7 +897,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
         source_name: "Split Key Polynomial",
         marker_name: "SplitKeyPolynomial",
         tag: 0x42_01_B6,
@@ -907,7 +907,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
         source_name: "Deactivation Reason",
         marker_name: "DeactivationReason",
         tag: 0x42_01_B8,
@@ -917,7 +917,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
         source_name: "Certificate Subject DN",
         marker_name: "CertificateSubjectDn",
         tag: 0x42_01_BA,
@@ -927,7 +927,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
         source_name: "Certificate Issuer DN",
         marker_name: "CertificateIssuerDn",
         tag: 0x42_01_BB,
@@ -937,7 +937,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
         source_name: "Certificate Request Link",
         marker_name: "CertificateRequestLink",
         tag: 0x42_01_BC,
@@ -947,7 +947,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
         source_name: "Certify Counter",
         marker_name: "CertifyCounter",
         tag: 0x42_01_BD,
@@ -957,7 +957,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
         source_name: "Decrypt Counter",
         marker_name: "DecryptCounter",
         tag: 0x42_01_BE,
@@ -967,7 +967,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
         source_name: "Encrypt Counter",
         marker_name: "EncryptCounter",
         tag: 0x42_01_BF,
@@ -977,7 +977,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
         source_name: "Sign Counter",
         marker_name: "SignCounter",
         tag: 0x42_01_C0,
@@ -987,7 +987,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
         source_name: "Signature Verify Counter",
         marker_name: "SignatureVerifyCounter",
         tag: 0x42_01_C1,
@@ -997,7 +997,7 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         max_version: None,
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
+        element_id: "KMIP-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
         source_name: "NIST Security Category",
         marker_name: "NistSecurityCategory",
         tag: 0x42_01_C2,

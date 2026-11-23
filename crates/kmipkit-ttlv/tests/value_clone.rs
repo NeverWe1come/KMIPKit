@@ -1,6 +1,6 @@
 //! Deep-copy behavior for the opaque TTLV value model.
 //!
-//! Traceability: KMIPKIT-0012-FR-007 preserves generic extension subtrees;
+//! Traceability: functional requirement preserves generic extension subtrees;
 //! OASIS KMIP v2.1 §9.13, Table 418 defines the enclosing Vendor Extension.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView, try_clone_value};

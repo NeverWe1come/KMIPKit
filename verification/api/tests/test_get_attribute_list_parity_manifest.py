@@ -10,7 +10,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-GET-ATTRIBUTE-LIST"
 OWNER_APPROVAL_EVIDENCE = "specs/016-attribute-operations/traceability.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 EXPECTED_MAPPINGS = {

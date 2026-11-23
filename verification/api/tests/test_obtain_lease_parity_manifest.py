@@ -12,22 +12,22 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-OBTAIN-LEASE"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
     *(f"KMIPKIT-0036-FR-{index:03}" for index in range(1, 9)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22)),
-    "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-    "KMIPKIT-REQ-SPEC-6.1.35-002",
-    "KMIPKIT-REQ-SPEC-6.1.35-005",
+    "KMIP-REQ-SPEC-6.1.35-001-001",
+    "KMIP-REQ-SPEC-6.1.35-001-002",
+    "KMIP-REQ-SPEC-6.1.35-002",
+    "KMIP-REQ-SPEC-6.1.35-005",
 }
 TRACEABILITY_IDS = {
-    "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-    "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-    "KMIPKIT-REQ-SPEC-6.1.35-002",
-    "KMIPKIT-REQ-SPEC-6.1.35-005",
+    "KMIP-REQ-SPEC-6.1.35-001-001",
+    "KMIP-REQ-SPEC-6.1.35-001-002",
+    "KMIP-REQ-SPEC-6.1.35-002",
+    "KMIP-REQ-SPEC-6.1.35-005",
 }
 PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",

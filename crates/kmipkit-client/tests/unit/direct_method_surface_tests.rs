@@ -1,7 +1,7 @@
-//! KMIPKIT-0050 compile-time checks for the 56 direct Client operations.
+//! specification requirement compile-time checks for the 56 direct Client operations.
 //!
 //! Operation names and direction follow OASIS KMIP v2.1 §6.1 and the reviewed
-//! 56-row client operation inventory in `specs/050-parameters-auth-client`.
+//! 56-row client operation inventory in `component specification`.
 
 use kmipkit_protocol::*;
 use kmipkit_transport::RequestOptions;

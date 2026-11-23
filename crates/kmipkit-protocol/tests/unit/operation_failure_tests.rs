@@ -6,9 +6,9 @@
 //! valid for Encrypt and Decrypt even though Tables 198 and 216 do not list it.
 //! Result Message is defined by §9.17.
 //!
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1-001-002`,
-//! `KMIPKIT-ELEM-OP-C2S-ENCRYPT`, `KMIPKIT-ELEM-OP-C2S-DECRYPT`, and
-//! `KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-GENERAL-FAILURE-00000100`.
+//! Traceability: `KMIP-REQ-SPEC-6.1-001-002`,
+//! `KMIP-ELEM-OP-C2S-ENCRYPT`, `KMIP-ELEM-OP-C2S-DECRYPT`, and
+//! `KMIP-ELEM-ENUM-VALUE-RESULT-REASON-GENERAL-FAILURE-00000100`.
 
 use crate::async_operation_fixtures::{item, structure};
 use crate::{

@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
 //! Both language guides must explain the caller-selected Opaque Object context.
 
@@ -23,8 +23,8 @@ fn both_guides_cover_default_and_explicit_managed_opaque_context() {
         assert!(guide.contains("Cryptographic Length"));
         assert!(guide.contains("0x80000001"));
         assert!(guide.contains("Table 469") || guide.contains("Tabla 469"));
-        assert!(guide.contains("KMIPKIT-REQ-SPEC-2.3-002"));
-        assert!(guide.contains("KMIPKIT-REQ-SPEC-2.3-003"));
+        assert!(guide.contains("KMIP-REQ-SPEC-2.3-002"));
+        assert!(guide.contains("KMIP-REQ-SPEC-2.3-003"));
     }
 }
 

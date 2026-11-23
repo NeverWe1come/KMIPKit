@@ -3,7 +3,7 @@
 //! not official Test Case executions.
 //!
 //! Traceability: FR-001, FR-005–FR-011, FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY`.
+//! `KMIP-ELEM-OP-C2S-MAC-VERIFY`.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{

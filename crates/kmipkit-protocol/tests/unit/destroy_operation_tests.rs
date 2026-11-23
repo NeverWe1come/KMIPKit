@@ -4,7 +4,7 @@
 //! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-DESTROY`; KMIPKIT-0018 FR-001, FR-002,
+//! Traceability: `KMIP-ELEM-OP-C2S-DESTROY`; specification requirement FR-001, FR-002,
 //! FR-003, FR-006, FR-008, FR-009; SC-001 and SC-002.
 
 use crate::async_operation_fixtures::response_message;
@@ -24,7 +24,7 @@ const DESTROY_OPERATION: u32 = 0x0000_0014;
 const SUCCESS: u32 = 0;
 const OPERATION_FAILED: u32 = 1;
 // Table 210 maps Object Not Found to catalog record
-// KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-NOT-FOUND-00000037.
+// KMIP-ELEM-ENUM-VALUE-RESULT-REASON-OBJECT-NOT-FOUND-00000037.
 const OBJECT_NOT_FOUND_RESULT_REASON: u32 = 0x0000_0037;
 
 fn identifier_forms() -> [UniqueIdentifier; 3] {
@@ -161,7 +161,7 @@ fn failure_response_preserves_object_not_found_without_a_typed_success_identifie
 
 #[test]
 fn failure_response_preserves_an_unknown_result_reason_for_fr008() {
-    // KMIPKIT-0018 FR-008 requires unknown values to remain unchanged.
+    // specification requirement FR-008 requires unknown values to remain unchanged.
     let unknown_reason = 0xF001_0001;
     let message = response_message(
         DESTROY_OPERATION,

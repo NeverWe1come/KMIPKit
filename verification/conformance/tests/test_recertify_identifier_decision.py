@@ -8,7 +8,7 @@ import unittest
 from verification.conformance.tests.test_validate import ROOT
 
 
-REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+REQUIREMENT_ID = "KMIP-REQ-SPEC-6.1.45-002-003"
 DISCREPANCY_ID = "KMIPKIT-DISC-054"
 DECISION_ID = "KMIPKIT-DEC-019"
 BASELINE_CLIENT_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
@@ -68,7 +68,7 @@ class RecertifyIdentifierDecisionTests(unittest.TestCase):
 
         self.assertEqual(
             certify_decision["requirement_ids"],
-            ["KMIPKIT-REQ-SPEC-6.1.6-002-002"],
+            ["KMIP-REQ-SPEC-6.1.6-002-002"],
             "DEC-013 remains Certify-only",
         )
 

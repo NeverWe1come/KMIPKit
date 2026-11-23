@@ -203,9 +203,9 @@ LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-8d60104e0b52b30f3496",
     "rust-observed-feb2e57f6cbe856a8fa1",
 }
-LOCATE_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-LOCATE"
-LOCATE_REQUEST_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-007"
-LOCATE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.28-011"
+LOCATE_OPERATION_ID = "KMIP-ELEM-OP-C2S-LOCATE"
+LOCATE_REQUEST_REQUIREMENT = "KMIP-REQ-SPEC-6.1.28-007"
+LOCATE_SERVER_ONLY_REQUIREMENT = "KMIP-REQ-SPEC-6.1.28-011"
 JOIN_SPLIT_SECRET_DATA_TYPE_ID = "rust-observed-7c003b4ec061b8499a9e"
 REKEY_KEY_PAIR_UID_ID = "rust-observed-3fc6c1f77db9dabbee97"
 REKEY_KEY_PAIR_STRUCTURE_IDS = {
@@ -228,16 +228,16 @@ RECERTIFY_STRUCTURE_IDS = {
     "rust-observed-0cad07b4f1010a7d9a55",
     "rust-observed-6e9fb656f103c43fa2de",
 }
-JOIN_SPLIT_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
-REKEY_KEY_PAIR_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+JOIN_SPLIT_OPERATION_ID = "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY"
+REKEY_KEY_PAIR_OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 REQUEST_BUILDER_BATCH_EVIDENCE = {
     "crates/kmipkit-ffi/tests/c_api_coverage.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "verification/api/tests/test_t102_join_split_key_secret_data_type_mapping.py",
     "verification/api/tests/test_t102_rekey_key_pair_structure_mapping.py",
 }
-REKEY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY"
-RETIRED_REKEY_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.46-004-002"
+REKEY_OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY"
+RETIRED_REKEY_REQUIREMENT = "KMIP-REQ-SPEC-6.1.46-004-002"
 REKEY_FUNCTION_IDS = {
     "client_batch_item_rekey",
     "client_batch_item_response_rekey",
@@ -248,7 +248,7 @@ REKEY_KEY_PAIR_FUNCTION_IDS = {
     "client_batch_item_response_rekey_key_pair",
     "client_batch_item_response_rekey_key_pair_ttlv",
 }
-RETIRED_REKEY_KEY_PAIR_REQUIREMENT = "KMIPKIT-REQ-SPEC-6.1.47-004-002"
+RETIRED_REKEY_KEY_PAIR_REQUIREMENT = "KMIP-REQ-SPEC-6.1.47-004-002"
 SCALAR_REQUEST_BUILDER_IDS = {
     "rust-observed-9cd4c6b6fd190aff211f",
     "rust-observed-506281d0cf8e3c41a90e",
@@ -276,12 +276,12 @@ SCALAR_REQUEST_BUILDER_IDS = {
     "rust-observed-543f908844c7bb7b67bb",
 }
 SCALAR_REQUEST_BUILDER_OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-CHECK",
-    "KMIPKIT-ELEM-OP-C2S-GET",
-    "KMIPKIT-ELEM-OP-C2S-EXPORT",
-    "KMIPKIT-ELEM-OP-C2S-RE-KEY",
-    "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
-    "KMIPKIT-ELEM-OP-C2S-IMPORT",
+    "KMIP-ELEM-OP-C2S-CHECK",
+    "KMIP-ELEM-OP-C2S-GET",
+    "KMIP-ELEM-OP-C2S-EXPORT",
+    "KMIP-ELEM-OP-C2S-RE-KEY",
+    "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION",
+    "KMIP-ELEM-OP-C2S-IMPORT",
 }
 PKCS11_REQUEST_SETTER_IDS = {
     "rust-observed-60273eccedf62e75a65e",
@@ -381,7 +381,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         self.assertEqual(expected_ids, actual)
 
         for item in EXPECTED:
-            operation_id = f"KMIPKIT-ELEM-OP-C2S-{item.operation_suffix}"
+            operation_id = f"KMIP-ELEM-OP-C2S-{item.operation_suffix}"
             rust_name = f"kmipkit_client::ClientResponseView<'a>::{item.method}"
             foreign = {
                 "c": self.declarations[("c-kmipkit", item.c_name)],
@@ -539,7 +539,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if declaration["declarationId"] in RETIRED_REQUIREMENT_DECLARATIONS:
                 requirements = set(declaration["requirementIds"])
                 requirements.difference_update(ACTIVE_REQUEST_REQUIREMENTS)
-                requirements.update((OWNER_REQUIREMENTS - {"KMIPKIT-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
+                requirements.update((OWNER_REQUIREMENTS - {"KMIP-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
                 declaration["requirementIds"] = sorted(requirements)
             if declaration["declarationId"] in SCALAR_REQUEST_BUILDER_IDS:
                 declaration["capabilityId"] = "public_binding_surface"
@@ -584,19 +584,19 @@ class T102ResponseViewMappingTests(unittest.TestCase):
         )
 
         target_operations = {
-            f"KMIPKIT-ELEM-OP-C2S-{item.operation_suffix}" for item in EXPECTED
+            f"KMIP-ELEM-OP-C2S-{item.operation_suffix}" for item in EXPECTED
         }
         target_operations.update(item.operation_id for item in REMAINING_RESPONSE_VIEWS)
         target_operations.add(LOCATE_OPERATION_ID)
         target_operations.update({RECERTIFY, REKEY_KEY_PAIR})
         target_operations.update({
-            "KMIPKIT-ELEM-OP-C2S-RE-KEY",
-            "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
-            "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+            "KMIP-ELEM-OP-C2S-RE-KEY",
+            "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+            "KMIP-ELEM-OP-C2S-RE-CERTIFY",
         })
         target_operations.update({JOIN_SPLIT_OPERATION_ID, REKEY_KEY_PAIR_OPERATION_ID})
         target_operations.update(SCALAR_REQUEST_BUILDER_OPERATIONS)
-        target_operations.add("KMIPKIT-ELEM-OP-C2S-PKCS-11")
+        target_operations.add("KMIP-ELEM-OP-C2S-PKCS-11")
         normalized_operations = copy.deepcopy(self.manifest["operations"])
         for operation in normalized_operations:
             if operation["operationId"] in target_operations:
@@ -663,11 +663,11 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 "KMIPKIT-0093-FR-008",
                 "KMIPKIT-0093-FR-009",
                 LOCATE_REQUEST_REQUIREMENT,
-                "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.18-008",
-                "KMIPKIT-REQ-SPEC-7.18-001-001",
-                "KMIPKIT-REQ-SPEC-7.18-004",
+                "KMIP-REQ-SPEC-6.1.45-002-003",
+                "KMIP-REQ-SPEC-6.1.18-001-001",
+                "KMIP-REQ-SPEC-6.1.18-008",
+                "KMIP-REQ-SPEC-7.18-001-001",
+                "KMIP-REQ-SPEC-7.18-004",
             }
         ]
         for function in other_manifest["functions"]:
@@ -704,7 +704,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             }:
                 requirements = set(function["requirementIds"])
                 requirements.difference_update(ACTIVE_REQUEST_REQUIREMENTS)
-                requirements.update((OWNER_REQUIREMENTS - {"KMIPKIT-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
+                requirements.update((OWNER_REQUIREMENTS - {"KMIP-REQ-SPEC-6.1.45-002-003"}) | RETIRED_REQUIREMENTS)
                 function["requirementIds"] = sorted(requirements)
             if function["id"] in REKEY_FUNCTION_IDS:
                 function["requirementIds"] = sorted(

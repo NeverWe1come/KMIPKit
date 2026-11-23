@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 OPERATION_NAME = "kmipkit_protocol::RekeyKeyPairRequest::"
 OWNER_FR = {
     "KMIPKIT-0036-FR-001",
@@ -27,9 +27,9 @@ OWNER_FR = {
     "KMIPKIT-0036-FR-008",
 }
 FORBIDDEN_REQUEST_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.47-001",
-    "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-    "KMIPKIT-REQ-SPEC-6.1.47-004-002",
+    "KMIP-REQ-SPEC-6.1.47-001",
+    "KMIP-REQ-SPEC-6.1.47-004-001",
+    "KMIP-REQ-SPEC-6.1.47-004-002",
 }
 T102_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 EVIDENCE = {
@@ -95,7 +95,7 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
                     FORBIDDEN_REQUEST_REQUIREMENTS.intersection(declaration["requirementIds"])
                 )
                 self.assertFalse(
-                    any(value.startswith("KMIPKIT-REQ-SPEC-6.1.47-")
+                    any(value.startswith("KMIP-REQ-SPEC-6.1.47-")
                         for value in declaration["requirementIds"])
                 )
                 expected_mappings = {
@@ -148,9 +148,9 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
         )
         catalog_ids = {row.get("element_id") for row in tag_catalog.get("elements", [])}
         self.assertTrue({
-            "KMIPKIT-ELEM-TAG-420126", "KMIPKIT-ELEM-TAG-420127",
-            "KMIPKIT-ELEM-TAG-420128", "KMIPKIT-ELEM-TAG-420163",
-            "KMIPKIT-ELEM-TAG-420164", "KMIPKIT-ELEM-TAG-420165",
+            "KMIP-ELEM-TAG-420126", "KMIP-ELEM-TAG-420127",
+            "KMIP-ELEM-TAG-420128", "KMIP-ELEM-TAG-420163",
+            "KMIP-ELEM-TAG-420164", "KMIP-ELEM-TAG-420165",
         } <= catalog_ids)
 
         source_expectations = {

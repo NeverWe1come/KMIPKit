@@ -21,19 +21,19 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
-OPERATION = "KMIPKIT-ELEM-OP-C2S-CERTIFY"
+OPERATION = "KMIP-ELEM-OP-C2S-CERTIFY"
 C_BUILDER = "kmipkit_client_batch_item_certify"
 JAVA_BUILDER = "org.kmipkit.extensions.ClientBatchItem.certify"
 PYTHON_BUILDER = "kmipkit.extensions.client_batch_item_certify"
 LIFECYCLE_SERIALIZER_IDS = {
-    "KMIPKIT-ELEM-OP-C2S-CERTIFY": "rust-observed-455bf70fd49c2d1c0584",
-    "KMIPKIT-ELEM-OP-C2S-CHECK": "rust-observed-1aa8855f67251843003b",
-    "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE": "rust-observed-3f7281ffc6f28316cdb2",
-    "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY": "rust-observed-d7bf84b1a5fd4c705597",
-    "KMIPKIT-ELEM-OP-C2S-RE-KEY": "rust-observed-1477c49c457fdc10fa5b",
-    "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR": "rust-observed-92442b7d3422ffe465c3",
-    "KMIPKIT-ELEM-OP-C2S-RE-PROVISION": "rust-observed-d1446684e4f2641b3c96",
-    "KMIPKIT-ELEM-OP-C2S-REVOKE": "rust-observed-3110caf46cc1e36cbcc9",
+    "KMIP-ELEM-OP-C2S-CERTIFY": "rust-observed-455bf70fd49c2d1c0584",
+    "KMIP-ELEM-OP-C2S-CHECK": "rust-observed-1aa8855f67251843003b",
+    "KMIP-ELEM-OP-C2S-OBTAIN-LEASE": "rust-observed-3f7281ffc6f28316cdb2",
+    "KMIP-ELEM-OP-C2S-RE-CERTIFY": "rust-observed-d7bf84b1a5fd4c705597",
+    "KMIP-ELEM-OP-C2S-RE-KEY": "rust-observed-1477c49c457fdc10fa5b",
+    "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR": "rust-observed-92442b7d3422ffe465c3",
+    "KMIP-ELEM-OP-C2S-RE-PROVISION": "rust-observed-d1446684e4f2641b3c96",
+    "KMIP-ELEM-OP-C2S-REVOKE": "rust-observed-3110caf46cc1e36cbcc9",
 }
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
@@ -91,7 +91,7 @@ TARGETS = (
         "field": "Unique Identifier",
         "tag": 0x420094,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
-        "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-002-001", "KMIPKIT-REQ-SPEC-6.1.6-002-002"},
+        "requirements": {"KMIP-REQ-SPEC-6.1.6-002-001", "KMIP-REQ-SPEC-6.1.6-002-002"},
     },
     {
         "id": "rust-observed-25fb2f73d24e03d2ab13",
@@ -99,7 +99,7 @@ TARGETS = (
         "field": "Certificate Request Type",
         "tag": 0x420019,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
-        "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-007"},
+        "requirements": {"KMIP-REQ-SPEC-6.1.6-007"},
     },
     {
         "id": "rust-observed-75b1748bcbc69c385a66",
@@ -107,7 +107,7 @@ TARGETS = (
         "field": "Attributes",
         "tag": 0x420125,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
-        "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-002-003"},
+        "requirements": {"KMIP-REQ-SPEC-6.1.6-002-003"},
     },
     {
         "id": "rust-observed-ddcac6317bf0ae830eab",
@@ -123,7 +123,7 @@ TARGETS = (
         "field": "Certificate Request Value",
         "tag": 0x420140,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-005", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
-        "requirements": {"KMIPKIT-REQ-SPEC-6.1.6-007"},
+        "requirements": {"KMIP-REQ-SPEC-6.1.6-007"},
     },
 )
 REQUEST_CONSTRUCTION_TARGETS = (
@@ -144,12 +144,12 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
     "KMIPKIT-0036-FR-004",
     "KMIPKIT-0036-FR-006",
     "KMIPKIT-0036-FR-008",
-    "KMIPKIT-REQ-SPEC-6.1.6-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-003",
-    "KMIPKIT-REQ-SPEC-6.1.6-007",
+    "KMIP-REQ-SPEC-6.1.6-001",
+    "KMIP-REQ-SPEC-6.1.6-002-001",
+    "KMIP-REQ-SPEC-6.1.6-002-002",
+    "KMIP-REQ-SPEC-6.1.6-002-003",
+    "KMIP-REQ-SPEC-6.1.6-003",
+    "KMIP-REQ-SPEC-6.1.6-007",
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
@@ -216,7 +216,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     declaration["languageMappings"],
                 )
                 self.assertTrue(EVIDENCE <= set(declaration["parityEvidenceIds"]))
-                tag_id = f"KMIPKIT-ELEM-TAG-{target['tag']:06X}"
+                tag_id = f"KMIP-ELEM-TAG-{target['tag']:06X}"
                 self.assertIn(tag_id, self.elements)
                 self.assertEqual("assigned", self.elements[tag_id]["allocation"])
                 self.assertEqual("client_1_0", self.elements[tag_id]["scope_state"])
@@ -317,8 +317,8 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         )
         self.assertIn("Table 117: Protection Storage Mask", text)
         self.assertIn("Protection Storage Mask Integer", text)
-        self.assertEqual("Protection Storage Masks", self.elements["KMIPKIT-ELEM-TAG-42015F"]["name"])
-        self.assertEqual("Protection Storage Mask", self.elements["KMIPKIT-ELEM-TAG-42015E"]["name"])
+        self.assertEqual("Protection Storage Masks", self.elements["KMIP-ELEM-TAG-42015F"]["name"])
+        self.assertEqual("Protection Storage Mask", self.elements["KMIP-ELEM-TAG-42015E"]["name"])
 
     def test_raw_certify_discriminators_have_direct_three_language_metadata_evidence(self) -> None:
         self.assertEqual(2, len(RAW_CERTIFY_DECLARATIONS))
@@ -494,7 +494,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     evidence_id for evidence_id in operation["parityEvidenceIds"]
                     if evidence_id not in OPERATION_ADDED_EVIDENCE
                 ]
-            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY":
+            if operation["operationId"] == "KMIP-ELEM-OP-C2S-RE-CERTIFY":
                 operation["declarations"]["rust"] = [
                     declaration_id for declaration_id in operation["declarations"]["rust"]
                     if declaration_id not in {RECERTIFY_TYPE_ID, "rust-observed-be7b44dc6c8bae24ad53"}
@@ -504,16 +504,16 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                     if evidence_id != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                 ]
             if operation["operationId"] in {
-                "KMIPKIT-ELEM-OP-C2S-IMPORT",
-                "KMIPKIT-ELEM-OP-C2S-EXPORT",
-                "KMIPKIT-ELEM-OP-C2S-GET",
+                "KMIP-ELEM-OP-C2S-IMPORT",
+                "KMIP-ELEM-OP-C2S-EXPORT",
+                "KMIP-ELEM-OP-C2S-GET",
             }:
                 operation["declarations"]["rust"] = [
                     declaration_id
                     for declaration_id in operation["declarations"]["rust"]
                     if declaration_id not in WRAPPING_REQUEST_BUILDER_IDS
                 ]
-            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-PKCS-11":
+            if operation["operationId"] == "KMIP-ELEM-OP-C2S-PKCS-11":
                 operation["declarations"]["rust"] = [
                     declaration_id
                     for declaration_id in operation["declarations"]["rust"]

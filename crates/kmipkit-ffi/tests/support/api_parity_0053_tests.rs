@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn common_abi_handles_preserve_ownership_reject_null_and_stale_inputs_and_redact_values() {
-    const SECRET_SENTINEL: &str = "KMIPKIT-0053-SECRET-REDACTION-SENTINEL";
+    const SECRET_SENTINEL: &str = "specification requirement-SECRET-REDACTION-SENTINEL";
     let parameters = CryptographicParametersBuilder::new()
         .with_p_source(SECRET_SENTINEL.as_bytes().to_vec())
         .build()

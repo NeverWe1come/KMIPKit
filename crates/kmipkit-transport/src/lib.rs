@@ -80,7 +80,7 @@
 //! [`TransportResponse`] owns and zeroizes its current response allocation on
 //! drop.
 //!
-//! See [ADR-0014](../../../docs/adr/0014-public-transport-exchange-contract.md)
+//! Public Low-Level Transport Exchange Contract for Rust.
 //! for the low-level ownership, response-limit, and cleanup contract.
 //!
 //! # Examples

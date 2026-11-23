@@ -11,14 +11,14 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY"
 OWNER_SPEC = "specs/023-key-material-transfer/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.27-001",
-    "KMIPKIT-REQ-SPEC-6.1.27-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.27-005",
+    "KMIP-REQ-SPEC-6.1.27-001",
+    "KMIP-REQ-SPEC-6.1.27-002-001",
+    "KMIP-REQ-SPEC-6.1.27-002-002",
+    "KMIP-REQ-SPEC-6.1.27-005",
     *(f"KMIPKIT-0037-FR-{index:03}" for index in range(1, 9)),
     *(f"KMIPKIT-0043-FR-{index:03}" for index in (4, 5, 7, 8, 9, 10, 11, 12, 13, 17, 18, 21, 22)),
 }

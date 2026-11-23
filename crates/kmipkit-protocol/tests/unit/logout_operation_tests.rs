@@ -1,7 +1,7 @@
 //! Source-derived Logout contracts from OASIS KMIP v2.1 §6.1.31,
 //! Tables 256–258, and the Ticket structure in §7.39, Table 391.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-LOGOUT`,
+//! Traceability: `KMIP-ELEM-OP-C2S-LOGOUT`,
 //! `KMIPKIT-024-T256-REQUEST`, `KMIPKIT-024-T257-RESPONSE`, and
 //! `KMIPKIT-024-T258-ERROR`. No direct official Logout test case is cataloged.
 

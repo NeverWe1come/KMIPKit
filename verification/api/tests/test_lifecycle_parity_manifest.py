@@ -20,7 +20,7 @@ LANGUAGE_PACKAGES = {
     "python": {"python-kmipkit"},
 }
 OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-ACTIVATE": {
+    "KMIP-ELEM-OP-C2S-ACTIVATE": {
         "name": "Activate",
         "section": "6.1.1",
         "rust": {
@@ -49,7 +49,7 @@ OPERATIONS = {
             "kmipkit.client.ActivateResponse.unique_identifier",
         },
     },
-    "KMIPKIT-ELEM-OP-C2S-ARCHIVE": {
+    "KMIP-ELEM-OP-C2S-ARCHIVE": {
         "name": "Archive",
         "section": "6.1.4",
         "rust": {
@@ -78,7 +78,7 @@ OPERATIONS = {
             "kmipkit.client.ArchiveResponse.unique_identifier",
         },
     },
-    "KMIPKIT-ELEM-OP-C2S-DESTROY": {
+    "KMIP-ELEM-OP-C2S-DESTROY": {
         "name": "Destroy",
         "section": "6.1.15",
         "rust": {
@@ -107,7 +107,7 @@ OPERATIONS = {
             "kmipkit.client.DestroyResponse.unique_identifier",
         },
     },
-    "KMIPKIT-ELEM-OP-C2S-RECOVER": {
+    "KMIP-ELEM-OP-C2S-RECOVER": {
         "name": "Recover",
         "section": "6.1.42",
         "rust": {
@@ -155,11 +155,11 @@ OWNER_REQUIREMENTS = {
 }
 OPERATION_NORMATIVE_REQUIREMENTS = {
     "Activate": set(),
-    "Archive": {"KMIPKIT-REQ-SPEC-6.1.4-001"},
+    "Archive": {"KMIP-REQ-SPEC-6.1.4-001"},
     "Destroy": set(),
     "Recover": {
-        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+        "KMIP-REQ-SPEC-6.1.42-001-001",
+        "KMIP-REQ-SPEC-6.1.42-001-002",
     },
 }
 API_REQUIREMENTS = {

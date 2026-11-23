@@ -75,47 +75,47 @@ MODULES = {
 }
 OPERATIONS = {
     "CertifyError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-CERTIFY",
+        "element": "KMIP-ELEM-OP-C2S-CERTIFY",
         "reference": "OASIS KMIP v2.1 Section 6.1.6, Table 181",
         "caption": "Table 181: Certify Errors",
     },
     "CheckError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-CHECK",
+        "element": "KMIP-ELEM-OP-C2S-CHECK",
         "reference": "OASIS KMIP v2.1 Section 6.1.7, Table 185",
         "caption": "Table 185: Check Errors",
     },
     "ObtainLeaseError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE",
+        "element": "KMIP-ELEM-OP-C2S-OBTAIN-LEASE",
         "reference": "OASIS KMIP v2.1 Section 6.1.35, Table 270",
         "caption": "Table 270: Obtain Lease Errors",
     },
     "RegisterError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-REGISTER",
+        "element": "KMIP-ELEM-OP-C2S-REGISTER",
         "reference": "OASIS KMIP v2.1 Section 6.1.43, Table 294",
         "caption": "Table 294: Register Errors",
     },
     "RevokeError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-REVOKE",
+        "element": "KMIP-ELEM-OP-C2S-REVOKE",
         "reference": "OASIS KMIP v2.1 Section 6.1.44, Table 297",
         "caption": "Table 297: Revoke Errors",
     },
     "RecertifyError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "element": "KMIP-ELEM-OP-C2S-RE-CERTIFY",
         "reference": "OASIS KMIP v2.1 Section 6.1.45, Table 302",
         "caption": "Table 302: Re-certify Errors",
     },
     "RekeyError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "element": "KMIP-ELEM-OP-C2S-RE-KEY",
         "reference": "OASIS KMIP v2.1 Section 6.1.46, Table 307",
         "caption": "Table 307: Re-key Errors",
     },
     "RekeyKeyPairError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
+        "element": "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR",
         "reference": "OASIS KMIP v2.1 Section 6.1.47, Table 312",
         "caption": "Table 312: Re-key Key Pair Errors",
     },
     "ReProvisionError": {
-        "element": "KMIPKIT-ELEM-OP-C2S-RE-PROVISION",
+        "element": "KMIP-ELEM-OP-C2S-RE-PROVISION",
         "reference": "OASIS KMIP v2.1 Section 6.1.48.1, Table 315",
         "caption": "Table 315: RNG Retrieve Errors",
         "caption_note": (

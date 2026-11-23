@@ -1,4 +1,4 @@
-//! Derived KMIPKIT-0008 secret owner contracts (FR-010, SC-003).
+//! Derived specification requirement secret owner contracts (FR-010, SC-003).
 
 use kmipkit_protocol::{SecretBytes, SecretText};
 use kmipkit_ttlv::{Item, RawTag, Tag, ValueView};

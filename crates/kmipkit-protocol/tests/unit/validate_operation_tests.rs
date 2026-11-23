@@ -1,5 +1,5 @@
 //! Source-derived OASIS KMIP v2.1 §6.1.57, Tables 340–342; §2.1, Table 2.
-//! Six KMIPKIT-REQ-SPEC-6.1.57 requirements are named below.
+//! Six KMIP-REQ-SPEC-6.1.57 requirements are named below.
 //! No official OASIS fixture or local certificate-validation claim is made.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
@@ -414,7 +414,7 @@ fn request_extension_depth_limit_is_checked_before_encoding() {
     assert_eq!(error.kind(), crate::ProtocolErrorKind::InvalidValue);
 }
 
-// KMIPKIT-REQ-SPEC-10.1.2-001: section 10.1.2, unnumbered Type table Structure row requires description order.
+// KMIP-REQ-SPEC-10.1.2-001: section 10.1.2, unnumbered Type table Structure row requires description order.
 #[test]
 fn table_340_groups_certificates_before_identifiers_preserving_each_list_order() {
     let request = ValidateRequest::new()

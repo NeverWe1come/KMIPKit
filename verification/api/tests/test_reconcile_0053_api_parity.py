@@ -457,8 +457,8 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
         self.assertEqual(result, replay)
         declarations = {row["declarationId"]: row for row in result["publicDeclarations"]}
         operations = {row["operationId"]: row for row in result["operations"]}
-        encrypt_refs = operations["KMIPKIT-ELEM-OP-C2S-ENCRYPT"]["declarations"]["rust"]
-        decrypt_refs = operations["KMIPKIT-ELEM-OP-C2S-DECRYPT"]["declarations"]["rust"]
+        encrypt_refs = operations["KMIP-ELEM-OP-C2S-ENCRYPT"]["declarations"]["rust"]
+        decrypt_refs = operations["KMIP-ELEM-OP-C2S-DECRYPT"]["declarations"]["rust"]
         for correction in corrections:
             declaration = declarations[correction["declarationId"]]
             target = declarations[correction["targetDeclarationId"]]

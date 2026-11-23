@@ -1,7 +1,7 @@
 //! Public Device Credential binding contract.
 //!
-//! Traceability: KMIPKIT-0008-FR-005; KMIPKIT-REQ-SPEC-9.11-004-001,
-//! KMIPKIT-REQ-SPEC-9.11-004-002, and KMIPKIT-REQ-SPEC-9.11-004-003;
+//! Traceability: functional requirement; KMIP-REQ-SPEC-9.11-004-001,
+//! KMIP-REQ-SPEC-9.11-004-002, and KMIP-REQ-SPEC-9.11-004-003;
 //! OASIS KMIP v2.1 §9.11 Table 412.
 
 use kmipkit_protocol::{CredentialValidationErrorKind, DeviceCredential};

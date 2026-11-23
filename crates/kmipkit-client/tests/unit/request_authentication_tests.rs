@@ -1,4 +1,4 @@
-//! KMIPKIT-0050 Authentication Request Header tests.
+//! specification requirement Authentication Request Header tests.
 //!
 //! OASIS KMIP v2.1 §8.2, Table 395 places Authentication after Attestation
 //! Type and before Batch Error Continuation Option. The current client omits

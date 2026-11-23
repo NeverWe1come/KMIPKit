@@ -11,79 +11,79 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 ORACLE_PATH = REPO_ROOT / "verification/conformance/tests/fixtures/profile-closure-v2.1.json"
 CATALOG_PATH = REPO_ROOT / "verification/conformance/catalog/kmip-2.1.json"
 
-SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.11-001"
-PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIPKIT-REQ-SPEC-4.57-002"
+SERVER_ONLY_REQUIREMENT = "KMIP-REQ-SPEC-4.11-001"
+PRE_ACTIVE_SERVER_ONLY_REQUIREMENT = "KMIP-REQ-SPEC-4.57-002"
 STATE_SERVER_ONLY_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-4.57-003-001",
-    "KMIPKIT-REQ-SPEC-4.57-003-002",
-    "KMIPKIT-REQ-SPEC-4.57-003-003",
-    "KMIPKIT-REQ-SPEC-4.57-003-004",
-    "KMIPKIT-REQ-SPEC-4.57-004-001",
-    "KMIPKIT-REQ-SPEC-4.57-004-002",
-    "KMIPKIT-REQ-SPEC-4.57-004-003",
-    "KMIPKIT-REQ-SPEC-4.57-005-001",
-    "KMIPKIT-REQ-SPEC-4.57-005-003",
-    "KMIPKIT-REQ-SPEC-4.57-006",
-    "KMIPKIT-REQ-SPEC-4.57-007",
-    "KMIPKIT-REQ-SPEC-4.57-007-002",
+    "KMIP-REQ-SPEC-4.57-003-001",
+    "KMIP-REQ-SPEC-4.57-003-002",
+    "KMIP-REQ-SPEC-4.57-003-003",
+    "KMIP-REQ-SPEC-4.57-003-004",
+    "KMIP-REQ-SPEC-4.57-004-001",
+    "KMIP-REQ-SPEC-4.57-004-002",
+    "KMIP-REQ-SPEC-4.57-004-003",
+    "KMIP-REQ-SPEC-4.57-005-001",
+    "KMIP-REQ-SPEC-4.57-005-003",
+    "KMIP-REQ-SPEC-4.57-006",
+    "KMIP-REQ-SPEC-4.57-007",
+    "KMIP-REQ-SPEC-4.57-007-002",
 }
 BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-4.1-001-001",
-    "KMIPKIT-REQ-SPEC-4.1-001-002",
-    "KMIPKIT-REQ-SPEC-4.1-001-003",
-    "KMIPKIT-REQ-SPEC-4.18-001-001",
-    "KMIPKIT-REQ-SPEC-4.18-001-002",
+    "KMIP-REQ-SPEC-4.1-001-001",
+    "KMIP-REQ-SPEC-4.1-001-002",
+    "KMIP-REQ-SPEC-4.1-001-003",
+    "KMIP-REQ-SPEC-4.18-001-001",
+    "KMIP-REQ-SPEC-4.18-001-002",
 }
 CONDITIONAL_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-4.1-001-001",
-    "KMIPKIT-REQ-SPEC-4.1-001-002",
-    "KMIPKIT-REQ-SPEC-4.1-001-003",
-    "KMIPKIT-REQ-SPEC-4.18-001-001",
-    "KMIPKIT-REQ-SPEC-4.18-001-002",
-    "KMIPKIT-REQ-SPEC-4.38-003",
-    "KMIPKIT-REQ-SPEC-4.59-002",
-    "KMIPKIT-REQ-SPEC-4.59-003-001",
-    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+    "KMIP-REQ-SPEC-4.1-001-001",
+    "KMIP-REQ-SPEC-4.1-001-002",
+    "KMIP-REQ-SPEC-4.1-001-003",
+    "KMIP-REQ-SPEC-4.18-001-001",
+    "KMIP-REQ-SPEC-4.18-001-002",
+    "KMIP-REQ-SPEC-4.38-003",
+    "KMIP-REQ-SPEC-4.59-002",
+    "KMIP-REQ-SPEC-4.59-003-001",
+    "KMIP-REQ-SPEC-6.1.34-001-003",
 }
 CLIENT_SCOPE_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-4.34-001-002",
-    "KMIPKIT-REQ-SPEC-4.40-001-001",
-    "KMIPKIT-REQ-SPEC-4.40-001-002",
-    "KMIPKIT-REQ-SPEC-4.40-001-003",
-    "KMIPKIT-REQ-SPEC-4.40-001-004",
-    "KMIPKIT-REQ-SPEC-4.40-001-005",
-    "KMIPKIT-REQ-SPEC-4.41-001-001",
-    "KMIPKIT-REQ-SPEC-4.41-001-002",
-    "KMIPKIT-REQ-SPEC-4.41-001-003",
-    "KMIPKIT-REQ-SPEC-4.41-001-004",
-    "KMIPKIT-REQ-SPEC-4.57-001",
-    "KMIPKIT-REQ-SPEC-8-001",
-    "KMIPKIT-REQ-SPEC-8-002",
-    "KMIPKIT-REQ-SPEC-9.7-001",
+    "KMIP-REQ-SPEC-4.34-001-002",
+    "KMIP-REQ-SPEC-4.40-001-001",
+    "KMIP-REQ-SPEC-4.40-001-002",
+    "KMIP-REQ-SPEC-4.40-001-003",
+    "KMIP-REQ-SPEC-4.40-001-004",
+    "KMIP-REQ-SPEC-4.40-001-005",
+    "KMIP-REQ-SPEC-4.41-001-001",
+    "KMIP-REQ-SPEC-4.41-001-002",
+    "KMIP-REQ-SPEC-4.41-001-003",
+    "KMIP-REQ-SPEC-4.41-001-004",
+    "KMIP-REQ-SPEC-4.57-001",
+    "KMIP-REQ-SPEC-8-001",
+    "KMIP-REQ-SPEC-8-002",
+    "KMIP-REQ-SPEC-9.7-001",
 }
 MESSAGE_ENVELOPE_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-8-001": "KMIPKIT-CLAUSE-SPEC-8-001",
-    "KMIPKIT-REQ-SPEC-8-002": "KMIPKIT-CLAUSE-SPEC-8-002",
-    "KMIPKIT-REQ-SPEC-9.7-001": "KMIPKIT-CLAUSE-SPEC-9.7-001",
+    "KMIP-REQ-SPEC-8-001": "KMIP-CLAUSE-SPEC-8-001",
+    "KMIP-REQ-SPEC-8-002": "KMIP-CLAUSE-SPEC-8-002",
+    "KMIP-REQ-SPEC-9.7-001": "KMIP-CLAUSE-SPEC-9.7-001",
 }
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS = (
     BASELINE_SELECTED_ATTRIBUTE_REQUIREMENTS | CLIENT_SCOPE_REQUIREMENTS
 )
 T040_ALL_CLIENT_PROFILE_REQUIREMENTS = {
     "KMIPKIT-REQ-PROF-4.1.2-005",
-    "KMIPKIT-REQ-SPEC-4-001-001",
-    "KMIPKIT-REQ-SPEC-4-001-002",
-    "KMIPKIT-REQ-SPEC-4-001-003",
-    "KMIPKIT-REQ-SPEC-7.31-001",
-    "KMIPKIT-REQ-SPEC-7.32-001",
+    "KMIP-REQ-SPEC-4-001-001",
+    "KMIP-REQ-SPEC-4-001-002",
+    "KMIP-REQ-SPEC-4-001-003",
+    "KMIP-REQ-SPEC-7.31-001",
+    "KMIP-REQ-SPEC-7.32-001",
 }
 T040_BASELINE_PROFILE_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-4.38-003",
-    "KMIPKIT-REQ-SPEC-4.57-005-002",
-    "KMIPKIT-REQ-SPEC-4.59-002",
-    "KMIPKIT-REQ-SPEC-4.59-003-001",
-    "KMIPKIT-REQ-SPEC-6.1.14-002",
-    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+    "KMIP-REQ-SPEC-4.38-003",
+    "KMIP-REQ-SPEC-4.57-005-002",
+    "KMIP-REQ-SPEC-4.59-002",
+    "KMIP-REQ-SPEC-4.59-003-001",
+    "KMIP-REQ-SPEC-6.1.14-002",
+    "KMIP-REQ-SPEC-6.1.34-001-003",
 }
 ALL_CLIENT_PROFILE_SCOPE_REQUIREMENTS |= T040_ALL_CLIENT_PROFILE_REQUIREMENTS
 FINAL_DISPOSITIONS = {
@@ -99,28 +99,28 @@ SERVER_ONLY_REQUIREMENTS = {
     *STATE_SERVER_ONLY_REQUIREMENTS,
 }
 TTLV_CLIENT_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-10.1.2-001",
-    "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-    "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-    "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-    "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-    "KMIPKIT-REQ-SPEC-11.56-001",
+    "KMIP-REQ-SPEC-10.1.2-001",
+    "KMIP-REQ-SPEC-10.1.2-002-001",
+    "KMIP-REQ-SPEC-10.1.2-002-002",
+    "KMIP-REQ-SPEC-10.1.5-001-001",
+    "KMIP-REQ-SPEC-10.1.5-001-002",
+    "KMIP-REQ-SPEC-11.56-001",
 }
 PROFILE_VARIATION_REQUIREMENT = "KMIPKIT-REQ-PROF-4.1.2-001"
 T040_BASELINE_PROFILE_ID = "KMIPKIT-PROFILE-BASELINE-CLIENT"
 T040_REMAINING_APPLICABILITY = {
     "KMIPKIT-REQ-PROF-4.1.2-005": ("profile_conditional", "client", "client_to_server", "all_client_profiles"),
-    "KMIPKIT-REQ-SPEC-4-001-001": ("mixed", "client", "both", "all_client_profiles"),
-    "KMIPKIT-REQ-SPEC-4-001-002": ("mixed", "client", "both", "all_client_profiles"),
-    "KMIPKIT-REQ-SPEC-4-001-003": ("mixed", "client", "both", "all_client_profiles"),
-    "KMIPKIT-REQ-SPEC-4.38-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-4.57-005-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-4.59-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-4.59-003-001": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-6.1.14-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-6.1.34-001-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
-    "KMIPKIT-REQ-SPEC-7.31-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
-    "KMIPKIT-REQ-SPEC-7.32-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
+    "KMIP-REQ-SPEC-4-001-001": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIP-REQ-SPEC-4-001-002": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIP-REQ-SPEC-4-001-003": ("mixed", "client", "both", "all_client_profiles"),
+    "KMIP-REQ-SPEC-4.38-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-4.57-005-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-4.59-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-4.59-003-001": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-6.1.14-002": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-6.1.34-001-003": ("profile_conditional", "client", "client_to_server", "baseline_client"),
+    "KMIP-REQ-SPEC-7.31-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
+    "KMIP-REQ-SPEC-7.32-001": ("profile_conditional", "client", "server_to_client", "all_client_profiles"),
 }
 
 
@@ -249,7 +249,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             with self.subTest(requirement_id=requirement_id):
                 expected_direction = (
                     "client_to_server"
-                    if requirement_id == "KMIPKIT-REQ-SPEC-4.57-001"
+                    if requirement_id == "KMIP-REQ-SPEC-4.57-001"
                     else "both"
                     if requirement_id in MESSAGE_ENVELOPE_REQUIREMENTS
                     else "unclear"
@@ -332,7 +332,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                     self.assertIn(requirement_id, oracle_profiles[profile_id]["requirement_ids"])
 
     def test_state_attribute_modify_prohibition_is_client_scope(self) -> None:
-        requirement_id = "KMIPKIT-REQ-SPEC-4.57-001"
+        requirement_id = "KMIP-REQ-SPEC-4.57-001"
         requirement = self.requirements[requirement_id]
         crosswalk = self.crosswalk[requirement_id]
         obligation = next(
@@ -355,7 +355,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
 
     def test_pre_active_use_prohibition_is_server_only(self) -> None:
         requirement_id = PRE_ACTIVE_SERVER_ONLY_REQUIREMENT
-        clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-002"
+        clause_id = "KMIP-CLAUSE-SPEC-4.57-002"
         requirement = self.requirements[requirement_id]
         clause = next(
             row for row in self.catalog["source_clauses"] if row["clause_id"] == clause_id
@@ -473,7 +473,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                     self.assertNotIn(requirement_id, profile["requirement_ids"])
 
     def test_deactivation_date_can_only_be_modified_in_named_states_and_never_deleted(self) -> None:
-        use_after_deactivation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-001"]
+        use_after_deactivation = self.crosswalk["KMIP-REQ-SPEC-4.18-001-001"]
         self.assertIn(
             "Pinned OASIS KMIP Specification v2.1",
             use_after_deactivation["review_note"],
@@ -481,7 +481,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertIn("extraordinary", use_after_deactivation["review_note"].casefold())
         self.assertIn("special permission", use_after_deactivation["review_note"].casefold())
 
-        deactivation_date_mutation = self.crosswalk["KMIPKIT-REQ-SPEC-4.18-001-002"]
+        deactivation_date_mutation = self.crosswalk["KMIP-REQ-SPEC-4.18-001-002"]
         mutation_note = deactivation_date_mutation["review_note"].casefold()
         self.assertIn("deletable by client: no", mutation_note)
         self.assertIn("table 64", mutation_note)
@@ -490,11 +490,11 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         self.assertIn("active", mutation_note)
 
     def test_modify_attribute_keeps_existing_id_and_client_request_context(self) -> None:
-        modify_attribute = self.crosswalk["KMIPKIT-REQ-SPEC-6.1.34-001-003"]
+        modify_attribute = self.crosswalk["KMIP-REQ-SPEC-6.1.34-001-003"]
         self.assertEqual(modify_attribute["source_section"], "6.1.34")
         self.assertEqual(modify_attribute["source_obligation_order"], 4)
         self.assertEqual(
-            self.requirements["KMIPKIT-REQ-SPEC-6.1.34-001-003"]["direction"],
+            self.requirements["KMIP-REQ-SPEC-6.1.34-001-003"]["direction"],
             "client_to_server",
         )
         modify_review = next(
@@ -506,7 +506,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
             for obligation in modify_review["source_obligations"]
             if obligation["candidate_requirement_id"] is not None
         }
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.34-001-003", modify_candidate_ids)
+        self.assertIn("KMIP-REQ-SPEC-6.1.34-001-003", modify_candidate_ids)
         self.assertFalse(
             any("6.1.34" in requirement_id and requirement_id.endswith("001-005")
                 for requirement_id in self.requirements)
@@ -656,7 +656,7 @@ class T002FinalApplicabilityTests(unittest.TestCase):
                 self.assertIn("project", crosswalk["review_note"].casefold())
 
     def test_usage_limits_discrepancy_and_requirements_resolve_to_typed_member(self) -> None:
-        element_id = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL"
+        element_id = "KMIP-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL"
         discrepancy = next(
             row
             for row in self.catalog["discrepancies"]
@@ -664,8 +664,8 @@ class T002FinalApplicabilityTests(unittest.TestCase):
         )
         self.assertEqual(discrepancy["affected_element_ids"], [element_id])
         for requirement_id in (
-            "KMIPKIT-REQ-SPEC-4.59-002",
-            "KMIPKIT-REQ-SPEC-4.59-003-001",
+            "KMIP-REQ-SPEC-4.59-002",
+            "KMIP-REQ-SPEC-4.59-003-001",
         ):
             with self.subTest(requirement_id=requirement_id):
                 self.assertIn(element_id, self.requirements[requirement_id]["element_ids"])

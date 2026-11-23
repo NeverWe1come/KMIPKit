@@ -1,8 +1,8 @@
 //! Client-boundary borrowed codec-limit identity tests.
 //!
 //! This is a `KMIPKit` project contract, not a new OASIS requirement.
-//! Traceability: `KMIPKIT-0007-FR-003`, `KMIPKIT-0007-FR-009`,
-//! `KMIPKIT-0007-SC-003`, and ADR-0012.
+//! Traceability: `functional requirement`, `functional requirement`,
+//! `success criterion`, and caller-requested encoding and zeroization.
 
 use std::cell::RefCell;
 use std::rc::Rc;

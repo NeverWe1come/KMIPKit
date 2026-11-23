@@ -3,7 +3,7 @@
 //! `KMIPKIT-DISC-039` caption discrepancy; this test preserves the payload
 //! without assigning it a typed schema.
 //!
-//! Traceability: `KMIPKIT-0009-FR-007`, `FR-012`.
+//! Traceability: `functional requirement`, `FR-012`.
 
 use kmipkit_ttlv::{StructureView, Value, ValueView};
 

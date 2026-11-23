@@ -13,9 +13,9 @@
 //! standard-library whitelist. It does not expand macros or resolve types; the
 //! whitelist's token trees are checked for protected boundary identifiers.
 //!
-//! Traceability: `KMIPKIT-0007-FR-001`, `-FR-003`, `-FR-011`, `-FR-012`,
-//! `-FR-015`, `-FR-017`; `KMIPKIT-0007-SC-004`, `-SC-007`, `-SC-008`;
-//! ADR-0012, ADR-0014, OD-005.
+//! Traceability: `functional requirement`, `-FR-003`, `-FR-011`, `-FR-012`,
+//! `-FR-015`, `-FR-017`; `success criterion`, `-SC-007`, `-SC-008`;
+//! caller-requested encoding and zeroization, low-level transport exchange contract, OD-005.
 
 use std::collections::HashSet;
 use std::fs;

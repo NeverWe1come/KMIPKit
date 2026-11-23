@@ -1,7 +1,7 @@
 # Transport and security architecture
 
 This document describes the intended 1.0 transport profile and its accepted
-implementation boundary. KMIPKIT-0013 implements production TLS/HTTPS
+implementation boundary. the transport subsystem implements production TLS/HTTPS
 adapters and a synchronous typed-client constructor from validated
 configuration. Remaining operation coverage, platform, documentation, and
 independent-review gates are tracked in that specification. The constructor
@@ -13,7 +13,7 @@ implemented boundary.
 
 The typed client supports TTLV, JSON, and XML over both transports, with TTLV
 as the default. JSON/XML HTTPS body and Content-Type behavior follows the
-contextual interpretation in ADR-0018.
+contextual interpretation in multi-encoding specification.
 The local received-byte cap applies to actual wire bytes; KMIP `Maximum
 Response Size` retains its TTLV-equivalent meaning.
 
@@ -38,7 +38,7 @@ Response Size` retains its TTLV-equivalent meaning.
 - Send exactly one `Host` header derived from the endpoint authority; the
   target path and TLS verification-name override do not alter it.
 - `Content-Type` is `application/octet-stream` for TTLV, `application/json`
-  for JSON, and `text/xml` for XML under ADR-0018's contextual interpretation.
+  for JSON, and `text/xml` for XML under the multi-encoding contextual interpretation.
 - No redirect, proxy, or compression behavior.
 - Strict KMIP HTTPS profile status, header, and body checks.
 
@@ -94,7 +94,7 @@ result before it can open a candidate connection or dispatch KMIP data. The
 OS owns DNS packet retries, upstream concurrency, resolver caches, hosts and
 search rules, and split-DNS/VPN routing. KMIPKit makes no numeric claims about
 those OS-controlled behaviors. See
-ADR-0016.
+the native system name-resolution policy.
 
 ## Timeouts
 
@@ -126,7 +126,7 @@ KMIPKit adds no wire prefix and closes that connection after the response.
 ## Credentials
 
 Transport identity (TLS client identity) and KMIP message Authentication are
-separate. KMIPKIT-0008 models ordered Authentication and raw-preserving
+separate. the credentials and attestation model models ordered Authentication and raw-preserving
 Credentials in memory. It does not add Authentication or Credential data to a
 request payload; request integration is outside this increment.
 

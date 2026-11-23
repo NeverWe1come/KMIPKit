@@ -1,6 +1,6 @@
-//! KMIPKIT-0012 protocol error contract tests.
+//! specification requirement protocol error contract tests.
 //!
-//! Traceability: KMIPKIT-0012-FR-011 and KMIPKIT-0012-FR-012.
+//! Traceability: functional requirement and functional requirement.
 
 use std::error::Error;
 use std::fmt::Write as _;

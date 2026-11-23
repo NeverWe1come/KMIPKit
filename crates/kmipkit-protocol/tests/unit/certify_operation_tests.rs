@@ -1,6 +1,6 @@
 //! Source-derived Certify contracts from OASIS KMIP v2.1 §6.1.6,
 //! Tables 179–181. Stable requirement coverage:
-//! `KMIPKIT-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
+//! `KMIP-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
 //! `-003`, and `-007`. These tests are derived from the pinned standard and
 //! do not claim an official OASIS Test Case pass.
 

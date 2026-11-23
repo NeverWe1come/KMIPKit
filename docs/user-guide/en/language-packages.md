@@ -209,7 +209,7 @@ changes to this table.
 | `generic_ttlv_model` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ttlv_wire_codec` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
-| `rust_transport_exchange` | declared | Rust-only transport exchange under accepted ADR-0014; it is not a foreign-language client operation. |
+| `rust_transport_exchange` | declared | Rust-only transport exchange under the low-level transport exchange contract exclusive to Rust; it is not a foreign-language client operation. |
 | `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled, and all 56 client operation API mappings are verified. The verified inventory does not claim KMIP conformance, interoperability, or release readiness. |
 | `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
@@ -258,7 +258,7 @@ Validate, Cancel, Create, Create Key Pair, Create Split Key, Hash, MAC,
 MAC Verify, Poll, Process, Query Asynchronous Requests, Sign, and Signature
 Verify. These verified states describe four-language API mappings only; they do
 not establish full operation parity, KMIP conformance, or server interoperability. The asynchronous APIs follow
-the approved KMIPKIT-0009 scope; Process Table 278 catalog and review-checklist
+the approved asynchronous client operations scope; Process Table 278 catalog and review-checklist
 work remains tracked separately. Do not infer operation availability from
 types or implementation code elsewhere in the repository. Logout sends the caller-supplied
 Ticket and does not add credential data to later requests or log out automatically;

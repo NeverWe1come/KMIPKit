@@ -1,4 +1,4 @@
-"""Python CFFI parity tests for KMIPKIT-0043 T033.
+"""Python CFFI parity tests for public API binding surface T033.
 
 The extension facade forwards typed TTLV values and opaque operation bytes to
 the C ABI. These tests stub only the batch-item constructor boundary; no

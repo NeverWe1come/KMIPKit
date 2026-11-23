@@ -1,7 +1,7 @@
 //! OASIS KMIP Specification v2.1, §10.1.1 (Tag), Chapter 11 introduction, and §11.56 (Tag
-//! Enumeration). Traceability: KMIPKIT-0004-FR-002, KMIPKIT-0004-FR-003,
-//! KMIPKIT-0004-NR-001, and KMIPKIT-0004-NR-005. Exact-over-range precedence
-//! is the accepted `KMIPKit` policy in ADR-0010, not an OASIS interpretation.
+//! Enumeration). Traceability: functional requirement, functional requirement,
+//! specification requirement-NR-001, and specification requirement-NR-005. Exact-over-range precedence
+//! is the accepted `KMIPKit` policy in tag allocation precedence, not an OASIS interpretation.
 
 // Generated catalog literals use grouped hexadecimal digits; keep the lint
 // allowance scoped to this imported test module and do not edit generated data.

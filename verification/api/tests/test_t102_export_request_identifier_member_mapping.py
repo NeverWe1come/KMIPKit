@@ -11,7 +11,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/023-key-material-transfer/spec.md"
 DECLARATION_ID = "rust-observed-adea91ee09708737b04d"
 EXPORT_NAME = "kmipkit_protocol::ExportRequest::unique_identifier"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-EXPORT"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-EXPORT"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_export_request_identifier_member_mapping.py"
 
 
@@ -62,7 +62,7 @@ class T102ExportRequestIdentifierMemberMappingTests(unittest.TestCase):
     def test_mapping_is_grounded_in_the_approved_table_and_wire_field(self) -> None:
         owner = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Export | KMIPKIT-ELEM-OP-C2S-EXPORT | §6.1.18 | 217 | 218 | 219 |",
+            "| Export | KMIP-ELEM-OP-C2S-EXPORT | §6.1.18 | 217 | 218 | 219 |",
             owner,
         )
         request_source = (ROOT / "crates/kmipkit-protocol/src/export.rs").read_text(

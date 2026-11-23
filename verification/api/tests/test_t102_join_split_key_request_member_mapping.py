@@ -11,7 +11,7 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 MAPPING_EVIDENCE = (
     "verification/api/tests/test_t102_join_split_key_request_member_mapping.py"
 )
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY"
 OWNER = "specs/023-key-material-transfer/spec.md"
 BUILDER = "kmipkit_client_batch_item_join_split_key"
 SOURCE_TEST = "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs"
@@ -87,7 +87,7 @@ class T102JoinSplitKeyRequestMemberMappingTests(unittest.TestCase):
     def test_mapping_pins_approved_owner_and_oasis_request_source(self) -> None:
         specification = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Join Split Key | KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY | §6.1.27 | 244 | 245 | 246 |",
+            "| Join Split Key | KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY | §6.1.27 | 244 | 245 | 246 |",
             specification,
         )
         source_test = (ROOT / SOURCE_TEST).read_text(encoding="utf-8")

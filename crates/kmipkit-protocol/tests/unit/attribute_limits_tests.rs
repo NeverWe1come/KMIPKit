@@ -7,7 +7,7 @@
 //! Get Attribute List §6.1.21 Tables 226–228; Modify Attribute §6.1.34
 //! Tables 265–267; and Set Attribute §6.1.51 Tables 322–324.
 //!
-//! Traceability: KMIPKIT-0016-FR-013 and SC-002. These derived tests do not
+//! Traceability: functional requirement and SC-002. These derived tests do not
 //! claim that an official OASIS conformance case passed.
 
 use crate::{
@@ -265,7 +265,7 @@ fn truncated_ttlv_response_frames_are_rejected_payload_free_for_all_operations()
 #[test]
 fn configured_ttlv_limits_reject_all_seven_response_shapes_before_returning_a_tree() {
     // KMIPKit's accepted decoder defaults are 16 MiB, depth 64, and 100,000
-    // Items (AGENTS.md §8; KMIPKIT-0016-FR-013). Lowered per-call limits are
+    // Items (security zeroization policy; functional requirement). Lowered per-call limits are
     // checked while decoding, before an Item tree can be returned.
     let oversized_result_message = SECRET_SENTINEL.repeat(64);
 
@@ -298,12 +298,12 @@ fn configured_ttlv_limits_reject_all_seven_response_shapes_before_returning_a_tr
 fn received_reserved_tags_are_rejected_before_item_construction_for_all_operations() {
     // OASIS KMIP Specification v2.1 Chapter 11 introduction and §11.56,
     // Table 487, classify Tag 0x420009 as Reserved and prohibit implementation
-    // use. Rejection on receipt is the accepted KMIPKit policy in ADR-0011;
+    // use. Rejection on receipt is the accepted KMIPKit policy in architectural decision;
     // this test does not attribute decoder rejection to OASIS.
     for (name, operation) in ATTRIBUTE_OPERATIONS {
         let wire = raw_response_wire(operation, true, None);
         let error = decode_with_limits(&wire, &CodecLimits::defaults())
-            .expect_err("ADR-0011 rejects the peer's Reserved Tag before returning an Item tree");
+            .expect_err("architectural decision rejects the peer's Reserved Tag before returning an Item tree");
         assert_payload_free_decode_error(error, DecodeErrorKind::ReservedTag, name);
     }
 }

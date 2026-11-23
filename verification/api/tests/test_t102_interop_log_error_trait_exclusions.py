@@ -34,8 +34,8 @@ CONDITIONAL = {
     "core::convert::TryInto<U>>::Error", "core::convert::TryInto<U>>::try_into",
 }
 OPERATIONS = {
-    "InteropError": {"module":"interop", "element":"KMIPKIT-ELEM-OP-C2S-INTEROP", "reference":"OASIS KMIP v2.1 Section 6.1.26, Table 243", "caption":"Table 243: Interop Errors", "request":"InteropRequest", "response":"InteropResponse", "method":"interop", "title":"Interop"},
-    "LogError": {"module":"log", "element":"KMIPKIT-ELEM-OP-C2S-LOG", "reference":"OASIS KMIP v2.1 Section 6.1.29, Table 252", "caption":"Table 252: Log Errors", "request":"LogRequest", "response":"LogResponse", "method":"log", "title":"Log"},
+    "InteropError": {"module":"interop", "element":"KMIP-ELEM-OP-C2S-INTEROP", "reference":"OASIS KMIP v2.1 Section 6.1.26, Table 243", "caption":"Table 243: Interop Errors", "request":"InteropRequest", "response":"InteropResponse", "method":"interop", "title":"Interop"},
+    "LogError": {"module":"log", "element":"KMIP-ELEM-OP-C2S-LOG", "reference":"OASIS KMIP v2.1 Section 6.1.29, Table 252", "caption":"Table 252: Log Errors", "request":"LogRequest", "response":"LogResponse", "method":"log", "title":"Log"},
 }
 ERROR_SUFFIXES = {
     "":"declared", "::InvalidOperationResult":"declared", "::InvalidOperationResult::0":"declared",

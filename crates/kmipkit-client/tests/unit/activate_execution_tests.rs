@@ -5,10 +5,10 @@
 //! Identifier encodings; §11.56 Table 487 assigns tag 0x420094 to Unique Identifier;
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
-//! and the KMIPKIT-0007/0009 client contracts. Traceability:
-//! `KMIPKIT-ELEM-OP-C2S-ACTIVATE`, KMIPKIT-0018 FR-001, FR-002, FR-003,
+//! and the specification requirement/0009 client contracts. Traceability:
+//! `KMIP-ELEM-OP-C2S-ACTIVATE`, specification requirement FR-001, FR-002, FR-003,
 //! FR-006, FR-007, FR-008, FR-009, SC-001, and SC-003.
-//! `KMIPKIT-CLAUSE-SPEC-6.1.1-001` is server-only. These are derived
+//! `KMIP-CLAUSE-SPEC-6.1.1-001` is server-only. These are derived
 //! structural/execution tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{ActivateRequest, UniqueIdentifier};
@@ -254,7 +254,7 @@ fn activate_success_returns_server_result_without_simulating_object_state() {
                 response_identifier.to_owned()
             ))
         );
-        // The server-only state effect from KMIPKIT-CLAUSE-SPEC-6.1.1-001 is
+        // The server-only state effect from KMIP-CLAUSE-SPEC-6.1.1-001 is
         // not represented as local state; the client returns only the KMIP
         // result and identifier required by the successful response.
         assert_activate_request(

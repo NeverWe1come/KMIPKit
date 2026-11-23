@@ -11,7 +11,7 @@ from verification.api.tests.parity_support import assert_declaration_mappings
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-GET-USAGE-ALLOCATION"
 OWNER_SPEC = "specs/025-policy-controls/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 EXPECTED_MAPPINGS = {
@@ -49,7 +49,7 @@ EXPECTED_MAPPINGS = {
     },
 }
 REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+    "KMIP-REQ-SPEC-6.1.23-002-001",
     "KMIPKIT-0039-FR-001",
     "KMIPKIT-0039-FR-002",
     "KMIPKIT-0039-FR-003",

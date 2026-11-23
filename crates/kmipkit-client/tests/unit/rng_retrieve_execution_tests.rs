@@ -2,13 +2,13 @@
 //! §6.1.49, Tables 316–318. These tests are source-derived, not official
 //! Test Case passes.
 //!
-//! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-001–SC-003. This is Rust-only
+//! Traceability: specification requirement FR-001–FR-008, SC-001–SC-003. This is Rust-only
 //! fake-transport evidence; it does not establish cross-language parity or
 //! two-server interoperability.
-//! `KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE`,
-//! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! `KMIP-ELEM-OP-C2S-RNG-RETRIEVE`,
+//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use kmipkit_protocol::{ProtocolCauseCategory, RngRetrieveRequest};
 use kmipkit_test_support::ExchangeScript;

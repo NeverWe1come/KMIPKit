@@ -19,8 +19,8 @@ OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "ups
 OWNER = "specs/023-key-material-transfer/spec.md"
 DECLARATION_ID = "rust-observed-7c003b4ec061b8499a9e"
 EXPORT_NAME = "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
-REQUIREMENT_ID = "KMIPKIT-REQ-SPEC-6.1.27-002-002"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY"
+REQUIREMENT_ID = "KMIP-REQ-SPEC-6.1.27-002-002"
 OWNER_REQUIREMENTS = {
     "KMIPKIT-0037-FR-001",
     "KMIPKIT-0037-FR-004",
@@ -50,7 +50,7 @@ JOIN_SPLIT_PARITY_EVIDENCE = {
 }
 REKEY_KEY_PAIR_UID_ID = "rust-observed-3fc6c1f77db9dabbee97"
 REKEY_KEY_PAIR_UID_NAME = "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier"
-REKEY_KEY_PAIR_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+REKEY_KEY_PAIR_OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 REKEY_KEY_PAIR_OWNER = "specs/022-object-lifecycle/spec.md"
 REKEY_KEY_PAIR_UID_REQUIREMENTS = {
     "KMIPKIT-0036-FR-001",
@@ -115,7 +115,7 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
         self.assertEqual(REKEY_KEY_PAIR_OPERATION_ID, declaration["capabilityId"])
         self.assertEqual(REKEY_KEY_PAIR_UID_REQUIREMENTS, set(declaration["requirementIds"]))
         self.assertFalse(
-            any(value.startswith("KMIPKIT-REQ-SPEC-6.1.47-") for value in declaration["requirementIds"])
+            any(value.startswith("KMIP-REQ-SPEC-6.1.47-") for value in declaration["requirementIds"])
         )
         self.assertEqual("four-language", declaration["parityScope"])
         self.assertEqual(REKEY_KEY_PAIR_UID_MAPPINGS, declaration["languageMappings"])
@@ -162,7 +162,7 @@ class T102JoinSplitKeySecretDataTypeMappingTests(unittest.TestCase):
         self.assertIn("Private Key Unique Identifier No Determines the existing Asymmetric key pair to be re-keyed.", text)
         tag_catalog = json.loads((ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8"))
         self.assertIn(
-            "KMIPKIT-ELEM-TAG-420066",
+            "KMIP-ELEM-TAG-420066",
             {row.get("element_id") for row in tag_catalog.get("elements", [])},
         )
 

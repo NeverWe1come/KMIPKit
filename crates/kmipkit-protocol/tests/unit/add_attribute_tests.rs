@@ -2,7 +2,7 @@
 
 //! Derived Add Attribute request vectors for OASIS KMIP v2.1 §6.1.2,
 //! Tables 167–169, using the New Attribute structure in §5.7, Table 163.
-//! Traceability: KMIPKIT-0016-FR-003/FR-010 and SC-002/SC-003.
+//! Traceability: functional requirement/FR-010 and SC-002/SC-003.
 //! These structural vectors do not claim that an official OASIS case passed.
 
 use crate::{

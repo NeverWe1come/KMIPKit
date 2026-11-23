@@ -1,4 +1,4 @@
-//! Client-boundary contracts for KMIPKIT-0017 FR-001 and FR-011.
+//! Client-boundary contracts for specification requirement FR-001 and FR-011.
 //!
 //! The wire Operation Enumeration values follow OASIS KMIP Specification v2.1
 //! §11.36, Table 470: Get is 0x0000000A and Locate is 0x00000008. Operation

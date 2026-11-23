@@ -10,7 +10,7 @@ explicitly, and attaches both extensions to one `Discover Versions` batch
 item in caller order. It verifies the attached identities and criticality
 values.
 
-Unknown response extensions still follow KMIPKIT-0007: an unrecognized
+Unknown response extensions follow standard protocol rules: an unrecognized
 critical extension is rejected and an unrecognized non-critical extension
 remains available as generic TTLV. This example inspects local values and does
 not exercise response transport handling.

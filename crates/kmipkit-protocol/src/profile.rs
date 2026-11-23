@@ -1116,19 +1116,19 @@ struct ContextualRuleMapping {
 
 const CONTEXTUAL_RULE_MAPPINGS: &[ContextualRuleMapping] = &[
     ContextualRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.38-003",
+        requirement_id: "KMIP-REQ-SPEC-4.38-003",
         evaluator: validate_original_creation_date_context,
     },
     ContextualRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-002",
+        requirement_id: "KMIP-REQ-SPEC-4.59-002",
         evaluator: validate_usage_limits_protection_context,
     },
     ContextualRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-002",
+        requirement_id: "KMIP-REQ-SPEC-4.59-003-002",
         evaluator: validate_usage_limits_count_context,
     },
     ContextualRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.59-003-001",
+        requirement_id: "KMIP-REQ-SPEC-4.59-003-001",
         evaluator: validate_usage_limits_allocation_context,
     },
 ];
@@ -1144,8 +1144,8 @@ fn validate_original_creation_date_context(
     context: &ProfileValidationContext,
     profile_id: &str,
 ) -> Result<(), ProfileValidationError> {
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.38-003";
-    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.38-003";
+    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.38-003";
+    const CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.38-003";
 
     for (index, batch_item) in request.batch_items().enumerate() {
         let Some(operation) = batch_item.operation() else {
@@ -1233,8 +1233,8 @@ fn validate_usage_limits_protection_context(
     context: &ProfileValidationContext,
     profile_id: &str,
 ) -> Result<(), ProfileValidationError> {
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-002";
-    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-002";
+    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.59-002";
+    const CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.59-002";
 
     for (index, batch_item) in request.batch_items().enumerate() {
         let Some(operation) = batch_item.operation() else {
@@ -1321,8 +1321,8 @@ fn validate_usage_limits_count_context(
     context: &ProfileValidationContext,
     profile_id: &str,
 ) -> Result<(), ProfileValidationError> {
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-002";
-    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.59-003-002";
+    const CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.59-003";
 
     for (index, batch_item) in request.batch_items().enumerate() {
         if batch_item.operation() != Some(SET_ATTRIBUTE_OPERATION) {
@@ -1400,8 +1400,8 @@ fn validate_usage_limits_allocation_context(
     context: &ProfileValidationContext,
     profile_id: &str,
 ) -> Result<(), ProfileValidationError> {
-    const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.59-003-001";
-    const CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-4.59-003";
+    const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-4.59-003-001";
+    const CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-4.59-003";
 
     for (index, batch_item) in request.batch_items().enumerate() {
         let Some(operation) = batch_item.operation() else {
@@ -4699,7 +4699,7 @@ fn client_sends_maximum_response_size_only_for_possible_large_replies(
         return true;
     }
 
-    // KMIPKIT-0007 classifies Discover Versions as not likely to return a
+    // The client execution model classifies Discover Versions as not likely to return a
     // large reply. Other operations are left to their operation specifications.
     request
         .batch_items()
@@ -9336,8 +9336,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("tls13_cipher_suites", "kmip_profiles_3_1_2")],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.3-001",
-        "KMIPKIT-CLAUSE-SPEC-2.3-001",
+        "KMIP-REQ-SPEC-2.3-001",
+        "KMIP-CLAUSE-SPEC-2.3-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_opaque_object_context_custom_attributes),
@@ -9354,8 +9354,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.3-002",
-        "KMIPKIT-CLAUSE-SPEC-2.3-002",
+        "KMIP-REQ-SPEC-2.3-002",
+        "KMIP-CLAUSE-SPEC-2.3-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_opaque_object_context_managed_attributes),
@@ -9376,7 +9376,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.3-003",
+        "KMIP-REQ-SPEC-2.3-003",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -9388,8 +9388,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.4-001-001",
-        "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        "KMIP-REQ-SPEC-2.4-001-001",
+        "KMIP-CLAUSE-SPEC-2.4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(import_preserves_pgp_key_form_and_opaque_bytes),
@@ -9406,8 +9406,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.4-001-002",
-        "KMIPKIT-CLAUSE-SPEC-2.4-001",
+        "KMIP-REQ-SPEC-2.4-001-002",
+        "KMIP-CLAUSE-SPEC-2.4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(import_preserves_pgp_key_form_and_opaque_bytes),
@@ -9424,8 +9424,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.4-002-001",
-        "KMIPKIT-CLAUSE-SPEC-2.4-002",
+        "KMIP-REQ-SPEC-2.4-002-001",
+        "KMIP-CLAUSE-SPEC-2.4-002",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(import_preserves_pgp_key_form_and_opaque_bytes),
@@ -9442,8 +9442,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.7-001",
-        "KMIPKIT-CLAUSE-SPEC-2.7-001",
+        "KMIP-REQ-SPEC-2.7-001",
+        "KMIP-CLAUSE-SPEC-2.7-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(import_preserves_wrapped_secret_data_shape),
@@ -9460,8 +9460,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.8-001-002",
-        "KMIPKIT-CLAUSE-SPEC-2.8-001",
+        "KMIP-REQ-SPEC-2.8-001-002",
+        "KMIP-CLAUSE-SPEC-2.8-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_split_key_part_identifier_is_within_declared_parts),
@@ -9482,8 +9482,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-2.8-003",
-        "KMIPKIT-CLAUSE-SPEC-2.8-003",
+        "KMIP-REQ-SPEC-2.8-003",
+        "KMIP-CLAUSE-SPEC-2.8-003",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_create_split_key_requires_prime_field_size_for_polynomial_method),
@@ -9512,8 +9512,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.3-001-001",
-        "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        "KMIP-REQ-SPEC-3.3-001-001",
+        "KMIP-CLAUSE-SPEC-3.3-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
@@ -9524,8 +9524,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.3-001-002",
-        "KMIPKIT-CLAUSE-SPEC-3.3-001",
+        "KMIP-REQ-SPEC-3.3-001-002",
+        "KMIP-CLAUSE-SPEC-3.3-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
@@ -9536,8 +9536,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-3.3-002",
-        "KMIPKIT-CLAUSE-SPEC-3.3-002",
+        "KMIP-REQ-SPEC-3.3-002",
+        "KMIP-CLAUSE-SPEC-3.3-002",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
@@ -9549,8 +9549,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-3.3-006",
-        "KMIPKIT-CLAUSE-SPEC-3.3-006",
+        "KMIP-REQ-SPEC-3.3-006",
+        "KMIP-CLAUSE-SPEC-3.3-006",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations",
@@ -9562,8 +9562,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.3-003",
-        "KMIPKIT-CLAUSE-SPEC-3.3-003",
+        "KMIP-REQ-SPEC-3.3-003",
+        "KMIP-CLAUSE-SPEC-3.3-003",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_no_encoding_excludes_key_value_attributes),
@@ -9580,8 +9580,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.3-004",
-        "KMIPKIT-CLAUSE-SPEC-3.3-004",
+        "KMIP-REQ-SPEC-3.3-004",
+        "KMIP-CLAUSE-SPEC-3.3-004",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
@@ -9592,8 +9592,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.3-009",
-        "KMIPKIT-CLAUSE-SPEC-3.3-009",
+        "KMIP-REQ-SPEC-3.3-009",
+        "KMIP-CLAUSE-SPEC-3.3-009",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_key_wrapping_data_is_absent_or_has_required_key_information),
@@ -9610,8 +9610,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.7-002",
-        "KMIPKIT-CLAUSE-SPEC-3.7-002",
+        "KMIP-REQ-SPEC-3.7-002",
+        "KMIP-CLAUSE-SPEC-3.7-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_transparent_rsa_private_key_has_material_alternative),
@@ -9636,8 +9636,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4-001",
+        "KMIP-REQ-SPEC-4-001-001",
+        "KMIP-CLAUSE-SPEC-4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_represent_multi_instance_attributes),
@@ -9648,8 +9648,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4-001",
+        "KMIP-REQ-SPEC-4-001-002",
+        "KMIP-CLAUSE-SPEC-4-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_distinct_multi_instance_attribute_values_as_recommended_behavior",
@@ -9661,8 +9661,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4-001",
+        "KMIP-REQ-SPEC-4-001-003",
+        "KMIP-CLAUSE-SPEC-4-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_preserves_single_instance_attribute_cardinality),
@@ -9715,8 +9715,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.4-001",
-        "KMIPKIT-CLAUSE-SPEC-4.4-001",
+        "KMIP-REQ-SPEC-4.4-001",
+        "KMIP-CLAUSE-SPEC-4.4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_application_specific_information_can_omit_data),
@@ -9727,8 +9727,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.26-001",
-        "KMIPKIT-CLAUSE-SPEC-4.26-001",
+        "KMIP-REQ-SPEC-4.26-001",
+        "KMIP-CLAUSE-SPEC-4.26-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_server_generated_key_format_type_is_enumeration),
@@ -9745,8 +9745,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-002",
-        "KMIPKIT-CLAUSE-SPEC-3.1-002",
+        "KMIP-REQ-SPEC-3.1-002",
+        "KMIP-CLAUSE-SPEC-3.1-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_wrapped_key_value_requires_key_wrapping_data),
@@ -9763,8 +9763,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-006",
-        "KMIPKIT-CLAUSE-SPEC-3.1-006",
+        "KMIP-REQ-SPEC-3.1-006",
+        "KMIP-CLAUSE-SPEC-3.1-006",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_key_wrapping_data_is_only_present_for_wrapped_key_value),
@@ -9781,8 +9781,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.2-001",
-        "KMIPKIT-CLAUSE-SPEC-3.2-001",
+        "KMIP-REQ-SPEC-3.2-001",
+        "KMIP-CLAUSE-SPEC-3.2-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_key_value_attributes_are_structured),
@@ -9799,8 +9799,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-001",
-        "KMIPKIT-CLAUSE-SPEC-3.1-001",
+        "KMIP-REQ-SPEC-3.1-001",
+        "KMIP-CLAUSE-SPEC-3.1-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_get_or_export_key_compression_type_is_enumeration),
@@ -9821,8 +9821,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.14-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        "KMIP-REQ-SPEC-4.14-001-001",
+        "KMIP-CLAUSE-SPEC-4.14-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
@@ -9839,8 +9839,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.14-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.14-001",
+        "KMIP-REQ-SPEC-4.14-001-002",
+        "KMIP-CLAUSE-SPEC-4.14-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_domain_parameters_have_valid_wire_types),
@@ -9857,8 +9857,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-5.1-002",
-        "KMIPKIT-CLAUSE-SPEC-5.1-002",
+        "KMIP-REQ-SPEC-5.1-002",
+        "KMIP-CLAUSE-SPEC-5.1-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_repeated_attributes_are_representable),
@@ -9875,8 +9875,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-5.2-002",
-        "KMIPKIT-CLAUSE-SPEC-5.2-002",
+        "KMIP-REQ-SPEC-5.2-002",
+        "KMIP-CLAUSE-SPEC-5.2-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_common_attributes_are_representable),
@@ -9893,8 +9893,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-5.3-002",
-        "KMIPKIT-CLAUSE-SPEC-5.3-002",
+        "KMIP-REQ-SPEC-5.3-002",
+        "KMIP-CLAUSE-SPEC-5.3-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_private_key_attributes_are_representable),
@@ -9911,8 +9911,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-5.4-002",
-        "KMIPKIT-CLAUSE-SPEC-5.4-002",
+        "KMIP-REQ-SPEC-5.4-002",
+        "KMIP-CLAUSE-SPEC-5.4-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_public_key_attributes_are_representable),
@@ -9929,8 +9929,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-001",
+        "KMIP-REQ-SPEC-6.1.7-001",
+        "KMIP-CLAUSE-SPEC-6.1.7-001",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_check_requires_multi_item_batch_when_check_is_present),
@@ -9941,8 +9941,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        "KMIP-REQ-SPEC-6.1.7-002-001",
+        "KMIP-CLAUSE-SPEC-6.1.7-002",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_check_batch_order_option_is_true_when_check_is_present),
@@ -9959,8 +9959,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        "KMIP-REQ-SPEC-6.1.7-002-002",
+        "KMIP-CLAUSE-SPEC-6.1.7-002",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_check_batch_error_continuation_option_is_stop_or_undo_when_check_is_present),
@@ -9971,8 +9971,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        "KMIP-REQ-SPEC-6.1.7-002-003",
+        "KMIP-CLAUSE-SPEC-6.1.7-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_check_additional_attributes_are_limited_to_listed_set),
@@ -9983,8 +9983,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-003",
+        "KMIP-REQ-SPEC-6.1.7-003",
+        "KMIP-CLAUSE-SPEC-6.1.7-003",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_check_optional_usage_limits_count_is_long_integer),
@@ -10001,7 +10001,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.23-002-001",
+        "KMIP-REQ-SPEC-6.1.23-002-001",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -10013,8 +10013,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.25-006",
-        "KMIPKIT-CLAUSE-SPEC-6.1.25-006",
+        "KMIP-REQ-SPEC-6.1.25-006",
+        "KMIP-CLAUSE-SPEC-6.1.25-006",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_import_preserves_wrapped_object_and_attributes),
@@ -10031,8 +10031,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.4-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.4-001",
+        "KMIP-REQ-SPEC-6.1.4-001",
+        "KMIP-CLAUSE-SPEC-6.1.4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_archive_request_is_well_formed),
@@ -10053,8 +10053,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
+        "KMIP-REQ-SPEC-6.1.7-004-001",
+        "KMIP-CLAUSE-SPEC-6.1.7-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_check_optional_cryptographic_usage_mask_is_integer),
@@ -10071,8 +10071,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-004-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-004",
+        "KMIP-REQ-SPEC-6.1.7-004-002",
+        "KMIP-CLAUSE-SPEC-6.1.7-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_check_optional_cryptographic_usage_mask_is_integer),
@@ -10089,8 +10089,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.7-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.7-005",
+        "KMIP-REQ-SPEC-6.1.7-005",
+        "KMIP-CLAUSE-SPEC-6.1.7-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_check_optional_lease_time_is_interval),
@@ -10107,8 +10107,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        "KMIP-REQ-SPEC-6.1.9-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.9-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_common_attributes_are_representable),
@@ -10129,8 +10129,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.9-001",
+        "KMIP-REQ-SPEC-6.1.9-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.9-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_create_key_pair_differing_attributes_are_representable),
@@ -10151,8 +10151,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.9-006",
-        "KMIPKIT-CLAUSE-SPEC-6.1.9-006",
+        "KMIP-REQ-SPEC-6.1.9-006",
+        "KMIP-CLAUSE-SPEC-6.1.9-006",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_create_key_pair_table_191_values_match),
@@ -10181,8 +10181,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.9-007",
-        "KMIPKIT-CLAUSE-SPEC-6.1.9-007",
+        "KMIP-REQ-SPEC-6.1.9-007",
+        "KMIP-CLAUSE-SPEC-6.1.9-007",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_create_key_pair_table_191_values_match),
@@ -10211,8 +10211,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-004-001",
-        "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        "KMIP-REQ-SPEC-3.1-004-001",
+        "KMIP-CLAUSE-SPEC-3.1-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_key_block_algorithm_may_be_omitted_if_value_present),
@@ -10229,8 +10229,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-005-001",
-        "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        "KMIP-REQ-SPEC-3.1-005-001",
+        "KMIP-CLAUSE-SPEC-3.1-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_key_block_length_may_be_omitted_if_value_present),
@@ -10247,8 +10247,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-004-002",
-        "KMIPKIT-CLAUSE-SPEC-3.1-004",
+        "KMIP-REQ-SPEC-3.1-004-002",
+        "KMIP-CLAUSE-SPEC-3.1-004",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_key_block_algorithm_requires_length),
@@ -10259,8 +10259,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-3.1-005-002",
-        "KMIPKIT-CLAUSE-SPEC-3.1-005",
+        "KMIP-REQ-SPEC-3.1-005-002",
+        "KMIP-CLAUSE-SPEC-3.1-005",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_key_block_length_requires_algorithm),
@@ -10271,8 +10271,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-001",
+        "KMIP-REQ-SPEC-6.1.43-001",
+        "KMIP-CLAUSE-SPEC-6.1.43-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_register_has_required_object_type_and_attributes),
@@ -10289,8 +10289,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-007",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-007",
+        "KMIP-REQ-SPEC-6.1.43-007",
+        "KMIP-CLAUSE-SPEC-6.1.43-007",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_register_has_required_object_type_and_attributes),
@@ -10307,8 +10307,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        "KMIP-REQ-SPEC-6.1.43-009-001",
+        "KMIP-CLAUSE-SPEC-6.1.43-009",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_table293_pair_may_be_in_key_block),
@@ -10333,8 +10333,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        "KMIP-REQ-SPEC-6.1.43-010-001",
+        "KMIP-CLAUSE-SPEC-6.1.43-010",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_table293_pair_may_be_in_key_block),
@@ -10359,8 +10359,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-011",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-011",
+        "KMIP-REQ-SPEC-6.1.43-011",
+        "KMIP-CLAUSE-SPEC-6.1.43-011",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_signature_algorithm_may_be_in_certificate),
@@ -10385,8 +10385,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-009",
+        "KMIP-REQ-SPEC-6.1.43-009-002",
+        "KMIP-CLAUSE-SPEC-6.1.43-009",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_register_algorithm_requires_length),
@@ -10407,8 +10407,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-010-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-010",
+        "KMIP-REQ-SPEC-6.1.43-010-002",
+        "KMIP-CLAUSE-SPEC-6.1.43-010",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_register_length_requires_algorithm),
@@ -10419,8 +10419,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.27-001",
-        "KMIPKIT-CLAUSE-SPEC-4.27-001",
+        "KMIP-REQ-SPEC-4.27-001",
+        "KMIP-CLAUSE-SPEC-4.27-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_key_value_location_requires_omitted_key_value),
@@ -10431,8 +10431,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.28-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        "KMIP-REQ-SPEC-4.28-001-001",
+        "KMIP-CLAUSE-SPEC-4.28-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_register_does_not_specify_key_value_present),
@@ -10457,8 +10457,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.28-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        "KMIP-REQ-SPEC-4.28-001-002",
+        "KMIP-CLAUSE-SPEC-4.28-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_key_value_present_is_not_modified),
@@ -10469,8 +10469,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4-001-004",
-        "KMIPKIT-CLAUSE-SPEC-4-001",
+        "KMIP-REQ-SPEC-4-001-004",
+        "KMIP-CLAUSE-SPEC-4-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_read_only_attribute_modification_is_not_requested),
@@ -10481,8 +10481,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.57-001",
-        "KMIPKIT-CLAUSE-SPEC-4.57-001",
+        "KMIP-REQ-SPEC-4.57-001",
+        "KMIP-CLAUSE-SPEC-4.57-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_state_modify_attribute_is_not_requested),
@@ -10493,8 +10493,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.57-005-002",
-        "KMIPKIT-CLAUSE-SPEC-4.57-005",
+        "KMIP-REQ-SPEC-4.57-005-002",
+        "KMIP-CLAUSE-SPEC-4.57-005",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [],
         [(
@@ -10503,8 +10503,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4-001-005",
-        "KMIPKIT-CLAUSE-SPEC-4-001",
+        "KMIP-REQ-SPEC-4-001-005",
+        "KMIP-CLAUSE-SPEC-4-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_read_only_attribute_deletion_is_not_requested),
@@ -10515,8 +10515,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.59-003-002",
-        "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        "KMIP-REQ-SPEC-4.59-003-002",
+        "KMIP-CLAUSE-SPEC-4.59-003",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_usage_limits_count_is_not_set_by_add_or_modify),
@@ -10533,8 +10533,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.28-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.28-001",
+        "KMIP-REQ-SPEC-4.28-001-003",
+        "KMIP-CLAUSE-SPEC-4.28-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_locate_key_value_present_is_boolean_when_used),
@@ -10551,8 +10551,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.34-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        "KMIP-REQ-SPEC-4.34-001-001",
+        "KMIP-CLAUSE-SPEC-4.34-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_nist_key_type_is_enumeration),
@@ -10563,8 +10563,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.59-002",
-        "KMIPKIT-CLAUSE-SPEC-4.59-002",
+        "KMIP-REQ-SPEC-4.59-002",
+        "KMIP-CLAUSE-SPEC-4.59-002",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [
             (
@@ -10582,8 +10582,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.59-003-001",
-        "KMIPKIT-CLAUSE-SPEC-4.59-003",
+        "KMIP-REQ-SPEC-4.59-003-001",
+        "KMIP-CLAUSE-SPEC-4.59-003",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-client/tests/unit/profile_preflight_tests.rs::usage_limits_total_change_after_allocation_is_attributed_only_when_count_changed",
@@ -10595,8 +10595,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.34-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        "KMIP-REQ-SPEC-4.34-001-002",
+        "KMIP-CLAUSE-SPEC-4.34-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_single_key_usage_recommendation_as_caller_owned_behavior",
@@ -10608,8 +10608,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.31-002",
-        "KMIPKIT-CLAUSE-SPEC-4.31-002",
+        "KMIP-REQ-SPEC-4.31-002",
+        "KMIP-CLAUSE-SPEC-4.31-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_omit_link_when_associated_key_material_is_unavailable),
@@ -10620,7 +10620,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.31-004",
+        "KMIP-REQ-SPEC-4.31-004",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINK-TYPE-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -10650,7 +10650,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.31-005",
+        "KMIP-REQ-SPEC-4.31-005",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-4.31-LINKED-OBJECT-IDENTIFIER-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -10680,8 +10680,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.32-001",
-        "KMIPKIT-CLAUSE-SPEC-4.32-001",
+        "KMIP-REQ-SPEC-4.32-001",
+        "KMIP-CLAUSE-SPEC-4.32-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/unit/attribute_tests.rs::name_attribute_is_preserved_as_caller_supplied_text",
@@ -10693,8 +10693,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-001",
+        "KMIP-REQ-SPEC-6.1.6-001",
+        "KMIP-CLAUSE-SPEC-6.1.6-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_certify_requests_at_most_one_certificate),
@@ -10705,8 +10705,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        "KMIP-REQ-SPEC-6.1.6-002-001",
+        "KMIP-CLAUSE-SPEC-6.1.6-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_certify_certificate_request_value_is_omittable),
@@ -10717,8 +10717,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        "KMIP-REQ-SPEC-6.1.6-002-002",
+        "KMIP-CLAUSE-SPEC-6.1.6-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_certify_omitted_request_requires_unique_identifier),
@@ -10735,8 +10735,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-002",
+        "KMIP-REQ-SPEC-6.1.6-002-003",
+        "KMIP-CLAUSE-SPEC-6.1.6-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_certify_omitted_request_requires_certificate_type_attribute),
@@ -10747,8 +10747,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-003",
+        "KMIP-REQ-SPEC-6.1.6-003",
+        "KMIP-CLAUSE-SPEC-6.1.6-003",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_retrieve_certified_certificate_with_get_in_batch),
@@ -10765,8 +10765,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.6-007",
-        "KMIPKIT-CLAUSE-SPEC-6.1.6-007",
+        "KMIP-REQ-SPEC-6.1.6-007",
+        "KMIP-CLAUSE-SPEC-6.1.6-007",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_certify_request_type_required_with_request_value),
@@ -10777,8 +10777,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.43-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.43-005",
+        "KMIP-REQ-SPEC-6.1.43-005",
+        "KMIP-CLAUSE-SPEC-6.1.43-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_preserves_optional_wrapped_key_value),
@@ -10795,8 +10795,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.35-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        "KMIP-REQ-SPEC-4.35-001-001",
+        "KMIP-CLAUSE-SPEC-4.35-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_object_group_names_are_representable),
@@ -10813,8 +10813,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.35-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        "KMIP-REQ-SPEC-4.35-001-002",
+        "KMIP-CLAUSE-SPEC-4.35-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_object_group_names_are_representable),
@@ -10831,8 +10831,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.35-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.35-001",
+        "KMIP-REQ-SPEC-4.35-001-003",
+        "KMIP-CLAUSE-SPEC-4.35-001",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_object_group_names_are_representable),
@@ -10853,8 +10853,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.38-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        "KMIP-REQ-SPEC-4.38-001-001",
+        "KMIP-CLAUSE-SPEC-4.38-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_original_creation_date_is_datetime_when_used),
@@ -10871,8 +10871,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.38-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        "KMIP-REQ-SPEC-4.38-001-002",
+        "KMIP-CLAUSE-SPEC-4.38-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_original_creation_date_is_datetime_when_used),
@@ -10889,8 +10889,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.38-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.38-001",
+        "KMIP-REQ-SPEC-4.38-001-003",
+        "KMIP-CLAUSE-SPEC-4.38-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_add_original_creation_date_is_datetime_when_used),
@@ -10907,8 +10907,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.39-002-001",
-        "KMIPKIT-CLAUSE-SPEC-4.39-002",
+        "KMIP-REQ-SPEC-4.39-002-001",
+        "KMIP-CLAUSE-SPEC-4.39-002",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_pkcs12_friendly_name_uses_lowercase_text),
@@ -10919,8 +10919,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.38-003",
-        "KMIPKIT-CLAUSE-SPEC-4.38-003",
+        "KMIP-REQ-SPEC-4.38-003",
+        "KMIP-CLAUSE-SPEC-4.38-003",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [
             (
@@ -10938,8 +10938,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.46-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        "KMIP-REQ-SPEC-4.46-001-001",
+        "KMIP-CLAUSE-SPEC-4.46-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_register_random_number_generator_is_well_formed),
@@ -10956,8 +10956,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.46-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.46-001",
+        "KMIP-REQ-SPEC-4.46-001-002",
+        "KMIP-CLAUSE-SPEC-4.46-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_add_attribute_random_number_generator_is_well_formed),
@@ -10974,8 +10974,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.36-001",
-        "KMIPKIT-CLAUSE-SPEC-7.36-001",
+        "KMIP-REQ-SPEC-7.36-001",
+        "KMIP-CLAUSE-SPEC-7.36-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_rng_parameters_are_well_formed),
@@ -11000,8 +11000,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.36-002-001",
-        "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        "KMIP-REQ-SPEC-7.36-002-001",
+        "KMIP-CLAUSE-SPEC-7.36-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_rng_parameters_are_well_formed),
@@ -11034,8 +11034,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.36-002-002",
-        "KMIPKIT-CLAUSE-SPEC-7.36-002",
+        "KMIP-REQ-SPEC-7.36-002-002",
+        "KMIP-CLAUSE-SPEC-7.36-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_rng_parameters_are_well_formed),
@@ -11060,8 +11060,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.36-003",
-        "KMIPKIT-CLAUSE-SPEC-7.36-003",
+        "KMIP-REQ-SPEC-7.36-003",
+        "KMIP-CLAUSE-SPEC-7.36-003",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_rng_parameters_are_well_formed),
@@ -11098,8 +11098,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.1-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        "KMIP-REQ-SPEC-4.1-001-001",
+        "KMIP-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_use_as_caller_owned_optional_capability",
@@ -11111,8 +11111,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.1-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        "KMIP-REQ-SPEC-4.1-001-002",
+        "KMIP-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_pre_activation_use_restriction_as_caller_owned_prohibition",
@@ -11124,8 +11124,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.1-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.1-001",
+        "KMIP-REQ-SPEC-4.1-001-003",
+        "KMIP-CLAUSE-SPEC-4.1-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_activation_date_mutation_restriction_as_caller_owned_prohibition",
@@ -11137,8 +11137,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.17-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        "KMIP-REQ-SPEC-4.17-001-001",
+        "KMIP-CLAUSE-SPEC-4.17-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_eligibility_as_caller_owned_optional_capability",
@@ -11150,8 +11150,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.17-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.17-001",
+        "KMIP-REQ-SPEC-4.17-001-002",
+        "KMIP-CLAUSE-SPEC-4.17-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_mask_restriction_as_caller_owned_prohibition",
@@ -11163,8 +11163,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.18-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        "KMIP-REQ-SPEC-4.18-001-001",
+        "KMIP-CLAUSE-SPEC-4.18-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivated_object_exceptions_as_caller_owned_prohibition",
@@ -11176,8 +11176,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.18-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.18-001",
+        "KMIP-REQ-SPEC-4.18-001-002",
+        "KMIP-CLAUSE-SPEC-4.18-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_deactivation_date_mutation_restriction_as_caller_owned_prohibition",
@@ -11189,8 +11189,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.40-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        "KMIP-REQ-SPEC-4.40-001-001",
+        "KMIP-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11202,8 +11202,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.40-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        "KMIP-REQ-SPEC-4.40-001-002",
+        "KMIP-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11215,8 +11215,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.40-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        "KMIP-REQ-SPEC-4.40-001-003",
+        "KMIP-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11228,8 +11228,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.40-001-004",
-        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        "KMIP-REQ-SPEC-4.40-001-004",
+        "KMIP-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11241,8 +11241,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.40-001-005",
-        "KMIPKIT-CLAUSE-SPEC-4.40-001",
+        "KMIP-REQ-SPEC-4.40-001-005",
+        "KMIP-CLAUSE-SPEC-4.40-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11254,8 +11254,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.41-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        "KMIP-REQ-SPEC-4.41-001-001",
+        "KMIP-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11267,8 +11267,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.41-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        "KMIP-REQ-SPEC-4.41-001-002",
+        "KMIP-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11280,8 +11280,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.41-001-003",
-        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        "KMIP-REQ-SPEC-4.41-001-003",
+        "KMIP-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11293,8 +11293,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.41-001-004",
-        "KMIPKIT-CLAUSE-SPEC-4.41-001",
+        "KMIP-REQ-SPEC-4.41-001-004",
+        "KMIP-CLAUSE-SPEC-4.41-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_coverage_unit.rs::profile_maps_process_start_and_protect_stop_date_rules_as_caller_owned",
@@ -11306,8 +11306,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-4.30-001",
-        "KMIPKIT-CLAUSE-SPEC-4.30-001",
+        "KMIP-REQ-SPEC-4.30-001",
+        "KMIP-CLAUSE-SPEC-4.30-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_lease_expiry_restriction_as_caller_owned_prohibition",
@@ -11319,8 +11319,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.47-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        "KMIP-REQ-SPEC-4.47-001-001",
+        "KMIP-CLAUSE-SPEC-4.47-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_revoke_revocation_message_is_text_when_used),
@@ -11341,8 +11341,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.47-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.47-001",
+        "KMIP-REQ-SPEC-4.47-001-002",
+        "KMIP-CLAUSE-SPEC-4.47-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_revoke_revocation_message_is_text_when_used),
@@ -11363,8 +11363,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.23-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        "KMIP-REQ-SPEC-6.1.23-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.23-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_before_protection_as_caller_owned_prohibition",
@@ -11376,8 +11376,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.23-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.23-001",
+        "KMIP-REQ-SPEC-6.1.23-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.23-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_usage_allocation_date_window_as_caller_owned_required_behavior",
@@ -11389,8 +11389,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.23-002-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.23-002",
+        "KMIP-REQ-SPEC-6.1.23-002-002",
+        "KMIP-CLAUSE-SPEC-6.1.23-002",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_consumed_allocation_restriction_as_caller_owned_prohibition",
@@ -11402,8 +11402,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        "KMIP-REQ-SPEC-6.1.35-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.35-001",
         GeneratedVerificationCategory::ProhibitedBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::profile_maps_post_expiry_lease_restriction_as_caller_owned_prohibition",
@@ -11415,8 +11415,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.44-003-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        "KMIP-REQ-SPEC-6.1.44-003-001",
+        "KMIP-CLAUSE-SPEC-6.1.44-003",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_revoke_compromise_occurrence_date_recommended_for_compromise_reasons),
@@ -11427,8 +11427,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.44-003-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.44-003",
+        "KMIP-REQ-SPEC-6.1.44-003-002",
+        "KMIP-CLAUSE-SPEC-6.1.44-003",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_compromise_occurrence_date_only_for_key_or_ca_compromise),
@@ -11445,8 +11445,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.45-004",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-004",
+        "KMIP-REQ-SPEC-6.1.45-004",
+        "KMIP-CLAUSE-SPEC-6.1.45-004",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [
             (
@@ -11464,8 +11464,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.46-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.46-001",
+        "KMIP-REQ-SPEC-6.1.46-001",
+        "KMIP-CLAUSE-SPEC-6.1.46-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [
             (
@@ -11483,8 +11483,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.47-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.47-001",
+        "KMIP-REQ-SPEC-6.1.47-001",
+        "KMIP-CLAUSE-SPEC-6.1.47-001",
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         [
             (
@@ -11502,8 +11502,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.48-006",
-        "KMIPKIT-CLAUSE-SPEC-6.1.48-006",
+        "KMIP-REQ-SPEC-6.1.48-006",
+        "KMIP-CLAUSE-SPEC-6.1.48-006",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -11521,8 +11521,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.45-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-001",
+        "KMIP-REQ-SPEC-6.1.45-001",
+        "KMIP-CLAUSE-SPEC-6.1.45-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_recertify_requests_at_most_one_certificate),
@@ -11533,8 +11533,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+        "KMIP-REQ-SPEC-6.1.45-002-001",
+        "KMIP-CLAUSE-SPEC-6.1.45-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_recertify_identifier_required_when_request_value_is_omitted),
@@ -11551,8 +11551,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-002",
+        "KMIP-REQ-SPEC-6.1.45-002-003",
+        "KMIP-CLAUSE-SPEC-6.1.45-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_recertify_identifier_required_when_request_value_is_omitted),
@@ -11581,8 +11581,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-006",
+        "KMIP-REQ-SPEC-6.1.45-006-001",
+        "KMIP-CLAUSE-SPEC-6.1.45-006",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_recertify_offset_is_optional_interval),
@@ -11603,8 +11603,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.45-008",
-        "KMIPKIT-CLAUSE-SPEC-6.1.45-008",
+        "KMIP-REQ-SPEC-6.1.45-008",
+        "KMIP-CLAUSE-SPEC-6.1.45-008",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_recertify_request_type_required_with_request_value),
@@ -11629,8 +11629,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.46-004",
+        "KMIP-REQ-SPEC-6.1.46-004-001",
+        "KMIP-CLAUSE-SPEC-6.1.46-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_rekey_offset_is_optional_interval),
@@ -11651,8 +11651,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.47-004",
+        "KMIP-REQ-SPEC-6.1.47-004-001",
+        "KMIP-CLAUSE-SPEC-6.1.47-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_rekey_key_pair_offset_is_optional_interval),
@@ -11673,8 +11673,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.48-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.48-001",
+        "KMIP-REQ-SPEC-6.1.48-001",
+        "KMIP-CLAUSE-SPEC-6.1.48-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_reprovision_request_fields_are_well_formed),
@@ -11707,8 +11707,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.55-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.55-001",
+        "KMIP-REQ-SPEC-6.1.55-001",
+        "KMIP-CLAUSE-SPEC-6.1.55-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_sign_cryptographic_parameters_are_optional_structure),
@@ -11729,8 +11729,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.50-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.50-001",
+        "KMIP-REQ-SPEC-6.1.50-001",
+        "KMIP-CLAUSE-SPEC-6.1.50-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_accepts_rng_seed_zero_data_length),
@@ -11751,8 +11751,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.51-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.51-001",
+        "KMIP-REQ-SPEC-6.1.51-001",
+        "KMIP-CLAUSE-SPEC-6.1.51-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_set_attribute_does_not_mutate_read_only_attributes),
@@ -11763,8 +11763,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.56-001",
+        "KMIP-REQ-SPEC-6.1.56-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.56-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_signature_verify_original_data_is_optional_byte_string),
@@ -11785,8 +11785,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.56-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.56-002",
+        "KMIP-REQ-SPEC-6.1.56-002",
+        "KMIP-CLAUSE-SPEC-6.1.56-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_signature_verify_cryptographic_parameters_are_optional_structure),
@@ -11807,8 +11807,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.32-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.32-001",
+        "KMIP-REQ-SPEC-6.1.32-001",
+        "KMIP-CLAUSE-SPEC-6.1.32-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_mac_cryptographic_parameters_are_optional_structure),
@@ -11825,8 +11825,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.33-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        "KMIP-REQ-SPEC-6.1.33-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.33-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_mac_verify_original_data_is_optional_byte_string),
@@ -11843,8 +11843,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.33-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.33-001",
+        "KMIP-REQ-SPEC-6.1.33-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.33-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_mac_verify_cryptographic_parameters_are_optional_structure),
@@ -11861,8 +11861,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.57-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.57-001",
+        "KMIP-REQ-SPEC-6.1.57-001",
+        "KMIP-CLAUSE-SPEC-6.1.57-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_validate_chain_list_members_are_usable),
@@ -11873,8 +11873,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.57-002-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        "KMIP-REQ-SPEC-6.1.57-002-002",
+        "KMIP-CLAUSE-SPEC-6.1.57-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_validate_validity_date_is_usable),
@@ -11885,8 +11885,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.57-002-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.57-002",
+        "KMIP-REQ-SPEC-6.1.57-002-001",
+        "KMIP-CLAUSE-SPEC-6.1.57-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_validate_chain_list_members_are_usable),
@@ -11897,8 +11897,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.57-004",
-        "KMIPKIT-CLAUSE-SPEC-6.1.57-004",
+        "KMIP-REQ-SPEC-6.1.57-004",
+        "KMIP-CLAUSE-SPEC-6.1.57-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_validate_repeated_certificates_are_usable),
@@ -11909,8 +11909,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.57-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.57-005",
+        "KMIP-REQ-SPEC-6.1.57-005",
+        "KMIP-CLAUSE-SPEC-6.1.57-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_validate_repeated_unique_identifiers_are_usable),
@@ -11921,8 +11921,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.62-003",
-        "KMIPKIT-CLAUSE-SPEC-4.62-003",
+        "KMIP-REQ-SPEC-4.62-003",
+        "KMIP-CLAUSE-SPEC-4.62-003",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_response_preserves_x509_optional_values),
@@ -11933,8 +11933,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.63-004",
-        "KMIPKIT-CLAUSE-SPEC-4.63-004",
+        "KMIP-REQ-SPEC-4.63-004",
+        "KMIP-CLAUSE-SPEC-4.63-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_response_preserves_x509_optional_values),
@@ -11945,8 +11945,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.63-005",
-        "KMIPKIT-CLAUSE-SPEC-4.63-005",
+        "KMIP-REQ-SPEC-4.63-005",
+        "KMIP-CLAUSE-SPEC-4.63-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_response_preserves_x509_optional_values),
@@ -11957,8 +11957,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.35-001",
+        "KMIP-REQ-SPEC-6.1.35-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.35-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_obtain_lease_response_values_are_typed),
@@ -11979,8 +11979,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.35-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.35-002",
+        "KMIP-REQ-SPEC-6.1.35-002",
+        "KMIP-CLAUSE-SPEC-6.1.35-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_obtain_lease_response_values_are_typed),
@@ -12001,8 +12001,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.35-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.35-005",
+        "KMIP-REQ-SPEC-6.1.35-005",
+        "KMIP-CLAUSE-SPEC-6.1.35-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_obtain_lease_response_values_are_typed),
@@ -12023,8 +12023,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1-001-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        "KMIP-REQ-SPEC-6.1-001-003",
+        "KMIP-CLAUSE-SPEC-6.1-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_request_batch_items),
@@ -12041,8 +12041,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-8.1-002",
-        "KMIPKIT-CLAUSE-SPEC-8.1-002",
+        "KMIP-REQ-SPEC-8.1-002",
+        "KMIP-CLAUSE-SPEC-8.1-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_request_batch_items),
@@ -12053,8 +12053,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-8.2-002",
-        "KMIPKIT-CLAUSE-SPEC-8.2-002",
+        "KMIP-REQ-SPEC-8.2-002",
+        "KMIP-CLAUSE-SPEC-8.2-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_request_attestation_types),
@@ -12065,8 +12065,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.3-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.3-001",
+        "KMIP-REQ-SPEC-9.3-001-001",
+        "KMIP-CLAUSE-SPEC-9.3-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_sets_attestation_indicator_true),
@@ -12091,8 +12091,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.4-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.4-001",
+        "KMIP-REQ-SPEC-9.4-001-002",
+        "KMIP-CLAUSE-SPEC-9.4-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_authentication_contains_a_credential_if_present),
@@ -12109,8 +12109,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.4-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.4-001",
+        "KMIP-REQ-SPEC-9.4-001-001",
+        "KMIP-CLAUSE-SPEC-9.4-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_omit_authentication_when_not_required),
@@ -12127,8 +12127,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.4-002",
-        "KMIPKIT-CLAUSE-SPEC-9.4-002",
+        "KMIP-REQ-SPEC-9.4-002",
+        "KMIP-CLAUSE-SPEC-9.4-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_credentials_within_authentication),
@@ -12149,8 +12149,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.11-004-001",
-        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        "KMIP-REQ-SPEC-9.11-004-001",
+        "KMIP-CLAUSE-SPEC-9.11-004",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_device_credential_has_identifier_if_present),
@@ -12167,8 +12167,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.11-004-002",
-        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        "KMIP-REQ-SPEC-9.11-004-002",
+        "KMIP-CLAUSE-SPEC-9.11-004",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12186,8 +12186,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.11-004-003",
-        "KMIPKIT-CLAUSE-SPEC-9.11-004",
+        "KMIP-REQ-SPEC-9.11-004-003",
+        "KMIP-CLAUSE-SPEC-9.11-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_device_credential_password_is_text_string_if_present),
@@ -12204,8 +12204,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.11-006",
-        "KMIPKIT-CLAUSE-SPEC-9.11-006",
+        "KMIP-REQ-SPEC-9.11-006",
+        "KMIP-CLAUSE-SPEC-9.11-006",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_attestation_credential_has_evidence_if_present),
@@ -12230,8 +12230,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.11-010-001",
-        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        "KMIP-REQ-SPEC-9.11-010-001",
+        "KMIP-CLAUSE-SPEC-9.11-010",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12257,8 +12257,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.11-010-002",
-        "KMIPKIT-CLAUSE-SPEC-9.11-010",
+        "KMIP-REQ-SPEC-9.11-010-002",
+        "KMIP-CLAUSE-SPEC-9.11-010",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12276,8 +12276,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.11-001",
-        "KMIPKIT-CLAUSE-SPEC-9.11-001",
+        "KMIP-REQ-SPEC-9.11-001",
+        "KMIP-CLAUSE-SPEC-9.11-001",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -12295,8 +12295,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.5-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.5-001",
+        "KMIP-REQ-SPEC-6.1.5-001",
+        "KMIP-CLAUSE-SPEC-6.1.5-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_uses_async_correlation_value_for_poll_or_cancel),
@@ -12317,8 +12317,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.38-001",
+        "KMIP-REQ-SPEC-6.1.38-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.38-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_uses_async_correlation_value_for_poll_or_cancel),
@@ -12339,8 +12339,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.1-001",
-        "KMIPKIT-CLAUSE-SPEC-9.1-001",
+        "KMIP-REQ-SPEC-9.1-001",
+        "KMIP-CLAUSE-SPEC-9.1-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_uses_async_correlation_value_for_poll_or_cancel),
@@ -12361,8 +12361,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.19-002",
-        "KMIPKIT-CLAUSE-SPEC-9.19-002",
+        "KMIP-REQ-SPEC-9.19-002",
+        "KMIP-CLAUSE-SPEC-9.19-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_uses_async_correlation_value_for_poll_or_cancel),
@@ -12383,8 +12383,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.9-001",
-        "KMIPKIT-CLAUSE-SPEC-9.9-001",
+        "KMIP-REQ-SPEC-9.9-001",
+        "KMIP-CLAUSE-SPEC-9.9-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_client_correlation_value),
@@ -12405,8 +12405,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.12-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        "KMIP-REQ-SPEC-9.12-001-001",
+        "KMIP-CLAUSE-SPEC-9.12-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_maximum_response_size),
@@ -12417,8 +12417,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.12-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        "KMIP-REQ-SPEC-9.12-001-002",
+        "KMIP-CLAUSE-SPEC-9.12-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12437,8 +12437,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_capability", "declared_response_capacity")],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.12-001-003",
-        "KMIPKIT-CLAUSE-SPEC-9.12-001",
+        "KMIP-REQ-SPEC-9.12-001-003",
+        "KMIP-CLAUSE-SPEC-9.12-001",
         None,
         GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         Some(client_sends_maximum_response_size_only_for_possible_large_replies),
@@ -12455,8 +12455,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.20-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        "KMIP-REQ-SPEC-9.20-001-001",
+        "KMIP-CLAUSE-SPEC-9.20-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_request_time_stamp),
@@ -12473,8 +12473,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.20-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.20-001",
+        "KMIP-REQ-SPEC-9.20-001-002",
+        "KMIP-CLAUSE-SPEC-9.20-001",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -12492,8 +12492,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.21-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.21-001",
+        "KMIP-REQ-SPEC-9.21-001-001",
+        "KMIP-CLAUSE-SPEC-9.21-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_optional_unique_batch_item_id),
@@ -12510,8 +12510,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-8.3-003",
-        "KMIPKIT-CLAUSE-SPEC-8.3-003",
+        "KMIP-REQ-SPEC-8.3-003",
+        "KMIP-CLAUSE-SPEC-8.3-003",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_includes_unique_batch_item_id_for_multi_item_request),
@@ -12522,8 +12522,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-8.3-004",
-        "KMIPKIT-CLAUSE-SPEC-8.3-004",
+        "KMIP-REQ-SPEC-8.3-004",
+        "KMIP-CLAUSE-SPEC-8.3-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_request_message_extensions),
@@ -12540,8 +12540,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-8-001",
-        "KMIPKIT-CLAUSE-SPEC-8-001",
+        "KMIP-REQ-SPEC-8-001",
+        "KMIP-CLAUSE-SPEC-8-001",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -12575,8 +12575,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-8-002",
-        "KMIPKIT-CLAUSE-SPEC-8-002",
+        "KMIP-REQ-SPEC-8-002",
+        "KMIP-CLAUSE-SPEC-8-002",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12602,8 +12602,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.7-001",
-        "KMIPKIT-CLAUSE-SPEC-9.7-001",
+        "KMIP-REQ-SPEC-9.7-001",
+        "KMIP-CLAUSE-SPEC-9.7-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12625,8 +12625,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.13-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        "KMIP-REQ-SPEC-9.13-001-001",
+        "KMIP-CLAUSE-SPEC-9.13-001",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -12644,8 +12644,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.13-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        "KMIP-REQ-SPEC-9.13-001-002",
+        "KMIP-CLAUSE-SPEC-9.13-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12667,8 +12667,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-9.13-001-003",
-        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        "KMIP-REQ-SPEC-9.13-001-003",
+        "KMIP-CLAUSE-SPEC-9.13-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -12690,8 +12690,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.13-001-004",
-        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        "KMIP-REQ-SPEC-9.13-001-004",
+        "KMIP-CLAUSE-SPEC-9.13-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_rejects_unknown_critical_response_extensions),
@@ -12716,8 +12716,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.13-001-005",
-        "KMIPKIT-CLAUSE-SPEC-9.13-001",
+        "KMIP-REQ-SPEC-9.13-001-005",
+        "KMIP-CLAUSE-SPEC-9.13-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_process_unknown_noncritical_response_extensions),
@@ -12738,8 +12738,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.5-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        "KMIP-REQ-SPEC-9.5-001-001",
+        "KMIP-CLAUSE-SPEC-9.5-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_sets_batch_count_to_request_item_count),
@@ -12750,8 +12750,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.5-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.5-001",
+        "KMIP-REQ-SPEC-9.5-001-002",
+        "KMIP-CLAUSE-SPEC-9.5-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_sets_batch_count_to_one_for_single_operation),
@@ -12762,8 +12762,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.6-001-001",
-        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        "KMIP-REQ-SPEC-9.6-001-001",
+        "KMIP-CLAUSE-SPEC-9.6-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_includes_batch_error_continuation_only_for_multi_item_request),
@@ -12774,8 +12774,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.6-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        "KMIP-REQ-SPEC-9.6-001-002",
+        "KMIP-CLAUSE-SPEC-9.6-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_uses_assigned_batch_error_continuation_values),
@@ -12792,8 +12792,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.6-001-003",
-        "KMIPKIT-CLAUSE-SPEC-9.6-001",
+        "KMIP-REQ-SPEC-9.6-001-003",
+        "KMIP-CLAUSE-SPEC-9.6-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_defaults_batch_error_continuation_to_stop),
@@ -12834,8 +12834,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-9.17-001-002",
-        "KMIPKIT-CLAUSE-SPEC-9.17-001",
+        "KMIP-REQ-SPEC-9.17-001-002",
+        "KMIP-CLAUSE-SPEC-9.17-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_inspect_optional_result_message),
@@ -12856,8 +12856,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.16-001-002",
-        "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        "KMIP-REQ-SPEC-4.16-001-002",
+        "KMIP-CLAUSE-SPEC-4.16-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(type_specific_parameters_do_not_infer_remote_object_type),
@@ -12868,8 +12868,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.16-001-001",
-        "KMIPKIT-CLAUSE-SPEC-4.16-001",
+        "KMIP-REQ-SPEC-4.16-001-001",
+        "KMIP-CLAUSE-SPEC-4.16-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(type_specific_parameters_do_not_infer_remote_object_type),
@@ -12894,8 +12894,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.16-002",
-        "KMIPKIT-CLAUSE-SPEC-4.16-002",
+        "KMIP-REQ-SPEC-4.16-002",
+        "KMIP-CLAUSE-SPEC-4.16-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_variable_iv_cryptographic_parameters_include_iv_length),
@@ -12906,8 +12906,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-4.16-003",
-        "KMIPKIT-CLAUSE-SPEC-4.16-003",
+        "KMIP-REQ-SPEC-4.16-003",
+        "KMIP-CLAUSE-SPEC-4.16-003",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_gcm_cryptographic_parameters_include_tag_length),
@@ -12918,8 +12918,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.17-006",
-        "KMIPKIT-CLAUSE-SPEC-6.1.17-006",
+        "KMIP-REQ-SPEC-6.1.17-006",
+        "KMIP-CLAUSE-SPEC-6.1.17-006",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_encrypt_aad_is_on_initial_request),
@@ -12936,8 +12936,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        "KMIP-REQ-SPEC-6.1.17-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.17-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_encrypt_cryptographic_parameters_are_optional_structure),
@@ -12948,8 +12948,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.17-001",
+        "KMIP-REQ-SPEC-6.1.17-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.17-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_encrypt_iv_counter_nonce_is_optional_byte_string),
@@ -12960,8 +12960,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        "KMIP-REQ-SPEC-6.1.11-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.11-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_decrypt_cryptographic_parameters_are_optional_structure),
@@ -12978,8 +12978,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.11-001",
+        "KMIP-REQ-SPEC-6.1.11-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.11-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_decrypt_iv_counter_nonce_is_optional_byte_string),
@@ -12996,8 +12996,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.11-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.11-005",
+        "KMIP-REQ-SPEC-6.1.11-005",
+        "KMIP-CLAUSE-SPEC-6.1.11-005",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_decrypt_aad_is_on_initial_request),
@@ -13014,8 +13014,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.11-006",
-        "KMIPKIT-CLAUSE-SPEC-6.1.11-006",
+        "KMIP-REQ-SPEC-6.1.11-006",
+        "KMIP-CLAUSE-SPEC-6.1.11-006",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_decrypt_tag_is_on_initial_request),
@@ -13032,7 +13032,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.12-003",
+        "KMIP-REQ-SPEC-6.1.12-003",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-RIGHTS-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13050,7 +13050,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.12-005",
+        "KMIP-REQ-SPEC-6.1.12-005",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-LEASE-TIME-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13068,7 +13068,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.12-006",
+        "KMIP-REQ-SPEC-6.1.12-006",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-REQUEST-COUNT-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13086,7 +13086,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.12-007",
+        "KMIP-REQ-SPEC-6.1.12-007",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.12-USAGE-LIMITS-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13104,7 +13104,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.30-001",
+        "KMIP-REQ-SPEC-6.1.30-001",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-LEASE-TIME-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13122,7 +13122,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.30-002",
+        "KMIP-REQ-SPEC-6.1.30-002",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-REQUEST-COUNT-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13140,7 +13140,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.30-003",
+        "KMIP-REQ-SPEC-6.1.30-003",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.30-USAGE-LIMITS-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13158,7 +13158,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.31-001",
+        "KMIP-REQ-SPEC-6.1.31-001",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.31-TICKET-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13176,8 +13176,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        "KMIP-REQ-SPEC-6.1.16-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.16-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(discover_versions_advertises_only_client_supported_versions),
@@ -13188,8 +13188,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.10-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.10-001",
+        "KMIP-REQ-SPEC-6.1.10-001",
+        "KMIP-CLAUSE-SPEC-6.1.10-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_optional_create_split_key_source_identifier),
@@ -13200,8 +13200,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        "KMIP-REQ-SPEC-6.1.16-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.16-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(discover_versions_advertises_only_client_supported_versions),
@@ -13212,7 +13212,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.13-005",
+        "KMIP-REQ-SPEC-6.1.13-005",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-CURRENT-ATTRIBUTE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13224,7 +13224,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.13-006",
+        "KMIP-REQ-SPEC-6.1.13-006",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.13-ATTRIBUTE-REFERENCE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13236,8 +13236,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.34-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        "KMIP-REQ-SPEC-6.1.34-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.34-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_represent_optional_modify_attribute_selector),
@@ -13248,8 +13248,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.34-001-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.34-001",
+        "KMIP-REQ-SPEC-6.1.34-001-003",
+        "KMIP-CLAUSE-SPEC-6.1.34-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/unit/modify_attribute_tests.rs::request_preserves_exact_current_and_new_items_in_table_265_order",
@@ -13261,8 +13261,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.27-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.27-001",
+        "KMIP-REQ-SPEC-6.1.27-001",
+        "KMIP-CLAUSE-SPEC-6.1.27-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_join_split_key_has_validated_identifier_entries),
@@ -13291,8 +13291,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.27-002",
+        "KMIP-REQ-SPEC-6.1.27-002-002",
+        "KMIP-CLAUSE-SPEC-6.1.27-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_join_split_key_secret_data_type_is_valid_when_applicable),
@@ -13303,8 +13303,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.27-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1.27-005",
+        "KMIP-REQ-SPEC-6.1.27-005",
+        "KMIP-CLAUSE-SPEC-6.1.27-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_join_split_key_has_validated_identifier_entries),
@@ -13315,8 +13315,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.28-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-001",
+        "KMIP-REQ-SPEC-6.1.28-001",
+        "KMIP-CLAUSE-SPEC-6.1.28-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_optional_locate_maximum_items),
@@ -13327,8 +13327,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.28-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-002",
+        "KMIP-REQ-SPEC-6.1.28-002",
+        "KMIP-CLAUSE-SPEC-6.1.28-002",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_optional_locate_offset_items),
@@ -13339,8 +13339,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.28-007",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-007",
+        "KMIP-REQ-SPEC-6.1.28-007",
+        "KMIP-CLAUSE-SPEC-6.1.28-007",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_can_send_partial_structured_locate_attributes),
@@ -13351,8 +13351,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.28-013-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        "KMIP-REQ-SPEC-6.1.28-013-001",
+        "KMIP-CLAUSE-SPEC-6.1.28-013",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_supplies_locate_attributes_structure),
@@ -13363,8 +13363,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.28-013-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-013",
+        "KMIP-REQ-SPEC-6.1.28-013-002",
+        "KMIP-CLAUSE-SPEC-6.1.28-013",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_supplies_locate_attributes_structure),
@@ -13375,8 +13375,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.20-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.20-001",
+        "KMIP-REQ-SPEC-6.1.20-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.20-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(get_attributes_references_are_not_repeated),
@@ -13387,8 +13387,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.20-004",
-        "KMIPKIT-CLAUSE-SPEC-6.1.20-004",
+        "KMIP-REQ-SPEC-6.1.20-004",
+        "KMIP-CLAUSE-SPEC-6.1.20-004",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_include_optional_get_attributes_attribute_references),
@@ -13399,8 +13399,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.18-001",
+        "KMIP-REQ-SPEC-6.1.18-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.18-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_export_controls_have_get_semantics),
@@ -13411,7 +13411,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.18-005",
+        "KMIP-REQ-SPEC-6.1.18-005",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-FORMAT-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13429,7 +13429,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.18-006",
+        "KMIP-REQ-SPEC-6.1.18-006",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAP-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13447,7 +13447,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.18-007",
+        "KMIP-REQ-SPEC-6.1.18-007",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-COMPRESSION-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13459,7 +13459,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.18-008",
+        "KMIP-REQ-SPEC-6.1.18-008",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.18-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13471,8 +13471,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.19-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.19-002",
+        "KMIP-REQ-SPEC-6.1.19-002",
+        "KMIP-CLAUSE-SPEC-6.1.19-002",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_get_or_export_key_format_type_is_enumeration),
@@ -13483,7 +13483,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.19-003",
+        "KMIP-REQ-SPEC-6.1.19-003",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-FORMAT-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13495,7 +13495,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.19-004",
+        "KMIP-REQ-SPEC-6.1.19-004",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAP-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13507,7 +13507,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.19-005",
+        "KMIP-REQ-SPEC-6.1.19-005",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-COMPRESSION-TYPE-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13519,7 +13519,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.19-006",
+        "KMIP-REQ-SPEC-6.1.19-006",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.19-KEY-WRAPPING-SPECIFICATION-OPTIONAL"),
         GeneratedVerificationCategory::OptionalCapability,
@@ -13531,8 +13531,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-7.31-001",
-        "KMIPKIT-CLAUSE-SPEC-7.31-001",
+        "KMIP-REQ-SPEC-7.31-001",
+        "KMIP-CLAUSE-SPEC-7.31-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/unit/query_operation_tests.rs::query_response_exposes_all_table_283_members_and_unknown_nested_items",
@@ -13544,8 +13544,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.32-001",
-        "KMIPKIT-CLAUSE-SPEC-7.32-001",
+        "KMIP-REQ-SPEC-7.32-001",
+        "KMIP-CLAUSE-SPEC-7.32-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_query_profile_information_is_well_formed),
@@ -13562,8 +13562,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.8-001",
-        "KMIPKIT-CLAUSE-SPEC-7.8-001",
+        "KMIP-REQ-SPEC-7.8-001",
+        "KMIP-CLAUSE-SPEC-7.8-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_multipart_continuation_has_server_correlation),
@@ -13588,8 +13588,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.18-006",
-        "KMIPKIT-CLAUSE-SPEC-7.18-006",
+        "KMIP-REQ-SPEC-7.18-006",
+        "KMIP-CLAUSE-SPEC-7.18-006",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_get_or_export_wrapping_attribute_names),
@@ -13600,8 +13600,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.18-001-001",
-        "KMIPKIT-CLAUSE-SPEC-7.18-001",
+        "KMIP-REQ-SPEC-7.18-001-001",
+        "KMIP-CLAUSE-SPEC-7.18-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_supports_get_or_export_wrapped_key_request),
@@ -13612,8 +13612,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.18-004",
-        "KMIPKIT-CLAUSE-SPEC-7.18-004",
+        "KMIP-REQ-SPEC-7.18-004",
+        "KMIP-CLAUSE-SPEC-7.18-004",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_get_or_export_wrapping_specification_has_key_information),
@@ -13624,8 +13624,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.18-005",
-        "KMIPKIT-CLAUSE-SPEC-7.18-005",
+        "KMIP-REQ-SPEC-7.18-005",
+        "KMIP-CLAUSE-SPEC-7.18-005",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_get_or_export_wrapping_specification_has_key_information),
@@ -13636,8 +13636,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.40-014",
-        "KMIPKIT-CLAUSE-SPEC-6.1.40-014",
+        "KMIP-REQ-SPEC-6.1.40-014",
+        "KMIP-CLAUSE-SPEC-6.1.40-014",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_query_contains_one_or_more_functions),
@@ -13648,8 +13648,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.40-016",
-        "KMIPKIT-CLAUSE-SPEC-6.1.40-016",
+        "KMIP-REQ-SPEC-6.1.40-016",
+        "KMIP-CLAUSE-SPEC-6.1.40-016",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_repeat_query_functions),
@@ -13660,8 +13660,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.14-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        "KMIP-REQ-SPEC-6.1.14-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.14-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
@@ -13673,8 +13673,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.14-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-002",
+        "KMIP-REQ-SPEC-6.1.14-002",
+        "KMIP-CLAUSE-SPEC-6.1.14-002",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-protocol/tests/unit/derive_key_operation_tests.rs::request_encodes_required_table_205_fields_in_order_and_repeats_identifiers",
@@ -13686,8 +13686,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        "KMIP-REQ-SPEC-6.1.14-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.14-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(derive_key_specifies_cryptographic_length),
@@ -13698,8 +13698,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-001-003",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        "KMIP-REQ-SPEC-6.1.14-001-003",
+        "KMIP-CLAUSE-SPEC-6.1.14-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(derive_key_specifies_cryptographic_algorithm_for_key_output),
@@ -13710,7 +13710,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-007-001",
+        "KMIP-REQ-SPEC-6.1.14-007-001",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-ATTRIBUTES-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13722,8 +13722,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-007-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-007",
+        "KMIP-REQ-SPEC-6.1.14-007-002",
+        "KMIP-CLAUSE-SPEC-6.1.14-007",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(derive_key_symmetric_output_specifies_cryptographic_attributes),
@@ -13734,7 +13734,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-009",
+        "KMIP-REQ-SPEC-6.1.14-009",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-OBJECT-TYPE-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13746,7 +13746,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-010",
+        "KMIP-REQ-SPEC-6.1.14-010",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-UNIQUE-IDENTIFIER-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13758,7 +13758,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-011",
+        "KMIP-REQ-SPEC-6.1.14-011",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-METHOD-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13770,7 +13770,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-012",
+        "KMIP-REQ-SPEC-6.1.14-012",
         "",
         Some("KMIPKIT-SOURCE-GAP-SPEC-6.1.14-DERIVATION-PARAMETERS-REQUIRED"),
         GeneratedVerificationCategory::RequiredBehavior,
@@ -13782,8 +13782,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-001",
+        "KMIP-REQ-SPEC-6.1.14-001-004",
+        "KMIP-CLAUSE-SPEC-6.1.14-001",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(derive_key_secret_data_uses_total_cryptographic_length),
@@ -13794,8 +13794,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-006-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        "KMIP-REQ-SPEC-6.1.14-006-001",
+        "KMIP-CLAUSE-SPEC-6.1.14-006",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(derive_key_repeated_unique_identifiers_are_usable),
@@ -13806,8 +13806,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1.14-006-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.14-006",
+        "KMIP-REQ-SPEC-6.1.14-006-002",
+        "KMIP-CLAUSE-SPEC-6.1.14-006",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(derive_key_specifies_explicit_source_identifiers),
@@ -13818,8 +13818,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.12-003",
-        "KMIPKIT-CLAUSE-SPEC-7.12-003",
+        "KMIP-REQ-SPEC-7.12-003",
+        "KMIP-CLAUSE-SPEC-7.12-003",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(derive_key_hash_method_selects_explicit_prf),
@@ -13830,8 +13830,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-7.12-005-001",
-        "KMIPKIT-CLAUSE-SPEC-7.12-005",
+        "KMIP-REQ-SPEC-7.12-005-001",
+        "KMIP-CLAUSE-SPEC-7.12-005",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(derive_key_optional_input_forms_are_representable),
@@ -13852,8 +13852,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-8-003-001",
-        "KMIPKIT-CLAUSE-SPEC-8-003",
+        "KMIP-REQ-SPEC-8-003-001",
+        "KMIP-CLAUSE-SPEC-8-003",
         None,
         GeneratedVerificationCategory::OptionalCapability,
         Some(client_can_signal_asynchronous_response_support),
@@ -13870,8 +13870,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.1.2-001",
-        "KMIPKIT-CLAUSE-SPEC-10.1.2-001",
+        "KMIP-REQ-SPEC-10.1.2-001",
+        "KMIP-CLAUSE-SPEC-10.1.2-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13886,8 +13886,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("encoding", "ttlv")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-        "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        "KMIP-REQ-SPEC-10.1.2-002-001",
+        "KMIP-CLAUSE-SPEC-10.1.2-002",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13902,8 +13902,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("encoding", "ttlv")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-        "KMIPKIT-CLAUSE-SPEC-10.1.2-002",
+        "KMIP-REQ-SPEC-10.1.2-002-002",
+        "KMIP-CLAUSE-SPEC-10.1.2-002",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::encodes_big_integer_golden_vector_with_sign_extension_in_item_length",
@@ -13912,8 +13912,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("encoding", "ttlv")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-        "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        "KMIP-REQ-SPEC-10.1.5-001-001",
+        "KMIP-CLAUSE-SPEC-10.1.5-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13932,8 +13932,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("encoding", "ttlv")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-        "KMIPKIT-CLAUSE-SPEC-10.1.5-001",
+        "KMIP-REQ-SPEC-10.1.5-001-002",
+        "KMIP-CLAUSE-SPEC-10.1.5-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-client/tests/support/wire_encoder_tests.rs::fixed_width_four_byte_values_have_four_following_padding_bytes",
@@ -13942,8 +13942,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("encoding", "ttlv")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.4-001-001",
-        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        "KMIP-REQ-SPEC-10.4-001-001",
+        "KMIP-CLAUSE-SPEC-10.4-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13958,8 +13958,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("transport_security", "tls13")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.4-001-002",
-        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        "KMIP-REQ-SPEC-10.4-001-002",
+        "KMIP-CLAUSE-SPEC-10.4-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13974,8 +13974,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("transport_security", "tls13")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-10.4-001-003",
-        "KMIPKIT-CLAUSE-SPEC-10.4-001",
+        "KMIP-REQ-SPEC-10.4-001-003",
+        "KMIP-CLAUSE-SPEC-10.4-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -13998,8 +13998,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("transport_security", "tls13")],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-11.56-001",
-        "KMIPKIT-CLAUSE-SPEC-11.56-001",
+        "KMIP-REQ-SPEC-11.56-001",
+        "KMIP-CLAUSE-SPEC-11.56-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_request_tags_use_kmip_prefixes),
@@ -14010,8 +14010,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-11-001",
-        "KMIPKIT-CLAUSE-SPEC-11-001",
+        "KMIP-REQ-SPEC-11-001",
+        "KMIP-CLAUSE-SPEC-11-001",
         None,
         GeneratedVerificationCategory::ProhibitedBehavior,
         Some(client_request_tags_are_allocated),
@@ -14028,8 +14028,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-12-001-001",
-        "KMIPKIT-CLAUSE-SPEC-12-001",
+        "KMIP-REQ-SPEC-12-001-001",
+        "KMIP-CLAUSE-SPEC-12-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_mask_values_use_ttlv_integer_encoding),
@@ -14124,8 +14124,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        "KMIP-REQ-SPEC-6.1-001-001",
+        "KMIP-CLAUSE-SPEC-6.1-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
@@ -14134,8 +14134,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_capability", "implemented_operations")],
     ),
     typed_rule_mapping(
-        "KMIPKIT-REQ-SPEC-6.1-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1-001",
+        "KMIP-REQ-SPEC-6.1-001-002",
+        "KMIP-CLAUSE-SPEC-6.1-001",
         None,
         GeneratedVerificationCategory::RequiredBehavior,
         Some(client_understands_response_operations),
@@ -14156,8 +14156,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         &[],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1-003-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1-003",
+        "KMIP-REQ-SPEC-6.1-003-002",
+        "KMIP-CLAUSE-SPEC-6.1-003",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -14172,8 +14172,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_capability", "id_placeholder")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1-004",
-        "KMIPKIT-CLAUSE-SPEC-6.1-004",
+        "KMIP-REQ-SPEC-6.1-004",
+        "KMIP-CLAUSE-SPEC-6.1-004",
         GeneratedVerificationCategory::OptionalCapability,
         [
             (
@@ -14191,8 +14191,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1-005",
-        "KMIPKIT-CLAUSE-SPEC-6.1-005",
+        "KMIP-REQ-SPEC-6.1-005",
+        "KMIP-CLAUSE-SPEC-6.1-005",
         GeneratedVerificationCategory::RequiredBehavior,
         [
             (
@@ -14210,8 +14210,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+        "KMIP-REQ-SPEC-6.1.28-004-001",
+        "KMIP-CLAUSE-SPEC-6.1.28-004",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
@@ -14223,8 +14223,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         )],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-        "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        "KMIP-REQ-SPEC-6.1.42-001-001",
+        "KMIP-CLAUSE-SPEC-6.1.42-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::caller_issues_poll_after_recover_pending_with_the_returned_correlation",
@@ -14233,8 +14233,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_capability", "recover_poll_caller_directed")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-        "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        "KMIP-REQ-SPEC-6.1.42-001-002",
+        "KMIP-CLAUSE-SPEC-6.1.42-001",
         GeneratedVerificationCategory::OptionalCapability,
         [(
             "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::caller_directs_archived_locate_recover_then_get_as_three_exchanges",
@@ -14243,8 +14243,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_capability", "recover_get_caller_directed")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-14.1-001",
-        "KMIPKIT-CLAUSE-SPEC-14.1-001",
+        "KMIP-REQ-SPEC-14.1-001",
+        "KMIP-CLAUSE-SPEC-14.1-001",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
@@ -14253,8 +14253,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         [("client_profile_selection", "at_least_one")],
     ),
     simple_typed_rule_mapping!(
-        "KMIPKIT-REQ-SPEC-14.1-002",
-        "KMIPKIT-CLAUSE-SPEC-14.1-002",
+        "KMIP-REQ-SPEC-14.1-002",
+        "KMIP-CLAUSE-SPEC-14.1-002",
         GeneratedVerificationCategory::RequiredBehavior,
         [(
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::selection_resolves_kmip_client_conformance_only_for_a_complete_profile_closure",
@@ -14451,7 +14451,7 @@ fn validate_selection(
             if profile.selected_target && profile.claim_state != "evidence_complete" {
                 let error = requirements
                     .iter()
-                    .find(|requirement| requirement.requirement_id == "KMIPKIT-REQ-SPEC-14.1-001")
+                    .find(|requirement| requirement.requirement_id == "KMIP-REQ-SPEC-14.1-001")
                     .map_or_else(
                         || {
                             ProfileValidationError::for_profile(

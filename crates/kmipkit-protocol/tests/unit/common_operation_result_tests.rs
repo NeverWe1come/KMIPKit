@@ -4,7 +4,7 @@
 //! Unknown reasons and Result Message text remain lossless, while Pending stays
 //! represented as its own status for the caller's shared `PendingOutcome` path.
 //!
-//! Traceability: `KMIPKIT-0019-FR-007` and `KMIPKIT-REQ-SPEC-6.1-001-002`.
+//! Traceability: `functional requirement` and `KMIP-REQ-SPEC-6.1-001-002`.
 
 use crate::async_operation_fixtures::{item, structure};
 use crate::asynchronous::operation_result;

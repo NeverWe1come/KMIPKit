@@ -22,7 +22,7 @@ REQUEST_RUST_MAPPINGS = {
     },
 }
 OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE": {
+    "KMIP-ELEM-OP-C2S-RNG-RETRIEVE": {
         "name": "RNG Retrieve",
         "section": "6.1.49",
         "functions": {
@@ -58,7 +58,7 @@ OPERATIONS = {
             },
         },
     },
-    "KMIPKIT-ELEM-OP-C2S-RNG-SEED": {
+    "KMIP-ELEM-OP-C2S-RNG-SEED": {
         "name": "RNG Seed",
         "section": "6.1.50",
         "functions": {
@@ -188,7 +188,7 @@ class RngParityManifestTests(unittest.TestCase):
                     any(value.startswith("KMIPKIT-0041-FR-") for value in response_ttlv["requirementIds"])
                 )
                 if expected["name"] == "RNG Seed":
-                    self.assertIn("KMIPKIT-REQ-SPEC-6.1.50-001", response_ttlv["requirementIds"])
+                    self.assertIn("KMIP-REQ-SPEC-6.1.50-001", response_ttlv["requirementIds"])
                 self.assertIn("caller-owned copy", response_ttlv["c"]["documentation"][0])
                 self.assertIn("Success or Pending", response_ttlv["c"]["documentation"][0])
                 self.assertIn("Failure", response_ttlv["c"]["documentation"][1])

@@ -47,7 +47,7 @@ TARGETS = (
     {
         "id": "rust-observed-55695fec9108789be098",
         "name": "kmipkit_protocol::RekeyRequest::with_attributes",
-        "operation": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "operation": "KMIP-ELEM-OP-C2S-RE-KEY",
         "tag": 0x420125,
         "owner": OWNER,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-008"},
@@ -66,7 +66,7 @@ TARGETS = (
     {
         "id": "rust-observed-3c3be169b5ff8899e1c7",
         "name": "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
-        "operation": "KMIPKIT-ELEM-OP-C2S-RE-KEY",
+        "operation": "KMIP-ELEM-OP-C2S-RE-KEY",
         "tag": 0x42015F,
         "owner": OWNER,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-008"},
@@ -85,7 +85,7 @@ TARGETS = (
     {
         "id": "rust-observed-f894598b6998d1b416b1",
         "name": "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
-        "operation": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "operation": "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         "tag": 0x420125,
         "owner": "specs/023-key-material-transfer/spec.md",
         "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
@@ -103,7 +103,7 @@ TARGETS = (
     {
         "id": "rust-observed-236134f1fc8e195442a0",
         "name": "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
-        "operation": "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY",
+        "operation": "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY",
         "tag": 0x42015F,
         "owner": "specs/023-key-material-transfer/spec.md",
         "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
@@ -122,7 +122,7 @@ TARGETS = (
     {
         "id": "rust-observed-0cad07b4f1010a7d9a55",
         "name": "kmipkit_protocol::RecertifyRequest::with_attributes",
-        "operation": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "operation": "KMIP-ELEM-OP-C2S-RE-CERTIFY",
         "tag": 0x420125,
         "owner": OWNER,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
@@ -141,7 +141,7 @@ TARGETS = (
     {
         "id": "rust-observed-6e9fb656f103c43fa2de",
         "name": "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
-        "operation": "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY",
+        "operation": "KMIP-ELEM-OP-C2S-RE-CERTIFY",
         "tag": 0x42015F,
         "owner": OWNER,
         "fr": {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-002", "KMIPKIT-0036-FR-004", "KMIPKIT-0036-FR-006", "KMIPKIT-0036-FR-008"},
@@ -168,15 +168,15 @@ WRAPPING_REQUEST_BUILDER_IDS = {
     "rust-observed-ba1772cec998d92e5148",
 }
 WRAPPING_REQUEST_BUILDER_OPERATIONS = {
-    "KMIPKIT-ELEM-OP-C2S-IMPORT",
-    "KMIPKIT-ELEM-OP-C2S-EXPORT",
-    "KMIPKIT-ELEM-OP-C2S-GET",
+    "KMIP-ELEM-OP-C2S-IMPORT",
+    "KMIP-ELEM-OP-C2S-EXPORT",
+    "KMIP-ELEM-OP-C2S-GET",
 }
 RAW_RECERTIFY_DECLARATIONS = {
     "rust-observed-bd90b6e53d6c05c1a6b0",
     "rust-observed-4c37b205dc5bee05df9a",
 }
-RECERTIFY_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+RECERTIFY_OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-CERTIFY"
 RECERTIFY_OPERATION_ADDED_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
 }
@@ -241,7 +241,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 self.assertEqual("Approved", declaration["approvalSource"]["status"])
                 requirements = set(declaration["requirementIds"])
                 self.assertEqual(target["fr"], requirements)
-                self.assertFalse(any(value.startswith("KMIPKIT-REQ-SPEC-") for value in requirements))
+                self.assertFalse(any(value.startswith("KMIP-REQ-SPEC-") for value in requirements))
                 expected_mappings = {
                     "rust": {"packageId": "rust-kmipkit-protocol", "name": target["name"]},
                     "c": {"packageId": "c-kmipkit", "name": target["c"]},
@@ -283,12 +283,12 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
         elements = {row["element_id"]: row for row in catalog["elements"]}
         self.assertIn("Table 117: Protection Storage Mask", text)
         self.assertIn("Protection Storage Mask Integer", text)
-        self.assertEqual("Protection Storage Masks", elements["KMIPKIT-ELEM-TAG-42015F"]["name"])
-        self.assertEqual("Protection Storage Mask", elements["KMIPKIT-ELEM-TAG-42015E"]["name"])
-        self.assertEqual("42015F", elements["KMIPKIT-ELEM-TAG-42015F"]["wire_value"])
-        self.assertEqual("42015E", elements["KMIPKIT-ELEM-TAG-42015E"]["wire_value"])
+        self.assertEqual("Protection Storage Masks", elements["KMIP-ELEM-TAG-42015F"]["name"])
+        self.assertEqual("Protection Storage Mask", elements["KMIP-ELEM-TAG-42015E"]["name"])
+        self.assertEqual("42015F", elements["KMIP-ELEM-TAG-42015F"]["wire_value"])
+        self.assertEqual("42015E", elements["KMIP-ELEM-TAG-42015E"]["wire_value"])
         for target in TARGETS:
-            tag_id = f"KMIPKIT-ELEM-TAG-{target['tag']:06X}"
+            tag_id = f"KMIP-ELEM-TAG-{target['tag']:06X}"
             self.assertIn(tag_id, elements)
             self.assertEqual("assigned", elements[tag_id]["allocation"])
             self.assertEqual("client_1_0", elements[tag_id]["scope_state"])
@@ -430,7 +430,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     WRAPPING_REQUEST_BUILDER_IDS
                     & set(operation["declarations"]["rust"])
                 )
-            if operation["operationId"] == "KMIPKIT-ELEM-OP-C2S-PKCS-11":
+            if operation["operationId"] == "KMIP-ELEM-OP-C2S-PKCS-11":
                 operation_target_ids.update(PKCS11_REQUEST_SETTER_IDS)
             if operation_target_ids:
                 operation["declarations"]["rust"] = [

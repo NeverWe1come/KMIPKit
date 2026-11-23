@@ -2,7 +2,7 @@
 //! Tables 235–237. These are not complete official Test Case executions.
 //!
 //! Traceability: FR-001–FR-003, FR-009–FR-012, and
-//! `KMIPKIT-ELEM-OP-C2S-HASH`.
+//! `KMIP-ELEM-OP-C2S-HASH`.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

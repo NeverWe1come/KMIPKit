@@ -14,11 +14,11 @@ class RequirementSourceReferenceTests(unittest.TestCase):
         catalog = json.loads(
             (ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json").read_text(encoding="utf-8")
         )
-        requirement_id = "KMIPKIT-REQ-SPEC-4.57-003-004"
+        requirement_id = "KMIP-REQ-SPEC-4.57-003-004"
         requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
         )
-        clause_id = "KMIPKIT-CLAUSE-SPEC-4.57-003"
+        clause_id = "KMIP-CLAUSE-SPEC-4.57-003"
         source_clause = next(
             item for item in catalog["source_clauses"] if item["clause_id"] == clause_id
         )
@@ -40,14 +40,14 @@ class RequirementSourceReferenceTests(unittest.TestCase):
                 / "profile-closure-v2.1.json"
             ).read_text(encoding="utf-8")
         )
-        requirement_id = "KMIPKIT-REQ-SPEC-6.1.17-005-001"
+        requirement_id = "KMIP-REQ-SPEC-6.1.17-005-001"
         requirement = next(
             item for item in catalog["requirements"] if item["requirement_id"] == requirement_id
         )
         source_review = next(
             item
             for item in fixture["source_requirement_reviews"]
-            if item["source_clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.17-005"
+            if item["source_clause_id"] == "KMIP-CLAUSE-SPEC-6.1.17-005"
         )
 
         self.assertEqual(requirement["status"], "retired")

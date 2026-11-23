@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-REVOKE"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-REVOKE"
 OWNER = "specs/022-object-lifecycle/spec.md"
 MAPPING_EVIDENCE = (
     "verification/api/tests/test_t102_revoke_request_member_mapping.py"
@@ -96,7 +96,7 @@ class T102RevokeRequestMemberMappingTests(unittest.TestCase):
     def test_mapping_pins_approved_owner_and_oasis_request_source(self) -> None:
         spec = (ROOT / OWNER).read_text(encoding="utf-8")
         self.assertIn(
-            "| Revoke | KMIPKIT-ELEM-OP-C2S-REVOKE | §6.1.44 | 295 | 296 | 297 |",
+            "| Revoke | KMIP-ELEM-OP-C2S-REVOKE | §6.1.44 | 295 | 296 | 297 |",
             spec,
         )
         tests = (ROOT / "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs").read_text(

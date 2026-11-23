@@ -1,6 +1,6 @@
 //! Client-boundary redaction characterization for KMIP v2.1 §6.1.11
 //! Tables 196–197 (Decrypt), §6.1.17 Tables 214–215 (Encrypt), and §§7.3,
-//! 7.4, 7.8, and 7.9. Traceability: KMIPKIT-0019-FR-009 and SC-004.
+//! 7.4, 7.8, and 7.9. Traceability: functional requirement and SC-004.
 
 use std::cell::Cell;
 use std::error::Error;

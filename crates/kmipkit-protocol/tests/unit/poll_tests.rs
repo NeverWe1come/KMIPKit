@@ -1,6 +1,6 @@
 //! Derived KMIP 2.1 Poll tests; not official conformance vectors.
 //!
-//! Traceability: `KMIPKIT-0009-FR-001`–`FR-003`, `FR-009`; OASIS KMIP v2.1
+//! Traceability: `functional requirement`–`FR-003`, `FR-009`; OASIS KMIP v2.1
 //! §§6.1.38, 8.6, 9.1, and 9.19, Tables 276, 399, 400, and 424.
 
 use kmipkit_ttlv::{Value, ValueView};

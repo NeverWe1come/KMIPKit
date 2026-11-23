@@ -2,7 +2,7 @@
 
 //! Fake-transport Certify execution contracts from OASIS KMIP v2.1 §6.1.6,
 //! Tables 179–181. Stable requirement coverage:
-//! `KMIPKIT-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
+//! `KMIP-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
 //! `-003`, and `-007`. Shared Pending and delivery behavior follows KMIP
 //! v2.1 §§8.6, 9.1, and 9.2. These are derived tests, not official OASIS
 //! Test Case executions.

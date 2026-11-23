@@ -1,5 +1,5 @@
-//! Requirement traceability: KMIPKIT-0004-FR-009, FR-010, FR-013, and SC-004.
-//! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
+//! Requirement traceability: functional requirement, FR-010, FR-013, and SC-004.
+//! Authority: approved specification requirement specification and Rust value-model contract.
 
 use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex, Write as _};
 

@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
 //! Fixture-derived operation-item evidence from the OASIS KMIP Test Cases
 //! v2.1 Committee Note 01, §§2.99–2.101 and their pinned XML work products.
@@ -795,14 +795,14 @@ fn fixture_derived_success_responses_preserve_all_24_encrypt_and_4_decrypt_items
     // are fixture-derived operation-item assertions from Test Cases v2.1 CN01
     // §§2.99–2.101, never complete official Test Case pass claims.
     //
-    // Traceability: `KMIPKIT-REQ-SPEC-6.1-001-002`,
-    // `KMIPKIT-ELEM-OP-C2S-ENCRYPT`,
-    // `KMIPKIT-ELEM-OP-C2S-DECRYPT`,
+    // Traceability: `KMIP-REQ-SPEC-6.1-001-002`,
+    // `KMIP-ELEM-OP-C2S-ENCRYPT`,
+    // `KMIP-ELEM-OP-C2S-DECRYPT`,
     // `KMIPKIT-TEST-CN01-2-99`, `KMIPKIT-TEST-CN01-2-100`,
     // `KMIPKIT-TEST-CN01-2-101`,
-    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`,
-    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
-    // `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+    // `KMIP-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`,
+    // `KMIP-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`, and
+    // `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
     let cases = [
         (
             TC_ENC_1_21_ID,

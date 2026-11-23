@@ -134,7 +134,7 @@ class T102ResponseConversionErrorMappingTests(unittest.TestCase):
                 self.assertTrue({"KMIPKIT-0007-FR-006", "KMIPKIT-0007-FR-008"} <= requirements)
                 self.assertTrue({"KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022"} <= requirements)
                 self.assertTrue(
-                    {item for item in response["requirementIds"] if item.startswith("KMIPKIT-REQ-SPEC-")} <= requirements
+                    {item for item in response["requirementIds"] if item.startswith("KMIP-REQ-SPEC-")} <= requirements
                 )
                 self.assertTrue(SHARED_PARITY_EVIDENCE <= set(row["parityEvidenceIds"]))
                 self.assertTrue(

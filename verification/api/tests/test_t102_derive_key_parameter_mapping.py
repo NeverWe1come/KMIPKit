@@ -12,7 +12,7 @@ from verification.api.tests.t102_manifest_totals import T102_BLOCKED_CANDIDATES
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 OWNER = "specs/023-key-material-transfer/spec.md"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-DERIVE-KEY"
 MAPPING_EVIDENCE = "verification/api/tests/test_t102_derive_key_parameter_mapping.py"
 DECLARATIONS = (
     ("rust-observed-6b4e7ba39cb4bd340234", "kmipkit_protocol::DerivationMethod", "type"),
@@ -86,7 +86,7 @@ class T102DeriveKeyParameterMappingTests(unittest.TestCase):
     def test_foreign_builders_accept_the_generic_derivation_structure(self) -> None:
         self.assert_source_contains(
             tuple(OWNER.split("/")),
-            "| Derive Key | KMIPKIT-ELEM-OP-C2S-DERIVE-KEY | §6.1.14 | 205 | 206 | 207 |",
+            "| Derive Key | KMIP-ELEM-OP-C2S-DERIVE-KEY | §6.1.14 | 205 | 206 | 207 |",
             "§7.12, Table 364",
         )
         self.assert_source_contains(

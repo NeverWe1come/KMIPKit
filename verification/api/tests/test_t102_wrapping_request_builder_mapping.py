@@ -28,16 +28,16 @@ COMMON_EVIDENCE = {
 TARGETS = {
     "rust-observed-9cd4c6b6fd190aff211f": {
         "name": "kmipkit_protocol::ImportRequest::with_key_wrap_type",
-        "operation": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "operation": "KMIP-ELEM-OP-C2S-IMPORT",
         "owner": "specs/023-key-material-transfer/spec.md",
-        "requirements": {"KMIPKIT-REQ-SPEC-6.1.25-006"},
+        "requirements": {"KMIP-REQ-SPEC-6.1.25-006"},
         "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
         "builder": "kmipkit_client_batch_item_import",
         "rust_test": "crates/kmipkit-protocol/tests/unit/import_operation_tests.rs",
     },
     "rust-observed-506281d0cf8e3c41a90e": {
         "name": "kmipkit_protocol::ImportRequest::with_replace_existing",
-        "operation": "KMIPKIT-ELEM-OP-C2S-IMPORT",
+        "operation": "KMIP-ELEM-OP-C2S-IMPORT",
         "owner": "specs/023-key-material-transfer/spec.md",
         "requirements": set(),
         "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-008"},
@@ -46,13 +46,13 @@ TARGETS = {
     },
     "rust-observed-61aecad439c9a84c7241": {
         "name": "kmipkit_protocol::ExportRequest::with_key_wrapping_specification",
-        "operation": "KMIPKIT-ELEM-OP-C2S-EXPORT",
+        "operation": "KMIP-ELEM-OP-C2S-EXPORT",
         "owner": "specs/023-key-material-transfer/spec.md",
         "requirements": {
-            "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-            "KMIPKIT-REQ-SPEC-6.1.18-008",
-            "KMIPKIT-REQ-SPEC-7.18-001-001",
-            "KMIPKIT-REQ-SPEC-7.18-004",
+            "KMIP-REQ-SPEC-6.1.18-001-001",
+            "KMIP-REQ-SPEC-6.1.18-008",
+            "KMIP-REQ-SPEC-7.18-001-001",
+            "KMIP-REQ-SPEC-7.18-004",
         },
         "fr": {"KMIPKIT-0037-FR-001", "KMIPKIT-0037-FR-002", "KMIPKIT-0037-FR-004", "KMIPKIT-0037-FR-006", "KMIPKIT-0037-FR-008"},
         "builder": "kmipkit_client_batch_item_export",
@@ -60,11 +60,11 @@ TARGETS = {
     },
     "rust-observed-ba1772cec998d92e5148": {
         "name": "kmipkit_protocol::GetRequest::with_key_wrapping_specification",
-        "operation": "KMIPKIT-ELEM-OP-C2S-GET",
+        "operation": "KMIP-ELEM-OP-C2S-GET",
         "owner": "specs/017-managed-object-retrieval/spec.md",
         "requirements": {
-            "KMIPKIT-REQ-SPEC-7.18-001-001",
-            "KMIPKIT-REQ-SPEC-7.18-004",
+            "KMIP-REQ-SPEC-7.18-001-001",
+            "KMIP-REQ-SPEC-7.18-004",
         },
         "fr": {"KMIPKIT-0017-FR-001", "KMIPKIT-0017-FR-002", "KMIPKIT-0017-FR-003", "KMIPKIT-0017-FR-005", "KMIPKIT-0017-FR-013"},
         "builder": "kmipkit_client_batch_item_get",
@@ -105,7 +105,7 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
                 }
                 self.assertEqual(expected["fr"], owner_fr_ids)
                 normative_ids = {
-                    value for value in linked_ids if value.startswith("KMIPKIT-REQ-SPEC-")
+                    value for value in linked_ids if value.startswith("KMIP-REQ-SPEC-")
                 }
                 self.assertEqual(expected["requirements"], normative_ids)
                 expected_evidence = set(COMMON_EVIDENCE.values()) | {expected["rust_test"]}
@@ -139,10 +139,10 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
     def test_client_and_server_requirement_scope_is_exact(self) -> None:
         self.assertTrue(
             {
-                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.18-008",
-                "KMIPKIT-REQ-SPEC-7.18-001-001",
-                "KMIPKIT-REQ-SPEC-7.18-004",
+                "KMIP-REQ-SPEC-6.1.18-001-001",
+                "KMIP-REQ-SPEC-6.1.18-008",
+                "KMIP-REQ-SPEC-7.18-001-001",
+                "KMIP-REQ-SPEC-7.18-004",
             }
             <= set(self.manifest["requirementIds"])
         )
@@ -152,12 +152,12 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
             )
         )
         requirement_id_pattern = schema["$defs"]["requirementId"]["pattern"]
-        self.assertRegex("KMIPKIT-REQ-SPEC-7.18-001-001", requirement_id_pattern)
-        self.assertRegex("KMIPKIT-REQ-SPEC-7.18-004", requirement_id_pattern)
+        self.assertRegex("KMIP-REQ-SPEC-7.18-001-001", requirement_id_pattern)
+        self.assertRegex("KMIP-REQ-SPEC-7.18-004", requirement_id_pattern)
         requirements = {
             row["requirement_id"]: row for row in self.catalog["requirements"]
         }
-        server_replace = requirements["KMIPKIT-REQ-SPEC-6.1.25-004"]
+        server_replace = requirements["KMIP-REQ-SPEC-6.1.25-004"]
         self.assertEqual("server", server_replace["role"])
         self.assertEqual("server_to_client", server_replace["direction"])
         self.assertEqual("server_only", server_replace["scope_state"])
@@ -167,20 +167,20 @@ class T102WrappingRequestBuilderMappingTests(unittest.TestCase):
         ):
             self.assertNotIn(server_replace["requirement_id"], self.declarations[declaration_id]["requirementIds"])
         for requirement_id in (
-            "KMIPKIT-REQ-SPEC-7.18-004",
-            "KMIPKIT-REQ-SPEC-7.18-005",
-            "KMIPKIT-REQ-SPEC-7.18-006",
+            "KMIP-REQ-SPEC-7.18-004",
+            "KMIP-REQ-SPEC-7.18-005",
+            "KMIP-REQ-SPEC-7.18-006",
         ):
             requirement = requirements[requirement_id]
             self.assertEqual("client", requirement["role"])
             self.assertEqual("client_to_server", requirement["direction"])
         get_req_ids = set(self.declarations["rust-observed-ba1772cec998d92e5148"]["requirementIds"])
         export_req_ids = set(self.declarations["rust-observed-61aecad439c9a84c7241"]["requirementIds"])
-        self.assertIn("KMIPKIT-REQ-SPEC-7.18-004", get_req_ids)
-        self.assertIn("KMIPKIT-REQ-SPEC-7.18-004", export_req_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-7.18-005", get_req_ids | export_req_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-7.18-006", get_req_ids | export_req_ids)
-        self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.19-001", get_req_ids)
+        self.assertIn("KMIP-REQ-SPEC-7.18-004", get_req_ids)
+        self.assertIn("KMIP-REQ-SPEC-7.18-004", export_req_ids)
+        self.assertNotIn("KMIP-REQ-SPEC-7.18-005", get_req_ids | export_req_ids)
+        self.assertNotIn("KMIP-REQ-SPEC-7.18-006", get_req_ids | export_req_ids)
+        self.assertNotIn("KMIP-REQ-SPEC-6.1.19-001", get_req_ids)
 
     def test_oasis_tables_pin_optional_fields_and_valid_wrapping_shape(self) -> None:
         raw = OASIS.read_bytes()

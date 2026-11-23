@@ -1,5 +1,5 @@
-//! Requirement traceability: KMIPKIT-0004-FR-010, FR-012, and SC-006.
-//! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
+//! Requirement traceability: functional requirement, FR-012, and SC-006.
+//! Authority: approved specification requirement specification and Rust value-model contract.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 

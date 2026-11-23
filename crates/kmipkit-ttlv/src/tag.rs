@@ -33,7 +33,7 @@ impl RawTag {
     /// KMIP versions.
     ///
     /// Exact catalog records take precedence over overlapping aggregate
-    /// ranges, following the `KMIPKit` project policy recorded in ADR-0010.
+    /// ranges, following the tag allocation precedence policy.
     /// This checks allocation only. A tag assigned by one supported KMIP
     /// version may be reserved or unassigned in another; the protocol layer
     /// remains responsible for checking the effective version, as well as
@@ -62,7 +62,7 @@ impl RawTag {
 /// checked.
 ///
 /// Allocation follows `KMIPKit`'s project policy for exact records and
-/// aggregate ranges as recorded in ADR-0010 and the pinned versioned tag
+/// aggregate ranges as defined in the tag allocation precedence policy and the pinned versioned tag
 /// catalogs. A checked tag is not a claim that it is valid for a particular
 /// protocol version, or that its TTLV framing, Structure schema, extension
 /// semantics, or operation meaning is valid.

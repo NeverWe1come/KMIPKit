@@ -1,7 +1,7 @@
 //! Registered extension recognition and inspection behavior.
 //!
-//! Traceability: KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-007,
-//! KMIPKIT-0012-FR-012, and KMIP 2.1 §9.13, Table 418.
+//! Traceability: functional requirement, functional requirement,
+//! functional requirement, and KMIP 2.1 §9.13, Table 418.
 
 use kmipkit_client::extension_registry::{self, ClientExtensionRegistry, ExtensionRecognition};
 use kmipkit_client::{ClientError, ClientErrorCategory};

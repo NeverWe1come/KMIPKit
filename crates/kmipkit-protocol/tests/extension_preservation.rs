@@ -3,8 +3,8 @@
 //! OASIS KMIP v2.1 §9.13, Table 418 defines the standard Message Extension
 //! fields and Vendor Extension subtree. Unknown vendor payload fields and
 //! forward-compatible enum/bitmask values are `KMIPKit` preservation policy
-//! (`KMIPKIT-0012-FR-007`, `KMIPKIT-0012-SC-003`), not new OASIS schema rules.
-//! TTLV decoding bounds follow KMIPKIT-0005-FR-004 and KMIPKIT-0012-FR-012.
+//! (`functional requirement`, `success criterion`), not new OASIS schema rules.
+//! TTLV decoding bounds follow functional requirement and functional requirement.
 
 use kmipkit_protocol::{
     ProtocolError, ProtocolErrorKind, RequestMessage,

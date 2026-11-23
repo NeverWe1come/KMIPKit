@@ -1,7 +1,7 @@
 //! Delegated Login contracts from OASIS KMIP Specification v2.1 §6.1.12,
 //! Tables 199–201, with Ticket encoding from §7.39, Table 391.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-DELEGATED-LOGIN`,
+//! Traceability: `KMIP-ELEM-OP-C2S-DELEGATED-LOGIN`,
 //! `KMIPKIT-024-T199-REQUEST`, `KMIPKIT-024-T200-RESPONSE`, and
 //! `KMIPKIT-024-T201-ERROR`. These are source-derived tests, not official
 //! Test Case executions.

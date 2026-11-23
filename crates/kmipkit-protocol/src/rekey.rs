@@ -127,7 +127,7 @@ impl RekeyRequest {
             .is_err()
             {
                 return crate::validation::request_issue_report(
-                    "KMIPKIT-0051-P005",
+                    "PAYLOAD-POLICY-P005",
                     "Attributes",
                     ValidationSourceRef::Oasis {
                         document: "KMIP v2.1",

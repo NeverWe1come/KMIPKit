@@ -12,15 +12,15 @@ CATALOG = ROOT / "verification/conformance/catalog/kmip-2.1.json"
 TRACE = ROOT / "specs/028-diagnostics-interop/traceability.md"
 RESEARCH = ROOT / "specs/028-diagnostics-interop/research.md"
 EXPECTED = {
-    "KMIPKIT-REQ-SPEC-6.1.57-001": "req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
-    "KMIPKIT-REQ-SPEC-6.1.57-002-001": "req_002_001_certificate_identifier_and_mixed_inputs_are_available",
-    "KMIPKIT-REQ-SPEC-6.1.57-002-002": "req_002_002_optional_validity_date_preserves_exact_value",
-    "KMIPKIT-REQ-SPEC-6.1.57-004": "req_004_repeated_certificate_values_preserve_order",
-    "KMIPKIT-REQ-SPEC-6.1.57-005": "req_005_repeated_identifiers_preserve_order_and_open_values",
-    "KMIPKIT-REQ-SPEC-6.1.57-006": "req_006_omitted_date_remains_absent_in_request_serialization",
+    "KMIP-REQ-SPEC-6.1.57-001": "req_001_models_one_chain_and_rejects_malformed_certificate_wrapper",
+    "KMIP-REQ-SPEC-6.1.57-002-001": "req_002_001_certificate_identifier_and_mixed_inputs_are_available",
+    "KMIP-REQ-SPEC-6.1.57-002-002": "req_002_002_optional_validity_date_preserves_exact_value",
+    "KMIP-REQ-SPEC-6.1.57-004": "req_004_repeated_certificate_values_preserve_order",
+    "KMIP-REQ-SPEC-6.1.57-005": "req_005_repeated_identifiers_preserve_order_and_open_values",
+    "KMIP-REQ-SPEC-6.1.57-006": "req_006_omitted_date_remains_absent_in_request_serialization",
 }
-UNSPECIFIED_ROLE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
-PROFILELESS_FEATURE_REQUIREMENTS = {"KMIPKIT-REQ-SPEC-6.1.57-006"}
+UNSPECIFIED_ROLE_REQUIREMENTS = {"KMIP-REQ-SPEC-6.1.57-006"}
+PROFILELESS_FEATURE_REQUIREMENTS = {"KMIP-REQ-SPEC-6.1.57-006"}
 OMITTED_DATE_RESEARCH_CONTRACT = (
     "source actor remains unspecified",
     "Client verification covers preserving the omission in request serialization only",
@@ -33,7 +33,7 @@ OMITTED_DATE_TRACEABILITY_CONTRACT = (
 )
 
 
-@unittest.skipUnless((ROOT / "specs").is_dir(), "SDD traceability sources are excluded from this branch")
+@unittest.skipUnless((ROOT / "specs").is_dir(), "External specification sources are not bundled with this source distribution")
 class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
     def setUp(self) -> None:
         self.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
@@ -52,7 +52,7 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
             self.assertEqual(record["role"], expected_role)
             self.assertEqual(record["status"], "scoped_verified")
             self.assertEqual(record["scope_state"], "client_1_0")
-            self.assertIn("KMIPKIT-ELEM-OP-C2S-VALIDATE", record["element_ids"])
+            self.assertIn("KMIP-ELEM-OP-C2S-VALIDATE", record["element_ids"])
             if identifier in PROFILELESS_FEATURE_REQUIREMENTS:
                 self.assertEqual(record["profile_ids"], [])
             self.assertEqual(record["test_case_ids"], [])
@@ -71,14 +71,14 @@ class DiagnosticsInteropTraceabilityTests(unittest.TestCase):
     def test_operation_tables_codes_and_all_payload_rows_remain_mapped(self) -> None:
         elements = {r["element_id"]: r for r in self.catalog["elements"]}
         for operation, tables, code in [("INTEROP", [241, 242], "00000034"), ("LOG", [250, 251], "0000002C"), ("VALIDATE", [340, 341], "00000017")]:
-            record = elements[f"KMIPKIT-ELEM-OP-C2S-{operation}"]
+            record = elements[f"KMIP-ELEM-OP-C2S-{operation}"]
             self.assertEqual(record["feature_spec"], "KMIPKIT-0042")
             self.assertEqual([table["table_number"] for table in record["payload_tables"]], tables)
             self.assertTrue(record["implementation_refs"])
             self.assertTrue(record["verification_refs"])
-            self.assertEqual(elements[f"KMIPKIT-ELEM-ENUM-VALUE-OPERATION-{operation}-{code}"]["wire_value"], code)
+            self.assertEqual(elements[f"KMIP-ELEM-ENUM-VALUE-OPERATION-{operation}-{code}"]["wire_value"], code)
         for tag in ["420160", "420161", "420141", "420013", "420094", "42009A", "42009B"]:
-            identifier = f"KMIPKIT-ELEM-TAG-{tag}"
+            identifier = f"KMIP-ELEM-TAG-{tag}"
             self.assertIn(identifier, self.trace)
             self.assertIn(identifier, elements)
         rows = re.findall(r"^\| KMIPKIT-028-T\d+-\w+", self.trace, re.MULTILINE)

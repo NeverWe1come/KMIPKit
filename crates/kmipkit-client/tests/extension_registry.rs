@@ -1,7 +1,7 @@
 //! Client-owned immutable extension registry tests.
 //!
-//! Traceability: KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-009, and
-//! KMIPKIT-0012-SC-002.
+//! Traceability: functional requirement, functional requirement, and
+//! success criterion.
 
 use kmipkit_client::extension_registry;
 use kmipkit_client::{ClientError, ClientErrorCategory};
@@ -215,7 +215,7 @@ fn ordered_identities(
 
 #[test]
 fn client_registries_keep_definition_snapshots_isolated() {
-    // KMIPKIT-0012-FR-001: a registry belongs to one client configuration.
+    // functional requirement: a registry belongs to one client configuration.
     let alpha = &FIXTURES[0];
     let beta = &FIXTURES[2];
     let alpha_registry = registry(&[alpha]);
@@ -272,7 +272,7 @@ fn registry_read_operations_leave_the_constructed_snapshot_unchanged() {
 
 #[test]
 fn definition_and_metadata_views_ignore_registration_order() {
-    // KMIPKIT-0012-FR-009 and KMIPKIT-0012-SC-002: registry-local definition
+    // functional requirement and success criterion: registry-local definition
     // and metadata views are deterministic regardless of registration order.
     let forward = registry(&[&FIXTURES[0], &FIXTURES[1], &FIXTURES[2]]);
     let reverse = registry(&[&FIXTURES[2], &FIXTURES[1], &FIXTURES[0]]);

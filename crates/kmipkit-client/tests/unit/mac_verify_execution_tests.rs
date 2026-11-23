@@ -3,7 +3,7 @@
 //! Test Case executions.
 //!
 //! Traceability: FR-001, FR-005–FR-011, FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY`.
+//! `KMIP-ELEM-OP-C2S-MAC-VERIFY`.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

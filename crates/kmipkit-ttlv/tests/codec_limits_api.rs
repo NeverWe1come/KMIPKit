@@ -24,7 +24,7 @@ fn assert_kind<T>(result: &Result<T, kmipkit_ttlv::codec::DecodeError>, expected
 
 #[test]
 fn public_limits_expose_default_and_explicit_read_only_values() {
-    // KMIPKit per-call resource policy: KMIPKIT-0005-FR-007.
+    // KMIPKit per-call resource policy: functional requirement.
     let defaults = CodecLimits::defaults();
     assert_eq!(
         defaults.max_message_bytes(),

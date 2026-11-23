@@ -145,7 +145,7 @@ class T102RngSeedRequestTraitExclusionTests(unittest.TestCase):
             with self.subTest(export_name=name):
                 self.assertEqual(
                     protocol_rows[name]["capabilityId"],
-                    "KMIPKIT-ELEM-OP-C2S-RNG-SEED",
+                    "KMIP-ELEM-OP-C2S-RNG-SEED",
                 )
                 self.assertIn("KMIPKIT-0041-FR-001", protocol_rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0041-FR-004", protocol_rows[name]["requirementIds"])

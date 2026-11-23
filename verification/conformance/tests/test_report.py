@@ -25,20 +25,20 @@ def report_catalog() -> dict[str, object]:
     catalog = minimal_catalog()
     catalog["source_clauses"] = [
         {
-            "clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "source_id": "KMIPKIT-SRC-spec",
             "section": "8.1",
             "locator": {"ordinal": 1, "block_kind": "paragraph"},
             "source_keywords": ["MUST"],
             "disposition": "requirement",
-            "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+            "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
             "exclusion_rationale": None,
         }
     ]
     catalog["requirements"] = [
         {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
             "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
             "source_keyword": "MUST",
             "normative_strength": "mandatory",
@@ -92,7 +92,7 @@ class CoverageReportTests(unittest.TestCase):
         requirement = next(
             record
             for record in catalog["requirements"]
-            if record["requirement_id"] == "KMIPKIT-REQ-SPEC-8-001"
+            if record["requirement_id"] == "KMIP-REQ-SPEC-8-001"
         )
 
         self.assertEqual(
@@ -119,7 +119,7 @@ class CoverageReportTests(unittest.TestCase):
         requirement["implementation_refs"] = ["crates/kmipkit-protocol/src/profile.rs"]
         requirement["verification_refs"] = ["verification/conformance/tests/test_report.py"]
         requirement_id = requirement["requirement_id"]
-        clause_id = "KMIPKIT-CLAUSE-SPEC-8.1-001"
+        clause_id = "KMIP-CLAUSE-SPEC-8.1-001"
         test_id = "KMIPKIT-TEST-SPEC-READINESS-001"
         profile_a_id = "KMIPKIT-PROFILE-READINESS-A"
         profile_b_id = "KMIPKIT-PROFILE-READINESS-B"
@@ -384,8 +384,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-14.1-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-14.1-002",
+        requirement_id: "KMIP-REQ-SPEC-14.1-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-14.1-002",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
@@ -414,8 +414,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             self.assertEqual(
                 [
                     {
-                        "requirement_id": "KMIPKIT-REQ-SPEC-14.1-002",
-                        "source_clause_id": "KMIPKIT-CLAUSE-SPEC-14.1-002",
+                        "requirement_id": "KMIP-REQ-SPEC-14.1-002",
+                        "source_clause_id": "KMIP-CLAUSE-SPEC-14.1-002",
                         "source_gap_id": None,
                         "verification_category": "RequiredBehavior",
                         "evaluator_present": False,
@@ -436,8 +436,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        requirement_id: "KMIP-REQ-SPEC-4-001-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-4-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: None,
@@ -457,8 +457,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             _parse_typed_rule_registry(source),
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
-                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+                    "requirement_id": "KMIP-REQ-SPEC-4-001-002",
+                    "source_clause_id": "KMIP-CLAUSE-SPEC-4-001",
                     "source_gap_id": None,
                     "verification_category": "RecommendedBehaviorOrDeviation",
                     "evaluator_present": False,
@@ -477,8 +477,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         requirement = catalog["requirements"][0]
         requirement.update(
             {
-                "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-4-001"],
+                "requirement_id": "KMIP-REQ-SPEC-4-001-002",
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-4-001"],
                 "source_keyword": "SHOULD",
                 "normative_strength": "recommended",
                 "role": "client",
@@ -492,20 +492,20 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             {
                 "profile_id": "KMIPKIT-PROFILE-BASELINE-CLIENT",
                 "role": "client",
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-4-001-002"],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-4-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-4-001-002"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-4-001"],
             }
         ]
         catalog["decisions"] = [
             {
                 "decision_id": "KMIPKIT-DEC-023",
                 "status": "accepted",
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-4-001-002"],
+                "requirement_ids": ["KMIP-REQ-SPEC-4-001-002"],
             }
         ]
         mapping = {
-            "requirement_id": "KMIPKIT-REQ-SPEC-4-001-002",
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-4-001",
+            "requirement_id": "KMIP-REQ-SPEC-4-001-002",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-4-001",
             "verification_category": "RecommendedBehaviorOrDeviation",
             "evaluator_present": False,
             "transport_only": False,
@@ -666,8 +666,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.57-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.57-002",
+        requirement_id: "KMIP-REQ-SPEC-4.57-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-4.57-002",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::ProhibitedBehavior,
         evaluator: None,
@@ -688,8 +688,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+        requirement_id: "KMIP-REQ-SPEC-6.1.28-004-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.28-004",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RequiredBehavior,
         evaluator: None,
@@ -709,8 +709,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             _parse_typed_rule_registry(source),
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.28-004",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.28-004-001",
+                    "source_clause_id": "KMIP-CLAUSE-SPEC-6.1.28-004",
                     "source_gap_id": None,
                     "verification_category": "RequiredBehavior",
                     "evaluator_present": False,
@@ -727,8 +727,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-4.34-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4.34-001",
+        requirement_id: "KMIP-REQ-SPEC-4.34-001-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-4.34-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: None,
@@ -748,7 +748,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         self.assertEqual(len(mappings), 1)
         self.assertEqual(
-            mappings[0]["requirement_id"], "KMIPKIT-REQ-SPEC-4.34-001-002"
+            mappings[0]["requirement_id"], "KMIP-REQ-SPEC-4.34-001-002"
         )
         self.assertEqual(
             mappings[0]["verification_category"], "RecommendedBehaviorOrDeviation"
@@ -761,37 +761,37 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         expected = [
             (
-                "KMIPKIT-REQ-SPEC-4.38-003",
+                "KMIP-REQ-SPEC-4.38-003",
                 "ProhibitedBehavior",
                 "NegativeBehavior",
                 "original_creation_date_immutable_after_set_caller_asserted",
             ),
             (
-                "KMIPKIT-REQ-SPEC-4.57-005-002",
+                "KMIP-REQ-SPEC-4.57-005-002",
                 "RecommendedBehaviorOrDeviation",
                 "RecommendedBehavior",
                 "compromised_object_protected_information_only_trusted_client_caller_asserted",
             ),
             (
-                "KMIPKIT-REQ-SPEC-4.59-002",
+                "KMIP-REQ-SPEC-4.59-002",
                 "ProhibitedBehavior",
                 "NegativeBehavior",
                 "usage_limits_total_immutable_after_protection_begins_caller_asserted",
             ),
             (
-                "KMIPKIT-REQ-SPEC-4.59-003-001",
+                "KMIP-REQ-SPEC-4.59-003-001",
                 "ProhibitedBehavior",
                 "NegativeBehavior",
                 "usage_limits_total_immutable_after_count_allocation_caller_asserted",
             ),
             (
-                "KMIPKIT-REQ-SPEC-6.1.14-002",
+                "KMIP-REQ-SPEC-6.1.14-002",
                 "OptionalCapability",
                 "OptionalCapabilityUsable",
                 "derive_key_multiple_inputs_caller_selected",
             ),
             (
-                "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+                "KMIP-REQ-SPEC-6.1.34-001-003",
                 "OptionalCapability",
                 "OptionalCapabilityUsable",
                 "modify_attribute_existing_instance_named",
@@ -801,7 +801,7 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         entries = [
             f'''    TypedRuleMapping {{
         requirement_id: "{requirement_id}",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-4-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-4-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::{category},
         evaluator: None,
@@ -849,8 +849,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.42-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.42-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: None,
@@ -864,8 +864,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         }],
     },
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.42-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.42-001-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.42-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: None,
@@ -885,8 +885,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
         self.assertEqual(
             [mapping["requirement_id"] for mapping in mappings],
             [
-                "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.42-001-002",
+                "KMIP-REQ-SPEC-6.1.42-001-001",
+                "KMIP-REQ-SPEC-6.1.42-001-002",
             ],
         )
         self.assertTrue(all(mapping["configuration_only"] for mapping in mappings))
@@ -900,8 +900,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
 
         source = """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+        requirement_id: "KMIP-REQ-SPEC-6.1.7-002-002",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.7-002",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::RecommendedBehaviorOrDeviation,
         evaluator: Some(
@@ -920,8 +920,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             _parse_typed_rule_registry(source),
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-                    "source_clause_id": "KMIPKIT-CLAUSE-SPEC-6.1.7-002",
+                    "requirement_id": "KMIP-REQ-SPEC-6.1.7-002-002",
+                    "source_clause_id": "KMIP-CLAUSE-SPEC-6.1.7-002",
                     "source_gap_id": None,
                     "verification_category": "RecommendedBehaviorOrDeviation",
                     "evaluator_present": True,
@@ -949,8 +949,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -979,8 +979,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1016,8 +1016,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1052,8 +1052,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1088,8 +1088,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1124,8 +1124,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1157,8 +1157,8 @@ const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1194,8 +1194,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1236,8 +1236,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1274,8 +1274,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1311,8 +1311,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1348,8 +1348,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(validate_discover_versions_rule),
@@ -1385,8 +1385,8 @@ mod unrelated {
             source_path.write_text(
                 """const TYPED_RULE_MAPPINGS: &[TypedRuleMapping] = &[
     TypedRuleMapping {
-        requirement_id: "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-        source_clause_id: "KMIPKIT-CLAUSE-SPEC-6.1.16-001",
+        requirement_id: "KMIP-REQ-SPEC-6.1.16-001-001",
+        source_clause_id: "KMIP-CLAUSE-SPEC-6.1.16-001",
         source_gap_id: None,
         verification_category: GeneratedVerificationCategory::OptionalCapability,
         evaluator: Some(run_unreviewed_macro!()),
@@ -1411,15 +1411,15 @@ mod unrelated {
                 "role": "client",
                 "applicability": "client_1_0",
                 "claim_state": "not_claimed",
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "dependency_profile_ids": [],
                 "test_case_ids": ["KMIPKIT-TEST-PROFILE-BASELINE"],
             }
         ]
         typed_rule_mapping = {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "verification_category": "RequiredBehavior",
             "evaluator_present": True,
             "test_kind": "PositiveBehavior",
@@ -1437,16 +1437,16 @@ mod unrelated {
         catalog["requirements"].extend(
             [
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
-                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "requirement_id": "KMIP-REQ-SPEC-8.1-UNCLEAR",
+                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
                     "role": "client",
                     "scope_state": "unclear",
                     "implementation_refs": [],
                     "verification_refs": [],
                 },
                 {
-                    "requirement_id": "KMIPKIT-REQ-SPEC-8.1-CONDITIONAL",
-                    "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                    "requirement_id": "KMIP-REQ-SPEC-8.1-CONDITIONAL",
+                    "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
                     "role": "both",
                     "scope_state": "profile_conditional",
                     "profile_ids": [],
@@ -1467,15 +1467,15 @@ mod unrelated {
 
         report = render_report(catalog, typed_rule_mappings=[typed_rule_mapping])
         self.assertIn(
-            "unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR",
+            "unresolved applicability scope: KMIP-REQ-SPEC-8.1-UNCLEAR",
             report,
         )
         self.assertTrue(any(
-            blocker.startswith("unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-UNCLEAR at ")
+            blocker.startswith("unresolved applicability scope: KMIP-REQ-SPEC-8.1-UNCLEAR at ")
             for blocker in readiness["blockers"]
         ))
         self.assertTrue(any(
-            blocker.startswith("unresolved applicability scope: KMIPKIT-REQ-SPEC-8.1-CONDITIONAL at ")
+            blocker.startswith("unresolved applicability scope: KMIP-REQ-SPEC-8.1-CONDITIONAL at ")
             for blocker in readiness["blockers"]
         ))
         self.assertFalse(readiness["runtime_validation_available"])
@@ -1504,7 +1504,7 @@ mod unrelated {
 
         self.assertIn(
             "unresolved source discrepancy: KMIPKIT-DISC-042 affects "
-            "requirement KMIPKIT-REQ-SPEC-9.11-004-001",
+            "requirement KMIP-REQ-SPEC-9.11-004-001",
             readiness["blockers"],
         )
 
@@ -1754,7 +1754,7 @@ mod unrelated {
         self.assertIn("## Source documents", report)
         self.assertIn("## Count reconciliation", report)
         self.assertIn("## Unassigned requirements", report)
-        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIP-REQ-SPEC-8.1-001", report)
         self.assertIn("mandatory", report)
         self.assertTrue(report.endswith("\n"))
 
@@ -1808,7 +1808,7 @@ mod unrelated {
         report = render_report(catalog)
 
         self.assertIn("## Requirements needing negative verification", report)
-        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIP-REQ-SPEC-8.1-001", report)
         self.assertIn("prohibited", report)
         self.assertIn("required", report)
 
@@ -1822,7 +1822,7 @@ mod unrelated {
         report = render_report(catalog)
 
         self.assertIn("## Requirements without official test-case links", report)
-        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIP-REQ-SPEC-8.1-001", report)
         self.assertIn("No requirement-specific official Test Cases ID", report)
 
     def test_reports_profile_states_missing_fixtures_and_open_discrepancies(self) -> None:
@@ -1857,7 +1857,7 @@ mod unrelated {
                 "summary": "Batch continuation wording conflict",
                 "state": "open",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "11.5"}],
-                "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "affected_requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "affected_element_ids": [],
                 "affected_profile_ids": [],
                 "affected_policy_ids": [],
@@ -1902,7 +1902,7 @@ mod unrelated {
         catalog = report_catalog()
         catalog["elements"] = [
             {
-                "element_id": "KMIPKIT-ELEM-TAG-420001",
+                "element_id": "KMIP-ELEM-TAG-420001",
                 "kind": "tag",
                 "name": "Activation Date",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "6.1.7"}],
@@ -1918,9 +1918,9 @@ mod unrelated {
         report = render_report(catalog)
         self.assertIn("## Unassigned protocol elements", report)
         self.assertIn("| Element | Name | Kind | Direction | Scope | Wire value | Allocation | Source |", report)
-        self.assertIn("KMIPKIT-ELEM-TAG-420001", report)
+        self.assertIn("KMIP-ELEM-TAG-420001", report)
         self.assertIn(r"client\_to\_server", report)
-        self.assertIn("| KMIPKIT-ELEM-TAG-420001 | Activation Date | tag |", report)
+        self.assertIn("| KMIP-ELEM-TAG-420001 | Activation Date | tag |", report)
         self.assertIn(r"| client\_1\_0 | 420001 | assigned | KMIPKIT-SRC-spec §6.1.7 |", report)
 
     def test_reports_tag_allocation_counts_and_each_range(self) -> None:
@@ -2031,8 +2031,8 @@ mod unrelated {
                 "applicability": "client_1_0",
                 "claim_state": "evidence_incomplete",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "element_ids": [],
                 "dependency_profile_ids": [],
                 "test_case_ids": [],
@@ -2049,8 +2049,8 @@ mod unrelated {
 
         self.assertIn("## Profile requirement rule coverage", report)
         self.assertIn("KMIPKIT-PROFILE-BASELINE-CLIENT", report)
-        self.assertIn("KMIPKIT-REQ-SPEC-8.1-001", report)
-        self.assertIn("KMIPKIT-CLAUSE-SPEC-8.1-001", report)
+        self.assertIn("KMIP-REQ-SPEC-8.1-001", report)
+        self.assertIn("KMIP-CLAUSE-SPEC-8.1-001", report)
         self.assertIn("RequiredBehavior", report)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
@@ -2068,8 +2068,8 @@ mod unrelated {
                 "applicability": "client_1_0",
                 "claim_state": "not_claimed",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "element_ids": [],
                 "dependency_profile_ids": [],
                 "test_case_ids": [],
@@ -2078,8 +2078,8 @@ mod unrelated {
             }
         ]
         mapping = {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "verification_category": "RequiredBehavior",
             "evaluator_present": True,
             "test_kind": "PositiveBehavior",
@@ -2104,8 +2104,8 @@ mod unrelated {
                 "applicability": "client_1_0",
                 "claim_state": "not_claimed",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "element_ids": [],
                 "dependency_profile_ids": [],
                 "test_case_ids": [],
@@ -2114,8 +2114,8 @@ mod unrelated {
             }
         ]
         mapping = {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "verification_category": "RequiredBehavior",
             "evaluator_present": False,
             "transport_only": True,
@@ -2139,8 +2139,8 @@ mod unrelated {
                 "applicability": "client_1_0",
                 "claim_state": "not_claimed",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
-                "requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
+                "requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "element_ids": [],
                 "dependency_profile_ids": [],
                 "test_case_ids": [],
@@ -2149,8 +2149,8 @@ mod unrelated {
             }
         ]
         mapping = {
-            "requirement_id": "KMIPKIT-REQ-SPEC-8.1-001",
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "requirement_id": "KMIP-REQ-SPEC-8.1-001",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "verification_category": "RequiredBehavior",
             "evaluator_present": False,
             "transport_only": False,
@@ -2190,7 +2190,7 @@ mod unrelated {
                 "applicability": "client_1_0",
                 "claim_state": "not_claimed",
                 "source_refs": [{"source_id": "KMIPKIT-SRC-spec", "section": "8.1"}],
-                "source_clause_ids": ["KMIPKIT-CLAUSE-SPEC-8.1-001"],
+                "source_clause_ids": ["KMIP-CLAUSE-SPEC-8.1-001"],
                 "requirement_ids": [requirement["requirement_id"]],
                 "element_ids": [],
                 "dependency_profile_ids": [],
@@ -2201,7 +2201,7 @@ mod unrelated {
         ]
         mapping = {
             "requirement_id": requirement["requirement_id"],
-            "source_clause_id": "KMIPKIT-CLAUSE-SPEC-8.1-001",
+            "source_clause_id": "KMIP-CLAUSE-SPEC-8.1-001",
             "verification_category": "RecommendedBehaviorOrDeviation",
             "evaluator_present": True,
             "test_kind": None,
@@ -2234,10 +2234,10 @@ mod unrelated {
         requirement_row = next(
             row
             for row in coverage_report.splitlines()
-            if row.startswith("| KMIPKIT-REQ-SPEC-6.1.6-007 |")
+            if row.startswith("| KMIP-REQ-SPEC-6.1.6-007 |")
         )
 
-        self.assertIn("KMIPKIT-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE".replace("_", r"\_"), requirement_row)
+        self.assertIn("KMIP-ELEM-STRUCTURE-MEMBER-2-2-CERTIFICATE-REQUEST-CERTIFICATE-REQUEST-TYPE".replace("_", r"\_"), requirement_row)
         self.assertIn("Certificate Request Type", requirement_row)
 
     def test_requirement_rule_coverage_shows_certify_get_placeholder_path_elements(self) -> None:
@@ -2248,7 +2248,7 @@ mod unrelated {
         requirement_row = next(
             row
             for row in coverage_report.splitlines()
-            if row.startswith("| KMIPKIT-REQ-SPEC-6.1.6-003 |")
+            if row.startswith("| KMIP-REQ-SPEC-6.1.6-003 |")
         )
 
         for name in ("Certify", "Get", "ID Placeholder", "Unique Identifier", "Batch Item", "Batch Order Option"):
@@ -2260,7 +2260,7 @@ mod unrelated {
         mapping = next(
             row
             for row in report_module.load_typed_rule_mappings(ROOT)
-            if row["requirement_id"] == "KMIPKIT-REQ-SPEC-2.3-003"
+            if row["requirement_id"] == "KMIP-REQ-SPEC-2.3-003"
         )
 
         self.assertIsNone(mapping.get("source_clause_id"))
@@ -2278,7 +2278,7 @@ mod unrelated {
         requirement_row = next(
             row
             for row in report.splitlines()
-            if row.startswith("| KMIPKIT-REQ-SPEC-2.3-003 |")
+            if row.startswith("| KMIP-REQ-SPEC-2.3-003 |")
         )
         self.assertIn("KMIPKIT-SOURCE-GAP-SPEC-2.3-OPAQUE-DATA-TYPE-REQUIRED", requirement_row)
         self.assertIn("§2.3", requirement_row)
@@ -2289,8 +2289,8 @@ mod unrelated {
         from verification.conformance import report as report_module
 
         entry = '''simple_typed_rule_mapping!(
-            "KMIPKIT-REQ-SPEC-TEST-001",
-            "KMIPKIT-CLAUSE-SPEC-TEST-001",
+            "KMIP-REQ-SPEC-TEST-001",
+            "KMIP-CLAUSE-SPEC-TEST-001",
             GeneratedVerificationCategory::OptionalCapability,
             [("crates/kmipkit-protocol/tests/support/profile_unit.rs::test_optional_capability", RuleTestKind::OptionalCapabilityUsable)],
             [("client_profile_capability", "recover_poll_caller_directed")],
@@ -2301,8 +2301,8 @@ mod unrelated {
         self.assertEqual(
             fields,
             {
-                "requirement_id": "KMIPKIT-REQ-SPEC-TEST-001",
-                "source_clause_id": "KMIPKIT-CLAUSE-SPEC-TEST-001",
+                "requirement_id": "KMIP-REQ-SPEC-TEST-001",
+                "source_clause_id": "KMIP-CLAUSE-SPEC-TEST-001",
                 "source_gap_id": None,
                 "category": "OptionalCapability",
                 "evaluator": "None",
@@ -2337,13 +2337,13 @@ mod unrelated {
 
         self.assertFalse(
             any(
-                row["requirement_id"] == "KMIPKIT-REQ-SPEC-4.57-002"
+                row["requirement_id"] == "KMIP-REQ-SPEC-4.57-002"
                 for row in typed_rule_mappings
             )
         )
         self.assertFalse(
             any(
-                row.startswith("| KMIPKIT-REQ-SPEC-4.57-002 |")
+                row.startswith("| KMIP-REQ-SPEC-4.57-002 |")
                 and "Typed rule mapping:" in row
                 for row in report.splitlines()
             )
@@ -2365,437 +2365,437 @@ mod unrelated {
                 "KMIPKIT-REQ-PROF-3.1.2-002",
                 "KMIPKIT-REQ-PROF-3.1.2-005",
                 "KMIPKIT-REQ-PROF-3.1.2-005",
-                "KMIPKIT-REQ-SPEC-2.3-001",
-                "KMIPKIT-REQ-SPEC-2.3-001",
-                "KMIPKIT-REQ-SPEC-2.3-002",
-                "KMIPKIT-REQ-SPEC-2.3-002",
-                "KMIPKIT-REQ-SPEC-2.3-002",
-                "KMIPKIT-REQ-SPEC-2.3-003",
-                "KMIPKIT-REQ-SPEC-2.4-001-001",
-                "KMIPKIT-REQ-SPEC-2.4-001-001",
-                "KMIPKIT-REQ-SPEC-2.4-001-002",
-                "KMIPKIT-REQ-SPEC-2.4-001-002",
-                "KMIPKIT-REQ-SPEC-2.4-002-001",
-                "KMIPKIT-REQ-SPEC-2.4-002-001",
-                "KMIPKIT-REQ-SPEC-2.7-001",
-                "KMIPKIT-REQ-SPEC-2.7-001",
-                "KMIPKIT-REQ-SPEC-2.8-003",
-                "KMIPKIT-REQ-SPEC-2.8-003",
-                "KMIPKIT-REQ-SPEC-2.8-003",
-                "KMIPKIT-REQ-SPEC-2.8-003",
-                "KMIPKIT-REQ-SPEC-2.8-003",
-                "KMIPKIT-REQ-SPEC-3.3-001-001",
-                "KMIPKIT-REQ-SPEC-3.3-001-002",
-                "KMIPKIT-REQ-SPEC-3.3-002",
-                "KMIPKIT-REQ-SPEC-3.3-006",
-                "KMIPKIT-REQ-SPEC-3.3-004",
-                "KMIPKIT-REQ-SPEC-3.1-002",
-                "KMIPKIT-REQ-SPEC-3.1-002",
-                "KMIPKIT-REQ-SPEC-3.1-006",
-                "KMIPKIT-REQ-SPEC-3.1-006",
-                "KMIPKIT-REQ-SPEC-3.2-001",
-                "KMIPKIT-REQ-SPEC-3.2-001",
-                "KMIPKIT-REQ-SPEC-3.1-001",
-                "KMIPKIT-REQ-SPEC-3.1-001",
-                "KMIPKIT-REQ-SPEC-3.1-001",
-                "KMIPKIT-REQ-SPEC-4-001-004",
-                "KMIPKIT-REQ-SPEC-4-001-005",
-                "KMIPKIT-REQ-SPEC-4.14-001-001",
-                "KMIPKIT-REQ-SPEC-4.14-001-001",
-                "KMIPKIT-REQ-SPEC-4.14-001-002",
-                "KMIPKIT-REQ-SPEC-4.14-001-002",
-                "KMIPKIT-REQ-SPEC-5.1-002",
-                "KMIPKIT-REQ-SPEC-5.1-002",
-                "KMIPKIT-REQ-SPEC-5.2-002",
-                "KMIPKIT-REQ-SPEC-5.2-002",
-                "KMIPKIT-REQ-SPEC-5.3-002",
-                "KMIPKIT-REQ-SPEC-5.3-002",
-                "KMIPKIT-REQ-SPEC-5.4-002",
-                "KMIPKIT-REQ-SPEC-5.4-002",
-                "KMIPKIT-REQ-SPEC-6.1.7-003",
-                "KMIPKIT-REQ-SPEC-6.1.7-003",
-                "KMIPKIT-REQ-SPEC-6.1.7-004-002",
-                "KMIPKIT-REQ-SPEC-6.1.7-004-002",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.9-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.9-006",
-                "KMIPKIT-REQ-SPEC-6.1.9-006",
-                "KMIPKIT-REQ-SPEC-6.1.9-006",
-                "KMIPKIT-REQ-SPEC-6.1.9-006",
-                "KMIPKIT-REQ-SPEC-6.1.9-006",
-                "KMIPKIT-REQ-SPEC-6.1.9-007",
-                "KMIPKIT-REQ-SPEC-6.1.9-007",
-                "KMIPKIT-REQ-SPEC-6.1.9-007",
-                "KMIPKIT-REQ-SPEC-6.1.9-007",
-                "KMIPKIT-REQ-SPEC-6.1.9-007",
-                "KMIPKIT-REQ-SPEC-3.1-004-002",
-                "KMIPKIT-REQ-SPEC-3.1-005-002",
-                "KMIPKIT-REQ-SPEC-6.1.43-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-007",
-                "KMIPKIT-REQ-SPEC-6.1.43-007",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-                "KMIPKIT-REQ-SPEC-6.1.43-011",
-                "KMIPKIT-REQ-SPEC-6.1.43-011",
-                "KMIPKIT-REQ-SPEC-6.1.43-011",
-                "KMIPKIT-REQ-SPEC-6.1.43-011",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-                "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-                "KMIPKIT-REQ-SPEC-6.1.43-010-002",
-                "KMIPKIT-REQ-SPEC-4.27-001",
-                "KMIPKIT-REQ-SPEC-4.28-001-001",
-                "KMIPKIT-REQ-SPEC-4.28-001-001",
-                "KMIPKIT-REQ-SPEC-4.28-001-001",
-                "KMIPKIT-REQ-SPEC-4.28-001-001",
-                "KMIPKIT-REQ-SPEC-4.28-001-002",
-                "KMIPKIT-REQ-SPEC-4.28-001-003",
-                "KMIPKIT-REQ-SPEC-4.28-001-003",
-                "KMIPKIT-REQ-SPEC-6.1.6-001",
-                "KMIPKIT-REQ-SPEC-6.1.6-002-001",
-                "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-                "KMIPKIT-REQ-SPEC-6.1.6-002-002",
-                "KMIPKIT-REQ-SPEC-6.1.6-002-003",
-                "KMIPKIT-REQ-SPEC-6.1.6-003",
-                "KMIPKIT-REQ-SPEC-6.1.6-003",
-                "KMIPKIT-REQ-SPEC-6.1.6-007",
-                "KMIPKIT-REQ-SPEC-6.1.43-005",
-                "KMIPKIT-REQ-SPEC-6.1.43-005",
-                "KMIPKIT-REQ-SPEC-4.35-001-001",
-                "KMIPKIT-REQ-SPEC-4.35-001-001",
-                "KMIPKIT-REQ-SPEC-4.35-001-002",
-                "KMIPKIT-REQ-SPEC-4.35-001-002",
-                "KMIPKIT-REQ-SPEC-4.38-001-001",
-                "KMIPKIT-REQ-SPEC-4.38-001-001",
-                "KMIPKIT-REQ-SPEC-4.38-001-002",
-                "KMIPKIT-REQ-SPEC-4.38-001-002",
-                "KMIPKIT-REQ-SPEC-4.38-001-003",
-                "KMIPKIT-REQ-SPEC-4.38-001-003",
-                "KMIPKIT-REQ-SPEC-4.39-002-001",
-                "KMIPKIT-REQ-SPEC-4.46-001-001",
-                "KMIPKIT-REQ-SPEC-4.46-001-001",
-                "KMIPKIT-REQ-SPEC-4.46-001-002",
-                "KMIPKIT-REQ-SPEC-4.46-001-002",
-                "KMIPKIT-REQ-SPEC-4.47-001-001",
-                "KMIPKIT-REQ-SPEC-4.47-001-001",
-                "KMIPKIT-REQ-SPEC-4.47-001-001",
-                "KMIPKIT-REQ-SPEC-4.47-001-002",
-                "KMIPKIT-REQ-SPEC-4.47-001-002",
-                "KMIPKIT-REQ-SPEC-4.47-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.44-003-002",
-                "KMIPKIT-REQ-SPEC-6.1.44-003-002",
-                "KMIPKIT-REQ-SPEC-6.1.45-001",
-                "KMIPKIT-REQ-SPEC-6.1.45-008",
-                "KMIPKIT-REQ-SPEC-6.1.45-008",
-                "KMIPKIT-REQ-SPEC-6.1.45-008",
-                "KMIPKIT-REQ-SPEC-6.1.45-008",
-                "KMIPKIT-REQ-SPEC-6.1.57-001",
-                "KMIPKIT-REQ-SPEC-6.1.57-002-002",
-                "KMIPKIT-REQ-SPEC-6.1.57-002-001",
-                "KMIPKIT-REQ-SPEC-6.1.57-004",
-                "KMIPKIT-REQ-SPEC-6.1.57-005",
-                "KMIPKIT-REQ-SPEC-4.62-003",
-                "KMIPKIT-REQ-SPEC-4.63-004",
-                "KMIPKIT-REQ-SPEC-4.63-005",
-                "KMIPKIT-REQ-SPEC-8.1-002",
-                "KMIPKIT-REQ-SPEC-8.2-002",
-                "KMIPKIT-REQ-SPEC-9.3-001-001",
-                "KMIPKIT-REQ-SPEC-9.3-001-001",
-                "KMIPKIT-REQ-SPEC-9.3-001-001",
-                "KMIPKIT-REQ-SPEC-9.3-001-001",
-                "KMIPKIT-REQ-SPEC-9.11-004-003",
-                "KMIPKIT-REQ-SPEC-9.11-004-003",
+                "KMIP-REQ-SPEC-2.3-001",
+                "KMIP-REQ-SPEC-2.3-001",
+                "KMIP-REQ-SPEC-2.3-002",
+                "KMIP-REQ-SPEC-2.3-002",
+                "KMIP-REQ-SPEC-2.3-002",
+                "KMIP-REQ-SPEC-2.3-003",
+                "KMIP-REQ-SPEC-2.4-001-001",
+                "KMIP-REQ-SPEC-2.4-001-001",
+                "KMIP-REQ-SPEC-2.4-001-002",
+                "KMIP-REQ-SPEC-2.4-001-002",
+                "KMIP-REQ-SPEC-2.4-002-001",
+                "KMIP-REQ-SPEC-2.4-002-001",
+                "KMIP-REQ-SPEC-2.7-001",
+                "KMIP-REQ-SPEC-2.7-001",
+                "KMIP-REQ-SPEC-2.8-003",
+                "KMIP-REQ-SPEC-2.8-003",
+                "KMIP-REQ-SPEC-2.8-003",
+                "KMIP-REQ-SPEC-2.8-003",
+                "KMIP-REQ-SPEC-2.8-003",
+                "KMIP-REQ-SPEC-3.3-001-001",
+                "KMIP-REQ-SPEC-3.3-001-002",
+                "KMIP-REQ-SPEC-3.3-002",
+                "KMIP-REQ-SPEC-3.3-006",
+                "KMIP-REQ-SPEC-3.3-004",
+                "KMIP-REQ-SPEC-3.1-002",
+                "KMIP-REQ-SPEC-3.1-002",
+                "KMIP-REQ-SPEC-3.1-006",
+                "KMIP-REQ-SPEC-3.1-006",
+                "KMIP-REQ-SPEC-3.2-001",
+                "KMIP-REQ-SPEC-3.2-001",
+                "KMIP-REQ-SPEC-3.1-001",
+                "KMIP-REQ-SPEC-3.1-001",
+                "KMIP-REQ-SPEC-3.1-001",
+                "KMIP-REQ-SPEC-4-001-004",
+                "KMIP-REQ-SPEC-4-001-005",
+                "KMIP-REQ-SPEC-4.14-001-001",
+                "KMIP-REQ-SPEC-4.14-001-001",
+                "KMIP-REQ-SPEC-4.14-001-002",
+                "KMIP-REQ-SPEC-4.14-001-002",
+                "KMIP-REQ-SPEC-5.1-002",
+                "KMIP-REQ-SPEC-5.1-002",
+                "KMIP-REQ-SPEC-5.2-002",
+                "KMIP-REQ-SPEC-5.2-002",
+                "KMIP-REQ-SPEC-5.3-002",
+                "KMIP-REQ-SPEC-5.3-002",
+                "KMIP-REQ-SPEC-5.4-002",
+                "KMIP-REQ-SPEC-5.4-002",
+                "KMIP-REQ-SPEC-6.1.7-003",
+                "KMIP-REQ-SPEC-6.1.7-003",
+                "KMIP-REQ-SPEC-6.1.7-004-002",
+                "KMIP-REQ-SPEC-6.1.7-004-002",
+                "KMIP-REQ-SPEC-6.1.9-001-001",
+                "KMIP-REQ-SPEC-6.1.9-001-001",
+                "KMIP-REQ-SPEC-6.1.9-001-001",
+                "KMIP-REQ-SPEC-6.1.9-001-002",
+                "KMIP-REQ-SPEC-6.1.9-001-002",
+                "KMIP-REQ-SPEC-6.1.9-001-002",
+                "KMIP-REQ-SPEC-6.1.9-006",
+                "KMIP-REQ-SPEC-6.1.9-006",
+                "KMIP-REQ-SPEC-6.1.9-006",
+                "KMIP-REQ-SPEC-6.1.9-006",
+                "KMIP-REQ-SPEC-6.1.9-006",
+                "KMIP-REQ-SPEC-6.1.9-007",
+                "KMIP-REQ-SPEC-6.1.9-007",
+                "KMIP-REQ-SPEC-6.1.9-007",
+                "KMIP-REQ-SPEC-6.1.9-007",
+                "KMIP-REQ-SPEC-6.1.9-007",
+                "KMIP-REQ-SPEC-3.1-004-002",
+                "KMIP-REQ-SPEC-3.1-005-002",
+                "KMIP-REQ-SPEC-6.1.43-001",
+                "KMIP-REQ-SPEC-6.1.43-001",
+                "KMIP-REQ-SPEC-6.1.43-007",
+                "KMIP-REQ-SPEC-6.1.43-007",
+                "KMIP-REQ-SPEC-6.1.43-009-001",
+                "KMIP-REQ-SPEC-6.1.43-009-001",
+                "KMIP-REQ-SPEC-6.1.43-009-001",
+                "KMIP-REQ-SPEC-6.1.43-009-001",
+                "KMIP-REQ-SPEC-6.1.43-010-001",
+                "KMIP-REQ-SPEC-6.1.43-010-001",
+                "KMIP-REQ-SPEC-6.1.43-010-001",
+                "KMIP-REQ-SPEC-6.1.43-010-001",
+                "KMIP-REQ-SPEC-6.1.43-011",
+                "KMIP-REQ-SPEC-6.1.43-011",
+                "KMIP-REQ-SPEC-6.1.43-011",
+                "KMIP-REQ-SPEC-6.1.43-011",
+                "KMIP-REQ-SPEC-6.1.43-009-002",
+                "KMIP-REQ-SPEC-6.1.43-009-002",
+                "KMIP-REQ-SPEC-6.1.43-009-002",
+                "KMIP-REQ-SPEC-6.1.43-010-002",
+                "KMIP-REQ-SPEC-4.27-001",
+                "KMIP-REQ-SPEC-4.28-001-001",
+                "KMIP-REQ-SPEC-4.28-001-001",
+                "KMIP-REQ-SPEC-4.28-001-001",
+                "KMIP-REQ-SPEC-4.28-001-001",
+                "KMIP-REQ-SPEC-4.28-001-002",
+                "KMIP-REQ-SPEC-4.28-001-003",
+                "KMIP-REQ-SPEC-4.28-001-003",
+                "KMIP-REQ-SPEC-6.1.6-001",
+                "KMIP-REQ-SPEC-6.1.6-002-001",
+                "KMIP-REQ-SPEC-6.1.6-002-002",
+                "KMIP-REQ-SPEC-6.1.6-002-002",
+                "KMIP-REQ-SPEC-6.1.6-002-003",
+                "KMIP-REQ-SPEC-6.1.6-003",
+                "KMIP-REQ-SPEC-6.1.6-003",
+                "KMIP-REQ-SPEC-6.1.6-007",
+                "KMIP-REQ-SPEC-6.1.43-005",
+                "KMIP-REQ-SPEC-6.1.43-005",
+                "KMIP-REQ-SPEC-4.35-001-001",
+                "KMIP-REQ-SPEC-4.35-001-001",
+                "KMIP-REQ-SPEC-4.35-001-002",
+                "KMIP-REQ-SPEC-4.35-001-002",
+                "KMIP-REQ-SPEC-4.38-001-001",
+                "KMIP-REQ-SPEC-4.38-001-001",
+                "KMIP-REQ-SPEC-4.38-001-002",
+                "KMIP-REQ-SPEC-4.38-001-002",
+                "KMIP-REQ-SPEC-4.38-001-003",
+                "KMIP-REQ-SPEC-4.38-001-003",
+                "KMIP-REQ-SPEC-4.39-002-001",
+                "KMIP-REQ-SPEC-4.46-001-001",
+                "KMIP-REQ-SPEC-4.46-001-001",
+                "KMIP-REQ-SPEC-4.46-001-002",
+                "KMIP-REQ-SPEC-4.46-001-002",
+                "KMIP-REQ-SPEC-4.47-001-001",
+                "KMIP-REQ-SPEC-4.47-001-001",
+                "KMIP-REQ-SPEC-4.47-001-001",
+                "KMIP-REQ-SPEC-4.47-001-002",
+                "KMIP-REQ-SPEC-4.47-001-002",
+                "KMIP-REQ-SPEC-4.47-001-002",
+                "KMIP-REQ-SPEC-6.1.44-003-002",
+                "KMIP-REQ-SPEC-6.1.44-003-002",
+                "KMIP-REQ-SPEC-6.1.45-001",
+                "KMIP-REQ-SPEC-6.1.45-008",
+                "KMIP-REQ-SPEC-6.1.45-008",
+                "KMIP-REQ-SPEC-6.1.45-008",
+                "KMIP-REQ-SPEC-6.1.45-008",
+                "KMIP-REQ-SPEC-6.1.57-001",
+                "KMIP-REQ-SPEC-6.1.57-002-002",
+                "KMIP-REQ-SPEC-6.1.57-002-001",
+                "KMIP-REQ-SPEC-6.1.57-004",
+                "KMIP-REQ-SPEC-6.1.57-005",
+                "KMIP-REQ-SPEC-4.62-003",
+                "KMIP-REQ-SPEC-4.63-004",
+                "KMIP-REQ-SPEC-4.63-005",
+                "KMIP-REQ-SPEC-8.1-002",
+                "KMIP-REQ-SPEC-8.2-002",
+                "KMIP-REQ-SPEC-9.3-001-001",
+                "KMIP-REQ-SPEC-9.3-001-001",
+                "KMIP-REQ-SPEC-9.3-001-001",
+                "KMIP-REQ-SPEC-9.3-001-001",
+                "KMIP-REQ-SPEC-9.11-004-003",
+                "KMIP-REQ-SPEC-9.11-004-003",
                 # KMIPKIT-0010 T056: caller-responsible Device uniqueness.
-                "KMIPKIT-REQ-SPEC-9.11-004-002",
-                "KMIPKIT-REQ-SPEC-9.11-004-002",
+                "KMIP-REQ-SPEC-9.11-004-002",
+                "KMIP-REQ-SPEC-9.11-004-002",
                 # KMIPKIT-0010 T056: model-only Credential identification.
-                "KMIPKIT-REQ-SPEC-9.11-001",
-                "KMIPKIT-REQ-SPEC-9.11-001",
-                "KMIPKIT-REQ-SPEC-9.11-006",
-                "KMIPKIT-REQ-SPEC-9.11-006",
-                "KMIPKIT-REQ-SPEC-9.11-006",
-                "KMIPKIT-REQ-SPEC-9.11-006",
+                "KMIP-REQ-SPEC-9.11-001",
+                "KMIP-REQ-SPEC-9.11-001",
+                "KMIP-REQ-SPEC-9.11-006",
+                "KMIP-REQ-SPEC-9.11-006",
+                "KMIP-REQ-SPEC-9.11-006",
+                "KMIP-REQ-SPEC-9.11-006",
                 # KMIPKIT-0010 T056: model-level Hashing Algorithm default.
-                "KMIPKIT-REQ-SPEC-9.11-010-002",
-                "KMIPKIT-REQ-SPEC-9.11-010-002",
-                "KMIPKIT-REQ-SPEC-6.1.5-001",
-                "KMIPKIT-REQ-SPEC-6.1.5-001",
-                "KMIPKIT-REQ-SPEC-6.1.5-001",
-                "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.38-001-001",
-                "KMIPKIT-REQ-SPEC-9.1-001",
-                "KMIPKIT-REQ-SPEC-9.1-001",
-                "KMIPKIT-REQ-SPEC-9.1-001",
-                "KMIPKIT-REQ-SPEC-9.19-002",
-                "KMIPKIT-REQ-SPEC-9.19-002",
-                "KMIPKIT-REQ-SPEC-9.19-002",
-                "KMIPKIT-REQ-SPEC-9.9-001",
-                "KMIPKIT-REQ-SPEC-9.9-001",
-                "KMIPKIT-REQ-SPEC-9.9-001",
-                "KMIPKIT-REQ-SPEC-9.12-001-001",
+                "KMIP-REQ-SPEC-9.11-010-002",
+                "KMIP-REQ-SPEC-9.11-010-002",
+                "KMIP-REQ-SPEC-6.1.5-001",
+                "KMIP-REQ-SPEC-6.1.5-001",
+                "KMIP-REQ-SPEC-6.1.5-001",
+                "KMIP-REQ-SPEC-6.1.38-001-001",
+                "KMIP-REQ-SPEC-6.1.38-001-001",
+                "KMIP-REQ-SPEC-6.1.38-001-001",
+                "KMIP-REQ-SPEC-9.1-001",
+                "KMIP-REQ-SPEC-9.1-001",
+                "KMIP-REQ-SPEC-9.1-001",
+                "KMIP-REQ-SPEC-9.19-002",
+                "KMIP-REQ-SPEC-9.19-002",
+                "KMIP-REQ-SPEC-9.19-002",
+                "KMIP-REQ-SPEC-9.9-001",
+                "KMIP-REQ-SPEC-9.9-001",
+                "KMIP-REQ-SPEC-9.9-001",
+                "KMIP-REQ-SPEC-9.12-001-001",
                 # KMIPKIT-0010 T056: client response size declaration is enforced.
-                "KMIPKIT-REQ-SPEC-9.12-001-002",
-                "KMIPKIT-REQ-SPEC-9.12-001-002",
-                "KMIPKIT-REQ-SPEC-9.12-001-002",
-                "KMIPKIT-REQ-SPEC-9.12-001-003",
-                "KMIPKIT-REQ-SPEC-9.12-001-003",
-                "KMIPKIT-REQ-SPEC-9.20-001-001",
-                "KMIPKIT-REQ-SPEC-9.20-001-001",
+                "KMIP-REQ-SPEC-9.12-001-002",
+                "KMIP-REQ-SPEC-9.12-001-002",
+                "KMIP-REQ-SPEC-9.12-001-002",
+                "KMIP-REQ-SPEC-9.12-001-003",
+                "KMIP-REQ-SPEC-9.12-001-003",
+                "KMIP-REQ-SPEC-9.20-001-001",
+                "KMIP-REQ-SPEC-9.20-001-001",
                 # KMIPKIT-0010 T056: caller-owned relative Date interpretation.
-                "KMIPKIT-REQ-SPEC-9.20-001-002",
-                "KMIPKIT-REQ-SPEC-9.20-001-002",
-                "KMIPKIT-REQ-SPEC-9.21-001-001",
-                "KMIPKIT-REQ-SPEC-9.21-001-001",
-                "KMIPKIT-REQ-SPEC-8.3-003",
-                "KMIPKIT-REQ-SPEC-8.3-004",
-                "KMIPKIT-REQ-SPEC-8.3-004",
-                "KMIPKIT-REQ-SPEC-9.5-001-001",
-                "KMIPKIT-REQ-SPEC-9.5-001-002",
-                "KMIPKIT-REQ-SPEC-9.6-001-001",
-                "KMIPKIT-REQ-SPEC-9.6-001-002",
-                "KMIPKIT-REQ-SPEC-9.6-001-002",
-                "KMIPKIT-REQ-SPEC-9.6-001-003",
+                "KMIP-REQ-SPEC-9.20-001-002",
+                "KMIP-REQ-SPEC-9.20-001-002",
+                "KMIP-REQ-SPEC-9.21-001-001",
+                "KMIP-REQ-SPEC-9.21-001-001",
+                "KMIP-REQ-SPEC-8.3-003",
+                "KMIP-REQ-SPEC-8.3-004",
+                "KMIP-REQ-SPEC-8.3-004",
+                "KMIP-REQ-SPEC-9.5-001-001",
+                "KMIP-REQ-SPEC-9.5-001-002",
+                "KMIP-REQ-SPEC-9.6-001-001",
+                "KMIP-REQ-SPEC-9.6-001-002",
+                "KMIP-REQ-SPEC-9.6-001-002",
+                "KMIP-REQ-SPEC-9.6-001-003",
                 "KMIPKIT-REQ-PROF-4.1.2-007",
                 "KMIPKIT-REQ-PROF-4.1.2-007",
-                "KMIPKIT-REQ-SPEC-9.17-001-002",
-                "KMIPKIT-REQ-SPEC-9.17-001-002",
-                "KMIPKIT-REQ-SPEC-9.17-001-002",
-                "KMIPKIT-REQ-SPEC-4.16-001-002",
-                "KMIPKIT-REQ-SPEC-4.16-001-001",
-                "KMIPKIT-REQ-SPEC-4.16-001-001",
-                "KMIPKIT-REQ-SPEC-4.16-001-001",
-                "KMIPKIT-REQ-SPEC-4.16-001-001",
-                "KMIPKIT-REQ-SPEC-4.16-002",
-                "KMIPKIT-REQ-SPEC-4.16-003",
-                "KMIPKIT-REQ-SPEC-6.1.16-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.16-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.10-001",
-                "KMIPKIT-REQ-SPEC-6.1.13-006",
-                "KMIPKIT-REQ-SPEC-6.1.34-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.28-001",
-                "KMIPKIT-REQ-SPEC-6.1.28-002",
-                "KMIPKIT-REQ-SPEC-6.1.28-007",
-                "KMIPKIT-REQ-SPEC-6.1.28-013-001",
-                "KMIPKIT-REQ-SPEC-6.1.28-013-002",
-                "KMIPKIT-REQ-SPEC-6.1.20-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.20-004",
-                "KMIPKIT-REQ-SPEC-6.1.18-005",
-                "KMIPKIT-REQ-SPEC-6.1.18-005",
-                "KMIPKIT-REQ-SPEC-6.1.18-006",
-                "KMIPKIT-REQ-SPEC-6.1.18-006",
-                "KMIPKIT-REQ-SPEC-6.1.19-002",
-                "KMIPKIT-REQ-SPEC-6.1.19-003",
-                "KMIPKIT-REQ-SPEC-6.1.19-004",
-                "KMIPKIT-REQ-SPEC-6.1.19-005",
-                "KMIPKIT-REQ-SPEC-6.1.19-006",
-                "KMIPKIT-REQ-SPEC-7.18-006",
-                "KMIPKIT-REQ-SPEC-7.18-001-001",
-                "KMIPKIT-REQ-SPEC-7.18-004",
-                "KMIPKIT-REQ-SPEC-7.18-005",
-                "KMIPKIT-REQ-SPEC-6.1.40-014",
-                "KMIPKIT-REQ-SPEC-6.1.40-016",
-                "KMIPKIT-REQ-SPEC-6.1.14-001-002",
-                "KMIPKIT-REQ-SPEC-6.1.14-001-003",
-                "KMIPKIT-REQ-SPEC-6.1.14-007-001",
-                "KMIPKIT-REQ-SPEC-6.1.14-007-002",
-                "KMIPKIT-REQ-SPEC-6.1.14-009",
-                "KMIPKIT-REQ-SPEC-6.1.14-010",
-                "KMIPKIT-REQ-SPEC-6.1.14-011",
-                "KMIPKIT-REQ-SPEC-6.1.14-012",
-                "KMIPKIT-REQ-SPEC-6.1.14-001-004",
-                "KMIPKIT-REQ-SPEC-6.1.14-006-001",
-                "KMIPKIT-REQ-SPEC-6.1.14-006-002",
-                "KMIPKIT-REQ-SPEC-10.1.2-001",
-                "KMIPKIT-REQ-SPEC-10.1.2-001",
-                "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-                "KMIPKIT-REQ-SPEC-10.1.2-002-001",
-                "KMIPKIT-REQ-SPEC-10.1.2-002-002",
-                "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-                "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-                "KMIPKIT-REQ-SPEC-10.1.5-001-001",
-                "KMIPKIT-REQ-SPEC-10.1.5-001-002",
-                "KMIPKIT-REQ-SPEC-10.4-001-001",
-                "KMIPKIT-REQ-SPEC-10.4-001-001",
-                "KMIPKIT-REQ-SPEC-10.4-001-002",
-                "KMIPKIT-REQ-SPEC-10.4-001-002",
-                "KMIPKIT-REQ-SPEC-10.4-001-003",
-                "KMIPKIT-REQ-SPEC-10.4-001-003",
-                "KMIPKIT-REQ-SPEC-10.4-001-003",
-                "KMIPKIT-REQ-SPEC-10.4-001-003",
-                "KMIPKIT-REQ-SPEC-11.56-001",
-                "KMIPKIT-REQ-SPEC-11-001",
-                "KMIPKIT-REQ-SPEC-11-001",
-                "KMIPKIT-REQ-SPEC-12-001-001",
-                "KMIPKIT-REQ-SPEC-12-001-001",
-                "KMIPKIT-REQ-SPEC-2.8-001-002",
-                "KMIPKIT-REQ-SPEC-2.8-001-002",
-                "KMIPKIT-REQ-SPEC-2.8-001-002",
-                "KMIPKIT-REQ-SPEC-3.3-003",
-                "KMIPKIT-REQ-SPEC-3.3-003",
-                "KMIPKIT-REQ-SPEC-3.3-009",
-                "KMIPKIT-REQ-SPEC-3.3-009",
-                "KMIPKIT-REQ-SPEC-4.31-002",
-                "KMIPKIT-REQ-SPEC-4.31-004",
-                "KMIPKIT-REQ-SPEC-4.31-004",
-                "KMIPKIT-REQ-SPEC-4.31-004",
-                "KMIPKIT-REQ-SPEC-4.31-004",
-                "KMIPKIT-REQ-SPEC-4.31-004",
-                "KMIPKIT-REQ-SPEC-4.31-005",
-                "KMIPKIT-REQ-SPEC-4.31-005",
-                "KMIPKIT-REQ-SPEC-4.31-005",
-                "KMIPKIT-REQ-SPEC-4.31-005",
-                "KMIPKIT-REQ-SPEC-4.31-005",
-                "KMIPKIT-REQ-SPEC-6.1.18-001-001",
-                "KMIPKIT-REQ-SPEC-6.1.18-007",
-                "KMIPKIT-REQ-SPEC-6.1.18-008",
-                "KMIPKIT-REQ-SPEC-14.1-001",
-                "KMIPKIT-REQ-SPEC-14.1-002",
+                "KMIP-REQ-SPEC-9.17-001-002",
+                "KMIP-REQ-SPEC-9.17-001-002",
+                "KMIP-REQ-SPEC-9.17-001-002",
+                "KMIP-REQ-SPEC-4.16-001-002",
+                "KMIP-REQ-SPEC-4.16-001-001",
+                "KMIP-REQ-SPEC-4.16-001-001",
+                "KMIP-REQ-SPEC-4.16-001-001",
+                "KMIP-REQ-SPEC-4.16-001-001",
+                "KMIP-REQ-SPEC-4.16-002",
+                "KMIP-REQ-SPEC-4.16-003",
+                "KMIP-REQ-SPEC-6.1.16-001-001",
+                "KMIP-REQ-SPEC-6.1.16-001-002",
+                "KMIP-REQ-SPEC-6.1.10-001",
+                "KMIP-REQ-SPEC-6.1.13-006",
+                "KMIP-REQ-SPEC-6.1.34-001-001",
+                "KMIP-REQ-SPEC-6.1.28-001",
+                "KMIP-REQ-SPEC-6.1.28-002",
+                "KMIP-REQ-SPEC-6.1.28-007",
+                "KMIP-REQ-SPEC-6.1.28-013-001",
+                "KMIP-REQ-SPEC-6.1.28-013-002",
+                "KMIP-REQ-SPEC-6.1.20-001-001",
+                "KMIP-REQ-SPEC-6.1.20-004",
+                "KMIP-REQ-SPEC-6.1.18-005",
+                "KMIP-REQ-SPEC-6.1.18-005",
+                "KMIP-REQ-SPEC-6.1.18-006",
+                "KMIP-REQ-SPEC-6.1.18-006",
+                "KMIP-REQ-SPEC-6.1.19-002",
+                "KMIP-REQ-SPEC-6.1.19-003",
+                "KMIP-REQ-SPEC-6.1.19-004",
+                "KMIP-REQ-SPEC-6.1.19-005",
+                "KMIP-REQ-SPEC-6.1.19-006",
+                "KMIP-REQ-SPEC-7.18-006",
+                "KMIP-REQ-SPEC-7.18-001-001",
+                "KMIP-REQ-SPEC-7.18-004",
+                "KMIP-REQ-SPEC-7.18-005",
+                "KMIP-REQ-SPEC-6.1.40-014",
+                "KMIP-REQ-SPEC-6.1.40-016",
+                "KMIP-REQ-SPEC-6.1.14-001-002",
+                "KMIP-REQ-SPEC-6.1.14-001-003",
+                "KMIP-REQ-SPEC-6.1.14-007-001",
+                "KMIP-REQ-SPEC-6.1.14-007-002",
+                "KMIP-REQ-SPEC-6.1.14-009",
+                "KMIP-REQ-SPEC-6.1.14-010",
+                "KMIP-REQ-SPEC-6.1.14-011",
+                "KMIP-REQ-SPEC-6.1.14-012",
+                "KMIP-REQ-SPEC-6.1.14-001-004",
+                "KMIP-REQ-SPEC-6.1.14-006-001",
+                "KMIP-REQ-SPEC-6.1.14-006-002",
+                "KMIP-REQ-SPEC-10.1.2-001",
+                "KMIP-REQ-SPEC-10.1.2-001",
+                "KMIP-REQ-SPEC-10.1.2-002-001",
+                "KMIP-REQ-SPEC-10.1.2-002-001",
+                "KMIP-REQ-SPEC-10.1.2-002-002",
+                "KMIP-REQ-SPEC-10.1.5-001-001",
+                "KMIP-REQ-SPEC-10.1.5-001-001",
+                "KMIP-REQ-SPEC-10.1.5-001-001",
+                "KMIP-REQ-SPEC-10.1.5-001-002",
+                "KMIP-REQ-SPEC-10.4-001-001",
+                "KMIP-REQ-SPEC-10.4-001-001",
+                "KMIP-REQ-SPEC-10.4-001-002",
+                "KMIP-REQ-SPEC-10.4-001-002",
+                "KMIP-REQ-SPEC-10.4-001-003",
+                "KMIP-REQ-SPEC-10.4-001-003",
+                "KMIP-REQ-SPEC-10.4-001-003",
+                "KMIP-REQ-SPEC-10.4-001-003",
+                "KMIP-REQ-SPEC-11.56-001",
+                "KMIP-REQ-SPEC-11-001",
+                "KMIP-REQ-SPEC-11-001",
+                "KMIP-REQ-SPEC-12-001-001",
+                "KMIP-REQ-SPEC-12-001-001",
+                "KMIP-REQ-SPEC-2.8-001-002",
+                "KMIP-REQ-SPEC-2.8-001-002",
+                "KMIP-REQ-SPEC-2.8-001-002",
+                "KMIP-REQ-SPEC-3.3-003",
+                "KMIP-REQ-SPEC-3.3-003",
+                "KMIP-REQ-SPEC-3.3-009",
+                "KMIP-REQ-SPEC-3.3-009",
+                "KMIP-REQ-SPEC-4.31-002",
+                "KMIP-REQ-SPEC-4.31-004",
+                "KMIP-REQ-SPEC-4.31-004",
+                "KMIP-REQ-SPEC-4.31-004",
+                "KMIP-REQ-SPEC-4.31-004",
+                "KMIP-REQ-SPEC-4.31-004",
+                "KMIP-REQ-SPEC-4.31-005",
+                "KMIP-REQ-SPEC-4.31-005",
+                "KMIP-REQ-SPEC-4.31-005",
+                "KMIP-REQ-SPEC-4.31-005",
+                "KMIP-REQ-SPEC-4.31-005",
+                "KMIP-REQ-SPEC-6.1.18-001-001",
+                "KMIP-REQ-SPEC-6.1.18-007",
+                "KMIP-REQ-SPEC-6.1.18-008",
+                "KMIP-REQ-SPEC-14.1-001",
+                "KMIP-REQ-SPEC-14.1-002",
                 # Keep the hand-reviewed registry baseline synchronized with
                 # profile evidence added after the original partial-registry
                 # fixture; duplicate IDs represent distinct rule test cases.
                 *[
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-001",
-                    "KMIPKIT-REQ-SPEC-4.34-001-001",
-                    "KMIPKIT-REQ-SPEC-4.34-001-002",
-                    "KMIPKIT-REQ-SPEC-4.40-001-001",
-                    "KMIPKIT-REQ-SPEC-4.40-001-002",
-                    "KMIPKIT-REQ-SPEC-4.40-001-003",
-                    "KMIPKIT-REQ-SPEC-4.40-001-004",
-                    "KMIPKIT-REQ-SPEC-4.40-001-005",
-                    "KMIPKIT-REQ-SPEC-4.41-001-001",
-                    "KMIPKIT-REQ-SPEC-4.41-001-002",
-                    "KMIPKIT-REQ-SPEC-4.41-001-003",
-                    "KMIPKIT-REQ-SPEC-4.41-001-004",
-                    "KMIPKIT-REQ-SPEC-4.35-001-003",
-                    "KMIPKIT-REQ-SPEC-4.35-001-003",
-                    "KMIPKIT-REQ-SPEC-4.35-001-003",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
-                    "KMIPKIT-REQ-SPEC-6.1.27-001",
-                    "KMIPKIT-REQ-SPEC-6.1.27-002-002",
-                    "KMIPKIT-REQ-SPEC-6.1.27-005",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-                    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-                    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-                    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-                    "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.46-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.47-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.55-001",
-                    "KMIPKIT-REQ-SPEC-6.1.55-001",
-                    "KMIPKIT-REQ-SPEC-6.1.55-001",
-                    "KMIPKIT-REQ-SPEC-6.1.50-001",
-                    "KMIPKIT-REQ-SPEC-6.1.50-001",
-                    "KMIPKIT-REQ-SPEC-6.1.50-001",
-                    "KMIPKIT-REQ-SPEC-6.1.51-001",
-                    "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.56-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.56-002",
-                    "KMIPKIT-REQ-SPEC-6.1.56-002",
-                    "KMIPKIT-REQ-SPEC-6.1.56-002",
-                    "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.7-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.7-005",
-                    "KMIPKIT-REQ-SPEC-6.1.7-005",
-                    "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-                    "KMIPKIT-REQ-SPEC-6.1.7-002-001",
-                    "KMIPKIT-REQ-SPEC-6.1.7-002-002",
-                    "KMIPKIT-REQ-SPEC-6.1.7-002-003",
-                    "KMIPKIT-REQ-SPEC-4.59-003-002",
-                    "KMIPKIT-REQ-SPEC-4.59-003-002",
-                    "KMIPKIT-REQ-SPEC-6.1.17-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.17-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.17-006",
-                    "KMIPKIT-REQ-SPEC-6.1.17-006",
-                    "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-                    "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.11-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.11-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.11-005",
-                    "KMIPKIT-REQ-SPEC-6.1.11-005",
-                    "KMIPKIT-REQ-SPEC-6.1.11-006",
-                    "KMIPKIT-REQ-SPEC-6.1.11-006",
-                    "KMIPKIT-REQ-SPEC-6.1.12-003",
-                    "KMIPKIT-REQ-SPEC-6.1.12-003",
-                    "KMIPKIT-REQ-SPEC-6.1.12-005",
-                    "KMIPKIT-REQ-SPEC-6.1.12-005",
-                    "KMIPKIT-REQ-SPEC-6.1.12-006",
-                    "KMIPKIT-REQ-SPEC-6.1.12-006",
-                    "KMIPKIT-REQ-SPEC-6.1.12-007",
-                    "KMIPKIT-REQ-SPEC-6.1.12-007",
-                    "KMIPKIT-REQ-SPEC-6.1.30-001",
-                    "KMIPKIT-REQ-SPEC-6.1.30-001",
-                    "KMIPKIT-REQ-SPEC-6.1.30-002",
-                    "KMIPKIT-REQ-SPEC-6.1.30-002",
-                    "KMIPKIT-REQ-SPEC-6.1.30-003",
-                    "KMIPKIT-REQ-SPEC-6.1.30-003",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-                    "KMIPKIT-REQ-SPEC-6.1.31-001",
-                    "KMIPKIT-REQ-SPEC-6.1.31-001",
-                    "KMIPKIT-REQ-SPEC-6.1.32-001",
-                    "KMIPKIT-REQ-SPEC-6.1.32-001",
-                    "KMIPKIT-REQ-SPEC-6.1.33-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.33-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.33-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.33-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.13-005",
-                    "KMIPKIT-REQ-SPEC-6.1-001-003",
-                    "KMIPKIT-REQ-SPEC-6.1-001-003",
-                    "KMIPKIT-REQ-SPEC-7.8-001",
-                    "KMIPKIT-REQ-SPEC-7.8-001",
-                    "KMIPKIT-REQ-SPEC-7.8-001",
-                    "KMIPKIT-REQ-SPEC-7.8-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-6.1.48-001",
+                    "KMIP-REQ-SPEC-4.34-001-001",
+                    "KMIP-REQ-SPEC-4.34-001-002",
+                    "KMIP-REQ-SPEC-4.40-001-001",
+                    "KMIP-REQ-SPEC-4.40-001-002",
+                    "KMIP-REQ-SPEC-4.40-001-003",
+                    "KMIP-REQ-SPEC-4.40-001-004",
+                    "KMIP-REQ-SPEC-4.40-001-005",
+                    "KMIP-REQ-SPEC-4.41-001-001",
+                    "KMIP-REQ-SPEC-4.41-001-002",
+                    "KMIP-REQ-SPEC-4.41-001-003",
+                    "KMIP-REQ-SPEC-4.41-001-004",
+                    "KMIP-REQ-SPEC-4.35-001-003",
+                    "KMIP-REQ-SPEC-4.35-001-003",
+                    "KMIP-REQ-SPEC-4.35-001-003",
+                    "KMIP-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-001",
+                    "KMIP-REQ-SPEC-6.1.27-002-002",
+                    "KMIP-REQ-SPEC-6.1.27-005",
+                    "KMIP-REQ-SPEC-6.1.45-002-001",
+                    "KMIP-REQ-SPEC-6.1.45-002-001",
+                    "KMIP-REQ-SPEC-6.1.45-006-001",
+                    "KMIP-REQ-SPEC-6.1.45-006-001",
+                    "KMIP-REQ-SPEC-6.1.45-006-001",
+                    "KMIP-REQ-SPEC-6.1.46-004-001",
+                    "KMIP-REQ-SPEC-6.1.46-004-001",
+                    "KMIP-REQ-SPEC-6.1.46-004-001",
+                    "KMIP-REQ-SPEC-6.1.47-004-001",
+                    "KMIP-REQ-SPEC-6.1.47-004-001",
+                    "KMIP-REQ-SPEC-6.1.47-004-001",
+                    "KMIP-REQ-SPEC-6.1.55-001",
+                    "KMIP-REQ-SPEC-6.1.55-001",
+                    "KMIP-REQ-SPEC-6.1.55-001",
+                    "KMIP-REQ-SPEC-6.1.50-001",
+                    "KMIP-REQ-SPEC-6.1.50-001",
+                    "KMIP-REQ-SPEC-6.1.50-001",
+                    "KMIP-REQ-SPEC-6.1.51-001",
+                    "KMIP-REQ-SPEC-6.1.56-001-001",
+                    "KMIP-REQ-SPEC-6.1.56-001-001",
+                    "KMIP-REQ-SPEC-6.1.56-001-001",
+                    "KMIP-REQ-SPEC-6.1.56-002",
+                    "KMIP-REQ-SPEC-6.1.56-002",
+                    "KMIP-REQ-SPEC-6.1.56-002",
+                    "KMIP-REQ-SPEC-6.1.7-004-001",
+                    "KMIP-REQ-SPEC-6.1.7-004-001",
+                    "KMIP-REQ-SPEC-6.1.7-005",
+                    "KMIP-REQ-SPEC-6.1.7-005",
+                    "KMIP-REQ-SPEC-6.1.7-002-001",
+                    "KMIP-REQ-SPEC-6.1.7-002-001",
+                    "KMIP-REQ-SPEC-6.1.7-002-002",
+                    "KMIP-REQ-SPEC-6.1.7-002-003",
+                    "KMIP-REQ-SPEC-4.59-003-002",
+                    "KMIP-REQ-SPEC-4.59-003-002",
+                    "KMIP-REQ-SPEC-6.1.17-001-001",
+                    "KMIP-REQ-SPEC-6.1.17-001-002",
+                    "KMIP-REQ-SPEC-6.1.17-006",
+                    "KMIP-REQ-SPEC-6.1.17-006",
+                    "KMIP-REQ-SPEC-6.1.23-002-001",
+                    "KMIP-REQ-SPEC-6.1.11-001-001",
+                    "KMIP-REQ-SPEC-6.1.11-001-001",
+                    "KMIP-REQ-SPEC-6.1.11-001-002",
+                    "KMIP-REQ-SPEC-6.1.11-001-002",
+                    "KMIP-REQ-SPEC-6.1.11-005",
+                    "KMIP-REQ-SPEC-6.1.11-005",
+                    "KMIP-REQ-SPEC-6.1.11-006",
+                    "KMIP-REQ-SPEC-6.1.11-006",
+                    "KMIP-REQ-SPEC-6.1.12-003",
+                    "KMIP-REQ-SPEC-6.1.12-003",
+                    "KMIP-REQ-SPEC-6.1.12-005",
+                    "KMIP-REQ-SPEC-6.1.12-005",
+                    "KMIP-REQ-SPEC-6.1.12-006",
+                    "KMIP-REQ-SPEC-6.1.12-006",
+                    "KMIP-REQ-SPEC-6.1.12-007",
+                    "KMIP-REQ-SPEC-6.1.12-007",
+                    "KMIP-REQ-SPEC-6.1.30-001",
+                    "KMIP-REQ-SPEC-6.1.30-001",
+                    "KMIP-REQ-SPEC-6.1.30-002",
+                    "KMIP-REQ-SPEC-6.1.30-002",
+                    "KMIP-REQ-SPEC-6.1.30-003",
+                    "KMIP-REQ-SPEC-6.1.30-003",
+                    "KMIP-REQ-SPEC-6.1.45-002-003",
+                    "KMIP-REQ-SPEC-6.1.45-002-003",
+                    "KMIP-REQ-SPEC-6.1.45-002-003",
+                    "KMIP-REQ-SPEC-6.1.45-002-003",
+                    "KMIP-REQ-SPEC-6.1.45-002-003",
+                    "KMIP-REQ-SPEC-6.1.31-001",
+                    "KMIP-REQ-SPEC-6.1.31-001",
+                    "KMIP-REQ-SPEC-6.1.32-001",
+                    "KMIP-REQ-SPEC-6.1.32-001",
+                    "KMIP-REQ-SPEC-6.1.33-001-001",
+                    "KMIP-REQ-SPEC-6.1.33-001-001",
+                    "KMIP-REQ-SPEC-6.1.33-001-002",
+                    "KMIP-REQ-SPEC-6.1.33-001-002",
+                    "KMIP-REQ-SPEC-6.1.13-005",
+                    "KMIP-REQ-SPEC-6.1-001-003",
+                    "KMIP-REQ-SPEC-6.1-001-003",
+                    "KMIP-REQ-SPEC-7.8-001",
+                    "KMIP-REQ-SPEC-7.8-001",
+                    "KMIP-REQ-SPEC-7.8-001",
+                    "KMIP-REQ-SPEC-7.8-001",
                     # KMIPKIT-0010 T040: message envelope mappings; repeats
                     # reflect distinct category-matched test references.
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-001",
-                    "KMIPKIT-REQ-SPEC-8-002",
-                    "KMIPKIT-REQ-SPEC-8-002",
-                    "KMIPKIT-REQ-SPEC-8-002",
-                    "KMIPKIT-REQ-SPEC-8-002",
-                    "KMIPKIT-REQ-SPEC-9.7-001",
-                    "KMIPKIT-REQ-SPEC-9.7-001",
-                    "KMIPKIT-REQ-SPEC-9.7-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-001",
+                    "KMIP-REQ-SPEC-8-002",
+                    "KMIP-REQ-SPEC-8-002",
+                    "KMIP-REQ-SPEC-8-002",
+                    "KMIP-REQ-SPEC-8-002",
+                    "KMIP-REQ-SPEC-9.7-001",
+                    "KMIP-REQ-SPEC-9.7-001",
+                    "KMIP-REQ-SPEC-9.7-001",
                     # KMIPKIT-0010 T049 and T050: caller-supplied wrapped
                     # Import and optional Archive request evidence.
-                    "KMIPKIT-REQ-SPEC-6.1.25-006",
-                    "KMIPKIT-REQ-SPEC-6.1.25-006",
-                    "KMIPKIT-REQ-SPEC-6.1.4-001",
-                    "KMIPKIT-REQ-SPEC-6.1.4-001",
-                    "KMIPKIT-REQ-SPEC-6.1.4-001",
+                    "KMIP-REQ-SPEC-6.1.25-006",
+                    "KMIP-REQ-SPEC-6.1.25-006",
+                    "KMIP-REQ-SPEC-6.1.4-001",
+                    "KMIP-REQ-SPEC-6.1.4-001",
+                    "KMIP-REQ-SPEC-6.1.4-001",
                     # KMIPKIT-0010 T051: Baseline profile gates and shared
                     # operation evidence; repeated IDs represent distinct
                     # response/capability test references.
@@ -2805,142 +2805,142 @@ mod unrelated {
                     "KMIPKIT-REQ-PROF-6.1-002",
                     "KMIPKIT-REQ-PROF-6.1-003",
                     "KMIPKIT-REQ-PROF-6.1-004",
-                    "KMIPKIT-REQ-SPEC-6.1-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1-003-002",
-                    "KMIPKIT-REQ-SPEC-6.1-003-002",
-                    "KMIPKIT-REQ-SPEC-6.1-004",
-                    "KMIPKIT-REQ-SPEC-6.1-004",
-                    "KMIPKIT-REQ-SPEC-6.1-005",
-                    "KMIPKIT-REQ-SPEC-6.1-005",
+                    "KMIP-REQ-SPEC-6.1-001-001",
+                    "KMIP-REQ-SPEC-6.1-001-002",
+                    "KMIP-REQ-SPEC-6.1-001-002",
+                    "KMIP-REQ-SPEC-6.1-001-002",
+                    "KMIP-REQ-SPEC-6.1-003-002",
+                    "KMIP-REQ-SPEC-6.1-003-002",
+                    "KMIP-REQ-SPEC-6.1-004",
+                    "KMIP-REQ-SPEC-6.1-004",
+                    "KMIP-REQ-SPEC-6.1-005",
+                    "KMIP-REQ-SPEC-6.1-005",
                     # KMIPKIT-0010 profile evidence added after the original
                     # registry snapshot; repeats represent distinct mapped
                     # requirements, not unresolved report rows.
-                    "KMIPKIT-REQ-SPEC-3.7-002",
-                    "KMIPKIT-REQ-SPEC-3.7-002",
-                    "KMIPKIT-REQ-SPEC-3.7-002",
-                    "KMIPKIT-REQ-SPEC-3.7-002",
-                    "KMIPKIT-REQ-SPEC-4.4-001",
-                    "KMIPKIT-REQ-SPEC-4.26-001",
-                    "KMIPKIT-REQ-SPEC-4.26-001",
-                    "KMIPKIT-REQ-SPEC-6.1.7-001",
-                    "KMIPKIT-REQ-SPEC-3.1-004-001",
-                    "KMIPKIT-REQ-SPEC-3.1-004-001",
-                    "KMIPKIT-REQ-SPEC-3.1-005-001",
-                    "KMIPKIT-REQ-SPEC-3.1-005-001",
+                    "KMIP-REQ-SPEC-3.7-002",
+                    "KMIP-REQ-SPEC-3.7-002",
+                    "KMIP-REQ-SPEC-3.7-002",
+                    "KMIP-REQ-SPEC-3.7-002",
+                    "KMIP-REQ-SPEC-4.4-001",
+                    "KMIP-REQ-SPEC-4.26-001",
+                    "KMIP-REQ-SPEC-4.26-001",
+                    "KMIP-REQ-SPEC-6.1.7-001",
+                    "KMIP-REQ-SPEC-3.1-004-001",
+                    "KMIP-REQ-SPEC-3.1-004-001",
+                    "KMIP-REQ-SPEC-3.1-005-001",
+                    "KMIP-REQ-SPEC-3.1-005-001",
                     # KMIPKIT-0010 T052: caller-owned Name uniqueness.
-                    "KMIPKIT-REQ-SPEC-4.32-001",
-                    "KMIPKIT-REQ-SPEC-6.1.44-003-001",
+                    "KMIP-REQ-SPEC-4.32-001",
+                    "KMIP-REQ-SPEC-6.1.44-003-001",
                     # KMIPKIT-0010 T054: caller-directed archived retrieval
                     # and optional Recover follow-up capabilities.
-                    "KMIPKIT-REQ-SPEC-6.1.28-004-001",
-                    "KMIPKIT-REQ-SPEC-6.1.42-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.42-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.14-001-001",
+                    "KMIP-REQ-SPEC-6.1.28-004-001",
+                    "KMIP-REQ-SPEC-6.1.42-001-001",
+                    "KMIP-REQ-SPEC-6.1.42-001-002",
+                    "KMIP-REQ-SPEC-6.1.14-001-001",
                     # KMIPKIT-0010 T054: caller-owned lifecycle
                     # recommendations and credential reprovisioning.
-                    "KMIPKIT-REQ-SPEC-6.1.45-004",
-                    "KMIPKIT-REQ-SPEC-6.1.45-004",
-                    "KMIPKIT-REQ-SPEC-6.1.46-001",
-                    "KMIPKIT-REQ-SPEC-6.1.46-001",
-                    "KMIPKIT-REQ-SPEC-6.1.47-001",
-                    "KMIPKIT-REQ-SPEC-6.1.47-001",
-                    "KMIPKIT-REQ-SPEC-6.1.48-006",
-                    "KMIPKIT-REQ-SPEC-6.1.48-006",
+                    "KMIP-REQ-SPEC-6.1.45-004",
+                    "KMIP-REQ-SPEC-6.1.45-004",
+                    "KMIP-REQ-SPEC-6.1.46-001",
+                    "KMIP-REQ-SPEC-6.1.46-001",
+                    "KMIP-REQ-SPEC-6.1.47-001",
+                    "KMIP-REQ-SPEC-6.1.47-001",
+                    "KMIP-REQ-SPEC-6.1.48-006",
+                    "KMIP-REQ-SPEC-6.1.48-006",
                     # KMIPKIT-0010 T053: caller-owned lifecycle-date,
                     # Usage Mask, lease, and allocation mappings. These tests
                     # verify static responsibility metadata, not local gating.
-                    "KMIPKIT-REQ-SPEC-4.1-001-001",
-                    "KMIPKIT-REQ-SPEC-4.1-001-002",
-                    "KMIPKIT-REQ-SPEC-4.1-001-003",
-                    "KMIPKIT-REQ-SPEC-4.17-001-001",
-                    "KMIPKIT-REQ-SPEC-4.17-001-002",
-                    "KMIPKIT-REQ-SPEC-4.18-001-001",
-                    "KMIPKIT-REQ-SPEC-4.18-001-002",
-                    "KMIPKIT-REQ-SPEC-4.30-001",
+                    "KMIP-REQ-SPEC-4.1-001-001",
+                    "KMIP-REQ-SPEC-4.1-001-002",
+                    "KMIP-REQ-SPEC-4.1-001-003",
+                    "KMIP-REQ-SPEC-4.17-001-001",
+                    "KMIP-REQ-SPEC-4.17-001-002",
+                    "KMIP-REQ-SPEC-4.18-001-001",
+                    "KMIP-REQ-SPEC-4.18-001-002",
+                    "KMIP-REQ-SPEC-4.30-001",
                     # KMIPKIT-0010 T040: State cannot be changed through the
                     # client-to-server Modify Attribute operation.
-                    "KMIPKIT-REQ-SPEC-4.57-001",
-                    "KMIPKIT-REQ-SPEC-6.1.23-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.23-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.23-002-002",
-                    "KMIPKIT-REQ-SPEC-6.1.35-001-002",
-                    "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.35-001-001",
-                    "KMIPKIT-REQ-SPEC-6.1.35-002",
-                    "KMIPKIT-REQ-SPEC-6.1.35-002",
-                    "KMIPKIT-REQ-SPEC-6.1.35-002",
-                    "KMIPKIT-REQ-SPEC-6.1.35-005",
-                    "KMIPKIT-REQ-SPEC-6.1.35-005",
-                    "KMIPKIT-REQ-SPEC-6.1.35-005",
+                    "KMIP-REQ-SPEC-4.57-001",
+                    "KMIP-REQ-SPEC-6.1.23-001-001",
+                    "KMIP-REQ-SPEC-6.1.23-001-002",
+                    "KMIP-REQ-SPEC-6.1.23-002-002",
+                    "KMIP-REQ-SPEC-6.1.35-001-002",
+                    "KMIP-REQ-SPEC-6.1.35-001-001",
+                    "KMIP-REQ-SPEC-6.1.35-001-001",
+                    "KMIP-REQ-SPEC-6.1.35-001-001",
+                    "KMIP-REQ-SPEC-6.1.35-002",
+                    "KMIP-REQ-SPEC-6.1.35-002",
+                    "KMIP-REQ-SPEC-6.1.35-002",
+                    "KMIP-REQ-SPEC-6.1.35-005",
+                    "KMIP-REQ-SPEC-6.1.35-005",
+                    "KMIP-REQ-SPEC-6.1.35-005",
                     # KMIPKIT-0010 T055: key-derivation and asynchronous
                     # response mappings added after the partial-registry baseline.
-                    "KMIPKIT-REQ-SPEC-7.12-003",
-                    "KMIPKIT-REQ-SPEC-7.12-005-001",
-                    "KMIPKIT-REQ-SPEC-7.12-005-001",
-                    "KMIPKIT-REQ-SPEC-7.12-005-001",
-                    "KMIPKIT-REQ-SPEC-8-003-001",
-                    "KMIPKIT-REQ-SPEC-8-003-001",
+                    "KMIP-REQ-SPEC-7.12-003",
+                    "KMIP-REQ-SPEC-7.12-005-001",
+                    "KMIP-REQ-SPEC-7.12-005-001",
+                    "KMIP-REQ-SPEC-7.12-005-001",
+                    "KMIP-REQ-SPEC-8-003-001",
+                    "KMIP-REQ-SPEC-8-003-001",
                     # KMIPKIT-0010 T056: authentication, Device Credential,
                     # Hashed Password timestamp, and response Message Extension
                     # profile mappings.
-                    "KMIPKIT-REQ-SPEC-9.11-010-001",
-                    "KMIPKIT-REQ-SPEC-9.11-010-001",
-                    "KMIPKIT-REQ-SPEC-9.11-010-001",
-                    "KMIPKIT-REQ-SPEC-9.11-010-001",
-                    "KMIPKIT-REQ-SPEC-9.4-001-002",
-                    "KMIPKIT-REQ-SPEC-9.4-001-002",
-                    "KMIPKIT-REQ-SPEC-9.4-001-001",
-                    "KMIPKIT-REQ-SPEC-9.4-001-001",
-                    "KMIPKIT-REQ-SPEC-9.4-002",
-                    "KMIPKIT-REQ-SPEC-9.4-002",
-                    "KMIPKIT-REQ-SPEC-9.4-002",
-                    "KMIPKIT-REQ-SPEC-9.11-004-001",
-                    "KMIPKIT-REQ-SPEC-9.11-004-001",
+                    "KMIP-REQ-SPEC-9.11-010-001",
+                    "KMIP-REQ-SPEC-9.11-010-001",
+                    "KMIP-REQ-SPEC-9.11-010-001",
+                    "KMIP-REQ-SPEC-9.11-010-001",
+                    "KMIP-REQ-SPEC-9.4-001-002",
+                    "KMIP-REQ-SPEC-9.4-001-002",
+                    "KMIP-REQ-SPEC-9.4-001-001",
+                    "KMIP-REQ-SPEC-9.4-001-001",
+                    "KMIP-REQ-SPEC-9.4-002",
+                    "KMIP-REQ-SPEC-9.4-002",
+                    "KMIP-REQ-SPEC-9.4-002",
+                    "KMIP-REQ-SPEC-9.11-004-001",
+                    "KMIP-REQ-SPEC-9.11-004-001",
                     # KMIPKIT-0010 T040: client-sender Message Extension rules.
-                    "KMIPKIT-REQ-SPEC-9.13-001-001",
-                    "KMIPKIT-REQ-SPEC-9.13-001-001",
-                    "KMIPKIT-REQ-SPEC-9.13-001-002",
-                    "KMIPKIT-REQ-SPEC-9.13-001-002",
-                    "KMIPKIT-REQ-SPEC-9.13-001-002",
-                    "KMIPKIT-REQ-SPEC-9.13-001-003",
-                    "KMIPKIT-REQ-SPEC-9.13-001-003",
-                    "KMIPKIT-REQ-SPEC-9.13-001-003",
-                    "KMIPKIT-REQ-SPEC-9.13-001-004",
-                    "KMIPKIT-REQ-SPEC-9.13-001-004",
-                    "KMIPKIT-REQ-SPEC-9.13-001-004",
-                    "KMIPKIT-REQ-SPEC-9.13-001-004",
-                    "KMIPKIT-REQ-SPEC-9.13-001-005",
-                    "KMIPKIT-REQ-SPEC-9.13-001-005",
-                    "KMIPKIT-REQ-SPEC-9.13-001-005",
+                    "KMIP-REQ-SPEC-9.13-001-001",
+                    "KMIP-REQ-SPEC-9.13-001-001",
+                    "KMIP-REQ-SPEC-9.13-001-002",
+                    "KMIP-REQ-SPEC-9.13-001-002",
+                    "KMIP-REQ-SPEC-9.13-001-002",
+                    "KMIP-REQ-SPEC-9.13-001-003",
+                    "KMIP-REQ-SPEC-9.13-001-003",
+                    "KMIP-REQ-SPEC-9.13-001-003",
+                    "KMIP-REQ-SPEC-9.13-001-004",
+                    "KMIP-REQ-SPEC-9.13-001-004",
+                    "KMIP-REQ-SPEC-9.13-001-004",
+                    "KMIP-REQ-SPEC-9.13-001-004",
+                    "KMIP-REQ-SPEC-9.13-001-005",
+                    "KMIP-REQ-SPEC-9.13-001-005",
+                    "KMIP-REQ-SPEC-9.13-001-005",
                     # KMIPKIT-0010 T040: typed evidence for repeated Name,
                     # caller-owned distinct values, and profile query replies.
-                    "KMIPKIT-REQ-SPEC-4-001-001",
-                    "KMIPKIT-REQ-SPEC-4-001-002",
+                    "KMIP-REQ-SPEC-4-001-001",
+                    "KMIP-REQ-SPEC-4-001-002",
                     "KMIPKIT-REQ-PROF-4.1.2-005",
-                    "KMIPKIT-REQ-SPEC-7.31-001",
-                    "KMIPKIT-REQ-SPEC-7.32-001",
-                    "KMIPKIT-REQ-SPEC-7.32-001",
+                    "KMIP-REQ-SPEC-7.31-001",
+                    "KMIP-REQ-SPEC-7.32-001",
+                    "KMIP-REQ-SPEC-7.32-001",
                     # KMIPKIT-0010 T040: final Baseline mappings, including
                     # both state-aware negative tests for Original Creation Date.
-                    *["KMIPKIT-REQ-SPEC-4-001-003"] * 11,
+                    *["KMIP-REQ-SPEC-4-001-003"] * 11,
                     # Shared RNG Parameters evidence covers client request and
                     # response representation, optional fields, and negatives.
-                    *["KMIPKIT-REQ-SPEC-7.36-001"] * 4,
-                    *["KMIPKIT-REQ-SPEC-7.36-002-001"] * 6,
-                    *["KMIPKIT-REQ-SPEC-7.36-002-002"] * 4,
-                    *["KMIPKIT-REQ-SPEC-7.36-003"] * 7,
-                    "KMIPKIT-REQ-SPEC-4.38-003",
-                    "KMIPKIT-REQ-SPEC-4.38-003",
-                    "KMIPKIT-REQ-SPEC-4.57-005-002",
-                    "KMIPKIT-REQ-SPEC-4.59-002",
-                    "KMIPKIT-REQ-SPEC-4.59-002",
-                    "KMIPKIT-REQ-SPEC-4.59-003-001",
-                    "KMIPKIT-REQ-SPEC-6.1.14-002",
-                    "KMIPKIT-REQ-SPEC-6.1.34-001-003",
+                    *["KMIP-REQ-SPEC-7.36-001"] * 4,
+                    *["KMIP-REQ-SPEC-7.36-002-001"] * 6,
+                    *["KMIP-REQ-SPEC-7.36-002-002"] * 4,
+                    *["KMIP-REQ-SPEC-7.36-003"] * 7,
+                    "KMIP-REQ-SPEC-4.38-003",
+                    "KMIP-REQ-SPEC-4.38-003",
+                    "KMIP-REQ-SPEC-4.57-005-002",
+                    "KMIP-REQ-SPEC-4.59-002",
+                    "KMIP-REQ-SPEC-4.59-002",
+                    "KMIP-REQ-SPEC-4.59-003-001",
+                    "KMIP-REQ-SPEC-6.1.14-002",
+                    "KMIP-REQ-SPEC-6.1.34-001-003",
                 ],
             ],
             [mapping["requirement_id"] for mapping in typed_rule_mappings],
@@ -2953,12 +2953,12 @@ mod unrelated {
         self.assertIn("| selected | true | evidence\\_complete |", baseline_row)
         self.assertIn("No typed rule mapping", report)
         self.assertIn("No category-appropriate rule test", report)
-        self.assertIn("KMIPKIT-REQ-SPEC-6.1.16-001-001", report)
+        self.assertIn("KMIP-REQ-SPEC-6.1.16-001-001", report)
         self.assertIn("Category test reference: present", report)
         usage_count_source_row = next(
             line
             for line in report.splitlines()
-            if line.startswith("| KMIPKIT-REQ-SPEC-6.1.23-002-001 |")
+            if line.startswith("| KMIP-REQ-SPEC-6.1.23-002-001 |")
             and "KMIPKIT-SOURCE-GAP-SPEC-6.1.23-USAGE-LIMITS-COUNT-REQUIRED" in line
         )
         self.assertIn("KMIPKIT-SRC-spec §6.1.23, KMIPKIT-SRC-spec §7.40", usage_count_source_row)
@@ -3218,7 +3218,7 @@ mod unrelated {
                 "state": "open",
                 "summary": f"malformed evidence raw-kmip-body={raw_body_marker}",
                 "source_refs": [],
-                "affected_requirement_ids": ["KMIPKIT-REQ-SPEC-8.1-001"],
+                "affected_requirement_ids": ["KMIP-REQ-SPEC-8.1-001"],
                 "affected_element_ids": [],
                 "affected_profile_ids": [],
                 "affected_policy_ids": [],
@@ -3252,7 +3252,7 @@ mod unrelated {
         self.assertNotIn(secret_suffix_marker, report)
 
     def test_device_credential_order_evidence_stays_scoped_and_global_rule_deferred(self) -> None:
-        requirement_id = "KMIPKIT-REQ-SPEC-10.1.2-001"
+        requirement_id = "KMIP-REQ-SPEC-10.1.2-001"
         test_id = (
             "crates/kmipkit-protocol/tests/support/profile_unit.rs::"
             "profile_requires_a_device_identifier_field_in_device_credentials"
@@ -3293,11 +3293,11 @@ mod unrelated {
         unassigned_elements = report.split("## Unassigned protocol elements\n", 1)[1].split("\n## ", 1)[0]
         self.assertTrue(all(row["element_id"] not in unassigned_elements for row in tag_elements))
         requirements = {row["requirement_id"]: row for row in catalog["requirements"]}
-        reserved_tag_requirement = requirements["KMIPKIT-REQ-SPEC-11-001"]
+        reserved_tag_requirement = requirements["KMIP-REQ-SPEC-11-001"]
         self.assertEqual(reserved_tag_requirement["feature_spec"], "KMIPKIT-0004")
         self.assertTrue(reserved_tag_requirement["implementation_refs"])
         self.assertTrue(reserved_tag_requirement["verification_refs"])
-        structure_order_requirement = requirements["KMIPKIT-REQ-SPEC-10.1.2-001"]
+        structure_order_requirement = requirements["KMIP-REQ-SPEC-10.1.2-001"]
         self.assertEqual(structure_order_requirement["feature_spec"], "KMIPKIT-0005")
         self.assertTrue(structure_order_requirement["implementation_refs"])
         self.assertTrue(structure_order_requirement["verification_refs"])

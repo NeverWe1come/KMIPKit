@@ -3,14 +3,14 @@
 //! These are derived project-policy tests, not official OASIS vectors. The
 //! Pending Asynchronous Correlation Value is required immediately by OASIS
 //! KMIP v2.1 §8.6, Table 399, catalog element
-//! `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`; §9.19 and
-//! `KMIPKIT-REQ-SPEC-9.19-002` concern its later use by Poll. Discover Versions
-//! has no secret payload and does not resolve ADR-0012 OD-006, which remains a
+//! `KMIP-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`; §9.19 and
+//! `KMIP-REQ-SPEC-9.19-002` concern its later use by Poll. Discover Versions
+//! has no secret payload and does not resolve caller-requested encoding and zeroization OD-006, which remains a
 //! gate for the first secret-bearing operation.
 //!
-//! Traceability: `KMIPKIT-0007-FR-005`, `-FR-008`, `-FR-011`, `-FR-012`,
-//! `-FR-013`, `-FR-017`; `KMIPKIT-0007-SC-002`, `-SC-004`, `-SC-005`,
-//! `-SC-008`; ADR-0012; `AGENTS.md` §8.
+//! Traceability: `functional requirement`, `-FR-008`, `-FR-011`, `-FR-012`,
+//! `-FR-013`, `-FR-017`; `success criterion`, `-SC-004`, `-SC-005`,
+//! `-SC-008`; caller-requested encoding and zeroization; `security and privacy policy` §8.
 
 use std::cell::{Cell, RefCell};
 use std::error::Error;
@@ -335,7 +335,7 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
 #[test]
 fn deferred_set_endpoint_role_preserves_open_values_in_validation_report() {
     // KMIP 2.1 §6.1.54, Table 331 defines Endpoint Role as a required
-    // Enumeration; KMIPKIT-0051 scopes pre-send rules to the 56 client_1_0
+    // Enumeration; specification requirement scopes pre-send rules to the 56 client_1_0
     // operations, while this operation is deferred to 1.1.
     let request = ClientRequest::SetEndpointRole(SetEndpointRoleRequest::new(
         EndpointRole::from_raw(0x8000_1234),

@@ -12,20 +12,20 @@ ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 GENERATED_PARITY = ROOT / "bindings" / "shared" / "fixtures" / "api" / "generated" / "public_api_parity.json"
 TRACEABILITY = ROOT / "specs" / "043-public-api-bindings" / "traceability.md"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-RE-CERTIFY"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.45-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.45-004",
-    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-008",
+    "KMIP-REQ-SPEC-6.1.45-001",
+    "KMIP-REQ-SPEC-6.1.45-002-001",
+    "KMIP-REQ-SPEC-6.1.45-002-003",
+    "KMIP-REQ-SPEC-6.1.45-004",
+    "KMIP-REQ-SPEC-6.1.45-006-001",
+    "KMIP-REQ-SPEC-6.1.45-008",
 }
 RETIRED_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.45-002-002",
-    "KMIPKIT-REQ-SPEC-6.1.45-006-002",
+    "KMIP-REQ-SPEC-6.1.45-002-002",
+    "KMIP-REQ-SPEC-6.1.45-006-002",
 }
 RETIRED_REQUIREMENT_DECLARATIONS = {
     'T058:recertify:constructor:c',
@@ -124,12 +124,12 @@ NON_REQUEST_DECLARATIONS = {
     "T058:recertify:response-close:python",
 }
 ACTIVE_REQUEST_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.45-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-002-003",
-    "KMIPKIT-REQ-SPEC-6.1.45-004",
-    "KMIPKIT-REQ-SPEC-6.1.45-006-001",
-    "KMIPKIT-REQ-SPEC-6.1.45-008",
+    "KMIP-REQ-SPEC-6.1.45-001",
+    "KMIP-REQ-SPEC-6.1.45-002-001",
+    "KMIP-REQ-SPEC-6.1.45-002-003",
+    "KMIP-REQ-SPEC-6.1.45-004",
+    "KMIP-REQ-SPEC-6.1.45-006-001",
+    "KMIP-REQ-SPEC-6.1.45-008",
 }
 RESPONSE_FUNCTIONS = {
     "client_batch_item_response_recertify",
@@ -277,7 +277,7 @@ class RecertifyParityManifestTests(unittest.TestCase):
         self.assertTrue(ACTIVE_REQUEST_REQUIREMENTS <= linked_requirements)
 
     def test_conditional_identifier_requirement_is_request_only_and_retired_ids_are_unassigned(self) -> None:
-        active = "KMIPKIT-REQ-SPEC-6.1.45-002-003"
+        active = "KMIP-REQ-SPEC-6.1.45-002-003"
         self.assertIn(active, self.manifest["requirementIds"])
         self.assertTrue(RETIRED_REQUIREMENTS <= set(self.manifest["requirementIds"]))
 

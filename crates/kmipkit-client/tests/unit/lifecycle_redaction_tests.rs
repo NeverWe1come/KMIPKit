@@ -1,7 +1,7 @@
-//! Redaction regressions for the KMIPKIT-0018 lifecycle values.
+//! Redaction regressions for the specification requirement lifecycle values.
 //!
-//! Derived from the project's KMIPKIT-0018 FR-010 security requirement and
-//! shared KMIPKIT-0007 error contract. These are project-policy tests, not
+//! Derived from the project's specification requirement FR-010 security requirement and
+//! shared specification requirement error contract. These are project-policy tests, not
 //! official OASIS Test Cases.
 
 use std::error::Error;

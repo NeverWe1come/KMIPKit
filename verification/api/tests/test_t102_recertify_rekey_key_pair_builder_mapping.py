@@ -18,8 +18,8 @@ MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
 OASIS_HTML = ROOT / "verification" / "conformance" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 OWNER = "specs/022-object-lifecycle/spec.md"
-RECERTIFY = "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY"
-REKEY_KEY_PAIR = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
+RECERTIFY = "KMIP-ELEM-OP-C2S-RE-CERTIFY"
+REKEY_KEY_PAIR = "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 JAVA_WIRE = "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
 C_WIRE = "crates/kmipkit-ffi/tests/c_api_coverage.rs"
 WIRE_EVIDENCE = {JAVA_WIRE, C_WIRE}
@@ -34,7 +34,7 @@ RECERTIFY_TYPE_REQUIREMENTS = {
     "KMIPKIT-0036-FR-004",
     "KMIPKIT-0036-FR-006",
     "KMIPKIT-0036-FR-008",
-    "KMIPKIT-REQ-SPEC-6.1.45-008",
+    "KMIP-REQ-SPEC-6.1.45-008",
 }
 RECERTIFY_VALUE_REQUIREMENTS = {
     "KMIPKIT-0036-FR-001",
@@ -43,7 +43,7 @@ RECERTIFY_VALUE_REQUIREMENTS = {
     "KMIPKIT-0036-FR-005",
     "KMIPKIT-0036-FR-006",
     "KMIPKIT-0036-FR-008",
-    "KMIPKIT-REQ-SPEC-6.1.45-008",
+    "KMIP-REQ-SPEC-6.1.45-008",
 }
 RECERTIFY_TYPE_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
@@ -74,7 +74,7 @@ TARGETS = {
     "rust-observed-e98ebdedfd3bd6dc5178": (
         "kmipkit_protocol::RecertifyRequest::new",
         RECERTIFY,
-        {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004", "KMIPKIT-REQ-SPEC-6.1.45-001"},
+        {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004", "KMIP-REQ-SPEC-6.1.45-001"},
         "kmipkit_client_batch_item_recertify",
     ),
     "rust-observed-3b7ec1d8b422ce2f856a": (
@@ -86,8 +86,8 @@ TARGETS = {
             "KMIPKIT-0036-FR-004",
             "KMIPKIT-0036-FR-006",
             "KMIPKIT-0036-FR-008",
-            "KMIPKIT-REQ-SPEC-6.1.45-002-001",
-            "KMIPKIT-REQ-SPEC-6.1.45-002-003",
+            "KMIP-REQ-SPEC-6.1.45-002-001",
+            "KMIP-REQ-SPEC-6.1.45-002-003",
         },
         "kmipkit_client_batch_item_recertify",
     ),
@@ -105,14 +105,14 @@ TARGETS = {
             "KMIPKIT-0036-FR-004",
             "KMIPKIT-0036-FR-006",
             "KMIPKIT-0036-FR-008",
-            "KMIPKIT-REQ-SPEC-6.1.45-006-001",
+            "KMIP-REQ-SPEC-6.1.45-006-001",
         },
         "kmipkit_client_batch_item_recertify",
     ),
     "rust-observed-87194cce123787c123e6": (
         "kmipkit_protocol::RekeyKeyPairRequest::new",
         REKEY_KEY_PAIR,
-        {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004", "KMIPKIT-REQ-SPEC-6.1.47-001"},
+        {"KMIPKIT-0036-FR-001", "KMIPKIT-0036-FR-004", "KMIP-REQ-SPEC-6.1.47-001"},
         "kmipkit_client_batch_item_rekey_key_pair",
     ),
     "rust-observed-c48c50a3aba9f3320543": (
@@ -123,7 +123,7 @@ TARGETS = {
             "KMIPKIT-0036-FR-004",
             "KMIPKIT-0036-FR-006",
             "KMIPKIT-0036-FR-008",
-            "KMIPKIT-REQ-SPEC-6.1.47-004-001",
+            "KMIP-REQ-SPEC-6.1.47-004-001",
         },
         "kmipkit_client_batch_item_rekey_key_pair",
     ),
@@ -156,7 +156,7 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
                 self.assertEqual(capability, declaration["capabilityId"])
                 self.assertEqual(builder["approvalSource"], declaration["approvalSource"])
                 self.assertEqual(requirements, set(declaration["requirementIds"]))
-                self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.45-008", declaration["requirementIds"])
+                self.assertNotIn("KMIP-REQ-SPEC-6.1.45-008", declaration["requirementIds"])
                 self.assertEqual("four-language", declaration["parityScope"])
                 expected_mappings = dict(builder["languageMappings"])
                 expected_mappings["rust"] = {"packageId": "rust-kmipkit-protocol", "name": export_name}
@@ -166,7 +166,7 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         for row in self.manifest["publicDeclarations"]:
             if row.get("capabilityId") == RECERTIFY and row.get("declarationState") == "verified":
                 if row["declarationId"] in TARGETS:
-                    self.assertNotIn("KMIPKIT-REQ-SPEC-6.1.45-008", row["requirementIds"])
+                    self.assertNotIn("KMIP-REQ-SPEC-6.1.45-008", row["requirementIds"])
 
     def test_selected_ids_are_added_to_exact_operation_rust_sets(self) -> None:
         operations = {row["operationId"]: row for row in self.manifest["operations"]}
@@ -227,8 +227,8 @@ class T102RecertifyRekeyKeyPairBuilderMappingTests(unittest.TestCase):
         self.assertIn("Table 300: Re-certify Request Payload", oasis)
         self.assertRegex(oasis, r"Certificate Request Type No An Enumeration object.*?It is REQUIRED if the Certificate Request is present\.")
         self.assertRegex(oasis, r"Certificate Request Value No A Byte String object with the certificate request\.")
-        self.assertEqual("Certificate Request Type", self.elements["KMIPKIT-ELEM-TAG-420019"]["name"])
-        self.assertIn("KMIPKIT-ELEM-ENUMERATION-TAG", self.elements["KMIPKIT-ELEM-TAG-420019"]["parent_element_ids"])
+        self.assertEqual("Certificate Request Type", self.elements["KMIP-ELEM-TAG-420019"]["name"])
+        self.assertIn("KMIP-ELEM-ENUMERATION-TAG", self.elements["KMIP-ELEM-TAG-420019"]["parent_element_ids"])
         source = MANIFEST.read_text(encoding="utf-8")
         self.assertTrue("Certificate Request Type is optional and may appear without Certificate Request Value" in source)
         self.assertFalse("Certificate Request Type is present only with Certificate Request Value" in source)

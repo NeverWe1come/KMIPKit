@@ -4,9 +4,9 @@
 //! Credential models. They do not claim official OASIS test-vector coverage
 //! or server-side credential satisfaction.
 //!
-//! Traceability: KMIPKIT-REQ-SPEC-9.4-001-001, KMIPKIT-REQ-SPEC-9.4-001-002,
-//! KMIPKIT-REQ-SPEC-9.4-002, KMIPKIT-REQ-SPEC-9.11-004-001/-002/-003,
-//! KMIPKIT-REQ-SPEC-9.11-006; KMIPKIT-0008-FR-001, FR-002, FR-004–FR-006,
+//! Traceability: KMIP-REQ-SPEC-9.4-001-001, KMIP-REQ-SPEC-9.4-001-002,
+//! KMIP-REQ-SPEC-9.4-002, KMIP-REQ-SPEC-9.11-004-001/-002/-003,
+//! KMIP-REQ-SPEC-9.11-006; functional requirement, FR-002, FR-004–FR-006,
 //! FR-009; SC-001, SC-002.
 
 use kmipkit_protocol::{
@@ -807,7 +807,7 @@ fn hashed_password_timestamp_sequence_matches_shared_fixture() {
         .expect("next timestamp is signed 64-bit");
 
     // KMIP Specification v2.1 §9.11, Table 415; OD-003 is resolved in
-    // KMIPKIT-0008 and KMIPKIT-0010 T056 as caller-owned per-Username state.
+    // specification requirement and specification requirement T056 as caller-owned per-Username state.
     let mut sequence = HashedPasswordTimestampSequence::new(Some(restored));
     assert_eq!(
         sequence.last_timestamp(),

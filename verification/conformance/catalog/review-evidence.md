@@ -171,15 +171,15 @@ Section 1.2 defines the uppercase key words, including `MUST`, as described by
 RFC 2119. Section 9.4 prints “they must ALL be satisfied” with lowercase
 `must`. The inventory retains the detected keyword candidate and records the
 case-classification alternatives in open `KMIPKIT-DISC-041`; no interpretation
-is selected. Requirement `KMIPKIT-REQ-SPEC-9.4-001-003` describes the server's
+is selected. Requirement `KMIP-REQ-SPEC-9.4-001-003` describes the server's
 authentication process, remains `server_only` and `unassigned`, and has no
 client feature, implementation, or verification assignment.
 
 Section 9.11 says a Credential is used for client identification and that it
 MAY be used for authentication as indicated by KMIP Profiles. The catalog
 summary and condition now keep general identification separate from
-profile-dependent authentication. Requirement `KMIPKIT-REQ-SPEC-9.11-001`
-links to `KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL` with a reciprocal element link.
+profile-dependent authentication. Requirement `KMIP-REQ-SPEC-9.11-001`
+links to `KMIP-ELEM-CREDENTIAL-CREDENTIAL` with a reciprocal element link.
 The §9.4 Authentication and repeated Credential requirements likewise link to
 their corresponding existing message fields in both directions.
 
@@ -196,17 +196,17 @@ requires one of those four identifier fields; it does not claim that OASIS
 states that exact minimum verbatim. Empty Text Strings still count as present
 fields, while the caller remains responsible for actual uniqueness because
 the source defines no comparison scope. Requirement
-`KMIPKIT-REQ-SPEC-9.11-004-001` retains the source-neutral “at least one field”
+`KMIP-REQ-SPEC-9.11-004-001` retains the source-neutral “at least one field”
 summary and links all six fields; its implementation note cites OD-002;
-`KMIPKIT-REQ-SPEC-9.11-004-002` links only to the four named uniqueness
-fields; and `KMIPKIT-REQ-SPEC-9.11-004-003` links to Device Password. No local
+`KMIP-REQ-SPEC-9.11-004-002` links only to the four named uniqueness
+fields; and `KMIP-REQ-SPEC-9.11-004-003` links to Device Password. No local
 uniqueness-enforcement requirement was added.
 
-Changed records are clauses `KMIPKIT-CLAUSE-SPEC-9.4-001` and
-`KMIPKIT-CLAUSE-SPEC-9.11-001`; requirements `KMIPKIT-REQ-SPEC-9.4-001-001`,
-`KMIPKIT-REQ-SPEC-9.4-001-002`, `KMIPKIT-REQ-SPEC-9.4-001-003`,
-`KMIPKIT-REQ-SPEC-9.4-002`, `KMIPKIT-REQ-SPEC-9.11-001`, and
-`KMIPKIT-REQ-SPEC-9.11-004-001` through `-003`; discrepancy records
+Changed records are clauses `KMIP-CLAUSE-SPEC-9.4-001` and
+`KMIP-CLAUSE-SPEC-9.11-001`; requirements `KMIP-REQ-SPEC-9.4-001-001`,
+`KMIP-REQ-SPEC-9.4-001-002`, `KMIP-REQ-SPEC-9.4-001-003`,
+`KMIP-REQ-SPEC-9.4-002`, `KMIP-REQ-SPEC-9.11-001`, and
+`KMIP-REQ-SPEC-9.11-004-001` through `-003`; discrepancy records
 `KMIPKIT-DISC-041` and `KMIPKIT-DISC-042`; and the reciprocal element links
 listed above. The pinned OASIS source files and source manifest were not
 edited. The exact-base audit found 1,411 candidates and the immutable-source

@@ -111,7 +111,7 @@ fn has_date_time_extended(item: &Item, expected: i64) -> bool {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004.
+// specification requirement-NR-002 and specification requirement-NR-004.
 #[test]
 fn decodes_a_valid_empty_structure_item() {
     let wire = item_bytes(ASSIGNED_TAG, STRUCTURE, 0, &[]);
@@ -123,7 +123,7 @@ fn decodes_a_valid_empty_structure_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002 and specification requirement-NR-005.
 #[test]
 fn decodes_a_valid_integer_item_and_its_four_byte_padding() {
     let wire = item_bytes(
@@ -137,7 +137,7 @@ fn decodes_a_valid_integer_item_and_its_four_byte_padding() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004.
+// specification requirement-NR-002 and specification requirement-NR-004.
 #[test]
 fn decodes_a_valid_long_integer_item() {
     let wire = item_bytes(
@@ -152,7 +152,7 @@ fn decodes_a_valid_long_integer_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-003, and KMIPKIT-0005-NR-004.
+// specification requirement-NR-002, specification requirement-NR-003, and specification requirement-NR-004.
 #[test]
 fn decodes_a_valid_aligned_big_integer_item_without_changing_its_octets() {
     let value = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2A];
@@ -162,7 +162,7 @@ fn decodes_a_valid_aligned_big_integer_item_without_changing_its_octets() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002 and specification requirement-NR-005.
 #[test]
 fn decodes_a_valid_enumeration_item_and_its_four_byte_padding() {
     let wire = item_bytes(
@@ -177,7 +177,7 @@ fn decodes_a_valid_enumeration_item_and_its_four_byte_padding() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and §11.23; traceability
-// KMIPKIT-0005-NR-002.
+// specification requirement-NR-002.
 #[test]
 fn decodes_a_valid_true_boolean_item() {
     let wire = item_bytes(ASSIGNED_TAG, BOOLEAN, 8, &[0, 0, 0, 0, 0, 0, 0, 1]);
@@ -186,7 +186,7 @@ fn decodes_a_valid_true_boolean_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
-// KMIPKIT-0005-NR-002.
+// specification requirement-NR-002.
 #[test]
 fn decodes_a_valid_false_boolean_item() {
     let wire = item_bytes(ASSIGNED_TAG, BOOLEAN, 8, &[0; 8]);
@@ -195,7 +195,7 @@ fn decodes_a_valid_false_boolean_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002 and specification requirement-NR-005.
 #[test]
 fn decodes_a_valid_utf8_text_string_with_minimal_padding() {
     let wire = item_bytes(
@@ -209,7 +209,7 @@ fn decodes_a_valid_utf8_text_string_with_minimal_padding() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002 and specification requirement-NR-005.
 #[test]
 fn decodes_a_valid_byte_string_with_minimal_padding() {
     let value = [0x00, 0x80, 0xFF];
@@ -224,7 +224,7 @@ fn decodes_a_valid_byte_string_with_minimal_padding() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004.
+// specification requirement-NR-002 and specification requirement-NR-004.
 #[test]
 fn decodes_a_valid_date_time_item() {
     let wire = item_bytes(ASSIGNED_TAG, DATE_TIME, 8, &[0xFF; 8]);
@@ -233,7 +233,7 @@ fn decodes_a_valid_date_time_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2, 10.1.5, and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002 and specification requirement-NR-005.
 #[test]
 fn decodes_a_valid_interval_item_and_its_four_byte_padding() {
     let wire = item_bytes(
@@ -247,7 +247,7 @@ fn decodes_a_valid_interval_item_and_its_four_byte_padding() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004.
+// specification requirement-NR-002 and specification requirement-NR-004.
 #[test]
 fn decodes_a_valid_date_time_extended_item() {
     let wire = item_bytes(
@@ -263,8 +263,8 @@ fn decodes_a_valid_date_time_extended_item() {
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23 define the wire forms;
 // preserving every unknown Enumeration bit is KMIPKit project requirement
-// KMIPKIT-0005-FR-005, not an OASIS operation-level enumeration requirement.
-// Traceability for the OASIS value form: KMIPKIT-0005-NR-002.
+// functional requirement, not an OASIS operation-level enumeration requirement.
+// Traceability for the OASIS value form: specification requirement-NR-002.
 #[test]
 fn preserves_an_unknown_enumeration_value_as_raw_u32_bits() {
     let wire = item_bytes(
@@ -280,8 +280,8 @@ fn preserves_an_unknown_enumeration_value_as_raw_u32_bits() {
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23 define the wire forms;
 // preserving unknown Integer mask bits is KMIPKit project requirement
-// KMIPKIT-0005-FR-005, not an OASIS decoder semantic requirement.
-// Traceability for the OASIS value form: KMIPKIT-0005-NR-002.
+// functional requirement, not an OASIS decoder semantic requirement.
+// Traceability for the OASIS value form: specification requirement-NR-002.
 #[test]
 fn preserves_unknown_integer_mask_bits() {
     let bits = [0xF1, 0x23, 0x45, 0x67];
@@ -297,8 +297,8 @@ fn preserves_unknown_integer_mask_bits() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
-// KMIPKIT-0005-NR-002. Preservation of repeated Tags and caller order is the
-// generic-model behavior in KMIPKit project requirement KMIPKIT-0005-FR-005.
+// specification requirement-NR-002. Preservation of repeated Tags and caller order is the
+// generic-model behavior in KMIPKit project requirement functional requirement.
 #[test]
 fn preserves_structure_child_order_and_repeated_tags() {
     let first = item_bytes(
@@ -330,8 +330,8 @@ fn preserves_structure_child_order_and_repeated_tags() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
-// KMIPKIT-0005-NR-002. Cumulative Structure boundaries follow
-// KMIPKit project requirement KMIPKIT-0005-FR-006.
+// specification requirement-NR-002. Cumulative Structure boundaries follow
+// KMIPKit project requirement functional requirement.
 #[test]
 fn preserves_nested_structure_boundaries_and_child_value() {
     let child = item_bytes(
@@ -360,8 +360,8 @@ fn preserves_nested_structure_boundaries_and_child_value() {
 }
 
 // OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56; the
-// assigned Tag remains accepted under project requirement KMIPKIT-0005-FR-005.
-// Traceability: KMIPKIT-0005-NR-006 covers allocation classification.
+// assigned Tag remains accepted under project requirement functional requirement.
+// Traceability: specification requirement-NR-006 covers allocation classification.
 #[test]
 fn accepts_an_assigned_tag() {
     let tag = 0x0042_0173;
@@ -373,7 +373,7 @@ fn accepts_an_assigned_tag() {
 
 // OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56; an
 // accepted extension Tag is preserved by KMIPKit project requirement
-// KMIPKIT-0005-FR-005. Traceability: KMIPKIT-0005-NR-006 covers allocation.
+// functional requirement. Traceability: specification requirement-NR-006 covers allocation.
 #[test]
 fn accepts_an_extension_tag() {
     let extension_tag = 0x0054_1234;
@@ -388,10 +388,10 @@ fn accepts_an_extension_tag() {
         if item.tag().raw() == extension_tag && item.item_type() == ItemType::Enumeration));
 }
 
-// Project requirement KMIPKIT-0005-FR-010 and accepted ADR-0011 require
+// Project requirement functional requirement and accepted architectural decision require
 // Reserved-tag rejection; this is not an OASIS decoder rejection requirement.
 // OASIS KMIP Specification v2.1, Chapter 11 introduction and §11.56 define the
-// Tag classification covered by KMIPKIT-0005-NR-006.
+// Tag classification covered by specification requirement-NR-006.
 #[test]
 fn rejects_a_received_reserved_tag_before_item_construction() {
     let wire = item_bytes(0x0042_0009, ENUMERATION, 4, &[0, 0, 0, 9, 0, 0, 0, 0]);
@@ -402,7 +402,7 @@ fn rejects_a_received_reserved_tag_before_item_construction() {
     ));
 }
 
-// KMIPKit project requirement KMIPKIT-0005-FR-004 requires one complete item
+// KMIPKit project requirement functional requirement requires one complete item
 // and rejects trailing bytes; this is project framing behavior, not a separate
 // OASIS requirement.
 #[test]
@@ -417,7 +417,7 @@ fn rejects_bytes_after_one_complete_item() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.1–10.1.3; traceability
-// KMIPKIT-0005-NR-001 and KMIPKIT-0005-NR-004 require the complete header and
+// specification requirement-NR-001 and specification requirement-NR-004 require the complete header and
 // declared Item Value fields. Each prefix is a distinct truncation vector.
 #[test]
 fn rejects_every_incomplete_header_prefix() {
@@ -435,7 +435,7 @@ fn rejects_every_incomplete_header_prefix() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004 require the declared value extent.
+// specification requirement-NR-002 and specification requirement-NR-004 require the declared value extent.
 #[test]
 fn rejects_a_truncated_fixed_width_value() {
     let wire = item_bytes(ASSIGNED_TAG, LONG_INTEGER, 8, &[0, 1, 2, 3, 4, 5, 6]);
@@ -447,7 +447,7 @@ fn rejects_a_truncated_fixed_width_value() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004 define fixed-width values and
+// specification requirement-NR-002 and specification requirement-NR-004 define fixed-width values and
 // allowed Item Lengths for all seven fixed-width Item Types.
 #[test]
 fn rejects_invalid_lengths_for_every_fixed_width_item_type() {
@@ -476,7 +476,7 @@ fn rejects_invalid_lengths_for_every_fixed_width_item_type() {
     }
 }
 
-// OASIS KMIP Specification v2.1, §10.1.2; traceability KMIPKIT-0005-NR-003
+// OASIS KMIP Specification v2.1, §10.1.2; traceability specification requirement-NR-003
 // requires a Big Integer Item Value length that is a multiple of eight.
 #[test]
 fn rejects_a_nonempty_big_integer_with_a_non_multiple_of_eight_length() {
@@ -488,10 +488,10 @@ fn rejects_a_nonempty_big_integer_with_a_non_multiple_of_eight_length() {
     ));
 }
 
-// KMIPKit project requirement KMIPKIT-0005-FR-006 and the approved
+// KMIPKit project requirement functional requirement and the approved
 // clarification record reject empty Big Integer values. OASIS KMIP
 // Specification v2.1 §10.1.2 does not state a minimum length, so this is not
-// presented as an OASIS MUST. Its Big Integer value form is KMIPKIT-0005-NR-003.
+// presented as an OASIS MUST. Its Big Integer value form is specification requirement-NR-003.
 #[test]
 fn rejects_an_empty_big_integer_under_the_project_validity_rule() {
     let wire = item_bytes(ASSIGNED_TAG, BIG_INTEGER, 0, &[]);
@@ -503,7 +503,7 @@ fn rejects_an_empty_big_integer_under_the_project_validity_rule() {
 }
 
 // OASIS KMIP Specification v2.1, §10.1.2 and §11.23 define Text String as
-// UTF-8; traceability KMIPKIT-0005-NR-002.
+// UTF-8; traceability specification requirement-NR-002.
 #[test]
 fn rejects_invalid_utf8_text_string_octets() {
     let wire = item_bytes(
@@ -520,7 +520,7 @@ fn rejects_invalid_utf8_text_string_octets() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2 and 11.23; traceability
-// KMIPKIT-0005-NR-002 requires the exact eight-byte Boolean encodings.
+// specification requirement-NR-002 requires the exact eight-byte Boolean encodings.
 #[test]
 fn rejects_a_boolean_value_other_than_the_defined_false_or_true_encoding() {
     let wire = item_bytes(ASSIGNED_TAG, BOOLEAN, 8, &[0, 0, 0, 0, 0, 0, 0, 2]);
@@ -531,9 +531,9 @@ fn rejects_a_boolean_value_other_than_the_defined_false_or_true_encoding() {
     ));
 }
 
-// KMIPKit project requirement KMIPKIT-0005-FR-005 rejects Item Type codes the
+// KMIPKit project requirement functional requirement rejects Item Type codes the
 // generic model cannot represent. OASIS KMIP Specification v2.1 §11.23 lists
-// the assigned Item Types (`KMIPKIT-0005-NR-002`); rejection of an unsupported
+// the assigned Item Types (`specification requirement-NR-002`); rejection of an unsupported
 // code is project policy.
 #[test]
 fn rejects_an_unsupported_item_type_code() {
@@ -545,9 +545,9 @@ fn rejects_an_unsupported_item_type_code() {
     ));
 }
 
-// OASIS KMIP Specification v2.1, §10.1.5; traceability KMIPKIT-0005-NR-005
+// OASIS KMIP Specification v2.1, §10.1.5; traceability specification requirement-NR-005
 // specifies padding extents but no required octet value. KMIPKit project
-// requirement KMIPKIT-0005-FR-006 therefore accepts these nonzero octets.
+// requirement functional requirement therefore accepts these nonzero octets.
 #[test]
 fn accepts_nonzero_padding_octets_when_the_required_extents_are_present() {
     let vectors = [
@@ -592,9 +592,9 @@ fn accepts_nonzero_padding_octets_when_the_required_extents_are_present() {
 }
 
 // OASIS KMIP Specification v2.1, §10.1.5; traceability
-// KMIPKIT-0005-NR-005 covers exact four-byte and minimum string/byte padding
+// specification requirement-NR-005 covers exact four-byte and minimum string/byte padding
 // extents. Extra bytes after the one item are rejected under KMIPKit project
-// requirement KMIPKIT-0005-FR-004, rather than treated as padding.
+// requirement functional requirement, rather than treated as padding.
 #[test]
 fn rejects_short_padding_and_bytes_beyond_each_required_padding_extent() {
     let cases = [
@@ -625,10 +625,10 @@ fn rejects_short_padding_and_bytes_beyond_each_required_padding_extent() {
     }
 }
 
-// KMIPKit project requirement KMIPKIT-0005-FR-006 checks Structure child
+// KMIPKit project requirement functional requirement checks Structure child
 // boundaries; OASIS KMIP Specification v2.1, §§10.1.2, 10.1.3, and 10.1.5
 // define nested Structure values and the length inclusion rule. Traceability:
-// KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-004, and KMIPKIT-0005-NR-005.
+// specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005.
 #[test]
 fn rejects_a_child_that_crosses_its_parent_structure_boundary() {
     let child = item_bytes(
@@ -645,11 +645,11 @@ fn rejects_a_child_that_crosses_its_parent_structure_boundary() {
     ));
 }
 
-// KMIPKit project requirement KMIPKIT-0005-FR-006 rejects child data that
+// KMIPKit project requirement functional requirement rejects child data that
 // cannot fill its declared parent Structure extent. OASIS KMIP Specification
 // v2.1, §§10.1.2, 10.1.3, and 10.1.5 define child encodings and Structure
-// length. Traceability: KMIPKIT-0005-NR-002, KMIPKIT-0005-NR-004, and
-// KMIPKIT-0005-NR-005.
+// length. Traceability: specification requirement-NR-002, specification requirement-NR-004, and
+// specification requirement-NR-005.
 #[test]
 fn rejects_a_structure_whose_declared_extent_exceeds_available_input() {
     let child_header_only = item_bytes(ASSIGNED_TAG, INTEGER, 4, &[]);
@@ -662,8 +662,8 @@ fn rejects_a_structure_whose_declared_extent_exceeds_available_input() {
 }
 
 // OASIS KMIP Specification v2.1, §10.1.3; traceability
-// KMIPKIT-0005-NR-004 requires Item Length to fit the U32 field. KMIPKit
-// project requirement KMIPKIT-0005-FR-008 rejects a declared span that is not
+// specification requirement-NR-004 requires Item Length to fit the U32 field. KMIPKit
+// project requirement functional requirement rejects a declared span that is not
 // available before allocation; this boundary vector uses no giant allocation.
 #[test]
 fn checks_a_maximum_u32_length_against_available_input_before_allocation() {
@@ -676,7 +676,7 @@ fn checks_a_maximum_u32_length_against_available_input_before_allocation() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.1–10.1.3; traceability
-// KMIPKIT-0005-NR-001 and KMIPKIT-0005-NR-004 cover the fixed header fields and
+// specification requirement-NR-001 and specification requirement-NR-004 cover the fixed header fields and
 // declared value span used by this boundary check.
 #[test]
 fn rejects_a_value_whose_declared_extent_is_not_available() {

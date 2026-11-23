@@ -1,11 +1,11 @@
 //! Source-derived RNG Seed contracts from OASIS KMIP v2.1 §6.1.50,
 //! Tables 319–321. These tests do not claim an official Test Case pass.
 //!
-//! Traceability: FR-001–FR-008, `KMIPKIT-REQ-SPEC-6.1.50-001`,
-//! `KMIPKIT-ELEM-OP-C2S-RNG-SEED`,
-//! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Traceability: FR-001–FR-008, `KMIP-REQ-SPEC-6.1.50-001`,
+//! `KMIP-ELEM-OP-C2S-RNG-SEED`,
+//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::structure_contains_tag;
@@ -118,7 +118,7 @@ fn successful_response_preserves_zero_data_length_and_unknown_fields() {
         ])),
     );
     let response = RngSeedResponse::try_from_response_item(response_item(&message))
-        .expect("§6.1.50 and KMIPKIT-REQ-SPEC-6.1.50-001 accept zero bytes used");
+        .expect("§6.1.50 and KMIP-REQ-SPEC-6.1.50-001 accept zero bytes used");
 
     assert_eq!(response.result().status().raw(), SUCCESS);
     assert_eq!(response.data_length(), Some(0));

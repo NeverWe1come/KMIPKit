@@ -761,7 +761,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
-                // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
+                // response inspection-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
                 try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
                         var json = queryResult.json(CodecLimits.defaults());
                         var xml = queryResult.xml(CodecLimits.defaults())) {

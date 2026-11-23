@@ -460,7 +460,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             with self.subTest(export_name=export_name):
                 self.assertEqual(row["declarationState"], "verified")
                 self.assertEqual(
-                    row["capabilityId"], "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS"
+                    row["capabilityId"], "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS"
                 )
                 self.assertIn("KMIPKIT-0039-FR-001", row["requirementIds"])
 
@@ -542,7 +542,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
         self.assertEqual(
             rows[ttlv_constructor]["capabilityId"],
-            "KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS",
+            "KMIP-ELEM-OP-C2S-GET-CONSTRAINTS",
         )
 
     def test_set_response_trait_paths_are_exact_approved_exclusions(self) -> None:
@@ -618,7 +618,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS")
                 self.assertIn("KMIPKIT-0039-FR-001", rows[name]["requirementIds"])
 
 
@@ -705,7 +705,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertEqual(rows[ttlv_constructor]["declarationState"], "verified")
         self.assertEqual(
             rows[ttlv_constructor]["capabilityId"],
-            "KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS",
+            "KMIP-ELEM-OP-C2S-SET-CONSTRAINTS",
         )
 
 
@@ -865,7 +865,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         for export_name, row in rows.items():
             with self.subTest(export_name=export_name):
                 self.assertEqual(row["declarationState"], "verified")
-                self.assertEqual(row["capabilityId"], "KMIPKIT-ELEM-OP-C2S-VALIDATE")
+                self.assertEqual(row["capabilityId"], "KMIP-ELEM-OP-C2S-VALIDATE")
                 self.assertIn("KMIPKIT-0042-FR-001", row["requirementIds"])
         root_rows = [
             row for row in self.manifest["publicDeclarations"]
@@ -959,7 +959,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-CHECK")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-CHECK")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
         root_rows = [
             row for row in self.manifest["publicDeclarations"]
@@ -1051,7 +1051,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-DERIVE-KEY")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-DERIVE-KEY")
                 self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
         root_rows = [
             row for row in self.manifest["publicDeclarations"]
@@ -1148,7 +1148,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-EXPORT")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-EXPORT")
                 self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
         root_rows = [
             row for row in self.manifest["publicDeclarations"]
@@ -1243,7 +1243,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-GET")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-GET")
                 self.assertIn("KMIPKIT-0017-FR-001", rows[name]["requirementIds"])
         root_rows = [
             row for row in self.manifest["publicDeclarations"]
@@ -1342,7 +1342,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOCATE")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-LOCATE")
                 self.assertIn("KMIPKIT-0017-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0017-FR-008", rows[name]["requirementIds"])
         root_rows = [
@@ -1441,7 +1441,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-INTEROP")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-INTEROP")
                 self.assertIn("KMIPKIT-0042-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0042-FR-008", rows[name]["requirementIds"])
         root_rows = [
@@ -1549,7 +1549,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(
             rows["kmipkit_protocol::LocateRequest"]["capabilityId"],
-            "KMIPKIT-ELEM-OP-C2S-LOCATE",
+            "KMIP-ELEM-OP-C2S-LOCATE",
         )
         self.assertIn(
             "KMIPKIT-0017-FR-006",
@@ -1651,7 +1651,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-LOG")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-LOG")
                 self.assertIn("KMIPKIT-0042-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0042-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -1751,7 +1751,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-IMPORT")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-IMPORT")
                 self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0037-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -1844,7 +1844,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-JOIN-SPLIT-KEY")
                 self.assertIn("KMIPKIT-0037-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0037-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -1970,7 +1970,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-OBTAIN-LEASE")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-OBTAIN-LEASE")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2095,7 +2095,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RE-KEY-KEY-PAIR")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2346,7 +2346,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-KEY")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RE-KEY")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2471,7 +2471,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-CERTIFY")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RE-CERTIFY")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2596,7 +2596,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-REGISTER")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-REGISTER")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2722,7 +2722,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-REVOKE")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-REVOKE")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2848,7 +2848,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RE-PROVISION")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RE-PROVISION")
                 self.assertIn("KMIPKIT-0036-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0036-FR-004", rows[name]["requirementIds"])
         root_rows = [
@@ -2979,7 +2979,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RNG-RETRIEVE")
                 self.assertIn("KMIPKIT-0041-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0041-FR-004", rows[name]["requirementIds"])
         self.assertEqual(
@@ -3008,7 +3008,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
         operation = next(
             row for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-RNG-RETRIEVE"
         )
         self.assertEqual(operation["section"], "6.1.49")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})
@@ -3050,7 +3050,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
                     "KMIPKIT-0041-FR-004",
                     "KMIPKIT-0043-FR-010",
                     "KMIPKIT-0043-FR-021",
-                    "KMIPKIT-REQ-SPEC-6.1.50-001",
+                    "KMIP-REQ-SPEC-6.1.50-001",
                 ):
                     self.assertIn(requirement_id, row["evidence"])
                 self.assertIn("KMIP v2.1 Section 6.1.50 Tables 319-321", row["evidence"])
@@ -3133,7 +3133,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         )
         for name in verified:
             with self.subTest(export_name=name):
-                self.assertEqual(rows[name]["capabilityId"], "KMIPKIT-ELEM-OP-C2S-RNG-SEED")
+                self.assertEqual(rows[name]["capabilityId"], "KMIP-ELEM-OP-C2S-RNG-SEED")
                 self.assertIn("KMIPKIT-0041-FR-001", rows[name]["requirementIds"])
                 self.assertIn("KMIPKIT-0041-FR-004", rows[name]["requirementIds"])
         self.assertEqual(
@@ -3162,7 +3162,7 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
         self.assertTrue(all("candidateSpecId" not in root_rows[name] for name in expected_root_verified))
         operation = next(
             row for row in self.manifest["operations"]
-            if row["operationId"] == "KMIPKIT-ELEM-OP-C2S-RNG-SEED"
+            if row["operationId"] == "KMIP-ELEM-OP-C2S-RNG-SEED"
         )
         self.assertEqual(operation["section"], "6.1.50")
         self.assertEqual(operation["ownerDependency"], {"state": "approved", "specId": "KMIPKIT-0041"})

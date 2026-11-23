@@ -55,7 +55,7 @@ DECLARATIONS = {
 }
 REQUIREMENTS = {
     "KMIPKIT-0008-FR-007",
-    "KMIPKIT-REQ-SPEC-9.11-010-001",
+    "KMIP-REQ-SPEC-9.11-010-001",
     "KMIPKIT-0043-FR-004",
     "KMIPKIT-0043-FR-005",
     "KMIPKIT-0043-FR-010",
@@ -128,7 +128,7 @@ class T102HashedPasswordTimestampSequenceTests(unittest.TestCase):
             rows = list(csv.DictReader(stream))
         row = next(item for item in rows if item["requirement_id"] == "KMIPKIT-0008-FR-007")
         self.assertIn("strictly increasing", row["statement"])
-        self.assertIn("KMIPKIT-REQ-SPEC-9.11-010-001", row["statement"])
+        self.assertIn("KMIP-REQ-SPEC-9.11-010-001", row["statement"])
         self.assertNotIn("do not calculate hashes or claim monotonicity behavior", row["statement"])
 
     def test_exact_sequence_trait_artifacts_are_excluded_by_the_credential_owner(self) -> None:

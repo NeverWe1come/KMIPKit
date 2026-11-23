@@ -3,7 +3,7 @@
 //! exercise in-memory conversion; they are not official OASIS fixtures and do
 //! not assert wire validity.
 //!
-//! Traceability: KMIPKIT-0006-FR-010, FR-013, FR-014, FR-017, FR-022; SC-003,
+//! Traceability: functional requirement, FR-013, FR-014, FR-017, FR-022; SC-003,
 //! SC-004, and SC-006.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};

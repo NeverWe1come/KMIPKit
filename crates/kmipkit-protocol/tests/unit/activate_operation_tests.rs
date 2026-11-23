@@ -4,7 +4,7 @@
 //! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-ACTIVATE`; KMIPKIT-0018 FR-001, FR-002,
+//! Traceability: `KMIP-ELEM-OP-C2S-ACTIVATE`; specification requirement FR-001, FR-002,
 //! FR-003, FR-006, FR-009; SC-001 and SC-002.
 
 use crate::async_operation_fixtures::response_message;

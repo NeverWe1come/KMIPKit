@@ -1,9 +1,9 @@
 //! Operation Data tests derived from OASIS KMIP v2.1 §7.9, Tables 360–361.
 //! These are source-derived shared-value tests contributing to
-//! KMIPKIT-0019-FR-001, not official OASIS Test Cases.
+//! functional requirement, not official OASIS Test Cases.
 //!
-//! Traceability: `KMIPKIT-0019-FR-001` and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Traceability: `functional requirement` and
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use std::fmt::{Debug, Display};
 

@@ -9,18 +9,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
-OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-REGISTER"
+OPERATION_ID = "KMIP-ELEM-OP-C2S-REGISTER"
 OWNER_SPEC = "specs/022-object-lifecycle/spec.md"
 LANGUAGES = {"rust", "c", "java", "python"}
 OWNER_REQUIREMENTS = {
-    "KMIPKIT-REQ-SPEC-6.1.43-001",
-    "KMIPKIT-REQ-SPEC-6.1.43-005",
-    "KMIPKIT-REQ-SPEC-6.1.43-007",
-    "KMIPKIT-REQ-SPEC-6.1.43-009-001",
-    "KMIPKIT-REQ-SPEC-6.1.43-009-002",
-    "KMIPKIT-REQ-SPEC-6.1.43-010-001",
-    "KMIPKIT-REQ-SPEC-6.1.43-010-002",
-    "KMIPKIT-REQ-SPEC-6.1.43-011",
+    "KMIP-REQ-SPEC-6.1.43-001",
+    "KMIP-REQ-SPEC-6.1.43-005",
+    "KMIP-REQ-SPEC-6.1.43-007",
+    "KMIP-REQ-SPEC-6.1.43-009-001",
+    "KMIP-REQ-SPEC-6.1.43-009-002",
+    "KMIP-REQ-SPEC-6.1.43-010-001",
+    "KMIP-REQ-SPEC-6.1.43-010-002",
+    "KMIP-REQ-SPEC-6.1.43-011",
 }
 API_REQUIREMENTS = {
     f"KMIPKIT-0043-FR-{index:03}"

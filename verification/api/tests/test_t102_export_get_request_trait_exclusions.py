@@ -180,7 +180,7 @@ class T102ExportGetRequestTraitExclusionTests(unittest.TestCase):
             self.assertEqual(actual, expected)
             api = next(row for row in self.manifest["publicDeclarations"]
                        if row.get("packageId") == PACKAGE and row.get("exportName") == protocol)
-            capability = "KMIPKIT-ELEM-OP-C2S-EXPORT" if type_name == "ExportRequest" else "KMIPKIT-ELEM-OP-C2S-GET"
+            capability = "KMIP-ELEM-OP-C2S-EXPORT" if type_name == "ExportRequest" else "KMIP-ELEM-OP-C2S-GET"
             self.assertEqual(api["capabilityId"], capability)
 
             root = f"kmipkit::{type_name}"

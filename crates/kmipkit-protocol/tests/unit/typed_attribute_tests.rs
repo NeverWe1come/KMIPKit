@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-//! Typed attribute API contract from the KMIPKIT-0048 specification.
+//! Typed attribute API contract from the specification requirement specification.
 
 use crate::attribute::{
     Attribute, AttributeSet, AttributeValueError, CurrentAttribute, NewAttribute, typed,
@@ -30,7 +30,7 @@ fn generated_typed_attribute_registry_covers_every_direct_definition() {
             .all(|(definition, generated_tag)| definition.tag == *generated_tag)
     );
     assert!(definitions.iter().any(|definition| {
-        definition.element_id == "KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
+        definition.element_id == "KMIP-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM"
             && definition.source_multiplicity
                 == Some("Yes for PGP keys. No for X.509 certificates.")
     }));

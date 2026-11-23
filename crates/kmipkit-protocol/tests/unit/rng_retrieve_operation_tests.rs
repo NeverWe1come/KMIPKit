@@ -1,10 +1,10 @@
 //! Source-derived RNG Retrieve contracts from OASIS KMIP v2.1 §6.1.49,
 //! Tables 316–318. These tests do not claim an official Test Case pass.
 //!
-//! Traceability: FR-001–FR-008, `KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE`,
-//! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Traceability: FR-001–FR-008, `KMIP-ELEM-OP-C2S-RNG-RETRIEVE`,
+//! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
+//! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{output_bytes, structure_contains_tag};

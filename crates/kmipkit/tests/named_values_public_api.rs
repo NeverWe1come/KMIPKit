@@ -2,7 +2,7 @@ use kmipkit::protocol::named_values_generated::values::bitmask::cryptographic_us
 use kmipkit::protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
 
 #[test]
-// OASIS KMIP Specification v2.1 §§11.12 and 12.1; KMIPKIT-0047-FR-001–004.
+// OASIS KMIP Specification v2.1 §§11.12 and 12.1; functional requirement–004.
 fn named_values_preserve_unknown_raw_values_and_bits() {
     assert_eq!(cryptographic_algorithm::AES, 3);
     assert_eq!(

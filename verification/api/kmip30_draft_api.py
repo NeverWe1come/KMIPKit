@@ -84,7 +84,7 @@ def validate_kmip30_draft_api(
     _require(isinstance(capability, dict), "draft route capability is not declared")
     _require(capability.get("capabilityState") == "declared", "draft routes cannot be marked verified")
     _require(
-        "KMIPKIT-0053-FR-018" in capability.get("requirementIds", []),
+        "PARITY-FACADE-FR-018" in capability.get("requirementIds", []),
         "draft route capability lacks its specification requirement",
     )
     _validate_pinned_source(draft_catalog.get("source"), root)
@@ -99,7 +99,7 @@ def _validate_route_mapping(
     java_method: str,
 ) -> None:
     _require(function is not None, f"public API manifest omits {operation}")
-    _require(function.get("requirementIds") == ["KMIPKIT-0053-FR-018"], f"wrong requirement mapping for {operation}")
+    _require(function.get("requirementIds") == ["PARITY-FACADE-FR-018"], f"wrong requirement mapping for {operation}")
 
     rust = function.get("rust")
     _require(
