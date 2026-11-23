@@ -55,6 +55,7 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
@@ -444,6 +445,19 @@ final class FluentFacadeShapeTest {
                 assertEquals(10, get.operation());
                 assertEquals(20, destroy.operation());
                 assertEquals(10, getCopy.operation());
+            }
+            try (GetBuilder builder = client.request().get();
+                    TtlvStructure empty = TtlvStructure.create()) {
+                builder.uniqueIdentifier(id).keyFormatType(1).keyWrapType(0x8000_0000L)
+                        .keyCompressionType(1).withOptions(RequestOptions.defaults());
+                builder.validate();
+                try (ClientBatchItem item = builder.toBatchItem()) {
+                    assertEquals(10, item.operation());
+                }
+                builder.keyWrappingSpecification(empty);
+                assertThrows(InvalidInputException.class, builder::validate);
+                builder.keyWrappingSpecification(null);
+                builder.validate();
             }
             assertThrows(ClientOperationException.class, () -> client.createSymmetricKey(
                     SymmetricKeyRequest.named(3, 256, (int) CryptographicUsageMask.ENCRYPT, "named"), limits));
