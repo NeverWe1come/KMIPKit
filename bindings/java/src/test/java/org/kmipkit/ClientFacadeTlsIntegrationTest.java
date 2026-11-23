@@ -4021,7 +4021,7 @@ final class ClientFacadeTlsIntegrationTest {
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
         byte[] createWire = fluentClientResponseMessage(1);
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
-                createWire, createWire, createWire,
+                createWire, createWire, createWire, createWire,
                 fluentClientResponseMessage(10), fluentClientResponseMessage(10),
                 fluentClientResponseMessage(20), fluentClientResponseMessage(20),
                 discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1),
@@ -4060,6 +4060,14 @@ final class ClientFacadeTlsIntegrationTest {
                 UniqueIdentifier created = response.createIdentifier().orElseThrow();
                 assertEquals(id.kind(), created.kind());
                 assertEquals(id.text(), created.text());
+                assertArrayEquals(createWire, response.rawResponseBytes());
+            }
+            try (var builder = client.request().create()
+                         .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
+                         .withOptions(RequestOptions.defaults());
+                    ClientBatchItemResult response = builder.executeOne()) {
+                assertEquals(0, response.resultStatus());
+                assertEquals(id.text(), response.createIdentifier().orElseThrow().text());
                 assertArrayEquals(createWire, response.rawResponseBytes());
             }
             try (ClientBatchResponse response = client.getById(id, limits)) {
@@ -4101,7 +4109,7 @@ final class ClientFacadeTlsIntegrationTest {
         } finally {
             listener.close();
         }
-        assertEquals(11, peer.get(15, TimeUnit.SECONDS).size());
+        assertEquals(12, peer.get(15, TimeUnit.SECONDS).size());
     }
 
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.

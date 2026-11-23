@@ -6045,31 +6045,6 @@ pub extern "C" fn kmipkit_client_batch_item_response_query_field_at(
     })
 }
 
-/// Borrows the complete received response message while the item handle is live.
-///
-/// Keep the bytes out of logs. Copy before releasing the response item, and do
-/// not release the handle concurrently with an access through this span.
-#[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_response_wire_bytes_v1(
-    item: *mut kmipkit_client_batch_item_response_t,
-    out_bytes: *mut crate::kmipkit_byte_span_v1_t,
-) -> i32 {
-    ffi_entrypoint(|| {
-        if !out_bytes.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let output = scalar_out!(out_bytes);
-        let mut present = 0;
-        try_ffi!(set_borrowed_span(&mut present, output, None));
-        let response_handle = read_handle!(item, ClientBatchItemResponse);
-        let item = try_ffi!(batch_response_item_from_handle(&response_handle));
-        try_ffi!(item.with_raw_response_bytes(|bytes| {
-            set_borrowed_span(&mut present, output, Some(bytes))
-        }));
-        SUCCESS
-    })
-}
-
 /// Copies the ordered Response Payload for any valid batch result, when present.
 ///
 /// The returned structure is caller-owned and remains valid after the result

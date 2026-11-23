@@ -10139,11 +10139,8 @@ fn ffi_last_error_snapshots_are_isolated_between_threads() {
     assert_eq!(delivery, DELIVERY_STATE_NONE);
 }
 
-#[test]
-fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
-    use super::fluent::*;
-
-    let wire = ttlv_structure(
+fn create_result_wire_fixture() -> Vec<u8> {
+    ttlv_structure(
         0x0042_007b,
         [
             ttlv_structure(
@@ -10172,8 +10169,22 @@ fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
                 ],
             ),
         ],
-    );
-    for symmetric in [false, true] {
+    )
+}
+
+#[test]
+fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
+    use super::fluent::*;
+
+    let wire = create_result_wire_fixture();
+    let inherit = || timeout(0, 0, 0);
+    let options = request_options(inherit(), inherit(), inherit(), inherit());
+    for (symmetric, options) in [
+        (false, ptr::null()),
+        (false, &raw const options),
+        (true, ptr::null()),
+        (true, &raw const options),
+    ] {
         let (client, peer) = client_with_one_response(wire.clone());
         let client = make_handle(
             Kind::Client,
@@ -10203,7 +10214,7 @@ fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
                     builder,
                     client,
                     limits,
-                    ptr::null(),
+                    options,
                     &mut result,
                 )
             };
@@ -10215,13 +10226,7 @@ fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
             assert_eq!(kmipkit_create_builder_set_object_type(builder, 2), SUCCESS);
             // SAFETY: the native handles and writable output reference live values.
             let status = unsafe {
-                kmipkit_create_builder_execute_one_v1(
-                    builder,
-                    client,
-                    limits,
-                    ptr::null(),
-                    &mut result,
-                )
+                kmipkit_create_builder_execute_one_v1(builder, client, limits, options, &mut result)
             };
             kmipkit_create_builder_release(builder);
             status
@@ -10258,6 +10263,35 @@ fn ffi_create_builders_return_owned_result_with_original_wire_bytes() {
         assert_eq!(bytes, wire);
         kmipkit_client_batch_item_response_release(result);
     }
+}
+
+#[test]
+fn ffi_create_result_rejects_invalid_arguments_and_clears_the_output() {
+    use super::fluent::{
+        kmipkit_client_batch_item_response_wire_bytes_v1, kmipkit_create_builder_execute_one_v1,
+    };
+
+    let mut result = ptr::dangling_mut();
+    // SAFETY: the output is writable and all optional inputs are null.
+    let status = unsafe {
+        kmipkit_create_builder_execute_one_v1(
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null_mut(),
+            ptr::null(),
+            &raw mut result,
+        )
+    };
+    assert_eq!(status, ERROR_INVALID_INPUT);
+    assert!(result.is_null());
+
+    let mut span = byte_span(b"previous bytes");
+    assert_eq!(
+        kmipkit_client_batch_item_response_wire_bytes_v1(ptr::null_mut(), &raw mut span),
+        ERROR_INVALID_INPUT
+    );
+    assert!(span.data.is_null());
+    assert_eq!(span.length, 0);
 }
 
 #[test]
