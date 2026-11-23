@@ -136,3 +136,20 @@ The script isolates compilation/profiles, runs the Rust and controlled subproces
 suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
 it is a generated data-dispatch table verified by regeneration and all 67 local
 model cases. Fresh measured handwritten coverage is 90.41% (1819/2012 lines).
+
+## Local KMIP 3.0 draft campaign
+
+After installing the Rust distribution, build the campaign runner and use it
+with the shared plan from the repository root.
+
+```sh
+cargo +1.94 build --locked --manifest-path verification/interop/rust-kmip-validator/Cargo.toml --bin kmip30-campaign
+python3 verification/interop/shared/tools/campaign.py --version 3.0 \
+  --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+  --output-dir /tmp/kmip-rust-draft
+```
+
+The runner invokes all seven catalogued generic-payload constructors and checks
+their operation codes. It records the installed distribution's provenance.
+XML scenarios, fluent routes, response checks and live KMIP 3.0 exchanges
+remain pending in the campaign report.
