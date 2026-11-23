@@ -69,3 +69,19 @@ CI builds the JNI JAR from the revision under test and runs the validator agains
 mTLS peer with a controlled KMIP response. This verifies the external package
 and request/response handling; it is not evidence for a commercial or other
 deployed KMS.
+
+## Local KMIP 3.0 draft campaign
+
+After installing the artifact, build the standalone distribution.
+
+```sh
+bash bindings/java/gradlew --project-dir verification/interop/java-kmip-validator installDist
+python3 verification/interop/shared/tools/campaign.py --version 3.0 \
+  --runner java verification/interop/java-kmip-validator/tools/run_draft_campaign.sh \
+  --output-dir /tmp/kmip-java-draft
+```
+
+The runner verifies that the loaded JAR matches the installer manifest, calls
+all seven public generic-payload constructors through JNI, and checks their
+operation codes. It generates local evidence. The existing live runner
+handles KMIP 2.0 and 2.1.
