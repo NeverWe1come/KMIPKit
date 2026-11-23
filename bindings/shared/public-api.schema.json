@@ -2445,7 +2445,6 @@
         "kind": {
           "enum": [
             "feature-specification",
-            "accepted-adr",
             "architecture-decision",
             "accepted-architecture-decision"
           ]
@@ -2481,7 +2480,7 @@
         },
         "path": {
           "type": "string",
-          "pattern": "^specs/[0-9]{3}-[a-z0-9-]+/spec\\.md$"
+          "pattern": "^docs/[a-zA-Z0-9_./-]+\\.md$"
         },
         "status": {
           "const": "Draft"
@@ -2593,7 +2592,7 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr",
+            "rust-only-transport",
             "c-only",
             "language-specific"
           ]
@@ -2607,7 +2606,7 @@
             "normalized-client-protocol-error-outcome",
             "standard-attribute-tag-value"
           ],
-          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the KMIPKIT-0021-FR-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
+          "description": "Declares cross-language mapping semantics beyond matching names. Lifecycle values describe cleanup differences. normalized-client-protocol-error limits equivalence to the observable client-execution failure after a Rust response-conversion error is discarded and normalized to the shared Protocol error; it does not claim foreign parser-error identity or direct parser-call parity. normalized-client-protocol-error-outcome maps a source that can produce Protocol or the specifically permitted ProtocolResponse outcome to the complete shared client error surface; response TTLV remains available only for the HASH-MAC-SIGN-REQ-015 Unique Identifier exception. standard-attribute-tag-value maps a C named uint32_t TTLV tag macro to the Rust typed marker and Java/Python StandardAttribute entry whose tag value is identical."
         },
         "lifecycleSemanticsByLanguage": {
           "type": "object",
@@ -2639,7 +2638,7 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "pattern": "^[A-Z0-9-]+$",
           "description": "Exact approved feature specification authorizing this declaration when it extends a capability owned by another specification."
         },
         "blockedReason": {
@@ -2742,7 +2741,7 @@
         },
         "ownerSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "pattern": "^[A-Z0-9-]+$",
           "description": "Semantic owner specification for a delegated public API capability."
         },
         "approvalEvidence": {
@@ -3047,7 +3046,7 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$",
+          "pattern": "^[A-Z0-9-]+$",
           "description": "Exact owner specification for an approved declaration exclusion."
         },
         "rustArtifactKind": {
@@ -3186,7 +3185,7 @@
             ],
             "properties": {
               "candidateSpecId": {
-                "const": "KMIPKIT-0053"
+                "const": "PARITY-FACADE"
               }
             }
           }
@@ -3296,11 +3295,11 @@
         },
         "featureSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$"
+          "pattern": "^[A-Z0-9-]+$"
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$"
+          "pattern": "^[A-Z0-9-]+$"
         },
         "approvalEvidence": {
           "$ref": "#/$defs/approvalSource"
@@ -3527,7 +3526,7 @@
           "oneOf": [
             {
               "type": "string",
-              "pattern": "^KMIPKIT-[0-9]{4}$"
+              "pattern": "^[A-Z0-9-]+$"
             },
             {
               "type": "null"
@@ -3600,15 +3599,15 @@
         "parityScope": {
           "enum": [
             "four-language",
-            "rust-only-adr",
+            "rust-only-transport",
             "c-only"
           ]
         },
         "ownerSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$"
+          "pattern": "^[A-Z0-9-]+$"
         },
-        "ownerAdrId": {
+        "ownerDecisionId": {
           "type": "string"
         },
         "approvalEvidence": {
@@ -3638,7 +3637,7 @@
         },
         "candidateSpecId": {
           "type": "string",
-          "pattern": "^KMIPKIT-[0-9]{4}$"
+          "pattern": "^[A-Z0-9-]+$"
         },
         "blockedReason": {
           "type": "string",
@@ -3671,7 +3670,7 @@
                 },
                 {
                   "required": [
-                    "ownerAdrId"
+                    "ownerDecisionId"
                   ]
                 },
                 {
@@ -3738,7 +3737,7 @@
                   "anyOf": [
                     {
                       "required": [
-                        "ownerAdrId"
+                        "ownerDecisionId"
                       ]
                     },
                     {
@@ -3751,7 +3750,7 @@
               },
               {
                 "required": [
-                  "ownerAdrId",
+                  "ownerDecisionId",
                   "acceptedEvidence"
                 ],
                 "properties": {
@@ -3759,7 +3758,6 @@
                     "properties": {
                       "kind": {
                         "enum": [
-                          "accepted-adr",
                           "architecture-decision",
                           "accepted-architecture-decision"
                         ]
@@ -3838,7 +3836,7 @@
           "if": {
             "properties": {
               "parityScope": {
-                "const": "rust-only-adr"
+                "const": "rust-only-transport"
               },
               "capabilityState": {
                 "enum": [
@@ -3860,7 +3858,7 @@
               }
             },
             "required": [
-              "ownerAdrId",
+              "ownerDecisionId",
               "acceptedEvidence"
             ]
           }
@@ -4302,7 +4300,7 @@
             }
           ],
           "items": false,
-          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from REQ-012. Each language maps the same logical limit to its declared field name."
         },
         "security": {
           "$ref": "#/$defs/security"
@@ -4407,7 +4405,7 @@
             }
           ],
           "items": false,
-          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from FR-012. Each language maps the same logical limit to its declared field name."
+          "description": "The twelve ExtensionRegistryLimits entries have fixed names, defaults, maxima, and order from REQ-012. Each language maps the same logical limit to its declared field name."
         },
         "security": {
           "$ref": "#/$defs/security"

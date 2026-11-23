@@ -1,7 +1,7 @@
 //! Source-derived RNG Retrieve contracts from OASIS KMIP v2.1 §6.1.49,
 //! Tables 316–318. These tests do not claim an official Test Case pass.
 //!
-//! Traceability: FR-001–FR-008, `KMIP-ELEM-OP-C2S-RNG-RETRIEVE`,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
 //! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
 //! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.

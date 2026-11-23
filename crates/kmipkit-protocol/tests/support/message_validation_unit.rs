@@ -578,10 +578,7 @@ mod tests {
             item(CRITICALITY_INDICATOR, Value::boolean(false)),
             item(
                 VENDOR_EXTENSION,
-                Value::structure(structure([item(
-                    OPERATION,
-                    Value::enumeration(1),
-                )])),
+                Value::structure(structure([item(OPERATION, Value::enumeration(1))])),
             ),
         ]);
         assert_kind(
@@ -840,7 +837,8 @@ mod tests {
         );
 
         // KMIP 3.0 request header with Batch Order Option must be rejected with InvalidFieldValue
-        let v3_req_with_order = structure([v3_version(), item(BATCH_ORDER_OPTION, Value::boolean(true))]);
+        let v3_req_with_order =
+            structure([v3_version(), item(BATCH_ORDER_OPTION, Value::boolean(true))]);
         assert_kind(
             validate_request_header(&v3_req_with_order.view(), 0),
             MessageValidationErrorKind::InvalidFieldValue,
@@ -882,13 +880,13 @@ mod tests {
         ]);
         assert_kind(
             validate_request_batch_item(&v3_batch_with_bool_ephemeral.view(), 1, false, true),
-            MessageValidationErrorKind::InvalidFieldValue,
+            MessageValidationErrorKind::WrongItemType,
         );
 
         // KMIP 3.0 request batch: Ephemeral Mode Enum is allowed
         let v3_batch_with_mode = structure([
             item(OPERATION, Value::enumeration(1)),
-            item(EPHEMERAL_MODE, Value::enumeration(1)),
+            item(EPHEMERAL, Value::enumeration(1)),
             item(REQUEST_PAYLOAD, Value::structure(Structure::new())),
         ]);
         assert!(validate_request_batch_item(&v3_batch_with_mode.view(), 1, false, true).is_ok());

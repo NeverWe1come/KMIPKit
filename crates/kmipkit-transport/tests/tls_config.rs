@@ -1,4 +1,4 @@
-//! Derived tests for specification requirement FR-003, FR-004, FR-009, FR-011, and FR-017.
+//! Derived tests for the specification requirements, and the specification rules.
 //!
 //! The default HTTPS target also verifies OASIS KMIP Profiles v2.1 OS §5.3.1
 //! item 3 (`SHOULD`), while caller-selected origin-form targets cover item 4.

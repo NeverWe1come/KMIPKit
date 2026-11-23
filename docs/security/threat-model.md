@@ -1,12 +1,11 @@
 # KMIPKit threat model
 
 Status: implementation snapshot and design baseline
-Scope: KMIPKit 1.0 architecture, including the TTLV wire codec TTLV, the client execution model
-client execution, the transport subsystem production transport, the Rust lifecycle
-operation additions in the specification, Register Opaque Object context in
-opaque object registration context, four-language operation mappings in public API parity manifest, including
-PKCS#11 and Set Defaults (§6.1.53, T067), and approved multi-encoding scope
-in the specification–0057
+Scope: KMIPKit 1.0 architecture, including the TTLV wire codec, the client execution model,
+the production transport subsystem, the Rust lifecycle
+operations, Register Opaque Object context,
+four-language operation mappings in the public API parity manifest (including
+PKCS#11 and Set Defaults, §6.1.53), and multi-encoding client and transport integration
 Last reviewed: 2026-11-06
 
 This document models risks for the KMIPKit 1.0 architecture and distinguishes
@@ -18,24 +17,23 @@ validated production adapters. The Rust client currently includes Certify,
 Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision,
 Register, and Revoke in addition to its earlier typed request set. These
 operations do not establish complete KMIP 2.1 operation or profile coverage.
-C, Java, and Python parity for the Register Opaque Object context is implemented
-under opaque object registration context. Full parity for the nine the specification lifecycle operations
-remains assigned to public API parity manifest and is not established by this branch.
+C, Java, and Python parity for the Register Opaque Object context is implemented.
+Full parity for the nine lifecycle operations
+is tracked in the public API parity manifest.
 The PKCS#11 request/response mapping is public in Rust, C, Java, and Python
-under OASIS KMIP v2.1 §6.1.37. profile catalog language mappings remains **Approved for
-implementation**, and the direct implementation authorization dated
+under OASIS KMIP v2.1 §6.1.37. Profile catalog language mappings are approved for
+implementation, and the direct implementation authorization dated
 2026-10-20 is recorded separately; formal acceptance remains false. This API
 mapping does not claim Profile support, complete KMIP conformance, or
 interoperability. Existing bounds, opaque parameter handling, zeroization,
 redaction, response ownership, and no-retry behavior apply to the new bindings.
-The Set Defaults mapping in public API parity manifest (T067) follows the approved
-the specification contract: omitted Defaults Information requests removal, while a
+The Set Defaults mapping in the public API parity manifest follows the approved
+operation contract: omitted Defaults Information requests removal, while a
 present-empty structure remains distinct; only Success exposes complete
 response TTLV, and Failure/Pending retain common metadata without the response
 body. Existing parser bounds, redaction, ownership, correlation, and no-retry
 controls apply; this mapping adds no new trust boundary or profile-support
-claim. See the approved operation contract
-and T067 traceability.
+claim.
 Publication remains planned. Scenarios below remain hypotheses and security
 requirements unless a control is explicitly tied to executable evidence. The
 model must be revised as each executable boundary is introduced.
@@ -89,13 +87,12 @@ flowchart LR
 
 The generic TTLV value model, bounded public decoder, typed client execution,
 low-level transport contract, and production raw TLS and HTTPS adapters are
-implemented. JSON/XML codecs are approved 1.0 scope but remain planned in
-the specification and the specification; no codec behavior or support claim is inferred
-from this threat-model update. the transport subsystem connects the currently supported
+implemented. JSON/XML codecs are in the 1.0 scope; no broader codec behavior or support claim is inferred
+from this threat-model update. The transport subsystem connects the currently supported
 typed operations to
-those adapters through a private worker. the specification adds the nine listed
+those adapters through a private worker. The lifecycle operations module adds the nine listed
 Rust lifecycle operations through that same request path. C, Java, and Python
-parity for those nine operations is deferred to public API parity manifest. opaque object registration context
+parity for those nine operations is tracked in the public API parity manifest. Opaque object registration context
 also exposes the Register Opaque Object context across the four language
 facades; this single Register capability does not establish full lifecycle
 parity. This implementation
@@ -115,12 +112,12 @@ not retry, implicitly Poll, or rewrite caller batch policy. Evidence:
 `crates/kmipkit-client/src/execute.rs:2848-2905,2931-3275,3820-3867,4948-4979,5181-5301`;
 `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`.
 
-For Check, OASIS KMIP v2.1 §6.1.7, Tables 183-185, and the approved
-the specification interpretation permit a failed response to include typed optional
+For Check, OASIS KMIP v2.1 §6.1.7, Tables 183-185, and the project's protocol
+interpretation permit a failed response to include typed optional
 Usage Limits Count, Cryptographic Usage Mask, and Lease Time fields. Such a
 failure does not require Unique Identifier; the typed parser requires that
 identifier on success and retains the optional policy fields on either result.
-Evidence: `the component specification:80-115`;
+Evidence: `docs/user-guide/en/lifecycle-operations.md`;
 `crates/kmipkit-protocol/src/check.rs:127-222,282-352`;
 `crates/kmipkit-protocol/tests/unit/check_operation_tests.rs:190-211`.
 
@@ -128,10 +125,10 @@ Evidence: `the component specification:80-115`;
 |---|---|---|---|
 | Generic TTLV value model (implemented) | Construct and inspect typed in-memory values; preserve ordered Structures; check tag allocation and depth | Payload redaction and zeroization, bounded nesting, tag allocation; this model does not establish wire validity | `crates/kmipkit-ttlv/src/lib.rs:1-11`; `docs/architecture/public-api.md:34-49` |
 | Public TTLV decoder (implemented) | Decode one bounded untrusted item into the public generic tree | Memory and CPU bounds, malformed-input rejection, unknown value preservation, no raw-byte retention | `crates/kmipkit-ttlv/src/codec/decoder.rs:29-162`; `crates/kmipkit-ttlv/src/codec/mod.rs:18-24,181-209` |
-| JSON/XML codecs (approved, implementation planned) | Encode/decode bounded KMIP documents over the shared ordered item model | Parser allocation/depth/count bounds; no XML DTD, external entities, schema fetch, or network access; duplicate/malformed input rejection; payload-free errors and no format fallback | the specification common wire codec contract; the specification and the specification draft specifications |
-| Private client outbound writer (implemented) | Encodes the closed typed request set, including the nine the specification lifecycle operations, through `Client::execute`; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroizing encoded owner, redacted diagnostics | `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-client/src/execute.rs:3820-3867`; la política de codificación y limpieza de búferes; the component specification |
-| Typed protocol client (implemented for the current request set) | Validates requests, correlates responses, and invokes one production adapter exchange | Extension-registry provenance, typed response validation, request-delivery evidence, response-size check before decoding, no retry | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-client/tests/production_client.rs`; the component specification |
-| Managed-object lifecycle operations (Rust implemented) | Typed Certify, Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and Revoke requests and results | Server responses remain untrusted; the client checks response-to-request correspondence and parses typed results. Each convenience method sends one request batch through one exchange and performs no automatic retry or Poll. Server object state, lifecycle links, lease tracking, and policy decisions remain server-owned | `crates/kmipkit-client/src/execute.rs:161-185,2931-3275,3820-3867,5181-5301`; `crates/kmipkit-protocol/src/check.rs:127-222,282-352`; `the component specification:34-43`; C/Java/Python parity: public API parity manifest |
+| JSON/XML codecs (approved, implementation planned) | Encode/decode bounded KMIP documents over the shared ordered item model | Parser allocation/depth/count bounds; no XML DTD, external entities, schema fetch, or network access; duplicate/malformed input rejection; payload-free errors and no format fallback | Common wire codec contract and multi-encoding architecture (`docs/architecture/transport-security.md`) |
+| Private client outbound writer (implemented) | Encodes the closed typed request set, including the nine lifecycle operations, through `Client::execute`; no general-purpose or public encoder | Execute-owned permit, one writer callsite, request owner through synchronous exchange, zeroizing encoded owner, redacted diagnostics | `crates/kmipkit-client/src/wire_encoder.rs:358-368`; `crates/kmipkit-client/src/execute.rs:3820-3867`; outbound wire-encoding and buffer-zeroization policy (`docs/architecture/public-api.md`) |
+| Typed protocol client (implemented for the current request set) | Validates requests, correlates responses, and invokes one production adapter exchange | Extension-registry provenance, typed response validation, request-delivery evidence, response-size check before decoding, no retry | `crates/kmipkit-client/src/execute.rs`; `crates/kmipkit-client/tests/production_client.rs`; `docs/user-guide/en/client-execution.md` |
+| Managed-object lifecycle operations (Rust implemented) | Typed Certify, Check, Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and Revoke requests and results | Server responses remain untrusted; the client checks response-to-request correspondence and parses typed results. Each convenience method sends one request batch through one exchange and performs no automatic retry or Poll. Server object state, lifecycle links, lease tracking, and policy decisions remain server-owned | `crates/kmipkit-client/src/execute.rs:161-185,2931-3275,3820-3867,5181-5301`; `crates/kmipkit-protocol/src/check.rs:127-222,282-352`; `docs/user-guide/en/lifecycle-operations.md`; C/Java/Python parity: `bindings/shared/public-api.json` |
 | Raw TLS and HTTPS transports (implemented) | Authenticate peers and carry bounded messages | Server/client identity, confidentiality, framing, deadlines, delivery state, response cleanup; HTTPS may reuse a healthy connection and raw TLS closes after one frame | `crates/kmipkit-transport/src/raw_tls.rs`; `crates/kmipkit-transport/src/https.rs`; `crates/kmipkit-transport/src/timeout.rs`; `docs/architecture/transport-security.md` |
 | Private client worker and system resolver (implemented) | Keep the public API synchronous while owning async I/O and system name resolution | Bounded queue, deadline/cancellation ordering, shared resolver admission, late-result isolation; OS resolver behavior remains outside KMIPKit's numeric guarantees | `crates/kmipkit-transport/src/worker.rs`; `crates/kmipkit-transport/src/resolver.rs`; the synchronous transport worker architecture; the native system name-resolution policy |
 | C ABI | Expose native functionality to foreign runtimes | Pointer validity, ownership, panic containment, stable layouts | `docs/architecture/ffi-and-bindings.md:3-33` |
@@ -194,7 +191,7 @@ work.
    path resolution including caller-selected symlinks. It does not check for
    regular files, retain paths, or impose a file-size cap. The caller is
    responsible for path trust, provenance, permissions, and resource suitability
-   (`the component specification`, FR-004).
+   (`docs/user-guide/en/production-transports.md`).
    High-level APIs do not silently choose cryptographic policy.
 2. **Foreign runtime to C ABI.** Every entry validates handles, pointer/length
    pairs, structure versions, and lifecycle state before touching memory. No
@@ -315,7 +312,7 @@ tests.
 | Medium | Secrets appear in errors, debug output, tracing, exceptions, test snapshots, or language runtime representations | Error path or convenience formatting handles a secret-bearing value | Credential or key disclosure to logs and telemetry | Specialized secret types, redacted typed errors, zeroization of KMIPKit-owned initialized request/response buffers, logging disabled by default | Keep raw response bytes out of typed results; redaction tests through every language; review panic and allocator diagnostics; document that Hyper/rustls/OS/caller/runtime copies cannot be zeroized by KMIPKit | `crates/kmipkit-client/tests/production_client.rs`; `crates/kmipkit-transport/tests/secret_redaction.rs`; `docs/architecture/transport-security.md:80-92`; `docs/security/threat-model.md` |
 | Medium | A complex declarative extension consumes excessive CPU/memory or changes validation outcomes by registration order | Application loads an untrusted manifest | Denial of service or inconsistent protocol behavior | Immutable per-client registry, duplicate rejection, deterministic registration, core limits remain active | Define manifest limits and deterministic grammar; reject recursion/cycles; property test registration order; fuzz manifest parser | `docs/architecture/extensions.md:18-59` |
 | Medium | A Java native binary is replaced between verification and loading | Attacker can write to extraction path under the same user or exploit non-atomic extraction | Native code execution in the application | Bundled hash verification, private location, atomic extraction, `System.load` | Specify restrictive permissions, collision-resistant path, create-new semantics, file handle strategy, and post-open identity check | `docs/architecture/ffi-and-bindings.md:73-81` |
-| Medium | Unbounded or attacker-controlled file paths read unexpected certificates or keys | Caller passes a path derived from untrusted input | Blocking configuration, unbounded memory use, credential disclosure, or unintended identity use | Explicit configuration and no automatic discovery; selected paths use ordinary operating-system resolution, including caller-selected symlinks; no regular-file check or size cap | Keep paths application-managed and trusted; document caller ownership of provenance, permissions, and resource suitability; do not expose paths or contents in errors. A FIFO/device path can block construction or supply unbounded data | `the component specification` FR-004; `docs/user-guide/en/production-transports.md:60-66`; `crates/kmipkit-transport/src/config.rs`; `crates/kmipkit-transport/src/secret.rs` |
+| Medium | Unbounded or attacker-controlled file paths read unexpected certificates or keys | Caller passes a path derived from untrusted input | Blocking configuration, unbounded memory use, credential disclosure, or unintended identity use | Explicit configuration and no automatic discovery; selected paths use ordinary operating-system resolution, including caller-selected symlinks; no regular-file check or size cap | Keep paths application-managed and trusted; document caller ownership of provenance, permissions, and resource suitability; do not expose paths or contents in errors. A FIFO/device path can block construction or supply unbounded data | `docs/user-guide/en/production-transports.md:60-66`; `crates/kmipkit-transport/src/config.rs`; `crates/kmipkit-transport/src/secret.rs` |
 | Low | Detailed errors or timings expose object existence, server policy, or endpoint metadata | Application exposes library diagnostics to an untrusted party | Information disclosure that assists later attacks | Redacted structured events and caller-controlled logging | Classify public versus diagnostic errors; sanitize endpoint/query content; document that applications control audience | `docs/architecture/transport-security.md:87-92` |
 
 ## 4. Severity calibration

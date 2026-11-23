@@ -21,9 +21,9 @@ struct FixtureDefinition {
     discriminator_value: &'static str,
 }
 
-// T010 uses minimal typed Rust schemas with identity and discriminator values
+// the implementation uses minimal typed Rust schemas with identity and discriminator values
 // shared with bindings/shared/fixtures/extensions/cases.json. These are not the full
-// schemas in that corpus; T008 remains the full cross-adapter parity corpus.
+// schemas in that corpus; the implementation remains the full cross-adapter parity corpus.
 const FIXTURES: &[FixtureDefinition] = &[
     FixtureDefinition {
         name: "alpha",
@@ -294,7 +294,7 @@ fn definition_and_metadata_views_ignore_registration_order() {
         }
     }
 
-    // FR-009: these are deterministic metadata list/map views over the local
+    // the specification rules: these are deterministic metadata list/map views over the local
     // registry. They do not indicate that a remote KMIP server supports them.
     let local_metadata_map = |registry: &extension_registry::ClientExtensionRegistry| {
         (0..definition_count_as_usize(registry))

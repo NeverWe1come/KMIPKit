@@ -74,8 +74,10 @@ impl QueryFunction {
     pub const DEFAULTS_INFORMATION: Self = Self(13);
     /// Query Storage Protection Masks (14).
     pub const STORAGE_PROTECTION_MASKS: Self = Self(14);
-    /// Query Performs CRL Checks (15, KMIP 3.0).
-    pub const PERFORMS_CRL_CHECKS: Self = Self(15);
+    /// Query Credential Information (15, KMIP 3.0 §11.46).
+    pub const CREDENTIAL_INFORMATION: Self = Self(15);
+    /// Historical name for code 15. Use `CREDENTIAL_INFORMATION` in new code.
+    pub const PERFORMS_CRL_CHECKS: Self = Self::CREDENTIAL_INFORMATION;
 
     /// Constructs a Query Function from its exact raw Enumeration value.
     #[must_use]

@@ -2,7 +2,7 @@
 
 //! Derived attribute preservation vectors for OASIS KMIP v2.1 §§4, 5.1,
 //! 5.5–5.7, §6.1.2 Tables 167–169, §6.1.20 Table 224, §11.1 Table 429, and
-//! §11.56. Traceability: functional requirement and SC-005. These tests are
+//! §11.56. Verifies protocol model, request/response validation, and security invariants.
 //! derived structural checks and do not claim official OASIS conformance.
 
 use crate::{
@@ -264,7 +264,7 @@ fn get_attributes_response_preserves_repeated_instances_in_wire_order() {
 fn generic_attribute_ttlv_retains_unknown_enumeration_values() {
     // OASIS KMIP v2.1 §4.13 Table 53 declares Cryptographic Algorithm as an
     // Enumeration attribute; §11.1 Table 429 describes assigned and
-    // extension codes. FR-011 keeps all generic Enumeration values lossless,
+    // extension codes. the specification rules keeps all generic Enumeration values lossless,
     // including codes a typed outbound Adjustment Type must reject.
     let unknown_value = 0x7FFF_FFFF;
     let attributes = AttributeSet::try_new([item(
@@ -333,7 +333,7 @@ fn adjust_attribute_rejects_reserved_attribute_reference_tags() {
 #[test]
 fn adjust_attribute_rejects_reserved_adjustment_enumerations() {
     // OASIS KMIP v2.1 §11.1, Table 429 leaves unlisted values outside its
-    // extension range Reserved for future versions. FR-011 preserves such
+    // extension range Reserved for future versions. the specification rules preserves such
     // codes generically but prohibits emitting them as typed Adjustment Type.
     for reserved_value in [0x0000_0000, 0x0000_0004, 0x7FFF_FFFF, 0x9000_0000] {
         let request = AdjustAttributeRequest::new(

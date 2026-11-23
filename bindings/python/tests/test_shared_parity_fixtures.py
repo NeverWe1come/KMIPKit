@@ -131,7 +131,7 @@ def test_hashed_password_timestamp_sequence_matches_shared_fixture() -> None:
 def test_hashed_password_timestamp_sequence_rejects_invalid_python_integers(
     invalid_timestamp: object,
 ) -> None:
-    # KMIP v2.1 §9.11, Table 415 defines Date Time Extended; OD-003 scopes
+    # KMIP v2.1 §9.11, Table 415 defines Date Time Extended; The monotonic timestamp sequence helper scopes
     # this caller-owned helper to signed i64 values supplied by the caller.
     sequence_type = credentials.HashedPasswordTimestampSequence
 

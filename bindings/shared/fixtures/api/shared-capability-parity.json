@@ -20,8 +20,8 @@
       "id": "api-levels.shared.v1",
       "capability": "api_level_discovery",
       "requirementIds": [
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010"
+        "PUBLIC-API-BINDINGS-REQ-005",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "input": {
         "discovery": "local-api-levels"
@@ -88,9 +88,9 @@
       "id": "client-configuration.registry-isolation.v1",
       "capability": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0012-FR-001"
+        "EXTENSION-REGISTRY-REQ-001",
+        "PUBLIC-API-BINDINGS-REQ-005",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "input": {
         "configurations": [
@@ -180,9 +180,9 @@
       "id": "errors.schema-redaction.v1",
       "capability": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-011",
+        "PUBLIC-API-BINDINGS-REQ-013"
       ],
       "input": {
         "diagnosticMarker": "secret-value-must-not-appear-in-diagnostics"
@@ -240,10 +240,10 @@
       "id": "batch.ordered-completed-pending-failed.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-012",
-        "KMIPKIT-0006-FR-010",
-        "KMIPKIT-0007-FR-008"
+        "CLIENT-EXEC-REQ-008",
+        "MESSAGE-MODEL-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-012"
       ],
       "input": {
         "discovery": "ordered-client-batch-outcomes",
@@ -358,10 +358,10 @@
       "id": "discover-versions.supported-versions.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0007-FR-001",
-        "KMIPKIT-0007-FR-002",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
+        "CLIENT-EXEC-REQ-001",
+        "CLIENT-EXEC-REQ-002",
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-021"
       ],
       "normativeSource": "OASIS KMIP v2.1 §6.1.16, Tables 211–213",
       "input": {
@@ -450,9 +450,9 @@
       "id": "ttlv.open-values-and-child-order.v1",
       "capability": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0043-FR-011",
-        "KMIPKIT-0004-FR-004",
-        "KMIPKIT-0004-FR-006"
+        "PUBLIC-API-BINDINGS-REQ-011",
+        "TTLV-MODEL-REQ-004",
+        "TTLV-MODEL-REQ-006"
       ],
       "input": {
         "structure": {
@@ -532,10 +532,10 @@
       "id": "extensions.recognition-and-generic-preservation.v1",
       "capability": "vendor_extension_registry",
       "requirementIds": [
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "input": {
         "sourceFixture": "bindings/shared/fixtures/extensions/cases.json",
@@ -602,9 +602,9 @@
       "id": "creation.create.request-response.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0014-FR-001",
-        "KMIPKIT-0014-FR-002",
-        "KMIPKIT-0043-FR-010"
+        "OBJECT-CREATION-REQ-001",
+        "OBJECT-CREATION-REQ-002",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "normativeSource": "OASIS KMIP v2.1 §6.1.8, Tables 186–188; §5.1, Table 157",
       "input": {
@@ -688,25 +688,35 @@
       "id": "creation.key-pair.request-response.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0014-FR-001",
-        "KMIPKIT-0014-FR-003",
-        "KMIPKIT-0014-FR-004",
-        "KMIPKIT-0043-FR-010"
+        "OBJECT-CREATION-REQ-001",
+        "OBJECT-CREATION-REQ-003",
+        "OBJECT-CREATION-REQ-004",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "normativeSource": "OASIS KMIP v2.1 §6.1.9, Tables 189–192; §§5.2–5.4, Tables 158–160",
       "input": {
         "operation": "Create Key Pair",
         "commonAttributes": {
           "present": true,
-          "attributeTagsInOrder": ["0x540001", "0x540001"]
+          "attributeTagsInOrder": [
+            "0x540001",
+            "0x540001"
+          ]
         },
         "privateKeyAttributes": {
           "present": true,
-          "attributeTagsInOrder": ["0x420028", "0x540002", "0x540002"]
+          "attributeTagsInOrder": [
+            "0x420028",
+            "0x540002",
+            "0x540002"
+          ]
         },
         "publicKeyAttributes": {
           "present": true,
-          "attributeTagsInOrder": ["0x420028", "0x540003"]
+          "attributeTagsInOrder": [
+            "0x420028",
+            "0x540003"
+          ]
         },
         "protectionStorageMasks": {
           "commonPresent": true,
@@ -716,9 +726,19 @@
         "effectiveTable191ValuesEqual": true
       },
       "expectedOutput": {
-        "commonAttributeTagsInOrder": ["0x540001", "0x540001"],
-        "privateAttributeTagsInOrder": ["0x420028", "0x540002", "0x540002"],
-        "publicAttributeTagsInOrder": ["0x420028", "0x540003"],
+        "commonAttributeTagsInOrder": [
+          "0x540001",
+          "0x540001"
+        ],
+        "privateAttributeTagsInOrder": [
+          "0x420028",
+          "0x540002",
+          "0x540002"
+        ],
+        "publicAttributeTagsInOrder": [
+          "0x420028",
+          "0x540003"
+        ],
         "groupsRemainDistinct": true,
         "commonMasksPresent": true,
         "privateMasksPresent": false,
@@ -736,9 +756,19 @@
         "resultMessagePresencePreserved": true
       },
       "javaObservedOutput": {
-        "commonAttributeTagsInOrder": ["0x540001", "0x540001"],
-        "privateAttributeTagsInOrder": ["0x420028", "0x540002", "0x540002"],
-        "publicAttributeTagsInOrder": ["0x420028", "0x540003"],
+        "commonAttributeTagsInOrder": [
+          "0x540001",
+          "0x540001"
+        ],
+        "privateAttributeTagsInOrder": [
+          "0x420028",
+          "0x540002",
+          "0x540002"
+        ],
+        "publicAttributeTagsInOrder": [
+          "0x420028",
+          "0x540003"
+        ],
         "groupsRemainDistinct": true,
         "commonMasksPresent": true,
         "privateMasksPresent": false,
@@ -768,18 +798,18 @@
         "c": {
           "status": "available",
           "testFile": "bindings/c/tests/client_abi_consumer.c",
-        "test": "creation_create_key_pair_matches_shared_fixture",
-        "supportingTests": [
-          {
-            "language": "rust",
-            "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
-            "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
-            "assertions": [
-              "fixture-key-pair-request-preserves-attribute-groups-and-mask-absence",
-              "fixture-key-pair-response-preserves-enumeration-and-text-identifiers"
-            ]
-          }
-        ]
+          "test": "creation_create_key_pair_matches_shared_fixture",
+          "supportingTests": [
+            {
+              "language": "rust",
+              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
+              "assertions": [
+                "fixture-key-pair-request-preserves-attribute-groups-and-mask-absence",
+                "fixture-key-pair-response-preserves-enumeration-and-text-identifiers"
+              ]
+            }
+          ]
         },
         "java": {
           "status": "available",
@@ -796,11 +826,11 @@
       "id": "creation.split-key.request-response.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0014-FR-001",
-        "KMIPKIT-0014-FR-005",
-        "KMIPKIT-0014-FR-006",
-        "KMIPKIT-0014-FR-014",
-        "KMIPKIT-0043-FR-010"
+        "OBJECT-CREATION-REQ-001",
+        "OBJECT-CREATION-REQ-005",
+        "OBJECT-CREATION-REQ-006",
+        "OBJECT-CREATION-REQ-014",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "normativeSource": "OASIS KMIP v2.1 §6.1.10, Tables 193–195; §5.1, Table 157",
       "input": {
@@ -834,10 +864,22 @@
         "attributesPresent": true,
         "protectionStorageMasksPresent": true,
         "responseUniqueIdentifiersInWireOrder": [
-          {"wireType": "TextString", "text": "part-a"},
-          {"wireType": "Enumeration", "enumeration": 4294967295},
-          {"wireType": "Integer", "integer": -7},
-          {"wireType": "TextString", "text": "part-a"}
+          {
+            "wireType": "TextString",
+            "text": "part-a"
+          },
+          {
+            "wireType": "Enumeration",
+            "enumeration": 4294967295
+          },
+          {
+            "wireType": "Integer",
+            "integer": -7
+          },
+          {
+            "wireType": "TextString",
+            "text": "part-a"
+          }
         ],
         "resultStatus": 0,
         "resultMessage": null,
@@ -850,11 +892,17 @@
           "correlationValueHex": "00ff80"
         },
         "pendingResponseUniqueIdentifiersInWireOrder": [
-          {"wireType": "TextString", "text": "pending-part"}
+          {
+            "wireType": "TextString",
+            "text": "pending-part"
+          }
         ],
         "automaticFollowUp": false,
         "transportExchangeCount": 1,
-        "uniqueBatchItemIds": ["split-success", "split-pending"]
+        "uniqueBatchItemIds": [
+          "split-success",
+          "split-pending"
+        ]
       },
       "javaObservedOutput": {
         "requestObjectType": 4026531840,
@@ -869,10 +917,22 @@
         "attributesPresent": true,
         "protectionStorageMasksPresent": true,
         "responseUniqueIdentifiersInWireOrder": [
-          {"wireType": "TextString", "text": "part-a"},
-          {"wireType": "Enumeration", "enumeration": 4294967295},
-          {"wireType": "Integer", "integer": -7},
-          {"wireType": "TextString", "text": "part-a"}
+          {
+            "wireType": "TextString",
+            "text": "part-a"
+          },
+          {
+            "wireType": "Enumeration",
+            "enumeration": 4294967295
+          },
+          {
+            "wireType": "Integer",
+            "integer": -7
+          },
+          {
+            "wireType": "TextString",
+            "text": "part-a"
+          }
         ],
         "resultStatus": 0,
         "resultMessage": null,
@@ -885,11 +945,17 @@
           "correlationValueHex": "00ff80"
         },
         "pendingResponseUniqueIdentifiersInWireOrder": [
-          {"wireType": "TextString", "text": "pending-part"}
+          {
+            "wireType": "TextString",
+            "text": "pending-part"
+          }
         ],
         "automaticFollowUp": false,
         "transportExchangeCount": 1,
-        "uniqueBatchItemIds": ["split-success", "split-pending"]
+        "uniqueBatchItemIds": [
+          "split-success",
+          "split-pending"
+        ]
       },
       "errorCategory": null,
       "cleanup": [
@@ -936,9 +1002,9 @@
       "id": "creation.result-message-on-failure.v1",
       "capability": "client_execution",
       "requirementIds": [
-        "KMIPKIT-0014-FR-001",
-        "KMIPKIT-0014-FR-002",
-        "KMIPKIT-0043-FR-010"
+        "OBJECT-CREATION-REQ-001",
+        "OBJECT-CREATION-REQ-002",
+        "PUBLIC-API-BINDINGS-REQ-010"
       ],
       "normativeSource": "OASIS KMIP v2.1 §8.6, Table 399; §9.17",
       "input": {
@@ -1006,8 +1072,8 @@
       "id": "codec-limits.defaults-and-ranges.v1",
       "capability": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0005-FR-007",
-        "KMIPKIT-0043-FR-010"
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "TTLV-CODEC-REQ-007"
       ],
       "input": {
         "defaults": true,
@@ -1094,18 +1160,18 @@
       "id": "usage-allocation.guard-accounting.v1",
       "capability": "usage_allocation_guard",
       "requirementIds": [
-        "KMIPKIT-0039-FR-002",
-        "KMIPKIT-0039-FR-004",
-        "KMIPKIT-0039-FR-009",
-        "KMIPKIT-0043-FR-004",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-017",
-        "KMIPKIT-0043-FR-021",
         "KMIPKIT-REQ-SPEC-6.1.23-001-001",
         "KMIPKIT-REQ-SPEC-6.1.23-001-002",
         "KMIPKIT-REQ-SPEC-6.1.23-002-001",
-        "KMIPKIT-REQ-SPEC-6.1.23-002-002"
+        "KMIPKIT-REQ-SPEC-6.1.23-002-002",
+        "PUBLIC-API-BINDINGS-REQ-004",
+        "PUBLIC-API-BINDINGS-REQ-005",
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-017",
+        "PUBLIC-API-BINDINGS-REQ-021",
+        "USAGE-POLICY-REQ-002",
+        "USAGE-POLICY-REQ-004",
+        "USAGE-POLICY-REQ-009"
       ],
       "input": {
         "allocationIdentifier": "allocation-object",
@@ -1188,19 +1254,19 @@
           "test": "test_native_python_guard_executes_encrypt_and_rejects_over_budget_before_transport"
         }
       },
-      "normativeSource": "OASIS KMIP Specification v2.1 §6.1.23, Table 232; approved local guard interpretation in KMIPKIT-0039"
+      "normativeSource": "OASIS KMIP Specification v2.1 §6.1.23, Table 232; approved local guard interpretation in USAGE-POLICY"
     },
     {
       "id": "ttlv.decoder-root-structure.v1",
       "capability": "ttlv_wire_codec",
       "requirementIds": [
-        "KMIPKIT-0005-FR-004",
-        "KMIPKIT-0005-FR-005",
-        "KMIPKIT-0005-FR-007",
-        "KMIPKIT-0005-FR-009",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-017"
+        "PUBLIC-API-BINDINGS-REQ-005",
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-017",
+        "TTLV-CODEC-REQ-004",
+        "TTLV-CODEC-REQ-005",
+        "TTLV-CODEC-REQ-007",
+        "TTLV-CODEC-REQ-009"
       ],
       "input": {
         "wireHex": "54000301000000205400010500000004e102030400000000540002080000000380ff010000000000",
@@ -1291,16 +1357,19 @@
       "id": "typed-message.ordered-open-values-and-lifetime.v1",
       "capability": "generic_ttlv_model",
       "requirementIds": [
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-011",
-        "KMIPKIT-0043-FR-013",
-        "KMIPKIT-0043-FR-017",
-        "KMIPKIT-0043-FR-018",
-        "KMIPKIT-0043-FR-022"
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-011",
+        "PUBLIC-API-BINDINGS-REQ-013",
+        "PUBLIC-API-BINDINGS-REQ-017",
+        "PUBLIC-API-BINDINGS-REQ-018",
+        "PUBLIC-API-BINDINGS-REQ-022"
       ],
       "input": {
         "request": {
-          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x0042000d"
+          ],
           "batchItems": [
             {
               "operationRaw": 4045620583,
@@ -1325,7 +1394,11 @@
           }
         },
         "response": {
-          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x00420092",
+            "0x0042000d"
+          ],
           "timeStamp": 5678,
           "operationRaw": 10,
           "resultStatusRaw": 2147483649,
@@ -1341,22 +1414,34 @@
         },
         "invalidRequest": {
           "missingBatchItemIdIndex": 1,
-          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR"
+          "payloadMarker": "REDACTED-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR"
         }
       },
       "expectedOutput": {
         "request": {
-          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x0042000d"
+          ],
           "batchCount": 2,
           "batchItems": [
             {
-              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079"],
+              "fieldTags": [
+                "0x0042005c",
+                "0x00420093",
+                "0x00420079"
+              ],
               "operationRaw": 4045620583,
               "uniqueBatchItemIdHex": "00ff80",
               "bitMaskRawHex": "0x80000009"
             },
             {
-              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079", "0x00420051"],
+              "fieldTags": [
+                "0x0042005c",
+                "0x00420093",
+                "0x00420079",
+                "0x00420051"
+              ],
               "operationRaw": 10,
               "uniqueBatchItemIdHex": "020304",
               "bitMaskRawHex": "0x40000003"
@@ -1375,9 +1460,18 @@
           "extensionVendorValueHex": "00fe80"
         },
         "response": {
-          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x00420092",
+            "0x0042000d"
+          ],
           "batchCount": 1,
-          "batchItemFieldTags": ["0x0042005c", "0x0042007f", "0x0042007c", "0x00420051"],
+          "batchItemFieldTags": [
+            "0x0042005c",
+            "0x0042007f",
+            "0x0042007c",
+            "0x00420051"
+          ],
           "operationRaw": 10,
           "resultStatusRaw": 2147483649,
           "extensionBatchItemIndex": 0,
@@ -1391,7 +1485,7 @@
           "structureIndex": 2,
           "fieldIndex": null,
           "diagnosticOmitsPayloadMarker": true,
-          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
+          "payloadMarker": "REDACTED-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
           "cDiagnosticSurface": "none"
         },
         "lifetime": {
@@ -1402,17 +1496,29 @@
       },
       "javaObservedOutput": {
         "request": {
-          "headerFieldTags": ["0x00420069", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x0042000d"
+          ],
           "batchCount": 2,
           "batchItems": [
             {
-              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079"],
+              "fieldTags": [
+                "0x0042005c",
+                "0x00420093",
+                "0x00420079"
+              ],
               "operationRaw": 4045620583,
               "uniqueBatchItemIdHex": "00ff80",
               "bitMaskRawHex": "0x80000009"
             },
             {
-              "fieldTags": ["0x0042005c", "0x00420093", "0x00420079", "0x00420051"],
+              "fieldTags": [
+                "0x0042005c",
+                "0x00420093",
+                "0x00420079",
+                "0x00420051"
+              ],
               "operationRaw": 10,
               "uniqueBatchItemIdHex": "020304",
               "bitMaskRawHex": "0x40000003"
@@ -1431,9 +1537,18 @@
           "extensionVendorValueHex": "00fe80"
         },
         "response": {
-          "headerFieldTags": ["0x00420069", "0x00420092", "0x0042000d"],
+          "headerFieldTags": [
+            "0x00420069",
+            "0x00420092",
+            "0x0042000d"
+          ],
           "batchCount": 1,
-          "batchItemFieldTags": ["0x0042005c", "0x0042007f", "0x0042007c", "0x00420051"],
+          "batchItemFieldTags": [
+            "0x0042005c",
+            "0x0042007f",
+            "0x0042007c",
+            "0x00420051"
+          ],
           "operationRaw": 10,
           "resultStatusRaw": 2147483649,
           "extensionBatchItemIndex": 0,
@@ -1447,7 +1562,7 @@
           "structureIndex": 2,
           "fieldIndex": null,
           "diagnosticOmitsPayloadMarker": true,
-          "payloadMarker": "T107-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
+          "payloadMarker": "REDACTED-PAYLOAD-MUST-NOT-APPEAR-IN-ERROR",
           "cDiagnosticSurface": "none"
         },
         "lifetime": {
@@ -1503,15 +1618,15 @@
       "id": "credentials.hashed-password-timestamp-sequence.v1",
       "capability": "hashed_password_timestamp_sequence",
       "requirementIds": [
-        "KMIPKIT-0008-FR-007",
+        "CREDENTIALS-REQ-007",
         "KMIPKIT-REQ-SPEC-9.11-010-001",
-        "KMIPKIT-0043-FR-005",
-        "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-017",
-        "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "PUBLIC-API-BINDINGS-REQ-005",
+        "PUBLIC-API-BINDINGS-REQ-010",
+        "PUBLIC-API-BINDINGS-REQ-017",
+        "PUBLIC-API-BINDINGS-REQ-021",
+        "PUBLIC-API-BINDINGS-REQ-022"
       ],
-      "normativeSource": "OASIS KMIP v2.1 §9.11, Table 415; KMIPKIT-0008 OD-003",
+      "normativeSource": "OASIS KMIP v2.1 §9.11, Table 415; CREDENTIALS NOTE-003",
       "input": {
         "restoredTimestamp": 1800000001,
         "nextTimestamp": 1800000002,
@@ -1523,7 +1638,10 @@
       "expectedOutput": {
         "initialTimestamp": 1800000001,
         "lastAfterIncrease": 1800000002,
-        "rejectedTimestamps": [1800000002, 1800000000],
+        "rejectedTimestamps": [
+          1800000002,
+          1800000000
+        ],
         "rejectionCategory": "invalid_input",
         "stateUnchangedAfterRejection": true,
         "independentSequencesAcceptSameTimestamp": true,
@@ -1537,7 +1655,10 @@
       "javaObservedOutput": {
         "initialTimestamp": 1800000001,
         "lastAfterIncrease": 1800000002,
-        "rejectedTimestamps": [1800000002, 1800000000],
+        "rejectedTimestamps": [
+          1800000002,
+          1800000000
+        ],
         "rejectionCategory": "invalid_input",
         "stateUnchangedAfterRejection": true,
         "independentSequencesAcceptSameTimestamp": true,
@@ -1549,7 +1670,9 @@
         "credentialTransmissions": 0
       },
       "errorCategory": "invalid_input",
-      "cleanup": ["close-each-caller-owned-sequence-once"],
+      "cleanup": [
+        "close-each-caller-owned-sequence-once"
+      ],
       "consumerTests": {
         "rust": {
           "status": "available",

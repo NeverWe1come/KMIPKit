@@ -1,4 +1,4 @@
-"""fluent expert attributes FR-001–004; KMIP v2.1 §§4–5, §4.60 Table 150, §§7.1–8."""
+"""Fluent expert attributes: KMIP v2.1 §§4–5, §4.60 Table 150, §§7.1–8."""
 
 from contextlib import contextmanager
 import socket

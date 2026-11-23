@@ -182,6 +182,7 @@ impl VersionGate {
                 | 0x0042_004A // Link (Reserved in 3.0)
                 | 0x0042_004B // Link Type (Reserved in 3.0)
                 | 0x0042_004C // Linked Object Identifier (Reserved in 3.0)
+                | 0x0042_00AC // Object Group Member (replaced by Object Class Mask in Locate)
                 | 0x0042_000D // Batch Count (Reserved in 3.0)
                 | 0x0042_0010 // Batch Order Option (Reserved in 3.0)
                 | 0x0042_0093 // Unique Batch Item ID (Reserved in 3.0)

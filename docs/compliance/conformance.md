@@ -67,7 +67,7 @@ runtime profile selection for Baseline remains unavailable while the catalog
 evidence state is incomplete, and per-exchange validation fails closed before
 transport. Its catalog
 `claim_state` remains `evidence_incomplete`: the 16 linked mandatory official
-XML fixtures are pinned, while T036 records 10 full Baseline Client (`BL-M`)
+XML fixtures are pinned, while the conformance replay suite records 10 full Baseline Client (`BL-M`)
 replays, 3 full Shared Knowledge Link Client (`SKLC-M`) replays, and 3 typed
 preflight blockers. KMIP Profiles v2.1 §6.1 item 4 requires support for one or
 more cases from §§5.1.3 and 5.6.3, not every linked case. The three blocked

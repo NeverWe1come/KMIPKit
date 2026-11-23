@@ -34,7 +34,7 @@ not establish profile conformance.
 ## Phase 3: public API and language parity — integrated, release gate
 
 The Rust facade, C ABI, Java JNI API, and Python CFFI API have undergone
-cross-language parity work through public API parity manifest and named protocol values–0053. The
+cross-language parity work through the public API parity manifest and typed language facades. The
 versioned API manifest and generators define the public surface. Package
 publishing and final compatibility evidence remain separate release gates.
 
@@ -42,9 +42,9 @@ publishing and final compatibility evidence remain separate release gates.
 
 Raw TLS and HTTPS/HTTP 1.1, TLS 1.3 mutual authentication, request delivery
 states, TLS credential reload, session resumption, and keep-alive reconnect
-are implemented under the approved transport specifications. JSON and XML
-codecs and client/transport integration are implemented under the specification–0057.
-the specification tracks package dry-runs; the dated status page records its PR state
+are implemented in the production transport layer. JSON and XML
+codecs and client/transport integration are implemented for multi-encoding execution.
+Release packaging workflows track package dry-runs; the dated status page records its PR state
 at the snapshot.
 
 ## Phase 5: typed API usability and preflight validation — integrated
@@ -52,16 +52,16 @@ at the snapshot.
 Named protocol values, typed attributes and managed objects, operation
 parameters, request authentication, schema-aware pre-send validation, typed
 responses, generic response navigation, and parity across the four supported
-languages are integrated through named protocol values–0053.
+languages are integrated across the four-language public API facade.
 
 ## Phase 6: protocol breadth, interoperability, and release hardening — implementation integrated; release evidence remains
 
 - KMIP 2.1 server-to-client operations and role handling: server-to-client operations.
-- KMIP 2.0 and catalogued KMIP 3.0 version support: multi-version foundation–0071. The
+- KMIP 2.0 and catalogued KMIP 3.0 version support: multi-version protocol and catalog support. The
   KMIP 3.0 surface remains limited to the pinned draft and
   approved feature requirements; it is not a blanket conformance claim.
 - Shared interoperability catalog and Rust, C, Java, and Python validators:
-  the specification–0062. The server compatibility matrix remains an evidence
+  multi-language interoperability validation suite. The server compatibility matrix remains an evidence
   ledger; untested operations and products stay pending.
 - Standalone multi-version test server: test server foundation.
 - Release work still includes final package build/install/smoke tests, complete
@@ -77,8 +77,8 @@ records.
 
 ## Separate deliverable: stateless KMS proxy
 
-The proxy has its own Cargo workspace, dependency boundary, specifications,
-and provider workflows. stateless proxy foundation–0082 cover the foundation and bridges for
+The proxy has its own Cargo workspace, dependency boundary, architecture,
+and provider workflows. The proxy workspace covers the foundation and bridges for
 AWS, Azure, Google Cloud, Oracle OCI, Vault/OpenBao, Infisical, IBM, Alibaba,
 Scaleway, and Open Telekom Cloud. Its implementation does not make proxy
 support part of the core client library or its 1.0 packages.

@@ -523,7 +523,7 @@ fn main() {
 
 Indica el tipo de objeto, el número de partes, el umbral, el método de
 separación y la estructura Attributes obligatoria. El Unique Identifier de la
-clave de entrada solo se envía si se proporciona. Según la política FR-015 de
+clave de entrada solo se envía si se proporciona. Según la política de validación de
 KMIPKit, para Polynomial Sharing Prime Field el llamador debe proporcionar
 Prime Field Size explícitamente.
 
@@ -691,7 +691,7 @@ omite, el modelo informa SHA-256 como algoritmo efectivo (valor bruto `6`) y
 conserva el campo como ausente en el árbol TTLV. KMIPKit no calcula el hash.
 KMIP Specification v2.1 §9.11 exige que esta marca de tiempo aumente de forma
 monótona. El modelo actual conserva el valor proporcionado, pero no guarda
-marcas anteriores ni impone esa secuencia. the credentials and attestation model OD-003 deja sin resolver
+marcas anteriores ni impone esa secuencia. La disposición abierta del catálogo deja sin resolver
 quién debe aplicar la regla, su ámbito de comparación y el comportamiento del
 reloj; KMIPKit no afirma que este requisito esté satisfecho.
 
@@ -800,10 +800,10 @@ KMIPKit no afirma controlar esos efectos del servidor.
 `execute_query_async_requests` admite los filtros opcionales de valor de
 correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Esta
 especificación expone el payload de respuesta como TTLV genérico.
-`KMIPKIT-DEC-015` registra la interpretación aceptada de la Tabla 286 para el
-trabajo de tipado separado en public API parity manifest T035; el pie impreso y la fuente
+El catálogo normativo registra la interpretación aceptada de la Tabla 286 para el
+mapeo tipado en el manifiesto de paridad de la API pública; el pie impreso y la fuente
 OASIS fijada permanecen intactos. Esta interpretación no constituye una
-afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
+afirmación formal de conformidad. Sigue abierto el hueco del
 catálogo para el campo obligatorio de la petición Process de la Tabla 278.
 
 Java y Python exponen la correlación mediante un callback que recibe una vista

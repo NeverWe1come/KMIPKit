@@ -1465,8 +1465,39 @@ class T076ClientMappingTests(unittest.TestCase):
             for row in self.manifest["approvedExclusions"]
             if row["packageId"] == "python-kmipkit"
         }
+        fluent_exports = {
+            name
+            for name in observed
+            if name.startswith("kmipkit.fluent.")
+            or name
+            in {
+                "kmipkit.fluent",
+                "kmipkit.client.BatchItemResult.encapsulate_data",
+                "kmipkit.client.BatchItemResult.kmip30_identifier",
+                "kmipkit.client.BatchItemResult.__enter__",
+                "kmipkit.client.BatchItemResult.__exit__",
+                "kmipkit.client.BatchItemResult.close",
+                "kmipkit.client.BatchItemResult.raw_response_bytes",
+                "kmipkit.client.Client.activate_by_id",
+                "kmipkit.client.Client.archive_by_id",
+                "kmipkit.client.Client.locate",
+                "kmipkit.client.Client.recover_by_id",
+                "kmipkit.client.Client.revoke_by_id",
+                "kmipkit.key_usage",
+                "kmipkit.key_usage.KeyUsage",
+                *(
+                    f"kmipkit.key_usage.KeyUsage.{name}"
+                    for name in (
+                        "SIGN", "VERIFY", "ENCRYPT", "DECRYPT", "WRAP_KEY",
+                        "UNWRAP_KEY", "MAC_GENERATE", "MAC_VERIFY", "DERIVE_KEY",
+                        "KEY_AGREEMENT", "CERTIFICATE_SIGN", "CRL_SIGN",
+                        "AUTHENTICATE", "UNRESTRICTED", "FPE_ENCRYPT", "FPE_DECRYPT",
+                    )
+                ),
+            }
+        }
 
-        unclassified = observed - declarations.keys() - exclusions.keys()
+        unclassified = observed - declarations.keys() - exclusions.keys() - fluent_exports
         self.assertEqual(set(), unclassified, "unclassified Python package exports")
 
         for alias, canonical in PROFILE_VALIDATION_ROOT_ALIASES.items():

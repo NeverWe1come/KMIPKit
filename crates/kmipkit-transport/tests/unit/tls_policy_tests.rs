@@ -1,4 +1,4 @@
-//! TLS policy tests derived from specification requirement FR-002, FR-003, and FR-006.
+//! TLS policy tests derived from the specification requirements, and the specification rules.
 //!
 //! KMIP Specification v2.1 §10.4 requires channel confidentiality, integrity,
 //! and authenticity. The product-specific TLS 1.3, mutual authentication,

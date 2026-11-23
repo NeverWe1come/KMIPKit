@@ -5,12 +5,12 @@
 //! KMIP v2.1 §8.6, Table 399, catalog element
 //! `KMIP-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`; §9.19 and
 //! `KMIP-REQ-SPEC-9.19-002` concern its later use by Poll. Discover Versions
-//! has no secret payload and does not resolve caller-requested encoding and zeroization OD-006, which remains a
+//! has no secret payload and does not resolve caller-requested encoding and zeroization the specification rules, which remains a
 //! gate for the first secret-bearing operation.
 //!
-//! Traceability: `functional requirement`, `-FR-008`, `-FR-011`, `-FR-012`,
-//! `-FR-013`, `-FR-017`; `success criterion`, `-SC-004`, `-SC-005`,
-//! `-SC-008`; caller-requested encoding and zeroization; `security and privacy policy` §8.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules; `success criterion`, the specification rules,
+//! the specification rules; caller-requested encoding and zeroization; `security and privacy policy` §8.
 
 use std::cell::{Cell, RefCell};
 use std::error::Error;

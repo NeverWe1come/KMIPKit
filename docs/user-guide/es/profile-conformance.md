@@ -99,7 +99,7 @@ el transporte; no se afirma soporte ni conformidad del perfil.
 
 El estado de Baseline Client en el catálogo es `evidence_incomplete`. Los 16
 fixtures oficiales vinculados a Baseline y Shared Knowledge Link están fijados.
-T036 registra 10 reproducciones deterministas completas de casos `BL-M`, 3 de
+La suite de reproducción de conformidad registra 10 reproducciones deterministas completas de casos `BL-M`, 3 de
 casos `SKLC-M` y 3 bloqueos previos al envío por la validación tipada. Profiles
 v2.1 §6.1, ítem 4, exige soportar uno o más casos de §§5.1.3 y 5.6.3, no todos
 los casos vinculados; los tres bloqueos siguen visibles, pero por sí solos no
@@ -149,8 +149,7 @@ recomendación. KMIPKit la registra como una recomendación del cliente a cargo
 de la aplicación: esta debería elegir y conservar el uso único previsto. KMIPKit
 no consulta el estado remoto ni aplica el límite de usos. El requisito
 obligatorio de monotonicidad de Hashed Password Timestamp (§9.11) está mapeado
-a una función de secuencia a cargo de la aplicación según la decisión resuelta
-OD-003 de the credentials and attestation model. Exige marcas de tiempo que aumenten estrictamente por
+a una función de secuencia a cargo de la aplicación según el diseño de credenciales y atestación. Exige marcas de tiempo que aumenten estrictamente por
 Username y productor lógico de credenciales; la aplicación mantiene la
 persistencia entre reinicios. La función no calcula hashes ni envía
 credenciales, y el mapeo no establece el orden del cable ni la conformidad

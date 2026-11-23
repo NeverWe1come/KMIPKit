@@ -5,17 +5,25 @@ use std::fmt;
 use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::named_values_generated::values::bitmask::cryptographic_usage_mask;
 use kmipkit_protocol::{
-    ActivateRequest, AddAttributeRequest, ArchiveRequest, Attribute, AttributeDefinition,
-    AttributeReference, AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest, CryptographicAlgorithm, CryptographicParameters, CurrentAttribute,
-    DecryptRequest, DeleteAttributeRequest, DestroyRequest, EncryptRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest, LocateRequest,
-    MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes,
-    SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask,
-    UniqueIdentifier, ValidateKmipRequest,
+    ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
+    Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
+    CheckRequest, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CreateUserRequest,
+    CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DeactivateRequest,
+    DecapsulateRequest, DecryptRequest, DeleteAttributeRequest, DerivationMethod,
+    DerivationParameters, DeriveKeyRequest, DestroyRequest, DiscoverVersionsRequest,
+    EncapsulateRequest, EncryptRequest, GetAttributeListRequest, GetAttributesRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, KeyCompressionType,
+    KeyFormatType, KeyWrapType, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectClassMask, ObjectGroupMember, ObjectType,
+    ObliterateRequest, ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    ValidateKmipRequest, ValidationReport,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, KmipTag, RawTag, Structure, Tag, Value, ValueView};
@@ -24,6 +32,39 @@ use crate::{
     Client, ClientBatchItem, ClientBatchItemResponse, ClientCauseCategory, ClientError,
     ClientRequest,
 };
+
+macro_rules! fluent_option_field_setters {
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; non_const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+}
 
 const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const MESSAGE_EXTENSION_TAG_START: u32 = 0x0054_0000;
@@ -41,22 +82,39 @@ const ATTRIBUTE_VALUE_TAG: u32 = KmipTag::AttributeValue.as_u32();
 pub struct CryptographicUsageMask(i32);
 
 impl CryptographicUsageMask {
-    /// Permit signing operations.
-    pub const SIGN: Self = Self(0x0000_0001);
-    /// Permit signature verification operations.
-    pub const VERIFY: Self = Self(0x0000_0002);
-    /// Permit encryption operations.
-    pub const ENCRYPT: Self = Self(0x0000_0004);
-    /// Permit decryption operations.
-    pub const DECRYPT: Self = Self(0x0000_0008);
-    /// Permit MAC generation operations.
-    pub const MAC_GENERATE: Self = Self(0x0000_0080);
-    /// Permit MAC verification operations.
-    pub const MAC_VERIFY: Self = Self(0x0000_0100);
-    /// Permit key derivation operations.
-    pub const DERIVE_KEY: Self = Self(0x0000_0200);
-    /// Permit key agreement operations.
-    pub const KEY_AGREEMENT: Self = Self(0x0000_0800);
+    /// KMIP Sign usage flag.
+    pub const SIGN: Self = Self(cryptographic_usage_mask::SIGN.cast_signed());
+    /// KMIP Verify usage flag.
+    pub const VERIFY: Self = Self(cryptographic_usage_mask::VERIFY.cast_signed());
+    /// KMIP Encrypt usage flag.
+    pub const ENCRYPT: Self = Self(cryptographic_usage_mask::ENCRYPT.cast_signed());
+    /// KMIP Decrypt usage flag.
+    pub const DECRYPT: Self = Self(cryptographic_usage_mask::DECRYPT.cast_signed());
+    /// KMIP Wrap Key usage flag.
+    pub const WRAP_KEY: Self = Self(cryptographic_usage_mask::WRAP_KEY.cast_signed());
+    /// KMIP Unwrap Key usage flag.
+    pub const UNWRAP_KEY: Self = Self(cryptographic_usage_mask::UNWRAP_KEY.cast_signed());
+    /// KMIP Mac Generate usage flag.
+    pub const MAC_GENERATE: Self = Self(cryptographic_usage_mask::MAC_GENERATE.cast_signed());
+    /// KMIP Mac Verify usage flag.
+    pub const MAC_VERIFY: Self = Self(cryptographic_usage_mask::MAC_VERIFY.cast_signed());
+    /// KMIP Derive Key usage flag.
+    pub const DERIVE_KEY: Self = Self(cryptographic_usage_mask::DERIVE_KEY.cast_signed());
+    /// KMIP Key Agreement usage flag.
+    pub const KEY_AGREEMENT: Self = Self(cryptographic_usage_mask::KEY_AGREEMENT.cast_signed());
+    /// KMIP Certificate Sign usage flag.
+    pub const CERTIFICATE_SIGN: Self =
+        Self(cryptographic_usage_mask::CERTIFICATE_SIGN.cast_signed());
+    /// KMIP Crl Sign usage flag.
+    pub const CRL_SIGN: Self = Self(cryptographic_usage_mask::CRL_SIGN.cast_signed());
+    /// KMIP Authenticate usage flag.
+    pub const AUTHENTICATE: Self = Self(cryptographic_usage_mask::AUTHENTICATE.cast_signed());
+    /// KMIP Unrestricted usage flag.
+    pub const UNRESTRICTED: Self = Self(cryptographic_usage_mask::UNRESTRICTED.cast_signed());
+    /// KMIP Fpe Encrypt usage flag.
+    pub const FPE_ENCRYPT: Self = Self(cryptographic_usage_mask::FPE_ENCRYPT.cast_signed());
+    /// KMIP Fpe Decrypt usage flag.
+    pub const FPE_DECRYPT: Self = Self(cryptographic_usage_mask::FPE_DECRYPT.cast_signed());
 
     /// Preserves an exact signed TTLV Integer bit pattern.
     #[must_use]
@@ -83,6 +141,21 @@ impl BitOr for CryptographicUsageMask {
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FluentBuildError {
+    /// Add Attribute is missing its required New Attribute.
+    MissingAddAttributeValue,
+    /// Modify Attribute is missing its required New Attribute.
+    MissingModifyAttributeValue,
+    /// Set Attribute is missing its required New Attribute.
+    MissingSetAttributeValue,
+    /// Adjust Attribute is missing its required Attribute Reference.
+    MissingAdjustAttributeReference,
+    /// Adjust Attribute is missing its required Adjustment Type.
+    MissingAdjustAttributeType,
+    /// Discover Versions was given an empty or uncatalogued protocol offer.
+    InvalidProtocolVersions,
+    /// Get Usage Allocation is missing its required Usage Limits Count.
+    MissingGetUsageAllocationCount,
+
     /// Create Symmetric Key is missing Cryptographic Algorithm.
     MissingCryptographicAlgorithm,
     /// Create Symmetric Key is missing Cryptographic Length.
@@ -95,6 +168,18 @@ pub enum FluentBuildError {
     MissingCreateKeyPairLength,
     /// Create Split Key is missing Object Type.
     MissingCreateSplitKeyObjectType,
+    /// Create is missing Object Type.
+    MissingCreateObjectType,
+    /// Derive Key is missing Object Type.
+    MissingDeriveKeyObjectType,
+    /// Derive Key requires at least one source Unique Identifier.
+    MissingDeriveKeyUniqueIdentifier,
+    /// Derive Key is missing the caller-selected Derivation Method.
+    MissingDeriveKeyMethod,
+    /// Derive Key is missing the caller-selected Derivation Parameters.
+    MissingDeriveKeyParameters,
+    /// Derive Key is missing the required output Attributes Structure.
+    MissingDeriveKeyAttributes,
     /// Create Split Key is missing Split Key Method.
     MissingCreateSplitKeyMethod,
     /// Create Split Key is missing Split Key Parts.
@@ -103,6 +188,12 @@ pub enum FluentBuildError {
     MissingCreateSplitKeyThreshold,
     /// Hash is missing its caller-selected Cryptographic Parameters.
     MissingHashCryptographicParameters,
+    /// Get Usage Allocation is missing Usage Limits Count.
+    MissingUsageLimitsCount,
+    /// RNG Retrieve is missing the caller-selected Data Length.
+    MissingRngRetrieveDataLength,
+    /// RNG Seed is missing its caller-supplied secret Data.
+    MissingRngSeedData,
     /// Register is missing its object.
     MissingRegisterObject,
     /// Register's object or context is invalid.
@@ -131,6 +222,20 @@ pub enum FluentBuildError {
 impl fmt::Display for FluentBuildError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(match self {
+            Self::MissingAddAttributeValue => "Add Attribute requires a New Attribute",
+            Self::MissingModifyAttributeValue => "Modify Attribute requires a New Attribute",
+            Self::MissingSetAttributeValue => "Set Attribute requires a New Attribute",
+            Self::MissingAdjustAttributeReference => {
+                "Adjust Attribute requires an Attribute Reference"
+            }
+            Self::MissingAdjustAttributeType => "Adjust Attribute requires an Adjustment Type",
+            Self::InvalidProtocolVersions => {
+                "fluent Discover Versions offers are empty or unsupported"
+            }
+            Self::MissingGetUsageAllocationCount => {
+                "Get Usage Allocation requires a Usage Limits Count"
+            }
+
             Self::MissingCryptographicAlgorithm => {
                 "Create Symmetric Key requires Cryptographic Algorithm"
             }
@@ -145,12 +250,23 @@ impl fmt::Display for FluentBuildError {
             }
             Self::MissingCreateKeyPairLength => "Create Key Pair requires Cryptographic Length",
             Self::MissingCreateSplitKeyObjectType => "Create Split Key requires Object Type",
+            Self::MissingCreateObjectType => "Create requires Object Type",
+            Self::MissingDeriveKeyObjectType => "Derive Key requires Object Type",
+            Self::MissingDeriveKeyUniqueIdentifier => {
+                "Derive Key requires at least one source Unique Identifier"
+            }
+            Self::MissingDeriveKeyMethod => "Derive Key requires a Derivation Method",
+            Self::MissingDeriveKeyParameters => "Derive Key requires Derivation Parameters",
+            Self::MissingDeriveKeyAttributes => "Derive Key requires output Attributes",
             Self::MissingCreateSplitKeyMethod => "Create Split Key requires Split Key Method",
             Self::MissingCreateSplitKeyParts => "Create Split Key requires Split Key Parts",
             Self::MissingCreateSplitKeyThreshold => "Create Split Key requires Split Key Threshold",
             Self::MissingHashCryptographicParameters => {
                 "Hash requires caller-selected Cryptographic Parameters"
             }
+            Self::MissingUsageLimitsCount => "Get Usage Allocation requires Usage Limits Count",
+            Self::MissingRngRetrieveDataLength => "RNG Retrieve requires Data Length",
+            Self::MissingRngSeedData => "RNG Seed requires secret Data",
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
@@ -186,11 +302,168 @@ pub enum FluentAttributePosition {
 }
 
 /// A scoped fluent namespace borrowed from a mutable client.
+/// value or adjustment type for the caller.
+#[non_exhaustive]
+#[derive(Debug)]
+pub struct AttributeAdjustmentValue(Value);
+
+impl AttributeAdjustmentValue {
+    /// Creates a signed 32-bit Integer adjustment value.
+    #[must_use]
+    pub fn integer(value: i32) -> Self {
+        Self(Value::integer(value))
+    }
+
+    /// Creates a signed 64-bit Long Integer adjustment value.
+    #[must_use]
+    pub fn long_integer(value: i64) -> Self {
+        Self(Value::long_integer(value))
+    }
+
+    /// Creates an Enumeration adjustment value from its exact raw value.
+    #[must_use]
+    pub fn enumeration(value: u32) -> Self {
+        Self(Value::enumeration(value))
+    }
+
+    /// Creates a Boolean adjustment value.
+    #[must_use]
+    pub fn boolean(value: bool) -> Self {
+        Self(Value::boolean(value))
+    }
+
+    /// Creates a Text String adjustment value without normalization.
+    #[must_use]
+    pub fn text_string(value: String) -> Self {
+        Self(Value::text_string(value))
+    }
+
+    /// Creates a signed 64-bit Date Time adjustment value.
+    #[must_use]
+    pub fn date_time(value: i64) -> Self {
+        Self(Value::date_time(value))
+    }
+
+    /// Creates an unsigned 32-bit Interval adjustment value.
+    #[must_use]
+    pub fn interval(value: u32) -> Self {
+        Self(Value::interval(value))
+    }
+
+    /// Creates a signed 64-bit Date Time Extended adjustment value.
+    #[must_use]
+    pub fn date_time_extended(value: i64) -> Self {
+        Self(Value::date_time_extended(value))
+    }
+
+    fn try_clone(&self) -> Result<Self, FluentBuildError> {
+        kmipkit_ttlv::try_clone_value(&self.0)
+            .map(Self)
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)
+    }
+
+    fn into_value(self) -> Value {
+        self.0
+    }
+}
+
+/// A scoped fluent namespace borrowed from a mutable client.
 pub struct RequestBuilder<'a> {
     client: &'a mut Client,
 }
 
 impl<'a> RequestBuilder<'a> {
+    /// Begins constructing a typed Discover Versions request with the KMIP 2.1 default offer.
+    #[must_use]
+    pub fn discover_versions(self) -> DiscoverVersionsBuilder<'a> {
+        DiscoverVersionsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Query request.
+    #[must_use]
+    pub fn query(self) -> QueryBuilder<'a> {
+        QueryBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Check request.
+    #[must_use]
+    pub fn check(self) -> CheckBuilder<'a> {
+        CheckBuilder::new(self.client)
+    }
+
+    /// Begins constructing an Obtain Lease request.
+    #[must_use]
+    pub fn obtain_lease(self) -> ObtainLeaseBuilder<'a> {
+        ObtainLeaseBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Modify Attribute request.
+    #[must_use]
+    pub fn modify_attribute(self) -> ModifyAttributeBuilder<'a> {
+        ModifyAttributeBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Adjust Attribute request.
+    #[must_use]
+    pub fn adjust_attribute(self) -> AdjustAttributeBuilder<'a> {
+        AdjustAttributeBuilder::new(self.client)
+    }
+
+    /// Begins a KMIP 3.0 Create Credential builder using a typed credential
+    /// alternative. Its Credential Type is derived from the selected object.
+    /// The caller must explicitly select protocol version 3.0 on the client or
+    /// in exchange options before execution.
+    #[must_use]
+    pub fn create_credential(
+        self,
+        attributes: AttributeSet,
+        object: CreateCredentialObject,
+    ) -> CreateCredentialBuilder<'a> {
+        CreateCredentialBuilder::new(self.client, attributes, object)
+    }
+
+    /// Begins a KMIP 3.0 Create Group builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_group(self, attributes: AttributeSet) -> CreateGroupBuilder<'a> {
+        CreateGroupBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Create User builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_user(self, attributes: AttributeSet) -> CreateUserBuilder<'a> {
+        CreateUserBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Deactivate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn deactivate(self, unique_identifier: UniqueIdentifier) -> DeactivateBuilder<'a> {
+        DeactivateBuilder::new(self.client, unique_identifier)
+    }
+
+    /// Begins a KMIP 3.0 Decapsulate builder for a caller-supplied identifier
+    /// and encapsulated ciphertext.
+    #[must_use]
+    pub fn decapsulate(
+        self,
+        unique_identifier: UniqueIdentifier,
+        ciphertext: Vec<u8>,
+    ) -> DecapsulateBuilder<'a> {
+        DecapsulateBuilder::new(self.client, unique_identifier, ciphertext)
+    }
+
+    /// Begins a KMIP 3.0 Encapsulate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn encapsulate(self, unique_identifier: UniqueIdentifier) -> EncapsulateBuilder<'a> {
+        EncapsulateBuilder::new(self.client, unique_identifier)
+    }
+
+    /// Begins a KMIP 3.0 Obliterate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn obliterate(self, unique_identifier: UniqueIdentifier) -> ObliterateBuilder<'a> {
+        ObliterateBuilder::new(self.client, unique_identifier)
+    }
     pub(crate) const fn new(client: &'a mut Client) -> Self {
         Self { client }
     }
@@ -213,6 +486,19 @@ impl<'a> RequestBuilder<'a> {
         CreateSplitKeyBuilder::new(self.client)
     }
 
+    /// Begins a generic Create request with Object Type unset.
+    #[must_use]
+    pub fn create(self) -> CreateBuilder<'a> {
+        CreateBuilder::new(self.client)
+    }
+
+    /// Begins a typed Derive Key request with its source, method, parameters,
+    /// and output attributes unset.
+    #[must_use]
+    pub fn derive_key(self) -> DeriveKeyBuilder<'a> {
+        DeriveKeyBuilder::new(self.client)
+    }
+
     /// Begins constructing a typed Register request.
     #[must_use]
     pub fn register(self) -> RegisterBuilder<'a> {
@@ -222,9 +508,15 @@ impl<'a> RequestBuilder<'a> {
     /// Begins constructing a typed Get request for an explicit identifier.
     #[must_use]
     pub fn get(self, unique_identifier: UniqueIdentifier) -> GetBuilder<'a> {
+        self.get_request().unique_identifier(unique_identifier)
+    }
+
+    /// Begins a Get request with all selectors unset, including the identifier.
+    #[must_use]
+    pub fn get_request(self) -> GetBuilder<'a> {
         GetBuilder {
             client: self.client,
-            request: GetRequest::new().with_unique_identifier(unique_identifier),
+            request: GetRequest::new(),
             options: None,
             asynchronous_indicator: None,
         }
@@ -266,6 +558,33 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn get_attribute_list(self) -> GetAttributeListBuilder<'a> {
         GetAttributeListBuilder::new(self.client)
+    }
+
+    /// Begins a typed empty Get Constraints request.
+    #[must_use]
+    pub fn get_constraints(self) -> GetConstraintsBuilder<'a> {
+        GetConstraintsBuilder::new(self.client)
+    }
+
+    /// Begins a typed Get Usage Allocation request with Usage Limits Count unset.
+    ///
+    /// The Unique Identifier is optional when the surrounding batch context
+    /// establishes the KMIP ID Placeholder.
+    #[must_use]
+    pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
+        GetUsageAllocationBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Retrieve request with Data Length unset.
+    #[must_use]
+    pub fn rng_retrieve(self) -> RngRetrieveBuilder<'a> {
+        RngRetrieveBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Seed request with secret Data unset.
+    #[must_use]
+    pub fn rng_seed(self) -> RngSeedBuilder<'a> {
+        RngSeedBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -368,15 +687,825 @@ impl<'a> RequestBuilder<'a> {
     pub fn hash(self) -> HashBuilder<'a> {
         HashBuilder::new(self.client)
     }
+
+    /// Begins an empty typed Ping request (OASIS KMIP v2.1 §6.1.36).
+    #[must_use]
+    pub fn ping(self) -> PingBuilder<'a> {
+        PingBuilder {
+            execution: FluentBuilderExecution::new(self.client),
+        }
+    }
 }
 
-struct CryptoBuilderExecution<'a> {
+/// A fluent generic Create builder for OASIS KMIP v2.1 §6.1.8, Tables 186–188.
+/// It preserves the existing typed `CreateRequest` and does not choose object
+/// attributes or storage policy for the caller.
+pub struct CreateBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    object_type: Option<ObjectType>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+}
+
+impl<'a> CreateBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            object_type: None,
+            attributes: AttributeSet::new(),
+            protection_storage_masks: None,
+        }
+    }
+
+    /// Selects the caller's explicit KMIP Object Type.
+    #[must_use]
+    pub const fn object_type(mut self, object_type: ObjectType) -> Self {
+        self.object_type = Some(object_type);
+        self
+    }
+
+    /// Replaces the direct ordered Attributes to include in the request.
+    ///
+    /// An empty set is permitted by §5.1, Table 157; the required outer
+    /// Attributes Structure is still emitted.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the optional generic Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(CreateRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let request = create_typed_request(
+            self.object_type
+                .ok_or(FluentBuildError::MissingCreateObjectType)?,
+            self.attributes,
+            self.protection_storage_masks,
+        )?;
+        Ok((request, self.execution))
+    }
+
+    /// Validates the typed Create request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent, or [`FluentBuildError::InvalidRequest`] when typed request
+    /// validation rejects the payload.
+    /// Builds the existing typed Create request without consuming the builder.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent, or [`FluentBuildError::InvalidRequest`] when typed validation
+    /// fails.
+    pub fn build_request(&self) -> Result<CreateRequest, FluentBuildError> {
+        let object_type = self
+            .object_type
+            .ok_or(FluentBuildError::MissingCreateObjectType)?;
+        let mut attributes = AttributeSet::new();
+        for attribute in self.attributes.as_items() {
+            attributes
+                .try_push(
+                    attribute
+                        .try_clone()
+                        .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+                )
+                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        }
+        let mut request = CreateRequest::new(object_type, attributes);
+        if let Some(masks) = &self.protection_storage_masks {
+            request = request.with_protection_storage_masks(
+                masks
+                    .view()
+                    .try_clone()
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+            );
+        }
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the typed Create request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent, or [`FluentBuildError::InvalidRequest`] when typed request
+    /// validation rejects the payload.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.build_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Create request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingCreateObjectType`] when Object Type
+    /// is absent, or [`FluentBuildError::InvalidRequest`] when typed validation
+    /// fails.
+    pub fn build(self) -> Result<CreateRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts this request to the existing typed batch item without sending it.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    ///
+    /// # Errors
+    /// Returns a local builder error if a required field is absent or typed
+    /// request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::Create(request)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves the originating Create operation and correlation
+    /// value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Create(request), limits)
+    }
+}
+
+/// A fluent Derive Key builder for OASIS KMIP v2.1 §6.1.14, Tables 205–207.
+/// It preserves repeated source identifiers, caller-selected derivation
+/// parameters, and the existing typed result and delivery-state path.
+pub struct DeriveKeyBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    object_type: Option<ObjectType>,
+    unique_identifiers: Vec<UniqueIdentifier>,
+    derivation_method: Option<DerivationMethod>,
+    derivation_parameters: Option<DerivationParameters>,
+    attributes: Option<AttributeSet>,
+}
+
+impl<'a> DeriveKeyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            object_type: None,
+            unique_identifiers: Vec::new(),
+            derivation_method: None,
+            derivation_parameters: None,
+            attributes: None,
+        }
+    }
+
+    /// Selects the caller's explicit output Object Type.
+    #[must_use]
+    pub const fn object_type(mut self, object_type: ObjectType) -> Self {
+        self.object_type = Some(object_type);
+        self
+    }
+
+    /// Appends one explicit source Unique Identifier in request order.
+    ///
+    /// §6.1.14 permits repeated identifiers but prohibits substituting the ID
+    /// Placeholder. The existing typed request validator enforces that rule.
+    #[must_use]
+    pub fn unique_identifier(mut self, identifier: UniqueIdentifier) -> Self {
+        self.unique_identifiers.push(identifier);
+        self
+    }
+
+    /// Selects the caller's explicit Derivation Method.
+    #[must_use]
+    pub const fn derivation_method(mut self, method: DerivationMethod) -> Self {
+        self.derivation_method = Some(method);
+        self
+    }
+
+    /// Supplies the caller's typed §7.12 Derivation Parameters.
+    #[must_use]
+    pub fn derivation_parameters(mut self, parameters: DerivationParameters) -> Self {
+        self.derivation_parameters = Some(parameters);
+        self
+    }
+
+    /// Replaces the caller-selected output Attributes.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = Some(attributes);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn validate_required_fields(&self) -> Result<(), FluentBuildError> {
+        if self.object_type.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyObjectType);
+        }
+        if self.unique_identifiers.is_empty() {
+            return Err(FluentBuildError::MissingDeriveKeyUniqueIdentifier);
+        }
+        if self.derivation_method.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyMethod);
+        }
+        if self.derivation_parameters.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyParameters);
+        }
+        if self.attributes.is_none() {
+            return Err(FluentBuildError::MissingDeriveKeyAttributes);
+        }
+        Ok(())
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(DeriveKeyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        self.validate_required_fields()?;
+        let request = DeriveKeyRequest::new(
+            self.object_type
+                .ok_or(FluentBuildError::MissingDeriveKeyObjectType)?,
+            self.unique_identifiers,
+            self.derivation_method
+                .ok_or(FluentBuildError::MissingDeriveKeyMethod)?,
+            self.derivation_parameters
+                .ok_or(FluentBuildError::MissingDeriveKeyParameters)?,
+            self.attributes
+                .ok_or(FluentBuildError::MissingDeriveKeyAttributes)?,
+        );
+        if !request.validate().is_valid() {
+            return Err(FluentBuildError::InvalidRequest);
+        }
+        Ok((request, self.execution))
+    }
+
+    /// Checks that every required Table 205 field has been supplied.
+    ///
+    /// The typed request validation also runs in [`Self::build`],
+    /// [`Self::to_batch_item`], and [`Self::execute`].
+    ///
+    /// # Errors
+    /// Returns the specific missing-field error for the first absent required
+    /// field.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.validate_required_fields()
+    }
+
+    /// Builds the existing typed Derive Key request without sending it.
+    ///
+    /// # Errors
+    /// Returns a payload-free error when a required field is absent or the
+    /// typed request validation rejects the selected values.
+    pub fn build(self) -> Result<DeriveKeyRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts this request to the existing typed batch item without sending it.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    ///
+    /// # Errors
+    /// Returns a payload-free error when a required field is absent or the
+    /// typed request validation rejects the selected values.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::DeriveKey(request)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves the originating Derive Key operation and correlation
+    /// value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::DeriveKey(request), limits)
+    }
+}
+
+fn create_typed_request(
+    object_type: ObjectType,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+) -> Result<CreateRequest, FluentBuildError> {
+    let mut request = CreateRequest::new(object_type, attributes);
+    if let Some(masks) = protection_storage_masks {
+        request = request.with_protection_storage_masks(masks);
+    }
+    validate_fluent_request(&request)?;
+    Ok(request)
+}
+
+/// A fluent builder for the empty Ping payload in OASIS KMIP v2.1 §6.1.36,
+/// Table 271. Execution preserves the existing typed result and Pending outcome.
+pub struct PingBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+}
+
+impl PingBuilder<'_> {
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the typed empty payload without sending it.
+    ///
+    /// Protocol-version eligibility is checked by the client before sending.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&PingRequest::new())
+    }
+
+    /// Builds the empty typed Ping request without sending it.
+    #[must_use]
+    pub const fn build(self) -> PingRequest {
+        PingRequest::new()
+    }
+
+    /// Builds the empty typed Ping request without sending it.
+    ///
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// This method is infallible and always returns `Ok`.
+    pub fn build_request(self) -> Result<PingRequest, FluentBuildError> {
+        Ok(self.build())
+    }
+
+    /// Converts the empty request to a typed batch item.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    #[must_use]
+    pub fn to_batch_item(self) -> ClientBatchItem {
+        ClientBatchItem::new(ClientRequest::Ping(self.build()))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending preserves its correlation value without a follow-up or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence. KMIP 2.0 is rejected before sending.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execution
+            .run(ClientRequest::Ping(PingRequest::new()), limits)
+    }
+}
+
+/// A fluent builder for the empty Get Constraints request in OASIS KMIP v2.1
+/// §6.1.22, Table 229. Its response requires the typed Constraints payload.
+pub struct GetConstraintsBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+}
+
+impl<'a> GetConstraintsBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+        }
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the empty typed request without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&GetConstraintsRequest::new())
+    }
+
+    /// Builds the empty typed Get Constraints request without sending it.
+    #[must_use]
+    pub const fn build(self) -> GetConstraintsRequest {
+        GetConstraintsRequest::new()
+    }
+
+    /// Builds the empty typed Get Constraints request without sending it.
+    ///
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// This method is infallible and always returns `Ok`.
+    pub fn build_request(self) -> Result<GetConstraintsRequest, FluentBuildError> {
+        Ok(self.build())
+    }
+
+    /// Converts the empty request to a typed batch item.
+    ///
+    /// Exchange options and the asynchronous indicator belong to the batch
+    /// header and are not retained in an individual batch item.
+    #[must_use]
+    pub fn to_batch_item(self) -> ClientBatchItem {
+        ClientBatchItem::new(ClientRequest::GetConstraints(self.build()))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized protocol or transport error with its
+    /// request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        self.execution.run(ClientRequest::get_constraints(), limits)
+    }
+}
+
+/// A fluent Get Usage Allocation builder for OASIS KMIP v2.1 §6.1.23,
+/// Tables 232–234. It delegates request validation and protocol-version
+/// eligibility to the existing typed client path.
+pub struct GetUsageAllocationBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+}
+
+impl<'a> GetUsageAllocationBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            unique_identifier: None,
+            usage_limits_count: None,
+        }
+    }
+
+    /// Selects the object whose protection usage should be allocated.
+    ///
+    /// Omit this when the KMIP ID Placeholder resolves the object from an
+    /// earlier batch operation.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets the caller-requested Usage Limits Count.
+    #[must_use]
+    pub const fn usage_limits_count(mut self, value: i64) -> Self {
+        self.usage_limits_count = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn typed_request(&self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        let count = self
+            .usage_limits_count
+            .ok_or(FluentBuildError::MissingUsageLimitsCount)?;
+        let mut request = GetUsageAllocationRequest::new(count);
+        if let Some(identifier) = &self.unique_identifier {
+            request = request.with_unique_identifier(identifier.clone());
+        }
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates required builder fields and the existing typed request rules.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingUsageLimitsCount`] when Usage Limits
+    /// Count is absent, or [`FluentBuildError::InvalidRequest`] when the typed
+    /// request rejects the supplied values.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.typed_request().map(drop)
+    }
+
+    /// Builds the existing typed Get Usage Allocation request.
+    ///
+    /// # Errors
+    /// Returns a build error when a required field is absent or typed request
+    /// validation fails.
+    pub fn build(self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        self.typed_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a build error when a required field is absent or typed request
+    /// validation fails.
+    pub fn build_request(self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        self.build()
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns a build error when a required field is absent or typed request
+    /// validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::get_usage_allocation(
+            self.build()?,
+        )))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains an explicit outcome; this builder does not poll or
+    /// retry. Protocol-version eligibility is checked by the client before
+    /// sending.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .typed_request()
+            .map_err(fluent_client_validation_error)?;
+        self.execution
+            .run(ClientRequest::get_usage_allocation(request), limits)
+    }
+}
+
+/// A fluent RNG Retrieve builder for OASIS KMIP v2.1 §6.1.49, Tables 316–318.
+/// The returned Data remains in the existing zeroizing secret owner.
+pub struct RngRetrieveBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    data_length: Option<i32>,
+}
+
+impl<'a> RngRetrieveBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            data_length: None,
+        }
+    }
+
+    /// Sets the caller-selected number of random output bytes to request.
+    ///
+    /// The value is passed to the existing typed request without adding a
+    /// range rule beyond that request's validator.
+    #[must_use]
+    pub const fn data_length(mut self, value: i32) -> Self {
+        self.data_length = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn typed_request(&self) -> Result<RngRetrieveRequest, FluentBuildError> {
+        let data_length = self
+            .data_length
+            .ok_or(FluentBuildError::MissingRngRetrieveDataLength)?;
+        let request = RngRetrieveRequest::new(data_length);
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the required Data Length and existing typed request rules.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngRetrieveDataLength`] when Data
+    /// Length is absent, or [`FluentBuildError::InvalidRequest`] when the
+    /// typed request rejects the supplied values.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.typed_request().map(drop)
+    }
+
+    /// Builds the existing typed RNG Retrieve request.
+    ///
+    /// # Errors
+    /// Returns a build error when Data Length is absent or typed validation
+    /// fails.
+    pub fn build(self) -> Result<RngRetrieveRequest, FluentBuildError> {
+        self.typed_request()
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns a build error when Data Length is absent or typed validation
+    /// fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::rng_retrieve(
+            self.build()?,
+        )))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .typed_request()
+            .map_err(fluent_client_validation_error)?;
+        self.execution
+            .run(ClientRequest::rng_retrieve(request), limits)
+    }
+}
+
+/// A fluent RNG Seed builder for OASIS KMIP v2.1 §6.1.50, Tables 319–321.
+/// Caller Data is kept in the existing zeroizing secret owner.
+pub struct RngSeedBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    data: Option<SecretBytes>,
+}
+
+impl<'a> RngSeedBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            data: None,
+        }
+    }
+
+    /// Moves caller-supplied seed bytes into `KMIPKit`'s zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: SecretBytes) -> Self {
+        self.data = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates that the required secret Data was supplied.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.data
+            .as_ref()
+            .map(|_| ())
+            .ok_or(FluentBuildError::MissingRngSeedData)
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(RngSeedRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let data = self.data.ok_or(FluentBuildError::MissingRngSeedData)?;
+        Ok((RngSeedRequest::new(data), self.execution))
+    }
+
+    /// Builds the existing typed RNG Seed request.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn build(self) -> Result<RngSeedRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _execution)| request)
+    }
+
+    /// Converts the request to a typed batch item without sending it.
+    ///
+    /// # Errors
+    /// Returns [`FluentBuildError::MissingRngSeedData`] when Data is absent.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::rng_seed(self.build()?)))
+    }
+
+    /// Executes at most one exchange through the existing typed client path.
+    ///
+    /// Pending remains explicit; this builder does not poll or retry.
+    ///
+    /// # Errors
+    /// Returns the existing sanitized validation, protocol, or transport error
+    /// with its request-delivery evidence.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::rng_seed(request), limits)
+    }
+}
+
+struct FluentBuilderExecution<'a> {
     client: &'a mut Client,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
 }
 
-impl<'a> CryptoBuilderExecution<'a> {
+impl<'a> FluentBuilderExecution<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             client,
@@ -414,14 +1543,14 @@ impl<'a> CryptoBuilderExecution<'a> {
 // Byte conversion and validation live here so each public facade follows the
 // same ownership and execution rules without duplicating that logic.
 struct CryptoRequestState<'a, R> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     request: R,
 }
 
 impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
     fn new(client: &'a mut Client, request: R) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             request,
         }
     }
@@ -443,7 +1572,7 @@ impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
         self.field(SecretBytes::new(value), setter)
     }
 
-    fn into_parts(self) -> Result<(R, CryptoBuilderExecution<'a>), FluentBuildError> {
+    fn into_parts(self) -> Result<(R, FluentBuilderExecution<'a>), FluentBuildError> {
         validate_fluent_request(&self.request)?;
         Ok((self.request, self.execution))
     }
@@ -656,14 +1785,14 @@ impl CipherBuilderCore {
 
 /// A fluent builder for a typed KMIP Encrypt request.
 pub struct EncryptBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     core: CipherBuilderCore,
 }
 
 impl<'a> EncryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             core: CipherBuilderCore::new(),
         }
     }
@@ -752,7 +1881,7 @@ impl<'a> EncryptBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(EncryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(EncryptRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self { execution, core } = self;
         let request = core.into_request(&CipherRequestAdapter {
             new: EncryptRequest::new,
@@ -803,7 +1932,7 @@ impl<'a> EncryptBuilder<'a> {
 
 /// A fluent builder for a typed KMIP Decrypt request.
 pub struct DecryptBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     core: CipherBuilderCore,
     authenticated_encryption_tag: Option<SecretBytes>,
 }
@@ -811,7 +1940,7 @@ pub struct DecryptBuilder<'a> {
 impl<'a> DecryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             core: CipherBuilderCore::new(),
             authenticated_encryption_tag: None,
         }
@@ -908,7 +2037,7 @@ impl<'a> DecryptBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(DecryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(DecryptRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self {
             execution,
             core,
@@ -1061,7 +2190,7 @@ impl<'a> SignBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(SignRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(SignRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1212,7 +2341,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(SignatureVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(SignatureVerifyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1337,7 +2466,7 @@ impl<'a> MacBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(MacRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(MacRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1477,7 +2606,7 @@ impl<'a> MacVerifyBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(MacVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(MacVerifyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         self.state.into_parts()
     }
 
@@ -1516,7 +2645,7 @@ impl<'a> MacVerifyBuilder<'a> {
 
 /// A fluent builder for a typed KMIP Hash request.
 pub struct HashBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
+    execution: FluentBuilderExecution<'a>,
     fields: CryptoRequestFields,
 }
 
@@ -1529,7 +2658,7 @@ impl CryptoFieldsOwner for HashBuilder<'_> {
 impl<'a> HashBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
-            execution: CryptoBuilderExecution::new(client),
+            execution: FluentBuilderExecution::new(client),
             fields: CryptoRequestFields::default(),
         }
     }
@@ -1598,7 +2727,7 @@ impl<'a> HashBuilder<'a> {
 
     fn into_request_and_execution(
         self,
-    ) -> Result<(HashRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+    ) -> Result<(HashRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self { execution, fields } = self;
         let CryptoRequestFields {
             data,
@@ -1960,6 +3089,12 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     pub const fn usage_mask(mut self, usage_mask: CryptographicUsageMask) -> Self {
         self.usage_mask = Some(usage_mask);
         self
+    }
+
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn usage_mask_bits(self, bits: i32) -> Self {
+        self.usage_mask(CryptographicUsageMask::from_raw(bits))
     }
 
     /// Selects AES with a 128-bit key; usage policy remains explicit.
@@ -2490,6 +3625,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
 /// A Create Key Pair builder with independent common and key-specific attributes.
 pub struct CreateKeyPairBuilder<'a> {
     client: Option<&'a mut Client>,
+    seed: Option<SecretBytes>,
     algorithm: Option<CryptographicAlgorithm>,
     length: Option<i32>,
     private_usage_mask: Option<CryptographicUsageMask>,
@@ -2508,6 +3644,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
     fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
+            seed: None,
             algorithm: None,
             length: None,
             private_usage_mask: None,
@@ -2533,6 +3670,13 @@ impl<'a> CreateKeyPairBuilder<'a> {
         Self::new(None)
     }
 
+    /// Supplies the optional KMIP 3.0 key-generation Seed.
+    #[must_use]
+    pub fn seed(mut self, seed: SecretBytes) -> Self {
+        self.seed = Some(seed);
+        self
+    }
+
     /// Selects an explicit common KMIP Cryptographic Algorithm.
     #[must_use]
     pub const fn algorithm(mut self, algorithm: CryptographicAlgorithm) -> Self {
@@ -2554,11 +3698,23 @@ impl<'a> CreateKeyPairBuilder<'a> {
         self
     }
 
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn private_usage_mask_bits(self, bits: i32) -> Self {
+        self.private_usage_mask(CryptographicUsageMask::from_raw(bits))
+    }
+
     /// Selects an explicit public key Cryptographic Usage Mask.
     #[must_use]
     pub const fn public_usage_mask(mut self, usage_mask: CryptographicUsageMask) -> Self {
         self.public_usage_mask = Some(usage_mask);
         self
+    }
+
+    /// Sets the raw KMIP Cryptographic Usage Mask bits.
+    #[must_use]
+    pub const fn public_usage_mask_bits(self, bits: i32) -> Self {
+        self.public_usage_mask(CryptographicUsageMask::from_raw(bits))
     }
 
     /// Adds a private key Name using Uninterpreted Text String.
@@ -2740,6 +3896,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
         if !public.is_empty() {
             request = request.with_public_key_attributes(public);
         }
+        if let Some(seed) = &self.seed {
+            request = request.with_seed(seed.with_bytes(|bytes| SecretBytes::new(bytes.to_vec())));
+        }
         if !request.validate().is_valid() {
             return Err(FluentBuildError::InvalidRequest);
         }
@@ -2856,6 +4015,65 @@ impl GetBuilder<'_> {
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
         self.asynchronous_indicator = Some(value);
         self
+    }
+
+    /// Selects the object identifier. Leaving it unset uses the KMIP ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets the requested Key Format Type.
+    #[must_use]
+    pub fn key_format_type(mut self, value: KeyFormatType) -> Self {
+        self.request = self.request.with_key_format_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_format_type_code(self, value: u32) -> Self {
+        self.key_format_type(KeyFormatType::from_raw(value))
+    }
+
+    /// Sets the requested Key Wrap Type.
+    #[must_use]
+    pub fn key_wrap_type(mut self, value: KeyWrapType) -> Self {
+        self.request = self.request.with_key_wrap_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_wrap_type_code(self, value: u32) -> Self {
+        self.key_wrap_type(KeyWrapType::from_raw(value))
+    }
+
+    /// Sets the requested Key Compression Type.
+    #[must_use]
+    pub fn key_compression_type(mut self, value: KeyCompressionType) -> Self {
+        self.request = self.request.with_key_compression_type(value);
+        self
+    }
+
+    /// Sets the original KMIP code, including extension values.
+    #[must_use]
+    pub fn key_compression_type_code(self, value: u32) -> Self {
+        self.key_compression_type(KeyCompressionType::from_raw(value))
+    }
+
+    /// Sets the optional Key Wrapping Specification.
+    #[must_use]
+    pub fn key_wrapping_specification(mut self, value: Structure) -> Self {
+        self.request = self.request.with_key_wrapping_specification(value);
+        self
+    }
+
+    /// Checks the request payload locally using the same validator as execution.
+    #[must_use]
+    pub fn validate(&self) -> ValidationReport {
+        self.request.validate()
     }
 
     /// Builds the existing typed Get request without sending it.
@@ -4310,25 +5528,7 @@ impl<'a> LocateBuilder<'a> {
     /// Sets the complete ordered Attributes filter set.
     #[must_use]
     pub fn attributes(mut self, attributes: AttributeSet) -> Self {
-        let maximum_items = self.request.maximum_items();
-        let offset_items = self.request.offset_items();
-        let storage_status_mask = self.request.storage_status_mask();
-        let object_group_member = self.request.object_group_member();
-
-        let mut request = LocateRequest::new(attributes);
-        if let Some(value) = maximum_items {
-            request = request.with_maximum_items(value);
-        }
-        if let Some(value) = offset_items {
-            request = request.with_offset_items(value);
-        }
-        if let Some(value) = storage_status_mask {
-            request = request.with_storage_status_mask(value);
-        }
-        if let Some(value) = object_group_member {
-            request = request.with_object_group_member(value);
-        }
-        self.request = request;
+        self.request = self.request.with_attributes(attributes);
         self
     }
 
@@ -4357,6 +5557,13 @@ impl<'a> LocateBuilder<'a> {
     #[must_use]
     pub fn object_group_member(mut self, value: ObjectGroupMember) -> Self {
         self.request = self.request.with_object_group_member(value);
+        self
+    }
+
+    /// Sets the KMIP 3.0 Object Class Mask filter.
+    #[must_use]
+    pub fn object_class_mask(mut self, value: ObjectClassMask) -> Self {
+        self.request = self.request.with_object_class_mask(value);
         self
     }
 
@@ -5132,3 +6339,1191 @@ impl From<AttributeSetError> for FluentBuildError {
         Self::InvalidAttributeValue
     }
 }
+
+/// A fluent builder for typed Check requests.
+pub struct CheckBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+    cryptographic_usage_mask: Option<i32>,
+    lease_time: Option<u32>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> CheckBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            usage_limits_count: None,
+            cryptographic_usage_mask: None,
+            lease_time: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional object identifier. Omit it only when the request is
+    /// placed in an ordered batch whose preceding operation produces the
+    /// intended ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets the optional requested Usage Limits count.
+    #[must_use]
+    pub const fn usage_limits_count(mut self, value: i64) -> Self {
+        self.usage_limits_count = Some(value);
+        self
+    }
+
+    /// Sets the optional raw Cryptographic Usage Mask, preserving unknown bits.
+    #[must_use]
+    pub const fn cryptographic_usage_mask(mut self, value: i32) -> Self {
+        self.cryptographic_usage_mask = Some(value);
+        self
+    }
+
+    /// Sets the optional requested Lease Time interval.
+    #[must_use]
+    pub const fn lease_time(mut self, value: u32) -> Self {
+        self.lease_time = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates the typed Check request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&check_request(
+            self.unique_identifier.clone(),
+            self.usage_limits_count,
+            self.cryptographic_usage_mask,
+            self.lease_time,
+        ))
+    }
+
+    /// Builds the existing typed Check request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn build(self) -> Result<CheckRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn build_request(self) -> Result<CheckRequest, FluentBuildError> {
+        let request = check_request(
+            self.unique_identifier,
+            self.usage_limits_count,
+            self.cryptographic_usage_mask,
+            self.lease_time,
+        );
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Check to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Check(request)))
+    }
+
+    /// Executes one Check exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if request
+    /// validation fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            usage_limits_count,
+            cryptographic_usage_mask,
+            lease_time,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = check_request(
+            unique_identifier,
+            usage_limits_count,
+            cryptographic_usage_mask,
+            lease_time,
+        );
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Check(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn check_request(
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+    cryptographic_usage_mask: Option<i32>,
+    lease_time: Option<u32>,
+) -> CheckRequest {
+    let mut request = CheckRequest::new();
+    if let Some(unique_identifier) = unique_identifier {
+        request = request.with_unique_identifier(unique_identifier);
+    }
+    if let Some(usage_limits_count) = usage_limits_count {
+        request = request.with_usage_limits_count(usage_limits_count);
+    }
+    if let Some(cryptographic_usage_mask) = cryptographic_usage_mask {
+        request = request.with_cryptographic_usage_mask(cryptographic_usage_mask);
+    }
+    if let Some(lease_time) = lease_time {
+        request = request.with_lease_time(lease_time);
+    }
+    request
+}
+
+/// A fluent builder for typed Query requests.
+pub struct QueryBuilder<'a> {
+    client: &'a mut Client,
+    functions: Vec<QueryFunction>,
+    object_groups: Option<Vec<String>>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> QueryBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            functions: Vec::new(),
+            object_groups: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the ordered Query Functions explicitly.
+    #[must_use]
+    pub fn functions(mut self, value: Vec<QueryFunction>) -> Self {
+        self.functions = value;
+        self
+    }
+
+    /// Sets ordered Object Group text values without deduplication.
+    #[must_use]
+    pub fn object_groups(mut self, value: Vec<String>) -> Self {
+        self.object_groups = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates the Query functions and typed request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an empty or invalid function
+    /// list, or another typed request validation failure.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let request = query_request(self.functions.clone(), self.object_groups.clone());
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed Query request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an empty or invalid function
+    /// list, or another typed request validation failure.
+    pub fn build(self) -> Result<QueryRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an empty or invalid function
+    /// list, or another typed request validation failure.
+    pub fn build_request(self) -> Result<QueryRequest, FluentBuildError> {
+        let request = query_request(self.functions, self.object_groups);
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Query to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error when the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Query(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if the request is
+    /// invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            functions,
+            object_groups,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = query_request(functions, object_groups);
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Query(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn query_request(
+    functions: Vec<QueryFunction>,
+    object_groups: Option<Vec<String>>,
+) -> QueryRequest {
+    let request = QueryRequest::new(functions);
+    match object_groups {
+        Some(groups) => request.with_object_groups(groups),
+        None => request,
+    }
+}
+
+/// A fluent builder for typed Discover Versions requests.
+pub struct DiscoverVersionsBuilder<'a> {
+    client: &'a mut Client,
+    protocol_versions: Option<Vec<ProtocolVersion>>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> DiscoverVersionsBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            protocol_versions: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the explicit ordered protocol versions to offer.
+    ///
+    /// An empty list is rejected by local validation. When this method is
+    /// omitted, the existing request's KMIP 2.1 default is used.
+    #[must_use]
+    pub fn protocol_versions(mut self, value: Vec<ProtocolVersion>) -> Self {
+        self.protocol_versions = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates the offered versions without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidProtocolVersions`] for an empty or
+    /// uncatalogued explicit offer, or a sanitized protocol construction error.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let request = discover_versions_request(self.protocol_versions.clone())?;
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed Discover Versions request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidProtocolVersions`] for an empty or
+    /// uncatalogued explicit offer, or a sanitized protocol construction error.
+    pub fn build(self) -> Result<DiscoverVersionsRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidProtocolVersions`] for an empty or
+    /// uncatalogued explicit offer, or a sanitized protocol construction error.
+    pub fn build_request(self) -> Result<DiscoverVersionsRequest, FluentBuildError> {
+        let request = discover_versions_request(self.protocol_versions)?;
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Discover Versions to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error when the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::DiscoverVersions(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if the offer is
+    /// invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            protocol_versions,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request =
+            discover_versions_request(protocol_versions).map_err(fluent_client_validation_error)?;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::DiscoverVersions(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn discover_versions_request(
+    protocol_versions: Option<Vec<ProtocolVersion>>,
+) -> Result<DiscoverVersionsRequest, FluentBuildError> {
+    match protocol_versions {
+        Some(versions) => DiscoverVersionsRequest::with_versions(versions)
+            .map_err(|_| FluentBuildError::InvalidProtocolVersions),
+        None => Ok(DiscoverVersionsRequest::new()),
+    }
+}
+
+/// A fluent builder for Get Usage Allocation requests.
+/// A fluent builder for the existing typed Obtain Lease request.
+pub struct ObtainLeaseBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<UniqueIdentifier>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> ObtainLeaseBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects the object by its explicit identifier.
+    ///
+    /// Omit this field only when the request is part of an ordered batch whose
+    /// preceding operation supplies the intended ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates the typed Obtain Lease request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validated_obtain_lease_request(self.unique_identifier.clone()).map(|_| ())
+    }
+
+    /// Builds the existing typed Obtain Lease request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn build(self) -> Result<ObtainLeaseRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn build_request(self) -> Result<ObtainLeaseRequest, FluentBuildError> {
+        validated_obtain_lease_request(self.unique_identifier)
+    }
+
+    /// Converts Obtain Lease to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::ObtainLease(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if validation
+    /// fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = validated_obtain_lease_request(unique_identifier)
+            .map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::ObtainLease(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn obtain_lease_request(unique_identifier: Option<UniqueIdentifier>) -> ObtainLeaseRequest {
+    match unique_identifier {
+        Some(unique_identifier) => {
+            ObtainLeaseRequest::new().with_unique_identifier(unique_identifier)
+        }
+        None => ObtainLeaseRequest::new(),
+    }
+}
+
+fn validated_obtain_lease_request(
+    unique_identifier: Option<UniqueIdentifier>,
+) -> Result<ObtainLeaseRequest, FluentBuildError> {
+    let request = obtain_lease_request(unique_identifier);
+    validate_fluent_request(&request)?;
+    Ok(request)
+}
+
+/// A fluent builder for the empty typed Get Constraints request.
+fn copy_new_attribute(attribute: &NewAttribute) -> Result<NewAttribute, FluentBuildError> {
+    attribute
+        .item()
+        .try_clone()
+        .map(NewAttribute::new)
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)
+}
+
+fn copy_adjustment_value(
+    value: &AttributeAdjustmentValue,
+) -> Result<AttributeAdjustmentValue, FluentBuildError> {
+    value.try_clone()
+}
+
+/// A fluent builder for the existing typed Modify Attribute request.
+pub struct ModifyAttributeBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<String>,
+    current_attribute: Option<CurrentAttribute>,
+    new_attribute: Option<NewAttribute>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> ModifyAttributeBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            current_attribute: None,
+            new_attribute: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional KMIP Unique Identifier as caller-supplied text.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets the optional typed Current Attribute selector.
+    #[must_use]
+    pub fn current_attribute(mut self, value: CurrentAttribute) -> Self {
+        self.current_attribute = Some(value);
+        self
+    }
+
+    /// Sets the required typed New Attribute.
+    #[must_use]
+    pub fn new_attribute(mut self, value: NewAttribute) -> Self {
+        self.new_attribute = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates completeness and protocol constraints without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an absent New Attribute,
+    /// an invalid typed request, or a value that cannot be copied safely.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let new_attribute = self
+            .new_attribute
+            .as_ref()
+            .ok_or(FluentBuildError::MissingModifyAttributeValue)?;
+        let current_attribute = self
+            .current_attribute
+            .as_ref()
+            .map(|attribute| {
+                attribute
+                    .item()
+                    .try_clone()
+                    .map(CurrentAttribute::new)
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)
+            })
+            .transpose()?;
+        let request = ModifyAttributeRequest::new(
+            self.unique_identifier.clone(),
+            current_attribute,
+            copy_new_attribute(new_attribute)?,
+        );
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed KMIP request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an absent New Attribute
+    /// or a request rejected by the existing protocol validator.
+    pub fn build(self) -> Result<ModifyAttributeRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an absent New Attribute
+    /// or a request rejected by the existing protocol validator.
+    pub fn build_request(self) -> Result<ModifyAttributeRequest, FluentBuildError> {
+        let new_attribute = self
+            .new_attribute
+            .ok_or(FluentBuildError::MissingModifyAttributeValue)?;
+        let request = ModifyAttributeRequest::new(
+            self.unique_identifier,
+            self.current_attribute,
+            new_attribute,
+        );
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts this request to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error when the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::ModifyAttribute(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport when the request
+    /// is invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            current_attribute,
+            new_attribute,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let new_attribute = new_attribute
+            .ok_or(FluentBuildError::MissingModifyAttributeValue)
+            .map_err(fluent_client_validation_error)?;
+        let request =
+            ModifyAttributeRequest::new(unique_identifier, current_attribute, new_attribute);
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::ModifyAttribute(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for the existing typed Adjust Attribute request.
+pub struct AdjustAttributeBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<String>,
+    attribute_reference: Option<AttributeReference>,
+    adjustment_type: Option<AdjustmentType>,
+    adjustment_value: Option<AttributeAdjustmentValue>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> AdjustAttributeBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            attribute_reference: None,
+            adjustment_type: None,
+            adjustment_value: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional KMIP Unique Identifier as caller-supplied text.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets the required explicit Attribute Reference.
+    #[must_use]
+    pub fn attribute_reference(mut self, value: AttributeReference) -> Self {
+        self.attribute_reference = Some(value);
+        self
+    }
+
+    /// Sets the required Adjustment Type without choosing a default.
+    #[must_use]
+    pub const fn adjustment_type(mut self, value: AdjustmentType) -> Self {
+        self.adjustment_type = Some(value);
+        self
+    }
+
+    /// Sets the optional caller-supplied TTLV Adjustment Value.
+    #[must_use]
+    pub fn adjustment_value(mut self, value: AttributeAdjustmentValue) -> Self {
+        self.adjustment_value = Some(value);
+        self
+    }
+
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
+
+    /// Validates completeness and protocol constraints without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for a missing required field, an
+    /// invalid typed request, or a value that cannot be copied safely.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let attribute_reference = self
+            .attribute_reference
+            .as_ref()
+            .ok_or(FluentBuildError::MissingAdjustAttributeReference)?;
+        let adjustment_type = self
+            .adjustment_type
+            .ok_or(FluentBuildError::MissingAdjustAttributeType)?;
+        let adjustment_value = self
+            .adjustment_value
+            .as_ref()
+            .map(copy_adjustment_value)
+            .transpose()?;
+        let request = AdjustAttributeRequest::new(
+            self.unique_identifier.clone(),
+            attribute_reference.clone(),
+            adjustment_type,
+            adjustment_value.map(AttributeAdjustmentValue::into_value),
+        );
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed KMIP request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for a missing required field or
+    /// a request rejected by the existing protocol validator.
+    pub fn build(self) -> Result<AdjustAttributeRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Compatibility alias for [`Self::build`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for a missing required field or
+    /// a request rejected by the existing protocol validator.
+    pub fn build_request(self) -> Result<AdjustAttributeRequest, FluentBuildError> {
+        let attribute_reference = self
+            .attribute_reference
+            .ok_or(FluentBuildError::MissingAdjustAttributeReference)?;
+        let adjustment_type = self
+            .adjustment_type
+            .ok_or(FluentBuildError::MissingAdjustAttributeType)?;
+        let request = AdjustAttributeRequest::new(
+            self.unique_identifier,
+            attribute_reference,
+            adjustment_type,
+            self.adjustment_value
+                .map(AttributeAdjustmentValue::into_value),
+        );
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts this request to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error when the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::AdjustAttribute(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport when the request
+    /// is invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            attribute_reference,
+            adjustment_type,
+            adjustment_value,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let attribute_reference = attribute_reference
+            .ok_or(FluentBuildError::MissingAdjustAttributeReference)
+            .map_err(fluent_client_validation_error)?;
+        let adjustment_type = adjustment_type
+            .ok_or(FluentBuildError::MissingAdjustAttributeType)
+            .map_err(fluent_client_validation_error)?;
+        let request = AdjustAttributeRequest::new(
+            unique_identifier,
+            attribute_reference,
+            adjustment_type,
+            adjustment_value.map(AttributeAdjustmentValue::into_value),
+        );
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::AdjustAttribute(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for an existing typed Activate request.
+struct Kmip30BuilderExecution<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> Kmip30BuilderExecution<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    fn execute(
+        self,
+        request: ClientRequest,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        execute_fluent_request(
+            self.client,
+            request,
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
+}
+
+trait Kmip30BuilderParts<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest);
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a>;
+}
+
+macro_rules! impl_kmip30_builder_methods {
+    ($builder:ident) => {
+        impl<'a> $builder<'a> {
+            /// Sets one-exchange options, including a caller-selected protocol version.
+            #[must_use]
+            pub fn with_options(mut self, options: RequestOptions) -> Self {
+                self.execution().options = Some(options);
+                self
+            }
+
+            /// Sets the Request Header Asynchronous Indicator for this exchange.
+            #[must_use]
+            pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+                self.execution().asynchronous_indicator = Some(value);
+                self
+            }
+
+            /// Validates the semantic inputs held by the builder without sending.
+            /// The selected protocol version and typed request are checked again before transport.
+            ///
+            /// # Errors
+            ///
+            /// This operation currently has no local failure case because the
+            /// builder accepts only required, already typed request fields.
+            pub fn validate(&self) -> Result<(), FluentBuildError> {
+                Ok(())
+            }
+
+            /// Builds the existing typed request variant.
+            #[must_use]
+            pub fn build(self) -> ClientRequest {
+                self.into_parts().1
+            }
+
+            /// Converts the request to one typed batch item for explicit batching.
+            #[must_use]
+            pub fn to_batch_item(self) -> ClientBatchItem {
+                let (_, request) = self.into_parts();
+                ClientBatchItem::new(request)
+            }
+
+            /// Executes exactly one typed exchange.
+            ///
+            /// # Errors
+            /// Returns the existing local validation, version, transport, or response error.
+            pub fn execute(
+                self,
+                limits: &kmipkit_ttlv::codec::CodecLimits,
+            ) -> Result<ClientBatchItemResponse, ClientError> {
+                let (execution, request) = self.into_parts();
+                execution.execute(request, limits)
+            }
+        }
+    };
+}
+
+/// A KMIP 3.0 Create Credential fluent builder.
+pub struct CreateCredentialBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+    object: CreateCredentialObject,
+}
+
+impl<'a> CreateCredentialBuilder<'a> {
+    fn new(
+        client: &'a mut Client,
+        attributes: AttributeSet,
+        object: CreateCredentialObject,
+    ) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+            object,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateCredentialBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_credential(CreateCredentialRequest::new(
+                self.attributes,
+                self.object,
+            )),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateCredentialBuilder);
+
+/// A KMIP 3.0 Create Group fluent builder.
+pub struct CreateGroupBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+}
+impl<'a> CreateGroupBuilder<'a> {
+    fn new(client: &'a mut Client, attributes: AttributeSet) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateGroupBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_group(CreateGroupRequest::new(self.attributes)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateGroupBuilder);
+
+/// A KMIP 3.0 Create User fluent builder.
+pub struct CreateUserBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+}
+impl<'a> CreateUserBuilder<'a> {
+    fn new(client: &'a mut Client, attributes: AttributeSet) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateUserBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_user(CreateUserRequest::new(self.attributes)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateUserBuilder);
+
+/// A KMIP 3.0 Deactivate fluent builder.
+pub struct DeactivateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    reason: Option<Structure>,
+    date: Option<i64>,
+}
+impl<'a> DeactivateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            reason: None,
+            date: None,
+        }
+    }
+    /// Sets the optional typed Deactivation Reason Structure.
+    #[must_use]
+    pub fn deactivation_reason(mut self, reason: Structure) -> Self {
+        self.reason = Some(reason);
+        self
+    }
+    /// Sets the optional Deactivation Date as seconds since the Unix epoch.
+    #[must_use]
+    pub const fn deactivation_date(mut self, unix_seconds: i64) -> Self {
+        self.date = Some(unix_seconds);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for DeactivateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = DeactivateRequest::new(self.unique_identifier);
+        if let Some(reason) = self.reason {
+            request = request.with_deactivation_reason(reason);
+        }
+        if let Some(date) = self.date {
+            request = request.with_deactivation_date(date);
+        }
+        (self.execution, ClientRequest::deactivate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(DeactivateBuilder);
+
+/// A KMIP 3.0 Decapsulate fluent builder.
+pub struct DecapsulateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    ciphertext: Vec<u8>,
+    parameters: Option<CryptographicParameters>,
+    attributes: Option<AttributeSet>,
+}
+impl<'a> DecapsulateBuilder<'a> {
+    fn new(
+        client: &'a mut Client,
+        unique_identifier: UniqueIdentifier,
+        ciphertext: Vec<u8>,
+    ) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            ciphertext,
+            parameters: None,
+            attributes: None,
+        }
+    }
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.parameters = Some(value);
+        self
+    }
+    /// Sets the optional prevalidated ordered Attribute Set.
+    #[must_use]
+    pub fn attributes(mut self, value: AttributeSet) -> Self {
+        self.attributes = Some(value);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for DecapsulateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = DecapsulateRequest::new(self.unique_identifier, self.ciphertext);
+        if let Some(value) = self.parameters {
+            request = request.with_typed_cryptographic_parameters(value);
+        }
+        if let Some(value) = self.attributes {
+            request = request.with_attributes(value);
+        }
+        (self.execution, ClientRequest::decapsulate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(DecapsulateBuilder);
+
+/// A KMIP 3.0 Encapsulate fluent builder.
+pub struct EncapsulateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    parameters: Option<CryptographicParameters>,
+    attributes: Option<AttributeSet>,
+}
+impl<'a> EncapsulateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            parameters: None,
+            attributes: None,
+        }
+    }
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.parameters = Some(value);
+        self
+    }
+    /// Sets the optional prevalidated ordered Attribute Set.
+    #[must_use]
+    pub fn attributes(mut self, value: AttributeSet) -> Self {
+        self.attributes = Some(value);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for EncapsulateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = EncapsulateRequest::new(self.unique_identifier);
+        if let Some(value) = self.parameters {
+            request = request.with_typed_cryptographic_parameters(value);
+        }
+        if let Some(value) = self.attributes {
+            request = request.with_attributes(value);
+        }
+        (self.execution, ClientRequest::encapsulate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(EncapsulateBuilder);
+
+/// A KMIP 3.0 Obliterate fluent builder.
+pub struct ObliterateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+}
+impl<'a> ObliterateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for ObliterateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::obliterate(ObliterateRequest::new(self.unique_identifier)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(ObliterateBuilder);

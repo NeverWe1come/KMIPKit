@@ -1,5 +1,5 @@
 //! Project-derived checks for the explicit local guard in OASIS KMIP
-//! Specification v2.1 §6.1.23 and approved interpretation KMIPKIT-025-FR-009.
+//! Specification v2.1 §6.1.23 and approved interpretation the protocol specification.
 //! These are not official OASIS test cases.
 
 use kmipkit_protocol::{

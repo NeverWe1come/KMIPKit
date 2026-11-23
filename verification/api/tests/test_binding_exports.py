@@ -145,6 +145,48 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertFalse(missing_macro["matchesManifest"])
         self.assertEqual(missing_macro["header"]["counts"]["notObserved"], 1)
 
+    def test_c_package_audits_both_base_and_fluent_symbols(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            include = root / "bindings" / "c" / "include"
+            include.mkdir(parents=True)
+            (include / "kmipkit.h").write_text("int kmipkit_probe(void);\n", encoding="utf-8")
+            (include / "kmipkit_fluent.h").write_text(
+                "#ifndef KMIPKIT_FLUENT_H\n"
+                "#define KMIPKIT_FLUENT_H\n"
+                "#if !defined(KMIPKIT_H) && !defined(KMIPKIT_INTERNAL_H)\n"
+                '#include "kmipkit.h"\n'
+                "#endif\n"
+                "int kmipkit_probe_builder_create(void);\n"
+                "#endif\n",
+                encoding="utf-8",
+            )
+            manifest = {
+                "publicDeclarations": [
+                    {
+                        "packageId": "c-kmipkit",
+                        "kind": "c-symbol",
+                        "exportName": "kmipkit_probe",
+                        "declarationState": "verified",
+                    },
+                ],
+            }
+            binary = root / "kmipkit_ffi.dll"
+            exports = ["kmipkit_probe", "kmipkit_probe_builder_create"]
+            with patch.object(AUDIT, "read_native_exports", return_value=exports):
+                report = AUDIT.audit_c_package(root, manifest, binary)
+            with patch.object(
+                AUDIT, "read_native_exports", return_value=[*exports, "kmipkit_hidden_builder_create"]
+            ):
+                unexpected = AUDIT.audit_c_package(root, manifest, binary)
+
+        self.assertTrue(report["matchesManifest"], report)
+        self.assertFalse(unexpected["matchesManifest"])
+        self.assertIn(
+            ("kmipkit_hidden_builder_create", "exported-symbol-missing-from-header"),
+            {(issue["exportName"], issue["reason"]) for issue in unexpected["issues"]},
+        )
+
     def test_java_classpath_resolution_uses_bash_for_posix_gradle_wrapper(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

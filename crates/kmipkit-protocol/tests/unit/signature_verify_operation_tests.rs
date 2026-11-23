@@ -2,7 +2,7 @@
 //! Tables 337–339; Validity Indicator values follow §11.61. These tests are
 //! not official Test Case executions.
 //!
-//! Traceability: FR-001, FR-005–FR-013, FR-015, and
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY`.
 
 use crate::async_operation_fixtures::response_message;

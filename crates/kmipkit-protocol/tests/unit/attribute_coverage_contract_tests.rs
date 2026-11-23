@@ -1,5 +1,5 @@
 //! Exercise public attribute diagnostics and generic value-copy paths.
-//! Traceability: functional requirement/FR-011/FR-013 and SC-001/SC-005.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::error::Error;
 use std::fmt::Debug;

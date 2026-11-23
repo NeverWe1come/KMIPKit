@@ -2,7 +2,7 @@
 
 //! Derived Delete Attribute request/response vectors for OASIS KMIP v2.1
 //! §6.1.13, Tables 202–204, and §5.6, Table 162. Traceability:
-//! functional requirement/FR-010 and SC-002/SC-003.
+//! the specification requirements.
 //! These derived vectors do not claim that an official OASIS case passed.
 
 use crate::{

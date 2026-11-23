@@ -1,6 +1,6 @@
 //! Typed client outcome coverage derived from KMIP v2.1 §6.1.11 Table 197
 //! (Decrypt), §6.1.17 Table 215 (Encrypt), §9.17 (Result Message), and §9.18
-//! (Result Reason). Traceability: functional requirement, FR-007, FR-008, and
+//! (Result Reason). Verifies protocol model, request/response validation, and security invariants.
 //! KMIP-REQ-SPEC-6.1-001-002. UID-only success complements the fixture
 //! round trips in `encrypt_decrypt_fixture_execution_tests`; Pending routing
 //! is covered for both operations in `encrypt_decrypt_multipart_execution_tests`.

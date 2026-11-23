@@ -3,9 +3,9 @@
 //! Structure field order follows §10.1.2. Unknown member preservation and raw
 //! Enumeration values are project API compatibility requirements.
 //!
-//! Traceability: functional requirement–FR-005; SC-002, SC-005; the 18
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-STRUCTURE-MEMBER-4-16-*` IDs in
-//! `component specification/traceability.md`.
+//! the protocol architecture documentation.
 
 use kmipkit_protocol::{CryptographicParameters, CryptographicParametersBuilder};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};

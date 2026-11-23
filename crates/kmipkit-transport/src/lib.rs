@@ -233,10 +233,10 @@ pub mod listener;
 mod raw_tls;
 mod response;
 mod secret;
-// T019 exercises this private builder before T023 connects production adapters.
+// the implementation exercises this private builder before the implementation connects production adapters.
 #[allow(dead_code)]
 mod tls;
-// T010 introduces the private timeout seam before later adapter tasks consume it.
+// the implementation introduces the private timeout seam before later adapter tasks consume it.
 #[cfg(test)]
 #[path = "../tests/unit/https_transport_tests.rs"]
 mod https_transport_tests;

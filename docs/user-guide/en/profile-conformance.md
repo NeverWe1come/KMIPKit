@@ -97,7 +97,7 @@ specification's conformance requirement.
 
 The Baseline Client catalog state is `evidence_incomplete`. All 16 linked
 Baseline and Shared Knowledge Link mandatory official fixtures are pinned.
-T036 records 10 full deterministic `BL-M` replays, 3 full `SKLC-M` replays,
+The conformance replay suite records 10 full deterministic `BL-M` replays, 3 full `SKLC-M` replays,
 and 3 typed preflight blockers. Profiles v2.1 §6.1 item 4 requires support for
 one or more cases from §§5.1.3 and 5.6.3, not every linked case; the three
 blockers remain visible but do not alone invalidate that minimum. Separately,
@@ -144,7 +144,7 @@ caller-owned client recommendation; the application should choose and preserve
 the intended single usage. KMIPKit does not inspect remote object state or
 enforce the usage count. The mandatory Hashed Password Timestamp monotonicity
 requirement (§9.11) is mapped to a caller-owned sequence helper under the
-resolved the credentials and attestation model OD-003 decision. It requires strictly increasing
+credentials and attestation design. It requires strictly increasing
 caller-supplied timestamps per Username and logical credential producer; the
 application manages persistence across restarts. The helper does not compute
 hashes or send credentials, and the mapping does not establish wire ordering

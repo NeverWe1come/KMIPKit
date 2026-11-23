@@ -1,7 +1,7 @@
 //! Lifecycle tests for response fixtures owned by the deterministic fake.
 //! These are test-support project-policy tests, not OASIS conformance vectors.
 //!
-//! Traceability: `functional requirement`, `-SC-009`; low-level transport exchange contract; OASIS KMIP v2.1
+//! Verifies protocol model, request/response validation, and security invariants.
 //! §9.12, Table 417 for bounded fake exchange behavior.
 
 use kmipkit_test_support::{ExchangeScript, ResponseDropObserver, ScriptedTransport};

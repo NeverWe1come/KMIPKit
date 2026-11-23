@@ -1,5 +1,6 @@
 package org.kmipkit.fluent;
 
+import org.kmipkit.protocol.KeyUsage;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatch;
@@ -59,12 +60,22 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Selects named KMIP key usage flags. */
+    public CreateKeyPairBuilder privateUsageMask(KeyUsage... flags) {
+        return privateUsageMask(KeyUsage.mask(flags));
+    }
+
     public CreateKeyPairBuilder privateUsageMask(int mask) {
         handle.withValue(builder -> {
             NativeFluentRegistry.createKeyPairBuilderSetPrivateUsageMask(builder, mask);
             return null;
         });
         return this;
+    }
+
+    /** Selects named KMIP key usage flags. */
+    public CreateKeyPairBuilder publicUsageMask(KeyUsage... flags) {
+        return publicUsageMask(KeyUsage.mask(flags));
     }
 
     public CreateKeyPairBuilder publicUsageMask(int mask) {

@@ -14,7 +14,7 @@
 //! KMIP Specification v2.1 §8.4 Table 397 and §11.56.
 //! Request and response boundaries additionally trace to OASIS KMIP
 //! Specification v2.1 §9.12, Table 417, and §§10.1.1–10.1.5; byte-limit and
-//! typed-decoding acceptance is defined by specification requirement FR-014 and FR-017.
+//! typed-decoding acceptance is defined by the specification requirements and the specification rules.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener};

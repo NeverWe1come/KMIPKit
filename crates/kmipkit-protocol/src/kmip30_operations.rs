@@ -223,6 +223,18 @@ pub enum CreateCredentialObject {
 }
 
 impl CreateCredentialObject {
+    /// Returns the corresponding KMIP Credential Type for this object alternative.
+    #[must_use]
+    pub const fn credential_type(&self) -> CredentialType {
+        match self {
+            Self::Certificate(_) => CredentialType::Certificate,
+            Self::PasswordCredential(_) => CredentialType::Password,
+            Self::DeviceCredential(_) => CredentialType::Device,
+            Self::HashedPasswordCredential(_) => CredentialType::HashedPassword,
+            Self::OneTimePasswordCredential(_) => CredentialType::OneTimePassword,
+        }
+    }
+
     fn into_item(self) -> Item {
         match self {
             Self::Certificate(value) => value.into_item(),
@@ -258,9 +270,21 @@ pub struct CreateCredentialRequest {
 }
 
 impl CreateCredentialRequest {
-    /// Creates a request with its required type, Attributes, and defined object alternative.
+    /// Creates a request with Attributes and a closed object alternative.
+    /// The required Credential Type is derived from the selected alternative.
     #[must_use]
-    pub const fn new(
+    pub const fn new(attributes: AttributeSet, object: CreateCredentialObject) -> Self {
+        let credential_type = object.credential_type();
+        Self {
+            credential_type,
+            attributes,
+            object,
+        }
+    }
+
+    /// Creates a request with explicit Credential Type, Attributes, and defined object alternative.
+    #[must_use]
+    pub const fn with_credential_type(
         credential_type: CredentialType,
         attributes: AttributeSet,
         object: CreateCredentialObject,

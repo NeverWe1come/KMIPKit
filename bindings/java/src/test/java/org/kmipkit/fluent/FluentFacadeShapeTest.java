@@ -55,7 +55,10 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.protocol.KeyUsage;
+import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
@@ -88,6 +91,61 @@ final class FluentFacadeShapeTest {
                         java.util.List.class));
         assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest")
                 .getMethod("getAttributeList", org.kmipkit.extensions.UniqueIdentifier.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest").getMethod("create"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("objectType", long.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("attributes", org.kmipkit.extensions.AttributeSet.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("build"));
+        assertNotNull(Class.forName("org.kmipkit.fluent.CreateBuilder")
+                .getMethod("toBatchItem"));
+    }
+
+    @Test
+    void exposesTaskOrientedPingBuilder() throws Exception {
+        Class<?> builder = Class.forName("org.kmipkit.fluent.PingBuilder");
+        assertEquals(builder, FluentRequest.class.getMethod("ping").getReturnType());
+        assertNotNull(builder.getMethod("validate"));
+        assertNotNull(builder.getMethod("toBatchItem"));
+        assertNotNull(builder.getMethod("execute", CodecLimits.class));
+        assertNotNull(builder.getMethod("asynchronousIndicator", long.class));
+    }
+
+    @Test
+    void pingBuilderCreatesTheEmptyTypedPingItem() {
+        PingBuilder builder = new PingBuilder(null);
+        builder.validate();
+        try (ClientBatchItem item = builder.toBatchItem()) {
+            assertEquals(59, item.operation());
+        }
+    }
+
+    @Test
+    void createBuilderRequiresExplicitObjectTypeAndBuildsTypedCreateItem() {
+        try (org.kmipkit.ttlv.TtlvStructure emptyItems =
+                        org.kmipkit.ttlv.TtlvStructure.create();
+                org.kmipkit.extensions.AttributeSet attributes =
+                        org.kmipkit.extensions.AttributeSet.tryNew(emptyItems)) {
+            CreateBuilder incomplete = new CreateBuilder(null);
+            assertThrows(InvalidInputException.class, incomplete::validate);
+            assertThrows(InvalidInputException.class,
+                    () -> incomplete.withAsynchronousIndicator(0x1_0000_0000L));
+
+            CreateBuilder configured = new CreateBuilder(null)
+                    .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
+                    .attributes(attributes)
+                    .withAsynchronousIndicator(
+                            org.kmipkit.protocol.KmipValues.AsynchronousIndicator.PROHIBITED)
+                    .withOptions(org.kmipkit.extensions.RequestOptions.defaults());
+            try (configured) {
+                attributes.close();
+                emptyItems.close();
+                try (ClientBatchItem item = configured.toBatchItem()) {
+                    assertEquals(org.kmipkit.protocol.KmipValues.Operation.CREATE, item.operation());
+                }
+            }
+        }
     }
 
     @Test
@@ -191,6 +249,15 @@ final class FluentFacadeShapeTest {
     }
 
     @Test
+    void symmetricKeyRequestAcceptsNamedUsageFlags() {
+        SymmetricKeyRequest request = new SymmetricKeyRequest(
+                3, 256, "signing key", KeyUsage.ENCRYPT, KeyUsage.DECRYPT);
+        assertEquals((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                | KmipValues.CryptographicUsageMask.DECRYPT), request.usageMask());
+        assertEquals("signing key", request.name());
+    }
+
+    @Test
     void kmipClientExposesNamedOperationConveniences() throws Exception {
         Class<?> client = Class.forName("org.kmipkit.client.KmipClient");
         Class<?> request = Class.forName("org.kmipkit.client.SymmetricKeyRequest");
@@ -223,7 +290,7 @@ final class FluentFacadeShapeTest {
         }
         try (SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
             builder.aes256()
-                    .usageMask((int) (CryptographicUsageMask.ENCRYPT | CryptographicUsageMask.DECRYPT))
+                    .usageMask(KeyUsage.ENCRYPT, KeyUsage.DECRYPT)
                     .name("payments-key");
             try (ClientBatchItem item = builder.toBatchItem()) {
                 assertNotNull(item);
@@ -389,6 +456,19 @@ final class FluentFacadeShapeTest {
                 assertEquals(10, get.operation());
                 assertEquals(20, destroy.operation());
                 assertEquals(10, getCopy.operation());
+            }
+            try (GetBuilder builder = client.request().get();
+                    TtlvStructure empty = TtlvStructure.create()) {
+                builder.uniqueIdentifier(id).keyFormatType(1).keyWrapType(0x8000_0000L)
+                        .keyCompressionType(1).withOptions(RequestOptions.defaults());
+                builder.validate();
+                try (ClientBatchItem item = builder.toBatchItem()) {
+                    assertEquals(10, item.operation());
+                }
+                builder.keyWrappingSpecification(empty);
+                assertThrows(InvalidInputException.class, builder::validate);
+                builder.keyWrappingSpecification(null);
+                builder.validate();
             }
             assertThrows(ClientOperationException.class, () -> client.createSymmetricKey(
                     SymmetricKeyRequest.named(3, 256, (int) CryptographicUsageMask.ENCRYPT, "named"), limits));

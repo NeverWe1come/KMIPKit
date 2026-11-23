@@ -2,7 +2,7 @@
 
 //! Derived Set Attribute request/response vectors for OASIS KMIP v2.1
 //! §6.1.51, Tables 322–324, using the New Attribute structure in §5.7,
-//! Table 163. Traceability: functional requirement/FR-010 and SC-002/SC-003.
+//! Table 163. Verifies protocol model, request/response validation, and security invariants.
 //! These structural vectors do not claim that an official OASIS case passed.
 
 use crate::{

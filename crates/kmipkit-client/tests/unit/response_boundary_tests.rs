@@ -6,7 +6,7 @@
 //! This module verifies that the client checks a deliberately non-compliant
 //! response wrapper before entering its decoder.
 //!
-//! Traceability: `functional requirement`, `-FR-009`, `-FR-013`, `-SC-003`,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-REQ-SPEC-9.12-001-002`, `-001-003`, and low-level transport exchange contract.
 
 use std::cell::Cell;
@@ -127,8 +127,8 @@ fn client_accepts_a_valid_transport_response_exactly_at_the_limit() {
 fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
     let mut fixture = ResponseItemFixture::success(None);
     fixture.extension_criticality = Some(false);
-    let response = response_bytes((2, 1), &[fixture]);
-    let mut expected_ttlv = response.clone();
+    let wire_response = response_bytes((2, 1), &[fixture]);
+    let mut expected_ttlv = wire_response.clone();
     expected_ttlv[..3].copy_from_slice(&[0x42, 0x00, 0x7B]);
     let mut expected_ttlv_hex = String::new();
     for byte in &expected_ttlv {
@@ -137,7 +137,7 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
     }
     let limits = CodecLimits::defaults();
     let transport = ExactLimitTransport {
-        response,
+        response: wire_response.clone(),
         exchange_count: Rc::new(Cell::new(0)),
         last_response_cap: Rc::new(Cell::new(None)),
     };
@@ -147,6 +147,12 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
         .execute(batch, &limits)
         .expect("fixture response is a validated KMIP message");
     let item = response.get(0).expect("fixture has one response item");
+
+    assert!(item.with_raw_response_bytes(|raw| raw == wire_response.as_slice()));
+    assert_eq!(
+        response.with_raw_response_bytes(|raw| raw == wire_response.as_slice()),
+        Some(true),
+    );
 
     let ttlv = item
         .ttlv_hex(&limits)

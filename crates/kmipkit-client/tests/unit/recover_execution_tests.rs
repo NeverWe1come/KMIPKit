@@ -6,11 +6,11 @@
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
 //! and the specification requirement/0009 client contracts. Traceability:
-//! `KMIP-ELEM-OP-C2S-RECOVER`, specification requirement FR-001, FR-002, FR-005,
-//! FR-006, FR-007, FR-008, FR-009, FR-010, SC-001, and SC-003.
+//! `KMIP-ELEM-OP-C2S-RECOVER`, the specification requirements,
+//! the specification rules, and the specification rules.
 //! Caller-selected Recover-before-Encrypt ordering is required by the archived
 //! Managed Object paragraph in KMIP v2.1 §6.1 (`KMIP-REQ-SPEC-6.1-005`;
-//! specification requirement FR-010). These derived tests do not observe remote archive state.
+//! the specification requirements). These derived tests do not observe remote archive state.
 //! These are derived structural/execution tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{

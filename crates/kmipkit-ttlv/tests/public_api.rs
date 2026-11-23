@@ -1,4 +1,4 @@
-//! Requirement traceability: functional requirement, FR-012, and SC-006.
+//! Verifies public API ownership, redaction, and borrowing invariants.
 //! Authority: approved specification requirement specification and Rust value-model contract.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};

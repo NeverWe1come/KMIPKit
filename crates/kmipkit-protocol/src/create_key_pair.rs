@@ -8,12 +8,13 @@ use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Valu
 use crate::{
     AttributeSet, AttributeSetError, KmipOperationResult, ProtocolCauseCategory, ProtocolError,
     ProtocolErrorKind, RequestPayloadSchema, ResponseBatchItemView, ResultMessage,
-    ResultValidationError, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    ResultValidationError, SecretBytes, UniqueIdentifier, ValidateKmipRequest, ValidationReport,
     ValidationSourceRef,
 };
 
 const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
 const SUCCESS: u32 = 0;
+const SEED: u32 = kmipkit_ttlv::KmipTag::Seed.as_u32();
 
 const COMMON_ATTRIBUTES: u32 = 0x0042_0126;
 const PRIVATE_KEY_ATTRIBUTES: u32 = 0x0042_0127;
@@ -49,6 +50,7 @@ pub struct CreateKeyPairRequest {
     common_protection_storage_masks: Option<Structure>,
     private_protection_storage_masks: Option<Structure>,
     public_protection_storage_masks: Option<Structure>,
+    seed: Option<SecretBytes>,
 }
 
 impl CreateKeyPairRequest {
@@ -62,6 +64,7 @@ impl CreateKeyPairRequest {
             common_protection_storage_masks: None,
             private_protection_storage_masks: None,
             public_protection_storage_masks: None,
+            seed: None,
         }
     }
 
@@ -104,6 +107,13 @@ impl CreateKeyPairRequest {
     #[must_use]
     pub fn with_public_protection_storage_masks(mut self, masks: Structure) -> Self {
         self.public_protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets the optional KMIP 3.0 key-generation Seed.
+    #[must_use]
+    pub fn with_seed(mut self, seed: SecretBytes) -> Self {
+        self.seed = Some(seed);
         self
     }
 
@@ -187,6 +197,11 @@ impl CreateKeyPairRequest {
             PUBLIC_PROTECTION_STORAGE_MASKS,
             self.public_protection_storage_masks,
         )?;
+        if let Some(seed) = self.seed {
+            payload
+                .try_push(item(SEED, seed.into_ttlv_value())?)
+                .map_err(model_error)?;
+        }
         Ok(payload)
     }
 
@@ -274,6 +289,7 @@ impl fmt::Debug for CreateKeyPairRequest {
                 "has_public_protection_storage_masks",
                 &self.public_protection_storage_masks.is_some(),
             )
+            .field("has_seed", &self.seed.is_some())
             .finish()
     }
 }

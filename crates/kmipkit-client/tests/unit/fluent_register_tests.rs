@@ -1,5 +1,5 @@
 //! Fluent Register tests derived from KMIP v2.1 §6.1.43, Tables 291–293,
-//! and functional requirement through FR-006.
+//! and the specification requirements.
 
 use std::cell::RefCell;
 use std::rc::Rc;

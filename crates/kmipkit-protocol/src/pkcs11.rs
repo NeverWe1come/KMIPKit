@@ -286,7 +286,7 @@ fn validate_payload(payload: &StructureView<'_>, response: bool) -> Result<(), P
 fn valid_required_value(tree: &StructureView<'_>, tag: u32, integer_allowed: bool) -> bool {
     // Tables 273/274 explicitly allow vendor Integer functions in this operation.
     // Table 378 supplies the outer Structure/standard Enumeration shape; the
-    // context interpretation is traced as KMIPKIT-026-SOURCE-001 in research.md.
+    // context interpretation is traced as the protocol specification in the protocol documentation.
     valid_single_member(tree, tag, true, |value| {
         matches!(value, ValueView::Enumeration(_))
             || (integer_allowed && matches!(value, ValueView::Integer(_)))

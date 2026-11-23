@@ -44,7 +44,7 @@ fn public_limits_expose_default_and_explicit_read_only_values() {
 
 #[test]
 fn constructor_accepts_zero_and_model_depth_ceiling_and_rejects_one_over() {
-    // Zero message/count limits and Structure-depth boundaries are project API policy: FR-007.
+    // Zero message/count limits and Structure-depth boundaries are project API policy: the specification rules.
     let zero = CodecLimits::new(0, 0, 0).expect("zero limits are valid restrictive settings");
     assert_eq!(zero.max_message_bytes(), 0);
     assert_eq!(zero.max_structure_depth(), 0);
@@ -84,7 +84,7 @@ fn constructor_accepts_zero_and_model_depth_ceiling_and_rejects_one_over() {
 
 #[test]
 fn decode_with_limits_enforces_configured_byte_boundary() {
-    // Project resource policy only: KMIPKit FR-007.
+    // Project resource policy only: KMIPKit the specification rules.
     let limits = CodecLimits::new(8, 64, 100_000).expect("limit depth is valid");
     assert!(decode_with_limits(&empty_structure(), &limits).is_ok());
     assert_kind(
@@ -95,7 +95,7 @@ fn decode_with_limits_enforces_configured_byte_boundary() {
 
 #[test]
 fn decode_with_limits_enforces_configured_structure_depth_boundary() {
-    // Project resource policy only: KMIPKit FR-007; root Structure depth is one.
+    // Project resource policy only: KMIPKit the specification rules; root Structure depth is one.
     let limits = CodecLimits::new(128, 1, 100).expect("limit depth is valid");
     assert!(decode_with_limits(&empty_structure(), &limits).is_ok());
     assert_kind(
@@ -113,7 +113,7 @@ fn decode_with_limits_enforces_configured_structure_depth_boundary() {
 
 #[test]
 fn decode_with_limits_enforces_configured_item_count_boundary() {
-    // Project resource policy only: KMIPKit FR-007; the root counts as an Item.
+    // Project resource policy only: KMIPKit the specification rules; the root counts as an Item.
     let limits = CodecLimits::new(128, 64, 1).expect("limit depth is valid");
     assert!(decode_with_limits(&empty_structure(), &limits).is_ok());
     assert_kind(
@@ -128,7 +128,7 @@ fn decode_with_limits_enforces_configured_item_count_boundary() {
     ignore = "16 MiB stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
 )]
 fn raised_message_limit_decodes_an_input_above_the_default_cap() {
-    // Project resource policy only: KMIPKit FR-007. The bounded fixture is default + 8 bytes.
+    // Project resource policy only: KMIPKit the specification rules. The bounded fixture is default + 8 bytes.
     let max_message = CodecLimits::DEFAULT_MAX_MESSAGE_BYTES;
     let value_length = max_message - 8 + 1;
     let padding_length = (8 - value_length % 8) % 8;
@@ -151,7 +151,7 @@ fn raised_message_limit_decodes_an_input_above_the_default_cap() {
     ignore = "100,001-item stress allocation is verified natively; Miri verifies bounded limits and synthetic preflight"
 )]
 fn raised_item_limit_decodes_more_than_the_default_number_of_items() {
-    // Project resource policy only: KMIPKit FR-007. The 800,008-byte fixture
+    // Project resource policy only: KMIPKit the specification rules. The 800,008-byte fixture
     // contains one root plus 100,000 empty Structure children.
     let child_count = CodecLimits::DEFAULT_MAX_ELEMENTS;
     let structure_value_length = child_count * 8;

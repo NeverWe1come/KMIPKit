@@ -3,8 +3,8 @@
 //! Get and Locate payload shapes follow OASIS KMIP v2.1 §6.1.19 Table 221
 //! and §6.1.28 Table 248. Structure fields follow their described order under
 //! §10.1.2. Field presence and ordering apply functional requirement; sanitized Get
-//! errors apply FR-004 and FR-012. Decoder bounds and payload-free diagnostics
-//! apply FR-012 and the shared functional requirement–FR-009 decoder contract.
+//! errors apply the specification rules and the specification rules. Decoder bounds and payload-free diagnostics
+//! apply the specification rules and the shared the specification requirements decoder contract.
 //! These are project-derived negative vectors, not official OASIS test cases.
 
 use std::{error::Error, fmt::Write as _};
@@ -367,7 +367,7 @@ fn assert_wire_error(wire: &[u8], limits: &CodecLimits, expected: DecodeErrorKin
 #[test]
 fn truncated_and_malformed_get_and_locate_wire_vectors_are_sanitized() {
     // Generic TTLV structure and length rules come from the shared decoder
-    // contract, functional requirement and FR-008; they are not operation-specific.
+    // contract, the specification requirements; they are not operation-specific.
     for operation in [GET_OPERATION, LOCATE_OPERATION] {
         let complete = response_wire(operation, true);
         let default_limits = CodecLimits::defaults();

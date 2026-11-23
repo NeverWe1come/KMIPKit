@@ -5,8 +5,8 @@
 //! They do not encode TTLV bytes, apply client execution policy, or claim
 //! operation-schema validity.
 //!
-//! Traceability: functional requirement through FR-007, FR-009, FR-012, FR-018,
-//! FR-019; SC-001 and SC-002.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules and the specification rules.
 
 use kmipkit_protocol::{RequestMessage, ResponseMessage};
 use kmipkit_ttlv::{Item, RawTag, Structure, StructureView, Tag, Value, ValueView};

@@ -6,8 +6,8 @@
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
 //! and the specification requirement/0009 client contracts. Traceability:
-//! `KMIP-ELEM-OP-C2S-ARCHIVE`, specification requirement FR-001, FR-002, FR-004,
-//! FR-006, FR-007, FR-008, FR-009, FR-010, SC-001, and SC-003.
+//! `KMIP-ELEM-OP-C2S-ARCHIVE`, the specification requirements,
+//! the specification rules, and the specification rules.
 //! These are derived structural/execution tests, not official OASIS Test Cases.
 
 use kmipkit_protocol::{ArchiveRequest, UniqueIdentifier};

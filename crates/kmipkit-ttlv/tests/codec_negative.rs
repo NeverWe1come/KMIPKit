@@ -54,7 +54,7 @@ fn public_decoder_rejects_invalid_fixed_width_lengths_and_boolean_values() {
 }
 
 // OASIS KMIP Specification v2.1, §10.1.2; traceability specification requirement-NR-003.
-// Rejecting the empty value is the explicit KMIPKit rule in FR-006.
+// Rejecting the empty value is the explicit KMIPKit rule in the specification rules.
 #[test]
 fn public_decoder_rejects_empty_and_misaligned_big_integer_values() {
     assert_kind(
@@ -166,7 +166,7 @@ fn public_decode_errors_do_not_retain_or_format_input_payloads() {
     assert_eq!(error.offset(), 8);
 }
 
-// KMIPKit requirements functional requirement and FR-008 bound input size before
+// KMIPKit requirements the specification requirements bound input size before
 // parsing or allocation; these are local resource policies, not OASIS clauses.
 #[test]
 #[cfg_attr(
@@ -199,7 +199,7 @@ fn public_decoder_accepts_an_item_at_the_default_message_limit() {
     assert!(decode(&wire).is_ok());
 }
 
-// KMIPKit requirements functional requirement and FR-008 bound nested work.
+// KMIPKit requirements the specification requirements bound nested work.
 #[test]
 fn public_decoder_enforces_the_default_structure_depth_limit() {
     let mut nested = item(ASSIGNED_TAG, 0x08, 0, &[]);
@@ -216,7 +216,7 @@ fn public_decoder_enforces_the_default_structure_depth_limit() {
     assert_kind(&too_deep, DecodeErrorKind::StructureDepthExceeded);
 }
 
-// KMIPKit requirements functional requirement and FR-008 count the root and every
+// KMIPKit requirements the specification requirements count the root and every
 // descendant before accepting the complete tree.
 #[test]
 #[cfg_attr(

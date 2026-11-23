@@ -46,7 +46,7 @@ const TC_ENC_2_21_XML: &str = include_str!(
 const TC_ENCDEC_1_21_XML: &str = include_str!(
     "../../../verification/conformance/oasis/kmip-2.1/fixtures/TC-STREAM-ENCDEC-1-21.xml"
 );
-const SEQUENCE_PAIRING_CASE_ID: &str = "TC-T015-PAIRING-SYNTHETIC";
+const SEQUENCE_PAIRING_CASE_ID: &str = "TC-PAIRING-PAIRING-SYNTHETIC";
 const SEQUENCE_PAIRING_XML: &str = r#"
 <KMIP>
   <RequestMessage>
@@ -55,7 +55,7 @@ const SEQUENCE_PAIRING_XML: &str = r#"
         <ProtocolVersionMajor type="Integer" value="2"/>
         <ProtocolVersionMinor type="Integer" value="1"/>
       </ProtocolVersion>
-      <ClientCorrelationValue type="TextString" value="TC-T015-PAIRING-SYNTHETIC step=0"/>
+      <ClientCorrelationValue type="TextString" value="TC-PAIRING-PAIRING-SYNTHETIC step=0"/>
       <BatchCount type="Integer" value="1"/>
     </RequestHeader>
     <BatchItem>
@@ -90,7 +90,7 @@ const SEQUENCE_PAIRING_XML: &str = r#"
         <ProtocolVersionMajor type="Integer" value="2"/>
         <ProtocolVersionMinor type="Integer" value="1"/>
       </ProtocolVersion>
-      <ClientCorrelationValue type="TextString" value="TC-T015-PAIRING-SYNTHETIC step=1"/>
+      <ClientCorrelationValue type="TextString" value="TC-PAIRING-PAIRING-SYNTHETIC step=1"/>
       <BatchCount type="Integer" value="1"/>
     </RequestHeader>
     <BatchItem>
@@ -409,14 +409,14 @@ fn fixture_adapter_pairs_each_request_with_its_source_sequence_response() {
     let expected = [
         (
             0,
-            "TC-T015-PAIRING-SYNTHETIC step=0",
+            "TC-PAIRING-PAIRING-SYNTHETIC step=0",
             "paired-key-0",
             vec![0x01, 0x02, 0x03, 0x04],
             vec![0xA0, 0xA1, 0xA2, 0xA3],
         ),
         (
             1,
-            "TC-T015-PAIRING-SYNTHETIC step=1",
+            "TC-PAIRING-PAIRING-SYNTHETIC step=1",
             "paired-key-1",
             vec![0x11, 0x12, 0x13, 0x14],
             vec![0xB0, 0xB1, 0xB2, 0xB3],
@@ -728,7 +728,7 @@ fn fixture_adapter_rejects_malformed_xml_without_echoing_document_contents() {
         "<KMIP><RequestMessage><Data type=\"TextString\" value=\"{SECRET_SENTINEL}\"</RequestMessage>"
     );
 
-    let error = OasisCryptoFixture::from_xml("TC-T015-MALFORMED", &malformed_xml)
+    let error = OasisCryptoFixture::from_xml("TC-PAIRING-MALFORMED", &malformed_xml)
         .expect_err("an unclosed XML attribute is rejected");
     assert_eq!(error, OasisCryptoFixtureError::MalformedXml);
     let diagnostic = format!("{error:?} {error}");

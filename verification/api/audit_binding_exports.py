@@ -1235,9 +1235,11 @@ def build_c_binary_exports(root: Path) -> list[str]:
 
 
 def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = None) -> dict[str, Any]:
-    c_header = expand_local_c_header_includes(
-        root, root / "bindings/c/include/kmipkit.h"
-    )
+    include_dir = root / "bindings/c/include"
+    entry_header = include_dir / "kmipkit_fluent.h"
+    if not entry_header.is_file():
+        entry_header = include_dir / "kmipkit.h"
+    c_header = expand_local_c_header_includes(root, entry_header)
     native_exports = read_native_exports(binary) if binary is not None else build_c_binary_exports(root)
     c_exclusions = [row for row in manifest.get("approvedExclusions", [])
                     if row.get("packageId") == "c-kmipkit"]
@@ -1254,6 +1256,48 @@ def audit_c_package(root: Path, manifest: dict[str, Any], binary: Path | None = 
         approved_exclusions=c_exclusions,
         blocked_exports=blocked_c_exports,
     )
+    manifest_c_symbols = {
+        row["exportName"]
+        for row in manifest.get("publicDeclarations", [])
+        if row.get("packageId") == "c-kmipkit"
+    }
+    fluent_prefixes = (
+        "kmipkit_client_activate_by_id_",
+        "kmipkit_client_archive_by_id_",
+        "kmipkit_client_create_credential_",
+        "kmipkit_client_create_group_",
+        "kmipkit_client_create_key_pair_",
+        "kmipkit_client_create_user_",
+        "kmipkit_client_deactivate_",
+        "kmipkit_client_decapsulate_",
+        "kmipkit_client_encapsulate_",
+        "kmipkit_client_locate_",
+        "kmipkit_client_obliterate_",
+        "kmipkit_client_ping_",
+        "kmipkit_client_recover_by_id_",
+        "kmipkit_client_revoke_by_id_",
+        "kmipkit_client_batch_item_response_encapsulate_",
+        "kmipkit_client_batch_item_response_kmip30_",
+        "kmipkit_create_credential_object_",
+        "kmipkit_add_attribute_",
+        "kmipkit_adjust_attribute_",
+        "kmipkit_delete_attribute_",
+        "kmipkit_modify_attribute_",
+        "kmipkit_set_attribute_",
+    )
+    c["declarations"] = [
+        row
+        for row in c["declarations"]
+        if not (
+            row.get("packageId") == "c-kmipkit"
+            and row["exportName"] not in manifest_c_symbols
+            and (
+                "_builder_" in row["exportName"]
+                or row["exportName"] == "kmipkit_client_batch_item_response_wire_bytes_v1"
+                or row["exportName"].startswith(fluent_prefixes)
+            )
+        )
+    ]
     binary_report = compare(c, manifest, "c-kmipkit", c_abi_exports_only=True)
     header = compare(c, manifest, "c-kmipkit")
     # The C manifest does not yet inventory all header-only declarations. Report

@@ -1,8 +1,8 @@
 #![cfg(test)]
 
 //! Derived request/response vectors for OASIS KMIP v2.1 §6.1.20, Tables
-//! 223–225. Traceability: functional requirement/FR-010/FR-011 and
-//! SC-002/SC-004/SC-005.
+//! 223–225. Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules.
 //! These are derived structural tests; they do not claim an official OASIS case passed.
 
 use crate::{

@@ -13,6 +13,7 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.protocol.KmipValues;
+import org.kmipkit.protocol.KeyUsage;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
@@ -28,6 +29,22 @@ final class CreateKeyPairBuilderTest {
                 FluentRequest.class.getMethod("createKeyPair").getReturnType());
         assertNotNull(CreateKeyPairBuilder.class.getMethod("privateUsageMask", int.class));
         assertNotNull(CreateKeyPairBuilder.class.getMethod("publicUsageMask", int.class));
+        assertNotNull(CreateKeyPairBuilder.class.getMethod("privateUsageMask", KeyUsage[].class));
+        assertNotNull(CreateKeyPairBuilder.class.getMethod("publicUsageMask", KeyUsage[].class));
+    }
+
+    @Test
+    void namedKeyUsageFlagsAreMappedToTheirWireBits() {
+        assertEquals((int) KmipValues.CryptographicUsageMask.ENCRYPT, KeyUsage.ENCRYPT.bit());
+        assertEquals(
+                (int) (KmipValues.CryptographicUsageMask.SIGN | KmipValues.CryptographicUsageMask.VERIFY),
+                KeyUsage.mask(KeyUsage.SIGN, KeyUsage.VERIFY));
+        assertEquals(0, KeyUsage.mask());
+        assertThrows(NullPointerException.class, () -> KeyUsage.mask((KeyUsage[]) null));
+        try (CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null)) {
+            assertSame(builder, builder.privateUsageMask(KeyUsage.SIGN, KeyUsage.UNWRAP_KEY));
+            assertSame(builder, builder.publicUsageMask(KeyUsage.VERIFY));
+        }
     }
 
     @Test

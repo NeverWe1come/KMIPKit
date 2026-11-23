@@ -2314,11 +2314,20 @@ pub struct ClientOperationOutcome {
     operation: ClientOperation,
     result: kmipkit_protocol::KmipOperationResult,
     response: ResponseMessage,
+    wire_response: kmipkit_transport::TransportResponse,
     cancellation_result: Option<CancellationResult>,
     extensions: Vec<ClientMessageExtension>,
 }
 
 impl ClientOperationOutcome {
+    /// Lends the exact response message bytes, including all batch items.
+    ///
+    /// The bytes are sensitive and stay in zeroizing storage for the lifetime
+    /// of the response. The callback owns any copies it makes.
+    pub fn with_raw_response_bytes<R>(&self, callback: impl for<'a> FnOnce(&'a [u8]) -> R) -> R {
+        callback(self.wire_response.as_bytes())
+    }
+
     /// Returns the operation that produced this outcome.
     #[must_use]
     pub const fn operation(&self) -> ClientOperation {
@@ -4693,6 +4702,7 @@ pub struct ClientBatchItemResponse {
     outcome: ClientBatchOutcome,
     extensions: Vec<ClientMessageExtension>,
     response: Arc<ResponseMessage>,
+    wire_response: Arc<kmipkit_transport::TransportResponse>,
     response_index: usize,
     #[cfg(test)]
     pending_owner_observer: Option<ZeroizationObserver>,
@@ -4775,6 +4785,14 @@ impl Drop for ClientBatchItemResponse {
 }
 
 impl ClientBatchItemResponse {
+    /// Lends the exact response message bytes, including all batch items.
+    ///
+    /// The bytes are sensitive and stay in zeroizing storage for the lifetime
+    /// of the response. The callback owns any copies it makes.
+    pub fn with_raw_response_bytes<R>(&self, callback: impl for<'a> FnOnce(&'a [u8]) -> R) -> R {
+        callback(self.wire_response.as_bytes())
+    }
+
     /// Lends the associated Unique Batch Item ID, if the request supplied one.
     #[must_use]
     pub fn unique_batch_item_id(&self) -> Option<&[u8]> {
@@ -4862,6 +4880,12 @@ impl ClientBatchItemResponse {
         self.outcome
             .discover_versions_response()?
             .supported_versions()
+    }
+
+    /// Borrows the identifier returned by a successful Create operation.
+    #[must_use]
+    pub fn create_identifier(&self) -> Option<&UniqueIdentifier> {
+        self.outcome().create_response()?.unique_identifier()
     }
 
     /// Returns the typed item outcome.
@@ -5002,6 +5026,14 @@ pub struct ClientBatchResponse {
 }
 
 impl ClientBatchResponse {
+    /// Lends the original complete response bytes when the batch has a result.
+    pub fn with_raw_response_bytes<R>(
+        &self,
+        callback: impl for<'a> FnOnce(&'a [u8]) -> R,
+    ) -> Option<R> {
+        Some(self.items.first()?.with_raw_response_bytes(callback))
+    }
+
     /// Returns the number of batch results returned by the server.
     ///
     /// A server may omit results for batch items it did not process after a
@@ -5924,7 +5956,7 @@ impl Client {
         if let Some(mutation_policy) = mutation_policy {
             mutation_policy?;
         }
-        let (response_message, response_delivery_state) =
+        let (response_message, wire_response, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         let profile_response = if profiles.is_some() {
             Some(
@@ -5939,6 +5971,7 @@ impl Client {
             &request_identities,
             &options,
             response_message,
+            wire_response,
             self.configuration.extension_registry(),
             limits,
             #[cfg(test)]
@@ -7745,7 +7778,14 @@ impl Client {
         request_message: RequestMessage,
         limits: &CodecLimits,
         request_options: &RequestOptions,
-    ) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
+    ) -> Result<
+        (
+            ResponseMessage,
+            kmipkit_transport::TransportResponse,
+            RequestDeliveryState,
+        ),
+        ClientError,
+    > {
         let encoding = request_options
             .wire_encoding()
             .unwrap_or(self.configuration.wire_encoding());
@@ -8058,10 +8098,11 @@ impl Client {
             effective_version,
         )
         .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
-        let (response, delivery_state) =
+        let (response, wire_response, delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
         validate_async_response(
             response,
+            wire_response,
             operation,
             kind,
             asynchronous_indicator,
@@ -8247,6 +8288,8 @@ pub(super) enum BatchValidationError {
     EmptyBatch,
     MissingBatchItemId,
     DuplicateBatchItemId,
+    BatchItemIdReservedInV3,
+    QueryFunctionRequiresV3,
     IneligibleIdPlaceholder,
     InvalidAsynchronousIndicator,
     RepeatedBatchErrorContinuation,
@@ -8261,6 +8304,8 @@ impl fmt::Display for BatchValidationError {
             Self::EmptyBatch => "client batch must contain an item",
             Self::MissingBatchItemId => "multi-item request requires every batch item ID",
             Self::DuplicateBatchItemId => "request batch item IDs must be unique",
+            Self::BatchItemIdReservedInV3 => "Unique Batch Item ID is reserved in KMIP 3.0",
+            Self::QueryFunctionRequiresV3 => "Query Credential Information requires KMIP 3.0",
             Self::IneligibleIdPlaceholder => "ID Placeholder has no eligible preceding batch item",
             Self::InvalidAsynchronousIndicator => "asynchronous indicator is unassigned",
             Self::RepeatedBatchErrorContinuation => "batch error continuation is repeated",
@@ -8323,9 +8368,21 @@ pub(super) fn validate_batch(
     let options = validate_batch_options(batch, effective_version)?;
 
     let mut identifiers = HashSet::new();
+    let is_v3 = effective_version == ProtocolVersion::V3_0;
     for item in &batch.items {
+        if !is_v3
+            && let ClientRequest::Query(query) = &item.request
+            && query
+                .functions()
+                .contains(&kmipkit_protocol::QueryFunction::CREDENTIAL_INFORMATION)
+        {
+            return Err(BatchValidationError::QueryFunctionRequiresV3);
+        }
         match (&item.unique_batch_item_id, batch.items.len()) {
-            (None, count) if count > 1 => return Err(BatchValidationError::MissingBatchItemId),
+            (Some(_), _) if is_v3 => return Err(BatchValidationError::BatchItemIdReservedInV3),
+            (None, count) if count > 1 && !is_v3 => {
+                return Err(BatchValidationError::MissingBatchItemId);
+            }
             (Some(id), _) if !identifiers.insert(id.as_slice()) => {
                 return Err(BatchValidationError::DuplicateBatchItemId);
             }
@@ -9043,7 +9100,9 @@ fn build_async_request_message(
         ATTESTATION_CAPABLE_INDICATOR,
         Value::boolean(true),
     )?;
-    push(&mut header, BATCH_COUNT, Value::integer(1))?;
+    if protocol_version != ProtocolVersion::V3_0 {
+        push(&mut header, BATCH_COUNT, Value::integer(1))?;
+    }
 
     let mut batch_item = Structure::new();
     push(&mut batch_item, OPERATION, Value::enumeration(operation))?;
@@ -9202,6 +9261,25 @@ pub(super) fn associate_batch_items_allow_missing(
     Ok(associated)
 }
 
+fn associate_v3_batch_items(
+    requests: &[BatchIdentity],
+    responses: &[BatchIdentity],
+    allow_missing: bool,
+) -> Result<Vec<Option<usize>>, ResponseAssociationError> {
+    if responses.len() > requests.len() || (!allow_missing && responses.len() != requests.len()) {
+        return Err(ResponseAssociationError::ItemCountMismatch);
+    }
+    // KMIP 3.0 executes the batch in wire order and reserves Unique Batch Item ID.
+    for (request, response) in requests.iter().zip(responses) {
+        if request.operation != response.operation {
+            return Err(ResponseAssociationError::ItemOperationMismatch);
+        }
+    }
+    Ok((0..requests.len())
+        .map(|index| (index < responses.len()).then_some(index))
+        .collect())
+}
+
 #[derive(Clone, Copy)]
 pub(super) struct PendingState {
     pub(super) pending: bool,
@@ -9266,6 +9344,7 @@ fn validate_response(
     request_identities: &[BatchIdentity],
     options: &ValidatedBatchOptions,
     response: ResponseMessage,
+    wire_response: kmipkit_transport::TransportResponse,
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
@@ -9282,6 +9361,7 @@ fn validate_response(
     match result {
         Ok(pending_items) => {
             let response = Arc::new(response);
+            let wire_response = Arc::new(wire_response);
             let items = pending_items
                 .into_iter()
                 .map(|item| ClientBatchItemResponse {
@@ -9289,6 +9369,7 @@ fn validate_response(
                     outcome: item.outcome,
                     extensions: item.extensions,
                     response: Arc::clone(&response),
+                    wire_response: Arc::clone(&wire_response),
                     response_index: item.response_index,
                     #[cfg(test)]
                     pending_owner_observer: item.pending_owner_observer,
@@ -9334,11 +9415,19 @@ fn validate_response_inner(
         && response_items.iter().any(|item| {
             item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
         });
-    let association = associate_batch_items_allow_missing(
-        request_identities,
-        &response_identities,
-        partial_response_permitted,
-    )
+    let association = if resp_ver == ProtocolVersion::V3_0 {
+        associate_v3_batch_items(
+            request_identities,
+            &response_identities,
+            partial_response_permitted,
+        )
+    } else {
+        associate_batch_items_allow_missing(
+            request_identities,
+            &response_identities,
+            partial_response_permitted,
+        )
+    }
     .map_err(ProtocolError::from)?;
 
     let outcome_states = response_items
@@ -10297,6 +10386,7 @@ fn validate_follow_up_indicator(raw: Option<u32>) -> Result<(), ClientError> {
 #[allow(clippy::needless_pass_by_value, clippy::too_many_arguments)]
 fn validate_async_response(
     response: ResponseMessage,
+    wire_response: kmipkit_transport::TransportResponse,
     operation: u32,
     kind: ClientOperation,
     asynchronous_indicator: Option<u32>,
@@ -10356,6 +10446,7 @@ fn validate_async_response(
         operation: kind,
         result,
         response,
+        wire_response,
         cancellation_result,
         extensions,
     })
@@ -10509,7 +10600,14 @@ fn decode_transport_response(
     limits: &CodecLimits,
     encoding: WireEncoding,
     #[cfg(test)] observer: Option<&LimitsIdentityObserver>,
-) -> Result<(ResponseMessage, RequestDeliveryState), ClientError> {
+) -> Result<
+    (
+        ResponseMessage,
+        kmipkit_transport::TransportResponse,
+        RequestDeliveryState,
+    ),
+    ClientError,
+> {
     let response_delivery_state =
         RequestDeliveryState::PossiblySent.response_bytes_received(response.as_bytes().len());
     let decode_result = decode_bounded_response(
@@ -10519,8 +10617,6 @@ fn decode_transport_response(
         #[cfg(test)]
         observer,
     );
-    drop(response);
-
     let response_message = decode_result.map_err(|error| {
         let protocol = match error {
             BoundedResponseError::TooLarge => ProtocolError::new(
@@ -10532,7 +10628,7 @@ fn decode_transport_response(
         };
         protocol_failure_at(protocol, response_delivery_state)
     })?;
-    Ok((response_message, response_delivery_state))
+    Ok((response_message, response, response_delivery_state))
 }
 
 fn protocol_failure_at(error: ProtocolError, delivery_state: RequestDeliveryState) -> ClientError {

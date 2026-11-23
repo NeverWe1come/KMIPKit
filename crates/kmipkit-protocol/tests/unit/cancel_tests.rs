@@ -1,6 +1,6 @@
 //! Derived KMIP 2.1 Cancel tests; not official conformance vectors.
 //!
-//! Traceability: `functional requirement`, `FR-004`, `FR-009`; OASIS KMIP v2.1
+//! Verifies protocol model, request/response validation, and security invariants.
 //! §§6.1.5 and 11.7, Tables 176–178 and 437–438.
 
 use kmipkit_ttlv::ValueView;

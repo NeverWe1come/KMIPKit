@@ -7,8 +7,8 @@
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables
 //! 399–401; §11.3/Table 431; and the specification requirement/0009 client contracts.
 //! Traceability:
-//! `KMIP-ELEM-OP-C2S-DESTROY`, specification requirement FR-001, FR-002, FR-003,
-//! FR-006, FR-007, FR-008, SC-001, and SC-003.
+//! `KMIP-ELEM-OP-C2S-DESTROY`, the specification requirements,
+//! the specification rules, and the specification rules.
 //! `KMIP-CLAUSE-SPEC-6.1.15-001` is server-only. These are derived
 //! structural/execution tests, not official OASIS Test Cases.
 

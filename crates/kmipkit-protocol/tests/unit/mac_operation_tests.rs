@@ -2,7 +2,7 @@
 //! Cryptographic Algorithm values follow §11.12, Table 443. These tests do not
 //! claim an official Test Case pass.
 //!
-//! Traceability: FR-003, FR-009–FR-013, FR-015; `KMIP-ELEM-OP-C2S-MAC`,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM`, and the shared Data,
 //! Correlation Value, Init Indicator, and Final Indicator elements.
 

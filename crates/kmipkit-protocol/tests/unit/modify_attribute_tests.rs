@@ -3,9 +3,9 @@
 //! Derived Modify Attribute request/response vectors for OASIS KMIP v2.1
 //! §6.1.34, Tables 265–266; §§4.2, 5.6–5.7, Tables 31–32 and 162–163;
 //! §11.2 Table 430; §§11.36 and 11.56. Traceability: functional requirement/
-//! FR-010 and SC-002/SC-003.
+//! the specification rules and the specification rules.
 //! Table 267 Result Reasons and Operation Failed are checked against §§11.46–11.47,
-//! Tables 479–480. T032 covers transport propagation; these vectors do not claim that
+//! Tables 479–480. the implementation covers transport propagation; these vectors do not claim that
 //! an official OASIS case passed.
 
 use crate::{

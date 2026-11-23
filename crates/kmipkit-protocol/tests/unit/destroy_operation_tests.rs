@@ -4,8 +4,8 @@
 //! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
-//! Traceability: `KMIP-ELEM-OP-C2S-DESTROY`; specification requirement FR-001, FR-002,
-//! FR-003, FR-006, FR-008, FR-009; SC-001 and SC-002.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules and the specification rules.
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{
@@ -161,7 +161,7 @@ fn failure_response_preserves_object_not_found_without_a_typed_success_identifie
 
 #[test]
 fn failure_response_preserves_an_unknown_result_reason_for_fr008() {
-    // specification requirement FR-008 requires unknown values to remain unchanged.
+    // the specification requirements requires unknown values to remain unchanged.
     let unknown_reason = 0xF001_0001;
     let message = response_message(
         DESTROY_OPERATION,

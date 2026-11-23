@@ -123,7 +123,7 @@ class TimeoutKind(IntEnum):
 
 
 class BatchOutcome(IntEnum):
-    """Common outcome shape exposed by T076; unknown values remain numeric."""
+    """Common outcome shape exposed by client ABI; unknown values remain numeric."""
 
     COMPLETED = 1
     PENDING = 2
@@ -1238,7 +1238,7 @@ def _validated_transport_config(value: TransportConfig) -> TransportConfig:
 
 
 class _ClientHandle(NativeHandle):
-    """Native handle released through the private T076 CFFI library."""
+    """Native handle released through the private client ABI CFFI library."""
 
     def close(self) -> None:
         with _NATIVE_CALL_LOCK:
@@ -2128,6 +2128,8 @@ class BatchItemResult(_BatchItemResultNativeState):
     decapsulate_response: DecapsulateResponse | None = field(default=None, repr=False)
     delete_attribute_response: DeleteAttributeResponse | None = field(default=None, repr=False)
     modify_attribute_response: ModifyAttributeResponse | None = field(default=None, repr=False)
+    kmip30_identifier: extensions.UniqueIdentifier | None = field(default=None, repr=False)
+    encapsulate_data: bytes | None = field(default=None, repr=False)
     set_attribute_response: SetAttributeResponse | None = field(
         default=None, repr=False
     )
@@ -2244,6 +2246,35 @@ class BatchItemResult(_BatchItemResultNativeState):
         be cleared by KMIPKit. Rendering never sends a request.
         """
         return self._render_response_view("xml", limits)
+
+    def raw_response_bytes(self) -> bytes:
+        """Copy the complete received message. Treat the returned bytes as sensitive."""
+        item = self._native_response_item
+        if item is None:
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            span = ffi.new("kmipkit_byte_span_v1_t *")
+            _raise_abi_status(lib.kmipkit_client_batch_item_response_wire_bytes_v1(
+                item._pointer(), span
+            ))
+            if span.length > sys.maxsize:
+                errors.raise_for_status(6)
+            return bytes(ffi.buffer(span.data, int(span.length)))
+
+    def close(self) -> None:
+        """Release the native item view. Copied result metadata remains readable."""
+        with _NATIVE_CALL_LOCK:
+            for native_response in (
+                self._native_response_item, self._native_usage_allocation_response
+            ):
+                if native_response is not None:
+                    native_response.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
     def _render_response_view(self, encoding: str, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
         if not isinstance(limits, ttlv.CodecLimits) or self._native_response_item is None:
@@ -3258,6 +3289,15 @@ class BatchResult(_ClientHandle):
         super().__init__(handle, _token=_token)
         self.items = items
 
+    def _take_single_item(self) -> BatchItemResult:
+        """Transfer the sole result before closing the enclosing batch."""
+        with _NATIVE_CALL_LOCK:
+            if len(self.items) != 1:
+                errors.raise_for_status(7)
+            (item,) = self.items
+            self.items = ()
+            return item
+
     def item_count(self) -> int:
         """Return the number of response items actually returned by the server."""
         return len(self.items)
@@ -3454,6 +3494,70 @@ class Client(_ClientHandle):
             else lib.kmipkit_client_get_attribute_list_v1
         )
         return _execute_direct(self, function, unique_identifier, limits, options)
+
+    def activate_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Activate one object by its typed Unique Identifier."""
+        builder = self.request().activate(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def archive_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Archive one object by its typed Unique Identifier."""
+        builder = self.request().archive(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def recover_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Recover one object by its typed Unique Identifier."""
+        builder = self.request().recover(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def locate(
+        self, attributes: Any, limits: ttlv.CodecLimits, *,
+        maximum_items: int | None = None, offset_items: int | None = None,
+        storage_status_mask: int | None = None, object_group_member: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Locate objects from a typed AttributeSet and explicit optional filters."""
+        builder = self.request().locate(attributes)
+        if maximum_items is not None:
+            builder.maximum_items(maximum_items)
+        if offset_items is not None:
+            builder.offset_items(offset_items)
+        if storage_status_mask is not None:
+            builder.storage_status_mask(storage_status_mask)
+        if object_group_member is not None:
+            builder.object_group_member(object_group_member)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def revoke_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier,
+        reason: extensions.RevocationReason, limits: ttlv.CodecLimits, *,
+        compromise_occurrence_date: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Revoke one object with an explicit typed reason and optional date."""
+        builder = self.request().revoke(reason).unique_identifier(unique_identifier)
+        if compromise_occurrence_date is not None:
+            builder.compromise_occurrence_date(compromise_occurrence_date)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
 
     @classmethod
     def create(
@@ -4792,6 +4896,20 @@ def _batch_result(
                     sign_response,
                     signature_verify_response,
                 ) = cryptographic_responses
+                kmip30_identifier = None
+                encapsulate_data = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) in {0x3F, 0x3C, 0x3E, 0x40, 0x42, 0x41}
+                ):
+                    kmip30_identifier = _kmip30_identifier_response(item)
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x41
+                ):
+                    encapsulate_data = _encapsulate_response_data(item)
                 result = BatchItemResult(
                     outcome,
                     int(metadata.result_status),
@@ -4859,6 +4977,8 @@ def _batch_result(
                     decapsulate_response=decapsulate_response,
                     delete_attribute_response=delete_attribute_response,
                     modify_attribute_response=modify_attribute_response,
+                    kmip30_identifier=kmip30_identifier,
+                    encapsulate_data=encapsulate_data,
                     set_endpoint_role_response=set_endpoint_role_response,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
@@ -5031,6 +5151,35 @@ def _create_split_key_response(
         )
         identifiers.append(_read_unique_identifier(output))
     return tuple(identifiers)
+
+
+def _kmip30_identifier_response(
+    item: _ClientBatchItemResponse,
+) -> extensions.UniqueIdentifier | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_kmip30_identifier(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        _require_absent_unique_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return _read_unique_identifier(identifier)
+
+
+def _encapsulate_response_data(item: _ClientBatchItemResponse) -> bytes | None:
+    present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_encapsulate_data(
+            item._pointer(), present, data
+        )
+    )
+    return _optional_output_span(present, data)
 
 
 def _optional_output_span(present: Any, value: Any) -> bytes | None:

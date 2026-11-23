@@ -1,4 +1,4 @@
-// Requirement traceability: functional requirement, SC-004.
+// Verifies public API ownership, redaction, and borrowing invariants.
 // Authority: approved specification requirement Rust value-model contract.
 use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 use serde::Serialize;

@@ -111,7 +111,7 @@ Rust lends a `StructureView`, C returns a caller-owned
 callers close the result or its context-managed `response_ttlv` structure. The
 C, Java, and Python typed accessors do not return
 a generic response handle for Failure or Pending, and this does not expand the
-separate T081 error-only response-retention capability. The mapping follows
+separate error-only response-retention capability. The mapping follows
 the approved contract in policy controls.
 
 Hash, MAC, MAC Verify, Sign, and Signature Verify expose the full ordered
@@ -122,19 +122,19 @@ response types lend a `StructureView`; C returns an independently owned
 release the C handle with `kmipkit_ttlv_structure_release` and close the Java or
 Python structure when finished. Unknown fields and their order are preserved.
 Failure, Pending, and other-operation results do not expose this success
-accessor. The separate FR-015 error-response access remains limited to its
+accessor. The separate error-response TTLV access remains limited to its
 approved four identities.
 
-the transport subsystem constructs the typed client from validated transport
+The transport subsystem constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
 `kmipkit-transport` exchange contract remains a separate direct caller-byte
 API under the low-level transport exchange contract. A typed result does not expose raw response bytes. See the
 [client execution guide](../user-guide/en/client-execution.md) and
-the low-level transport exchange specification.
+[transport security architecture](transport-security.md).
 
 ### Wire encoding selection
 
-multi-encoding client integration exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
+Multi-encoding client integration exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
 The immutable client configuration defaults to TTLV and can select another
 encoding. `RequestOptions` supplies an optional per-exchange override. The
 resolved choice is override, configuration, then TTLV, and applies to both
@@ -152,7 +152,7 @@ parity does not establish full operation parity or release readiness.
 
 Both production transports carry the selected format. HTTPS uses the matching
 media type and body under the contextual interpretation documented in
-the multi-encoding specification. Raw TLS uses the standard
+[transport security architecture](transport-security.md). Raw TLS uses the standard
 TTLV frame or reads one complete JSON/XML document incrementally and closes
 after the response; this framing is a KMIPKit decision, not an OASIS raw-TLS
 profile requirement. The low-level transport API remains a caller-owned byte
@@ -160,12 +160,10 @@ exchange and does not perform this typed client's message selection.
 
 ### Managed-object lifecycle
 
-managed object lifecycle operations adds typed Activate, Archive, Destroy, and Recover operations.
-object lifecycle and certificates adds Certify, Check, Obtain Lease, and Re-certify. the specification
-adds the following nine-operation set to the Rust typed client: Certify, Check,
+Managed-object lifecycle operations include typed Activate, Archive, Destroy, and Recover operations,
+as well as Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
-Revoke. This scope does not establish C, Java, or Python operation parity;
-those mappings remain under public API parity manifest. Each single-operation convenience
+Revoke. Each single-operation convenience
 call performs one exchange and returns the server result. The client does not
 simulate server object state, retry, or claim that Archive completed.
 Re-certify callers should submit it no more than
@@ -392,10 +390,10 @@ copies deliberately made from borrowed views, temporary stack or register
 copies, and copies retained by Java, Python, or another runtime are outside
 this Rust model's guarantee.
 
-The the client execution model execute path uses its private zeroizing request owner only for
+The client execution path uses its private zeroizing request owner only for
 a caller-requested typed operation. Initialized encoded bytes are zeroized
 when that owner is dropped after exchange; broader copy and allocation limits
-are defined by la política de codificación y limpieza de búferes.
+are defined by the outbound wire-encoding and buffer-zeroization policy.
 The separate low-level raw-byte exchange exception and its response-wrapper
 limits are defined by the low-level transport exchange contract. The typed client
 always decodes the response wrapper and does not expose raw bodies.

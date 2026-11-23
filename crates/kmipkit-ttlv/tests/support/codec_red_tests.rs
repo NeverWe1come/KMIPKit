@@ -1,8 +1,8 @@
 #![cfg(test)]
-//! Decoder regression cases promoted from the T005 Red harness.
+//! Decoder regression cases promoted from the the implementation Red harness.
 //!
 //! Every behavioral expectation reaches the production decoder through the
-//! private adapter, which retains T005's concise error-category assertions.
+//! private adapter, which retains the concise error-category assertions.
 
 use crate::codec::{DecodeErrorKind as CandidateError, decode};
 use crate::{Item, ItemType, ValueView};

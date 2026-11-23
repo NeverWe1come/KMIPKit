@@ -7,8 +7,8 @@
 //! §§5.6–5.7 Tables 162–163; Attribute Reference forms follow §5.5 Table 161;
 //! Vendor Attribute follows §4.60 Table 150. Standard attribute mutation
 //! policy is sourced from §4.1–§4.63 attribute tables and the generated
-//! catalog policy (specification requirement FR-003–FR-005, FR-008–FR-010, FR-012, FR-015;
-//! SC-003, SC-007, SC-008). These are derived project tests, not official
+//! catalog policy (the specification requirements;
+//! the specification rules). These are derived project tests, not official
 //! OASIS conformance-case claims.
 
 use std::cell::{Cell, RefCell};

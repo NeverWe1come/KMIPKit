@@ -2,7 +2,7 @@
 //! and §9.16, Table 421's Discover Versions result rules. These are not
 //! official OASIS test vectors.
 //!
-//! Traceability: `functional requirement`, `-FR-003`; `success criterion`.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::error::Error;
 

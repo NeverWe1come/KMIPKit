@@ -4,8 +4,8 @@
 //! These are source-derived tests, not
 //! official OASIS Test Cases.
 //!
-//! Traceability: `KMIP-ELEM-OP-C2S-ACTIVATE`; specification requirement FR-001, FR-002,
-//! FR-003, FR-006, FR-009; SC-001 and SC-002.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules and the specification rules.
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{

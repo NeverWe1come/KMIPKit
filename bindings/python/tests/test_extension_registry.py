@@ -1,7 +1,6 @@
 """Python adapter parity tests for the KMIP 2.1 vendor extension registry.
 
-Traceability: vendor extension registry, FR-005 through FR-012, and SC-001
-through SC-007. Wire preservation follows KMIP 2.1 §8.3, Table 396;
+Verifies vendor extension registry inspection, validation, and attachment behavior. Wire preservation follows KMIP 2.1 §8.3, Table 396;
 §9.13, Table 418; §7.13, Table 365; and §11.44, Table 476.
 """
 

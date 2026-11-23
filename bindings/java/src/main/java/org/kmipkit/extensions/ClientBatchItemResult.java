@@ -132,6 +132,20 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return TtlvStructure.fromNative(structure, null);
     }
 
+    /** Returns the identifier assigned by a successful Create. */
+    public Optional<UniqueIdentifier> createIdentifier() {
+        return createResponse().map(CreateResponse::uniqueIdentifier);
+    }
+
+    /**
+     * Copies the complete response as received, including the response header and all items.
+     * The caller owns this potentially sensitive array and can clear it after inspection.
+     */
+    public byte[] rawResponseBytes() {
+        NativeExtensionRegistry.ensureLoaded();
+        return handle.withValue(NativeExtensionRegistry::clientBatchItemResponseWireBytes);
+    }
+
     /** Returns the successful Create response, including the identifier's exact wire type. */
     public Optional<CreateResponse> createResponse() {
         NativeExtensionRegistry.ensureLoaded();
@@ -3739,6 +3753,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         NativeExtensionRegistry.ensureLoaded();
         byte[] value = handle.withValue(
                 NativeExtensionRegistry::clientBatchItemResponsePendingCorrelationValue);
+        return value == null ? Optional.empty() : Optional.of(value.clone());
+    }
+
+    /** Returns the successful KMIP 3.0 operation's identifier, when its typed response defines one. */
+    public Optional<UniqueIdentifier> kmip30Identifier() {
+        if (outcomeKind().isPending() || resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        return parseLifecycleIdentifierResponse(
+                handle.withValue(NativeExtensionRegistry::clientBatchItemResponseKmip30Identifier),
+                "KMIP 3.0");
+    }
+
+    /** Returns only the public Data field from a successful Encapsulate response. */
+    public Optional<byte[]> encapsulateData() {
+        if (outcomeKind().isPending() || resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] value = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseEncapsulateData);
         return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 

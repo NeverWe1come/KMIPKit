@@ -1,7 +1,7 @@
 //! Project-derived fake-client checks for OASIS KMIP Specification v2.1
 //! §6.1.52, Tables 325–327; Constraints structure §7.7.
-//! Traceability: KMIPKIT-025-T325-REQUEST, T326-RESPONSE, T327-ERROR,
-//! KMIPKIT-025-COMMON-RESULT, KMIPKIT-025-COMMON-DELIVERY.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the protocol specification, the protocol specification.
 //! These are not official OASIS Test Cases. The error mapping follows the
 //! maintainer-approved KMIPKIT-DISC-020 interpretation in `spec.md`.
 

@@ -210,14 +210,14 @@ changes to this table.
 | `ttlv_wire_codec` | declared | A four-language mapping is recorded; complete parity verification is still pending. |
 | `ffi_runtime_metadata` | declared | Version and capability-query metadata is mapped in Rust, C, Java, and Python. |
 | `rust_transport_exchange` | declared | Rust-only transport exchange under the low-level transport exchange contract exclusive to Rust; it is not a foreign-language client operation. |
-| `public_binding_surface` | verified | T108/T109 and T011 confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled, and all 56 client operation API mappings are verified. The verified inventory does not claim KMIP conformance, interoperability, or release readiness. |
+| `public_binding_surface` | verified | Automated export audits confirm every observed declaration has a manifest record or an exact approved exclusion. The inventory is reconciled, and all 56 client operation API mappings are verified. The verified inventory does not claim KMIP conformance, interoperability, or release readiness. |
 | `vendor_extension_registry` | declared | Exact shared mappings include Rust drop, C release, Java close, and Python close for native handles; parity verification remains pending. |
 | `discover_versions_request_item` | declared | Four-language request-item builders are mapped; complete Discover Versions operation conformance remains pending. |
 | `client_batch_model` | declared | The four-language client batch model exposes typed ordered requests and results; full operation coverage remains incomplete. |
 | `client_execution` | declared | Discover Versions request and response mappings are present in Rust, C, Java, and Python; complete 1.0 operation conformance remains pending. |
 | `wire_encoding_selection` | declared | TTLV, JSON, and XML defaults and per-exchange selection are mapped across Rust, C, Java, and Python. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process, and Query Asynchronous Requests use explicit one-exchange calls across four languages; exact correlation bytes and the generic Query TTLV response are preserved, with no automatic polling. |
-| `crypto_response_ttlv` | declared | The separate FR-015 error-response access remains limited to its four approved accessors; typed success-response TTLV is recorded on the five operation rows. |
+| `crypto_response_ttlv` | declared | The separate error-response TTLV access remains limited to its four approved accessors; typed success-response TTLV is recorded on the five operation rows. |
 | `production_transport` | declared | Rust and the three adapters expose the approved TLS 1.3 client transport configuration; interoperability evidence remains pending. |
 | `api_level_discovery` | declared | Rust, C, Java, and Python expose the local API-level taxonomy without network access. |
 | `opaque_register_context` | declared | Explicit Opaque Object context and Register request-shape validation are mapped across four languages; this separate capability remains declared. The Register operation row is verified. |
@@ -279,7 +279,7 @@ does not imply general server health. Query preserves caller-supplied function
 and Object Group order, exposes typed readers for standard response fields in
 all four languages, retains unknown and vendor fields through generic TTLV,
 and tolerates both response shapes described in §6.1.40 while
-`KMIPKIT-DISC-047` remains unresolved. These
+the §6.1.40 response-shape catalog discrepancy remains unresolved. These
 are API mappings, not server-conformance claims. Locate preserves optional request filters, server order,
 repeated Unique Identifiers, and the distinction between omitted and empty
 Located Items. Its fluent builder is available in Rust, C, Java, and Python;
@@ -366,7 +366,7 @@ returns a caller-owned `kmipkit_ttlv_structure_t` that must be released with
 `response_ttlv` return the owned `TtlvStructure` or `ttlv.Structure`, which the
 caller closes when finished. These copies preserve unknown fields and their
 order. A non-success result or a different operation has no success-response
-TTLV accessor. This does not broaden the separate FR-015 error-response access.
+TTLV accessor. This does not broaden the separate error-response TTLV access.
 
 Encrypt and Decrypt are also mapped in all four languages. Java callers create
 items with `ClientBatchItem.encrypt(...)` and `ClientBatchItem.decrypt(...)`;

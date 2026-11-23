@@ -1,7 +1,7 @@
 //! Debug-redaction tests for the deterministic test-only transport fake.
 //! These do not establish production adapter behavior or OASIS conformance.
 //!
-//! Traceability: `functional requirement`, `-SC-009`; low-level transport exchange contract; OASIS KMIP v2.1
+//! Verifies protocol model, request/response validation, and security invariants.
 //! §9.12, Table 417 for the fake's bounded response behavior.
 
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};

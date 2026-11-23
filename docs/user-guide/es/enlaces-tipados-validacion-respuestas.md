@@ -161,8 +161,8 @@ y [Python](../../../verification/consumers/0053-parity/python/main.py). Estos so
 cinco recorridos progresivos de fluent complete API contract, probados en los cuatro lenguajes.
 C, Java y Python
 también exponen lectores tipados que comprueban la identidad de operación para
-Cancel, Poll, Process y Query Async; sus pruebas de paridad están registradas
-en la tarea T078.
+Cancel, Poll, Process y Query Async; sus pruebas de paridad están incluidas
+en la suite de pruebas multi-lenguaje.
 
 ## Representaciones explícitas de la respuesta completa
 

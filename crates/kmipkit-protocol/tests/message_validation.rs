@@ -1,8 +1,8 @@
 //! OASIS KMIP Specification v2.1: §§6.1.38, 8.3, 8.6, 9.1–9.2, 9.9–9.10,
 //! 9.13, 9.19, 9.21, 11.56; Tables 276, 396, 399, 400, 408–409, and 418.
 //!
-//! Traceability: functional requirement, FR-008, FR-010, FR-011, FR-014, FR-020,
-//! FR-021; SC-002, SC-003, SC-004, SC-006.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules.
 
 use kmipkit_protocol::{MessageValidationErrorKind, RequestMessage, ResponseMessage, ResultStatus};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};

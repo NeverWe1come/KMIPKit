@@ -86,7 +86,7 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
-/** Exercises the T076 client ABI through the Java facade against a local TLS 1.3 peer. */
+/** Exercises the client ABI client ABI through the Java facade against a local TLS 1.3 peer. */
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
@@ -761,7 +761,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
-                // response inspection-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
+                // Response inspection: KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
                 try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
                         var json = queryResult.json(CodecLimits.defaults());
                         var xml = queryResult.xml(CodecLimits.defaults())) {
@@ -4019,11 +4019,13 @@ final class ClientFacadeTlsIntegrationTest {
         X509Certificate clientCertificate = testCertificate(clientCertificatePem);
         SSLServerSocket listener = deterministicMtlsListener(
                 serverCertificatePem, serverPrivateKeyPem, clientCertificate);
+        byte[] createWire = fluentClientResponseMessage(1);
         FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveResponses(listener,
-                fluentClientResponseMessage(1), fluentClientResponseMessage(1),
+                createWire, createWire, createWire, createWire,
                 fluentClientResponseMessage(10), fluentClientResponseMessage(10),
                 fluentClientResponseMessage(20), fluentClientResponseMessage(20),
-                discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1)));
+                discoverVersionsResponseMessage(1), discoverVersionsResponseMessage(1),
+                fluentClientResponseMessage(0x3b), fluentClientResponseMessage(0x3b)));
         Thread peerThread = new Thread(peer, "kmipkit-java-fluent-client-fixture");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -4051,6 +4053,23 @@ final class ClientFacadeTlsIntegrationTest {
                     SymmetricKeyRequest.unnamed(3, 256, 12), limits, RequestOptions.defaults())) {
                 assertEquals(1, response.itemCount());
             }
+            try (var builder = client.request().createSymmetricKey().aes256()
+                         .usageMask(org.kmipkit.protocol.KeyUsage.ENCRYPT);
+                    ClientBatchItemResult response = builder.executeOne()) {
+                assertEquals(0, response.resultStatus());
+                UniqueIdentifier created = response.createIdentifier().orElseThrow();
+                assertEquals(id.kind(), created.kind());
+                assertEquals(id.text(), created.text());
+                assertArrayEquals(createWire, response.rawResponseBytes());
+            }
+            try (var builder = client.request().create()
+                         .objectType(org.kmipkit.protocol.KmipValues.ObjectType.SYMMETRIC_KEY)
+                         .withOptions(RequestOptions.defaults());
+                    ClientBatchItemResult response = builder.executeOne()) {
+                assertEquals(0, response.resultStatus());
+                assertEquals(id.text(), response.createIdentifier().orElseThrow().text());
+                assertArrayEquals(createWire, response.rawResponseBytes());
+            }
             try (ClientBatchResponse response = client.getById(id, limits)) {
                 assertEquals(1, response.itemCount());
             }
@@ -4076,10 +4095,21 @@ final class ClientFacadeTlsIntegrationTest {
                     assertEquals(1, response.itemCount());
                 }
             }
+            try (ClientBatchResponse response = client.request().ping().execute(limits);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x3b, result.operation());
+                assertEquals(Boolean.TRUE, result.pingResponse().orElseThrow());
+            }
+            try (ClientBatchResponse response = client.request().ping().executeWithOptions(
+                            limits, RequestOptions.defaults());
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x3b, result.operation());
+                assertEquals(Boolean.TRUE, result.pingResponse().orElseThrow());
+            }
         } finally {
             listener.close();
         }
-        assertEquals(8, peer.get(15, TimeUnit.SECONDS).size());
+        assertEquals(12, peer.get(15, TimeUnit.SECONDS).size());
     }
 
     // OASIS KMIP Specification v2.1 §6.1.52, Tables 325–327.
@@ -5701,7 +5731,7 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] testCrlDer() throws Exception {
         try (InputStream input = ClientFacadeTlsIntegrationTest.class
-                .getResourceAsStream("/t076-test-crl.der")) {
+                .getResourceAsStream("/test-crl.der")) {
             if (input == null) {
                 throw new IllegalStateException("test CRL fixture is missing");
             }
@@ -6783,6 +6813,8 @@ final class ClientFacadeTlsIntegrationTest {
                     structure(0x42008f, structure(0x420040,
                             item(0x420045, 8, "fluent-key-material".getBytes(StandardCharsets.US_ASCII)))));
             case 20 -> structure(0x42007c, identifier);
+            case 0x08, 0x12, 0x13, 0x15, 0x16 -> structure(0x42007c, identifier);
+            case 0x3b -> structure(0x42007c);
             default -> throw new IllegalArgumentException("unsupported fluent operation: " + operation);
         };
         byte[] responseItem = structure(0x42000f, enumeration(0x42005c, operation),

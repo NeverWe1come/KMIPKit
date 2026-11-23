@@ -2,7 +2,7 @@
 //! §6.1.24, Tables 235–237; Hashing Algorithm values are from §11.21, Table
 //! 454. These tests do not claim an official Test Case pass.
 //!
-//! Traceability: FR-002, FR-003, FR-009, FR-010, and FR-011;
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-OP-C2S-HASH`, `KMIP-ELEM-ENUM-VALUE-OPERATION-HASH-00000027`,
 //! `KMIP-ELEM-ENUMERATION-HASHING-ALGORITHM`, and
 //! `KMIP-ELEM-OPERATION-STRUCTURE-7-9-DATA`.

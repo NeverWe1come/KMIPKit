@@ -3,7 +3,7 @@
 //! `KMIPKIT-DISC-039` caption discrepancy; this test preserves the payload
 //! without assigning it a typed schema.
 //!
-//! Traceability: `functional requirement`, `FR-012`.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_ttlv::{StructureView, Value, ValueView};
 

@@ -58,7 +58,7 @@ impl SplitKeyMethod {
 ///
 /// Required split parameters and Attributes are caller supplied. Optional
 /// input identifiers, Prime Field Size, and Protection Storage Masks retain
-/// their presence independently. `KMIPKit` applies FR-015 by requiring an
+/// their presence independently. `KMIPKit` applies the specification rules by requiring an
 /// explicit Prime Field Size for Polynomial Sharing Prime Field requests.
 pub struct CreateSplitKeyRequest {
     object_type: ObjectType,
@@ -179,7 +179,7 @@ impl CreateSplitKeyRequest {
     ///
     /// # Errors
     ///
-    /// Returns a sanitized protocol error for the FR-015 client-policy
+    /// Returns a sanitized protocol error for the the specification rules client-policy
     /// violation, source-defined Attribute cardinality violation, or an
     /// invalid generic TTLV model value.
     pub fn into_ttlv_payload(self) -> Result<Structure, ProtocolError> {
@@ -400,7 +400,7 @@ pub enum CreateSplitKeyError {
     MissingSuccessPayload,
     /// A non-Failure payload has no valid Unique Identifier field.
     MalformedSuccessPayload,
-    /// `KMIPKit` FR-015 requires a caller value for the polynomial prime-field method.
+    /// `KMIPKit` the specification rules requires a caller value for the polynomial prime-field method.
     PolynomialMethodRequiresPrimeFieldSize,
 }
 
@@ -420,7 +420,7 @@ impl fmt::Display for CreateSplitKeyError {
                 "non-Failure Create Split Key response payload is malformed"
             }
             Self::PolynomialMethodRequiresPrimeFieldSize => {
-                "Create Split Key FR-015 requires explicit Prime Field Size"
+                "Create Split Key requires explicit Prime Field Size"
             }
         };
         formatter.write_str(message)

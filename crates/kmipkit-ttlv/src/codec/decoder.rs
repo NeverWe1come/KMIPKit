@@ -57,7 +57,7 @@ pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
 /// // KMIP-REQ-SPEC-10.1.5-001-002, and KMIP-REQ-SPEC-11.56-001.
 /// // Generic order, repeated Tags, and unknown mask/Enumeration values are
 /// // Checking padding
-/// // extents without constraining pad-byte values follows FR-006.
+/// // extents without constraining pad-byte values follows the specification rules.
 /// let wire = [
 ///     // Generic Structure Tag 0x420173; 3 child Items, 16 bytes each.
 ///     0x42, 0x01, 0x73, 0x01, 0x00, 0x00, 0x00, 0x30,

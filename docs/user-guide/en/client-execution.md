@@ -485,7 +485,7 @@ fn main() {
 
 Supply the object type, part count, threshold, split method, and required
 Attributes Structure. The optional input Unique Identifier is sent only when
-provided. For Polynomial Sharing Prime Field, KMIPKit's FR-015 policy requires
+provided. For Polynomial Sharing Prime Field, KMIPKit's validation policy requires
 the caller to provide Prime Field Size explicitly.
 
 ```rust,kmipkit-test
@@ -646,7 +646,7 @@ SHA-256 (raw Enumeration value `6`) while leaving the field absent in the
 retained TTLV tree. KMIPKit does not calculate the hash.
 KMIP Specification v2.1 §9.11 requires this Timestamp to increase
 monotonically. The current model preserves the supplied value but does not
-retain prior timestamps or enforce that sequence. the credentials and attestation model OD-003 leaves
+retain prior timestamps or enforce that sequence. The open catalog disposition leaves
 the enforcement owner, comparison scope, and clock behavior unresolved, so
 KMIPKit does not claim this requirement is satisfied.
 
@@ -748,12 +748,11 @@ true, its default. KMIPKit does not claim to control those server-side effects.
 
 `execute_query_async_requests` supports the optional correlation-value and
 operation filters from OASIS KMIP v2.1 §6.1.41, Table 285. Its response payload
-is exposed as generic TTLV by this feature. `KMIPKIT-DEC-015` records the
-accepted interpretation of Table 286 for the separate typed mapping work in
-public API parity manifest T035; the printed caption and pinned OASIS source remain
+is exposed as generic TTLV by this feature. The normative catalog records the
+accepted interpretation of Table 286 for the typed response mapping in the
+public API parity manifest; the printed caption and pinned OASIS source remain
 unchanged. This interpretation is not a formal conformance claim. The catalog
-gap for the required Process request field in Table 278 remains open under
-`OD-002`.
+gap for the required Process request field in Table 278 remains open.
 
 Java and Python expose the correlation through an explicit callback as a
 read-only view backed by temporary KMIPKit-managed storage. The temporary
@@ -865,8 +864,8 @@ owner remains alive through the synchronous exchange and zeroizes its
 initialized bytes after it is dropped. This guarantee does not cover spare or
 uninitialized capacity, copies made by the caller, earlier allocations not
 cleared before reallocation, or copies owned by TLS, the operating system, or
-third-party libraries. The approved policy and its precise limits are in
-la política de codificación y limpieza de búferes.
+third-party libraries. The approved policy and its precise limits are defined by
+the outbound wire-encoding and buffer-zeroization policy.
 
 ## Fluent object lookup and lifecycle
 
@@ -1204,10 +1203,10 @@ KMIP §9.13 requires rejection of an unrecognized critical Message
 Extension. An unknown
 non-critical response extension is preserved as opaque TTLV for explicit
 inspection; preservation does not interpret or validate vendor semantics.
-This slice does not register or send vendor extensions. the extension registry owns the
+This slice does not register or send vendor extensions. The extension registry module owns the
 immutable client extension registry and validated typed vendor-extension
 adapters before the 1.0 API is frozen, as recorded in
-la política de propiedad inmutable del registro de extensiones.
+the immutable client extension registry ownership policy.
 
 ## Low-level transport contract
 
@@ -1248,6 +1247,6 @@ records their security policy and connection lifecycle.
 - [Public API architecture](../../architecture/public-api.md)
 - KMIP 2.1 asynchronous operations review quickstart
 - Initial KMIP 2.1 release scope expanded to multi-version support (KMIP 2.0, 2.1, and 3.0)
-- la política de codificación y limpieza de búferes: caller-requested wire encoding
+- Outbound wire-encoding and buffer-zeroization policy: caller-requested wire encoding
 - Immutable client extension registry ownership
 - Low-level transport contract: public low-level transport contract exclusive to Rust

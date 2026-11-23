@@ -1,6 +1,6 @@
 //! Compile-fail contracts for the sealed vendor-extension request boundary.
 //!
-//! Traceability: functional requirement, FR-005, and FR-011.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 #[test]
 fn unvalidated_items_raw_bodies_caller_conversions_and_plugins_cannot_enter_typed_requests() {

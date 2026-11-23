@@ -1,5 +1,5 @@
 //! Fluent Create Split Key tests derived from KMIP v2.1 §6.1.10,
-//! Tables 193–195, and functional requirement through FR-007.
+//! Tables 193–195, and the specification requirements.
 
 use std::cell::RefCell;
 use std::rc::Rc;

@@ -241,7 +241,7 @@ fn assert_table_59_error_parity(
         assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
         assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
         assert_eq!(error.to_string(), "invalid protocol value (invalid value)");
-        assert!(!error.to_string().contains("T025-sensitive-sentinel"));
+        assert!(!error.to_string().contains("test-sensitive-sentinel"));
     }
 }
 
@@ -287,7 +287,7 @@ fn encrypt_and_decrypt_table_59_errors_are_payload_free_and_identical() {
         let wrong_type = || {
             vec![(
                 member.tag,
-                Value::text_string("T025-sensitive-sentinel".to_owned()),
+                Value::text_string("test-sensitive-sentinel".to_owned()),
             )]
         };
         assert_table_59_error_parity(wrong_type(), wrong_type());

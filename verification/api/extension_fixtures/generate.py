@@ -339,8 +339,8 @@ def _validate_manifest(value: Any) -> dict[str, Any]:
     for function_id in REQUIRED_FUNCTION_IDS:
         entry = functions[function_id]
         requirements = entry.get("requirementIds")
-        if not isinstance(requirements, list) or "KMIPKIT-0012-FR-010" not in requirements:
-            raise FixtureError(f"manifest function {function_id} lacks FR-010 traceability")
+        if not isinstance(requirements, list) or "EXTENSION-REGISTRY-REQ-010" not in requirements:
+            raise FixtureError(f"manifest function {function_id} lacks EXTENSION-REGISTRY-REQ-010 traceability")
         for adapter, required in {
             "rust": {"module", "name", "owner", "parameters", "returnType"},
             "c": {"symbol", "parameters", "returnType", "errorCategories"},

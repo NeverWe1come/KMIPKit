@@ -2,8 +2,8 @@
 //! Tables 256–258, and the Ticket structure in §7.39, Table 391.
 //!
 //! Traceability: `KMIP-ELEM-OP-C2S-LOGOUT`,
-//! `KMIPKIT-024-T256-REQUEST`, `KMIPKIT-024-T257-RESPONSE`, and
-//! `KMIPKIT-024-T258-ERROR`. No direct official Logout test case is cataloged.
+//! the protocol specification, the protocol specification, and
+//! the protocol specification. No direct official Logout test case is cataloged.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

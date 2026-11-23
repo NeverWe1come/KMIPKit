@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-//! T027 client-contract tests derived from the OASIS KMIP Specification v2.1 §§6.1,
+//! the implementation client-contract tests derived from the OASIS KMIP Specification v2.1 §§6.1,
 //! 6.1.11 Table 196, 6.1.17 Table 214, and §§7.3, 7.4, 7.8, 7.14, and 7.17.
 //! Traceability: `KMIP-ELEM-OP-C2S-ENCRYPT`,
 //! `KMIP-ELEM-OP-C2S-DECRYPT`,

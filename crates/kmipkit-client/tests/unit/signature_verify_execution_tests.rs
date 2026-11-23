@@ -2,7 +2,7 @@
 //! §6.1.56, Tables 337–339. These are fake-transport tests, not official
 //! Test Case executions.
 //!
-//! Traceability: FR-001, FR-005–FR-013, FR-015, and
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-OP-C2S-SIGNATURE-VERIFY`.
 
 use std::cell::RefCell;

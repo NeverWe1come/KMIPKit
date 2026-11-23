@@ -7277,7 +7277,7 @@ fn profile_rejects_malformed_attestation_credential_envelopes() {
 #[test]
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
     // KMIP Specification v2.1 §9.11/Table 412 and §10.1.2; the typed Device
-    // policy follows specification requirement OD-002 and keeps field presence separate from text.
+    // policy follows the specification requirements and keeps field presence separate from text.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-9.11-004-001";
     const SOURCE_CLAUSE_ID: &str = "KMIP-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -7336,7 +7336,7 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
         assert!(!evaluate(Some(&request), None));
         let error = result
             .validate_request(&request)
-            .expect_err("Password and Device Identifier alone do not satisfy OD-002");
+            .expect_err("Password and Device Identifier alone do not satisfy the device-identifier rule");
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
@@ -14580,7 +14580,7 @@ fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
 
 #[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; specification requirement FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
     const REQUIREMENT_ID: &str = "KMIP-REQ-SPEC-6.1.16-001-001";
     const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let result = ProfileValidationResult {
@@ -14633,7 +14633,7 @@ fn public_profile_result_entrypoints_validate_transport_and_responses() {
 
 #[test]
 fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; specification requirement FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
     let result = ProfileValidationResult {
         profile_ids: vec!["TEST-PROFILE".to_owned()],
         requirement_ids: vec!["TEST-REQ".to_owned()],
@@ -14679,7 +14679,7 @@ fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
 
 #[test]
 fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; specification requirement FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; the specification requirements.
     let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
     let requirements = [requirement(
         "TEST-REQ",
@@ -25599,7 +25599,7 @@ fn t052_transparent_rsa_private_key_request(
     if operation == IMPORT_OPERATION {
         payload.push(tagged(
             UNIQUE_IDENTIFIER,
-            Value::text_string("t052-rsa-private-key".to_owned()),
+            Value::text_string("test-rsa-private-key".to_owned()),
         ));
     }
     let mut key_block = vec![
@@ -25650,7 +25650,7 @@ fn t052_rsa_private_key_value(alternative: Option<&str>) -> Value {
         Some("only_prime_exponent_p") => {
             material.push(tagged(PRIME_EXPONENT_P, Value::big_integer(vec![0x0B])));
         }
-        Some(_) => unreachable!("T052 test uses a known RSA private-key alternative"),
+        Some(_) => unreachable!("test uses a known RSA private-key alternative"),
     }
     Value::structure(structure([tagged(
         KEY_MATERIAL,

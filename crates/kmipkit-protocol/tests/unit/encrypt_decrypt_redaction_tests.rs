@@ -1,6 +1,6 @@
 //! Redaction characterization for KMIP v2.1 Encrypt and Decrypt values from
 //! §6.1.11 Tables 196–197 (Decrypt), §6.1.17 Tables 214–215 (Encrypt), and
-//! §§7.3, 7.4, 7.8, and 7.9. Traceability: functional requirement and SC-004.
+//! §§7.3, 7.4, 7.8, and 7.9. Verifies protocol model, request/response validation, and security invariants.
 
 use std::error::Error;
 
@@ -81,7 +81,7 @@ fn format_error_chain(error: &(dyn Error + 'static)) -> String {
 #[test]
 fn encrypt_and_decrypt_request_debug_redacts_each_secret_request_member() {
     let encrypt = EncryptRequest::new(
-        Some(UniqueIdentifier::TextString("t036-encrypt-key".to_owned())),
+        Some(UniqueIdentifier::TextString("test-encrypt-key".to_owned())),
         Some(OperationData::ByteString(SecretBytes::new(
             ENCRYPT_REQUEST_DATA.as_bytes().to_vec(),
         ))),
@@ -106,7 +106,7 @@ fn encrypt_and_decrypt_request_debug_redacts_each_secret_request_member() {
     );
 
     let decrypt = DecryptRequest::new(
-        Some(UniqueIdentifier::TextString("t036-decrypt-key".to_owned())),
+        Some(UniqueIdentifier::TextString("test-decrypt-key".to_owned())),
         Some(OperationData::ByteString(SecretBytes::new(
             DECRYPT_REQUEST_DATA.as_bytes().to_vec(),
         ))),
@@ -140,7 +140,7 @@ fn encrypt_and_decrypt_response_debug_and_secret_display_redact_output_members()
         structure([
             item(
                 UNIQUE_IDENTIFIER,
-                Value::text_string("t036-encrypt-output".to_owned()),
+                Value::text_string("test-encrypt-output".to_owned()),
             ),
             item(
                 DATA,
@@ -201,7 +201,7 @@ fn encrypt_and_decrypt_response_debug_and_secret_display_redact_output_members()
         structure([
             item(
                 UNIQUE_IDENTIFIER,
-                Value::text_string("t036-decrypt-output".to_owned()),
+                Value::text_string("test-decrypt-output".to_owned()),
             ),
             item(
                 DATA,

@@ -30,22 +30,22 @@ extern int32_t kmipkit_ttlv_value_view_copy_bytes(
     kmipkit_ttlv_value_view_t *view, uint8_t *buffer, uint64_t capacity);
 
 /* These assertions verify that generated internal-header consumers observe
- * the exact T076 metadata carrier layout. */
+ * the exact client ABI metadata carrier layout. */
 _Static_assert(sizeof(struct kmipkit_client_batch_item_metadata_v1_t) == 24,
-               "T076 metadata is six fixed-width fields");
+               "client ABI metadata is six fixed-width fields");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, struct_size) == 0,
-               "T076 metadata begins with struct_size");
+               "client ABI metadata begins with struct_size");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, abi_version) == 4,
-               "T076 metadata keeps the ABI version at offset four");
+               "client ABI metadata keeps the ABI version at offset four");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, outcome_kind) == 8,
-               "T076 metadata keeps the outcome kind at offset eight");
+               "client ABI metadata keeps the outcome kind at offset eight");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, result_status) == 12,
-               "T076 metadata keeps result status at offset twelve");
+               "client ABI metadata keeps result status at offset twelve");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, has_result_reason) == 16,
-               "T076 metadata keeps the reason presence flag at offset sixteen");
+               "client ABI metadata keeps the reason presence flag at offset sixteen");
 _Static_assert(offsetof(struct kmipkit_client_batch_item_metadata_v1_t, result_reason) == 20,
-               "T076 metadata keeps the result reason at offset twenty");
-/* T076 declarations for still-unmapped ABI helpers remain test-local. */
+               "client ABI metadata keeps the result reason at offset twenty");
+/* client ABI declarations for still-unmapped ABI helpers remain test-local. */
 struct kmipkit_transport_config_t;
 struct kmipkit_client_t;
 struct kmipkit_client_batch_t;
@@ -637,7 +637,7 @@ static bool test_t076_validated_client_reports_delivery_state(
     if (status != KMIPKIT_SUCCESS) {
         const int32_t execution_status = status;
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-        fprintf(stderr, "T076 execute error snapshot: result=%ld category=%lu cause=%lu delivery=%lu\n",
+        fprintf(stderr, "client ABI execute error snapshot: result=%ld category=%lu cause=%lu delivery=%lu\n",
                 (long)execution_status, (unsigned long)category, (unsigned long)cause,
                 (unsigned long)delivery);
         return false;
@@ -3686,11 +3686,11 @@ int main(int argc, char **argv)
         const char *name;
         bool (*run)(void);
     } tests_without_arguments[] = {
-        {"T076 versioned transport config rejects null input",
+        {"client ABI versioned transport config rejects null input",
          test_t076_transport_config_null_input_contract},
-        {"T076 transport config rejects unknown ABI version",
+        {"client ABI transport config rejects unknown ABI version",
          test_t076_transport_config_rejects_unknown_abi_version},
-        {"T076 transport config rejects unknown discriminators and reserved fields",
+        {"client ABI transport config rejects unknown discriminators and reserved fields",
          test_t076_transport_config_rejects_invalid_discriminators},
         {"runtime metadata and error snapshot", test_runtime_metadata_and_error_snapshot},
         {"capability input boundaries and error categories", test_capability_input_boundaries_and_error_categories},
@@ -3730,11 +3730,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     if (argc == 7 && !test_t076_validated_client_reports_delivery_state(argc, argv)) {
-        fprintf(stderr, "T076 validated client response metadata test failed\n");
+        fprintf(stderr, "client ABI validated client response metadata test failed\n");
         return EXIT_FAILURE;
     }
     if (argc == 7) {
-        puts("PASS T076 validated client returns ordered metadata and possibly-sent delivery state");
+        puts("PASS client ABI validated client returns ordered metadata and possibly-sent delivery state");
     }
     puts("All internal extension registry FFI harness tests passed.");
     return EXIT_SUCCESS;

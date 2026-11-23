@@ -1,4 +1,4 @@
-//! Requirement traceability: functional requirement and SC-006.
+//! Verifies public API ownership, redaction, and borrowing invariants.
 //!
 //! These tests cover a borrowed in-memory view only. They do not assert wire
 //! encoding or OASIS schema validity.

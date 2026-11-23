@@ -1,4 +1,4 @@
-//! Requirement traceability: functional requirement and SC-006.
+//! Verifies public API ownership, redaction, and borrowing invariants.
 //! Authority: approved specification requirement specification and Rust value-model contract.
 
 #![cfg(not(coverage))]

@@ -4,7 +4,7 @@
 //! `KMIP-REQ-SPEC-6.1.16-004`, and
 //! `KMIP-ELEM-OP-C2S-DISCOVER-VERSIONS`,
 //! `KMIP-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR/-MINOR`; the client
-//! contract is specification requirement FR-001/002/003. Table 212 permits repeated Protocol
+//! contract is the specification requirements. Table 212 permits repeated Protocol
 //! Version fields and states no uniqueness rule. These are derived tests, not
 //! official OASIS vectors.
 

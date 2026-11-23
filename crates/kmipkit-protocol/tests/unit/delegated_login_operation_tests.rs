@@ -2,8 +2,8 @@
 //! Tables 199–201, with Ticket encoding from §7.39, Table 391.
 //!
 //! Traceability: `KMIP-ELEM-OP-C2S-DELEGATED-LOGIN`,
-//! `KMIPKIT-024-T199-REQUEST`, `KMIPKIT-024-T200-RESPONSE`, and
-//! `KMIPKIT-024-T201-ERROR`. These are source-derived tests, not official
+//! the protocol specification, the protocol specification, and
+//! the protocol specification. These are source-derived tests, not official
 //! Test Case executions.
 
 use crate::async_operation_fixtures::{item, response_message, structure};

@@ -1,6 +1,6 @@
 //! Source-derived MAC client contracts from OASIS KMIP v2.1 §6.1.32,
 //! Tables 259–261. These tests are not official Test Case executions.
-//! Traceability: FR-001, FR-003, FR-009–FR-013, FR-015, and
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-OP-C2S-MAC`.
 
 use std::cell::RefCell;

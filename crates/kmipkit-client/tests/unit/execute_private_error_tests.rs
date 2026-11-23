@@ -4,8 +4,8 @@
 //! and §§8.3 and 9.21, Tables 396 and 426. Generic value copying preserves the
 //! KMIP 2.1 TTLV model defined by §6.1.1.
 //!
-//! Traceability: `functional requirement`, `-FR-006`, `-FR-008`, `-FR-013`,
-//! `-FR-016`; `success criterion`, `-SC-005`, `-SC-009`.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules; `success criterion`, the specification rules.
 
 use std::error::Error;
 

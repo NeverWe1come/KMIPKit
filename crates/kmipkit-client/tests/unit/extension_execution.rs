@@ -1,6 +1,6 @@
 //! Fake-transport response inspection and specification requirement criticality behavior.
 //!
-//! Traceability: functional requirement through FR-008, functional requirement,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! KMIP 2.1 §9.13, Table 418. Registry inspection is integrated with typed
 //! response mapping while specification requirement retains unknown-extension criticality.
 

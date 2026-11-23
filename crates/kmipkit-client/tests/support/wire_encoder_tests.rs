@@ -233,7 +233,7 @@ fn encodes_integer_golden_vector_with_signed_big_endian_value() {
     // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, 10.1.5, and 11.56;
     // specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-002: Integer is signed big-endian and has
-    // four following padding bytes. Zero padding octets are the FR-002
+    // four following padding bytes. Zero padding octets are the the specification rules
     // canonical output; OASIS does not prescribe their values.
     // KMIP-REQ-SPEC-11.56-001: the allocated test Tag starts with 0x42.
     let encoded =
@@ -311,7 +311,7 @@ fn encodes_enumeration_golden_vector_with_unsigned_big_endian_value() {
     // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, and 10.1.5;
     // specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-002: Enumeration is unsigned big-endian and
-    // has four following padding bytes. Zero padding octets are the FR-002
+    // has four following padding bytes. Zero padding octets are the the specification rules
     // canonical output; OASIS does not prescribe their values.
     let encoded =
         encode_item(&item(Value::enumeration(u32::MAX))).expect("Enumeration vector is encodable");
@@ -342,7 +342,7 @@ fn encodes_text_string_golden_vector_with_minimum_following_padding() {
     // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, and 10.1.5;
     // specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-001: Text String padding is minimal. Exact
-    // UTF-8 bytes and zero fill are KMIPKit's canonical FR-002 vector.
+    // UTF-8 bytes and zero fill are KMIPKit's canonical the specification rules vector.
     let encoded = encode_item(&item(Value::text_string("é".to_owned())))
         .expect("Text String vector is encodable");
 
@@ -359,7 +359,7 @@ fn encodes_byte_string_golden_vector_with_minimum_following_padding() {
     // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, and 10.1.5;
     // specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-001: Byte String padding is minimal. Exact
-    // payload and zero fill are KMIPKit's canonical FR-002 vector.
+    // payload and zero fill are KMIPKit's canonical the specification rules vector.
     let encoded = encode_item(&item(Value::byte_string(vec![
         0xa1, 0xb2, 0xc3, 0xd4, 0xe5,
     ])))
@@ -394,7 +394,7 @@ fn encodes_interval_golden_vector_with_unsigned_big_endian_value() {
     // OASIS KMIP Specification v2.1 §§10.1.2, 10.1.3, and 10.1.5;
     // specification requirement-NR-002, specification requirement-NR-004, and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-002: Interval is unsigned big-endian and is
-    // followed by four padding bytes. Zero padding octets are the FR-002
+    // followed by four padding bytes. Zero padding octets are the the specification rules
     // canonical output; OASIS does not prescribe their values.
     let encoded =
         encode_item(&item(Value::interval(0x0102_0304))).expect("Interval vector is encodable");
@@ -427,7 +427,7 @@ fn fixed_width_four_byte_values_have_four_following_padding_bytes() {
     // specification requirement-NR-004 and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-002: Integer, Enumeration, and Interval
     // receive four following padding bytes; this checks all three families.
-    // Zero padding octets are FR-002 canonical output, not an OASIS byte-value
+    // Zero padding octets are the specification rules canonical output, not an OASIS byte-value
     // requirement.
     let cases = [
         (Value::integer(7), 0x02, [0, 0, 0, 7, 0, 0, 0, 0]),
@@ -451,7 +451,7 @@ fn text_and_byte_string_padding_is_minimal_at_eight_byte_boundaries() {
     // specification requirement-NR-004 and specification requirement-NR-005;
     // KMIP-REQ-SPEC-10.1.5-001-001: string and byte padding reaches the
     // next eight-byte boundary with the minimum following bytes. Zero fill is
-    // FR-002 canonical output, not an OASIS byte-value requirement. This
+    // the specification rules canonical output, not an OASIS byte-value requirement. This
     // bounded table covers empty, one-byte, seven-byte, and aligned values.
     for length in [0_usize, 1, 7, 8] {
         let text = "a".repeat(length);
@@ -727,7 +727,7 @@ fn borrowed_per_call_limits_do_not_share_mutable_state() {
 
 #[test]
 fn writer_uses_the_same_borrowed_codec_limits_instance_for_each_operation() {
-    // KMIPKit's private per-operation configuration boundary: FR-007.
+    // KMIPKit's private per-operation configuration boundary: the specification rules.
     let limits = CodecLimits::new(16, 0, 1).expect("limits fit the model boundary");
     let observer = LimitsIdentityObserver::new(&limits);
     let copy_observer = EncodingObserver::default();

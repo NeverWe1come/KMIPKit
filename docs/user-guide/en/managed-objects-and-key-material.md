@@ -8,6 +8,49 @@ object-specific Structure Item is passed directly to Register or Import; the
 wrapper names and ownership rules are summarized in [Typed bindings,
 validation, and response data](typed-bindings-and-response-data.md).
 
+## Generic server-generated Create
+
+Use the generic fluent Create builder when the caller has selected an Object
+Type and its direct Attributes. The builder emits the required Attributes
+Structure even when the set is empty; it can also carry the optional generic
+Protection Storage Masks Structure. The server creates the object. KMIPKit
+does not choose cryptographic attributes, material, or storage policy.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientOperation};
+use kmipkit_protocol::{AttributeSet, ObjectType};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn create_object(
+    client: &mut Client,
+    limits: &CodecLimits,
+    object_type: ObjectType,
+    attributes: AttributeSet,
+) -> Result<(), kmipkit_client::ClientError> {
+    let item = client
+        .request()
+        .create()
+        .object_type(object_type)
+        .attributes(attributes)
+        .execute(limits)?;
+    let outcome = item.outcome();
+    assert_eq!(outcome.operation(), ClientOperation::Create);
+    let response_view = outcome.response();
+    let response = response_view.create().expect("typed Create response");
+    let _status = response.result().status().raw();
+    let _object_type = response.object_type();
+    let _unique_identifier = response.unique_identifier();
+    Ok(())
+}
+
+fn main() { let _example = create_object; }
+```
+
+This is KMIP v2.1 §6.1.8, Tables 186–188. The application supplies all
+attributes and any Protection Storage Masks explicitly. Inspect the returned
+KMIP result and identifier; a successful response does not establish that the
+server followed application-specific policy.
+
 ## Plaintext key material
 
 Choose the Key Format Type explicitly. For Raw key bytes, a typed value can be

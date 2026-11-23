@@ -1,4 +1,4 @@
-//! functional requirement, FR-005, and FR-012 secret-handling contracts.
+//! the specification requirements, and the specification rules secret-handling contracts.
 //!
 //! Get field shapes follow OASIS KMIP v2.1 §6.1.19, Tables 220–221; the Any
 //! Object remains opaque as described in §2. Payload redaction and zeroization
@@ -155,7 +155,7 @@ fn diagnostics(error: &dyn Error) -> String {
 
 #[test]
 fn explicit_wrapping_fields_are_redacted_and_move_into_the_ttlv_owner() {
-    // FR-005 keeps explicit Table 220 wrapping input caller-selected. Formatting
+    // the specification rules keeps explicit Table 220 wrapping input caller-selected. Formatting
     // protection and zeroization on drop come from the KMIPKit TTLV contract.
     let request = GetRequest::new().with_key_wrapping_specification(wrapping_specification(
         REQUEST_TEXT_SENTINEL,
@@ -207,7 +207,7 @@ fn wrapping_depth_error_redacts_the_consumed_nested_secret() {
 
 #[test]
 fn nested_get_object_is_owned_after_source_drop_and_redacted_in_debug() {
-    // §2 and Table 221 leave Any Object opaque. FR-004 requires the retained
+    // §2 and Table 221 leave Any Object opaque. the specification rules requires the retained
     // object to use KMIPKit's existing zeroizing, redacting Item ownership.
     let response = {
         let message = response_message(response_payload(
@@ -235,7 +235,7 @@ fn nested_get_object_is_owned_after_source_drop_and_redacted_in_debug() {
 
 #[test]
 fn malformed_get_object_error_redacts_nested_payload_sentinels() {
-    // FR-012 requires sanitized failures even when an invalid response carries
+    // the specification rules requires sanitized failures even when an invalid response carries
     // a secret-bearing nested Any Object.
     let message = response_message(response_payload(
         any_object(ERROR_SENTINEL, RESPONSE_BYTES_SENTINEL),

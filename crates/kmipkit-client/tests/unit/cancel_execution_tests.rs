@@ -1,7 +1,7 @@
 //! Client Cancel behavior derived from OASIS KMIP v2.1 §6.1.5, Tables 176–178,
 //! and §11.7, Tables 437–438; these are not official conformance vectors.
 //!
-//! Traceability: functional requirement, FR-008, FR-009, FR-010.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_protocol::{CancelRequest, CancellationResult};
 use kmipkit_test_support::ExchangeScript;

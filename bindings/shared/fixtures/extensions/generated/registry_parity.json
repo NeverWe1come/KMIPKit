@@ -169,9 +169,9 @@
         "returnType": "ExtensionIdentity"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -247,9 +247,9 @@
         "returnType": "str"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ExtensionIdentity",
@@ -317,9 +317,9 @@
         "returnType": "str"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ExtensionIdentity",
@@ -387,9 +387,9 @@
         "returnType": "str"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ExtensionIdentity",
@@ -516,11 +516,11 @@
         "returnType": "ExtensionDefinition"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -635,11 +635,11 @@
         "returnType": "ValidatedExtensionValue"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -723,10 +723,10 @@
         "returnType": "ClientConfiguration"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-001",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry::ClientConfiguration",
@@ -797,9 +797,9 @@
         "returnType": "ClientExtensionRegistry"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-001",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry::ClientConfiguration",
@@ -957,10 +957,10 @@
         "returnType": "ClientExtensionRegistry"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-001",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1088,12 +1088,12 @@
         "returnType": "ExtensionRecognition"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-008",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-008",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1172,8 +1172,8 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1255,8 +1255,8 @@
         "returnType": "ExtensionDefinition | None"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1377,11 +1377,11 @@
         "returnType": "RegisteredExtensionValue"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1501,9 +1501,9 @@
         "returnType": "ClientRequestMessageExtension"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -1590,9 +1590,9 @@
         "returnType": "ClientBatchItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client",
@@ -1653,9 +1653,9 @@
         "returnType": "ClientBatchItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::execute::ClientBatchItem",
@@ -1717,9 +1717,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::execute::ClientBatchItem",
@@ -1801,9 +1801,9 @@
         "returnType": "ExtensionIdentity"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::execute::ClientBatchItem",
@@ -1888,9 +1888,9 @@
         "returnType": "bool"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::execute::ClientBatchItem",
@@ -2056,9 +2056,9 @@
         "returnType": "Compatibility"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2153,10 +2153,10 @@
         "returnType": "TtlvPath"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2245,10 +2245,10 @@
         "returnType": "TtlvPath"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2345,10 +2345,10 @@
         "returnType": "Discriminator"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2424,9 +2424,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2548,10 +2548,10 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2648,9 +2648,9 @@
         "returnType": "ExtensionChildRule"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2743,9 +2743,9 @@
         "returnType": "ExtensionChildRule"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2838,9 +2838,9 @@
         "returnType": "ExtensionChildRule"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -2932,10 +2932,10 @@
         "returnType": "ExtensionOrderConstraint"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3031,9 +3031,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3129,9 +3129,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3240,9 +3240,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3355,9 +3355,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3457,9 +3457,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3555,9 +3555,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3653,9 +3653,9 @@
         "returnType": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3775,8 +3775,8 @@
         "returnType": "ExtensionRegistryLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -3979,8 +3979,8 @@
         "returnType": "ExtensionRegistryLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4110,9 +4110,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4201,9 +4201,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4296,9 +4296,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4391,9 +4391,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4486,9 +4486,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4581,9 +4581,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4687,9 +4687,9 @@
         "returnType": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4769,8 +4769,8 @@
         "returnType": "Structure"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4863,9 +4863,9 @@
         "returnType": "ExtensionDefinition"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -4942,9 +4942,9 @@
         "returnType": "ExtensionIdentity"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -5017,8 +5017,8 @@
         "returnType": "ExtensionInformation | None"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -5105,8 +5105,8 @@
         "returnType": "ExtensionDefinition | None"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -5182,9 +5182,9 @@
         "returnType": "bool"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -5257,9 +5257,9 @@
         "returnType": "ValidatedExtensionValue | None"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -5332,9 +5332,9 @@
         "returnType": "TtlvStructureView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -5407,9 +5407,9 @@
         "returnType": "ExtensionIdentity"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -5482,10 +5482,10 @@
         "returnType": "TtlvStructureView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -5572,9 +5572,9 @@
         "returnType": "TtlvValueView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ValidatedExtensionValue",
@@ -5654,9 +5654,9 @@
         "returnType": "RawTag"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::RawTag",
@@ -5723,9 +5723,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::RawTag",
@@ -5793,9 +5793,9 @@
         "returnType": "Tag"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::RawTag",
@@ -5862,9 +5862,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Tag",
@@ -5915,9 +5915,9 @@
         "returnType": "CodecLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec::CodecLimits",
@@ -6013,10 +6013,10 @@
         "returnType": "CodecLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec::CodecLimits",
@@ -6091,9 +6091,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec::CodecLimits",
@@ -6160,9 +6160,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec::CodecLimits",
@@ -6229,9 +6229,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec::CodecLimits",
@@ -6297,9 +6297,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6365,9 +6365,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6437,9 +6437,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6507,9 +6507,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6575,9 +6575,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6647,9 +6647,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6715,9 +6715,9 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Value",
@@ -6817,10 +6817,10 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ttlv",
@@ -6924,10 +6924,10 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ttlv",
@@ -7031,10 +7031,10 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ttlv",
@@ -7128,10 +7128,10 @@
         "returnType": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7186,9 +7186,9 @@
         "returnType": "Structure"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv::Structure",
@@ -7287,10 +7287,10 @@
         "returnType": "TtlvItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension::ttlv",
@@ -7402,10 +7402,10 @@
         "returnType": "Structure"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7481,9 +7481,9 @@
         "returnType": "TtlvStructureView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7550,9 +7550,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7634,9 +7634,9 @@
         "returnType": "TtlvItemView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7708,9 +7708,9 @@
         "returnType": "Tag"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7777,9 +7777,9 @@
         "returnType": "ItemType"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7847,9 +7847,9 @@
         "returnType": "TtlvValueView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7917,9 +7917,9 @@
         "returnType": "TtlvValueView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -7986,9 +7986,9 @@
         "returnType": "ItemType"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8056,9 +8056,9 @@
         "returnType": "TtlvStructureView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8125,9 +8125,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8194,9 +8194,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8263,9 +8263,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8332,9 +8332,9 @@
         "returnType": "bool"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8401,9 +8401,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8470,9 +8470,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8539,9 +8539,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8608,9 +8608,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8691,9 +8691,9 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -8760,8 +8760,8 @@
         "returnType": "int"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::ClientBatchItemResponse",
@@ -8844,8 +8844,8 @@
         "returnType": "ttlv.Structure"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::ClientMessageExtension",
@@ -9005,20 +9005,20 @@
     }
   ],
   "requirementIds": [
-    "KMIPKIT-0012-FR-001",
-    "KMIPKIT-0012-FR-002",
-    "KMIPKIT-0012-FR-003",
-    "KMIPKIT-0012-FR-004",
-    "KMIPKIT-0012-FR-005",
-    "KMIPKIT-0012-FR-006",
-    "KMIPKIT-0012-FR-007",
-    "KMIPKIT-0012-FR-008",
-    "KMIPKIT-0012-FR-009",
-    "KMIPKIT-0012-FR-010",
-    "KMIPKIT-0012-FR-011",
-    "KMIPKIT-0012-FR-012",
-    "KMIPKIT-0012-FR-013",
-    "KMIPKIT-0012-FR-014"
+    "EXTENSION-REGISTRY-REQ-001",
+    "EXTENSION-REGISTRY-REQ-002",
+    "EXTENSION-REGISTRY-REQ-003",
+    "EXTENSION-REGISTRY-REQ-004",
+    "EXTENSION-REGISTRY-REQ-005",
+    "EXTENSION-REGISTRY-REQ-006",
+    "EXTENSION-REGISTRY-REQ-007",
+    "EXTENSION-REGISTRY-REQ-008",
+    "EXTENSION-REGISTRY-REQ-009",
+    "EXTENSION-REGISTRY-REQ-010",
+    "EXTENSION-REGISTRY-REQ-011",
+    "EXTENSION-REGISTRY-REQ-012",
+    "EXTENSION-REGISTRY-REQ-013",
+    "EXTENSION-REGISTRY-REQ-014"
   ],
   "scope": "registry-slice",
   "security": {
@@ -9050,9 +9050,9 @@
         "name": "ExtensionIdentity"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9079,9 +9079,9 @@
         "name": "Compatibility"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9108,10 +9108,10 @@
         "name": "TtlvPath"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9138,10 +9138,10 @@
         "name": "Discriminator"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9168,11 +9168,11 @@
         "name": "ExtensionSchema"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9199,9 +9199,9 @@
         "name": "ExtensionInformation"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9225,8 +9225,8 @@
         "name": "ExtensionRegistryLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9253,11 +9253,11 @@
         "name": "ExtensionDefinition"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9284,14 +9284,14 @@
         "name": "ClientExtensionRegistry"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-008",
-        "KMIPKIT-0012-FR-009",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-001",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-008",
+        "EXTENSION-REGISTRY-REQ-009",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -9318,10 +9318,10 @@
         "name": "ClientConfiguration"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-001",
-        "KMIPKIT-0012-FR-003",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-001",
+        "EXTENSION-REGISTRY-REQ-003",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -9348,11 +9348,11 @@
         "name": "ValidatedExtensionValue"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9379,10 +9379,10 @@
         "name": "RegisteredExtensionValue"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -9409,9 +9409,9 @@
         "name": "ClientRequestMessageExtension"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -9438,10 +9438,10 @@
         "name": "Structure"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9468,8 +9468,8 @@
         "name": "ClientBatchItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client",
@@ -9496,10 +9496,10 @@
         "name": "ExtensionChildRule"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9526,10 +9526,10 @@
         "name": "ExtensionOrderConstraint"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_protocol::extension",
@@ -9605,10 +9605,10 @@
         "name": "ItemType"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-004",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-004",
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9635,10 +9635,10 @@
         "name": "Value"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-002",
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-002",
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9665,9 +9665,9 @@
         "name": "ExtensionRecognition"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-006",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-006",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_client::extension_registry",
@@ -9694,9 +9694,9 @@
         "name": "RawTag"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9723,9 +9723,9 @@
         "name": "Tag"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9752,9 +9752,9 @@
         "name": "TtlvItem"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ttlv",
@@ -9781,10 +9781,10 @@
         "name": "CodecLimits"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-012"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-012"
       ],
       "rust": {
         "module": "kmipkit_ttlv::codec",
@@ -9811,9 +9811,9 @@
         "name": "TtlvStructureView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -9840,9 +9840,9 @@
         "name": "TtlvItemView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -9869,9 +9869,9 @@
         "name": "TtlvValueView"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-005",
-        "KMIPKIT-0012-FR-007",
-        "KMIPKIT-0012-FR-010"
+        "EXTENSION-REGISTRY-REQ-005",
+        "EXTENSION-REGISTRY-REQ-007",
+        "EXTENSION-REGISTRY-REQ-010"
       ],
       "rust": {
         "module": "kmipkit_ffi::ttlv",
@@ -9898,8 +9898,8 @@
         "name": "BatchItemResult"
       },
       "requirementIds": [
-        "KMIPKIT-0012-FR-010",
-        "KMIPKIT-0012-FR-011"
+        "EXTENSION-REGISTRY-REQ-010",
+        "EXTENSION-REGISTRY-REQ-011"
       ],
       "rust": {
         "module": "kmipkit_client",

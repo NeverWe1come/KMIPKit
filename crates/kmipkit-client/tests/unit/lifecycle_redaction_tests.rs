@@ -1,6 +1,6 @@
 //! Redaction regressions for the specification requirement lifecycle values.
 //!
-//! Derived from the project's specification requirement FR-010 security requirement and
+//! Derived from the project's the specification requirements security requirement and
 //! shared specification requirement error contract. These are project-policy tests, not
 //! official OASIS Test Cases.
 

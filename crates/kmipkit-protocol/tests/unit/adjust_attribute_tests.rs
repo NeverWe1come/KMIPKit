@@ -2,7 +2,7 @@
 
 //! Derived Adjust Attribute vectors for OASIS KMIP v2.1 §6.1.3, Tables
 //! 170–172, and §11.1, Tables 428–429. Traceability:
-//! functional requirement/FR-010/FR-011 and SC-002/SC-003/SC-005.
+//! the specification requirements.
 //! These are derived structural tests; they do not claim an official OASIS
 //! conformance case passed.
 

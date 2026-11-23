@@ -99,7 +99,7 @@ fn current_and_new_attribute_values_remain_typed_while_wrapper_debug_redacts_the
 
 #[test]
 fn direct_and_wrapped_attribute_validation_errors_redact_values_in_diagnostics() {
-    // FR-013 and security zeroization policy require diagnostics to omit secret-bearing
+    // the specification rules and security zeroization policy require diagnostics to omit secret-bearing
     // attribute values. The OASIS structure sources are §4 and §4.60 Table 150.
     let invalid_direct = item(
         KNOWN_ENUM_ATTRIBUTE_TAG,

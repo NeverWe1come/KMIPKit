@@ -105,12 +105,12 @@ fn typed_message_parity_case_is_shared_with_rust_and_compiled_c_consumers() {
     assert_eq!(
         case["requirementIds"],
         serde_json::json!([
-            "functional requirement",
-            "functional requirement",
-            "functional requirement",
-            "functional requirement",
-            "functional requirement",
-            "functional requirement"
+            "PUBLIC-API-BINDINGS-REQ-010",
+            "PUBLIC-API-BINDINGS-REQ-011",
+            "PUBLIC-API-BINDINGS-REQ-013",
+            "PUBLIC-API-BINDINGS-REQ-017",
+            "PUBLIC-API-BINDINGS-REQ-018",
+            "PUBLIC-API-BINDINGS-REQ-022"
         ])
     );
     assert_eq!(case["consumerTests"]["rust"]["status"], "available");

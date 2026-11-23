@@ -19,6 +19,9 @@ mod fluent;
 #[path = "client_abi/fluent_crypto.rs"]
 mod fluent_crypto;
 
+#[path = "client_abi/fluent_kmip30.rs"]
+pub(super) mod fluent_kmip30;
+
 fn c_abi_struct_size<T>() -> u32 {
     u32::try_from(std::mem::size_of::<T>()).unwrap_or(u32::MAX)
 }
@@ -2994,11 +2997,18 @@ pub extern "C" fn kmipkit_client_batch_item_create_credential_from_fields(
         let attributes = try_ffi!(copy_attribute_set_model(attributes));
         let object = try_ffi!(copy_required_item_handle(object));
         let object = try_ffi!(create_credential_object_from_item(object_type_raw, object));
-        let request = CreateCredentialRequest::new(
-            CredentialType::from_raw(credential_type_raw),
-            attributes,
-            object,
-        );
+        let expected_credential_type = match &object {
+            CreateCredentialObject::Certificate(_) => CredentialType::Certificate,
+            CreateCredentialObject::PasswordCredential(_) => CredentialType::Password,
+            CreateCredentialObject::DeviceCredential(_) => CredentialType::Device,
+            CreateCredentialObject::HashedPasswordCredential(_) => CredentialType::HashedPassword,
+            CreateCredentialObject::OneTimePasswordCredential(_) => CredentialType::OneTimePassword,
+            _ => return ERROR_INVALID_INPUT,
+        };
+        if expected_credential_type.raw() != credential_type_raw {
+            return ERROR_INVALID_INPUT;
+        }
+        let request = CreateCredentialRequest::new(attributes, object);
         *out = try_ffi!(batch_item_handle(ClientRequest::create_credential(request)));
         SUCCESS
     })

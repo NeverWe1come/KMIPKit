@@ -7,7 +7,7 @@
 //! Get Attribute List §6.1.21 Tables 226–228; Modify Attribute §6.1.34
 //! Tables 265–267; and Set Attribute §6.1.51 Tables 322–324.
 //!
-//! Traceability: functional requirement and SC-002. These derived tests do not
+//! Verifies protocol model, request/response validation, and security invariants.
 //! claim that an official OASIS conformance case passed.
 
 use crate::{

@@ -1,4 +1,4 @@
-//! Requirement traceability: functional requirement, FR-010, FR-013, and SC-004.
+//! Verifies public API ownership, redaction, and borrowing invariants.
 //! Authority: approved specification requirement specification and Rust value-model contract.
 
 use std::fmt::{Binary, Debug, Display, LowerHex, Octal, UpperHex, Write as _};

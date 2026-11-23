@@ -1,6 +1,6 @@
 //! Fallible identity, compatibility, discriminator, and definition contracts.
 //!
-//! Traceability: functional requirement, FR-002, FR-003, FR-006, and FR-012.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_protocol::{ProtocolError, ProtocolErrorKind, extension};
 use kmipkit_ttlv::{ItemType, RawTag, Tag, Value};

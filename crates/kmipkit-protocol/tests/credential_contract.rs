@@ -6,8 +6,8 @@
 //!
 //! Traceability: KMIP-REQ-SPEC-9.4-001-001, KMIP-REQ-SPEC-9.4-001-002,
 //! KMIP-REQ-SPEC-9.4-002, KMIP-REQ-SPEC-9.11-004-001/-002/-003,
-//! KMIP-REQ-SPEC-9.11-006; functional requirement, FR-002, FR-004–FR-006,
-//! FR-009; SC-001, SC-002.
+//! KMIP-REQ-SPEC-9.11-006; the specification requirements,
+//! the specification rules.
 
 use kmipkit_protocol::{
     Authentication, CredentialType, CredentialValidationErrorKind, CredentialValue,
@@ -806,8 +806,8 @@ fn hashed_password_timestamp_sequence_matches_shared_fixture() {
         .as_i64()
         .expect("next timestamp is signed 64-bit");
 
-    // KMIP Specification v2.1 §9.11, Table 415; OD-003 is resolved in
-    // specification requirement and specification requirement T056 as caller-owned per-Username state.
+    // KMIP Specification v2.1 §9.11, Table 415; the specification rules is resolved in
+    // the specification requirement and the specification requirement the implementation as caller-owned per-Username state.
     let mut sequence = HashedPasswordTimestampSequence::new(Some(restored));
     assert_eq!(
         sequence.last_timestamp(),

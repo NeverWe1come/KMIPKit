@@ -1,6 +1,6 @@
-"""Contract tests for the shared Python client facade (public API binding surface T024).
+"""Contract tests for the shared Python client facade (Python client facade).
 
-The client facade is a language adapter over the reviewed T076 C ABI. These
+The client facade is a language adapter over the reviewed client ABI C ABI. These
 tests intentionally do not create a real network connection; Rust/C tests own
 transport-wire verification.
 """
@@ -381,9 +381,21 @@ def _no_response_extension_symbols() -> dict[str, object]:
         output[0] = client.ffi.NULL  # type: ignore[index]
         return 0
 
+    def no_kmip30_identifier(_item: object, present: object, _output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        return 0
+
+    def no_encapsulate_data(_item: object, present: object, output: object) -> int:
+        present[0] = 0  # type: ignore[index]
+        output.data = client.ffi.NULL  # type: ignore[attr-defined]
+        output.length = 0  # type: ignore[attr-defined]
+        return 0
+
     return {
         "kmipkit_client_batch_item_response_extension_count": no_extensions,
         "kmipkit_client_batch_item_response_extension_ttlv_at": no_extension_at,
+        "kmipkit_client_batch_item_response_kmip30_identifier": no_kmip30_identifier,
+        "kmipkit_client_batch_item_response_encapsulate_data": no_encapsulate_data,
     }
 
 

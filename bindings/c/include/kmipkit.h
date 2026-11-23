@@ -1498,15 +1498,12 @@ int32_t kmipkit_last_error_clear(void);
 int32_t kmipkit_client_extension_registry_create_v1(kmipkit_extension_definition_t ** definitions, uint64_t definition_count, const kmipkit_extension_registry_limits_v1_t * limits, kmipkit_client_extension_registry_t ** out_registry);
 int32_t kmipkit_extension_registry_limits_v1_default_values(kmipkit_extension_registry_limits_v1_t * out_limits);
 int32_t kmipkit_extension_registry_limits_v1_validate(const kmipkit_extension_registry_limits_v1_t * limits);
-/* OPAQUE-CONTEXT-FR-001, OPAQUE-CONTEXT-FR-002, OPAQUE-CONTEXT-FR-006, OPAQUE-CONTEXT-FR-007 */
 int32_t kmipkit_register_request_create(uint32_t object_type, kmipkit_ttlv_structure_t * attributes, kmipkit_ttlv_item_t * object, kmipkit_register_request_t ** out_request);
-/* OPAQUE-CONTEXT-FR-001, OPAQUE-CONTEXT-FR-002, OPAQUE-CONTEXT-FR-003, OPAQUE-CONTEXT-FR-004, OPAQUE-CONTEXT-FR-005, OPAQUE-CONTEXT-FR-007 */
 int32_t kmipkit_register_request_with_opaque_object_context(kmipkit_register_request_t * request, uint32_t context, kmipkit_register_request_t ** out_request);
 /* Returns a Register request with caller-supplied Protection Storage Masks, defined by KMIP v2.1 Section 6.1.43 and Section 4.44 Table 117.
  * The request handle is consumed; the structure is borrowed and copied. An empty structure preserves present-empty separately from omission.
  */
 int32_t kmipkit_register_request_with_protection_storage_masks(kmipkit_register_request_t * request, kmipkit_ttlv_structure_t * masks, kmipkit_register_request_t ** out_request);
-/* OPAQUE-CONTEXT-FR-001, OPAQUE-CONTEXT-FR-003, OPAQUE-CONTEXT-FR-004, OPAQUE-CONTEXT-FR-005, OPAQUE-CONTEXT-FR-006, OPAQUE-CONTEXT-FR-007 */
 int32_t kmipkit_client_batch_item_register(kmipkit_register_request_t * request, kmipkit_client_batch_item_t ** out_item);
 int32_t kmipkit_client_batch_create(kmipkit_client_batch_t ** out_batch);
 int32_t kmipkit_client_batch_set_request_time_stamp(kmipkit_client_batch_t * batch, int64_t time_stamp);
@@ -2485,242 +2482,193 @@ int32_t kmipkit_client_async_operation_outcome_process_response_v1(kmipkit_clien
 int32_t kmipkit_client_async_operation_outcome_query_async_requests_response_v1(kmipkit_client_async_operation_outcome_t * outcome, uint8_t * out_present, kmipkit_client_async_operation_response_v1_t * out_response);
 /* Copies a direct attribute Item after checking its catalogued tag and TTLV value type. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_typed_attribute_from_item(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Copies a TTLV Item after validating it as a KMIP ManagedObject value. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_managed_object_from_item(uint32_t object_type, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Copies a TTLV Item after validating it as a KMIP KeyBlock value. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_block_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Copies a TTLV Item after validating it as a KMIP KeyValue value. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_value_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Copies a TTLV Item after validating it as a KMIP KeyMaterial value. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_material_from_item(uint32_t format_raw, kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Copies a TTLV Item after validating it as a KMIP KeyWrappingData value. The input remains caller-owned.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_wrapping_data_from_item(kmipkit_ttlv_item_t * item, kmipkit_ttlv_item_t ** out_item);
 /* Builds Cryptographic Parameters from a versioned field record; raw enumerations are preserved and P Source is copied.
  */
-/* PARITY-FACADE-FR-004, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_cryptographic_parameters_from_fields_v1(const kmipkit_cryptographic_parameters_fields_v1_t * fields, kmipkit_cryptographic_parameters_t ** out_parameters);
 /* Copies and validates a generic TTLV Structure without consuming the caller handle.
  */
-/* PARITY-FACADE-FR-004, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_cryptographic_parameters_from_ttlv(kmipkit_ttlv_structure_t * structure, kmipkit_cryptographic_parameters_t ** out_parameters);
 /* Consumes a typed Cryptographic Parameters value into generic TTLV.
  */
-/* PARITY-FACADE-FR-004, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_cryptographic_parameters_into_ttlv(kmipkit_cryptographic_parameters_t * parameters, kmipkit_ttlv_structure_t ** out_structure);
 /* Attaches Authentication once to the Request Header for this batch message. The handle is consumed only on success.
  */
-/* PARITY-FACADE-FR-005, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_client_batch_set_authentication(kmipkit_client_batch_t * batch, kmipkit_authentication_t * authentication);
 /* Validates a generic TTLV Structure with the shared Rust validator. Empty schema means no inferred schema; known names are RequestPayload/<Operation> or Nested/<Structure>.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-006, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_ttlv_structure_validation_report_v1(kmipkit_ttlv_structure_t * structure, const uint8_t * schema, uint64_t schema_length, kmipkit_validation_report_t ** out_report);
 /* Validates a typed request using the same Rust request checks that run before client execution.
  */
-/* PARITY-FACADE-FR-006, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_client_batch_item_validation_report(kmipkit_client_batch_item_t * item, kmipkit_validation_report_t ** out_report);
 /* Returns whether an owned validation report has no error-severity finding.
  */
-/* PARITY-FACADE-FR-006, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_validation_report_is_valid(kmipkit_validation_report_t * report, uint8_t * out_is_valid);
 /* Returns the ordered safe issue count for an owned validation report.
  */
-/* PARITY-FACADE-FR-006, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_validation_report_issue_count(kmipkit_validation_report_t * report, uint64_t * out_count);
 /* Copies safe code, schema path, severity and source metadata into a caller-versioned view; spans remain borrowed from the report.
  */
-/* PARITY-FACADE-FR-006, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_validation_report_issue_at_v1(kmipkit_validation_report_t * report, uint64_t index, kmipkit_validation_issue_view_v1_t * out_issue);
 /* Copies present Table 59 fields into a versioned record. P Source is a borrowed read-only span valid while the Cryptographic Parameters handle remains live.
  */
-/* PARITY-FACADE-FR-004, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_cryptographic_parameters_read_fields_v1(kmipkit_cryptographic_parameters_t * parameters, kmipkit_cryptographic_parameters_fields_v1_t * out_fields);
 /* Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
  */
-/* PARITY-FACADE-FR-007 */
 int32_t kmipkit_client_batch_item_operation(kmipkit_client_batch_item_t * item, uint32_t * out_operation);
 /* Constructs and validates an owned typed Item from a catalogued tag and copied TTLV Value; caller retains the Value.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_typed_attribute_from_value(uint32_t expected_tag, kmipkit_ttlv_value_t * value, kmipkit_ttlv_item_t ** out_item);
 /* Returns an independently owned TTLV Value after validating the typed Item.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_typed_attribute_value(uint32_t expected_tag, kmipkit_ttlv_item_t * item, kmipkit_ttlv_value_t ** out_value);
 /* Validates and appends one typed Item while preserving insertion order and caller ownership.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_attribute_set_try_push_typed(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, kmipkit_ttlv_item_t * item);
 /* Returns the number of occurrences for one catalogued attribute.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_attribute_set_typed_count(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t * out_count);
 /* Returns the requested catalogued attribute occurrence as an independently owned Item copy in source order.
  */
-/* PARITY-FACADE-FR-002, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_attribute_set_typed_at(kmipkit_attribute_set_t * attributes, uint32_t expected_tag, uint64_t occurrence, kmipkit_ttlv_item_t ** out_item);
 /* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_managed_object_from_fields(uint32_t object_type, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_block_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_value_from_fields(uint32_t format_raw, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_material_from_fields(uint32_t format_raw, kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Copies caller-owned field Items into a source-ordered typed KMIP structure; input handles remain owned by the caller.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_key_wrapping_data_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a Certificate from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_certificate_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Validates the selected managed value with its Rust typed model, then reads one raw-tag field. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. read_kind is 1 presence, 2 TTLV Item Type, 3 Enumeration, 4 Integer, or 5 Byte String/Big Integer bytes. Byte reads accept a null buffer with zero capacity to query length; short buffers fail without partial copies.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009 */
 int32_t kmipkit_managed_value_field_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, uint8_t * out_bytes, uint64_t byte_capacity, uint64_t * out_byte_length);
 /* Builds and validates a SymmetricKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_symmetric_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a PublicKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_public_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a PrivateKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_private_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a SplitKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_split_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a SecretData from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_secret_data_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a OpaqueObject from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_opaque_object_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a PgpKey from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_pgp_key_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Builds and validates a CertificateRequest from caller-owned field Items in KMIP table order.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-010, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_certificate_request_from_fields(kmipkit_ttlv_item_t ** fields, uint64_t field_count, kmipkit_ttlv_item_t ** out_item);
 /* Validates the selected managed value with its Rust typed model, then returns an independently owned copy of the first direct child matching field_tag. The copy retains the complete unknown/vendor subtree and child order; callers release a present output Item. owner_kind is 1 for ManagedObject, 2 for KeyBlock, 3 for KeyValue, 4 for KeyMaterial, or 5 for KeyWrappingData; context_raw is Object Type for kind 1, Key Format Type for kinds 3 and 4, and zero for kinds 2 and 5. Absence returns success with out_present set to zero and out_item set to null.
  */
-/* PARITY-FACADE-FR-003, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_managed_value_field_item_read(uint32_t owner_kind, uint32_t context_raw, kmipkit_ttlv_item_t * item, uint32_t field_tag, uint8_t * out_present, kmipkit_ttlv_item_t ** out_item);
 /* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
  * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
  */
-/* PARITY-FACADE-FR-008, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_client_batch_item_response_query_field_count(kmipkit_client_batch_item_response_t * item, uint8_t * out_present, uint64_t * out_count);
 /* Reads the Rust-classified Query response field without reparsing generic TTLV in the binding.
  * Enumeration fields return their raw uint32 value; other fields return an independently owned TTLV Item released with kmipkit_ttlv_item_release.
  */
-/* PARITY-FACADE-FR-008, PARITY-FACADE-FR-009, PARITY-FACADE-FR-011, PARITY-FACADE-FR-012 */
 int32_t kmipkit_client_batch_item_response_query_field_at(kmipkit_client_batch_item_response_t * item, uint64_t index, uint8_t * out_present, uint32_t * out_tag, uint8_t * out_kind, uint32_t * out_enumeration, kmipkit_ttlv_item_t ** out_item);
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_configuration_protocol_version(kmipkit_client_configuration_t * configuration, int32_t * out_major, int32_t * out_minor);
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_configuration_with_protocol_version(kmipkit_client_configuration_t * configuration, int32_t major, int32_t minor, kmipkit_client_configuration_t ** out_configuration);
 /* Creates an opt-in KMIP 3.0 Working Draft CreateGroup route from ordered generic TTLV, citing §6.1.10, Table 280. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_create_group(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft Obliterate route from ordered generic TTLV, citing §6.1.41, Table 374. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_obliterate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft CreateUser route from ordered generic TTLV, citing §6.1.13, Table 290. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_create_user(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft CreateCredential route from ordered generic TTLV, citing §6.1.9, Table 277. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_create_credential(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft Deactivate route from ordered generic TTLV, citing §6.1.14, Table 293. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_deactivate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft Encapsulate route from ordered generic TTLV, citing §6.1.22, Table 317. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_encapsulate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 /* Creates an opt-in KMIP 3.0 Working Draft Decapsulate route from ordered generic TTLV, citing §6.1.15, Table 296. This route preserves fields but does not validate operation-specific schema.
  */
-/* PARITY-FACADE-FR-018 */
 int32_t kmipkit_client_batch_item_decapsulate(kmipkit_ttlv_structure_t * payload, kmipkit_client_batch_item_t ** out_item);
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 int32_t kmipkit_message_validation_error_field_index(kmipkit_message_validation_error_t * error, uint8_t * out_present, uint64_t * out_index);

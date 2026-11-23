@@ -4,7 +4,7 @@
 //! These tests cover the in-memory semantic model only, not TTLV wire encoding
 //! or schema validity.
 //!
-//! Traceability: functional requirement–FR-008, functional requirement, and
+//! Verifies protocol model, request/response validation, and security invariants.
 //! functional requirement, and specification requirement-NR-001–NR-007. Structure depth is
 //! capped at 64 by `KMIPKit` policy, not by an OASIS protocol constraint.
 

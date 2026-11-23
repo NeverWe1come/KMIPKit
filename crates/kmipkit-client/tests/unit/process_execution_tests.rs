@@ -1,8 +1,8 @@
 //! Client Process behavior derived from OASIS KMIP v2.1 §§6.1.39, 8.6, 9.2,
 //! and 11.3, Tables 278–280, 399, 401, and 432; these are not official vectors.
 //!
-//! Traceability: functional requirement, FR-008, FR-009, FR-010. The missing
-//! catalog requirement ID for Table 278 remains open under OD-002.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! catalog requirement ID for Table 278 remains open under the specification rules.
 
 use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{client_for, request_contains};
@@ -57,6 +57,7 @@ fn process_pending_is_caller_selected_and_performs_one_exchange() {
 #[test]
 fn process_success_requires_the_empty_table_279_payload() {
     let response = asynchronous_response_bytes(PROCESS, 0, None, None, Some(test_structure([])));
+    let expected_wire_response = response.clone();
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: Vec::new(),
@@ -70,6 +71,10 @@ fn process_success_requires_the_empty_table_279_payload() {
         .expect("successful Process has an empty response payload");
 
     assert!(!result.is_pending());
+    assert_eq!(
+        result.with_raw_response_bytes(<[u8]>::to_vec),
+        expected_wire_response,
+    );
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(
         result

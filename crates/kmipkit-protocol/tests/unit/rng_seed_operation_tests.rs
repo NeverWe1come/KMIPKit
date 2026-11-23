@@ -1,7 +1,7 @@
 //! Source-derived RNG Seed contracts from OASIS KMIP v2.1 §6.1.50,
 //! Tables 319–321. These tests do not claim an official Test Case pass.
 //!
-//! Traceability: FR-001–FR-008, `KMIP-REQ-SPEC-6.1.50-001`,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-ELEM-OP-C2S-RNG-SEED`,
 //! `KMIP-ELEM-ENUM-VALUE-OPERATION-RNG-SEED-00000026`,
 //! `KMIP-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and

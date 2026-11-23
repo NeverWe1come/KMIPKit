@@ -15,6 +15,7 @@ from _test_support import (
     start_tls13_mtls_peer,
 )
 from kmipkit import attribute_operations, client, errors, extensions, fluent, protocol_values, ttlv
+from kmipkit.key_usage import KeyUsage
 from kmipkit.typed_attributes import StandardAttribute
 
 _FIXTURES = Path(__file__).resolve().parents[3] / "bindings" / "shared" / "fixtures" / "login-mtls"
@@ -33,6 +34,44 @@ def test_fluent_request_exposes_locate_and_revoke_builders():
     assert hasattr(fluent, "RevokeBuilder")
     assert "LocateBuilder" in fluent.__all__
     assert "RevokeBuilder" in fluent.__all__
+
+
+def test_fluent_request_exposes_a_ping_builder():
+    assert callable(getattr(fluent.Request, "ping", None))
+    assert hasattr(fluent, "PingBuilder")
+    assert "PingBuilder" in fluent.__all__
+    builder = fluent.Request(None).ping()
+    builder.validate()
+    with builder.to_batch_item() as item:
+        assert item.operation == protocol_values.V2_1_OPERATION_PING
+
+
+def test_create_builder_requires_object_type_and_builds_a_typed_create_item():
+    with ttlv.ttlv_structure_create() as empty_items:
+        with attribute_operations.AttributeSet.try_new(empty_items) as attributes:
+            builder = fluent.Request(None).create()
+            with pytest.raises(errors.InvalidInputError):
+                builder.validate()
+            with pytest.raises(errors.InvalidInputError):
+                builder.with_asynchronous_indicator(1 << 32)
+            builder.close()
+
+            builder = (
+                fluent.Request(None).create()
+                .object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+                .attributes(attributes)
+                .protection_storage_masks(empty_items)
+                .with_asynchronous_indicator(protocol_values.AsynchronousIndicator.PROHIBITED)
+                .with_options(client.RequestOptions())
+            )
+            attributes.close()
+            empty_items.close()
+            item = builder.to_batch_item()
+            try:
+                assert item.operation == protocol_values.Operation.CREATE
+            finally:
+                item.close()
+                builder.close()
 
 
 def test_locate_and_revoke_build_typed_items_with_explicit_optional_fields():
@@ -358,6 +397,13 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation in (0x12, 0x15, 0x16, 0x13):
+        payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation == 0x08:
+        payload_fields = [
+            _item(0x4200D5, 2, struct.pack(">i", 1)),
+            _item(0x420094, 7, identifier),
+        ]
     elif operation == 11:
         payload_fields = [
             _item(0x420094, 7, identifier),
@@ -373,6 +419,8 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
                 _item(0x42000A, 7, b"Comment"),
             ),
         ]
+    elif operation == protocol_values.V2_1_OPERATION_PING:
+        payload_fields = []
     else:
         raise AssertionError(f"unexpected fluent operation {operation}")
     response_item = _structure(
@@ -389,6 +437,8 @@ def _start_lifecycle_peer(
     *,
     expected_asynchronous_indicator: int | None = None,
     expected_indicators_by_operation: dict[int, int] | None = None,
+    response_identifier: bytes | None = None,
+    response_frame: bytes | None = None,
 ) -> tuple[int, list[tuple[int, bytes | None, bytes]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
@@ -411,6 +461,10 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
+                    if response_identifier is not None:
+                        stream.sendall(
+                            _lifecycle_response(expected_operation, response_identifier)
+                        )
                     expected_indicator = (expected_indicators_by_operation or {}).get(
                         expected_operation, expected_asynchronous_indicator
                     )
@@ -425,8 +479,14 @@ def _start_lifecycle_peer(
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
                     observations.append((operation, request_identifier, request))
-                    response_identifier = request_identifier or b"fluent-created-id"
-                    stream.sendall(_lifecycle_response(operation, response_identifier))
+                    if response_frame is not None:
+                        stream.sendall(response_frame)
+                    elif response_identifier is None:
+                        stream.sendall(
+                            _lifecycle_response(
+                                operation, request_identifier or b"fluent-created-id"
+                            )
+                        )
         except BaseException as error:  # noqa: BLE001 - make peer failures visible in the test.
             failures.put(error)
         finally:
@@ -493,6 +553,39 @@ def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options
         assert [operation for operation, _, _ in observations] == [10, 20, 1, 1]
     finally:
         for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_fluent_ping_builder_executes_one_tls_exchange() -> None:
+    assert callable(getattr(fluent.Request, "ping", None))
+    port, observations, peer_failures, peer = _start_lifecycle_peer(
+        (protocol_values.V2_1_OPERATION_PING,), expected_asynchronous_indicator=2
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result: client.BatchResult | None = None
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                result = kmip_client.request().ping().asynchronous_indicator(2).execute(limits)
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [item.operation for item in result.items] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+        assert [operation for operation, _, _ in observations] == [
+            protocol_values.V2_1_OPERATION_PING
+        ]
+    finally:
+        if result is not None:
             result.close()
         peer.join(timeout=12)
         if not peer_failures.empty():
@@ -814,7 +907,7 @@ def test_operation_async_indicator_is_encoded_in_request_header() -> None:
 
 def test_builder_builds_existing_typed_batch_item() -> None:
     with fluent.SymmetricKeyBuilder() as builder:
-        item = builder.aes_256().usage_mask(12).name("test-key").build()
+        item = builder.aes_256().usage_mask(KeyUsage.ENCRYPT | KeyUsage.DECRYPT).name("test-key").build()
     batch = client.Batch.create()
     try:
         batch.add_item(item)
@@ -882,6 +975,74 @@ def test_fluent_async_indicator_is_encoded_in_request_header() -> None:
         peer.join(timeout=12)
         if not peer_failures.empty():
             raise peer_failures.get()
+
+
+@pytest.mark.parametrize("generic", (False, True))
+@pytest.mark.parametrize("status", (0, 1, 2))
+def test_create_execute_one_preserves_result_and_wire_response(status: int, generic: bool) -> None:
+    wire = _lifecycle_response(1, b"created-id")
+    if status != 0:
+        header_end = 16 + int.from_bytes(wire[12:16], "big")
+        details = (
+            _item(0x42007E, 5, struct.pack(">I", 12))
+            if status == 1
+            else _item(0x420006, 8, b"create-pending")
+        )
+        response_item = _structure(
+            0x42000F,
+            _item(0x42005C, 5, struct.pack(">I", 1)),
+            _item(0x42007F, 5, struct.pack(">I", status)),
+            details,
+            *([_structure(0x42007C)] if status == 2 else []),
+        )
+        wire = _structure(0x42007B, wire[8:header_end], response_item)
+    port, observations, failures, peer = _start_lifecycle_peer((1,), response_frame=wire)
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    try:
+        with (
+            configuration,
+            client.Client.create(configuration, mtls_transport_config(port, _FIXTURES)) as kmip,
+            ttlv.codec_limits_defaults() as limits,
+        ):
+            request = kmip.request()
+            if generic:
+                builder = request.create().object_type(protocol_values.ObjectType.SYMMETRIC_KEY)
+                if status == 2:
+                    builder.with_asynchronous_indicator(protocol_values.AsynchronousIndicator.OPTIONAL)
+            else:
+                builder = request.create_symmetric_key().aes_256().usage_mask(KeyUsage.ENCRYPT)
+                if status == 2:
+                    builder.asynchronous_indicator(protocol_values.AsynchronousIndicator.OPTIONAL)
+            with builder, builder.execute_one(limits) as result:
+                assert result.result_status == status
+                assert result.raw_response_bytes() == wire
+                if status == 0:
+                    assert result.unique_identifier == extensions.UniqueIdentifier.text_string(
+                        "created-id"
+                    )
+                elif status == 1:
+                    assert result.unique_identifier is None
+                    assert result.result_reason == 12
+                else:
+                    assert result.unique_identifier is None
+                    assert result.pending_correlation_value == b"create-pending"
+            with pytest.raises(errors.InvalidInputError):
+                result.raw_response_bytes()
+    finally:
+        peer.join(timeout=12)
+        if not failures.empty():
+            raise failures.get()
+    assert not peer.is_alive()
+    assert len(observations) == 1
+
+
+def test_raw_response_bytes_requires_a_native_response() -> None:
+    metadata = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    with pytest.raises(errors.InvalidInputError):
+        metadata.raw_response_bytes()
 
 
 def test_fluent_create_get_destroy_uses_server_created_identifier() -> None:

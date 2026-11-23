@@ -4,11 +4,11 @@
 //! (Table 461), and 11.29; permitted Unique Identifier forms come from §4.58,
 //! Tables 145–146. Any Object remains opaque as defined in §2. These are local
 //! source-derived vectors, not official OASIS Test Cases.
-//! Response traceability: KMIP-ELEM-OP-C2S-GET; specification requirement FR-001–004,
-//! FR-011; SC-001 and SC-002.
+//! Verifies typed response parsing and validation requirements.
+//! the specification rules and the specification rules.
 //!
-//! Traceability: `KMIP-ELEM-OP-C2S-GET`; specification requirement FR-002, FR-003;
-//! SC-001 and SC-002.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! the specification rules and the specification rules.
 
 use crate::{
     GetError, GetRequest, GetResponse, KeyCompressionType, KeyFormatType, KeyWrapType, ObjectType,

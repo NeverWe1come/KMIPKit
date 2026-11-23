@@ -1,8 +1,8 @@
 //! Derived KMIP 2.1 Process tests; not official conformance vectors.
 //!
-//! Traceability: `functional requirement`, `FR-005`, `FR-009`; OASIS KMIP v2.1
+//! Verifies protocol model, request/response validation, and security invariants.
 //! §6.1.39, Tables 278–280. The missing catalog requirement ID for Table 278
-//! remains an explicit traceability gate (OD-002).
+//! remains an explicit traceability gate (the specification rules).
 
 use kmipkit_ttlv::ValueView;
 

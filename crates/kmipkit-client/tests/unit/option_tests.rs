@@ -7,7 +7,7 @@
 //! `KMIPKIT-DEC-002` applies only the assigned-value outbound policy and does
 //! not call the §11.5 extension allocation invalid.
 //!
-//! Traceability: `functional requirement`, `-FR-008`, `-FR-010`, `-SC-002`,
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-REQ-SPEC-8-003-002`, `KMIP-REQ-SPEC-9.2-001`,
 //! `KMIP-REQ-SPEC-9.6-001-001`, `-001-002`, `-001-003`,
 //! `KMIP-REQ-SPEC-9.13-001-004`, `-001-005`,
@@ -72,7 +72,7 @@ struct CandidateUnknownExtension {
     opaque_ttlv: Vec<u8>,
 }
 
-// Deliberately incomplete test-only seams. T011 replaces these candidates
+// Deliberately incomplete test-only seams. the implementation replaces these candidates
 // with the production request-option, response, and extension policies.
 fn candidate_validate_outbound_async_indicator(
     raw: Option<u32>,
@@ -96,6 +96,8 @@ fn candidate_build_batch_error_option(
             | crate::execute::BatchValidationError::EmptyBatch
             | crate::execute::BatchValidationError::MissingBatchItemId
             | crate::execute::BatchValidationError::DuplicateBatchItemId
+            | crate::execute::BatchValidationError::BatchItemIdReservedInV3
+            | crate::execute::BatchValidationError::QueryFunctionRequiresV3
             | crate::execute::BatchValidationError::IneligibleIdPlaceholder
             | crate::execute::BatchValidationError::InvalidAsynchronousIndicator
             | crate::execute::BatchValidationError::ExtensionRegistryMismatch => {

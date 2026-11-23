@@ -8,7 +8,7 @@
 //! `KMIPKit` associates response items by their IDs regardless of response
 //! order. These derived tests are not official OASIS vectors.
 //!
-//! Traceability: `functional requirement`, `-FR-006`, and `-FR-016`;
+//! Verifies protocol model, request/response validation, and security invariants.
 //! `KMIP-REQ-SPEC-8.3-003`, `KMIP-REQ-SPEC-9.21-001-001`,
 //! `KMIP-REQ-SPEC-9.21-001-002`, `KMIPKIT-DISC-022`,
 //! `functional requirement`, and `functional requirement`.
@@ -99,7 +99,7 @@ impl Arbitrary for ReorderedBatchCase {
     }
 }
 
-// Deliberately incomplete test-only seams. T009 supplies the typed execution
+// Deliberately incomplete test-only seams. the implementation supplies the typed execution
 // path and replaces these candidate functions with production behavior.
 fn candidate_accepts_header_version(version: CandidateProtocolVersion) -> bool {
     version_is_supported(ProtocolVersion::from_raw(version.major, version.minor))
