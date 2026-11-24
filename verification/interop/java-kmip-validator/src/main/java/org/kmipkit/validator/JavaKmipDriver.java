@@ -64,8 +64,8 @@ public final class JavaKmipDriver implements AutoCloseable {
             return executeCreateWithCleanup(testCase, start);
         }
         ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
-                ? client.request().ping().build().withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII))
-                : TypedRequestFactory.create(testCase.operation());
+                ? withBatchId(client.request().ping().build())
+                : TypedRequestFactory.create(testCase.operation(), !isDraft());
         return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
     }
 
@@ -125,9 +125,8 @@ public final class JavaKmipDriver implements AutoCloseable {
         long createStatus = -1;
         long createReason = -1;
         long createObjectType = -1;
-        try (TtlvStructure attributes = createTestKeyAttributes(objectName);
-                ClientBatchItem request = buildCreate(attributes, !attributeRead(testCase))
-                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        try (TtlvStructure attributes = createTestKeyAttributes(objectName, isDraft());
+                ClientBatchItem request = withBatchId(buildCreate(attributes, !attributeRead(testCase)));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
             batch.add(request);
@@ -181,8 +180,7 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
         }
 
-        try (ClientBatchItem request = ClientBatchItem.destroy(createdIdentifier)
-                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        try (ClientBatchItem request = withBatchId(ClientBatchItem.destroy(createdIdentifier));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
             batch.add(request);
@@ -305,7 +303,22 @@ public final class JavaKmipDriver implements AutoCloseable {
         return false;
     }
 
-    private static TtlvStructure createTestKeyAttributes(String objectName) {
+    private boolean isDraft() {
+        return "3.0".equals(connection.protocolVersion());
+    }
+
+    private ClientBatchItem withBatchId(ClientBatchItem request) {
+        return isDraft() ? request : request.withUniqueBatchItemId(
+                "item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+    }
+
+    private static TtlvStructure createTestKeyAttributes(String objectName, boolean draft) {
+        if (draft) {
+            var attributes = appendOwnedValue(TtlvStructure.create(), 0x0042_00fc,
+                    TtlvValue.TextString(objectName.getBytes(java.nio.charset.StandardCharsets.UTF_8), CODEC_LIMITS));
+            attributes = appendOwnedValue(attributes, 0x0042_0028, TtlvValue.Enumeration(3));
+            return appendOwnedValue(attributes, 0x0042_002a, TtlvValue.Integer(256));
+        }
         TtlvStructure name = TtlvStructure.create();
         TtlvStructure attributes = null;
         try {
@@ -338,7 +351,7 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private static boolean sameIdentifier(UniqueIdentifier left, UniqueIdentifier right) {
         if (left.kind() != right.kind()) return false;
-        return left.kind() == UniqueIdentifier.Kind.TEXT_STRING
+        return left.kind() == UniqueIdentifier.Kind.TEXT_STRING || left.kind() == UniqueIdentifier.Kind.IDENTIFIER
                 ? left.text().equals(right.text()) : left.number() == right.number();
     }
 
@@ -380,6 +393,8 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
+            case "Set Endpoint Role" -> result.setEndpointRoleResponse()
+                    .map(payload -> payload.endpointRole() == 1).orElse(false);
             case "Create" -> false;
             case "Get Constraints" -> {
                 var payload = result.getConstraintsResponse();

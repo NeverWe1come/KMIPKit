@@ -96,7 +96,7 @@ public final class MatrixReporter {
         text(report.server().product(), "server.product");
         text(report.server().version(), "server.version");
         digest(report.server().configurationFingerprint(), "server.configuration_fingerprint");
-        require(Set.of("2.0", "2.1").contains(report.protocolVersion()), "Report protocol_version is invalid");
+        require(Set.of("2.0", "2.1", "3.0").contains(report.protocolVersion()), "Report protocol_version is invalid");
         digest(report.catalogSha256(), "catalog_sha256");
         require(report.execution() != null, "Report execution is required");
         require(Set.of("raw_tls", "https").contains(report.execution().transport()), "Report transport is invalid");

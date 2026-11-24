@@ -6,6 +6,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.credentials.CredentialType;
+import org.kmipkit.credentials.SecretText;
+import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.ClientBatch;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientConfiguration;
+import org.kmipkit.extensions.ClientExtensionRegistry;
+import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.TransportConfiguration;
+import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.fluent.CreateCredentialObject;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -35,6 +54,7 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,6 +64,100 @@ class ControlledTlsPeerTest {
 
     @TempDir
     Path temporaryDirectory;
+
+    @ParameterizedTest
+    @ValueSource(ints = {0x3c, 0x3d, 0x3e, 0x3f, 0x40, 0x41, 0x42})
+    void draftTypedAndFluentBuildersSendTheSameVersionedRequest(int operation) throws Exception {
+        assertArrayEquals(draftExchange(operation, false), draftExchange(operation, true));
+    }
+
+    private static byte[] draftExchange(int operation, boolean fluent) throws Exception {
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] clientKey = fixture("client-key.pem");
+        var limits = CodecLimits.defaults();
+        try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                certificate(clientPem));
+                var registry = ClientExtensionRegistry.create(List.of(), ExtensionRegistryLimits.defaults());
+                var defaults = ClientConfiguration.create(registry);
+                var configuration = defaults.withProtocolVersion(new ProtocolVersion(3, 0));
+                var transportBuilder = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {clientPem}, clientKey)
+                        .trustCertificatesPem(new byte[][] {serverPem})
+                        .tlsServerName("localhost");
+                var transport = transportBuilder.build();
+                var client = KmipClient.create(configuration, transport);
+                var source = TtlvStructure.create();
+                var attrs = AttributeSet.tryNew(source);
+                var request = draftRequest(client, attrs, limits, operation, fluent);
+                var batch = ClientBatch.create()) {
+            var peer = new FutureTask<>(() -> serveOneResponse(listener, draftRejection(operation)));
+            Thread thread = new Thread(peer, "java-validator-kmip30-peer");
+            thread.setDaemon(true);
+            thread.start();
+            batch.add(request);
+            try (var response = client.execute(batch, limits); var item = response.itemAt(0)) {
+                assertEquals(operation, item.operation());
+                assertEquals(1, item.resultStatus());
+                assertEquals(5, item.resultReason().orElseThrow());
+            }
+            byte[] wire = peer.get(15, TimeUnit.SECONDS);
+            assertTrue(contains(wire, item(0x42006a, 2, intBytes(3))));
+            assertTrue(contains(wire, item(0x42005c, 5, intBytes(operation))));
+            return wire;
+        }
+    }
+
+    private static ClientBatchItem draftRequest(KmipClient client, AttributeSet attrs,
+            CodecLimits limits, int operation, boolean fluent) throws Exception {
+        var id = UniqueIdentifier.identifier("disposable-peer-object");
+        byte[] ciphertext = {1, 2, 3};
+        var builder = client.request();
+        return switch (operation) {
+            case 0x3c -> fluent ? builder.createGroup(attrs).build() : ClientBatchItem.createGroupFromAttributes(attrs);
+            case 0x3d -> fluent ? builder.obliterate(id).build() : ClientBatchItem.obliterateFromIdentifier(id);
+            case 0x3e -> fluent ? builder.createUser(attrs).build() : ClientBatchItem.createUserFromAttributes(attrs);
+            case 0x3f -> draftCredential(builder, attrs, limits, fluent);
+            case 0x40 -> fluent ? builder.deactivate(id).build() : ClientBatchItem.deactivateFromFields(id, null, null);
+            case 0x41 -> fluent ? builder.encapsulate(id).build() : ClientBatchItem.encapsulateFromFields(id, null, null);
+            case 0x42 -> fluent ? builder.decapsulate(id, ciphertext).build()
+                    : ClientBatchItem.decapsulateFromFields(id, ciphertext, null, null);
+            default -> throw new IllegalArgumentException("Unexpected draft operation");
+        };
+    }
+
+    private static ClientBatchItem draftCredential(org.kmipkit.fluent.FluentRequest request, AttributeSet attrs,
+            CodecLimits limits, boolean fluent) throws Exception {
+        String fixturePassword = "disposable-peer-credential";
+        if (fluent) {
+            try (var secret = SecretText.fromString(fixturePassword);
+                    var object = CreateCredentialObject.password(secret, null, null, null, null);
+                    var builder = request.createCredential(attrs, object)) {
+                return builder.build();
+            }
+        }
+        try (var empty = TtlvStructure.create();
+                var fieldTag = RawTag.fromRaw(0x4200a1); var field = fieldTag.checked();
+                var text = TtlvValue.TextString(fixturePassword.getBytes(StandardCharsets.UTF_8), limits);
+                var password = TtlvItem.create(field, text, limits);
+                var fields = TtlvStructure.withItem(empty, password, limits);
+                var wrapper = TtlvValue.structure(fields, limits);
+                var objectTag = RawTag.fromRaw(0x4201a1); var object = objectTag.checked();
+                var credential = TtlvItem.create(object, wrapper, limits)) {
+            return ClientBatchItem.createCredentialFromFields(
+                    CredentialType.fromRaw(CredentialType.PASSWORD), 0x0d, attrs, credential);
+        }
+    }
+
+    private static byte[] draftRejection(int operation) throws Exception {
+        return structure(0x42007b,
+                structure(0x42007a,
+                        structure(0x420069, item(0x42006a, 2, intBytes(3)), item(0x42006b, 2, intBytes(0))),
+                        item(0x420092, 9, longBytes(1))),
+                structure(0x42000f, item(0x42005c, 5, intBytes(operation)),
+                        item(0x42007f, 5, intBytes(1)), item(0x42007e, 5, intBytes(5))));
+    }
 
     // OASIS KMIP 2.1 §6.1.16 and §4.1.2: Discover Versions request and response.
     @Test
