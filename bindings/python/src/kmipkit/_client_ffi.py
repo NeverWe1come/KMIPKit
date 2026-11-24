@@ -6,12 +6,20 @@ declares the C ABI symbols needed by the Python CFFI wrappers.
 
 from __future__ import annotations
 
-from cffi import FFI
+import os
 
-from ._ffi import _bundled_path
+if os.environ.get("SPHINX_BUILD"):
+    from unittest.mock import MagicMock
 
-ffi = FFI()
-ffi.cdef(
+    ffi = MagicMock()
+    lib = MagicMock()
+else:
+    from cffi import FFI
+
+    from ._ffi import _bundled_path
+
+    ffi = FFI()
+    ffi.cdef(
     """
     typedef unsigned char uint8_t;
     typedef unsigned int uint32_t;
@@ -2759,17 +2767,12 @@ ffi.cdef(
     void kmipkit_kmip30_operation_builder_release(
         kmipkit_kmip30_operation_builder_t *builder);
     """
-)
+    )
 
-_native_path = str(_bundled_path)
-try:
-    lib = ffi.dlopen(_native_path)
-except (ImportError, OSError):
-    if os.environ.get("SPHINX_BUILD"):
-        from unittest.mock import MagicMock
-
-        lib = MagicMock()
-    else:
+    _native_path = str(_bundled_path)
+    try:
+        lib = ffi.dlopen(_native_path)
+    except (ImportError, OSError):
         raise ImportError("KMIPKit native client ABI is unavailable") from None
 
 
