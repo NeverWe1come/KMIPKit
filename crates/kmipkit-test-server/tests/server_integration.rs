@@ -27,8 +27,10 @@ use std::time::Duration;
 
 use kmipkit_client::extension_registry::{ClientConfiguration, client_extension_registry};
 use kmipkit_client::{
-    Client, ClientBatch, ClientBatchItem, ClientRequest, RequestOptions, WireEncoding,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientRequest, RequestOptions,
+    WireEncoding,
 };
+use kmipkit_protocol::{QueryFunction, QueryRequest};
 use kmipkit_test_server::codec::Format;
 use kmipkit_test_server::ops::dispatcher::*;
 use kmipkit_test_server::{ServerConfig, TestServer};
@@ -70,24 +72,38 @@ fn build_client(
 }
 
 #[tokio::test]
-async fn raw_tls_client_executes_discover_versions() {
+async fn raw_tls_client_executes_discover_versions_and_query_in_all_encodings() {
     let server = TestServer::start(ServerConfig::default())
         .await
         .expect("test server starts");
 
-    let endpoint = Endpoint::raw_tls("127.0.0.1", server.port());
-    let mut client = build_client(endpoint, server.pki(), WireEncoding::Ttlv);
-
-    let outcome = tokio::task::spawn_blocking(move || {
-        let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
-        client
-            .execute(batch, &CodecLimits::defaults())
-            .expect("discover_versions over raw-TLS succeeds")
-    })
-    .await
-    .unwrap();
-
-    assert_eq!(outcome.len(), 1);
+    for encoding in [WireEncoding::Ttlv, WireEncoding::Json, WireEncoding::Xml] {
+        let endpoint = Endpoint::raw_tls("127.0.0.1", server.port());
+        let mut client = build_client(endpoint, server.pki(), encoding);
+        tokio::task::spawn_blocking(move || {
+            let limits = CodecLimits::defaults();
+            let discover =
+                ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+            assert_eq!(
+                client
+                    .execute(discover, &limits)
+                    .expect("Discover Versions over raw TLS")
+                    .len(),
+                1
+            );
+            let request = ClientRequest::query(QueryRequest::new([QueryFunction::OPERATIONS]));
+            let batch = ClientBatch::new(ClientBatchItem::new(request));
+            let response = client.execute(batch, &limits).expect("Query over raw TLS");
+            let ClientBatchOutcome::Query(query) =
+                response.get(0).expect("Query batch item").outcome()
+            else {
+                panic!("expected typed Query response");
+            };
+            assert!(query.operations().next().is_some());
+        })
+        .await
+        .unwrap();
+    }
 
     server.shutdown().await.expect("clean shutdown");
 }
