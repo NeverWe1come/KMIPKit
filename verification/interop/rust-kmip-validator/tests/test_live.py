@@ -617,14 +617,18 @@ class LiveContract(unittest.TestCase):
             return report, tuple(peer.request_trees), tuple(peer.response_trees)
 
     def test_incoming_operations_use_public_listener_and_dispatcher(self):
-        for version in ("2.0", "2.1"):
+        for version in ("2.0", "2.1", "3.0"):
             with self.subTest(version=version):
                 self.incoming_scenario(version)
 
     def incoming_scenario(self, version):
         cases = [c for c in CATALOG["test_cases"] if c["requires"].get("workflow_type") == "server_to_client"]
+        major, minor = map(int, version.split("."))
+        if major == 3:
+            cases = [{**case, "execution": {**case["execution"], "protocol_versions": [version]}}
+                     for case in cases]
         work = self.directory / f"incoming-ready-{version}"
-        payloads = [[], [ttlv(0x420094, 7, "owned-fixture")], [ttlv(0x420094, 7, "owned-fixture"), ttlv(0x420070, 5, 1), ttlv(0x42005b, 1, [ttlv(0x420059, 5, 1), ttlv(0x42005a, 8, b"fixture")])], [ttlv(0x420074, 5, 1)], [ttlv(0x420151, 5, 1)]]
+        payloads = [[], [ttlv(0x420094, 7, "owned-fixture")], [ttlv(0x420094, 12 if major == 3 else 7, "owned-fixture"), ttlv(0x420070, 5, 1), ttlv(0x42005b, 1, [ttlv(0x420059, 5, 1), ttlv(0x42005a, 8, b"fixture")])], [ttlv(0x420074, 5, 1)], [ttlv(0x420151, 5, 1)]]
         operations = [0x1e, 0x1b, 0x1c, 0x18, 0x32]
         errors = []
         def send():
@@ -640,9 +644,14 @@ class LiveContract(unittest.TestCase):
                 for operation, payload in zip(operations, payloads):
                     with socket.create_connection((host, int(port)), timeout=5) as raw:
                         with context.wrap_socket(raw, server_hostname="localhost") as channel:
-                            channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, int(version[-1]))]), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
+                            fields = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)])]
+                            if major < 3:
+                                fields.append(ttlv(0x42000d, 2, 1))
+                            channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, fields),
+                                ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
                             reply = parse(receive(channel))
-                            if find(reply, 0x42005c) != operation or find(reply, 0x42007f) != 0 or find(reply, 0x42006b) != int(version[-1]):
+                            if (find(reply, 0x42005c), find(reply, 0x42007f), find(reply, 0x42006a),
+                                    find(reply, 0x42006b)) != (operation, 0, major, minor):
                                 raise AssertionError(f"incoming response contract mismatch: expected operation={operation}, observed operation={find(reply, 0x42005c)}, status={find(reply, 0x42007f)}")
             except Exception as error:
                 errors.append(str(error))
@@ -650,7 +659,7 @@ class LiveContract(unittest.TestCase):
         thread.start()
         _, report = self.command(self.connection(version=version), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
         thread.join(timeout=10)
-        self.assertFalse(errors, errors)
+        self.assertFalse(errors, (errors, report))
         self.assertEqual(report["summary"]["passed"], 5, report["cases"])
 
 
