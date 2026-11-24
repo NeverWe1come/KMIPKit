@@ -296,3 +296,97 @@ fn build_mutation(
         _ => return Err("no equivalent Rust Fluent attribute recipe"),
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use kmipkit::client_config::{ClientConfiguration, client_extension_registry};
+    use kmipkit::protocol::{
+        KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, ObjectGroupMember,
+        RevocationReason, RevokeRequest, StorageStatusMask, UniqueIdentifier,
+    };
+    use kmipkit::transport_config::{
+        CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
+    };
+
+    fn fixture_client() -> Client {
+        let registry =
+            client_extension_registry(Vec::new(), kmipkit::protocol::extension::defaults())
+                .expect("empty extension registry");
+        let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../../bindings/shared/fixtures/login-mtls");
+        let transport = TransportConfig::builder(Endpoint::raw_tls("127.0.0.1", 1))
+            .client_identity(ClientIdentity::new(
+                CertificateInput::from_pem_file(fixture.join("client-cert.pem"))
+                    .expect("test certificate"),
+                PrivateKeyInput::from_pem_file(fixture.join("client-key.pem"))
+                    .expect("test private key"),
+            ))
+            .trust_source(TrustSource::certificate_authorities(vec![
+                CertificateInput::from_pem_file(fixture.join("server-cert.pem"))
+                    .expect("test trust anchor"),
+            ]))
+            .build()
+            .expect("valid endpoint configuration");
+        Client::new(ClientConfiguration::new(registry), transport)
+            .expect("client construction without connecting")
+    }
+
+    #[test]
+    fn optional_get_selectors_survive_fluent_construction() {
+        let mut client = fixture_client();
+        let id = UniqueIdentifier::TextString("fixture-key".into());
+        let format = KeyFormatType::from_raw(7);
+        let wrapping = KeyWrapType::from_raw(2);
+        let compression = KeyCompressionType::from_raw(1);
+        let fixture = GetRequest::new()
+            .with_unique_identifier(id.clone())
+            .with_key_format_type(format)
+            .with_key_wrap_type(wrapping)
+            .with_key_compression_type(compression)
+            .with_key_wrapping_specification(kmipkit::ttlv::Structure::new());
+
+        let ClientRequest::Get(result) = build(&mut client, ClientRequest::Get(fixture))
+            .expect("Fluent Get with optional selectors")
+        else {
+            panic!("expected Get");
+        };
+        assert_eq!(result.unique_identifier(), Some(&id));
+        assert_eq!(result.key_format_type(), Some(format));
+        assert_eq!(result.key_wrap_type(), Some(wrapping));
+        assert_eq!(result.key_compression_type(), Some(compression));
+        assert!(result.key_wrapping_specification().is_some());
+    }
+
+    #[test]
+    fn locate_and_revoke_preserve_explicit_optional_values() {
+        let mut client = fixture_client();
+        let storage = StorageStatusMask::from_raw(3);
+        let group = ObjectGroupMember::from_raw(1);
+        let locate = LocateRequest::new(AttributeSet::new())
+            .with_maximum_items(3)
+            .with_offset_items(2)
+            .with_storage_status_mask(storage)
+            .with_object_group_member(group);
+        let ClientRequest::Locate(result) = build(&mut client, ClientRequest::Locate(locate))
+            .expect("Fluent Locate with explicit filters")
+        else {
+            panic!("expected Locate");
+        };
+        assert_eq!(result.maximum_items(), Some(3));
+        assert_eq!(result.offset_items(), Some(2));
+        assert_eq!(result.storage_status_mask(), Some(storage));
+        assert_eq!(result.object_group_member(), Some(group));
+
+        let revoke = RevokeRequest::new(RevocationReason::from_raw(2))
+            .with_revocation_message("fixture compromise".into())
+            .with_compromise_occurrence_date(1);
+        let ClientRequest::Revoke(result) = build(&mut client, ClientRequest::Revoke(revoke))
+            .expect("Fluent Revoke with explicit message and date")
+        else {
+            panic!("expected Revoke");
+        };
+        assert_eq!(result.revocation_message(), Some("fixture compromise"));
+        assert_eq!(result.compromise_occurrence_date(), Some(1));
+    }
+}
