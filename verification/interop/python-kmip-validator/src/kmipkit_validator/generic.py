@@ -8,8 +8,9 @@ import struct
 
 HASH_INPUT = b"abc"
 CREATE, GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 1, 0x0A, 0x0B, 0x14, 0x15, 0x16
+CHECK = 0x09
 GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE = 0x0C, 0x12, 0x13
-OWNED_KEY_OPERATIONS = {CREATE, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
+OWNED_KEY_OPERATIONS = {CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
 
 
 def _operation(case, version):
@@ -17,7 +18,7 @@ def _operation(case, version):
         return None
     if case["case_id"] == "test-op-ping":
         return 0x3B if version == "2.1" else None
-    return {"test-op-create": CREATE, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
+    return {"test-op-create": CREATE, "test-op-check": CHECK, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
             "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY, "test-op-get-attributes": GET_ATTRIBUTES,
             "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
             "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27}.get(case["case_id"])
@@ -152,9 +153,12 @@ def _run_owned_key(driver, operation):
             driver, GET_ATTRIBUTE_LIST, identifier,
             lambda payload: same_id(payload) and _has_length_reference(payload),
         )
-    if created["status"] == "passed" and operation in (ACTIVATE, REVOKE):
+    if created["status"] == "passed" and operation in (ACTIVATE, REVOKE, CHECK):
         activate = _checked_exchange(driver, ACTIVATE, identifier, same_id)
         target = activate
+        if activate["status"] == "passed" and operation == CHECK:
+            target = _checked_exchange(driver, CHECK, identifier,
+                                       lambda payload: same_id(payload) and _matches_check_usage(payload))
         if activate.get("result_status_code") in (None, 0):
             revoke = _checked_exchange(driver, REVOKE, identifier, same_id)
             if activate["status"] == "passed":
@@ -162,7 +166,7 @@ def _run_owned_key(driver, operation):
                     target = revoke
                 elif revoke["status"] != "passed":
                     target = _failure("Cleanup Revoke failed for the activated key.")
-        elif operation == REVOKE:
+        elif operation != ACTIVATE:
             target = _failure("Server rejected isolated Activate setup.", "not_run")
     if created["status"] == "passed" and operation in (ARCHIVE, RECOVER):
         archive = _checked_exchange(driver, ARCHIVE, identifier, same_id)
@@ -200,6 +204,8 @@ def _execute(driver, operation, identifier=None, expected=None):
         payload_fields = [item(0x420094, "text", identifier)]
         if operation == GET_ATTRIBUTES:
             payload_fields.append(item(0x42013B, "enumeration", 0x42002A))
+        if operation == CHECK:
+            payload_fields.append(item(0x42002C, "integer", 4))
         if operation == REVOKE:
             payload_fields.append(node(0x420081, [item(0x420082, "enumeration", 6)]))
     elif operation == 0x08:
@@ -294,6 +300,23 @@ def _has_field(payload, wanted, kind, enumeration=None):
                         return False
             found = True
     return found
+
+
+def _matches_check_usage(payload):
+    from kmipkit import ttlv
+
+    found = False
+    for field in _fields(payload):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) != 0x42002C:
+                continue
+            if found or ttlv.ttlv_item_view_type(field) != ttlv.ItemType.Integer:
+                return False
+            with ttlv.ttlv_item_view_value(field) as value:
+                if not (ttlv.ttlv_value_view_integer(value) & 4):
+                    return False
+            found = True
+    return True
 
 
 def _has_length_reference(payload):
