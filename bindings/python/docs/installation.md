@@ -1,6 +1,6 @@
 # Python Binding Installation & Build
 
-> **Requirement:** CPython 3.12 (`requires-python = ">=3.12,<3.13"` in [`pyproject.toml`](../pyproject.toml)).
+> **Requirement:** CPython 3.12 (`requires-python = ">=3.12,<3.13"` in `bindings/python/pyproject.toml`).
 
 ## Installing from Package Registry
 

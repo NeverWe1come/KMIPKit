@@ -27,5 +27,5 @@ with Client(config, transport) as client:
     ...
 ```
 
-See the [binding architecture](../../../docs/architecture/ffi-and-bindings.md)
-and [loader implementation](../src/kmipkit/_native.py).
+See the binding architecture (`docs/architecture/ffi-and-bindings.md`)
+and loader implementation (`bindings/python/src/kmipkit/_native.py`).
