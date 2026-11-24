@@ -64,7 +64,7 @@ public final class Main {
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = applicable.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
-                .filter(testCase -> supportsRoute(testCase, connection.apiLevel())).count();
+                .filter(testCase -> supportsRoute(testCase, connection)).count();
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
         long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
@@ -112,10 +112,10 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
-                        && supportsRoute(testCase, connection.apiLevel())
+                        && supportsRoute(testCase, connection)
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
-        JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
+        JavaKmipDriver driver = hasPotentialLiveRoute && !"generic-ttlv".equals(connection.apiLevel()) ? JavaKmipDriver.connect(connection) : null;
         try {
             for (CatalogLoader.CatalogCase testCase : applicable) {
                 JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver);
@@ -157,7 +157,7 @@ public final class Main {
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
                     : JavaKmipDriver.CaseOutcome.failed("Local TTLV model assertion failed.", elapsedMillis(start));
         }
-        if (!supportsRoute(testCase, connection.apiLevel())) {
+        if (!supportsRoute(testCase, connection)) {
             if (!"typed-protocol".equals(connection.apiLevel())) {
                 return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no equivalent recipe.",
                         elapsedMillis(start));
@@ -173,6 +173,9 @@ public final class Main {
                         "not_compared", elapsedMillis(start), null, null,
                         "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
             }
+        }
+        if ("generic-ttlv".equals(connection.apiLevel())) {
+            return GenericExchange.run(testCase, connection);
         }
         if (driver == null) {
             return JavaKmipDriver.CaseOutcome.notRun("No Java typed client was initialized for this run.",
@@ -206,7 +209,9 @@ public final class Main {
                 testCase.execution().protocolVersions().contains(version)).toList();
     }
 
-    private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, String apiLevel) {
+    private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
+        String apiLevel = connection.apiLevel();
+        if ("generic-ttlv".equals(apiLevel)) return GenericExchange.supports(testCase, connection);
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
                 || "fluent".equals(apiLevel) && JavaKmipDriver.supportsFluent(testCase));
     }

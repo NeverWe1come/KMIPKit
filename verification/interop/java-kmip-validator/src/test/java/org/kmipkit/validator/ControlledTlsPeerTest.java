@@ -346,7 +346,7 @@ class ControlledTlsPeerTest {
 
     @ParameterizedTest
     @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
-    void getAndDestroyOnlyUseTheOwnedKey(String version, String apiLevel) throws Exception {
+    void operationsOnlyUseTheOwnedKey(String version, String apiLevel) throws Exception {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
         int minor = Integer.parseInt(version.substring(2));
         byte[] identifier = item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.US_ASCII));
@@ -358,8 +358,19 @@ class ControlledTlsPeerTest {
                 structure(0x420045, item(0x420043, 8, new byte[32])),
                 item(0x420028, 5, intBytes(3)), item(0x42002a, 2, intBytes(256))));
         byte[] get = legacyKeyResponse(minor, 0x0a, objectType, identifier, key);
-        for (boolean readKey : List.of(true, false)) {
-            String id = readKey ? "test-op-get" : "test-op-destroy";
+        byte[] archive = legacyKeyResponse(minor, 0x15, identifier);
+        byte[] recover = legacyKeyResponse(minor, 0x16, identifier);
+        for (String id : List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover")) {
+            List<byte[]> responses = switch (id) {
+                case "test-op-get" -> List.of(create, get, destroy);
+                case "test-op-destroy" -> List.of(create, destroy);
+                default -> List.of(create, archive, recover, destroy);
+            };
+            List<Integer> operations = switch (id) {
+                case "test-op-get" -> List.of(1, 0x0a, 0x14);
+                case "test-op-destroy" -> List.of(1, 0x14);
+                default -> List.of(1, 0x15, 0x16, 0x14);
+            };
             var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(id))
                     .findFirst().orElseThrow();
             byte[] serverPem = fixture("server-cert.pem");
@@ -372,7 +383,7 @@ class ControlledTlsPeerTest {
                 Files.writeString(connection, config.put("protocol_version", version).toString());
                 var peer = new FutureTask<>(() -> {
                     var requests = new ArrayList<byte[]>();
-                    for (byte[] response : readKey ? List.of(create, get, destroy) : List.of(create, destroy)) {
+                    for (byte[] response : responses) {
                         requests.add(serveOneResponse(listener, response));
                     }
                     return requests;
@@ -385,12 +396,67 @@ class ControlledTlsPeerTest {
                     assertEquals("passed", outcome.status(), outcome.toString());
                 }
                 var requests = peer.get(15, TimeUnit.SECONDS);
-                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(1))));
-                if (readKey) assertTrue(contains(requests.get(1), item(0x42005c, 5, intBytes(0x0a))));
-                assertTrue(contains(requests.get(requests.size() - 1), item(0x42005c, 5, intBytes(0x14))));
+                assertEquals(operations.size(), requests.size());
+                for (int index = 0; index < requests.size(); index++) {
+                    assertTrue(contains(requests.get(index), item(0x42005c, 5, intBytes(operations.get(index)))));
+                }
                 for (int index = 1; index < requests.size(); index++) {
                     assertTrue(contains(requests.get(index), identifier));
                 }
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
+            "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59"})
+    void genericTagsReachThePeerThroughMain(String version, String caseId, int operation) throws Exception {
+        var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        var mapper = new ObjectMapper();
+        var catalog = (ObjectNode) mapper.readTree(source.toFile());
+        var selected = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(value -> caseId.equals(value.path("case_id").asText())).findFirst().orElseThrow();
+        catalog.putArray("test_cases").add(selected);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("generic-catalog.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] offered = structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
+        byte[] requestPayload = switch (operation) {
+            case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
+            case 30 -> structure(0x420079, offered);
+            default -> structure(0x420079);
+        };
+        byte[][] fields = switch (operation) {
+            case 24 -> new byte[][] {item(0x42005c, 5, intBytes(24))};
+            case 30 -> new byte[][] {offered};
+            default -> new byte[0][];
+        };
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        for (boolean matchingVersion : List.of(true, false)) {
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) mapper.readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), false, "generic-ttlv"));
+                Path connection = temporaryDirectory.resolve("generic-connection.json");
+                mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
+                byte[] response = legacyKeyResponse(matchingVersion ? minor : 1 - minor, operation, fields);
+                var peer = new FutureTask<>(() -> serveOneResponse(listener, response));
+                Thread thread = new Thread(peer, "java-validator-generic-tags");
+                thread.setDaemon(true);
+                thread.start();
+                Path output = temporaryDirectory.resolve("generic-output-" + matchingVersion);
+                try (var diagnostics = new java.io.PrintStream(new java.io.ByteArrayOutputStream())) {
+                    int exit = Main.execute(new String[] {"run", "--connection", connection.toString(),
+                            "--catalog", catalogFile.toString(), "--artifact-manifest",
+                            System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()},
+                            diagnostics, diagnostics);
+                    assertEquals(matchingVersion ? 0 : 1, exit);
+                }
+                assertTrue(contains(peer.get(10, TimeUnit.SECONDS), requestPayload));
+                var evidence = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+                assertEquals(matchingVersion ? "passed" : "failed", evidence.path("status").asText());
             }
         }
     }
