@@ -340,16 +340,21 @@ class ControlledExchangeTests(unittest.TestCase):
                             peer.close()
                         self.assertEqual(1, len(peer.requests))
 
-    def test_generic_owned_key_operations_use_only_the_created_identifier(self):
+    def test_owned_key_operations_use_only_the_created_identifier(self):
         from kmipkit_validator.cli import _run
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
         routes = {"create": [1, 20], "destroy": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20],
-                  "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+                  "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
+                  "get-attribute-list": [1, 12, 20], "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+        combinations = [("generic-ttlv", target, operations) for target, operations in routes.items()]
+        combinations += [(api, target, routes[target]) for api in ("typed-protocol", "fluent")
+                         for target in ("activate", "revoke")]
         for version in ("2.0", "2.1"):
-            for target, operations in routes.items():
-                for valid_get in ((True, False) if target in ("get", "get-attributes") else (True,)):
-                    with self.subTest(version=version, target=target, valid_get=valid_get):
+            for api, target, operations in combinations:
+                for valid_get in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke")
+                                  and (target != "revoke" or api == "generic-ttlv") else (True,)):
+                    with self.subTest(version=version, api=api, target=target, valid_get=valid_get):
                         minor = int(version[-1])
                         owned_id = b"owned-key-id"
                         seen = []
@@ -376,6 +381,16 @@ class ControlledExchangeTests(unittest.TestCase):
                             if operation == 11:
                                 self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x42002A))
                                 fields += structure(0x420125, item(0x42002A, 2, struct.pack(">i", 256 if valid_get else 128)))
+                            if operation == 12:
+                                fields += enumeration(0x42013B, 0x420028)
+                                if valid_get:
+                                    fields += enumeration(0x42013B, 0x42002A)
+                            if operation == 19:
+                                self.assertEqual(parse_children(find_value(payload, 0x420081)),
+                                                 [(0x420082, 5, struct.pack(">I", 6 if api == "generic-ttlv" else 1))])
+                            if not valid_get and ((target == "activate" and operation == 18)
+                                                  or (target == "revoke" and operation == 19)):
+                                fields = item(0x420094, 7, b"foreign-key-id")
                             protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
                                                  item(0x42006B, 2, struct.pack(">i", minor)))
                             header = structure(0x42007A, protocol, item(0x420092, 9, struct.pack(">q", 1)),
@@ -389,7 +404,7 @@ class ControlledExchangeTests(unittest.TestCase):
                         try:
                             connection = {
                                 "server_id": "owned-key-loopback", "protocol_version": version,
-                                "transport": "raw_tls", "encoding": "TTLV", "api_level": "generic-ttlv",
+                                "transport": "raw_tls", "encoding": "TTLV", "api_level": api,
                                 "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
                                 "tls": {"ca_cert_path": str(PKI / "server-cert.pem"),
                                         "client_cert_path": str(PKI / "client-cert.pem"),
