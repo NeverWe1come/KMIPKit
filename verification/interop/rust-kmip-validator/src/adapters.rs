@@ -1,7 +1,8 @@
 //! Explicit public typed operation adapters. No raw outbound request escape hatch.
 use crate::driver::{item, structure};
 use crate::models::{Case, Result};
-use kmipkit::ClientRequest;
+use kmipkit::{ClientRequest, ProtocolVersion};
+use kmipkit::protocol::DiscoverVersionsRequest;
 use kmipkit::protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
@@ -131,7 +132,17 @@ pub(crate) fn request(
         "Set Endpoint Role" => ClientRequest::SetEndpointRole(
             kmipkit::protocol::SetEndpointRoleRequest::new(kmipkit::protocol::EndpointRole::CLIENT),
         ),
-        "Discover Versions" => ClientRequest::discover_versions(),
+        "Discover Versions" => {
+            let version = match version {
+                "2.0" => ProtocolVersion::V2_0,
+                "3.0" => ProtocolVersion::V3_0,
+                _ => ProtocolVersion::V2_1,
+            };
+            ClientRequest::DiscoverVersions(
+                DiscoverVersionsRequest::with_versions(vec![version])
+                    .map_err(|_| "invalid protocol version offer")?,
+            )
+        }
         "Ping" => ClientRequest::ping(),
         "Query" => ClientRequest::Query(QueryRequest::new([
             QueryFunction::OPERATIONS,

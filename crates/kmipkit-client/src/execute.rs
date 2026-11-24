@@ -9160,6 +9160,7 @@ pub(super) struct BatchIdentity {
     pub(super) operation: u32,
     pub(super) unique_batch_item_id: Option<Vec<u8>>,
     pub(super) response_context: Option<CryptographicOperationResponseContext>,
+    pub(super) offered_versions: Option<Vec<ProtocolVersion>>,
 }
 
 impl BatchIdentity {
@@ -9168,6 +9169,12 @@ impl BatchIdentity {
             operation: item.request.operation(),
             unique_batch_item_id: item.unique_batch_item_id.clone(),
             response_context: item.request.response_context(),
+            offered_versions: match &item.request {
+                ClientRequest::DiscoverVersions(request) => {
+                    Some(request.protocol_versions().to_vec())
+                }
+                _ => None,
+            },
         }
     }
 
@@ -9176,6 +9183,7 @@ impl BatchIdentity {
             operation: item.operation().unwrap_or_default(),
             unique_batch_item_id: item.with_unique_batch_item_id(<[u8]>::to_vec),
             response_context: None,
+            offered_versions: None,
         }
     }
 }
@@ -9447,11 +9455,8 @@ fn validate_response_inner(
         };
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
-        let outcome = response_outcome(
-            request_identities[request_index].operation,
-            item,
-            request_identities[request_index].response_context,
-        )?;
+        let request_identity = &request_identities[request_index];
+        let outcome = response_outcome(request_identity, item)?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
             (pending_owner_observer, &outcome)
@@ -9474,12 +9479,12 @@ fn validate_response_inner(
 
 #[allow(clippy::too_many_lines)]
 fn response_outcome(
-    operation: u32,
+    request: &BatchIdentity,
     item: ResponseBatchItemView<'_>,
-    response_context: Option<CryptographicOperationResponseContext>,
 ) -> Result<ClientBatchOutcome, ProtocolError> {
+    let operation = request.operation;
     if is_crypto_operation(operation) {
-        return crypto_response_outcome(operation, item, response_context);
+        return crypto_response_outcome(operation, item, request.response_context);
     }
     match operation {
         ACTIVATE_OPERATION => read_operation_outcome(
@@ -9609,8 +9614,13 @@ fn response_outcome(
         GET_USAGE_ALLOCATION_OPERATION => get_usage_allocation_response_outcome(item),
         RNG_RETRIEVE_OPERATION | RNG_SEED_OPERATION => rng_response_outcome(operation, item),
         DISCOVER_VERSIONS_OPERATION => {
-            let response = DiscoverVersionsResponse::try_from_response_item(item)
-                .map_err(invalid_typed_response)?;
+            let offered = request
+                .offered_versions
+                .as_deref()
+                .ok_or_else(|| protocol_error(ProtocolErrorKind::MalformedMessage))?;
+            let response =
+                DiscoverVersionsResponse::try_from_response_item_for_offer(item, offered)
+                    .map_err(invalid_typed_response)?;
             operation_outcome(
                 ClientOperation::DiscoverVersions,
                 response,
@@ -10405,6 +10415,7 @@ fn validate_async_response(
         operation,
         unique_batch_item_id: None,
         response_context: None,
+        offered_versions: None,
     }];
     let response_identities = response_items
         .iter()

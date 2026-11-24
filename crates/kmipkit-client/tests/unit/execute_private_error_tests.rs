@@ -83,11 +83,13 @@ fn response_association_rejects_duplicate_request_id_matches() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     let responses = [
@@ -95,11 +97,13 @@ fn response_association_rejects_duplicate_request_id_matches() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"different-response-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
 
@@ -115,11 +119,13 @@ fn response_association_rejects_an_unmatched_batch_item_identifier() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"requested-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     let responses = [BatchIdentity {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"returned-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
 
     assert_eq!(
@@ -135,17 +141,20 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-1".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     let responses = [BatchIdentity {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"request-0".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
 
     assert_eq!(
@@ -161,6 +170,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"request-1".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &later_response, true),
@@ -171,6 +181,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"unknown-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &unknown_response, true),
@@ -181,6 +192,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_0020,
         unique_batch_item_id: Some(b"request-0".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &wrong_operation, true),
@@ -192,11 +204,13 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     assert_eq!(
