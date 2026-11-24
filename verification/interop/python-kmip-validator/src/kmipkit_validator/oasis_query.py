@@ -1,4 +1,4 @@
-"""Execute the pinned KMIP 3.0 Query profile case against a controlled TLS peer."""
+"""Replay the pinned Query Operations profile case for each KMIP version."""
 
 from __future__ import annotations
 
@@ -11,8 +11,14 @@ from .contract import ROOT
 from .controlled_peer import ControlledTlsPeer, PKI, enumeration, find_value, item, parse_children, structure
 from .driver import PythonKmipDriver
 
-CASE_ID = "QS-M-1-30"
-FIXTURE = Path(f"verification/interop/shared/catalog/oasis/kmip-3.0/mandatory/{CASE_ID}.xml")
+VERSIONS = ("2.0", "2.1", "3.0")
+FIXTURES = {
+    f"QS-M-1-{version.replace('.', '')}": (
+        version, Path(f"verification/interop/shared/catalog/oasis/kmip-{version}/mandatory/"
+                      f"QS-M-1-{version.replace('.', '')}.xml")
+    )
+    for version in VERSIONS
+}
 
 
 def _wire_values(enum, names):
@@ -21,8 +27,8 @@ def _wire_values(enum, names):
     return tuple(values[name.casefold()] for name in names)
 
 
-def _query_fixture(expected_digest):
-    source = (ROOT / FIXTURE).read_bytes()
+def _query_fixture(fixture, expected_digest):
+    source = (ROOT / fixture).read_bytes()
     if hashlib.sha256(source).hexdigest() != expected_digest:
         raise ValueError("OASIS Query fixture SHA-256 differs from the plan")
     pair = ET.fromstring(source)
@@ -41,12 +47,18 @@ def _query_fixture(expected_digest):
     return client_correlation, functions, operations
 
 
-def _respond(request, correlation, expected_functions, operations):
+def _respond(request, protocol_version, correlation, expected_functions, operations):
     fields = parse_children(request[8:])
     header = parse_children(find_value(fields, 0x420077))
     version = parse_children(find_value(header, 0x420069))
-    if int.from_bytes(find_value(version, 0x42006A), "big") != 3 or int.from_bytes(find_value(version, 0x42006B), "big") != 0:
+    expected_version = tuple(int(part) for part in protocol_version.split("."))
+    actual_version = tuple(int.from_bytes(find_value(version, tag), "big") for tag in (0x42006A, 0x42006B))
+    if actual_version != expected_version:
         raise AssertionError("Query request does not use the profile protocol version")
+    legacy = expected_version[0] == 2
+    request_count = [value for tag, kind, value in header if tag == 0x42000D and kind == 2]
+    if request_count != ([(1).to_bytes(4, "big")] if legacy else []):
+        raise AssertionError("Query request changed the profile batch count")
     if find_value(header, 0x420105) != correlation.encode("utf-8"):
         raise AssertionError("Query request changed the profile correlation field")
     batches = [parse_children(value) for tag, kind, value in fields if tag == 0x42000F and kind == 1]
@@ -56,25 +68,30 @@ def _respond(request, correlation, expected_functions, operations):
     functions = tuple(int.from_bytes(value, "big") for tag, kind, value in payload if tag == 0x420074 and kind == 5)
     if functions != expected_functions:
         raise AssertionError("Query request changed the ordered query functions")
+    response_header = [
+        structure(0x420069, *(item(tag, 2, number.to_bytes(4, "big"))
+                              for tag, number in zip((0x42006A, 0x42006B), expected_version, strict=True))),
+        item(0x420092, 9, (1_794_268_800).to_bytes(8, "big")),
+    ]
+    if legacy:
+        response_header.append(item(0x42000D, 2, (1).to_bytes(4, "big")))
     return structure(
         0x42007B,
-        structure(0x42007A, structure(0x420069, item(0x42006A, 2, (3).to_bytes(4, "big")),
-                                    item(0x42006B, 2, bytes(4))),
-                  item(0x420092, 9, (1_794_268_800).to_bytes(8, "big"))),
+        structure(0x42007A, *response_header),
         structure(0x42000F, enumeration(0x42005C, 0x18), enumeration(0x42007F, 0),
                   structure(0x42007C, *(enumeration(0x42005C, code) for code in operations))),
     )
 
 
-def _exercise_query(functions, operations, correlation):
+def _exercise_query(protocol_version, functions, operations, correlation):
     from kmipkit import client, errors, extensions, ttlv
 
-    peer = ControlledTlsPeer(protocol_version="3.0", response_factory=lambda request: _respond(
-        request, correlation, functions, operations,
+    peer = ControlledTlsPeer(protocol_version=protocol_version, response_factory=lambda request: _respond(
+        request, protocol_version, correlation, functions, operations,
     ))
     try:
         driver = PythonKmipDriver({
-            "server_id": "controlled-query", "protocol_version": "3.0", "transport": "raw_tls",
+            "server_id": "controlled-query", "protocol_version": protocol_version, "transport": "raw_tls",
             "encoding": "TTLV", "api_level": "typed-protocol",
             "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
             "tls": {
@@ -108,23 +125,29 @@ def _exercise_query(functions, operations, correlation):
 def oasis_query_evidence(lines):
     from kmipkit.protocol_values import Operation, QueryFunction
 
-    rows = []
+    selected = set()
+    evidence = []
     for line in lines:
         row = json.loads(line)
-        if row.get("kind") == "scenario_item" and row.get("case_id") == CASE_ID:
-            rows.append(row)
-    if (len(rows) != 1 or rows[0]["fixture"]["path"] != FIXTURE.as_posix()
-            or rows[0]["protocol_version"] != "3.0" or rows[0]["step_index"] != 0 or rows[0]["item_index"] != 0):
-        raise ValueError("The plan must contain the pinned KMIP 3.0 Query scenario")
-    row = rows[0]
-    correlation, functions, operations = _query_fixture(row["fixture"]["sha256"])
-    passed = _exercise_query(_wire_values(QueryFunction, functions), _wire_values(Operation, operations), correlation)
-    event = {
-        "obligation_id": row["obligation_id"], "public_api_symbol": "kmipkit.extensions.client_batch_item_query",
-        "execution_api_symbol": "kmipkit.client.Client.execute", "status": "passed" if passed else "failed",
-        "encoding": "TTLV", "transport": "raw_tls",
-        "assertion": "oasis_query_operations_in_order" if passed else "oasis_query_response_rejected",
-    }
-    if passed:
-        event["result_status_code"] = 0
-    return [event]
+        case_id = row.get("case_id")
+        if row.get("kind") != "scenario_item" or case_id not in FIXTURES:
+            continue
+        version, fixture = FIXTURES[case_id]
+        if (row["fixture"]["path"] != fixture.as_posix() or row["protocol_version"] != version
+                or row["step_index"] != 0 or row["item_index"] != 0 or case_id in selected):
+            raise ValueError("The plan does not match the pinned OASIS Query scenario")
+        selected.add(case_id)
+        correlation, functions, operations = _query_fixture(fixture, row["fixture"]["sha256"])
+        passed = _exercise_query(
+            version, _wire_values(QueryFunction, functions), _wire_values(Operation, operations), correlation,
+        )
+        event = {
+            "obligation_id": row["obligation_id"], "public_api_symbol": "kmipkit.extensions.client_batch_item_query",
+            "execution_api_symbol": "kmipkit.client.Client.execute", "status": "passed" if passed else "failed",
+            "encoding": "TTLV", "transport": "raw_tls",
+            "assertion": "oasis_query_operations_in_order" if passed else "oasis_query_response_rejected",
+        }
+        if passed:
+            event["result_status_code"] = 0
+        evidence.append(event)
+    return evidence
