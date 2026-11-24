@@ -1803,13 +1803,17 @@ class Batch(_ClientHandle):
     def set_client_correlation_value(self, value: str | bytes) -> Self:
         """Set exact UTF-8 correlation bytes for the outgoing request."""
         raw, data = _owned_bytes(value, maximum=_MAX_INPUT_BYTES)
-        pointer = data if raw else ffi.NULL
-        with _NATIVE_CALL_LOCK:
-            _raise_abi_status(
-                lib.kmipkit_client_batch_set_client_correlation_value(
-                    self._pointer(), pointer, len(raw)
+        try:
+            # The client ABI and the common handle module use separate CFFI objects.
+            pointer = ffi.cast("const uint8_t *", int(_base_ffi.cast("uintptr_t", data))) if raw else ffi.NULL
+            with _NATIVE_CALL_LOCK:
+                _raise_abi_status(
+                    lib.kmipkit_client_batch_set_client_correlation_value(
+                        self._pointer(), pointer, len(raw)
+                    )
                 )
-            )
+        finally:
+            _wipe_staging_buffer(data)
         return self
 
 
