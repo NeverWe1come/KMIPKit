@@ -49,9 +49,9 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The typed outbound role request requires explicit mutation opt-in.");
         }
-        if (JavaKmipDriver.attributeRead(testCase)) {
+        if (JavaKmipDriver.ownedObjectCase(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
-                    "The operation reads attributes from a newly created and isolated key.");
+                    "The operation targets a newly created and isolated key.");
         }
         if (JavaKmipDriver.readOnlyProbe(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,

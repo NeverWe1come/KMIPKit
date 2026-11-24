@@ -38,8 +38,8 @@ public final class Main {
             return 0;
         }
         try {
-            if (args.length == 1 && "--inspect-oasis-ttlv".equals(args[0])) {
-                return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST));
+            if (args.length == 1 && Set.of("--inspect-oasis-ttlv", "--construct-oasis-ttlv").contains(args[0])) {
+                return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST), "--construct-oasis-ttlv".equals(args[0]));
             }
             if ("--plan".equals(args[0])) {
                 return DraftCampaign.run(args, Path.of(DEFAULT_MANIFEST));

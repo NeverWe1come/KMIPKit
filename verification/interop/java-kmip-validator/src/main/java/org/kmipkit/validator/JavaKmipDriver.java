@@ -67,7 +67,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
-        if ("Create".equals(testCase.operation()) || attributeRead(testCase)) {
+        if ("Create".equals(testCase.operation()) || ownedObjectCase(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
         if (readOnlyProbe(testCase)) {
@@ -85,7 +85,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
-        return attributeRead(testCase) || readOnlyProbe(testCase)
+        return ownedObjectCase(testCase) || readOnlyProbe(testCase)
                 || Set.of("Create", "Ping").contains(testCase.operation());
     }
 
@@ -188,6 +188,10 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
+        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy").contains(testCase.caseId());
+    }
+
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
         String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
         UniqueIdentifier createdIdentifier = null;
@@ -195,7 +199,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         long createReason = -1;
         long createObjectType = -1;
         try (TtlvStructure attributes = createTestKeyAttributes(objectName, isDraft());
-                ClientBatchItem request = withBatchId(buildCreate(attributes, !attributeRead(testCase)));
+                ClientBatchItem request = withBatchId(buildCreate(attributes, !ownedObjectCase(testCase)));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
             batch.add(request);
@@ -215,7 +219,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     createStatus = result.resultStatus();
                     createReason = result.resultReason().orElse(-1);
                     if (createStatus != 0) {
-                        if (attributeRead(testCase)) {
+                        if (ownedObjectCase(testCase)) {
                             return CaseOutcome.notRun("The server rejected the isolated key setup.",
                                     elapsedMillis(start));
                         }
@@ -240,10 +244,16 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
 
+        if ("test-op-destroy".equals(testCase.caseId()) && createObjectType == 2) {
+            return destroyTarget(testCase, createdIdentifier, start);
+        }
+
         CaseOutcome target = null;
-        if (attributeRead(testCase)) {
+        if (ownedObjectCase(testCase) && createObjectType == 2) {
             try {
-                target = readAttributes(testCase, createdIdentifier, objectName, start);
+                target = "test-op-get".equals(testCase.caseId())
+                        ? getTarget(testCase, createdIdentifier, start)
+                        : readAttributes(testCase, createdIdentifier, objectName, start);
             } catch (RuntimeException exception) {
                 target = exchangeFailure(exception, start);
             }
@@ -286,6 +296,30 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
         return target == null ? CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason)) : target;
+    }
+
+    private CaseOutcome getTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        ClientBatchItem request = "fluent".equals(connection.apiLevel())
+                ? client.request().get(id).build() : ClientBatchItem.get(id, null, null, null, null);
+        return executeRequest(testCase, withBatchId(request), result -> {
+            var payload = result.getResponse().orElse(null);
+            if (payload == null) return false;
+            try (payload) {
+                return payload.objectTypeRaw().orElse(-1) == 2 && payload.object().isPresent()
+                        && payload.uniqueIdentifier().filter(value -> sameIdentifier(value, id)).isPresent();
+            }
+        }, start);
+    }
+
+    private CaseOutcome destroyTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        try {
+            ClientBatchItem request = "fluent".equals(connection.apiLevel())
+                    ? client.request().destroy(id).build() : ClientBatchItem.destroy(id);
+            return executeRequest(testCase, withBatchId(request), result -> result.destroyResponse()
+                    .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        }
     }
 
     private ClientBatchItem buildCreate(TtlvStructure source, boolean target) {
