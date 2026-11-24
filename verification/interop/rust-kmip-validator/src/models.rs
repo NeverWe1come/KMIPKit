@@ -18,6 +18,9 @@ pub(crate) fn load<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
 #[derive(Deserialize)]
 pub(crate) struct Connection {
     pub server_id: String,
+    pub server_product: Option<String>,
+    pub server_version: Option<String>,
+    pub server_configuration_fingerprint: Option<String>,
     pub protocol_version: String,
     pub transport: String,
     pub encoding: String,
@@ -87,10 +90,23 @@ impl Connection {
         {
             return Err("invalid server identity");
         }
-        if !["2.0", "2.1"].contains(&self.protocol_version.as_str())
+        if self
+            .server_configuration_fingerprint
+            .as_ref()
+            .is_some_and(|hash| {
+                hash.len() != 64
+                    || !hash
+                        .bytes()
+                        .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+            })
+        {
+            return Err("invalid server configuration fingerprint");
+        }
+        if !["2.0", "2.1", "3.0"].contains(&self.protocol_version.as_str())
             || !["TTLV", "JSON", "XML"].contains(&self.encoding.as_str())
             || !["raw_tls", "https"].contains(&self.transport.as_str())
-            || !["high-level", "typed-protocol", "generic-ttlv"].contains(&self.api_level.as_str())
+            || !["high-level", "typed-protocol", "fluent", "generic-ttlv"]
+                .contains(&self.api_level.as_str())
         {
             return Err("unsupported execution selection");
         }
@@ -117,7 +133,8 @@ impl Connection {
                 .as_ref()
                 .is_some_and(|values| {
                     !values.iter().all(|v| {
-                        ["high-level", "typed-protocol", "generic-ttlv"].contains(&v.as_str())
+                        ["high-level", "typed-protocol", "fluent", "generic-ttlv"]
+                            .contains(&v.as_str())
                     })
                 })
         {
@@ -223,7 +240,7 @@ impl Catalog {
                     .execution
                     .protocol_versions
                     .iter()
-                    .all(|v| ["2.0", "2.1"].contains(&v.as_str()))
+                    .all(|v| ["2.0", "2.1", "3.0"].contains(&v.as_str()))
             {
                 return Err("invalid catalog execution contract");
             }
@@ -232,6 +249,7 @@ impl Catalog {
                     [
                         "OASIS KMIP 2.0 Specification",
                         "OASIS KMIP 2.1 Specification",
+                        "OASIS KMIP 3.0 Working Draft",
                     ]
                     .contains(&r.document.as_str())
                         && !r.section.is_empty()

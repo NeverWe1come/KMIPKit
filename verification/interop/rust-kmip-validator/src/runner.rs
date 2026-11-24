@@ -43,8 +43,25 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             "mutations require explicit opt-in".to_owned(),
         ));
     }
-    if connection.api_level == "generic-ttlv" && case.execution.mode != "local_model" {
-        return Some(CaseResult::non_run(case, "not_run", "library_api_unavailable: generic TTLV outbound KMIP 2.0/2.1 construction; KMIPKIT-0083-FR-007".to_owned()));
+    if connection.api_level == "generic-ttlv"
+        && case.execution.mode != "local_model"
+        && !crate::generic::supports(case, connection)
+    {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "no equivalent generic TTLV exchange recipe for this case or connection".to_owned(),
+        ));
+    }
+    if connection.api_level == "fluent"
+        && case.execution.mode != "local_model"
+        && !crate::fluent::supports(case)
+    {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "no equivalent Rust Fluent request recipe".to_owned(),
+        ));
     }
     None
 }
@@ -62,6 +79,9 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         );
         result.library_correctness = if passed { "passed" } else { "failed" };
         return result;
+    }
+    if connection.api_level == "generic-ttlv" {
+        return crate::generic::run(case, connection);
     }
     let start = std::time::Instant::now();
     let (result, clean) = crate::recipes::execute(case, connection, client);
@@ -122,7 +142,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
     output
 }
 
-fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> CaseResult {
+pub(crate) fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> CaseResult {
     let expected_failure = case.requires["expected_status"] == "OperationFailed";
     let accepted_negative_reason = match case.case_id.as_str() {
         "test-neg-encrypt-preactive-key" => matches!(reason, Some(7 | 10)),

@@ -37,8 +37,10 @@ One invocation emits one scalar protocol/transport/encoding/API tuple. Repeat
 runs with separate configurations for a matrix. The policy encoding/API lists
 are planning metadata, not implicit additional runs. The frozen shared
 aggregator requires identical transport, encoding, API level and fingerprint,
-so cross-axis comparison currently uses the independent offline tests. The
-fingerprint hashes the exact connection JSON bytes, including execution axes.
+so cross-axis comparison currently uses the independent offline tests.
+Use the same explicit server configuration fingerprint when comparing runs
+made with different language consumers. Older configurations without a
+fingerprint retain the connection-file hash.
 
 Schema-2.0 reports distinguish library correctness, server compatibility,
 policy, parity and non-run. They contain no Result Message, KMIP body, key
@@ -64,8 +66,17 @@ server-provided tickets/correlations, distinct batch IDs and ordered steps.
 Poll, Process, Cancel, multipart continuation and teardown are explicit recipe
 steps. Failed requests are never retried; cleanup failure is visible.
 
-Generic TTLV construction/navigation and bounded decoding run locally. Generic
-outbound KMIP 2.0/2.1 submission is unavailable under KMIPKIT-0083-FR-007.
+The `generic-ttlv` route sends Locate, Query, Discover Versions, RNG Retrieve,
+and single-part SHA-256 Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. The probes
+use certificate authentication and the installed low-level raw TLS transport.
+RNG Retrieve follows the catalog's mutation opt-in.
+
+With mutation opt-in, the direct tag route also runs Create, Check, Get, Get
+Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
+Each case uses the Text String identifier returned when it creates an isolated
+AES-256 key. The lifecycle checks validate the response identifier and confirm
+cleanup with Destroy. An activated key is revoked before Destroy.
+
 The State server-negative case is different: its typed constructor exists, but
 preflight rejects direct State modification under KMIPKIT-0051-R282 and OASIS
 KMIP 2.1 §4.57, independently of mutation opt-in. Its status remains `not_run`,
@@ -136,3 +147,33 @@ The script isolates compilation/profiles, runs the Rust and controlled subproces
 suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
 it is a generated data-dispatch table verified by regeneration and all 67 local
 model cases. Fresh measured handwritten coverage is 90.41% (1819/2012 lines).
+
+## Local KMIP 3.0 draft campaign
+
+After installing the Rust distribution, build the campaign runner and use it
+with the shared plan from the repository root.
+
+```sh
+cargo +1.94 build --locked --manifest-path verification/interop/rust-kmip-validator/Cargo.toml --bin kmip30-campaign
+python3 verification/interop/shared/tools/campaign.py --version 3.0 \
+  --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+  --output-dir /tmp/kmip-rust-draft
+```
+
+The runner invokes all seven catalogued generic-payload constructors and checks
+their operation codes, field values, ordering and repeated tags. It records the installed distribution's provenance.
+XML scenarios, fluent routes, response checks and live KMIP 3.0 exchanges
+remain pending in the campaign report.
+
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
+The shared live campaign can run the typed KMIP 2.x Query Operations case
+against a configured endpoint. Select `--scope live --connection PATH` and
+use `tools/run_live_campaign.sh` as the Rust runner after building the main
+validator. The resulting event records the outcome of one actual exchange.
+
+Set `KMIPKIT_INTEROP_LIBRARY_COMMIT` to a full Git commit to build and verify
+the crates from the same source revision used by the other validators.
+Export the value before installing the artifacts and compiling the runner.

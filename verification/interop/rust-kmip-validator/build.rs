@@ -3,6 +3,7 @@ use std::error::Error;
 use std::path::Path;
 use std::process::Command;
 fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-env-changed=KMIPKIT_INTEROP_LIBRARY_COMMIT");
     let manifest = Path::new("../.local/rust-live/provenance.json");
     for path in [
         manifest,
