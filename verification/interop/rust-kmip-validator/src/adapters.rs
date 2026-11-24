@@ -1,7 +1,6 @@
 //! Explicit public typed operation adapters. No raw outbound request escape hatch.
 use crate::driver::{item, structure};
 use crate::models::{Case, Result};
-use kmipkit::{ClientRequest, ProtocolVersion};
 use kmipkit::protocol::DiscoverVersionsRequest;
 use kmipkit::protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
@@ -20,6 +19,7 @@ use kmipkit::protocol::{
     UniqueIdentifier, ValidateRequest,
 };
 use kmipkit::ttlv::{Value, ValueView};
+use kmipkit::{ClientRequest, ProtocolVersion};
 
 pub(crate) fn generic_model_check() -> bool {
     // OASIS KMIP 2.0/2.1 §10.1: future Enumeration values survive generic navigation.
