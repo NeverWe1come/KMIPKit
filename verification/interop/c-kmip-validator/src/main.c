@@ -1,3 +1,7 @@
+#ifdef KMIPKIT_C_GENERIC_TLS
+#include <signal.h>
+#endif
+
 #include "c_validator.h"
 #include "live_driver.h"
 
@@ -116,6 +120,10 @@ static void set_report_identity(kmip_validation_summary_t *summary,
 }
 
 int main(int argc, char **argv) {
+#ifdef KMIPKIT_C_GENERIC_TLS
+    /* OpenSSL socket BIOs can write after the peer has closed the connection. */
+    (void)signal(SIGPIPE, SIG_IGN);
+#endif
     if (argc < 2) {
         print_usage(argv[0]);
         return 1;
@@ -204,8 +212,10 @@ int main(int argc, char **argv) {
                connection.server_id, connection.protocol_version, case_count, applicable,
                server_exchange, local_model, mutations, incoming);
         printf("capability profiles are hypotheses and do not suppress probes\n");
-        printf("public C routes: typed-protocol, Fluent Create/Ping and local generic TTLV; "
-               "high-level and outbound generic TTLV are unavailable\n");
+        printf("public C routes: typed-protocol, Fluent and local generic TTLV\n");
+#ifdef KMIPKIT_C_GENERIC_TLS
+        printf("Generic TTLV live recipes: KMIP 2.x Query and Discover Versions, KMIP 2.1 Ping via mutual TLS\n");
+#endif
         return 0;
     }
 

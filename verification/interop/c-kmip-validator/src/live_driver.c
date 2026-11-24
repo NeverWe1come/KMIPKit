@@ -1,6 +1,10 @@
 #include "kmipkit_fluent.h"
 #include "live_driver.h"
 
+#ifdef KMIPKIT_C_GENERIC_TLS
+#include "generic_tls.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1449,6 +1453,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         return false;
     }
     memset(out_client, 0, sizeof(*out_client));
+    out_client->configuration = configuration;
     if (!parse_version(configuration->protocol_version, &out_client->protocol_major,
                        &out_client->protocol_minor) ||
         !parse_wire_encoding(configuration->encoding, &out_client->wire_encoding)) {
@@ -6458,7 +6463,7 @@ static bool created_key_sign_failure_response_is_empty(
     return valid;
 }
 
-static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *client) {
+static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *client, bool fluent) {
     /* OASIS KMIP 2.0/2.1 §6.1.9 returns identifiers for both created objects. */
     static const uint32_t operations[] = {
         KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR,
@@ -6488,30 +6493,45 @@ static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *clie
         .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
         .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PUBLIC_KEY
     };
-    int32_t status = kmipkit_ttlv_structure_create(&common_attributes);
-    if (status == 0) status = kmipkit_ttlv_value_enumeration(
-        KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x420028), &value))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x42002A), &value))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
-    if (status == 0) status = kmipkit_ttlv_value_integer(
-        (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &private_attributes, UINT32_C(0x42002C), &value))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_ttlv_structure_create(&public_attributes);
-    if (status == 0) status = kmipkit_ttlv_value_integer(
-        (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &public_attributes, UINT32_C(0x42002C), &value))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
-        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
+    int32_t status;
+    if (fluent) {
+        kmipkit_create_key_pair_builder_t *builder = NULL;
+        status = kmipkit_create_key_pair_builder_create(&builder);
+        if (status == 0) status = kmipkit_create_key_pair_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA);
+        if (status == 0) status = kmipkit_create_key_pair_builder_set_length(builder, 2048);
+        if (status == 0) status = kmipkit_create_key_pair_builder_set_private_usage_mask(
+            builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN);
+        if (status == 0) status = kmipkit_create_key_pair_builder_set_public_usage_mask(
+            builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY);
+        if (status == 0) status = kmipkit_create_key_pair_builder_build_batch_item(builder, &items[0]);
+        if (builder) kmipkit_create_key_pair_builder_release(builder);
+    } else {
+        status = kmipkit_ttlv_structure_create(&common_attributes);
+        if (status == 0) status = kmipkit_ttlv_value_enumeration(
+            KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
+        if (status == 0 && !append_ttlv_value(
+                client, &common_attributes, UINT32_C(0x420028), &value))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
+        if (status == 0 && !append_ttlv_value(
+                client, &common_attributes, UINT32_C(0x42002A), &value))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
+        if (status == 0) status = kmipkit_ttlv_value_integer(
+            (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &value);
+        if (status == 0 && !append_ttlv_value(
+                client, &private_attributes, UINT32_C(0x42002C), &value))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_ttlv_structure_create(&public_attributes);
+        if (status == 0) status = kmipkit_ttlv_value_integer(
+            (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY, &value);
+        if (status == 0 && !append_ttlv_value(
+                client, &public_attributes, UINT32_C(0x42002C), &value))
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
+            common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
+    }
     if (status == 0) status = kmipkit_client_batch_item_destroy(
         &private_request_identifier, &items[1]);
     if (status == 0) status = kmipkit_client_batch_item_destroy(
@@ -9257,6 +9277,286 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     return outcome;
 }
 
+#ifdef KMIPKIT_C_GENERIC_TLS
+static bool add_generic_number(kmip_live_client_t *client, kmipkit_ttlv_structure_t **fields,
+                               uint32_t tag, int32_t number, bool enumeration) {
+    kmipkit_ttlv_value_t *value = NULL;
+    int32_t status = enumeration ? kmipkit_ttlv_value_enumeration((uint32_t)number, &value) :
+                                    kmipkit_ttlv_value_integer(number, &value);
+    bool valid = status == 0 && append_ttlv_value(client, fields, tag, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return valid;
+}
+
+static bool add_generic_structure(kmip_live_client_t *client, kmipkit_ttlv_structure_t **fields,
+                                  uint32_t tag, kmipkit_ttlv_structure_t **children) {
+    kmipkit_ttlv_value_t *value = NULL;
+    bool valid = structure_into_value(client, children, &value) &&
+        append_ttlv_value(client, fields, tag, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return valid;
+}
+
+static bool add_generic_version(kmip_live_client_t *client, kmipkit_ttlv_structure_t **fields) {
+    kmipkit_ttlv_structure_t *version = NULL;
+    bool valid = kmipkit_ttlv_structure_create(&version) == 0 &&
+        add_generic_number(client, &version, 0x42006a, 2, false) &&
+        add_generic_number(client, &version, 0x42006b, client->protocol_minor, false) &&
+        add_generic_structure(client, fields, 0x420069, &version);
+    if (version) kmipkit_ttlv_structure_release(version);
+    return valid;
+}
+
+static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t operation) {
+    kmipkit_ttlv_structure_t *root = NULL, *header = NULL, *batch = NULL, *payload = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_raw_tag_t *raw = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    bool valid = kmipkit_ttlv_structure_create(&root) == 0 &&
+        kmipkit_ttlv_structure_create(&header) == 0 &&
+        add_generic_version(client, &header) &&
+        add_generic_number(client, &header, 0x42000d, 1, false) &&
+        add_generic_structure(client, &root, 0x420077, &header) &&
+        kmipkit_ttlv_structure_create(&batch) == 0 &&
+        add_generic_number(client, &batch, 0x42005c, (int32_t)operation, true) &&
+        kmipkit_ttlv_structure_create(&payload) == 0;
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY)
+        valid = add_generic_number(client, &payload, 0x420074, 1, true);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
+        valid = add_generic_version(client, &payload);
+    valid = valid && add_generic_structure(client, &batch, 0x420079, &payload) &&
+        add_generic_structure(client, &root, 0x42000f, &batch) &&
+        structure_into_value(client, &root, &value) &&
+        kmipkit_ttlv_raw_tag_create(0x420078, &raw) == 0 &&
+        kmipkit_ttlv_raw_tag_try_checked(raw, &tag) == 0;
+    if (valid) {
+        (void)kmipkit_ttlv_item_create(tag, value, client->limits, &item);
+        value = NULL;
+    }
+    if (tag) kmipkit_tag_release(tag);
+    if (raw) kmipkit_raw_tag_release(raw);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (batch) kmipkit_ttlv_structure_release(batch);
+    if (header) kmipkit_ttlv_structure_release(header);
+    if (root) kmipkit_ttlv_structure_release(root);
+    return item;
+}
+
+static void put_u32(uint8_t *output, uint32_t value) {
+    output[0] = (uint8_t)(value >> 24);
+    output[1] = (uint8_t)(value >> 16);
+    output[2] = (uint8_t)(value >> 8);
+    output[3] = (uint8_t)value;
+}
+
+/* The three read-only probes construct only Structure, Integer and Enumeration. */
+static bool encode_generic_probe(kmipkit_ttlv_item_view_t *item,
+                                 uint8_t *wire, size_t capacity, size_t *offset) {
+    if (*offset > capacity || capacity - *offset < 8) return false;
+    size_t header = *offset;
+    *offset += 8;
+    uint8_t type = 0;
+    uint32_t tag_value = 0;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    kmipkit_ttlv_structure_view_t *structure = NULL;
+    bool valid = kmipkit_ttlv_item_view_tag(item, &tag) == 0 &&
+        kmipkit_ttlv_tag_value(tag, &tag_value) == 0 &&
+        kmipkit_ttlv_item_view_type(item, &type) == 0 &&
+        kmipkit_ttlv_item_view_value(item, &value) == 0;
+    uint32_t body_length = 0;
+    if (valid && type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
+        uint64_t length = 0;
+        valid = kmipkit_ttlv_value_view_structure(value, &structure) == 0 &&
+            kmipkit_ttlv_structure_view_item_count(structure, &length) == 0;
+        for (uint64_t index = 0; valid && index < length; ++index) {
+            kmipkit_ttlv_item_view_t *child = NULL;
+            valid = kmipkit_ttlv_structure_view_item_at(structure, index, &child) == 0 &&
+                encode_generic_probe(child, wire, capacity, offset);
+            if (child) kmipkit_ttlv_item_view_release(child);
+        }
+        body_length = (uint32_t)(*offset - header - 8);
+    } else if (valid && capacity - *offset >= 8) {
+        uint32_t number = 0;
+        if (type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
+            valid = kmipkit_ttlv_value_view_enumeration(value, &number) == 0;
+        } else if (type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER) {
+            int32_t integer = 0;
+            valid = kmipkit_ttlv_value_view_integer(value, &integer) == 0;
+            number = (uint32_t)integer;
+        } else {
+            valid = false;
+        }
+        put_u32(wire + *offset, number);
+        put_u32(wire + *offset + 4, 0);
+        *offset += 8;
+        body_length = 4;
+    } else {
+        valid = false;
+    }
+    put_u32(wire + header, (tag_value << 8) | type);
+    put_u32(wire + header + 4, body_length);
+    if (structure) kmipkit_ttlv_structure_view_release(structure);
+    if (value) kmipkit_ttlv_value_view_release(value);
+    if (tag) kmipkit_tag_release(tag);
+    return valid;
+}
+
+static kmipkit_ttlv_structure_t *copy_generic_structure(kmipkit_ttlv_structure_view_t *view,
+                                                        kmipkit_codec_limits_t *limits) {
+    uint64_t count = 0;
+    kmipkit_ttlv_structure_t *copy = NULL;
+    if (kmipkit_ttlv_structure_view_item_count(view, &count) != 0 ||
+        kmipkit_ttlv_structure_create(&copy) != 0) return NULL;
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *child = NULL;
+        kmipkit_ttlv_item_t *owned = NULL;
+        kmipkit_ttlv_structure_t *next = NULL;
+        bool valid = kmipkit_ttlv_structure_view_item_at(view, index, &child) == 0 &&
+            kmipkit_ttlv_item_view_copy(child, &owned) == 0;
+        if (child) kmipkit_ttlv_item_view_release(child);
+        if (!valid) {
+            kmipkit_ttlv_structure_release(copy);
+            return NULL;
+        }
+        int32_t status = kmipkit_ttlv_structure_with_item(copy, owned, limits, &next);
+        if (status != 0) return NULL;
+        copy = next;
+    }
+    return copy;
+}
+
+static bool generic_structure_field(kmipkit_ttlv_structure_view_t *fields, uint32_t tag,
+                                    kmipkit_ttlv_structure_view_t **output) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    bool valid = structure_view_find_value(fields, tag, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value) &&
+        kmipkit_ttlv_value_view_structure(value, output) == 0;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return valid;
+}
+
+static bool generic_enum_field(kmipkit_ttlv_structure_view_t *fields, uint32_t tag, uint32_t *output) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    bool valid = structure_view_find_value(fields, tag, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value) &&
+        kmipkit_ttlv_value_view_enumeration(value, output) == 0;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return valid;
+}
+
+static bool generic_integer_field(kmipkit_ttlv_structure_view_t *fields, uint32_t tag, int32_t wanted) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    int32_t actual = 0;
+    bool valid = structure_view_find_value(fields, tag, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, &value) &&
+        kmipkit_ttlv_value_view_integer(value, &actual) == 0 && actual == wanted;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return valid;
+}
+
+static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor) {
+    kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
+    uint64_t fields = 0, version_fields = 0;
+    uint32_t advertised_operation = 0;
+    bool valid = generic_structure_field(batch, 0x42007c, &payload) &&
+        kmipkit_ttlv_structure_view_item_count(payload, &fields) == 0;
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
+        valid = fields == 0;
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
+        valid = generic_enum_field(payload, 0x42005c, &advertised_operation) && advertised_operation != 0;
+    } else if (valid) {
+        valid = fields == 1 && generic_structure_field(payload, 0x420069, &offered) &&
+            kmipkit_ttlv_structure_view_item_count(offered, &version_fields) == 0 && version_fields == 2 &&
+            generic_integer_field(offered, 0x42006a, 2) && generic_integer_field(offered, 0x42006b, minor);
+    }
+    if (offered) kmipkit_ttlv_structure_view_release(offered);
+    if (payload) kmipkit_ttlv_structure_view_release(payload);
+    return valid;
+}
+
+static bool read_generic_response(kmip_live_client_t *client, const uint8_t *wire, size_t size,
+                                  uint32_t operation, kmip_execution_outcome_t *outcome) {
+    kmipkit_ttlv_decode_error_v1_t error = {.struct_size = sizeof(error), .abi_version = 1};
+    kmipkit_ttlv_item_t *root = NULL;
+    kmipkit_ttlv_item_view_t *item = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    kmipkit_ttlv_structure_view_t *root_view = NULL, *batch_view = NULL;
+    kmipkit_ttlv_structure_t *copy = NULL, *batch_ttlv = NULL;
+    kmipkit_message_validation_error_t *validation_error = NULL;
+    kmipkit_response_message_t *message = NULL;
+    kmipkit_response_header_view_t *header = NULL;
+    kmipkit_response_batch_item_view_t *batch = NULL;
+    kmipkit_protocol_version_v1_t version = {0};
+    uint32_t actual_operation = 0, status = 0, reason = 0;
+    uint64_t count = 0;
+    uint8_t present = 0;
+    bool valid = kmipkit_ttlv_decode(wire, size, &error, &root) == 0 &&
+        kmipkit_ttlv_item_view_from_item(root, &item) == 0 &&
+        item_view_has_tag(item, 0x42007b, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value) &&
+        kmipkit_ttlv_value_view_structure(value, &root_view) == 0;
+    if (valid) copy = copy_generic_structure(root_view, client->limits);
+    if (copy) {
+        valid = kmipkit_response_message_from_ttlv(copy, &message, &validation_error) == 0;
+    } else {
+        valid = false;
+    }
+    valid = valid && kmipkit_response_message_header(message, &header) == 0 &&
+        kmipkit_response_header_view_protocol_version(header, &version) == 0 &&
+        version.major == 2 && version.minor == client->protocol_minor &&
+        kmipkit_response_message_batch_item_count(message, &count) == 0 && count == 1 &&
+        kmipkit_response_message_batch_item_at(message, 0, &batch) == 0 &&
+        kmipkit_response_batch_item_view_operation(batch, &present, &actual_operation) == 0 &&
+        present && actual_operation == operation &&
+        kmipkit_response_batch_item_view_result_status(batch, &present, &status) == 0 && present &&
+        kmipkit_response_batch_item_view_ttlv(batch, &batch_ttlv) == 0 &&
+        kmipkit_ttlv_structure_view(batch_ttlv, &batch_view) == 0;
+    if (valid) {
+        bool has_reason = generic_enum_field(batch_view, 0x42007e, &reason);
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .result_status = status, .has_result_reason = has_reason, .result_reason = reason,
+        };
+        record_kmip_result(outcome, &metadata);
+        if (outcome->success) {
+            valid = !has_reason && check_generic_payload(batch_view, operation, client->protocol_minor);
+        }
+    }
+    if (batch_view) kmipkit_ttlv_structure_view_release(batch_view);
+    if (batch_ttlv) kmipkit_ttlv_structure_release(batch_ttlv);
+    if (batch) kmipkit_response_batch_item_release(batch);
+    if (header) kmipkit_response_header_view_release(header);
+    if (message) kmipkit_response_message_release(message);
+    if (validation_error) kmipkit_message_validation_error_release(validation_error);
+    if (root_view) kmipkit_ttlv_structure_view_release(root_view);
+    if (value) kmipkit_ttlv_value_view_release(value);
+    if (item) kmipkit_ttlv_item_view_release(item);
+    if (root) kmipkit_ttlv_item_release(root);
+    return valid;
+}
+
+static kmip_execution_outcome_t execute_generic_probe(kmip_live_client_t *client, uint32_t operation) {
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_ttlv_item_t *request = generic_request(client, operation);
+    kmipkit_ttlv_item_view_t *view = NULL;
+    uint8_t wire[512], *response = NULL;
+    size_t request_size = 0, response_size = 0;
+    bool valid = request && kmipkit_ttlv_item_view_from_item(request, &view) == 0 &&
+        encode_generic_probe(view, wire, sizeof(wire), &request_size) &&
+        kmip_generic_tls_exchange(client->configuration, wire, request_size, KMIP_MAX_REQUEST_BYTES,
+                                  &response, &response_size) &&
+        read_generic_response(client, response, response_size, operation, &outcome);
+    if (!valid) {
+        outcome.success = false;
+        outcome.library_validated = false;
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Generic TTLV exchange or validation failed.");
+    }
+    free(response);
+    if (view) kmipkit_ttlv_item_view_release(view);
+    if (request) kmipkit_ttlv_item_release(request);
+    return outcome;
+}
+#endif
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -9283,10 +9583,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
     bool locate_workflow = strcmp(test_case->case_id, "test-op-locate") == 0;
+    bool create_key_pair_workflow = strcmp(test_case->case_id, "test-op-create-key-pair") == 0 ||
+        strcmp(test_case->case_id, "test-obj-private-key") == 0 ||
+        strcmp(test_case->case_id, "test-obj-public-key") == 0;
     bool draft_locate = client->protocol_major == 3 && locate_workflow;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        !hash_workflow && !locate_workflow && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
+        !hash_workflow && !locate_workflow && !create_key_pair_workflow && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
         strcmp(test_case->case_id, "test-op-set-attribute") != 0 &&
@@ -9366,8 +9669,21 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     }
     if (strcmp(client->api_level, "generic-ttlv") == 0) {
-        return outcome_not_run(
-            "the public C API can construct and inspect generic TTLV but cannot dispatch a generic request");
+#ifdef KMIPKIT_C_GENERIC_TLS
+        const kmip_connection_config_t *connection = client->configuration;
+        if (connection && client->protocol_major == 2 && client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
+            has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
+            !connection->username_env[0] && !connection->password_env[0] &&
+            strcmp(test_case->mode, "server_exchange") == 0 && strcmp(test_case->mutation, "read_only") == 0) {
+            if (strcmp(test_case->case_id, "test-op-query") == 0)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
+            if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
+            if (client->protocol_minor == 1 && strcmp(test_case->case_id, "test-op-ping") == 0)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_PING);
+        }
+#endif
+        return outcome_not_run("the selected C generic TTLV case or connection has no exchange recipe");
     }
     if (!client->client || !client->limits) {
         return outcome_not_run("live client is not initialized");
@@ -9509,10 +9825,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-mac-verify") == 0 ||
         strcmp(test_case->case_id, "test-crypto-mac-verify-hmac_sha256-256") == 0)
         return execute_created_key_action(client, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY, false, false);
-    if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0 ||
-        strcmp(test_case->case_id, "test-obj-private-key") == 0 ||
-        strcmp(test_case->case_id, "test-obj-public-key") == 0)
-        return execute_create_key_pair(client);
+    if (create_key_pair_workflow)
+        return execute_create_key_pair(client, fluent_route);
     if (strcmp(test_case->case_id, "test-op-create-split-key") == 0 ||
         strcmp(test_case->case_id, "test-obj-split-key") == 0)
         return execute_create_split_key(client);

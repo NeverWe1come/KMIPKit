@@ -41,6 +41,13 @@ set(KMIPKIT_C_INCLUDE_DIR "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/include")
 get_filename_component(KMIPKIT_C_CERTIFICATE_FIXTURE
     "${CMAKE_CURRENT_SOURCE_DIR}/../rust-kmip-validator/tests/fixtures/certificate.der" ABSOLUTE)
 
+if(UNIX)
+    if(NOT DEFINED OPENSSL_ROOT_DIR AND DEFINED ENV{OPENSSL_DIR})
+        set(OPENSSL_ROOT_DIR "$ENV{OPENSSL_DIR}")
+    endif()
+    find_package(OpenSSL 3 REQUIRED COMPONENTS SSL)
+endif()
+
 set(VALIDATOR_SOURCES
     src/c_validator.c
     src/live_driver.c
@@ -86,6 +93,14 @@ target_compile_definitions(test_c_validator PRIVATE
     KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE=$<BOOL:${KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE}>
 )
 set_target_properties(test_c_validator PROPERTIES BUILD_RPATH "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib")
+
+if(UNIX)
+    foreach(target kmip_validator_c test_c_validator)
+        target_sources(${target} PRIVATE src/generic_tls.c)
+        target_compile_definitions(${target} PRIVATE KMIPKIT_C_GENERIC_TLS=1)
+        target_link_libraries(${target} PRIVATE OpenSSL::SSL)
+    endforeach()
+endif()
 
 add_test(NAME test_c_validator COMMAND test_c_validator)
 set_tests_properties(test_c_validator PROPERTIES
