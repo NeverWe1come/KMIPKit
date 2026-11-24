@@ -96,12 +96,12 @@ public final class MatrixReporter {
         text(report.server().product(), "server.product");
         text(report.server().version(), "server.version");
         digest(report.server().configurationFingerprint(), "server.configuration_fingerprint");
-        require(Set.of("2.0", "2.1").contains(report.protocolVersion()), "Report protocol_version is invalid");
+        require(Set.of("2.0", "2.1", "3.0").contains(report.protocolVersion()), "Report protocol_version is invalid");
         digest(report.catalogSha256(), "catalog_sha256");
         require(report.execution() != null, "Report execution is required");
         require(Set.of("raw_tls", "https").contains(report.execution().transport()), "Report transport is invalid");
         require(Set.of("TTLV", "JSON", "XML").contains(report.execution().encoding()), "Report encoding is invalid");
-        require(Set.of("high-level", "typed-protocol", "generic-ttlv").contains(report.execution().apiLevel()),
+        require(Set.of("high-level", "typed-protocol", "fluent", "generic-ttlv").contains(report.execution().apiLevel()),
                 "Report api_level is invalid");
         require(report.execution().libraryCommit() != null
                 && report.execution().libraryCommit().matches("[0-9a-f]{7,40}"),
