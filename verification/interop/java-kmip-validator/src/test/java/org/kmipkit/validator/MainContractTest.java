@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -137,8 +139,9 @@ class MainContractTest {
         assertTrue(result.path("diagnostic").asText().contains("executable recipe"));
     }
 
-    @Test
-    void executableCreateIsWithheldWithoutBothMutationOptIns() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"typed-protocol", "fluent"})
+    void executableCreateIsWithheldWithoutBothMutationOptIns(String apiLevel) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
@@ -151,12 +154,14 @@ class MainContractTest {
         mapper.writeValue(catalogFile.toFile(), catalog);
         Path output = temporaryDirectory.resolve("create-mutation-report");
 
-        assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
+        assertCommand(0, "run", "--connection", connection("2.1", apiLevel).toString(),
                 "--catalog", catalogFile.toString(), "--artifact-manifest",
                 Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
                 "--output-dir", output.toString());
 
-        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(apiLevel, report.path("execution").path("api_level").asText());
+        JsonNode result = report.path("cases").get(0);
         assertEquals("policy_restricted", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
         assertTrue(result.path("diagnostic").asText().contains("--enable-mutations"));
