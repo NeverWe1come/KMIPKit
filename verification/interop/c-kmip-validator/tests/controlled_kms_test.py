@@ -630,6 +630,7 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             0x1e: offered,
             0x02: b"",
             0x08: integer(0x4200d5, 0),
+            0x13: b"",
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
             0x25: tlv(0x4200c2, 8, bytes(31 if invalid_payload else 32)),
             0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if invalid_payload else b"abc").digest()),
@@ -692,7 +693,15 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                             assert tlv(0x420079, 1, offered) in request
                         if operation == 0x3b:
                             assert tlv(0x420079, 1, b"") in request
-                        if operation == 0x02:
+                        if operation == 0x13:
+                            operations = (1, 19, 20)
+                            assert top_level_batch_operations(request) == operations
+                            assert tlv(0x420081, 1, enumeration(0x420082, 6)) in request
+                            request_wires.append(request)
+                            client.sendall(response(operations, minor, unique_batch_item_ids=(
+                                b"interop-create", b"interop-revoke", b"interop-destroy",
+                            )))
+                        elif operation == 0x02:
                             assert top_level_batch_operations(request) == (2, 20, 20)
                             assert enumeration(0x420028, 4) in request
                             assert integer(0x42002A, 2048) in request
@@ -724,7 +733,8 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
     catalog = json.loads(source.read_text())
     cases = {row["case_id"]: row for row in catalog["test_cases"]}
     operations = {"create": (1, 20), "get": (1, 10, 20), "destroy": (1, 20), "get-attributes": (1, 11, 20),
-                  "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
+                  "get-attribute-list": (1, 12, 20), "activate": (1, 18, 19, 20),
+                  "revoke": (1, 18, 19, 20), "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
     with tempfile.TemporaryDirectory(prefix="kmip-c-owned-") as temporary:
         directory = Path(temporary)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -741,7 +751,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
         header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
                      + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
         for target, exchanges in operations.items():
-            for valid in ((True, False) if target in ("get", "get-attributes") else (True,)):
+            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke") else (True,)):
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
@@ -780,7 +790,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                         fields = object_type + owned_id
                                     else:
                                         assert owned_id in request
-                                        if operation != 11:
+                                        if operation not in (11, 19):
                                             assert tlv(0x420079, 1, owned_id) in request
                                     if operation == 10:
                                         returned_id = owned_id if valid else tlv(0x420094, 7, b"foreign-key")
@@ -788,6 +798,15 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                     if operation == 11:
                                         assert tlv(0x420079, 1, owned_id + enumeration(0x42013b, 0x42002a)) in request
                                         fields += tlv(0x420125, 1, integer(0x42002a, 256 if valid else 128))
+                                    if operation == 12:
+                                        fields += enumeration(0x42013b, 0x420028)
+                                        if valid:
+                                            fields += enumeration(0x42013b, 0x42002a)
+                                    if operation == 19:
+                                        assert tlv(0x420079, 1, owned_id + tlv(0x420081, 1, enumeration(0x420082, 6))) in request
+                                    if not valid and ((target == "activate" and operation == 18)
+                                                      or (target == "revoke" and operation == 19)):
+                                        fields = tlv(0x420094, 7, b"foreign-key")
                                     batch = tlv(0x42000f, 1, enumeration(0x42005c, operation)
                                                 + enumeration(0x42007f, 0) + tlv(0x42007c, 1, fields))
                                     stream.sendall(tlv(0x42007b, 1, header + batch))
@@ -812,6 +831,7 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
     versioned_operation(binary, openssl, repository, "test-op-create-key-pair", 0x02, protocol_version)
+    versioned_operation(binary, openssl, repository, "test-op-revoke", 0x13, protocol_version)
     if os.name == "posix":
         versioned_owned_key(binary, openssl, repository, protocol_version)
         for invalid in (False, True):

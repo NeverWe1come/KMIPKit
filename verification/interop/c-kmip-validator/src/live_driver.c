@@ -1224,6 +1224,17 @@ static int32_t create_revocation_item(
     return status;
 }
 
+static int32_t build_fluent_revocation_item(const kmipkit_unique_identifier_v1_t *identifier,
+                                             kmipkit_client_batch_item_t **out_item) {
+    kmipkit_revoke_builder_t *builder = NULL;
+    int32_t status = kmipkit_revoke_builder_create(
+        KMIPKIT_ENUMERATION_REVOCATION_REASON_CODE_CESSATION_OF_OPERATION, &builder);
+    if (status == 0) status = kmipkit_revoke_builder_set_unique_identifier(builder, identifier);
+    if (status == 0) status = kmipkit_revoke_builder_build_batch_item(builder, out_item);
+    if (builder) kmipkit_revoke_builder_release(builder);
+    return status;
+}
+
 static bool create_authentication(kmip_live_client_t *client,
                                   kmipkit_authentication_t **out_authentication);
 
@@ -9340,6 +9351,16 @@ static bool add_generic_create_fields(kmip_live_client_t *client, kmipkit_ttlv_s
     return valid;
 }
 
+static bool add_generic_revoke_reason(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload) {
+    kmipkit_ttlv_structure_t *reason = NULL;
+    bool valid = kmipkit_ttlv_structure_create(&reason) == 0 &&
+        add_generic_number(client, &reason, 0x420082,
+            KMIPKIT_ENUMERATION_REVOCATION_REASON_CODE_CESSATION_OF_OPERATION, true) &&
+        add_generic_structure(client, payload, 0x420081, &reason);
+    if (reason) kmipkit_ttlv_structure_release(reason);
+    return valid;
+}
+
 static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t operation,
                                              const generic_identifier_t *identifier) {
     kmipkit_ttlv_structure_t *root = NULL, *header = NULL, *batch = NULL, *payload = NULL;
@@ -9360,6 +9381,8 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
     if (valid && identifier)
         valid = kmipkit_ttlv_value_text_string(client->limits, identifier->data, identifier->size, &value) == 0 &&
             append_ttlv_value(client, &payload, 0x420094, &value);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)
+        valid = add_generic_revoke_reason(client, &payload);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES)
         valid = add_generic_number(client, &payload, 0x42013b, 0x42002a, true);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE)
@@ -9608,6 +9631,21 @@ static bool generic_id_matches(kmipkit_ttlv_structure_view_t *payload, const gen
     return valid;
 }
 
+static bool generic_has_length_reference(kmipkit_ttlv_structure_view_t *payload, uint64_t count) {
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint32_t target = 0;
+        if (kmipkit_ttlv_structure_view_item_at(payload, index, &field) != 0) return false;
+        bool found = item_view_has_tag(field, 0x42013b, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value) &&
+            kmipkit_ttlv_value_view_enumeration(value, &target) == 0 && target == 0x42002a;
+        if (value) kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(field);
+        if (found) return true;
+    }
+    return false;
+}
+
 static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor,
                                   const generic_identifier_t *expected, generic_identifier_t *created) {
     kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
@@ -9623,6 +9661,8 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
             if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET)
                 valid = generic_structure_field(payload, 0x42008f, &offered);
         }
+        if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST)
+            valid = generic_has_length_reference(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
             uint64_t attributes = 0;
             valid = generic_structure_field(payload, 0x420125, &offered) &&
@@ -9760,8 +9800,23 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
         return outcome;
     }
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_GET ||
-                            operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES))
+                            operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES ||
+                            operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST))
         outcome = execute_generic_exchange(client, operation, &id, NULL);
+    if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_ACTIVATE ||
+                            operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)) {
+        outcome = execute_generic_exchange(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, &id, NULL);
+        if ((outcome.has_result_status_code && outcome.result_status_code == 0) || outcome.library_failed) {
+            kmip_execution_outcome_t revoke = execute_generic_exchange(
+                client, KMIPKIT_ENUMERATION_OPERATION_REVOKE, &id, NULL);
+            if (outcome.success) {
+                if (operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE) outcome = revoke;
+                else if (!revoke.success) outcome = generic_cleanup_failure("Cleanup Revoke failed for the activated key.");
+            }
+        } else if (operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE) {
+            outcome = outcome_not_run("server rejected isolated Activate setup");
+        }
+    }
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE || operation == KMIPKIT_ENUMERATION_OPERATION_RECOVER)) {
         outcome = execute_generic_exchange(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, &id, NULL);
         if (outcome.has_result_status_code && outcome.result_status_code == 0) {
@@ -9783,6 +9838,9 @@ static uint32_t generic_owned_operation(const char *id) {
     if (strcmp(id, "test-op-create") == 0) return KMIPKIT_ENUMERATION_OPERATION_CREATE;
     if (strcmp(id, "test-op-get") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET;
     if (strcmp(id, "test-op-get-attributes") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES;
+    if (strcmp(id, "test-op-get-attribute-list") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST;
+    if (strcmp(id, "test-op-activate") == 0) return KMIPKIT_ENUMERATION_OPERATION_ACTIVATE;
+    if (strcmp(id, "test-op-revoke") == 0) return KMIPKIT_ENUMERATION_OPERATION_REVOKE;
     if (strcmp(id, "test-op-destroy") == 0) return KMIPKIT_ENUMERATION_OPERATION_DESTROY;
     if (strcmp(id, "test-op-archive") == 0) return KMIPKIT_ENUMERATION_OPERATION_ARCHIVE;
     if (strcmp(id, "test-op-recover") == 0) return KMIPKIT_ENUMERATION_OPERATION_RECOVER;
@@ -9822,7 +9880,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool draft_locate = client->protocol_major == 3 && locate_workflow;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        !hash_workflow && !locate_workflow && !create_key_pair_workflow && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
+        !hash_workflow && !locate_workflow && !create_key_pair_workflow &&
+        strcmp(test_case->case_id, "test-op-revoke") != 0 && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
         strcmp(test_case->case_id, "test-op-set-attribute") != 0 &&
@@ -10667,7 +10726,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = kmipkit_client_batch_item_activate(&placeholder, &item);
             } else if (revoke_workflow) {
                 request_construction_step = "Revoke target operation";
-                status = create_revocation_item(&placeholder, &item);
+                status = fluent_route ? build_fluent_revocation_item(&placeholder, &item)
+                                      : create_revocation_item(&placeholder, &item);
             } else if (export_workflow) {
                 request_construction_step = "Export target operation";
                 bool export_identifier_present = !export_request_field ||

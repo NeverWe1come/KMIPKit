@@ -51,10 +51,13 @@ runs Locate, Query, Discover Versions, RNG Retrieve, and single-part SHA-256
 Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. RNG Retrieve follows the catalog's
 mutation opt-in.
 
-With mutation opt-in, the direct tag route also runs Create, Get, Get Attributes, Destroy,
-Archive and Recover. Each case creates an isolated AES-256 key and uses the
-server-returned Text String identifier for all follow-up exchanges. The
-validator checks the response identifier and performs cleanup with Destroy.
+With mutation opt-in, the direct tag route also runs Create, Get, Get
+Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
+Each case uses the Text String identifier returned when it creates an isolated
+AES-256 key. The lifecycle checks validate the response identifier and confirm
+cleanup with Destroy. An activated key is revoked before Destroy.
+The C Fluent route also exercises Revoke with its public builder and
+checks that the response identifies the owned key.
 
 Use CA, client certificate and unencrypted PEM key files. The supported
 probe recipes use certificate authentication.
