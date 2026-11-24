@@ -31,7 +31,12 @@ _native_package = Path(__file__).parent.parent / "_native_ffi"
 try:
     _ffi_module = _load_generated_ffi(_native_package / "ffi.py")
 except (ImportError, OSError):
-    raise ImportError("KMIPKit CFFI declarations are unavailable") from None
+    if os.environ.get("SPHINX_BUILD"):
+        from unittest.mock import MagicMock
+
+        _ffi_module = MagicMock()
+    else:
+        raise ImportError("KMIPKit CFFI declarations are unavailable") from None
 
 ffi = _ffi_module.ffi
 _bundled_path = (
@@ -44,12 +49,20 @@ _native_library_path = resolve_native_library_path(
     environ=os.environ,
 )
 _bundled_path = _native_library_path
-lib = load_cffi_library(
-    ffi=ffi,
-    bundled_path=_native_library_path,
-    expected_abi_version=1,
-    environ={},
-)
+try:
+    lib = load_cffi_library(
+        ffi=ffi,
+        bundled_path=_native_library_path,
+        expected_abi_version=1,
+        environ={},
+    )
+except (ImportError, OSError):
+    if os.environ.get("SPHINX_BUILD"):
+        from unittest.mock import MagicMock
+
+        lib = MagicMock()
+    else:
+        raise
 
 
 @lru_cache(maxsize=1)

@@ -13,8 +13,7 @@ pub fn decode_json(bytes: &[u8]) -> Result<Item, String> {
         return Err("JSON payload exceeds maximum allowed size".to_string());
     }
     let text = std::str::from_utf8(bytes).map_err(|e| format!("invalid UTF-8 in JSON: {e}"))?;
-    let json_val: JsonVal =
-        serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
+    let json_val: JsonVal = serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
     decode_json_element(&json_val)
 }
 

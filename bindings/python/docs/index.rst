@@ -9,6 +9,9 @@ authoritative KMIPKit Rust core via CFFI.
    :caption: Contents:
 
    api
+   installation
+   native-library
+   testing
 
 Quick Example
 -------------

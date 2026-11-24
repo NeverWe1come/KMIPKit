@@ -2764,8 +2764,13 @@ ffi.cdef(
 _native_path = str(_bundled_path)
 try:
     lib = ffi.dlopen(_native_path)
-except OSError:
-    raise ImportError("KMIPKit native client ABI is unavailable") from None
+except (ImportError, OSError):
+    if os.environ.get("SPHINX_BUILD"):
+        from unittest.mock import MagicMock
+
+        lib = MagicMock()
+    else:
+        raise ImportError("KMIPKit native client ABI is unavailable") from None
 
 
 __all__ = ["ffi", "lib"]

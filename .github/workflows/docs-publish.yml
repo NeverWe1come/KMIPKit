@@ -56,7 +56,7 @@ jobs:
           python-version: "3.12"
       - name: Install Sphinx & build strict HTML
         run: |
-          pip install sphinx furo myst-parser sphinx-autodoc-typehints
+          pip install --only-binary ":all:" sphinx==8.1.3 furo==2024.8.6 myst-parser==4.0.0 sphinx-autodoc-typehints==2.5.0
           sphinx-build -W -b html bindings/python/docs bindings/python/docs/_build/html
 
   doxygen:
@@ -71,4 +71,6 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y doxygen
       - name: Generate C API Reference
         working-directory: bindings/c
-        run: doxygen Doxyfile
+        run: |
+          mkdir -p build/doxygen
+          doxygen Doxyfile
