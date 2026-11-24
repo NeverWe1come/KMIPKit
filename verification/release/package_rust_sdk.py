@@ -83,7 +83,7 @@ def package_rust_sdk(
 
         if smoke_test:
             subprocess.run(
-                ["cargo", "check", "--offline", "-p", "kmipkit"],
+                ["cargo", "check", "-p", "kmipkit"],
                 cwd=stage,
                 check=True,
             )
