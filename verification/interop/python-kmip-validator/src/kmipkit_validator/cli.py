@@ -260,7 +260,10 @@ def _run(
                     observation["status"],
                     observation["library_correctness"],
                     observation["server_compatibility"],
-                    "response verified" if observation["status"] == "passed" else "KMIP response reported non-success status",
+                    observation.get("diagnostic") or (
+                        "response verified" if observation["status"] == "passed"
+                        else "KMIP response reported non-success status"
+                    ),
                     elapsed,
                     observation.get("result_status_code"),
                     observation.get("result_reason_code"),

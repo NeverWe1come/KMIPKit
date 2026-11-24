@@ -1789,6 +1789,14 @@ class PythonKmipDriver:
             )
         return final
 
+    @staticmethod
+    def _blocked_prerequisite(diagnostic: str) -> dict[str, Any]:
+        return {
+            "status": "not_run", "library_correctness": "not_checked",
+            "server_compatibility": "unknown", "parity": "not_compared",
+            "diagnostic": diagnostic,
+        }
+
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
@@ -1824,7 +1832,7 @@ class PythonKmipDriver:
                     attributes.close()
                 created_ids = setup.get("_identifiers", [])
                 if setup["status"] != "passed":
-                    return setup
+                    return self._blocked_prerequisite("server did not create the owned object fixture")
                 if not created_ids:
                     return {
                         "status": "failed", "library_correctness": "failed",
@@ -1837,22 +1845,26 @@ class PythonKmipDriver:
                     for key_identifier in created_ids:
                         activated = self._exchange(self._extensions.client_batch_item_activate(key_identifier))
                         if activated["status"] != "passed":
-                            return activated
+                            outcome = self._blocked_prerequisite("server did not activate the owned key fixture")
+                            return outcome
                 if operation == "Signature Verify" and len(created_ids) > 1:
                     target_identifier = created_ids[1]
             if operation in {"Deactivate", "Obliterate"}:
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
                 if activated["status"] != "passed":
-                    raise LocalRecipeUnavailable("server rejected activation of the owned fixture")
+                    outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
+                    return outcome
                 if operation == "Obliterate":
                     with self._build_item(test_case | {"operation": "Revoke"}, target_identifier, name=unique_name) as revoke:
                         revoked = self._exchange(revoke)
                     if revoked["status"] != "passed":
-                        raise LocalRecipeUnavailable("server rejected revocation of the owned fixture")
+                        outcome = self._blocked_prerequisite("server rejected revocation of the owned fixture")
+                        return outcome
                     with self._extensions.client_batch_item_destroy(target_identifier) as destroy:
                         destroyed = self._exchange(destroy)
                     if destroyed["status"] != "passed":
-                        raise LocalRecipeUnavailable("server rejected destruction of the owned fixture")
+                        outcome = self._blocked_prerequisite("server rejected destruction of the owned fixture")
+                        return outcome
             if operation in self._DRAFT_KEM:
                 with (
                     self._fixture_attributes(unique_name, 0x3A, 768) as attributes,
@@ -1860,7 +1872,7 @@ class PythonKmipDriver:
                 ):
                     pair = self._exchange(create)
                 if pair["status"] != "passed":
-                    raise LocalRecipeUnavailable("server rejected the ML-KEM fixture key pair")
+                    return self._blocked_prerequisite("server did not create the ML-KEM fixture key pair")
                 identifiers.extend(pair.get("_identifiers", []))
                 if len(identifiers) != 2:
                     raise LocalRecipeUnavailable("server did not return two owned ML-KEM identifiers")
@@ -1869,7 +1881,8 @@ class PythonKmipDriver:
                     with self._extensions.client_batch_item_activate(identifier) as activate:
                         active = self._exchange(activate)
                     if active["status"] != "passed":
-                        raise LocalRecipeUnavailable("server rejected activation of an owned ML-KEM key")
+                        outcome = self._blocked_prerequisite("server rejected activation of an owned ML-KEM key")
+                        return outcome
                 ciphertext = None
                 if operation == "Decapsulate":
                     with self._build_draft_item("Encapsulate", public, unique_name, fluent=False) as encapsulate:
@@ -1877,8 +1890,11 @@ class PythonKmipDriver:
                     if output["status"] == "passed":
                         self._own_kem_fixture(identifiers, output)
                     ciphertext = output.get("_bytes")
-                    if output["status"] != "passed" or not ciphertext:
-                        raise LocalRecipeUnavailable("Encapsulate setup returned no ciphertext")
+                    if output["status"] != "passed":
+                        outcome = self._blocked_prerequisite("server did not complete the Encapsulate setup")
+                        return outcome
+                    if not ciphertext:
+                        raise LocalRecipeUnavailable("successful Encapsulate setup returned no ciphertext")
                 with self._build_draft_item(
                     operation, public if operation == "Encapsulate" else private, unique_name,
                     fluent=self._api_level == "fluent", ciphertext=ciphertext,
