@@ -1,11 +1,11 @@
 # Ejecución tipada del cliente
 
 Esta guía comenzó describiendo la primera etapa de ejecución Rust introducida
-por the client execution model. Su lista de operaciones y ejemplos son puntos de entrada
+por el modelo de ejecución del cliente. Su lista de operaciones y ejemplos son puntos de entrada
 históricos; no son el inventario completo de la API actual. La rama de release
 incluye ahora 56 mapeos de operaciones iniciadas por el cliente, la ruta
 independiente Set Endpoint Role y las APIs aprobadas de escucha y despacho
-servidor-cliente de server-to-client operations. Consulta el [estado del
+servidor-cliente de las operaciones servidor-a-cliente. Consulta el [estado del
 proyecto](../../project-status.md), el [estado de paquetes y manifiesto
 ](paquetes-de-idiomas.md) y la [matriz de interoperabilidad con
 servidores](../../development/kmip-interoperability.md) para distinguir la
@@ -71,13 +71,12 @@ catalogada del borrador/estándar KMIP 3.0 se seleccionan explícitamente y se
 validan antes del envío según la arquitectura multi-versión KMIP 2.0, 2.1 y 3.0. La biblioteca
 cliente no admite KMIP 1.x. Las APIs de KMIP 3.0 se limitan a los modelos y
 rutas aprobados por versión; su presencia no afirma conformidad general con
-3.0, compatibilidad con perfiles ni certificación. Las especificaciones y el
-especificaciones de alcance inicial limitadas a KMIP 2.1, limitados a KMIP 2.1, han sido sustituidos en alcance por
+3.0, compatibilidad con perfiles ni certificación. Las especificaciones de alcance inicial limitadas a KMIP 2.1 han sido sustituidas en alcance por
 decisiones aprobadas posteriores.
 
 ## Ciclo fluido de una clave
 
-fluent API foundation añade un recorrido orientado a tareas para el ciclo habitual de
+La API fluida añade un recorrido orientado a tareas para el ciclo habitual de
 una clave simétrica. Construye peticiones tipadas existentes y mantiene
 explícitos el algoritmo, el tamaño de clave y la política de uso. Los presets
 AES solo fijan el algoritmo y la longitud en bits; el llamador elige las
@@ -677,7 +676,7 @@ formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 
 ## Credenciales y capacidad de atestación
 
-the credentials and attestation model proporciona valores tipados de Credential y Authentication que
+El modelo de credenciales y autenticación proporciona valores tipados de Credential y Authentication que
 conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
 contiene una o más Credential en el orden indicado por el llamador. El cliente
 puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
@@ -981,7 +980,7 @@ la política de codificación y limpieza de búferes.
 
 ## Búsqueda y ciclo de vida con builders
 
-fluent lifecycle and lookup operations añade builders Rust para Locate, Activate, Archive, Recover,
+Las operaciones fluidas de búsqueda y ciclo de vida añaden builders en Rust para Locate, Activate, Archive, Recover,
 Revoke, Re-key, Re-key Key Pair y Re-certify. Cada builder recibe valores
 semánticos y produce la request tipada existente; Locate y Re-key conservan
 los modelos tipados de filtros y atributos. El builder permite validar en
@@ -1129,7 +1128,7 @@ resolver un ID Placeholder.
 
 ## Peticiones criptográficas fluidas en Rust
 
-fluent cryptographic operations añade builders de Rust para Encrypt, Decrypt, Sign, Signature
+Las operaciones criptográficas fluidas añaden builders de Rust para Encrypt, Decrypt, Sign, Signature
 Verify, MAC, MAC Verify y Hash. Construyen las peticiones tipadas existentes,
 validan los campos comprobables localmente y pueden crear un elemento de batch
 o ejecutar un intercambio. Cada entrada de bytes pasa al propietario de
@@ -1194,8 +1193,8 @@ Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
 los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
 o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
 `Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
-Poll ni reintentos automáticos. fluent cryptographic operations a fluent Python cryptographic operations añaden las APIs de
-builders para Rust, C, Java y Python en entregas dependientes. Cada binding
+Poll ni reintentos automáticos. Las operaciones criptográficas fluidas añaden las APIs de
+builders para Rust, C, Java y Python. Cada binding
 respeta las reglas de propiedad y resultados de su lenguaje y usa las mismas
 operaciones tipadas de Rust.
 
@@ -1322,7 +1321,7 @@ reconozca. Una
 extensión de respuesta no crítica y desconocida se conserva como TTLV opaco
 para inspección explícita; conservarla no interpreta ni valida la semántica
 del fabricante. Esta parte no registra ni envía extensiones de fabricantes.
-the extension registry es responsable del registro inmutable por cliente y de los
+El registro de extensiones es responsable del registro inmutable por cliente y de los
 adaptadores tipados validados para extensiones de fabricantes antes de
 congelar la API 1.0, según la política de propiedad inmutable del registro de extensiones.
 
@@ -1349,7 +1348,7 @@ conservar los bytes de petición después del intercambio, reintentar ni dejar
 sin limpiar los bytes temporales de petición o respuesta parcial propiedad de
 KMIPKit antes de liberarlos. Un adaptador concreto debe impedir que el buffer
 de respuesta se reasigne tras almacenar bytes o limpiar las asignaciones
-anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta the low-level transport exchange specification
+anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta la especificación de intercambio de transporte de bajo nivel
 para conocer el contrato exacto.
 
 Los adaptadores de producción TLS y HTTPS usan la configuración de transporte

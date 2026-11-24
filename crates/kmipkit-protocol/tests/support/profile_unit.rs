@@ -3519,7 +3519,7 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
 #[test]
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
-    // extension tags start with 0x54. Applicability is mapped by DEC-018.
+    // extension tags start with 0x54. Applicability is mapped by profile rules.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11.56-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11.56-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -12220,7 +12220,7 @@ fn profile_maps_default_batch_error_continuation_to_stop() {
 #[test]
 fn profile_maps_assigned_batch_error_continuation_values() {
     // KMIP Specification v2.1 §9.6 and §11.5 Table 435 assign Continue=1,
-    // Stop=2, and Undo=3. DEC-002 preserves extension values in generic models
+    // Stop=2, and Undo=3. Extension values are preserved in generic models
     // while restricting this outbound profile rule to the assigned values.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
@@ -23104,7 +23104,7 @@ fn profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier
 #[test]
 fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
     // A raw Request Message cannot substitute a preceding batch item's
-    // ID Placeholder for the public key identifier required by DEC-013.
+    // ID Placeholder for the public key identifier required by OASIS KMIP specifications.
     let request = request_message_with_operation_payload(CERTIFY_OPERATION, Structure::new());
     let error = certify_omitted_value_identifier_profile_result()
         .validate_request(&request)
@@ -23126,7 +23126,7 @@ fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
 
 #[test]
 fn profile_rejects_id_placeholder_for_omitted_certify_request_value() {
-    // DEC-013 requires an explicit public-key identifier when request material
+    // OASIS KMIP requires an explicit public-key identifier when request material
     // is omitted; Enumeration(1) names the batch ID Placeholder, not the key.
     let request = request_message_with_operation_payload(
         CERTIFY_OPERATION,

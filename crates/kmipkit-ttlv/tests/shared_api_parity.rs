@@ -189,7 +189,7 @@ fn codec_limits_shared_fixture_covers_defaults_ranges_and_rejection() {
 
 #[test]
 fn generic_ttlv_decoder_matches_shared_fixture_and_limits() {
-    // parser validation/005/007/009 and parser validation/010/017.
+    // Parser validation and error handling contracts.
     let case = shared_case("ttlv.decoder-root-structure.v1");
     let wire = hex_bytes(
         case["input"]["wireHex"]
