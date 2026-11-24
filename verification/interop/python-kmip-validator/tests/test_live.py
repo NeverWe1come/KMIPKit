@@ -1,5 +1,6 @@
 """Controlled TLS 1.3 mTLS exchange tests; never evidence of vendor support."""
 
+import hashlib
 import json
 import os
 import struct
@@ -255,7 +256,7 @@ class ControlledExchangeTests(unittest.TestCase):
         from kmipkit_validator.cli import _plan, _run
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
-        selected = {"test-op-query", "test-op-discover-versions", "test-op-ping"}
+        selected = {"test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0"}
         catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
         for version in ("2.0", "2.1"):
             minor = int(version[-1])
@@ -267,30 +268,38 @@ class ControlledExchangeTests(unittest.TestCase):
                     with self.subTest(version=version, case=case_id, expected=expected):
                         query = case_id == "test-op-query"
                         ping = case_id == "test-op-ping"
-                        operation = 0x3B if ping else 0x18 if query else 0x1E
+                        hashing = case_id == "test-crypto-hash-sha_256-0"
+                        operation = {"test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+                                     "test-crypto-hash-sha_256-0": 0x27, "test-op-ping": 0x3B}[case_id]
 
                         def reply(request):
                             tree = parse_children(request[8:])
                             payload = parse_children(find_value(tree, 0x420079))
                             if ping:
                                 self.assertEqual([], payload)
+                            elif hashing:
+                                self.assertEqual(find_value(payload, 0x420038), struct.pack(">I", 6))
+                                self.assertEqual(find_value(payload, 0x4200C2), b"abc")
                             elif query:
                                 self.assertEqual(find_value(payload, 0x420074), struct.pack(">I", 1))
                             else:
                                 self.assertEqual(find_value(payload, 0x42006B), struct.pack(">i", minor))
                             if expected == "server_unsupported":
                                 return ping_response(request, 1, 5, protocol_minor=minor)
-                            reply_minor = 1 - minor if expected == "failed" else minor
+                            reply_minor = 1 - minor if expected == "failed" and not hashing else minor
                             if ping:
                                 return ping_response(request, 0, None, protocol_minor=reply_minor)
-                            if not query:
+                            if not query and not hashing:
                                 return discover_versions_response(request, 0, None, reply_minor, ((2, minor),))
                             protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
                                                  item(0x42006B, 2, struct.pack(">i", reply_minor)))
                             header = structure(0x42007A, protocol, item(0x420092, 9, struct.pack(">q", 1)),
                                                item(0x42000D, 2, struct.pack(">i", 1)))
+                            returned = (item(0x4200C2, 8, hashlib.sha256(
+                                b"wrong" if expected == "failed" else b"abc").digest())
+                                if hashing else enumeration(0x42005C, 1))
                             batch = structure(0x42000F, enumeration(0x42005C, operation),
-                                              enumeration(0x42007F, 0), structure(0x42007C, enumeration(0x42005C, 1)))
+                                              enumeration(0x42007F, 0), structure(0x42007C, returned))
                             return structure(0x42007B, header, batch)
 
                         peer = ControlledTlsPeer(response_factory=reply, protocol_version=version)
