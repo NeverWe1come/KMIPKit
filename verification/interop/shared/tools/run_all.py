@@ -30,9 +30,11 @@ if str(_current_dir) not in sys.path:
 try:
     from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
     from verification.interop.shared.tools.campaign import read_validated
+    from verification.interop.shared.tools.operation_catalog import build_catalog
 except ImportError:
     from aggregate_matrix import aggregate_results, generate_html, generate_markdown  # type: ignore
     from campaign import read_validated  # type: ignore
+    from operation_catalog import build_catalog  # type: ignore
 
 SUPPORTED_LANGUAGES = ["rust", "c", "java", "python"]
 
@@ -59,6 +61,7 @@ def build_command_for_language(
     project_dir: Path | None = None,
     python: Path | None = None,
     enable_mutations: bool = False,
+    c_catalog_override: bool = False,
 ) -> list[str]:
     """Use the installed consumer's run command and actual report location."""
     del vectors_path  # The installed consumers load their own canonical vectors.
@@ -67,7 +70,7 @@ def build_command_for_language(
     command = ["run"]
     if connection_path is not None:
         command.extend(("--connection", str(connection_path.resolve())))
-    if language != "c":
+    if language != "c" or c_catalog_override:
         command.extend(("--catalog", str(catalog_path.resolve())))
     if language in ("rust", "c", "python"):
         command.extend(("--capabilities", str(profile_path.resolve())))
@@ -156,6 +159,7 @@ def orchestrate_interop_run(
     projects: dict[str, Path] | None = None,
     python: Path | None = None,
     enable_mutations: bool = False,
+    c_catalog_override: bool = False,
 ) -> dict[str, Any]:
     """Launch one installed consumer per language and collect fresh reports."""
     if not dry_run and (connection_path is None or not connection_path.is_file()):
@@ -183,6 +187,7 @@ def orchestrate_interop_run(
         commands[lang] = build_command_for_language(
             lang, base_dir, profile_path, connection_path, catalog_path, vectors_path, out_file,
             project_dir=project_dirs[lang], python=python, enable_mutations=enable_mutations,
+            c_catalog_override=c_catalog_override,
         )
     if not dry_run:
         # Reserve isolated, fresh paths before sending any requests.
@@ -234,6 +239,8 @@ def main() -> None:
     parser.add_argument("--profile", type=Path, default=Path("verification/interop/shared/profiles/generic-kmip-2.1.json"), help="KMS profile JSON")
     parser.add_argument("--connection", type=Path, action="append", default=[],
                         help="Connection configuration JSON. Repeat for other versions or execution settings.")
+    parser.add_argument("--all-operations", action="store_true",
+                        help="Generate the complete operation catalog for each connection version")
     parser.add_argument("--catalog", type=Path, default=Path("verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"),
                         help="Test catalog for Rust, Java and Python. C uses its build-time catalog.")
     parser.add_argument("--vectors", type=Path, default=Path("verification/interop/shared/vectors/canonical-vectors.json"), help="Test vectors JSON")
@@ -255,6 +262,8 @@ def main() -> None:
         parser.error(f"select languages from {', '.join(SUPPORTED_LANGUAGES)}")
     if len(projects) != len(args.project) or not set(projects).issubset(langs):
         parser.error("give one project path per selected language")
+    if args.all_operations and not args.connection:
+        parser.error("--all-operations requires a connection configuration")
     if args.campaign and args.dry_run:
         parser.error("--campaign requires executing the validators")
 
@@ -267,19 +276,32 @@ def main() -> None:
     connections = args.connection or [None]
     results = []
     versions = []
+    operation_catalogs = {}
     try:
-        if not args.dry_run and args.connection:
+        if args.connection and (not args.dry_run or args.all_operations):
             versions = list(dict.fromkeys(
                 read_validated(path, "server-connection.schema.json")["protocol_version"]
                 for path in args.connection
             ))
+        if args.all_operations:
+            catalog_dir = out_dir / "catalogs"
+            catalog_dir.mkdir(parents=True, exist_ok=True)
+            for version in versions:
+                catalog = catalog_dir / f"kmip-{version}-operations.json"
+                with catalog.open("x", encoding="utf-8") as stream:
+                    json.dump(build_catalog(base_dir, version), stream, indent=2, ensure_ascii=False)
+                operation_catalogs[version] = catalog
         for index, connection in enumerate(connections, 1):
+            catalog_path = args.catalog
+            if args.all_operations:
+                version = read_validated(connection, "server-connection.schema.json")["protocol_version"]
+                catalog_path = operation_catalogs[version]
             destination = out_dir if len(connections) == 1 else out_dir / f"connection-{index}"
             result = orchestrate_interop_run(
                 languages=langs,
                 base_dir=base_dir,
                 profile_path=args.profile,
-                catalog_path=args.catalog,
+                catalog_path=catalog_path,
                 vectors_path=args.vectors,
                 output_dir=destination,
                 connection_path=connection,
@@ -288,6 +310,7 @@ def main() -> None:
                 projects=projects,
                 python=args.python.absolute() if args.python else None,
                 enable_mutations=args.enable_mutations,
+                c_catalog_override=args.all_operations,
             )
             results.extend(result["runs"])
         paths = [] if args.dry_run else report_files(results)
@@ -308,6 +331,8 @@ def main() -> None:
             command.extend(("--version", version))
         for lang in langs:
             command.extend(("--language", lang))
+        for path in operation_catalogs.values():
+            command.extend(("--catalog-source", str(path)))
         for path in paths:
             command.extend(("--live-report", str(path)))
         campaign_status = subprocess.run(command, check=False).returncode

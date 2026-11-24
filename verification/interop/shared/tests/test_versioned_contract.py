@@ -11,6 +11,7 @@ from pathlib import Path
 
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
 from verification.interop.shared.tools.operation_variants import plan as plan_operation_variants
+from verification.interop.shared.tools.operation_catalog import build_catalog, direction
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -309,6 +310,29 @@ class VersionedContractTests(unittest.TestCase):
         self.assertNotIn("secret response bytes", json_output)
         self.assertNotIn("private key material", json_output)
         self.assertNotIn("secret body in malformed summary", json_output)
+
+    def test_operation_catalog_has_every_operation_in_each_specification_and_direction(self) -> None:
+        import jsonschema
+
+        schema = json.loads((ROOT / "verification/interop/shared/schemas/test-catalog.schema.json").read_text())
+        for version, count in (("2.0", 56), ("2.1", 62), ("3.0", 69)):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version)
+                jsonschema.validate(catalog, schema)
+                cases = catalog["test_cases"]
+                self.assertEqual(count, len(cases))
+                self.assertEqual(count, len({(case["operation"], direction(case)) for case in cases}))
+                self.assertEqual(
+                    {"client_to_server", "server_to_client"},
+                    {direction(case) for case in cases if case["operation"] == "Set Endpoint Role"},
+                )
+                self.assertTrue(all(case["execution"]["protocol_versions"] == [version] for case in cases))
+                self.assertTrue(all(case["execution"]["mutation"] == "mutating" for case in cases
+                                    if case["operation"] in {"Put", "Set Endpoint Role", "Login"}))
+                draft = {"Create Group", "Create User", "Create Credential", "Deactivate",
+                         "Obliterate", "Encapsulate", "Decapsulate"}
+                self.assertEqual(draft if version == "3.0" else set(),
+                                 draft & {case["operation"] for case in cases})
 
     def test_operation_variants_preserve_versions_and_stable_identifiers(self) -> None:
         rows = list(plan_operation_variants(ROOT))

@@ -198,3 +198,29 @@ The paired columns show outcome agreement per case. `MATCHED_PASS` records
 the same successful assertion on both routes. `MATCHED_UNSUPPORTED` records
 the same server rejection. Cases omitted, withheld by policy, or validated
 locally without a server exchange remain pending in the paired columns.
+
+
+## Full operation selection
+
+Generate an exchange catalog for the target protocol version. Use the
+generated file as the validator's `--catalog` input for a dedicated test
+endpoint. Each row carries its exact specification section and direction.
+
+```sh
+python3 verification/interop/shared/tools/operation_catalog.py --version 3.0 --output /tmp/kmip-operations-3.0.json
+```
+
+Run the complete selections in one campaign by passing a connection file
+per version and API level.
+
+```sh
+python3 verification/interop/shared/tools/run_all.py --all-operations --campaign \
+  --connection /path/to/2.0.json --connection /path/to/2.1.json \
+  --connection /path/to/3.0.json --output-dir /tmp/kmip-operation-run
+```
+
+The catalogs include 56 operation/direction pairs for 2.0, 62 for 2.1,
+and 69 for the 3.0 Working Draft. Existing recipes are selected once for
+each direction. A planned row requires a tested recipe in the chosen
+consumer before the validator can report exchange evidence. A server
+rejection or a local delivery error remains visible in its result.
