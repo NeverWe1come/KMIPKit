@@ -368,18 +368,19 @@ class LiveContract(unittest.TestCase):
                         payload = [ttlv(0x420094, 12, identifier)]
                         if operation == 1:
                             payload.insert(0, ttlv(0x420057, 5, 2))
-                        elif operation == 3:
+                        elif operation == 2:
                             payload = [ttlv(0x420066, 12, "owned-private"),
                                        ttlv(0x42006f, 12, "owned-public")]
                         elif operation == 0x41:
-                            payload.append(ttlv(0x4200c2, 8, b"fixture-ciphertext"))
+                            payload = [ttlv(0x420094, 12, "owned-encapsulated"),
+                                       ttlv(0x4200c2, 8, b"fixture-ciphertext")]
                         return response(operation, minor=0, major=3, status=0, reason=None, payload=payload)
                     with ControlledPeer(self.pki, reply) as peer:
                         process, report = self.command(
                             self.connection(peer.port, version="3.0", api=api, mutations=True), [case]
                         )
                     self.assertIsNotNone(report, process.stderr)
-                    self.assertEqual("server_unsupported", report["cases"][0]["status"], report)
+                    self.assertEqual("server_unsupported", report["cases"][0]["status"], (peer.operations, report))
                     index, = [idx for idx, op in enumerate(peer.operations) if op == target]
                     observations.append((peer.request_trees[index], peer.response_trees[index]))
                 self.assertEqual(*observations)
