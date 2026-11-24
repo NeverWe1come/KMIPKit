@@ -7,6 +7,29 @@ plugins {
     `java-library`
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    withJavadocJar()
+    withSourcesJar()
+}
+
+tasks.withType<Javadoc>().configureEach {
+    options {
+        this as StandardJavadocDocletOptions
+        encoding = "UTF-8"
+        charSet = "UTF-8"
+        docTitle = "KMIPKit Java API ${project.version}"
+        windowTitle = "KMIPKit ${project.version} API"
+        overview = file("src/main/javadoc/overview.html").absolutePath
+        links("https://docs.oracle.com/en/java/javase/17/docs/api/")
+        addBooleanOption("html5", true)
+        addStringOption("Xdoclint:all,-missing", "-quiet")
+    }
+    exclude("**/org/kmipkit/native/**")
+}
+
 group = "org.kmipkit"
 version = "1.0.0"
 description = "KMIPKit Java 17 bindings, version 1.0.0 (unreleased)"

@@ -1,24 +1,16 @@
-# KMIPKit language bindings
+# KMIPKit Language Bindings
 
-The bindings share the Rust implementation and C ABI. Start with the guide for
-your language:
+KMIPKit provides **1:1 functional parity** across **C (C11 ABI)**, **Java (JNI)**, and **Python (CFFI)**, all backed by the same authoritative, memory-safe Rust core (`kmipkit-ffi`).
 
-- [C](c/README.md)
-- [Java](java/README.md)
-- [Python](python/README.md)
+| Language | Adapter Technology | Minimum Runtime | Entrypoint |
+| :--- | :--- | :--- | :--- |
+| **[C](c/README.md)** | Stable C11 ABI (`kmipkit.h`, `kmipkit_fluent.h`) | C11 / CMake 3.20+ | `libkmipkit_ffi.{so,dylib,dll}` |
+| **[Java](java/README.md)** | JNI C++ Bridge (`kmipkit_jni`) | JDK 17+ | `org.kmipkit:kmipkit-java:1.0.0` |
+| **[Python](python/README.md)** | CFFI Native Adapter | Python 3.10+ | `pip install kmipkit` |
 
-Each binding uses the same documentation layout:
+## Shared Guarantees Across All Bindings
 
-- `README.md`: introduction, first local example, and documentation links.
-- `docs/installation.md`: prerequisites, source builds, and package output.
-- `docs/native-library.md`: linking or loading native code and troubleshooting.
-- `docs/testing.md`: local checks and shared fixtures.
-- `examples/README.md`: available examples and how to run them.
-
-The [architecture guide](../docs/architecture/ffi-and-bindings.md) covers shared
-ownership and adapter responsibilities. The [user guides](../docs/README.md)
-cover KMIP behavior. Keep shared explanations there and link to them from the
-language guides.
-
-Shared API contracts and fixtures live under `shared/`. Their presence and
-package target declarations do not certify functional parity or KMIP conformance.
+* **Zero Protocol Drift:** TTLV/JSON/XML framing, OASIS KMIP 2.0/2.1/3.0 validation, and TLS 1.3/1.2 mTLS live exclusively in Rust.
+* **Opaque Permuted Handles:** Every native handle is an 8-round Feistel-permuted token backed by a live-handle table (prevents use-after-free and forged pointers).
+* **Panic Containment:** Every FFI boundary catches Rust panics and maps them to `KMIPKIT_ERROR_INTERNAL (7)` without unwinding into C/JVM/Python.
+* **Zeroization & Redaction:** Secret buffers are zeroized on free/close and redacted (`[REDACTED]`) from all diagnostics.

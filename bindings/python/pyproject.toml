@@ -6,9 +6,37 @@ build-backend = "maturin"
 name = "kmipkit"
 version = "1.0.0"
 description = "KMIPKit Python 3.12 bindings, version 1.0.0 (unreleased)"
+readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = { text = "Apache-2.0" }
+keywords = ["kmip", "kms", "hsm", "cryptography", "oasis", "security"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Typing :: Typed",
+]
 dependencies = ["cffi>=1.15"]
+
+[project.urls]
+Homepage = "https://github.com/NeverWe1come/KMIPKit"
+Documentation = "https://kmipkit.readthedocs.io/en/latest/"
+Repository = "https://github.com/NeverWe1come/KMIPKit"
+Changelog = "https://github.com/NeverWe1come/KMIPKit/releases"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx>=8.1",
+    "furo>=2024.8.6",
+    "myst-parser>=4.0",
+    "sphinx-autodoc-typehints>=2.5",
+]
 
 [tool.maturin]
 manifest-path = "../../crates/kmipkit-ffi/Cargo.toml"

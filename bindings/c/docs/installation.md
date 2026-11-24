@@ -1,35 +1,18 @@
-# C installation and build
+# C Binding Installation
 
-Run commands from the repository root. Source builds require the Rust toolchain
-specified by [Cargo.toml](../../../Cargo.toml), a C11 compiler, CMake 3.20 or
-newer, and the native build prerequisites for the Rust crypto dependencies.
-See the [Rust workspace guide](../../../docs/development/rust-workspace.md).
+## 1. Build `kmipkit-ffi` with Pinned OpenSSL
 
-```sh
-cargo build --locked -p kmipkit-ffi
-cmake -S bindings/c -B build/c-consumer
-cmake --build build/c-consumer --config Release
+```bash
+python3 verification/security/openssl/build.py
+export OPENSSL_DIR="$HOME/.cache/kmipkit/openssl/3.5.9"
+export OPENSSL_STATIC=1
+cargo build --release -p kmipkit-ffi
 ```
 
-Cargo produces the native library under `target/debug/`. The CMake project
-builds repository consumers and the example against that library. The
-`--config Release` argument selects the CMake configuration for generators
-such as Visual Studio; the Rust library in this command is still a debug build.
+## 2. CMake Integration
 
-To select a separately built Rust release library:
-
-```sh
-cargo build --locked --release -p kmipkit-ffi
-cmake -S bindings/c -B build/c-release -DKMIPKIT_TARGET_DIR="$PWD/target/release"
-cmake --build build/c-release --config Release
+```cmake
+find_package(KMIPKit REQUIRED)
+add_executable(my_kmip_app main.c)
+target_link_libraries(my_kmip_app PRIVATE KMIPKit::kmipkit_ffi)
 ```
-
-The last example uses POSIX shell syntax; use an absolute directory path in
-PowerShell. Keep different library selections in separate CMake build directories.
-
-The public header is [kmipkit.h](../include/kmipkit.h). For an application,
-add `bindings/c/include` to its include path and link the matching
-`kmipkit_ffi` library. [Native linking](native-library.md) describes runtime
-resolution and ownership. [package.toml](../package.toml) records distribution
-metadata; it does not create an installable archive. The current CMake project
-is a consumer build, not an installation or package publication workflow.
