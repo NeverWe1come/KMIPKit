@@ -169,3 +169,32 @@ identity on the returned evidence. The optional profile is passed with
 `--profile` and supplies capability declarations to the report. A runner
 should write its evidence before exiting with a failure. Run a single
 language with one executable or repeat the option for multiple languages.
+
+## Operation variants and API comparisons
+
+Export the request and response field obligations and the managed-object
+attribute rules for KMIP 2.0, 2.1 and 3.0.
+
+```sh
+python3 verification/interop/shared/tools/operation_variants.py --output /tmp/kmip-operation-variants.jsonl
+```
+
+Each row includes its source section, presence or cardinality branch, and
+stable ID. These rows describe cases to implement. The distinct
+`requiredness_review` branch identifies a rule requiring manual review.
+
+Run the validator twice with the same connection settings and catalog,
+selecting `api_level: typed-protocol` in one configuration and
+`api_level: fluent` in the other. Keep the artifact and server configuration
+the same. Then combine their reports.
+
+```sh
+python3 verification/interop/shared/tools/aggregate_matrix.py \
+  /path/to/typed/results.json /path/to/fluent/results.json \
+  --format html --output /tmp/kmip-api-comparison.html
+```
+
+The paired columns show outcome agreement per case. `MATCHED_PASS` records
+the same successful assertion on both routes. `MATCHED_UNSUPPORTED` records
+the same server rejection. Cases omitted, withheld by policy, or validated
+locally without a server exchange remain pending in the paired columns.

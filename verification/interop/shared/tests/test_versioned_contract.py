@@ -10,6 +10,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
+from verification.interop.shared.tools.operation_variants import plan as plan_operation_variants
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -308,6 +309,57 @@ class VersionedContractTests(unittest.TestCase):
         self.assertNotIn("secret response bytes", json_output)
         self.assertNotIn("private key material", json_output)
         self.assertNotIn("secret body in malformed summary", json_output)
+
+    def test_operation_variants_preserve_versions_and_stable_identifiers(self) -> None:
+        rows = list(plan_operation_variants(ROOT))
+        self.assertEqual(len(rows), len({row["variant_id"] for row in rows}))
+        self.assertEqual({"pending"}, {row["status"] for row in rows})
+        for version in ("2.0", "2.1", "3.0"):
+            with self.subTest(version=version):
+                selected = [row for row in rows if row["protocol_version"] == version]
+                self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "request"
+                                    for row in selected))
+                self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "response"
+                                    for row in selected))
+                self.assertTrue(any(row["kind"] == "managed_object_attribute" and row["field"] == "Name"
+                                    and row["variant"] == "read_by_exact_reference" for row in selected))
+
+    def test_typed_and_fluent_outcomes_require_the_same_runtime_and_real_evidence(self) -> None:
+        typed = result_payload(run_id="typed", language="rust", protocol_version="2.1",
+                               transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        fluent = result_payload(run_id="fluent", language="rust", protocol_version="2.1",
+                                 transport="raw_tls", encoding="TTLV", api_level="fluent", status="passed")
+        for run in (typed, fluent):
+            run["cases"][0]["result_status_code"] = 0
+            for case_id, status in (
+                ("test-rejection", "server_unsupported"),
+                ("test-failure", "failed"),
+                ("test-local", "passed"),
+            ):
+                run["cases"].append({"case_id": case_id, "status": status, "library_correctness": "passed",
+                                     "server_compatibility": "unknown"})
+        fluent["cases"].append({"case_id": "test-restricted", "status": "policy_restricted"})
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = [write_result(root, run["run_id"], run) for run in (typed, fluent)]
+            result = aggregate_results(paths)
+            (comparison,) = result["matrices"][0]["api_outcome_comparisons"]
+            self.assertEqual({
+                "test-get": "MATCHED_PASS", "test-rejection": "MATCHED_UNSUPPORTED",
+                "test-failure": "MATCHED_OTHER", "test-local": "PENDING", "test-restricted": "PENDING",
+            }, comparison["cases"])
+            self.assertIn("MATCHED_PASS 1", generate_markdown(result))
+            self.assertIn("MATCHED_PASS 1", generate_html(result))
+
+            fluent["cases"][0]["result_status_code"] = 1
+            write_result(root, "fluent", fluent)
+            (different,) = aggregate_results(paths)["matrices"][0]["api_outcome_comparisons"]
+            self.assertEqual("MISMATCH", different["cases"]["test-get"])
+
+            fluent["execution"]["artifact_sha256"] = "e" * 64
+            write_result(root, "fluent", fluent)
+            self.assertEqual([], aggregate_results(paths)["matrices"][0]["api_outcome_comparisons"])
 
     def test_aggregator_requires_matching_base_evidence_but_ignores_route_differences(self) -> None:
         baseline = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
