@@ -391,7 +391,7 @@ async fn test_64_concurrent_tcp_clients_mixed_operations_on_live_bridge() {
         tasks.push(tokio::spawn(async move {
             let mut stream = TcpStream::connect(addr).await.unwrap();
             let req = if client_id % 2 == 0 {
-                build_create_1x((client_id % 5) as i32)
+                build_create_1x(client_id % 5)
             } else {
                 ttlv_struct(
                     TAG_REQUEST_MESSAGE,

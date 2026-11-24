@@ -30,10 +30,12 @@ use kmipkit_proxy::kmip1x::ttlv_helpers::{
 use kmipkit_proxy::kmip1x::{Kmip1xBridge, UpstreamKmipTransport};
 use kmipkit_ttlv::{Item, Value};
 
+type ResponderFn = Box<dyn Fn(&Item) -> Result<Item, String> + Send + Sync>;
+
 #[derive(Default)]
 struct RecordingUpstream {
     requests: Mutex<Vec<Item>>,
-    responder: Mutex<Option<Box<dyn Fn(&Item) -> Result<Item, String> + Send + Sync>>>,
+    responder: Mutex<Option<ResponderFn>>,
 }
 
 impl RecordingUpstream {
