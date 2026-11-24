@@ -39,7 +39,7 @@ def ttlv(tag, kind, value):
         value = struct.pack(">Q", value)
     elif kind == 6:
         value = struct.pack(">Q", int(value))
-    elif kind == 7:
+    elif kind in (7, 12):
         value = value.encode()
     return tag.to_bytes(3, "big") + bytes([kind]) + len(value).to_bytes(4, "big") + value + b"\0" * (-len(value) % 8)
 
@@ -56,7 +56,7 @@ def parse(data):
             value = parse(value)
         elif kind in (2, 3, 5, 6, 9, 10, 11):
             value = int.from_bytes(value, "big", signed=kind in (2, 3, 9, 11))
-        elif kind == 7:
+        elif kind in (7, 12):
             value = value.decode()
         result.append((tag, kind, value))
         offset += 8 + size + (-size % 8)
@@ -74,7 +74,7 @@ def find(tree, tag):
     return None
 
 
-def response(operation, minor=1, status=1, reason=5, payload=None, message=None):
+def response(operation, minor=1, status=1, reason=5, payload=None, message=None, *, major=2):
     fields = [ttlv(0x42005c, 5, operation), ttlv(0x42007f, 5, status)]
     if reason is not None:
         fields.append(ttlv(0x42007e, 5, reason))
@@ -82,7 +82,11 @@ def response(operation, minor=1, status=1, reason=5, payload=None, message=None)
         fields.append(ttlv(0x42007d, 7, message))
     if payload is not None:
         fields.append(ttlv(0x42007c, 1, payload))
-    return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]), ttlv(0x420092, 9, 1794268800), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, fields)])
+    header = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)]),
+              ttlv(0x420092, 9, 1794268800)]
+    if major < 3:
+        header.append(ttlv(0x42000d, 2, 1))
+    return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, header), ttlv(0x42000f, 1, fields)])
 
 
 def receive(channel):
@@ -336,6 +340,49 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(report["summary"]["passed"], 2)
             self.assertEqual(peer.operations, [])
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
+
+    def test_all_new_kmip30_operations_use_the_versioned_typed_and_fluent_exchanges(self):
+        operations = {
+            "Create Group": 0x3c, "Obliterate": 0x3d, "Create User": 0x3e,
+            "Create Credential": 0x3f, "Deactivate": 0x40,
+            "Encapsulate": 0x41, "Decapsulate": 0x42,
+        }
+        template, = self.rows("test-op-create")
+        for name, target in operations.items():
+            with self.subTest(operation=name):
+                case = {
+                    **template, "case_id": "test-op-" + name.lower().replace(" ", "-"),
+                    "operation": name, "requires": {},
+                    "execution": {**template["execution"], "protocol_versions": ["3.0"]},
+                    "normative_refs": [{"document": "OASIS KMIP 3.0 Working Draft", "section": "6.1"}],
+                }
+                observations = []
+                for api in ("typed-protocol", "fluent"):
+                    def reply(tree):
+                        self.assertEqual(3, find(tree, 0x42006a))
+                        self.assertIsNone(find(tree, 0x42000d))
+                        operation = find(tree, 0x42005c)
+                        if operation == target:
+                            return response(operation, minor=0, major=3)
+                        identifier = find(tree, 0x420094) or "owned-draft-fixture"
+                        payload = [ttlv(0x420094, 12, identifier)]
+                        if operation == 1:
+                            payload.insert(0, ttlv(0x420057, 5, 2))
+                        elif operation == 3:
+                            payload = [ttlv(0x420066, 12, "owned-private"),
+                                       ttlv(0x42006f, 12, "owned-public")]
+                        elif operation == 0x41:
+                            payload.append(ttlv(0x4200c2, 8, b"fixture-ciphertext"))
+                        return response(operation, minor=0, major=3, status=0, reason=None, payload=payload)
+                    with ControlledPeer(self.pki, reply) as peer:
+                        process, report = self.command(
+                            self.connection(peer.port, version="3.0", api=api, mutations=True), [case]
+                        )
+                    self.assertIsNotNone(report, process.stderr)
+                    self.assertEqual("server_unsupported", report["cases"][0]["status"], report)
+                    index, = [idx for idx, op in enumerate(peer.operations) if op == target]
+                    observations.append((peer.request_trees[index], peer.response_trees[index]))
+                self.assertEqual(*observations)
 
     def test_typed_and_fluent_attribute_requests_match_at_the_peer(self):
         cases = self.rows("test-op-get-attributes", "test-attr-name", "test-op-get-attribute-list")

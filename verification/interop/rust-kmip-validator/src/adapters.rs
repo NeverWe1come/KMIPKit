@@ -44,7 +44,30 @@ pub(crate) fn generic_model_check() -> bool {
 #[path = "local_cases_generated.rs"]
 pub(crate) mod local;
 
-pub(crate) fn attributes(name: &str, algorithm: u32, bits: i32) -> Result<AttributeSet> {
+pub(crate) fn fixture_label(name: &str, version: &str) -> Result<kmipkit::ttlv::Item> {
+    if version == "3.0" {
+        // The pinned AttributeSet only admits the 2.x Structure encoding of Name.
+        // Description lets an isolated draft fixture carry a unique test label.
+        return item(0x0042_00fc, Value::text_string(name.to_owned()));
+    }
+    item(
+        0x0042_0053,
+        Value::structure(structure(
+            0x0042_0053,
+            vec![
+                item(0x0042_0055, Value::text_string(name.to_owned()))?,
+                item(0x0042_0054, Value::enumeration(1))?,
+            ],
+        )?),
+    )
+}
+
+pub(crate) fn attributes(
+    name: &str,
+    algorithm: u32,
+    bits: i32,
+    version: &str,
+) -> Result<AttributeSet> {
     AttributeSet::try_new(vec![
         item(0x0042_0028, Value::enumeration(algorithm))?,
         item(0x0042_002a, Value::integer(bits))?,
@@ -56,24 +79,15 @@ pub(crate) fn attributes(name: &str, algorithm: u32, bits: i32) -> Result<Attrib
                 _ => 0x0c,
             }),
         )?,
-        item(
-            0x0042_0053,
-            Value::structure(structure(
-                0x0042_0053,
-                vec![
-                    item(0x0042_0055, Value::text_string(name.to_owned()))?,
-                    item(0x0042_0054, Value::enumeration(1))?,
-                ],
-            )?),
-        )?,
+        fixture_label(name, version)?,
     ])
     .map_err(|_| "invalid explicit key attributes")
 }
 
-pub(crate) fn create(name: &str) -> Result<ClientRequest> {
+pub(crate) fn create(name: &str, version: &str) -> Result<ClientRequest> {
     Ok(ClientRequest::Create(CreateRequest::new(
         ObjectType::from_raw(2),
-        attributes(name, 3, 256)?,
+        attributes(name, 3, 256, version)?,
     )))
 }
 
@@ -102,6 +116,7 @@ pub(crate) fn request(
     case: &Case,
     identifier: Option<&UniqueIdentifier>,
     name: &str,
+    version: &str,
 ) -> Result<ClientRequest> {
     let id_text = identifier.as_ref().and_then(|v| match v {
         UniqueIdentifier::TextString(text) => Some(text.clone()),
@@ -113,6 +128,9 @@ pub(crate) fn request(
             .ok_or("owned object prerequisite unavailable")
     };
     Ok(match case.operation.as_str() {
+        "Set Endpoint Role" => ClientRequest::SetEndpointRole(
+            kmipkit::protocol::SetEndpointRoleRequest::new(kmipkit::protocol::EndpointRole::CLIENT),
+        ),
         "Discover Versions" => ClientRequest::discover_versions(),
         "Ping" => ClientRequest::ping(),
         "Query" => ClientRequest::Query(QueryRequest::new([
@@ -136,24 +154,26 @@ pub(crate) fn request(
         }
         "Create" => match case.requires["object_type"].as_str() {
             Some("Private Key" | "Public Key") => ClientRequest::CreateKeyPair(
-                CreateKeyPairRequest::new().with_common_attributes(attributes(name, 4, 2048)?),
+                CreateKeyPairRequest::new()
+                    .with_common_attributes(attributes(name, 4, 2048, version)?),
             ),
             Some("Split Key") => ClientRequest::CreateSplitKey(CreateSplitKeyRequest::new(
                 ObjectType::from_raw(2),
                 2,
                 2,
                 SplitKeyMethod::XOR,
-                attributes(name, 3, 256)?,
+                attributes(name, 3, 256, version)?,
             )),
-            _ => create(name)?,
+            _ => create(name, version)?,
         },
         "Register" => crate::fixtures::register(
             case.requires["object_type"]
                 .as_str()
                 .unwrap_or("Symmetric Key"),
+            version,
         )?,
         "Import" => {
-            let (kind, object, attrs) = crate::fixtures::object("Symmetric Key")?;
+            let (kind, object, attrs) = crate::fixtures::object("Symmetric Key", version)?;
             ClientRequest::Import(
                 ImportRequest::new(UniqueIdentifier::from(name), kind, attrs, object)
                     .with_replace_existing(false),
@@ -189,17 +209,17 @@ pub(crate) fn request(
                         .with_split_key_threshold(2),
                 ],
             )
-            .with_attributes(attributes(name, 3, 256)?),
+            .with_attributes(attributes(name, 3, 256, version)?),
         ),
         "Create Key Pair" => ClientRequest::CreateKeyPair(
-            CreateKeyPairRequest::new().with_common_attributes(attributes(name, 4, 2048)?),
+            CreateKeyPairRequest::new().with_common_attributes(attributes(name, 4, 2048, version)?),
         ),
         "Create Split Key" => ClientRequest::CreateSplitKey(CreateSplitKeyRequest::new(
             ObjectType::from_raw(2),
             2,
             2,
             SplitKeyMethod::XOR,
-            attributes(name, 3, 256)?,
+            attributes(name, 3, 256, version)?,
         )),
         "Activate" => ClientRequest::Activate(ActivateRequest::new(Some(id()?))),
         "Archive" => ClientRequest::Archive(ArchiveRequest::new(Some(id()?))),
@@ -237,7 +257,7 @@ pub(crate) fn request(
             ClientRequest::GetAttributeList(GetAttributeListRequest::new(id_text))
         }
         "Locate" => ClientRequest::Locate(
-            LocateRequest::new(attributes(name, 3, 256)?).with_maximum_items(1),
+            LocateRequest::new(attributes(name, 3, 256, version)?).with_maximum_items(1),
         ),
         "Check" => ClientRequest::Check(
             CheckRequest::new()
@@ -333,7 +353,7 @@ pub(crate) fn request(
             vec![id()?],
             DerivationMethod::from_raw(2),
             DerivationParameters::new().with_cryptographic_parameters(hash_parameters()?),
-            attributes(name, 3, 256)?,
+            attributes(name, 3, 256, version)?,
         )),
         _ => return Err("operation prerequisites are not represented by this connection contract"),
     })
@@ -363,6 +383,7 @@ mod tests {
                 case,
                 Some(&UniqueIdentifier::from("owned-fixture")),
                 "kmipkit-fixture",
+                "2.1",
             ) {
                 Ok(request) if case.case_id == "test-neg-modify-readonly-attribute" => {
                     assert!(

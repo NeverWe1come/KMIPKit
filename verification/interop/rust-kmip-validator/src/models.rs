@@ -102,7 +102,7 @@ impl Connection {
         {
             return Err("invalid server configuration fingerprint");
         }
-        if !["2.0", "2.1"].contains(&self.protocol_version.as_str())
+        if !["2.0", "2.1", "3.0"].contains(&self.protocol_version.as_str())
             || !["TTLV", "JSON", "XML"].contains(&self.encoding.as_str())
             || !["raw_tls", "https"].contains(&self.transport.as_str())
             || !["high-level", "typed-protocol", "fluent", "generic-ttlv"]
@@ -240,7 +240,7 @@ impl Catalog {
                     .execution
                     .protocol_versions
                     .iter()
-                    .all(|v| ["2.0", "2.1"].contains(&v.as_str()))
+                    .all(|v| ["2.0", "2.1", "3.0"].contains(&v.as_str()))
             {
                 return Err("invalid catalog execution contract");
             }
@@ -249,6 +249,7 @@ impl Catalog {
                     [
                         "OASIS KMIP 2.0 Specification",
                         "OASIS KMIP 2.1 Specification",
+                        "OASIS KMIP 3.0 Working Draft",
                     ]
                     .contains(&r.document.as_str())
                         && !r.section.is_empty()
