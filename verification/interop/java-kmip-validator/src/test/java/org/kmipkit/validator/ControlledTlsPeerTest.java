@@ -361,6 +361,14 @@ class ControlledTlsPeerTest {
                 item(0x4200c2, 8, digest)).status());
     }
 
+    @Test
+    void draftQueryAcceptsOperationsWithoutLegacyStorageMasks() throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var outcome = probeReadOnly(catalog, "test-op-query", 0x18, "3.0", "typed-protocol",
+                item(0x42005c, 5, intBytes(0x18)));
+        assertEquals("passed", outcome.status(), outcome.toString());
+    }
+
     private JavaKmipDriver.CaseOutcome probeReadOnly(CatalogLoader.Catalog catalog, String caseId,
             int operation, String version, String apiLevel, byte[] responseField) throws Exception {
         var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(caseId))
@@ -401,6 +409,8 @@ class ControlledTlsPeerTest {
                 if (operation == 0x27) {
                     assertTrue(contains(request, item(0x420038, 5, intBytes(6))));
                     assertTrue(contains(request, item(0x4200c2, 8, "abc".getBytes(StandardCharsets.US_ASCII))));
+                } else if (operation == 0x18) {
+                    assertTrue(contains(request, item(0x420074, 5, intBytes(1))));
                 } else {
                     assertTrue(contains(request, "kmipkit-locate-".getBytes(StandardCharsets.US_ASCII)));
                 }
