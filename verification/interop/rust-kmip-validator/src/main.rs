@@ -3,6 +3,7 @@
 mod adapters;
 mod driver;
 mod fixtures;
+mod fluent;
 mod incoming;
 mod models;
 mod query_campaign;
