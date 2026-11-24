@@ -37,8 +37,10 @@ One invocation emits one scalar protocol/transport/encoding/API tuple. Repeat
 runs with separate configurations for a matrix. The policy encoding/API lists
 are planning metadata, not implicit additional runs. The frozen shared
 aggregator requires identical transport, encoding, API level and fingerprint,
-so cross-axis comparison currently uses the independent offline tests. The
-fingerprint hashes the exact connection JSON bytes, including execution axes.
+so cross-axis comparison currently uses the independent offline tests.
+Use the same explicit server configuration fingerprint when comparing runs
+made with different language consumers. Older configurations without a
+fingerprint retain the connection-file hash.
 
 Schema-2.0 reports distinguish library correctness, server compatibility,
 policy, parity and non-run. They contain no Result Message, KMIP body, key
