@@ -29,6 +29,10 @@ python3 verification/interop/shared/tools/campaign.py --version 3.0 \
 The report records the installed library digest and the constructor checks.
 The local checks leave XML scenarios and live KMIP 3.0 exchanges pending.
 
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
 For a live typed KMIP 2.x Query Operations exchange, reuse the C runner
 with `--scope live --connection PATH`. It selects the matching wire
 obligation and invokes the native validator with `--case test-op-query`.

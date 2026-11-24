@@ -4,6 +4,7 @@
 import argparse
 import json
 from pathlib import Path
+import re
 import subprocess
 import uuid
 
@@ -12,28 +13,63 @@ from query_campaign import live_query
 
 
 PROBE = Path(__file__).resolve().parents[1] / "build" / "kmip30_c_constructors"
+CATALOG = PROBE.parents[2] / "shared" / "catalog" / "kmipkit-2x-matrix-catalog.json"
+TAG_ROUTES = {
+    "kmipkit_ttlv_raw_tag_create": (0, "generic_ttlv_raw_tag_value"),
+    "kmipkit_ttlv_raw_tag_try_checked": (1, "generic_ttlv_checked_tag_value"),
+}
+
+
+def run_probe(artifact, *args, source=None):
+    completed = subprocess.run([str(PROBE), *args], text=True, input=source, capture_output=True, check=False)
+    commit, digest, *results = completed.stdout.splitlines()
+    if commit != PIN or artifact["files"].get("lib/libkmipkit_ffi.so") != digest:
+        raise ValueError("The C probe was built with a different library artifact")
+    if args and completed.returncode:
+        raise ValueError("The C tag probe could not consume the planned targets")
+    return commit, digest, results
 
 
 def local_events(plan):
     artifact = verify_installed_artifact()
-    completed = subprocess.run([str(PROBE)], text=True, capture_output=True, check=False)
-    commit, digest, *results = completed.stdout.splitlines()
-    if commit != PIN or artifact["files"].get("lib/libkmipkit_ffi.so") != digest:
-        raise ValueError("The C probe was built with a different library artifact")
+    commit, digest, results = run_probe(artifact)
     outcomes = dict(result.split() for result in results)
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    allocations = {target["target_id"]: target["allocation"] for target in catalog["normative_targets"]
+                   if target["kind"] == "tag"}
     events = []
+    tags = {}
     for row in plan:
+        if (row.get("language"), row.get("action"), row.get("execution_status")) != ("c", "construct", "required"):
+            continue
+        symbol = row["public_api_symbol"]
+        if (row.get("protocol_version") in {"2.0", "2.1"} and row.get("mode") == "local"
+                and row.get("case_id") == "test-enum-tag" and symbol in TAG_ROUTES):
+            target = re.fullmatch(r"KMIPKIT-ELEM-TAG-([0-9a-fA-F]{6})", row["target_id"])
+            if target and row["target_id"] in allocations:
+                source = f"{target[1]} {int(allocations[row['target_id']] == 'assigned')}"
+                tags.setdefault(source, []).append(row)
+            continue
         if (row.get("language"), row.get("protocol_version"), row.get("kind"),
             row.get("action"), row.get("execution_status")) != ("c", "3.0", "public_route", "construct", "required"):
             continue
-        symbol = row["public_api_symbol"]
         if symbol in outcomes:
             events.append({
                 "obligation_id": row["obligation_id"], "public_api_symbol": symbol,
                 "status": outcomes[symbol], "assertion": "draft_operation_code",
             })
+    if tags:
+        _, _, results = run_probe(artifact, "--tags", source="\n".join(tags) + "\n")
+        for rows, outcome in zip(tags.values(), results, strict=True):
+            statuses = outcome.split()
+            for row in rows:
+                index, assertion = TAG_ROUTES[row["public_api_symbol"]]
+                events.append({
+                    "obligation_id": row["obligation_id"], "public_api_symbol": row["public_api_symbol"],
+                    "status": statuses[index], "assertion": assertion,
+                })
     if not events:
-        raise ValueError("The plan contains no supported C draft constructor obligations")
+        raise ValueError("The plan contains no supported C local obligations")
     return commit, digest, events
 
 
