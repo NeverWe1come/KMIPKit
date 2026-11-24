@@ -1,4 +1,4 @@
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 import io
 import importlib
 import json
@@ -387,6 +387,13 @@ class ValidatorContractTests(unittest.TestCase):
         planned = json.loads(output.getvalue())
         self.assertFalse(planned["network_attempted"])
         self.assertGreater(len(planned["cases"]), 0)
+
+    def test_unknown_case_is_rejected_before_artifact_or_tls_validation(self):
+        error = io.StringIO()
+        with redirect_stderr(error):
+            self.assertEqual(main(["run", "--connection", str(CONNECTION),
+                                   "--case", "unknown-test-case"]), 2)
+        self.assertIn("no unique case for the selected protocol version", error.getvalue())
 
     def test_preflight_includes_the_same_offline_plan_and_local_api_gaps(self):
         output = io.StringIO()

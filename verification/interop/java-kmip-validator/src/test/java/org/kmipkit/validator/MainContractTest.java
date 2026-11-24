@@ -69,23 +69,18 @@ class MainContractTest {
         Path connection = connection("2.1", "typed-protocol");
         Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
-        JsonNode serverQuery = catalog.path("test_cases").findParents("case_id").stream()
-                .filter(node -> "test-s2c-query".equals(node.path("case_id").asText()))
-                .findFirst().orElseThrow();
-        var oneCase = mapper.createArrayNode().add(serverQuery.deepCopy());
-        catalog.set("test_cases", oneCase);
-        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
-        Path catalogFile = temporaryDirectory.resolve("server-query-catalog.json");
-        mapper.writeValue(catalogFile.toFile(), catalog);
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
         Path output = temporaryDirectory.resolve("server-query-report");
 
-        assertCommand(0, "run", "--connection", connection.toString(), "--catalog", catalogFile.toString(),
-                "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
+        assertCommand(0, "run", "--connection", connection.toString(), "--catalog", sourceCatalog.toString(),
+                "--artifact-manifest", manifest.toString(), "--output-dir", output.toString(),
+                "--case", "test-s2c-query");
 
         JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(ArtifactProvenance.sha256(sourceCatalog), report.path("catalog_sha256").asText());
+        assertEquals(1, report.path("cases").size());
         JsonNode result = report.path("cases").get(0);
+        assertEquals("test-s2c-query", result.path("case_id").asText());
         assertEquals("not_run", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
         assertTrue(result.path("diagnostic").asText().contains("server-initiated"));

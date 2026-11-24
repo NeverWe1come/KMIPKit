@@ -81,6 +81,9 @@ final class DraftCampaign {
                 ArrayNode nodes = JSON.createArrayNode();
                 try (var item = construct ? buildFixture(wire) : TtlvCodec.decode(wire);
                         var view = item.view()) {
+                    if (construct && !java.util.Arrays.equals(wire, GenericExchange.encode(view))) {
+                        throw new IllegalArgumentException("Constructed fixture changed on re-encoding");
+                    }
                     appendItem(view, nodes);
                 } catch (org.kmipkit.KmipException | IllegalArgumentException rejected) {
                     nodes = null;
@@ -182,6 +185,20 @@ final class DraftCampaign {
         var row = nodes.addArray().add(raw).add(kind.code());
         if (kind != TtlvItemType.Structure) {
             row.add(0);
+            try (var value = view.value()) {
+                switch (kind) {
+                    case Integer -> row.add(value.integer());
+                    case LongInteger -> row.add(value.longInteger());
+                    case Enumeration -> row.add(value.enumeration());
+                    case Boolean -> row.add(value.booleanValue());
+                    case DateTime -> row.add(value.dateTime());
+                    case Interval -> row.add(value.interval());
+                    case DateTimeExtended -> row.add(value.dateTimeExtended());
+                    case BigInteger, ByteString, TextString, Identifier, Reference, NameReference ->
+                        row.add(HexFormat.of().formatHex(value.bytes()));
+                    case Structure -> throw new IllegalStateException("Expected a scalar TTLV type");
+                }
+            }
             return;
         }
         try (var value = view.value(); var structure = value.structure()) {

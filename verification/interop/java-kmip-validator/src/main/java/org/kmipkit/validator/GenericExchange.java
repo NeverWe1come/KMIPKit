@@ -280,7 +280,7 @@ final class GenericExchange {
         }
     }
 
-    private static byte[] encode(TtlvItemView item) {
+    static byte[] encode(TtlvItemView item) {
         try (var tag = item.tag(); var value = item.value()) {
             byte[] body = switch (item.itemType()) {
                 case Structure -> {
@@ -296,7 +296,19 @@ final class GenericExchange {
                 }
                 case Integer -> ByteBuffer.allocate(4).putInt(value.integer()).array();
                 case Enumeration -> ByteBuffer.allocate(4).putInt((int) value.enumeration()).array();
+                case LongInteger -> ByteBuffer.allocate(8).putLong(value.longInteger()).array();
+                case BigInteger -> {
+                    byte[] integer = value.bytes();
+                    if (integer.length == 0 || integer.length % 8 != 0) {
+                        throw new IllegalArgumentException("Invalid Big Integer size");
+                    }
+                    yield integer;
+                }
+                case Boolean -> ByteBuffer.allocate(8).putLong(value.booleanValue() ? 1 : 0).array();
                 case ByteString, TextString -> value.bytes();
+                case DateTime -> ByteBuffer.allocate(8).putLong(value.dateTime()).array();
+                case Interval -> ByteBuffer.allocate(4).putInt((int) value.interval()).array();
+                case DateTimeExtended -> ByteBuffer.allocate(8).putLong(value.dateTimeExtended()).array();
                 default -> throw new IllegalArgumentException("Unsupported generic probe item type");
             };
             return ByteBuffer.allocate(8 + ((body.length + 7) & ~7))

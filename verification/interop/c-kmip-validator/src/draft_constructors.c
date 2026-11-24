@@ -1,4 +1,4 @@
-#include "kmipkit.h"
+#include "generic_wire.h"
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -63,6 +63,50 @@ static int check_tags(void) {
     return input == EOF && !ferror(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static bool print_bytes(kmipkit_ttlv_value_view_t *value) {
+    uint64_t length = 0;
+    if (kmipkit_ttlv_value_view_byte_length(value, &length) != 0)
+        return false;
+    if (putchar('"') == EOF) return false;
+    for (uint64_t index = 0; index < length; ++index) {
+        uint8_t byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, index, &byte) != 0 ||
+            printf("%02x", (unsigned)byte) < 0)
+            return false;
+    }
+    return putchar('"') != EOF;
+}
+
+static bool print_scalar(uint8_t type, kmipkit_ttlv_value_view_t *value) {
+    int32_t integer = 0;
+    int64_t signed_value = 0;
+    uint32_t unsigned_value = 0;
+    uint8_t bit = 0;
+    int32_t status;
+
+    switch (type) {
+        case 2:
+            return kmipkit_ttlv_value_view_integer(value, &integer) == 0 &&
+                   printf("%" PRId32, integer) >= 0;
+        case 3: case 9: case 11:
+            if (type == 3) status = kmipkit_ttlv_value_view_long_integer(value, &signed_value);
+            else if (type == 9) status = kmipkit_ttlv_value_view_date_time(value, &signed_value);
+            else status = kmipkit_ttlv_value_view_date_time_extended(value, &signed_value);
+            return status == 0 && printf("%" PRId64, signed_value) >= 0;
+        case 5: case 10:
+            status = type == 5 ? kmipkit_ttlv_value_view_enumeration(value, &unsigned_value)
+                               : kmipkit_ttlv_value_view_interval(value, &unsigned_value);
+            return status == 0 && printf("%" PRIu32, unsigned_value) >= 0;
+        case 6:
+            return kmipkit_ttlv_value_view_boolean(value, &bit) == 0 &&
+                   fputs(bit ? "true" : "false", stdout) >= 0;
+        case 4: case 7: case 8: case 12: case 13: case 14:
+            return print_bytes(value);
+        default:
+            return false;
+    }
+}
+
 static bool print_item(kmipkit_ttlv_item_view_t *view, bool first) {
     uint8_t type = 0;
     kmipkit_tag_t *tag = NULL;
@@ -72,14 +116,18 @@ static bool print_item(kmipkit_ttlv_item_view_t *view, bool first) {
     uint64_t count = 0;
     bool ok = kmipkit_ttlv_item_view_tag(view, &tag) == 0 &&
               kmipkit_ttlv_tag_value(tag, &code) == 0 &&
-              kmipkit_ttlv_item_view_type(view, &type) == 0;
+              kmipkit_ttlv_item_view_type(view, &type) == 0 &&
+              kmipkit_ttlv_item_view_value(view, &value) == 0;
     if (ok && type == 1) {
-        ok = kmipkit_ttlv_item_view_value(view, &value) == 0 &&
-             kmipkit_ttlv_value_view_structure(value, &structure) == 0 &&
+        ok = kmipkit_ttlv_value_view_structure(value, &structure) == 0 &&
              kmipkit_ttlv_structure_view_item_count(structure, &count) == 0;
     }
     if (ok) {
-        printf("%s[%" PRIu32 ",%u,%" PRIu64 "]", first ? "" : ",", code, (unsigned)type, count);
+        printf("%s[%" PRIu32 ",%u,%" PRIu64, first ? "" : ",", code, (unsigned)type, count);
+        if (type != 1) {
+            ok = putchar(',') != EOF && print_scalar(type, value);
+        }
+        putchar(']');
         for (uint64_t index = 0; ok && index < count; ++index) {
             kmipkit_ttlv_item_view_t *child = NULL;
             ok = kmipkit_ttlv_structure_view_item_at(structure, index, &child) == 0 && print_item(child, false);
@@ -201,9 +249,26 @@ static bool inspect_line(char *line, uint8_t *wire, kmipkit_codec_limits_t *limi
         return true;
     }
     kmipkit_ttlv_item_view_t *view = NULL;
-    fputc('[', stdout);
-    bool ok = kmipkit_ttlv_item_view_from_item(item, &view) == 0 && print_item(view, true);
-    puts("]");
+    bool ok = kmipkit_ttlv_item_view_from_item(item, &view) == 0;
+    bool roundtrip = true;
+    if (ok && construct) {
+        size_t expected = length / 2;
+        uint8_t *encoded = malloc(expected);
+        size_t offset = 0;
+        ok = encoded != NULL;
+        if (ok) {
+            roundtrip = encode_generic_item(view, encoded, expected, &offset) &&
+                        offset == expected && memcmp(wire, encoded, expected) == 0;
+        }
+        free(encoded);
+    }
+    if (ok && roundtrip) {
+        fputc('[', stdout);
+        ok = print_item(view, true);
+        puts("]");
+    } else {
+        puts("null");
+    }
     kmipkit_ttlv_item_view_release(view);
     kmipkit_ttlv_item_release(item);
     return ok;

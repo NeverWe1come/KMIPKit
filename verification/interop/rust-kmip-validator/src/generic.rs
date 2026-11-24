@@ -1,5 +1,6 @@
 //! KMIP 2.x exchanges constructed using public raw-tag models.
 use crate::driver::{item, structure, transport_config};
+use crate::generic_wire::encode;
 use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
@@ -491,43 +492,4 @@ fn check_probe(
 
 fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
     item(tag, Value::structure(structure(tag, children)?))
-}
-
-// Encode the native generic tree for the exchange recipes.
-fn encode(item: &Item, output: &mut Vec<u8>) -> Result<()> {
-    let start = output.len();
-    output.extend_from_slice(&item.tag().raw().to_be_bytes()[1..]);
-    output.extend_from_slice(&[0; 5]);
-    let kind = item.with_value(|value| -> Result<u8> {
-        Ok(match value {
-            ValueView::Structure(value) => {
-                for field in value.children() {
-                    encode(field, output)?;
-                }
-                1
-            }
-            ValueView::Integer(value) => {
-                output.extend_from_slice(&value.to_be_bytes());
-                2
-            }
-            ValueView::Enumeration(value) => {
-                output.extend_from_slice(&value.to_be_bytes());
-                5
-            }
-            ValueView::TextString(value) => {
-                output.extend_from_slice(value.as_bytes());
-                7
-            }
-            ValueView::ByteString(value) => {
-                output.extend_from_slice(value);
-                8
-            }
-            _ => return Err("fixture contains an unsupported request value"),
-        })
-    })?;
-    let length = u32::try_from(output.len() - start - 8).map_err(|_| "fixture too large")?;
-    output[start + 3] = kind;
-    output[start + 4..start + 8].copy_from_slice(&length.to_be_bytes());
-    output.resize(output.len().next_multiple_of(8), 0);
-    Ok(())
 }

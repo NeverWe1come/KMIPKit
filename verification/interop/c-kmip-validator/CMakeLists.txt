@@ -32,11 +32,7 @@ if(NOT KMIPKIT_FFI_LIBRARY)
     message(FATAL_ERROR
         "KMIPKit FFI library not found in ${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/lib")
 endif()
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-2x-matrix-catalog.json")
 file(SHA256 "${KMIPKIT_FFI_LIBRARY}" KMIPKIT_C_ARTIFACT_SHA256)
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-2x-matrix-catalog.json")
-file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/../shared/catalog/kmipkit-2x-matrix-catalog.json"
-    KMIPKIT_C_CATALOG_SHA256)
 set(KMIPKIT_C_INCLUDE_DIR "${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}/include")
 get_filename_component(KMIPKIT_C_CERTIFICATE_FIXTURE
     "${CMAKE_CURRENT_SOURCE_DIR}/../rust-kmip-validator/tests/fixtures/certificate.der" ABSOLUTE)
@@ -68,7 +64,6 @@ target_compile_definitions(kmip_validator_c PRIVATE
     KMIPKIT_LIBRARY_COMMIT="${KMIPKIT_LIBRARY_COMMIT}"
     KMIPKIT_C_INSTALL_DIR="${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}"
     KMIPKIT_C_ARTIFACT_SHA256="${KMIPKIT_C_ARTIFACT_SHA256}"
-    KMIPKIT_C_CATALOG_SHA256="${KMIPKIT_C_CATALOG_SHA256}"
     KMIPKIT_C_CERTIFICATE_FIXTURE_PATH="${KMIPKIT_C_CERTIFICATE_FIXTURE}"
     KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE=$<BOOL:${KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE}>
 )
@@ -88,7 +83,6 @@ target_compile_definitions(test_c_validator PRIVATE
     KMIPKIT_LIBRARY_COMMIT="${KMIPKIT_LIBRARY_COMMIT}"
     KMIPKIT_C_INSTALL_DIR="${KMIPKIT_C_INSTALL_DIR_ABSOLUTE}"
     KMIPKIT_C_ARTIFACT_SHA256="${KMIPKIT_C_ARTIFACT_SHA256}"
-    KMIPKIT_C_CATALOG_SHA256="${KMIPKIT_C_CATALOG_SHA256}"
     KMIPKIT_C_CERTIFICATE_FIXTURE_PATH="${KMIPKIT_C_CERTIFICATE_FIXTURE}"
     KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE=$<BOOL:${KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE}>
 )
@@ -96,10 +90,13 @@ set_target_properties(test_c_validator PROPERTIES BUILD_RPATH "${KMIPKIT_C_INSTA
 
 if(UNIX)
     foreach(target kmip_validator_c test_c_validator)
-        target_sources(${target} PRIVATE src/generic_tls.c)
+        target_sources(${target} PRIVATE src/generic_tls.c src/generic_wire.c)
         target_compile_definitions(${target} PRIVATE KMIPKIT_C_GENERIC_TLS=1)
-        target_link_libraries(${target} PRIVATE OpenSSL::SSL)
+        target_link_libraries(${target} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
     endforeach()
+elseif(WIN32)
+    target_link_libraries(kmip_validator_c PRIVATE bcrypt)
+    target_link_libraries(test_c_validator PRIVATE bcrypt)
 endif()
 
 add_test(NAME test_c_validator COMMAND test_c_validator)
@@ -148,7 +145,7 @@ if(Python3_Interpreter_FOUND AND OPENSSL_EXECUTABLE)
     set_tests_properties(c_validator_offline_generic_route PROPERTIES TIMEOUT 20)
 endif()
 
-add_executable(kmip30_c_constructors src/draft_constructors.c)
+add_executable(kmip30_c_constructors src/draft_constructors.c src/generic_wire.c)
 target_include_directories(kmip30_c_constructors PRIVATE "${KMIPKIT_C_INCLUDE_DIR}")
 target_link_libraries(kmip30_c_constructors PRIVATE "${KMIPKIT_FFI_LIBRARY}")
 target_compile_definitions(kmip30_c_constructors PRIVATE

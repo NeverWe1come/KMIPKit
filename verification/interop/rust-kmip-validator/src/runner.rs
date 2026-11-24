@@ -167,6 +167,8 @@ pub(crate) fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> 
     );
     result.library_correctness = "passed";
     result.server_compatibility = server;
+    result.result_status_code = Some(status);
+    result.result_reason_code = reason;
     result.result_status = Some(
         kmipkit::ResultStatus::from_raw(status)
             .known_name()

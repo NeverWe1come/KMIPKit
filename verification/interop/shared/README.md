@@ -140,8 +140,8 @@ receives a result when the consumer supplies evidence for its obligation ID.
 `tools/oasis_ttlv.py` converts the pinned XML request and response messages
 into generic TTLV vectors with deterministic bindings for fixture symbols.
 With `--runner LANGUAGE EXECUTABLE`, the installed library decodes the vectors
-and the tool compares the ordered tag, type and child-count sequence for each
-message. The output retains fixture digests and artifact provenance.
+and the tool compares the ordered tags, types, child counts and scalar values
+for each message. The output retains fixture digests and artifact provenance.
 
 Supply the Rust `kmip30-campaign` binary, the C `kmip30_c_constructors` binary,
 the Java `tools/run_draft_campaign.sh` script, or the Python
@@ -160,8 +160,10 @@ python3 verification/interop/shared/tools/campaign.py \
 Use `--construct --version 2.0 --version 2.1` with the same installed runners
 to build each complete fixture from its raw tag numbers and scalar values
 through the language's public generic item constructors. The runner walks
-the constructed model and the tool checks its ordered tag, type and child
-counts. Import this output into the campaign using
+the constructed model and the tool checks its ordered tags, types, child
+counts and scalar values. Each runner also re-encodes the constructed message
+with the same serializer used for direct-tag exchanges and compares the bytes
+against the fixture. Import this output into the campaign using
 `--oasis-construction-report`. These checks exercise construction locally.
 
 Each XML scenario step shows its request and response codec outcomes.
@@ -191,8 +193,9 @@ stable ID. These rows describe cases to implement. The distinct
 `requiredness_review` branch identifies a rule requiring manual review.
 
 Run the validator twice with the same connection settings and catalog,
-selecting `api_level: typed-protocol` in one configuration and
-`api_level: fluent` in the other. Keep the artifact and server configuration
+selecting `api_level: generic-ttlv` in one configuration and
+`api_level: fluent` in the other. The report also compares `typed-protocol`
+with `fluent` when both runs are available. Keep the artifact and server configuration
 the same. Then combine their reports.
 
 ```sh
@@ -243,10 +246,14 @@ with `--case`. Both options are repeatable and take the union of matches.
 Operation selection retains every matching direction. Both
 `operation_catalog.py` and `run_all.py --all-operations` accept these
 selectors. The generated catalog can also be passed to a standalone
-validator through its `--catalog` option.
+validator through its `--catalog` option. Each standalone validator also
+accepts `run --case ID` to execute one case from that catalog. The result
+keeps the original catalog digest so that runs of the same case can be compared.
 
 Add `--require-complete` to a live `run_all.py --all-operations` run to
 require evidence for every applicable selected case in each run. An
 observed KMIP rejection for an unsupported operation accounts for the
 execution while retaining its server compatibility status. A missing
 case, a blocked case, or a failed local assertion fails the check.
+The `completion.json` report lists the missing case IDs for each validator and
+records reports whose catalog, server or execution route differs from the selection.

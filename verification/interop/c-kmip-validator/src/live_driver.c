@@ -3,6 +3,7 @@
 
 #ifdef KMIPKIT_C_GENERIC_TLS
 #include "generic_tls.h"
+#include "generic_wire.h"
 #include <openssl/crypto.h>
 #endif
 
@@ -9417,79 +9418,6 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
     return item;
 }
 
-static void put_u32(uint8_t *output, uint32_t value) {
-    output[0] = (uint8_t)(value >> 24);
-    output[1] = (uint8_t)(value >> 16);
-    output[2] = (uint8_t)(value >> 8);
-    output[3] = (uint8_t)value;
-}
-
-/* Serialize the item types used by the generic exchange recipes. */
-static bool encode_generic_probe(kmipkit_ttlv_item_view_t *item,
-                                 uint8_t *wire, size_t capacity, size_t *offset) {
-    if (*offset > capacity || capacity - *offset < 8) return false;
-    size_t header = *offset;
-    *offset += 8;
-    uint8_t type = 0;
-    uint32_t tag_value = 0;
-    kmipkit_tag_t *tag = NULL;
-    kmipkit_ttlv_value_view_t *value = NULL;
-    kmipkit_ttlv_structure_view_t *structure = NULL;
-    bool valid = kmipkit_ttlv_item_view_tag(item, &tag) == 0 &&
-        kmipkit_ttlv_tag_value(tag, &tag_value) == 0 &&
-        kmipkit_ttlv_item_view_type(item, &type) == 0 &&
-        kmipkit_ttlv_item_view_value(item, &value) == 0;
-    uint32_t body_length = 0;
-    if (valid && type == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE) {
-        uint64_t length = 0;
-        valid = kmipkit_ttlv_value_view_structure(value, &structure) == 0 &&
-            kmipkit_ttlv_structure_view_item_count(structure, &length) == 0;
-        for (uint64_t index = 0; valid && index < length; ++index) {
-            kmipkit_ttlv_item_view_t *child = NULL;
-            valid = kmipkit_ttlv_structure_view_item_at(structure, index, &child) == 0 &&
-                encode_generic_probe(child, wire, capacity, offset);
-            if (child) kmipkit_ttlv_item_view_release(child);
-        }
-        body_length = (uint32_t)(*offset - header - 8);
-    } else if (valid && (type == KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING ||
-                         type == KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING)) {
-        uint64_t length = 0;
-        valid = kmipkit_ttlv_value_view_byte_length(value, &length) == 0 &&
-            length <= ((capacity - *offset) & ~(size_t)7);
-        if (valid) {
-            body_length = (uint32_t)length;
-            for (uint64_t index = 0; valid && index < length; ++index)
-                valid = kmipkit_ttlv_value_view_byte_at(value, index, wire + *offset + index) == 0;
-            size_t padded = ((size_t)length + 7) & ~(size_t)7;
-            memset(wire + *offset + length, 0, padded - (size_t)length);
-            *offset += padded;
-        }
-    } else if (valid && capacity - *offset >= 8) {
-        uint32_t number = 0;
-        if (type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
-            valid = kmipkit_ttlv_value_view_enumeration(value, &number) == 0;
-        } else if (type == KMIPKIT_TTLV_ITEM_TYPE_INTEGER) {
-            int32_t integer = 0;
-            valid = kmipkit_ttlv_value_view_integer(value, &integer) == 0;
-            number = (uint32_t)integer;
-        } else {
-            valid = false;
-        }
-        put_u32(wire + *offset, number);
-        put_u32(wire + *offset + 4, 0);
-        *offset += 8;
-        body_length = 4;
-    } else {
-        valid = false;
-    }
-    put_u32(wire + header, (tag_value << 8) | type);
-    put_u32(wire + header + 4, body_length);
-    if (structure) kmipkit_ttlv_structure_view_release(structure);
-    if (value) kmipkit_ttlv_value_view_release(value);
-    if (tag) kmipkit_tag_release(tag);
-    return valid;
-}
-
 static kmipkit_ttlv_structure_t *copy_generic_structure(kmipkit_ttlv_structure_view_t *view,
                                                         kmipkit_codec_limits_t *limits) {
     uint64_t count = 0;
@@ -9787,7 +9715,7 @@ static kmip_execution_outcome_t execute_generic_exchange(kmip_live_client_t *cli
     uint8_t *wire = malloc(capacity), *response = NULL;
     size_t request_size = 0, response_size = 0;
     bool valid = wire && request && kmipkit_ttlv_item_view_from_item(request, &view) == 0 &&
-        encode_generic_probe(view, wire, capacity, &request_size) && request_size <= KMIP_MAX_REQUEST_BYTES &&
+        encode_generic_item(view, wire, capacity, &request_size) && request_size <= KMIP_MAX_REQUEST_BYTES &&
         kmip_generic_tls_exchange(client->configuration, wire, request_size, KMIP_MAX_REQUEST_BYTES,
                                   &response, &response_size) &&
         read_generic_response(client, response, response_size, operation, &outcome, id, created);

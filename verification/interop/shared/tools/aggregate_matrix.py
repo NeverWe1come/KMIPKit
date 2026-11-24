@@ -153,7 +153,8 @@ def _difference_dimensions(results: list[dict]) -> list[str]:
     ]
 
 
-API_LEVELS_FOR_COMPARISON = ("typed-protocol", "fluent")
+API_COMPARISON_PAIRS = (("generic-ttlv", "fluent"), ("typed-protocol", "fluent"))
+API_LEVEL_LABELS = {"generic-ttlv": "Direct tags", "typed-protocol": "Typed", "fluent": "Fluent"}
 API_OUTCOME_FIELDS = (
     "status", "result_status_code", "result_reason_code",
     "library_correctness", "server_compatibility",
@@ -168,8 +169,8 @@ def _api_comparison_key(run: dict) -> tuple:
     )
 
 
-def _api_outcomes(runs: list[dict], case_id: str) -> dict[str, set[tuple]]:
-    outcomes = {route: set() for route in API_LEVELS_FOR_COMPARISON}
+def _api_outcomes(runs: list[dict], case_id: str, levels: tuple[str, str]) -> dict[str, set[tuple]]:
+    outcomes = {route: set() for route in levels}
     for run in runs:
         result = run["cases"].get(case_id, {})
         if result.get("status", "NOT_RUN") in {"NOT_RUN", "POLICY_RESTRICTED"}:
@@ -184,14 +185,14 @@ def _api_outcomes(runs: list[dict], case_id: str) -> dict[str, set[tuple]]:
 
 
 def _api_outcome_status(outcomes: dict[str, set[tuple]]) -> str:
-    typed, fluent = (outcomes[level] for level in API_LEVELS_FOR_COMPARISON)
-    if len(typed) > 1 or len(fluent) > 1:
+    first, second = outcomes.values()
+    if len(first) > 1 or len(second) > 1:
         return "INCONSISTENT"
-    if not typed or not fluent:
+    if not first or not second:
         return "PENDING"
-    if typed != fluent:
+    if first != second:
         return "MISMATCH"
-    status, _, _, correctness, _ = next(iter(typed))
+    status, _, _, correctness, _ = next(iter(first))
     if status == "PASSED" and correctness == "passed":
         return "MATCHED_PASS"
     if status == "UNSUPPORTED_BY_SERVER":
@@ -202,29 +203,37 @@ def _api_outcome_status(outcomes: dict[str, set[tuple]]) -> str:
 def _compare_api_levels(runs: list[dict]) -> list[dict]:
     groups = defaultdict(list)
     for run in runs:
-        if run["execution"]["api_level"] in API_LEVELS_FOR_COMPARISON:
+        level = run["execution"]["api_level"]
+        if level in API_LEVEL_LABELS:
             groups[_api_comparison_key(run)].append(run)
-    result = []
+    comparisons = []
     for signature, comparable_runs in groups.items():
         if not all(signature):
             continue
-        if {run["execution"]["api_level"] for run in comparable_runs} != set(API_LEVELS_FOR_COMPARISON):
-            continue
-        case_ids = set().union(*(run["cases"] for run in comparable_runs))
-        execution = comparable_runs[0]["execution"]
-        statuses = {
-            case_id: _api_outcome_status(_api_outcomes(comparable_runs, case_id))
-            for case_id in sorted(case_ids)
-        }
-        result.append({
-            "language": comparable_runs[0]["language"],
-            "transport": execution["transport"],
-            "encoding": execution["encoding"],
-            "runs": [run["result_key"] for run in comparable_runs],
-            "summary": dict(Counter(statuses.values())),
-            "cases": statuses,
-        })
-    return result
+        for levels in API_COMPARISON_PAIRS:
+            pair = [run for run in comparable_runs if run["execution"]["api_level"] in levels]
+            if {run["execution"]["api_level"] for run in pair} != set(levels):
+                continue
+            case_ids = set().union(*(run["cases"] for run in pair))
+            execution = pair[0]["execution"]
+            statuses = {
+                case_id: _api_outcome_status(_api_outcomes(pair, case_id, levels))
+                for case_id in sorted(case_ids)
+            }
+            comparisons.append({
+                "language": pair[0]["language"],
+                "api_levels": list(levels),
+                "transport": execution["transport"],
+                "encoding": execution["encoding"],
+                "runs": [run["result_key"] for run in pair],
+                "summary": dict(Counter(statuses.values())),
+                "cases": statuses,
+            })
+    return comparisons
+
+
+def _api_pair_label(comparison: dict) -> str:
+    return " / ".join(API_LEVEL_LABELS[level] for level in comparison["api_levels"])
 
 
 def _api_comparison_label(comparison: dict) -> str:
@@ -382,12 +391,12 @@ def generate_markdown(aggregated: dict) -> str:
             for run in matrix["runs"]
         ) + "\n")
         for comparison in matrix.get("api_outcome_comparisons", []):
-            md.append(f"Typed and Fluent outcomes — {_api_comparison_label(comparison)}")
+            md.append(f"{_api_pair_label(comparison)} outcomes — {_api_comparison_label(comparison)}")
         if matrix.get("api_outcome_comparisons"):
             md.append("")
         comparisons = matrix.get("api_outcome_comparisons", [])
         columns = ["Case", "Category"] + [run.get("result_key", run["run_id"]) for run in matrix["runs"]] + ["Language/route differences"]
-        columns.extend(f"Typed / Fluent ({', '.join(item['runs'])})" for item in comparisons)
+        columns.extend(f"{_api_pair_label(item)} ({', '.join(item['runs'])})" for item in comparisons)
         md.append("| " + " | ".join(columns) + " |")
         md.append("| " + " | ".join(["---"] * len(columns)) + " |")
         for row in matrix["cases"]:
@@ -470,7 +479,7 @@ def generate_html(aggregated: dict) -> str:
             f'<p>Library correctness: <code>{html.escape(json.dumps(summary.get("library_correctness", {}), sort_keys=True))}</code> · Server compatibility: <code>{html.escape(json.dumps(summary.get("server_compatibility", {}), sort_keys=True))}</code> · Not executed (not_run): {summary.get("not_executed", 0)}</p>',
         ])
         for comparison in matrix.get("api_outcome_comparisons", []):
-            out.append(f'<p>Typed and Fluent outcomes — {html.escape(_api_comparison_label(comparison))}</p>')
+            out.append(f'<p>{html.escape(_api_pair_label(comparison))} outcomes — {html.escape(_api_comparison_label(comparison))}</p>')
         out.append('<div class="table-container"><table><thead><tr><th>Case</th><th>Category</th>')
         for run in runs:
             execution = run.get("execution", {})
@@ -480,7 +489,7 @@ def generate_html(aggregated: dict) -> str:
         comparisons = matrix.get("api_outcome_comparisons", [])
         out.append('<th>Language/route differences</th>')
         for item in comparisons:
-            out.append(f"<th>Typed / Fluent ({html.escape(', '.join(item['runs']))})</th>")
+            out.append(f"<th>{html.escape(_api_pair_label(item))} ({html.escape(', '.join(item['runs']))})</th>")
         out.append('</tr></thead><tbody>')
         for row in matrix.get("cases", []):
             out.append(f'<tr class="matrix-row"><td><code>{html.escape(str(row.get("case_id", "")))}</code></td><td>{html.escape(str(row.get("category", "")))}</td>')

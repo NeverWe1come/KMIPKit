@@ -104,9 +104,17 @@ public final class Main {
         ConnectionConfig connection = ConnectionConfig.load(options.path("--connection"));
         CatalogLoader.Catalog catalog = CatalogLoader.load(options.pathOr("--catalog", DEFAULT_CATALOG));
         JavaRouteInventory.classify(catalog);
+        List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
+        String caseId = options.values().get("--case");
+        if (caseId != null) {
+            applicable = applicable.stream().filter(testCase -> caseId.equals(testCase.caseId())).toList();
+            if (applicable.size() != 1) {
+                out.println("No unique case for the selected protocol version.");
+                return 2;
+            }
+        }
         ArtifactProvenance artifact = ArtifactProvenance.loadForCheckout(options.pathOr("--artifact-manifest", DEFAULT_MANIFEST));
         connection.requireTlsFilesExist();
-        List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         boolean enableMutations = options.flag("--enable-mutations");
         List<RunReport.CaseEvidence> evidence = new ArrayList<>(applicable.size());
 
@@ -232,13 +240,13 @@ public final class Main {
     private static void help(PrintStream output) {
         output.println("KMIPKit Java interoperability validator");
         output.println("Usage: <plan|preflight|run> --connection FILE [--catalog FILE]");
-        output.println("Run also accepts --artifact-manifest FILE --output-dir DIR --enable-mutations.");
+        output.println("Run also accepts --case ID --artifact-manifest FILE --output-dir DIR --enable-mutations.");
         output.println("plan and preflight do not resolve DNS or open sockets.");
     }
 
-    private record Arguments(Map<String, String> paths, Set<String> flags) {
+    private record Arguments(Map<String, String> values, Set<String> flags) {
         static Arguments parse(String[] args) {
-            Map<String, String> paths = new HashMap<>();
+            Map<String, String> values = new HashMap<>();
             Set<String> flags = new HashSet<>();
             Set<String> knownFlags = Set.of("--enable-mutations");
             for (int index = 1; index < args.length; index++) {
@@ -247,22 +255,25 @@ public final class Main {
                     flags.add(option);
                 } else if (Set.of("--connection", "--catalog", "--artifact-manifest", "--output-dir")
                         .contains(option) && index + 1 < args.length) {
-                    paths.put(option, args[++index]);
+                    values.put(option, args[++index]);
+                } else if ("run".equals(args[0]) && "--case".equals(option)
+                        && !values.containsKey(option) && index + 1 < args.length) {
+                    values.put(option, args[++index]);
                 } else {
                     throw new IllegalArgumentException("Unknown or incomplete command option");
                 }
             }
-            return new Arguments(Map.copyOf(paths), Set.copyOf(flags));
+            return new Arguments(Map.copyOf(values), Set.copyOf(flags));
         }
 
         Path path(String key) {
-            String value = paths.get(key);
+            String value = values.get(key);
             if (value == null || value.isBlank()) throw new IllegalArgumentException(key + " is required");
             return Path.of(value);
         }
 
         Path pathOr(String key, String fallback) {
-            return Path.of(paths.getOrDefault(key, fallback));
+            return Path.of(values.getOrDefault(key, fallback));
         }
 
         boolean flag(String key) {

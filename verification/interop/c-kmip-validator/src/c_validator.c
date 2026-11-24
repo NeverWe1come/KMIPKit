@@ -3,6 +3,39 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <bcrypt.h>
+#else
+#include <openssl/evp.h>
+#endif
+
+static bool catalog_sha256(const json_document_t *document, char hex[65]) {
+    unsigned char digest[32];
+#ifdef _WIN32
+    BCRYPT_ALG_HANDLE provider = NULL;
+    if (document->source_length > UINT32_MAX ||
+        BCryptOpenAlgorithmProvider(&provider, BCRYPT_SHA256_ALGORITHM, NULL, 0) < 0)
+        return false;
+    NTSTATUS status = BCryptHash(provider, NULL, 0, (PUCHAR)document->source,
+                                 (ULONG)document->source_length, digest, sizeof(digest));
+    (void)BCryptCloseAlgorithmProvider(provider, 0);
+    if (status < 0) return false;
+#else
+    size_t length = 0;
+    if (EVP_Q_digest(NULL, "SHA256", NULL, document->source, document->source_length,
+                     digest, &length) != 1 || length != sizeof(digest))
+        return false;
+#endif
+    static const char digits[] = "0123456789abcdef";
+    for (size_t index = 0; index < sizeof(digest); ++index) {
+        hex[2 * index] = digits[digest[index] >> 4];
+        hex[2 * index + 1] = digits[digest[index] & 0x0f];
+    }
+    hex[64] = '\0';
+    return true;
+}
+
 static bool string_in_list(const char *target, const char list[KMIP_MAX_CAPABILITIES][KMIP_MAX_NAME_LEN], size_t count) {
     if (!target || target[0] == '\0') return true;
     for (size_t i = 0; i < count; i++) {
@@ -180,6 +213,11 @@ static bool load_optional_requires(const json_document_t *document, int requires
 }
 
 bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_t *out_count) {
+    return kmip_load_catalog_with_digest(json_path, out_cases, out_count, NULL);
+}
+
+bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_cases,
+                                  size_t *out_count, char digest[65]) {
     if (!json_path || !out_cases || !out_count) return false;
     *out_count = 0;
     json_document_t document;
@@ -310,6 +348,7 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             valid = false;
         }
     }
+    if (valid && digest) valid = catalog_sha256(&document, digest);
     json_document_release(&document);
     if (!valid) return false;
     *out_count = count;
