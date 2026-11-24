@@ -14,7 +14,7 @@ use kmipkit_ttlv::{Item, Value};
 
 use crate::kmip1x::tags::{
     OBJECT_TYPE_TEMPLATE, TAG_ATTRIBUTE, TAG_ATTRIBUTE_NAME, TAG_NAME, TAG_NAME_TYPE,
-    TAG_NAME_VALUE, TAG_OBJECT_TYPE, TAG_TEMPLATE, TAG_UNIQUE_IDENTIFIER,
+    TAG_NAME_VALUE, TAG_TEMPLATE, TAG_UNIQUE_IDENTIFIER,
 };
 use crate::kmip1x::ttlv_helpers::{
     clone_item, extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
@@ -189,7 +189,10 @@ impl TemplateStore {
         all_attrs.push(ttlv_struct(
             TAG_ATTRIBUTE,
             vec![
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Unique Identifier".to_string()))?,
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Unique Identifier".to_string()),
+                )?,
                 ttlv_item(
                     crate::kmip1x::tags::TAG_ATTRIBUTE_VALUE,
                     Value::text_string(tpl.unique_id.clone()),
@@ -199,7 +202,10 @@ impl TemplateStore {
         all_attrs.push(ttlv_struct(
             TAG_ATTRIBUTE,
             vec![
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Type".to_string()))?,
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Object Type".to_string()),
+                )?,
                 ttlv_item(
                     crate::kmip1x::tags::TAG_ATTRIBUTE_VALUE,
                     Value::enumeration(OBJECT_TYPE_TEMPLATE),

@@ -129,9 +129,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &config.backend.oci,
         )?),
         other => {
-            eprintln!(
-                "Unknown or unconfigured provider: {other}, defaulting to in-memory mock"
-            );
+            eprintln!("Unknown or unconfigured provider: {other}, defaulting to in-memory mock");
             Arc::new(InMemoryMockProvider::default())
         }
     };

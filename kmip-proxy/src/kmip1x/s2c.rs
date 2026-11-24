@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use kmipkit_ttlv::{Item, Value};
+use kmipkit_ttlv::Item;
 
 use crate::kmip1x::mapping::UpstreamKmipVersion;
 use crate::kmip1x::tags::*;

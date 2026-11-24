@@ -28,7 +28,7 @@ fn decode_json_element(v: &JsonVal) -> Result<Item, String> {
     let tag_raw = parse_tag(tag_str)?;
     let raw_tag = RawTag::new(tag_raw).map_err(|e| format!("invalid tag: {e}"))?;
     let tag = raw_tag
-        .try_checked()
+        .try_checked_allow_reserved()
         .map_err(|e| format!("unchecked tag: {e}"))?;
 
     let type_str = obj.get("type").and_then(JsonVal::as_str);

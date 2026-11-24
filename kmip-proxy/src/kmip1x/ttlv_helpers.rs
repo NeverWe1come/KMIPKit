@@ -16,7 +16,7 @@ use crate::kmip1x::tags::{
 pub fn ttlv_item(tag: u32, val: Value) -> Result<Item, String> {
     let raw = RawTag::new(tag)
         .map_err(|e| format!("invalid raw tag 0x{tag:06X}: {e}"))?
-        .try_checked()
+        .try_checked_allow_reserved()
         .map_err(|e| format!("unchecked tag 0x{tag:06X}: {e}"))?;
     Item::new(raw, val).map_err(|e| format!("failed creating item 0x{tag:06X}: {e}"))
 }

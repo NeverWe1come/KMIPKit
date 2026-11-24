@@ -38,10 +38,12 @@ impl KmipKitUpstreamTransport {
         let endpoint = if cfg.endpoint.starts_with("https://") {
             Endpoint::https(cfg.endpoint.clone())
         } else {
-            let (host, port_str) = cfg
-                .endpoint
-                .rsplit_once(':')
-                .ok_or_else(|| format!("invalid upstream endpoint '{}', expected host:port or https://...", cfg.endpoint))?;
+            let (host, port_str) = cfg.endpoint.rsplit_once(':').ok_or_else(|| {
+                format!(
+                    "invalid upstream endpoint '{}', expected host:port or https://...",
+                    cfg.endpoint
+                )
+            })?;
             let port: u16 = port_str
                 .parse()
                 .map_err(|e| format!("invalid upstream port '{port_str}': {e}"))?;

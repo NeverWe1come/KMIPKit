@@ -18,22 +18,20 @@ use async_trait::async_trait;
 use kmipkit_ttlv::{Item, Value};
 
 use crate::codec::Format;
-use crate::kmip1x::mapping::{
-    OperationPolicyHandling, UpstreamKmipVersion, lookup_by_name_1x,
-};
+use crate::kmip1x::mapping::{OperationPolicyHandling, UpstreamKmipVersion, lookup_by_name_1x};
 use crate::kmip1x::tags::*;
 use crate::kmip1x::template_store::TemplateStore;
 use crate::kmip1x::translator::{
     TranslatedBatchMeta, TranslatorConfig, build_discover_versions_response_1x,
     extract_max_response_size, extract_protocol_version, is_template_object_request,
     needs_rmw_index_resolution, rewrite_header_version, translate_attribute_1x_to_2x,
-    translate_attribute_name_to_reference, translate_attributes_2x_to_1x,
-    translate_request_1x_to_2x, translate_request_batch_item, translate_response_2x_to_1x,
+    translate_attribute_name_to_reference, translate_request_1x_to_2x,
+    translate_request_batch_item, translate_response_2x_to_1x,
 };
 use crate::kmip1x::ttlv_helpers::{
-    build_error_batch_item, build_protocol_version, build_response_message,
-    build_success_batch_item, children_of, clone_item, extract_byte_string, extract_enumeration,
-    extract_integer, extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
+    build_error_batch_item, build_response_message, build_success_batch_item, children_of,
+    clone_item, extract_byte_string, extract_enumeration, extract_integer, extract_text_string,
+    find_child, find_children, ttlv_item, ttlv_struct,
 };
 
 /// Async transport abstraction for forwarding translated KMIP 2.0 / 2.1 / 3.0 TTLV messages.
@@ -65,10 +63,7 @@ impl Kmip1xBridge {
     }
 
     #[must_use]
-    pub fn with_config(
-        upstream: Arc<dyn UpstreamKmipTransport>,
-        config: TranslatorConfig,
-    ) -> Self {
+    pub fn with_config(upstream: Arc<dyn UpstreamKmipTransport>, config: TranslatorConfig) -> Self {
         Self {
             upstream,
             config,
@@ -219,8 +214,8 @@ impl Kmip1xBridge {
         let op = find_child(batch_item, TAG_OPERATION)
             .and_then(|i| extract_enumeration(&i))
             .ok_or_else(|| "Batch Item missing Operation".to_string())?;
-        let bid = find_child(batch_item, TAG_UNIQUE_BATCH_ITEM_ID)
-            .and_then(|i| extract_byte_string(&i));
+        let bid =
+            find_child(batch_item, TAG_UNIQUE_BATCH_ITEM_ID).and_then(|i| extract_byte_string(&i));
         let payload = find_child(batch_item, TAG_REQUEST_PAYLOAD);
 
         // 1. Local interception: Discover Versions
@@ -243,7 +238,13 @@ impl Kmip1xBridge {
         // 3. Read-Modify-Write for Modify Attribute / Delete Attribute with Attribute Index
         if needs_rmw_index_resolution(batch_item) {
             return self
-                .handle_rmw_attribute_operation(req_header, op, bid.as_deref(), payload.as_ref(), client_minor)
+                .handle_rmw_attribute_operation(
+                    req_header,
+                    op,
+                    bid.as_deref(),
+                    payload.as_ref(),
+                    client_minor,
+                )
                 .await;
         }
 
@@ -318,13 +319,23 @@ impl Kmip1xBridge {
                 build_success_batch_item(OP_LOCATE, bid, items)
             }
             OP_GET => {
-                let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(uid) =
+                    find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Unique Identifier");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Unique Identifier",
+                    );
                 };
                 let Some(tpl) = self.templates.get_by_id(&uid) else {
-                    return build_error_batch_item(op, bid, REASON_ITEM_NOT_FOUND, "template not found");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_ITEM_NOT_FOUND,
+                        "template not found",
+                    );
                 };
                 build_success_batch_item(
                     OP_GET,
@@ -337,28 +348,48 @@ impl Kmip1xBridge {
                 )
             }
             OP_GET_ATTRIBUTES => {
-                let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(uid) =
+                    find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Unique Identifier");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Unique Identifier",
+                    );
                 };
                 let req_names: Vec<String> = find_children(p, TAG_ATTRIBUTE_NAME)
                     .into_iter()
                     .filter_map(|i| extract_text_string(&i))
                     .collect();
-                match self.templates.build_get_attributes_items(&uid, &req_names)? {
+                match self
+                    .templates
+                    .build_get_attributes_items(&uid, &req_names)?
+                {
                     Some(items) => build_success_batch_item(OP_GET_ATTRIBUTES, bid, items),
-                    None => build_error_batch_item(op, bid, REASON_ITEM_NOT_FOUND, "template not found"),
+                    None => {
+                        build_error_batch_item(op, bid, REASON_ITEM_NOT_FOUND, "template not found")
+                    }
                 }
             }
             OP_GET_ATTRIBUTE_LIST => {
-                let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(uid) =
+                    find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Unique Identifier");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Unique Identifier",
+                    );
                 };
                 let Some(tpl) = self.templates.get_by_id(&uid) else {
-                    return build_error_batch_item(op, bid, REASON_ITEM_NOT_FOUND, "template not found");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_ITEM_NOT_FOUND,
+                        "template not found",
+                    );
                 };
                 let mut items = vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid))?];
                 for name in tpl.attribute_names() {
@@ -367,10 +398,15 @@ impl Kmip1xBridge {
                 build_success_batch_item(OP_GET_ATTRIBUTE_LIST, bid, items)
             }
             OP_DESTROY => {
-                let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(uid) =
+                    find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Unique Identifier");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Unique Identifier",
+                    );
                 };
                 if self.templates.destroy(&uid) {
                     build_success_batch_item(
@@ -408,19 +444,35 @@ impl Kmip1xBridge {
         let Some(p) = payload else {
             return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing request payload");
         };
-        let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i)) else {
-            return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Unique Identifier");
+        let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
+        else {
+            return build_error_batch_item(
+                op,
+                bid,
+                REASON_MISSING_DATA,
+                "missing Unique Identifier",
+            );
         };
 
         let (attr_name, target_index, new_attr_1x) = match op {
             OP_MODIFY_ATTRIBUTE => {
                 let Some(attr) = find_child(p, TAG_ATTRIBUTE) else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Attribute");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Attribute",
+                    );
                 };
-                let Some(name) = find_child(&attr, TAG_ATTRIBUTE_NAME)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(name) =
+                    find_child(&attr, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Attribute Name");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Attribute Name",
+                    );
                 };
                 let idx = find_child(&attr, TAG_ATTRIBUTE_INDEX)
                     .and_then(|i| extract_integer(&i))
@@ -428,10 +480,15 @@ impl Kmip1xBridge {
                 (name, idx, Some(attr))
             }
             OP_DELETE_ATTRIBUTE => {
-                let Some(name) = find_child(p, TAG_ATTRIBUTE_NAME)
-                    .and_then(|i| extract_text_string(&i))
+                let Some(name) =
+                    find_child(p, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i))
                 else {
-                    return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing Attribute Name");
+                    return build_error_batch_item(
+                        op,
+                        bid,
+                        REASON_MISSING_DATA,
+                        "missing Attribute Name",
+                    );
                 };
                 let idx = find_child(p, TAG_ATTRIBUTE_INDEX)
                     .and_then(|i| extract_integer(&i))
@@ -439,12 +496,22 @@ impl Kmip1xBridge {
                 (name, idx, None)
             }
             _ => {
-                return build_error_batch_item(op, bid, REASON_GENERAL_FAILURE, "unexpected RMW op");
+                return build_error_batch_item(
+                    op,
+                    bid,
+                    REASON_GENERAL_FAILURE,
+                    "unexpected RMW op",
+                );
             }
         };
 
         if target_index < 0 {
-            return build_error_batch_item(op, bid, REASON_INVALID_FIELD, "negative Attribute Index");
+            return build_error_batch_item(
+                op,
+                bid,
+                REASON_INVALID_FIELD,
+                "negative Attribute Index",
+            );
         }
 
         let Some(attr_ref) = translate_attribute_name_to_reference(&attr_name)? else {
@@ -458,10 +525,8 @@ impl Kmip1xBridge {
 
         // Step 1: Read current instances from upstream via Get Attributes
         let (up_major, up_minor) = self.config.upstream_version.major_minor();
-        let up_header = set_header_batch_count(
-            &rewrite_header_version(req_header, up_major, up_minor)?,
-            1,
-        )?;
+        let up_header =
+            set_header_batch_count(&rewrite_header_version(req_header, up_major, up_minor)?, 1)?;
         let get_bi = ttlv_struct(
             TAG_BATCH_ITEM,
             vec![
@@ -562,7 +627,10 @@ impl Kmip1xBridge {
             if find_child(&resp_bi, TAG_UNIQUE_BATCH_ITEM_ID).is_none() {
                 bi_children.insert(
                     1,
-                    ttlv_item(TAG_UNIQUE_BATCH_ITEM_ID, Value::byte_string(bid_bytes.to_vec()))?,
+                    ttlv_item(
+                        TAG_UNIQUE_BATCH_ITEM_ID,
+                        Value::byte_string(bid_bytes.to_vec()),
+                    )?,
                 );
                 resp_bi = ttlv_struct(TAG_BATCH_ITEM, bi_children)?;
             }
@@ -573,7 +641,9 @@ impl Kmip1xBridge {
             let mut updated_rp_children = Vec::new();
             let mut modified_rp = false;
             for child in children_of(&rp) {
-                if child.tag().raw() == TAG_ATTRIBUTE && find_child(&child, TAG_ATTRIBUTE_INDEX).is_none() {
+                if child.tag().raw() == TAG_ATTRIBUTE
+                    && find_child(&child, TAG_ATTRIBUTE_INDEX).is_none()
+                {
                     let mut attr_children = children_of(&child);
                     if !attr_children.is_empty() {
                         attr_children.insert(
@@ -591,7 +661,10 @@ impl Kmip1xBridge {
                 let mut bi_children = Vec::new();
                 for c in children_of(&resp_bi) {
                     if c.tag().raw() == TAG_RESPONSE_PAYLOAD {
-                        bi_children.push(ttlv_struct(TAG_RESPONSE_PAYLOAD, std::mem::take(&mut updated_rp_children))?);
+                        bi_children.push(ttlv_struct(
+                            TAG_RESPONSE_PAYLOAD,
+                            std::mem::take(&mut updated_rp_children),
+                        )?);
                     } else {
                         bi_children.push(c);
                     }

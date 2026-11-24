@@ -25,21 +25,19 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use kmipkit_proxy::kmip1x::mapping::{
-    Cardinality, OperationPolicyHandling, STANDARD_ATTRIBUTES, UpstreamKmipVersion,
-    downgrade_result_reason, link_type_to_v3_tag, lookup_by_name_1x, v3_link_tag_to_link_type,
+    Cardinality, STANDARD_ATTRIBUTES, UpstreamKmipVersion, downgrade_result_reason,
+    link_type_to_v3_tag, v3_link_tag_to_link_type,
 };
 use kmipkit_proxy::kmip1x::s2c::{Kmip1xS2cBridge, S2cClientTransport};
 use kmipkit_proxy::kmip1x::tags::*;
 use kmipkit_proxy::kmip1x::translator::{
-    TranslatorConfig, build_1x_attribute, extract_protocol_version,
-    translate_attribute_1x_to_2x, translate_attributes_2x_to_1x,
-    translate_request_1x_to_2x, translate_response_2x_to_1x,
+    TranslatorConfig, build_1x_attribute, extract_protocol_version, translate_attribute_1x_to_2x,
+    translate_attributes_2x_to_1x,
 };
 use kmipkit_proxy::kmip1x::ttlv_helpers::{
-    build_error_batch_item, build_protocol_version, build_response_message,
-    build_success_batch_item, children_of, clone_item, extract_boolean, extract_byte_string,
-    extract_enumeration, extract_integer, extract_text_string, find_child, find_children,
-    ttlv_item, ttlv_struct,
+    build_protocol_version, build_response_message, build_success_batch_item, children_of,
+    clone_item, extract_boolean, extract_byte_string, extract_enumeration, extract_integer,
+    extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
 };
 use kmipkit_proxy::kmip1x::{Kmip1xBridge, UpstreamKmipTransport};
 use kmipkit_ttlv::{Item, Value};
@@ -57,10 +55,10 @@ fn sample_value_for_attribute(name_1x: &str) -> Value {
         "Key Format Type" => Value::enumeration(0x01),         // Raw
         "Split Key Method" => Value::enumeration(0x01),        // XOR
         "Opaque Data Type" => Value::enumeration(0x01),
-        "Certificate Type" => Value::enumeration(0x01),        // X.509
+        "Certificate Type" => Value::enumeration(0x01), // X.509
         "Digital Signature Algorithm" => Value::enumeration(0x05), // SHA-256 with RSA
-        "State" => Value::enumeration(0x02),                   // Active
-        "Key Role Type" => Value::enumeration(0x03),           // DEK
+        "State" => Value::enumeration(0x02),            // Active
+        "Key Role Type" => Value::enumeration(0x03),    // DEK
 
         // Integers / Bitmasks
         "Cryptographic Length" => Value::integer(256),
@@ -152,8 +150,11 @@ fn sample_value_for_attribute(name_1x: &str) -> Value {
                 TAG_REVOCATION_REASON,
                 vec![
                     ttlv_item(TAG_REVOCATION_REASON_CODE, Value::enumeration(0x02)).unwrap(),
-                    ttlv_item(TAG_REVOCATION_MESSAGE, Value::text_string("compromised".into()))
-                        .unwrap(),
+                    ttlv_item(
+                        TAG_REVOCATION_MESSAGE,
+                        Value::text_string("compromised".into()),
+                    )
+                    .unwrap(),
                 ],
             )
             .unwrap();
@@ -175,8 +176,11 @@ fn sample_value_for_attribute(name_1x: &str) -> Value {
             let s = ttlv_struct(
                 TAG_APPLICATION_SPECIFIC_INFORMATION,
                 vec![
-                    ttlv_item(TAG_APPLICATION_NAMESPACE, Value::text_string("kmipkit".into()))
-                        .unwrap(),
+                    ttlv_item(
+                        TAG_APPLICATION_NAMESPACE,
+                        Value::text_string("kmipkit".into()),
+                    )
+                    .unwrap(),
                     ttlv_item(TAG_APPLICATION_DATA, Value::text_string("v1".into())).unwrap(),
                 ],
             )
@@ -253,8 +257,8 @@ impl UpstreamKmipTransport for EchoUpstreamServer {
             let op = find_child(&bi, TAG_OPERATION)
                 .and_then(|i| extract_enumeration(&i))
                 .unwrap_or(0);
-            let bid = find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID)
-                .and_then(|i| extract_byte_string(&i));
+            let bid =
+                find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID).and_then(|i| extract_byte_string(&i));
             let payload = find_child(&bi, TAG_REQUEST_PAYLOAD);
 
             let resp_bi = match op {
@@ -270,7 +274,10 @@ impl UpstreamKmipTransport for EchoUpstreamServer {
                         op,
                         bid.as_deref(),
                         vec![
-                            ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY))?,
+                            ttlv_item(
+                                TAG_OBJECT_TYPE,
+                                Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                            )?,
                             ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid))?,
                         ],
                     )?
@@ -303,7 +310,10 @@ impl UpstreamKmipTransport for EchoUpstreamServer {
                         .and_then(|p| find_child(p, TAG_UNIQUE_IDENTIFIER))
                         .and_then(|i| extract_text_string(&i))
                         .unwrap_or_else(|| "echo-obj-001".to_string());
-                    let mut out = vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid.clone()))?];
+                    let mut out = vec![ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string(uid.clone()),
+                    )?];
                     if let Some(list) = self.stored_attrs.lock().unwrap().get(&uid) {
                         for item in list {
                             if item.tag().raw() == TAG_ATTRIBUTE {
@@ -316,7 +326,10 @@ impl UpstreamKmipTransport for EchoUpstreamServer {
                                 out.push(ttlv_struct(
                                     TAG_ATTRIBUTE_REFERENCE,
                                     vec![
-                                        ttlv_item(TAG_VENDOR_IDENTIFICATION, Value::text_string(vendor))?,
+                                        ttlv_item(
+                                            TAG_VENDOR_IDENTIFICATION,
+                                            Value::text_string(vendor),
+                                        )?,
                                         ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string(name))?,
                                     ],
                                 )?);
@@ -396,8 +409,18 @@ fn test_all_77_attributes_full_bidirectional_roundtrip_across_20_21_and_30() {
 
             // Forward: 1.X -> 2.0 / 2.1 / 3.0
             let attr_2x = translate_attribute_1x_to_2x(&attr_1x, cfg, false)
-                .unwrap_or_else(|e| panic!("forward failed for '{}' on {upstream_version:?}: {e}", spec.name_1x))
-                .unwrap_or_else(|| panic!("'{}' unexpectedly dropped on {upstream_version:?}", spec.name_1x));
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "forward failed for '{}' on {upstream_version:?}: {e}",
+                        spec.name_1x
+                    )
+                })
+                .unwrap_or_else(|| {
+                    panic!(
+                        "'{}' unexpectedly dropped on {upstream_version:?}",
+                        spec.name_1x
+                    )
+                });
 
             if spec.tag_2x == TAG_LINK && upstream_version == UpstreamKmipVersion::V3_0 {
                 assert_eq!(attr_2x.tag().raw(), TAG_PUBLIC_KEY_LINK);
@@ -422,8 +445,8 @@ fn test_all_77_attributes_full_bidirectional_roundtrip_across_20_21_and_30() {
         );
 
         for (spec, item_1x) in STANDARD_ATTRIBUTES.iter().zip(restored_1x.iter()) {
-            let restored_name = extract_text_string(&find_child(item_1x, TAG_ATTRIBUTE_NAME).unwrap())
-                .unwrap();
+            let restored_name =
+                extract_text_string(&find_child(item_1x, TAG_ATTRIBUTE_NAME).unwrap()).unwrap();
             assert_eq!(restored_name, spec.name_1x);
             assert!(find_child(item_1x, TAG_ATTRIBUTE_VALUE).is_some());
 
@@ -484,7 +507,11 @@ async fn test_e2e_create_get_attributes_and_list_all_writable_attributes() {
                 OP_CREATE,
                 Some(b"batch-01"),
                 vec![
-                    ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap(),
+                    ttlv_item(
+                        TAG_OBJECT_TYPE,
+                        Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                    )
+                    .unwrap(),
                     ttlv_struct(TAG_TEMPLATE_ATTRIBUTE, all_1x_attrs).unwrap(),
                 ],
             )],
@@ -493,13 +520,18 @@ async fn test_e2e_create_get_attributes_and_list_all_writable_attributes() {
         assert_eq!(extract_protocol_version(&create_resp), Some((1, 4)));
         let create_bi = find_child(&create_resp, TAG_BATCH_ITEM).unwrap();
         assert_eq!(
-            extract_byte_string(&find_child(&create_bi, TAG_UNIQUE_BATCH_ITEM_ID).unwrap()).as_deref(),
+            extract_byte_string(&find_child(&create_bi, TAG_UNIQUE_BATCH_ITEM_ID).unwrap())
+                .as_deref(),
             Some(b"batch-01".as_slice())
         );
 
         // Verify read-only attributes were stripped before hitting upstream
         let sent_attrs = find_child(
-            &find_child(&find_child(&upstream.last_request(), TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD).unwrap(),
+            &find_child(
+                &find_child(&upstream.last_request(), TAG_BATCH_ITEM).unwrap(),
+                TAG_REQUEST_PAYLOAD,
+            )
+            .unwrap(),
             TAG_ATTRIBUTES,
         )
         .unwrap();
@@ -518,7 +550,13 @@ async fn test_e2e_create_get_attributes_and_list_all_writable_attributes() {
             vec![make_bi(
                 OP_GET_ATTRIBUTES,
                 Some(b"batch-02"),
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("echo-obj-001".into())).unwrap()],
+                vec![
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("echo-obj-001".into()),
+                    )
+                    .unwrap(),
+                ],
             )],
         );
         let get_attrs_resp = bridge.dispatch(&get_attrs_req).await.unwrap();
@@ -537,7 +575,13 @@ async fn test_e2e_create_get_attributes_and_list_all_writable_attributes() {
             vec![make_bi(
                 OP_GET_ATTRIBUTE_LIST,
                 Some(b"batch-03"),
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("echo-obj-001".into())).unwrap()],
+                vec![
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("echo-obj-001".into()),
+                    )
+                    .unwrap(),
+                ],
             )],
         );
         let list_resp = bridge.dispatch(&list_req).await.unwrap();
@@ -573,7 +617,11 @@ async fn test_response_attributes_respect_client_minor_version_10_through_14() {
         "ver-key",
         vec![
             ttlv_item(TAG_CRYPTOGRAPHIC_LENGTH, Value::integer(256)).unwrap(), // 1.0
-            ttlv_item(TAG_X509_CERTIFICATE_SUBJECT, Value::text_string("CN=app".into())).unwrap(), // 1.1 (maps to Certificate Subject in 1.0)
+            ttlv_item(
+                TAG_X509_CERTIFICATE_SUBJECT,
+                Value::text_string("CN=app".into()),
+            )
+            .unwrap(), // 1.1 (maps to Certificate Subject in 1.0)
             ttlv_item(TAG_FRESH, Value::boolean(true)).unwrap(),               // 1.1
             ttlv_item(TAG_ALTERNATIVE_NAME, Value::text_string("alt".into())).unwrap(), // 1.2
             ttlv_item(TAG_DESCRIPTION, Value::text_string("desc".into())).unwrap(), // 1.3
@@ -592,12 +640,18 @@ async fn test_response_attributes_respect_client_minor_version_10_through_14() {
             vec![make_bi(
                 OP_GET_ATTRIBUTES,
                 None,
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap()],
+                vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap(),
+                ],
             )],
         ))
         .await
         .unwrap();
-    let p10 = find_child(&find_child(&resp_10, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let p10 = find_child(
+        &find_child(&resp_10, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     let names_10: Vec<String> = find_children(&p10, TAG_ATTRIBUTE)
         .iter()
         .filter_map(|a| find_child(a, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n)))
@@ -615,12 +669,18 @@ async fn test_response_attributes_respect_client_minor_version_10_through_14() {
             vec![make_bi(
                 OP_GET_ATTRIBUTES,
                 None,
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap()],
+                vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap(),
+                ],
             )],
         ))
         .await
         .unwrap();
-    let p12 = find_child(&find_child(&resp_12, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let p12 = find_child(
+        &find_child(&resp_12, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     let names_12: Vec<String> = find_children(&p12, TAG_ATTRIBUTE)
         .iter()
         .filter_map(|a| find_child(a, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n)))
@@ -639,12 +699,18 @@ async fn test_response_attributes_respect_client_minor_version_10_through_14() {
             vec![make_bi(
                 OP_GET_ATTRIBUTES,
                 None,
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap()],
+                vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("ver-key".into())).unwrap(),
+                ],
             )],
         ))
         .await
         .unwrap();
-    let p14 = find_child(&find_child(&resp_14, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let p14 = find_child(
+        &find_child(&resp_14, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     assert_eq!(find_children(&p14, TAG_ATTRIBUTE).len(), 7);
 }
 
@@ -685,8 +751,11 @@ fn test_all_14_kmip30_typed_links_bidirectional_roundtrip() {
             TAG_ATTRIBUTE_VALUE,
             vec![
                 ttlv_item(TAG_LINK_TYPE, Value::enumeration(lt)).unwrap(),
-                ttlv_item(TAG_LINKED_OBJECT_IDENTIFIER, Value::text_string(target_id.clone()))
-                    .unwrap(),
+                ttlv_item(
+                    TAG_LINKED_OBJECT_IDENTIFIER,
+                    Value::text_string(target_id.clone()),
+                )
+                .unwrap(),
             ],
         )
         .unwrap();
@@ -703,15 +772,22 @@ fn test_all_14_kmip30_typed_links_bidirectional_roundtrip() {
             .unwrap()
             .unwrap();
         assert_eq!(v3_item.tag().raw(), expected_v3_tag);
-        assert_eq!(extract_text_string(&v3_item).as_deref(), Some(target_id.as_str()));
+        assert_eq!(
+            extract_text_string(&v3_item).as_deref(),
+            Some(target_id.as_str())
+        );
 
         let attrs_v3 = ttlv_struct(TAG_ATTRIBUTES, vec![v3_item]).unwrap();
         let back_1x = translate_attributes_2x_to_1x(&attrs_v3, 4).unwrap();
         assert_eq!(back_1x.len(), 1);
         let val = find_child(&back_1x[0], TAG_ATTRIBUTE_VALUE).unwrap();
-        assert_eq!(extract_enumeration(&find_child(&val, TAG_LINK_TYPE).unwrap()), Some(lt));
         assert_eq!(
-            extract_text_string(&find_child(&val, TAG_LINKED_OBJECT_IDENTIFIER).unwrap()).as_deref(),
+            extract_enumeration(&find_child(&val, TAG_LINK_TYPE).unwrap()),
+            Some(lt)
+        );
+        assert_eq!(
+            extract_text_string(&find_child(&val, TAG_LINKED_OBJECT_IDENTIFIER).unwrap())
+                .as_deref(),
             Some(target_id.as_str())
         );
     }
@@ -733,7 +809,8 @@ fn test_exhaustive_result_reason_downgrade_always_valid_for_1x_minor() {
         for reason_2x in (0x01..=0x50).chain(std::iter::once(0x100)) {
             let downgraded = downgrade_result_reason(reason_2x, minor);
             assert!(
-                (0x01..=max_valid_low).contains(&downgraded) || downgraded == REASON_GENERAL_FAILURE,
+                (0x01..=max_valid_low).contains(&downgraded)
+                    || downgraded == REASON_GENERAL_FAILURE,
                 "reason 0x{reason_2x:04X} downgraded to 0x{downgraded:04X} which is invalid for KMIP 1.{minor}"
             );
         }
@@ -790,7 +867,11 @@ async fn test_create_key_pair_common_private_public_template_attributes_translat
     assert_eq!(extract_protocol_version(&resp), Some((1, 4)));
 
     let sent = upstream.last_request();
-    let sp = find_child(&find_child(&sent, TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD).unwrap();
+    let sp = find_child(
+        &find_child(&sent, TAG_BATCH_ITEM).unwrap(),
+        TAG_REQUEST_PAYLOAD,
+    )
+    .unwrap();
     assert!(find_child(&sp, TAG_COMMON_ATTRIBUTES).is_some());
     assert!(find_child(&sp, TAG_PRIVATE_KEY_ATTRIBUTES).is_some());
     assert!(find_child(&sp, TAG_PUBLIC_KEY_ATTRIBUTES).is_some());
@@ -818,7 +899,11 @@ async fn test_export_key_wrapping_spec_and_async_indicator_header_translation() 
     let kws = ttlv_struct(
         TAG_KEY_WRAPPING_SPECIFICATION,
         vec![
-            ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+            ttlv_item(
+                TAG_ATTRIBUTE_NAME,
+                Value::text_string("Object Group".into()),
+            )
+            .unwrap(),
             ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("x-tenant".into())).unwrap(),
         ],
     )
@@ -831,7 +916,11 @@ async fn test_export_key_wrapping_spec_and_async_indicator_header_translation() 
                 OP_EXPORT,
                 None,
                 vec![
-                    ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap(),
+                    ttlv_item(
+                        TAG_OBJECT_TYPE,
+                        Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                    )
+                    .unwrap(),
                     ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("k-1".into())).unwrap(),
                     kws,
                 ],
@@ -850,7 +939,11 @@ async fn test_export_key_wrapping_spec_and_async_indicator_header_translation() 
         Some(true)
     );
     let sent_kws = find_child(
-        &find_child(&find_child(&sent, TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD).unwrap(),
+        &find_child(
+            &find_child(&sent, TAG_BATCH_ITEM).unwrap(),
+            TAG_REQUEST_PAYLOAD,
+        )
+        .unwrap(),
         TAG_KEY_WRAPPING_SPECIFICATION,
     )
     .unwrap();
@@ -953,13 +1046,17 @@ async fn test_s2c_all_operations_across_20_21_and_30() {
         assert_eq!(extract_protocol_version(&notify_resp), Some((maj, min)));
 
         // Verify client received 1.4 with 2 KMIP 1.X Attribute items
-        let rec = client.received.lock().unwrap();
-        let last_to_client = rec.last().unwrap();
-        assert_eq!(extract_protocol_version(last_to_client), Some((1, 4)));
-        let lp = find_child(&find_child(last_to_client, TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD)
+        {
+            let rec = client.received.lock().unwrap();
+            let last_to_client = rec.last().unwrap();
+            assert_eq!(extract_protocol_version(last_to_client), Some((1, 4)));
+            let lp = find_child(
+                &find_child(last_to_client, TAG_BATCH_ITEM).unwrap(),
+                TAG_REQUEST_PAYLOAD,
+            )
             .unwrap();
-        assert_eq!(find_children(&lp, TAG_ATTRIBUTE).len(), 2);
-        drop(rec);
+            assert_eq!(find_children(&lp, TAG_ATTRIBUTE).len(), 2);
+        }
 
         // 2. S2C Query
         let query = make_1x_req(maj, min, vec![make_bi(OP_QUERY, Some(b"s2c-2"), vec![])]);

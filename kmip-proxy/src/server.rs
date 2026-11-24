@@ -6,9 +6,9 @@
 //! or [`Kmip1xBridge`] (KMIP 1.X -> 2.0/2.1/3.0 protocol translation bridge).
 #![forbid(unsafe_code)]
 
+use kmipkit_ttlv::Item;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use kmipkit_ttlv::Item;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -109,7 +109,12 @@ impl ProxyServer {
         } else {
             None
         };
-        Self::start_target(config, Arc::new(ServerDispatchTarget::Kmip1xBridge(bridge)), pki).await
+        Self::start_target(
+            config,
+            Arc::new(ServerDispatchTarget::Kmip1xBridge(bridge)),
+            pki,
+        )
+        .await
     }
 
     /// Starts the KMIP 1.X -> KMIP 2.0/2.1/3.0 translation proxy server with a pre-existing PKI.
@@ -136,7 +141,12 @@ impl ProxyServer {
             provider,
             config.proxy_behavior.clone(),
         ));
-        Self::start_target(config, Arc::new(ServerDispatchTarget::Cloud(dispatcher)), pki).await
+        Self::start_target(
+            config,
+            Arc::new(ServerDispatchTarget::Cloud(dispatcher)),
+            pki,
+        )
+        .await
     }
 
     async fn start_target(
@@ -203,13 +213,14 @@ impl ProxyServer {
             let key_bytes = std::fs::read(key_path)
                 .map_err(|e| format!("failed reading key file {}: {e}", key_path.display()))?;
 
-            let ca_bytes = if let Some(ca_path) = &config.listener.tls_client_ca_path {
-                Some(std::fs::read(ca_path).map_err(|e| {
-                    format!("failed reading CA file {}: {e}", ca_path.display())
-                })?)
-            } else {
-                None
-            };
+            let ca_bytes =
+                if let Some(ca_path) = &config.listener.tls_client_ca_path {
+                    Some(std::fs::read(ca_path).map_err(|e| {
+                        format!("failed reading CA file {}: {e}", ca_path.display())
+                    })?)
+                } else {
+                    None
+                };
             (cert_bytes, key_bytes, ca_bytes)
         };
 

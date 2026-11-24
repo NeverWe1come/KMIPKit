@@ -21,8 +21,8 @@ use crate::kmip1x::tags::*;
 use crate::kmip1x::template_store::TemplateStore;
 use crate::kmip1x::ttlv_helpers::{
     build_protocol_version, build_response_message, build_success_batch_item, children_of,
-    clone_item, clone_item_value, extract_boolean, extract_enumeration, extract_integer,
-    extract_text_string, find_child, find_children, retag_item, ttlv_item, ttlv_struct,
+    clone_item_value, extract_boolean, extract_enumeration, extract_integer, extract_text_string,
+    find_child, find_children, retag_item, ttlv_item, ttlv_struct,
 };
 
 pub const PROXY_VENDOR_ID: &str = "kmip1x-proxy";
@@ -62,8 +62,8 @@ pub struct TranslatedBatchMeta {
 /// Extracts `(major, minor)` from a KMIP RequestMessage or ResponseMessage.
 #[must_use]
 pub fn extract_protocol_version(msg: &Item) -> Option<(i32, i32)> {
-    let header = find_child(msg, TAG_REQUEST_HEADER)
-        .or_else(|| find_child(msg, TAG_RESPONSE_HEADER))?;
+    let header =
+        find_child(msg, TAG_REQUEST_HEADER).or_else(|| find_child(msg, TAG_RESPONSE_HEADER))?;
     let pv = find_child(&header, TAG_PROTOCOL_VERSION)?;
     let major = find_child(&pv, TAG_PROTOCOL_VERSION_MAJOR).and_then(|i| extract_integer(&i))?;
     let minor = find_child(&pv, TAG_PROTOCOL_VERSION_MINOR).and_then(|i| extract_integer(&i))?;
@@ -161,7 +161,10 @@ pub fn translate_attribute_1x_to_2x(
                     TAG_VENDOR_IDENTIFICATION,
                     Value::text_string(vendor_id.to_string()),
                 )?,
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string(attr_name.to_string()))?,
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string(attr_name.to_string()),
+                )?,
                 val_item,
             ],
         )?;
@@ -192,7 +195,8 @@ pub fn translate_attribute_1x_to_2x(
     if spec.tag_2x == TAG_LINK && cfg.upstream_version == UpstreamKmipVersion::V3_0 {
         if let (Some(lt), Some(linked_id)) = (
             find_child(&val_item, TAG_LINK_TYPE).and_then(|i| extract_enumeration(&i)),
-            find_child(&val_item, TAG_LINKED_OBJECT_IDENTIFIER).and_then(|i| extract_text_string(&i)),
+            find_child(&val_item, TAG_LINKED_OBJECT_IDENTIFIER)
+                .and_then(|i| extract_text_string(&i)),
         ) {
             if let Some(v3_tag) = link_type_to_v3_tag(lt) {
                 return Ok(Some(ttlv_item(v3_tag, Value::text_string(linked_id))?));
@@ -220,8 +224,8 @@ pub fn translate_attributes_2x_to_1x(
             let vendor = find_child(&child, TAG_VENDOR_IDENTIFICATION)
                 .and_then(|i| extract_text_string(&i))
                 .unwrap_or_else(|| "x".to_string());
-            let attr_name = find_child(&child, TAG_ATTRIBUTE_NAME)
-                .and_then(|i| extract_text_string(&i));
+            let attr_name =
+                find_child(&child, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i));
             let val_item = find_child(&child, TAG_ATTRIBUTE_VALUE);
 
             if let (Some(aname), Some(val)) = (attr_name, val_item) {
@@ -335,7 +339,10 @@ pub fn translate_attribute_name_to_reference(name: &str) -> Result<Option<Item>,
                     TAG_VENDOR_IDENTIFICATION,
                     Value::text_string(vendor_id.to_string()),
                 )?,
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string(attr_name.to_string()))?,
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string(attr_name.to_string()),
+                )?,
             ],
         )?;
         return Ok(Some(ref_struct));
@@ -375,7 +382,9 @@ pub fn translate_template_attribute_to_2x(
     // 2. Append explicit attributes from the request (override single-instance template defaults)
     let explicit_1x = find_children(tpl_attr, TAG_ATTRIBUTE);
     for exp in &explicit_1x {
-        if let Some(exp_name) = find_child(exp, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n)) {
+        if let Some(exp_name) =
+            find_child(exp, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n))
+        {
             let is_single = lookup_by_name_1x(&exp_name)
                 .is_some_and(|s| s.cardinality == Cardinality::SingleInstance);
             if is_single {
@@ -459,12 +468,8 @@ pub fn translate_request_1x_to_2x(
                 new_top.push(rewrite_header_version(&child, up_major, up_minor)?);
             }
             TAG_BATCH_ITEM => {
-                let (translated_item, meta) = translate_request_batch_item(
-                    &child,
-                    batch_idx > 0,
-                    cfg,
-                    template_store,
-                )?;
+                let (translated_item, meta) =
+                    translate_request_batch_item(&child, batch_idx > 0, cfg, template_store)?;
                 new_top.push(translated_item);
                 metas.push(meta);
                 batch_idx += 1;
@@ -513,7 +518,10 @@ pub fn translate_request_batch_item(
         }
     }
 
-    out_children.insert(0, ttlv_item(TAG_OPERATION, Value::enumeration(upstream_op))?);
+    out_children.insert(
+        0,
+        ttlv_item(TAG_OPERATION, Value::enumeration(upstream_op))?,
+    );
     let item = ttlv_struct(TAG_BATCH_ITEM, out_children)?;
     Ok((
         item,
@@ -596,8 +604,8 @@ fn translate_request_payload(
             TAG_ATTRIBUTE_INDEX if op == OP_DELETE_ATTRIBUTE => {}
             // Add Attribute: single-instance -> Set Attribute(New Attribute); multi-instance -> Add Attribute(New Attribute)
             TAG_ATTRIBUTE if op == OP_ADD_ATTRIBUTE => {
-                if let Some(name) = find_child(&child, TAG_ATTRIBUTE_NAME)
-                    .and_then(|n| extract_text_string(&n))
+                if let Some(name) =
+                    find_child(&child, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n))
                 {
                     if let Some(spec) = lookup_by_name_1x(&name) {
                         if spec.cardinality == Cardinality::SingleInstance {
@@ -611,8 +619,8 @@ fn translate_request_payload(
             }
             // Modify Attribute (single-instance path; multi-instance with Attribute Index uses RMW in Kmip1xBridge)
             TAG_ATTRIBUTE if op == OP_MODIFY_ATTRIBUTE => {
-                if let Some(name) = find_child(&child, TAG_ATTRIBUTE_NAME)
-                    .and_then(|n| extract_text_string(&n))
+                if let Some(name) =
+                    find_child(&child, TAG_ATTRIBUTE_NAME).and_then(|n| extract_text_string(&n))
                 {
                     if let Some(spec) = lookup_by_name_1x(&name) {
                         if spec.cardinality == Cardinality::SingleInstance {
@@ -639,6 +647,22 @@ fn translate_request_payload(
             // Query Function: pass through supported functions
             TAG_QUERY_FUNCTION if op == OP_QUERY => {
                 out.push(child);
+            }
+            // Key Wrapping Specification: translate 1.X Attribute Name items to 2.0+ Attribute Reference
+            TAG_KEY_WRAPPING_SPECIFICATION => {
+                let mut kws_children = Vec::new();
+                for sub in children_of(&child) {
+                    if sub.tag().raw() == TAG_ATTRIBUTE_NAME {
+                        if let Some(name) = extract_text_string(&sub) {
+                            if let Some(attr_ref) = translate_attribute_name_to_reference(&name)? {
+                                kws_children.push(attr_ref);
+                                continue;
+                            }
+                        }
+                    }
+                    kws_children.push(sub);
+                }
+                out.push(ttlv_struct(TAG_KEY_WRAPPING_SPECIFICATION, kws_children)?);
             }
             // Everything else (Unique Identifier, Object Type, Key Block, Crypto Params, Data, IV, etc.)
             _ => out.push(child),
@@ -717,7 +741,11 @@ fn translate_response_batch_item(
                 }
             }
             TAG_RESPONSE_PAYLOAD => {
-                out.push(translate_response_payload(restored_op, &child, client_minor)?);
+                out.push(translate_response_payload(
+                    restored_op,
+                    &child,
+                    client_minor,
+                )?);
             }
             _ => out.push(child),
         }
@@ -804,7 +832,7 @@ fn translate_response_payload(
         }
     }
 
-    Ok(ttlv_struct(TAG_RESPONSE_PAYLOAD, out)?)
+    ttlv_struct(TAG_RESPONSE_PAYLOAD, out)
 }
 
 /// Reverse translator for Server-to-Client operations (`Notify` 0x1B and `Put` 0x1C)
@@ -827,10 +855,8 @@ pub fn translate_server_to_client_request_2x_to_1x(
                         let mut p_children = Vec::new();
                         for p_child in children_of(&bi_child) {
                             if p_child.tag().raw() == TAG_ATTRIBUTES {
-                                p_children.extend(translate_attributes_2x_to_1x(
-                                    &p_child,
-                                    client_minor,
-                                )?);
+                                p_children
+                                    .extend(translate_attributes_2x_to_1x(&p_child, client_minor)?);
                             } else {
                                 p_children.push(p_child);
                             }
@@ -871,7 +897,8 @@ pub fn translate_server_to_client_response_1x_to_2x(
 /// or specifies an `Attribute Index`.
 #[must_use]
 pub fn needs_rmw_index_resolution(batch_item: &Item) -> bool {
-    let Some(op) = find_child(batch_item, TAG_OPERATION).and_then(|i| extract_enumeration(&i)) else {
+    let Some(op) = find_child(batch_item, TAG_OPERATION).and_then(|i| extract_enumeration(&i))
+    else {
         return false;
     };
     let Some(payload) = find_child(batch_item, TAG_REQUEST_PAYLOAD) else {
@@ -886,11 +913,10 @@ pub fn needs_rmw_index_resolution(batch_item: &Item) -> bool {
             if find_child(&attr, TAG_ATTRIBUTE_INDEX).is_some() {
                 return true;
             }
-            let is_multi = find_child(&attr, TAG_ATTRIBUTE_NAME)
+            find_child(&attr, TAG_ATTRIBUTE_NAME)
                 .and_then(|n| extract_text_string(&n))
                 .and_then(|name| lookup_by_name_1x(&name))
-                .is_some_and(|spec| spec.cardinality == Cardinality::MultiInstance);
-            is_multi
+                .is_some_and(|spec| spec.cardinality == Cardinality::MultiInstance)
         }
         OP_DELETE_ATTRIBUTE => find_child(&payload, TAG_ATTRIBUTE_INDEX).is_some(),
         _ => false,
@@ -903,8 +929,7 @@ pub fn is_template_object_request(batch_item: &Item) -> bool {
     let Some(payload) = find_child(batch_item, TAG_REQUEST_PAYLOAD) else {
         return false;
     };
-    if find_child(&payload, TAG_OBJECT_TYPE)
-        .and_then(|i| extract_enumeration(&i))
+    if find_child(&payload, TAG_OBJECT_TYPE).and_then(|i| extract_enumeration(&i))
         == Some(OBJECT_TYPE_TEMPLATE)
     {
         return true;
@@ -915,8 +940,7 @@ pub fn is_template_object_request(batch_item: &Item) -> bool {
             .and_then(|n| extract_text_string(&n))
             .is_some_and(|n| n == "Object Type");
         if is_ot
-            && find_child(&attr, TAG_ATTRIBUTE_VALUE)
-                .and_then(|v| extract_enumeration(&v))
+            && find_child(&attr, TAG_ATTRIBUTE_VALUE).and_then(|v| extract_enumeration(&v))
                 == Some(OBJECT_TYPE_TEMPLATE)
         {
             return true;

@@ -26,18 +26,16 @@ use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use kmipkit_proxy::codec::Format;
 use kmipkit_proxy::config::ProxyConfig;
-use kmipkit_proxy::kmip1x::mapping::{
-    Cardinality, OperationPolicyHandling, STANDARD_ATTRIBUTES, UpstreamKmipVersion,
-};
+use kmipkit_proxy::kmip1x::mapping::{Cardinality, STANDARD_ATTRIBUTES, UpstreamKmipVersion};
 use kmipkit_proxy::kmip1x::tags::*;
 use kmipkit_proxy::kmip1x::translator::{
-    TranslatorConfig, build_1x_attribute, extract_protocol_version,
-    translate_attribute_1x_to_2x, translate_attributes_2x_to_1x,
+    TranslatorConfig, build_1x_attribute, extract_protocol_version, translate_attribute_1x_to_2x,
+    translate_attributes_2x_to_1x,
 };
 use kmipkit_proxy::kmip1x::ttlv_helpers::{
     build_error_batch_item, build_protocol_version, build_response_message,
     build_success_batch_item, children_of, clone_item, extract_byte_string, extract_enumeration,
-    extract_integer, extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
+    extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
 };
 use kmipkit_proxy::kmip1x::{Kmip1xBridge, UpstreamKmipTransport};
 use kmipkit_proxy::server::ProxyServer;
@@ -85,8 +83,11 @@ fn sample_val(name: &str) -> Value {
                 TAG_LINK,
                 vec![
                     ttlv_item(TAG_LINK_TYPE, Value::enumeration(LINK_TYPE_PARENT)).unwrap(),
-                    ttlv_item(TAG_LINKED_OBJECT_IDENTIFIER, Value::text_string("parent-1".into()))
-                        .unwrap(),
+                    ttlv_item(
+                        TAG_LINKED_OBJECT_IDENTIFIER,
+                        Value::text_string("parent-1".into()),
+                    )
+                    .unwrap(),
                 ],
             )
             .unwrap();
@@ -140,8 +141,8 @@ impl UpstreamKmipTransport for ChaosUpstream {
             let op = find_child(&bi, TAG_OPERATION)
                 .and_then(|i| extract_enumeration(&i))
                 .unwrap_or(0);
-            let bid = find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID)
-                .and_then(|i| extract_byte_string(&i));
+            let bid =
+                find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID).and_then(|i| extract_byte_string(&i));
             let payload = find_child(&bi, TAG_REQUEST_PAYLOAD);
 
             // Reject unknown / garbage operation codes just like a real KMIP 2.x/3.0 server
@@ -190,13 +191,12 @@ impl UpstreamKmipTransport for ChaosUpstream {
                         .and_then(|na| children_of(&na).into_iter().next());
                     if let (Some(c), Some(n)) = (curr, new_a) {
                         let cb = Format::Ttlv.encode(&c)?;
-                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid) {
-                            if let Some(pos) = list
+                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid)
+                            && let Some(pos) = list
                                 .iter()
                                 .position(|x| Format::Ttlv.encode(x).ok() == Some(cb.clone()))
-                            {
-                                list[pos] = n;
-                            }
+                        {
+                            list[pos] = n;
                         }
                     }
                     build_success_batch_item(
@@ -212,13 +212,12 @@ impl UpstreamKmipTransport for ChaosUpstream {
                         .and_then(|ca| children_of(&ca).into_iter().next());
                     if let Some(c) = curr {
                         let cb = Format::Ttlv.encode(&c)?;
-                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid) {
-                            if let Some(pos) = list
+                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid)
+                            && let Some(pos) = list
                                 .iter()
                                 .position(|x| Format::Ttlv.encode(x).ok() == Some(cb.clone()))
-                            {
-                                list.remove(pos);
-                            }
+                        {
+                            list.remove(pos);
                         }
                     }
                     build_success_batch_item(
@@ -302,8 +301,11 @@ async fn test_matrix_all_11_template_attribute_ops_with_all_77_attributes() {
                 vec![bi(
                     op,
                     vec![
-                        ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY))
-                            .unwrap(),
+                        ttlv_item(
+                            TAG_OBJECT_TYPE,
+                            Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                        )
+                        .unwrap(),
                         ttlv_struct(TAG_TEMPLATE_ATTRIBUTE, all_77).unwrap(),
                     ],
                 )],
@@ -313,8 +315,11 @@ async fn test_matrix_all_11_template_attribute_ops_with_all_77_attributes() {
 
             let sent = upstream.last_request();
             let sent_attrs = find_child(
-                &find_child(&find_child(&sent, TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD)
-                    .unwrap(),
+                &find_child(
+                    &find_child(&sent, TAG_BATCH_ITEM).unwrap(),
+                    TAG_REQUEST_PAYLOAD,
+                )
+                .unwrap(),
                 TAG_ATTRIBUTES,
             )
             .expect("Template-Attribute translated to Attributes");
@@ -352,7 +357,11 @@ async fn test_matrix_locate_preserves_all_77_attributes_including_readonly() {
 
         let sent = upstream.last_request();
         let sent_attrs = find_child(
-            &find_child(&find_child(&sent, TAG_BATCH_ITEM).unwrap(), TAG_REQUEST_PAYLOAD).unwrap(),
+            &find_child(
+                &find_child(&sent, TAG_BATCH_ITEM).unwrap(),
+                TAG_REQUEST_PAYLOAD,
+            )
+            .unwrap(),
             TAG_ATTRIBUTES,
         )
         .unwrap();
@@ -390,8 +399,11 @@ async fn test_matrix_add_attribute_cardinality_routing_for_all_77_attributes() {
 
         // Upstream op must match cardinality
         let sent_op = extract_enumeration(
-            &find_child(&find_child(&upstream.last_request(), TAG_BATCH_ITEM).unwrap(), TAG_OPERATION)
-                .unwrap(),
+            &find_child(
+                &find_child(&upstream.last_request(), TAG_BATCH_ITEM).unwrap(),
+                TAG_OPERATION,
+            )
+            .unwrap(),
         );
         let expected_up_op = match spec.cardinality {
             Cardinality::SingleInstance => OP_SET_ATTRIBUTE,
@@ -449,12 +461,21 @@ async fn test_deprecated_10_certificate_aliases_in_locate_and_get_attributes() {
             OP_GET_ATTRIBUTES,
             vec![
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("cert-1".into())).unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Certificate Identifier".into()))
-                    .unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Certificate Subject".into()))
-                    .unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Certificate Issuer".into()))
-                    .unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Certificate Identifier".into()),
+                )
+                .unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Certificate Subject".into()),
+                )
+                .unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Certificate Issuer".into()),
+                )
+                .unwrap(),
             ],
         )],
     );
@@ -498,9 +519,17 @@ async fn test_50_multi_instance_attributes_rmw_modify_middle_and_delete_ends() {
         vec![bi(
             OP_MODIFY_ATTRIBUTE,
             vec![
-                ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("many-attr-key".into())).unwrap(),
-                build_1x_attribute("Object Group", Some(25), Value::text_string("grp-25-MOD".into()))
-                    .unwrap(),
+                ttlv_item(
+                    TAG_UNIQUE_IDENTIFIER,
+                    Value::text_string("many-attr-key".into()),
+                )
+                .unwrap(),
+                build_1x_attribute(
+                    "Object Group",
+                    Some(25),
+                    Value::text_string("grp-25-MOD".into()),
+                )
+                .unwrap(),
             ],
         )],
     );
@@ -514,9 +543,16 @@ async fn test_50_multi_instance_attributes_rmw_modify_middle_and_delete_ends() {
             vec![bi(
                 OP_DELETE_ATTRIBUTE,
                 vec![
-                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("many-attr-key".into()))
-                        .unwrap(),
-                    ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("many-attr-key".into()),
+                    )
+                    .unwrap(),
+                    ttlv_item(
+                        TAG_ATTRIBUTE_NAME,
+                        Value::text_string("Object Group".into()),
+                    )
+                    .unwrap(),
                     ttlv_item(TAG_ATTRIBUTE_INDEX, Value::integer(idx)).unwrap(),
                 ],
             )],
@@ -531,12 +567,22 @@ async fn test_50_multi_instance_attributes_rmw_modify_middle_and_delete_ends() {
             vec![],
             vec![bi(
                 OP_GET_ATTRIBUTES,
-                vec![ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("many-attr-key".into())).unwrap()],
+                vec![
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("many-attr-key".into()),
+                    )
+                    .unwrap(),
+                ],
             )],
         ))
         .await
         .unwrap();
-    let gp = find_child(&find_child(&ga, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let gp = find_child(
+        &find_child(&ga, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     let attrs = find_children(&gp, TAG_ATTRIBUTE);
     assert_eq!(attrs.len(), 48);
     assert_eq!(
@@ -568,7 +614,11 @@ async fn test_exact_maximum_response_size_boundary_plus_minus_one_byte() {
         .unwrap();
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&ok_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_STATUS).unwrap()
+            &find_child(
+                &find_child(&ok_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_STATUS
+            )
+            .unwrap()
         ),
         Some(STATUS_SUCCESS)
     );
@@ -584,7 +634,11 @@ async fn test_exact_maximum_response_size_boundary_plus_minus_one_byte() {
         .unwrap();
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&fail_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_REASON).unwrap()
+            &find_child(
+                &find_child(&fail_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_REASON
+            )
+            .unwrap()
         ),
         Some(REASON_RESPONSE_TOO_LARGE)
     );
@@ -602,15 +656,16 @@ fn test_weird_custom_and_unknown_attribute_names_and_utf8_values() {
 
     let mut v2_items = Vec::new();
     for name in weird_names {
-        let a1x = build_1x_attribute(name, None, Value::text_string("valor-€-日本語".into())).unwrap();
+        let a1x =
+            build_1x_attribute(name, None, Value::text_string("valor-€-日本語".into())).unwrap();
         let a2x = translate_attribute_1x_to_2x(&a1x, cfg, false)
             .unwrap()
             .expect("preserved as vendor attribute");
         v2_items.push(a2x);
     }
 
-    let back = translate_attributes_2x_to_1x(&ttlv_struct(TAG_ATTRIBUTES, v2_items).unwrap(), 4)
-        .unwrap();
+    let back =
+        translate_attributes_2x_to_1x(&ttlv_struct(TAG_ATTRIBUTES, v2_items).unwrap(), 4).unwrap();
     assert_eq!(back.len(), weird_names.len());
     for (expected, item) in weird_names.iter().zip(back.iter()) {
         assert_eq!(
@@ -631,7 +686,10 @@ fn test_weird_custom_and_unknown_attribute_names_and_utf8_values() {
 #[tokio::test]
 async fn test_network_chaos_truncated_frames_garbage_bytes_and_upstream_failure_recovery() {
     let upstream = Arc::new(ChaosUpstream::new(UpstreamKmipVersion::V2_1));
-    let bridge = Arc::new(Kmip1xBridge::new(upstream.clone(), UpstreamKmipVersion::V2_1));
+    let bridge = Arc::new(Kmip1xBridge::new(
+        upstream.clone(),
+        UpstreamKmipVersion::V2_1,
+    ));
 
     let mut cfg = ProxyConfig::default();
     cfg.listener.bind_addr = "127.0.0.1:0".parse().unwrap();
@@ -649,9 +707,11 @@ async fn test_network_chaos_truncated_frames_garbage_bytes_and_upstream_failure_
     // Chaos 2: Truncated TTLV payload (claims 1024 bytes, sends 4 then closes)
     {
         let mut s = TcpStream::connect(addr).await.unwrap();
-        s.write_all(&[0x42, 0x00, 0x78, 0x01, 0x00, 0x00, 0x04, 0x00, 0xAA, 0xBB, 0xCC, 0xDD])
-            .await
-            .unwrap();
+        s.write_all(&[
+            0x42, 0x00, 0x78, 0x01, 0x00, 0x00, 0x04, 0x00, 0xAA, 0xBB, 0xCC, 0xDD,
+        ])
+        .await
+        .unwrap();
         drop(s);
     }
 
@@ -677,7 +737,9 @@ async fn test_network_chaos_truncated_frames_garbage_bytes_and_upstream_failure_
     upstream.fail_transport.store(true, Ordering::SeqCst);
     {
         let mut s = TcpStream::connect(addr).await.unwrap();
-        let bytes = Format::Ttlv.encode(&req(4, vec![], vec![bi(OP_CREATE, vec![])])).unwrap();
+        let bytes = Format::Ttlv
+            .encode(&req(4, vec![], vec![bi(OP_CREATE, vec![])]))
+            .unwrap();
         s.write_all(&bytes).await.unwrap();
         let mut buf = [0u8; 8];
         let _ = s.read(&mut buf).await;
@@ -688,7 +750,9 @@ async fn test_network_chaos_truncated_frames_garbage_bytes_and_upstream_failure_
     {
         let mut s = TcpStream::connect(addr).await.unwrap();
         for _ in 0..20 {
-            let bytes = Format::Ttlv.encode(&req(4, vec![], vec![bi(OP_CREATE, vec![])])).unwrap();
+            let bytes = Format::Ttlv
+                .encode(&req(4, vec![], vec![bi(OP_CREATE, vec![])]))
+                .unwrap();
             s.write_all(&bytes).await.unwrap();
             s.flush().await.unwrap();
 

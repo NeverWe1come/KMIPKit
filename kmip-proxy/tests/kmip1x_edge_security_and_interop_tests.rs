@@ -38,8 +38,7 @@ use kmipkit_proxy::kmip1x::translator::{
 use kmipkit_proxy::kmip1x::ttlv_helpers::{
     build_error_batch_item, build_protocol_version, build_response_message,
     build_success_batch_item, children_of, clone_item, extract_boolean, extract_byte_string,
-    extract_enumeration, extract_integer, extract_text_string, find_child, find_children,
-    ttlv_item, ttlv_struct,
+    extract_enumeration, extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
 };
 use kmipkit_proxy::kmip1x::upstream::LocalDispatcherUpstream;
 use kmipkit_proxy::kmip1x::{Kmip1xBridge, UpstreamKmipTransport};
@@ -103,20 +102,20 @@ impl UpstreamKmipTransport for ProgrammableUpstream {
             let op = find_child(&bi, TAG_OPERATION)
                 .and_then(|i| extract_enumeration(&i))
                 .unwrap_or(0);
-            let bid = find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID)
-                .and_then(|i| extract_byte_string(&i));
+            let bid =
+                find_child(&bi, TAG_UNIQUE_BATCH_ITEM_ID).and_then(|i| extract_byte_string(&i));
             let payload = find_child(&bi, TAG_REQUEST_PAYLOAD);
 
-            if let Some((f_op, f_reason)) = *self.fail_op.lock().unwrap() {
-                if f_op == op {
-                    resp_items.push(build_error_batch_item(
-                        op,
-                        bid.as_deref(),
-                        f_reason,
-                        "injected failure",
-                    )?);
-                    continue;
-                }
+            if let Some((f_op, f_reason)) = *self.fail_op.lock().unwrap()
+                && f_op == op
+            {
+                resp_items.push(build_error_batch_item(
+                    op,
+                    bid.as_deref(),
+                    f_reason,
+                    "injected failure",
+                )?);
+                continue;
             }
 
             let uid = payload
@@ -142,7 +141,10 @@ impl UpstreamKmipTransport for ProgrammableUpstream {
                         op,
                         bid.as_deref(),
                         vec![
-                            ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY))?,
+                            ttlv_item(
+                                TAG_OBJECT_TYPE,
+                                Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                            )?,
                             ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(new_id))?,
                         ],
                     )?
@@ -175,13 +177,12 @@ impl UpstreamKmipTransport for ProgrammableUpstream {
                         .and_then(|na| children_of(&na).into_iter().next());
                     if let (Some(c), Some(n)) = (curr, new_a) {
                         let cb = Format::Ttlv.encode(&c)?;
-                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid) {
-                            if let Some(pos) = list
+                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid)
+                            && let Some(pos) = list
                                 .iter()
                                 .position(|x| Format::Ttlv.encode(x).ok() == Some(cb.clone()))
-                            {
-                                list[pos] = clone_item(&n)?;
-                            }
+                        {
+                            list[pos] = clone_item(&n)?;
                         }
                         build_success_batch_item(
                             op,
@@ -204,10 +205,9 @@ impl UpstreamKmipTransport for ProgrammableUpstream {
                         .as_ref()
                         .and_then(|p| find_child(p, TAG_ATTRIBUTE_REFERENCE))
                         .and_then(|r| extract_enumeration(&r))
+                        && let Some(list) = self.objects.lock().unwrap().get_mut(&uid)
                     {
-                        if let Some(list) = self.objects.lock().unwrap().get_mut(&uid) {
-                            list.retain(|i| i.tag().raw() != aref);
-                        }
+                        list.retain(|i| i.tag().raw() != aref);
                     }
                     build_success_batch_item(
                         op,
@@ -294,7 +294,10 @@ async fn test_mixed_orchestrated_batch_preserves_order_and_batch_item_ids() {
                     ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_TEMPLATE)).unwrap(),
                     ttlv_struct(
                         TAG_TEMPLATE,
-                        vec![build_1x_attribute("Cryptographic Length", None, Value::integer(256)).unwrap()],
+                        vec![
+                            build_1x_attribute("Cryptographic Length", None, Value::integer(256))
+                                .unwrap(),
+                        ],
                     )
                     .unwrap(),
                 ],
@@ -304,7 +307,11 @@ async fn test_mixed_orchestrated_batch_preserves_order_and_batch_item_ids() {
                 OP_MODIFY_ATTRIBUTE,
                 Some(b"id-2"),
                 vec![
-                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("existing-1".into())).unwrap(),
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("existing-1".into()),
+                    )
+                    .unwrap(),
                     build_1x_attribute("Object Group", Some(1), Value::text_string("new-1".into()))
                         .unwrap(),
                 ],
@@ -313,7 +320,13 @@ async fn test_mixed_orchestrated_batch_preserves_order_and_batch_item_ids() {
             bi(
                 OP_CREATE,
                 Some(b"id-3"),
-                vec![ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap()],
+                vec![
+                    ttlv_item(
+                        TAG_OBJECT_TYPE,
+                        Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                    )
+                    .unwrap(),
+                ],
             ),
         ],
     );
@@ -323,7 +336,12 @@ async fn test_mixed_orchestrated_batch_preserves_order_and_batch_item_ids() {
     let resp_items = find_children(&resp, TAG_BATCH_ITEM);
     assert_eq!(resp_items.len(), 4);
 
-    let expected_ops = [OP_DISCOVER_VERSIONS, OP_REGISTER, OP_MODIFY_ATTRIBUTE, OP_CREATE];
+    let expected_ops = [
+        OP_DISCOVER_VERSIONS,
+        OP_REGISTER,
+        OP_MODIFY_ATTRIBUTE,
+        OP_CREATE,
+    ];
     let expected_ids: [&[u8]; 4] = [b"id-0", b"id-1", b"id-2", b"id-3"];
     for (i, item) in resp_items.iter().enumerate() {
         assert_eq!(
@@ -363,7 +381,11 @@ async fn test_kmip14_client_chained_to_cloud_kms_proxy_mock_provider() {
             OP_CREATE,
             None,
             vec![
-                ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap(),
+                ttlv_item(
+                    TAG_OBJECT_TYPE,
+                    Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                )
+                .unwrap(),
                 ttlv_struct(
                     TAG_TEMPLATE_ATTRIBUTE,
                     vec![
@@ -381,7 +403,11 @@ async fn test_kmip14_client_chained_to_cloud_kms_proxy_mock_provider() {
     assert_eq!(extract_protocol_version(&create_resp), Some((1, 4)));
     let key_id = extract_text_string(
         &find_child(
-            &find_child(&find_child(&create_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap(),
+            &find_child(
+                &find_child(&create_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESPONSE_PAYLOAD,
+            )
+            .unwrap(),
             TAG_UNIQUE_IDENTIFIER,
         )
         .unwrap(),
@@ -403,7 +429,11 @@ async fn test_kmip14_client_chained_to_cloud_kms_proxy_mock_provider() {
         .unwrap();
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&act_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_STATUS).unwrap()
+            &find_child(
+                &find_child(&act_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_STATUS
+            )
+            .unwrap()
         ),
         Some(STATUS_SUCCESS)
     );
@@ -425,7 +455,11 @@ async fn test_kmip14_client_chained_to_cloud_kms_proxy_mock_provider() {
         .unwrap();
     let ct = extract_byte_string(
         &find_child(
-            &find_child(&find_child(&enc_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap(),
+            &find_child(
+                &find_child(&enc_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESPONSE_PAYLOAD,
+            )
+            .unwrap(),
             TAG_DATA,
         )
         .unwrap(),
@@ -450,7 +484,11 @@ async fn test_kmip14_client_chained_to_cloud_kms_proxy_mock_provider() {
         .unwrap();
     let pt = extract_byte_string(
         &find_child(
-            &find_child(&find_child(&dec_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap(),
+            &find_child(
+                &find_child(&dec_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESPONSE_PAYLOAD,
+            )
+            .unwrap(),
             TAG_DATA,
         )
         .unwrap(),
@@ -495,7 +533,9 @@ async fn test_http_ttlv_json_and_xml_over_kmip1x_bridge_server() {
             .position(|w| w == b"\r\n\r\n")
             .expect("HTTP response separator");
         let resp_body = &resp_buf[sep + 4..];
-        let decoded = format.decode(resp_body).expect("response decodes in same format");
+        let decoded = format
+            .decode(resp_body)
+            .expect("response decodes in same format");
         assert_eq!(extract_protocol_version(&decoded), Some((1, 4)));
     }
 
@@ -536,21 +576,24 @@ async fn test_authentication_and_message_extension_preserved_end_to_end() {
 
     let auth = ttlv_struct(
         TAG_AUTHENTICATION,
-        vec![ttlv_struct(
-            TAG_CREDENTIAL,
-            vec![
-                ttlv_item(TAG_CREDENTIAL_TYPE, Value::enumeration(1)).unwrap(), // Username & Password
-                ttlv_struct(
-                    TAG_CREDENTIAL_VALUE,
-                    vec![
-                        ttlv_item(0x0042_0099, Value::text_string("legacy-svc".into())).unwrap(),
-                        ttlv_item(0x0042_00A1, Value::text_string("s3cr3t".into())).unwrap(),
-                    ],
-                )
-                .unwrap(),
-            ],
-        )
-        .unwrap()],
+        vec![
+            ttlv_struct(
+                TAG_CREDENTIAL,
+                vec![
+                    ttlv_item(TAG_CREDENTIAL_TYPE, Value::enumeration(1)).unwrap(), // Username & Password
+                    ttlv_struct(
+                        TAG_CREDENTIAL_VALUE,
+                        vec![
+                            ttlv_item(0x0042_0099, Value::text_string("legacy-svc".into()))
+                                .unwrap(),
+                            ttlv_item(0x0042_00A1, Value::text_string("s3cr3t".into())).unwrap(),
+                        ],
+                    )
+                    .unwrap(),
+                ],
+            )
+            .unwrap(),
+        ],
     )
     .unwrap();
 
@@ -566,7 +609,13 @@ async fn test_authentication_and_message_extension_preserved_end_to_end() {
     let mut create_bi = bi(
         OP_CREATE,
         None,
-        vec![ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap()],
+        vec![
+            ttlv_item(
+                TAG_OBJECT_TYPE,
+                Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+            )
+            .unwrap(),
+        ],
     );
     let mut bi_children = children_of(&create_bi);
     bi_children.push(msg_ext);
@@ -632,7 +681,11 @@ async fn test_rmw_edge_cases_negative_index_delete_all_custom_attr_and_step1_err
             None,
             vec![
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("rmw-key".into())).unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Object Group".into()),
+                )
+                .unwrap(),
                 ttlv_item(TAG_ATTRIBUTE_INDEX, Value::integer(-1)).unwrap(),
             ],
         )],
@@ -641,7 +694,11 @@ async fn test_rmw_edge_cases_negative_index_delete_all_custom_attr_and_step1_err
     assert_eq!(upstream.request_count(), 0);
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&neg_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_REASON).unwrap()
+            &find_child(
+                &find_child(&neg_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_REASON
+            )
+            .unwrap()
         ),
         Some(REASON_INVALID_FIELD)
     );
@@ -655,15 +712,27 @@ async fn test_rmw_edge_cases_negative_index_delete_all_custom_attr_and_step1_err
             None,
             vec![
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("rmw-key".into())).unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Object Group".into()),
+                )
+                .unwrap(),
             ],
         )],
     );
     let del_all_resp = bridge.dispatch(&del_all_req).await.unwrap();
-    assert_eq!(upstream.request_count(), 1, "Delete without index must be 1 RTT");
+    assert_eq!(
+        upstream.request_count(),
+        1,
+        "Delete without index must be 1 RTT"
+    );
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&del_all_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_STATUS).unwrap()
+            &find_child(
+                &find_child(&del_all_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_STATUS
+            )
+            .unwrap()
         ),
         Some(STATUS_SUCCESS)
     );
@@ -698,7 +767,11 @@ async fn test_rmw_edge_cases_negative_index_delete_all_custom_attr_and_step1_err
             None,
             vec![
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("missing".into())).unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Object Group".into()),
+                )
+                .unwrap(),
                 ttlv_item(TAG_ATTRIBUTE_INDEX, Value::integer(0)).unwrap(),
             ],
         )],
@@ -706,7 +779,11 @@ async fn test_rmw_edge_cases_negative_index_delete_all_custom_attr_and_step1_err
     let fail_resp = bridge.dispatch(&fail_rmw).await.unwrap();
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&fail_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_REASON).unwrap()
+            &find_child(
+                &find_child(&fail_resp, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_REASON
+            )
+            .unwrap()
         ),
         Some(REASON_ITEM_NOT_FOUND)
     );
@@ -737,7 +814,11 @@ async fn test_aead_encrypt_and_derive_key_payload_fidelity() {
         )],
     );
     let enc_resp = bridge.dispatch(&enc_req).await.unwrap();
-    let ep = find_child(&find_child(&enc_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let ep = find_child(
+        &find_child(&enc_resp, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     assert_eq!(
         extract_byte_string(&find_child(&ep, 0x0042_00FF).unwrap()).as_deref(),
         Some([0x99u8; 16].as_slice())
@@ -751,17 +832,26 @@ async fn test_aead_encrypt_and_derive_key_payload_fidelity() {
             OP_DERIVE_KEY,
             None,
             vec![
-                ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap(),
+                ttlv_item(
+                    TAG_OBJECT_TYPE,
+                    Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                )
+                .unwrap(),
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("base-1".into())).unwrap(),
                 ttlv_item(TAG_DERIVATION_METHOD, Value::enumeration(1)).unwrap(), // PBKDF2
                 ttlv_struct(
                     TAG_DERIVATION_PARAMETERS,
-                    vec![ttlv_item(TAG_DERIVATION_DATA, Value::byte_string(vec![0x55; 16])).unwrap()],
+                    vec![
+                        ttlv_item(TAG_DERIVATION_DATA, Value::byte_string(vec![0x55; 16])).unwrap(),
+                    ],
                 )
                 .unwrap(),
                 ttlv_struct(
                     TAG_TEMPLATE_ATTRIBUTE,
-                    vec![build_1x_attribute("Cryptographic Length", None, Value::integer(256)).unwrap()],
+                    vec![
+                        build_1x_attribute("Cryptographic Length", None, Value::integer(256))
+                            .unwrap(),
+                    ],
                 )
                 .unwrap(),
             ],
@@ -804,12 +894,20 @@ async fn test_template_store_edge_cases_and_unsupported_op() {
             None,
             vec![
                 ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(tpl_id.clone())).unwrap(),
-                ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string("Object Group".into())).unwrap(),
+                ttlv_item(
+                    TAG_ATTRIBUTE_NAME,
+                    Value::text_string("Object Group".into()),
+                )
+                .unwrap(),
             ],
         )],
     );
     let ga_resp = bridge.dispatch(&ga_req).await.unwrap();
-    let gp = find_child(&find_child(&ga_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let gp = find_child(
+        &find_child(&ga_resp, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     assert_eq!(find_children(&gp, TAG_ATTRIBUTE).len(), 1);
 
     // GetAttributeList on Template
@@ -825,7 +923,11 @@ async fn test_template_store_edge_cases_and_unsupported_op() {
         ))
         .await
         .unwrap();
-    let gal_p = find_child(&find_child(&gal_resp, TAG_BATCH_ITEM).unwrap(), TAG_RESPONSE_PAYLOAD).unwrap();
+    let gal_p = find_child(
+        &find_child(&gal_resp, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
     assert!(find_children(&gal_p, TAG_ATTRIBUTE_NAME).len() >= 4);
 
     // Unsupported op (Encrypt) targeting local Template -> Operation Not Supported (0x05)
@@ -843,7 +945,11 @@ async fn test_template_store_edge_cases_and_unsupported_op() {
         .unwrap();
     assert_eq!(
         extract_enumeration(
-            &find_child(&find_child(&bad_op, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_REASON).unwrap()
+            &find_child(
+                &find_child(&bad_op, TAG_BATCH_ITEM).unwrap(),
+                TAG_RESULT_REASON
+            )
+            .unwrap()
         ),
         Some(REASON_OPERATION_NOT_SUPPORTED)
     );
@@ -877,7 +983,11 @@ async fn test_adversarial_empty_batch_and_reject_operation_policy_name() {
             OP_CREATE,
             Some(b"pol-1"),
             vec![
-                ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY)).unwrap(),
+                ttlv_item(
+                    TAG_OBJECT_TYPE,
+                    Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                )
+                .unwrap(),
                 ttlv_struct(
                     TAG_TEMPLATE_ATTRIBUTE,
                     vec![
@@ -942,25 +1052,38 @@ async fn test_32_concurrent_clients_across_all_1x_versions() {
                     OP_CREATE,
                     Some(format!("t-{task_id}").as_bytes()),
                     vec![
-                        ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY))
-                            .unwrap(),
+                        ttlv_item(
+                            TAG_OBJECT_TYPE,
+                            Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                        )
+                        .unwrap(),
                         ttlv_struct(
                             TAG_TEMPLATE_ATTRIBUTE,
                             vec![
-                                build_1x_attribute("Cryptographic Length", None, Value::integer(256))
-                                    .unwrap(),
+                                build_1x_attribute(
+                                    "Cryptographic Length",
+                                    None,
+                                    Value::integer(256),
+                                )
+                                .unwrap(),
                             ],
                         )
                         .unwrap(),
                     ],
                 )],
             );
-            let resp = b.dispatch(&req).await.expect("concurrent dispatch succeeds");
+            let resp = b
+                .dispatch(&req)
+                .await
+                .expect("concurrent dispatch succeeds");
             assert_eq!(extract_protocol_version(&resp), Some((1, minor)));
             assert_eq!(
                 extract_enumeration(
-                    &find_child(&find_child(&resp, TAG_BATCH_ITEM).unwrap(), TAG_RESULT_STATUS)
-                        .unwrap()
+                    &find_child(
+                        &find_child(&resp, TAG_BATCH_ITEM).unwrap(),
+                        TAG_RESULT_STATUS
+                    )
+                    .unwrap()
                 ),
                 Some(STATUS_SUCCESS)
             );
