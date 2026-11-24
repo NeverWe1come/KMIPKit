@@ -296,7 +296,7 @@ class PythonKmipDriver:
                 return "the high-level request model is available only for the selected attribute or asynchronous operation"
             return "the pinned Python package exposes no high-level request model for this operation; select typed-protocol"
         if api_level == "generic-ttlv":
-            return "the pinned Python client has no public outbound generic-TTLV request API"
+            return "no generic TTLV recipe for this case or connection"
         if workflow == "server_to_client":
             return "the pinned Python package provides a KMIP client and no server-initiated Request Message handler"
         if workflow == "multipart_streaming":

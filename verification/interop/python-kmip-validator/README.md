@@ -73,3 +73,8 @@ Export `KMIPKIT_INTEROP_LIBRARY_COMMIT` before building the wheel and invoking
 the campaign to select a specific common source revision. In a source revision
 with the Query decoder correction, the 3.0 scenario checks the decoded
 operation list for equality, including order.
+
+The `generic-ttlv` route constructs and sends the read-only Query and
+Discover Versions probes in KMIP 2.0 and 2.1. It uses the installed
+KMIPKit tag and response models and Python's certificate-authenticated
+raw TLS transport. This route requires the TTLV encoding.

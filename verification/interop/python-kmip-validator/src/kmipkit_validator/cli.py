@@ -22,6 +22,7 @@ from .contract import (
     validate_artifact,
     validate_local_inputs,
 )
+from . import generic
 from .driver import LocalRecipeUnavailable, PythonKmipDriver
 from .reporter import write_interop_reports
 
@@ -135,19 +136,23 @@ def _make_report(
     return report
 
 
+def _supports_exchange(case, connection):
+    if connection["api_level"] == "generic-ttlv":
+        return generic.supports(case, connection)
+    return PythonKmipDriver.supports(case, connection["api_level"])
+
+
 def _plan(connection: dict[str, Any], catalog: dict[str, Any], catalog_bytes: bytes) -> dict[str, Any]:
     cases = applicable_cases(catalog, connection["protocol_version"])
     planned_cases = []
     for case in cases:
         local = case["execution"]["mode"] == "local_model"
         limitation = (
-            PythonKmipDriver.local_recipe_limitation(case)
-            if local
+            PythonKmipDriver.local_recipe_limitation(case) if local
+            else None if _supports_exchange(case, connection)
             else PythonKmipDriver.route_limitation(case, connection["api_level"])
         )
-        available = limitation is None and (
-            local or PythonKmipDriver.supports(case, connection["api_level"])
-        )
+        available = limitation is None
         planned_case = {
             "case_id": case["case_id"],
             "operation": case["operation"],
@@ -182,7 +187,7 @@ def _run(
     executable = [
         case
         for case in applicable
-        if PythonKmipDriver.supports(case, connection["api_level"])
+        if case["execution"]["mode"] == "server_exchange" and _supports_exchange(case, connection)
         and not (
             PythonKmipDriver.requires_mutation(case)
             and not (policy.get("allow_mutations") is True and enable_mutations)
@@ -223,7 +228,7 @@ def _run(
                     _case_record(case_id, "failed", "failed", "unknown", "local TTLV model assertion failed")
                 )
             continue
-        if not PythonKmipDriver.supports(case, connection["api_level"]):
+        if not _supports_exchange(case, connection):
             reason = PythonKmipDriver.route_limitation(case, connection["api_level"])
             results.append(_case_record(case_id, "not_run", "not_checked", "unknown", reason))
             continue
@@ -241,7 +246,8 @@ def _run(
             continue
         started = datetime.now(timezone.utc)
         try:
-            observation = driver.execute_case(case)
+            observation = (generic.run(driver, case) if connection["api_level"] == "generic-ttlv"
+                           else driver.execute_case(case))
             elapsed = (datetime.now(timezone.utc) - started).total_seconds() * 1000
             expected_reasons = case.get("requires", {}).get("expected_result_reasons", [])
             if (
