@@ -79,7 +79,10 @@ and single-part SHA-256 Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. It uses
 the installed KMIPKit tag and response models and Python's certificate-authenticated
 raw TLS transport. RNG Retrieve follows the catalog's mutation opt-in.
 
-With mutation opt-in, the direct tag route also runs Create, Get, Get Attributes, Destroy,
-Archive and Recover. Each case creates an isolated AES-256 key and uses the
-server-returned Text String identifier for all follow-up exchanges. The
-validator checks the response identifier and performs cleanup with Destroy.
+With mutation opt-in, the direct tag route also runs Create, Get, Get
+Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
+Each case uses the Text String identifier returned when it creates an isolated
+AES-256 key. The lifecycle checks validate the response identifier and confirm
+cleanup with Destroy. An activated key is revoked before Destroy.
+The typed and Fluent Activate and Revoke recipes check the response identifier
+and use the isolated key lifecycle as well.

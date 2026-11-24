@@ -1553,6 +1553,8 @@ class PythonKmipDriver:
                         observed.public_key_unique_identifier,
                         *(observed.split_key_unique_identifiers or ()),
                         *(payload.unique_identifier for payload in (
+                            getattr(observed, "activate_response", None),
+                            getattr(observed, "revoke_response", None),
                             getattr(observed, "create_group_response", None),
                             getattr(observed, "create_user_response", None),
                             getattr(observed, "create_credential_response", None),
@@ -1832,6 +1834,7 @@ class PythonKmipDriver:
         algorithm = {"AES": 3, "RSA": 4, "ECDSA": 6, "HMAC_SHA256": 9}.get(algorithm_name, 3)
         bits = int(test_case.get("requires", {}).get("key_length", 256))
         outcome: dict[str, Any] | None = None
+        activation_attempted = False
         try:
             if setup_required:
                 attributes = self._fixture_attributes(
@@ -1869,6 +1872,18 @@ class PythonKmipDriver:
                             return outcome
                 if operation == "Signature Verify" and len(created_ids) > 1:
                     target_identifier = created_ids[1]
+            if operation == "Revoke":
+                activation_attempted = True
+                activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated["status"] != "passed":
+                    activation_attempted = activated.get("result_status_code") in (None, 0)
+                    outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
+                    return outcome
+                if target_identifier not in activated.get("_identifiers", ()):
+                    outcome = {"status": "failed", "library_correctness": "failed",
+                               "server_compatibility": "unknown", "parity": "not_compared",
+                               "diagnostic": "Activate setup returned a different identifier"}
+                    return outcome
             if operation in {"Deactivate", "Obliterate"}:
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
                 if activated["status"] != "passed":
@@ -1979,7 +1994,12 @@ class PythonKmipDriver:
                     target = self._build_high_level_item(test_case, target_identifier, name=unique_name)
                 else:
                     target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
+            activation_attempted = operation == "Activate"
             result = self._exchange(target)
+            if (operation in {"Activate", "Revoke"} and result["status"] == "passed"
+                    and target_identifier not in result.get("_identifiers", ())):
+                result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                              diagnostic="KMIP lifecycle response returned a different identifier")
             if operation in self._CREATES_OBJECTS and result["status"] == "passed":
                 for identifier in result.get("_identifiers", []):
                     if identifier not in identifiers:
@@ -1990,6 +2010,17 @@ class PythonKmipDriver:
             if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)
         finally:
+            if activation_attempted and (outcome is None or outcome.get("result_status_code") in (None, 0)):
+                try:
+                    with self._build_item(test_case | {"operation": "Revoke"}, target_identifier, name=unique_name) as revoke:
+                        cleanup = self._exchange(revoke)
+                    revoked = (cleanup["status"] == "passed"
+                               and target_identifier in cleanup.get("_identifiers", ()))
+                except Exception:
+                    revoked = False
+                if not revoked and outcome is not None:
+                    outcome.update(status="failed", library_correctness="not_checked",
+                                   server_compatibility="unknown", diagnostic="test fixture Revoke cleanup failed")
             for identifier in reversed(identifiers):
                 try:
                     cleanup = self._exchange(self._extensions.client_batch_item_destroy(identifier))
