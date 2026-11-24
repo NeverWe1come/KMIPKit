@@ -410,7 +410,9 @@ class ControlledTlsPeerTest {
     @ParameterizedTest
     @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
             "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59",
-            "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39"})
+            "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39",
+            "2.0,test-op-locate,8", "2.1,test-op-locate,8",
+            "2.0,test-crypto-rng-retrieve-rng-32,37", "2.1,test-crypto-rng-retrieve-rng-32,37"})
     void genericTagsReachThePeerThroughMain(String version, String caseId, int operation) throws Exception {
         var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         var mapper = new ObjectMapper();
@@ -424,8 +426,10 @@ class ControlledTlsPeerTest {
         int minor = Integer.parseInt(version.substring(2));
         byte[] offered = structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
         byte[] requestPayload = switch (operation) {
+            case 8 -> structure(0x420079, item(0x42004f, 2, intBytes(1)), item(0x4200d4, 2, intBytes(0)));
             case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
             case 30 -> structure(0x420079, offered);
+            case 37 -> structure(0x420079, item(0x4200c4, 2, intBytes(32)));
             case 39 -> structure(0x420079, structure(0x42002b, item(0x420038, 5, intBytes(6))),
                     item(0x4200c2, 8, new byte[] {97, 98, 99}));
             default -> structure(0x420079);
@@ -437,36 +441,45 @@ class ControlledTlsPeerTest {
         };
         byte[] serverPem = fixture("server-cert.pem");
         byte[] clientPem = fixture("client-cert.pem");
-        for (boolean matchingVersion : List.of(true, false)) {
+        for (boolean validResponse : List.of(true, false)) {
             try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
                     certificate(clientPem))) {
                 var config = (ObjectNode) mapper.readTree(connectionJson(listener.getLocalPort(),
-                        serverPem, clientPem, fixture("client-key.pem"), false, "generic-ttlv"));
+                        serverPem, clientPem, fixture("client-key.pem"), operation == 37, "generic-ttlv"));
                 Path connection = temporaryDirectory.resolve("generic-connection.json");
                 mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
                 byte[] response;
                 if (operation == 39) {
                     byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(
-                            matchingVersion ? new byte[] {97, 98, 99} : new byte[] {0});
+                            validResponse ? new byte[] {97, 98, 99} : new byte[] {0});
                     response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, digest));
+                } else if (operation == 37) {
+                    response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, new byte[validResponse ? 32 : 31]));
+                } else if (operation == 8) {
+                    byte[] total = item(0x4200d5, 2, intBytes(2));
+                    byte[] identifier = item(0x420094, 7, "known-id".getBytes(StandardCharsets.US_ASCII));
+                    response = validResponse ? legacyKeyResponse(minor, operation, total, identifier)
+                            : legacyKeyResponse(minor, operation, total, identifier,
+                                    item(0x420094, 7, "second-id".getBytes(StandardCharsets.US_ASCII)));
                 } else {
-                    response = legacyKeyResponse(matchingVersion ? minor : 1 - minor, operation, fields);
+                    response = legacyKeyResponse(validResponse ? minor : 1 - minor, operation, fields);
                 }
                 var peer = new FutureTask<>(() -> serveOneResponse(listener, response));
                 Thread thread = new Thread(peer, "java-validator-generic-tags");
                 thread.setDaemon(true);
                 thread.start();
-                Path output = temporaryDirectory.resolve("generic-output-" + matchingVersion);
+                Path output = temporaryDirectory.resolve("generic-output-" + validResponse);
                 try (var diagnostics = new java.io.PrintStream(new java.io.ByteArrayOutputStream())) {
-                    int exit = Main.execute(new String[] {"run", "--connection", connection.toString(),
+                    var args = new ArrayList<>(List.of("run", "--connection", connection.toString(),
                             "--catalog", catalogFile.toString(), "--artifact-manifest",
-                            System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()},
-                            diagnostics, diagnostics);
-                    assertEquals(matchingVersion ? 0 : 1, exit);
+                            System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()));
+                    if (operation == 37) args.add("--enable-mutations");
+                    int exit = Main.execute(args.toArray(String[]::new), diagnostics, diagnostics);
+                    assertEquals(validResponse ? 0 : 1, exit);
                 }
                 assertTrue(contains(peer.get(10, TimeUnit.SECONDS), requestPayload));
                 var evidence = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
-                assertEquals(matchingVersion ? "passed" : "failed", evidence.path("status").asText());
+                assertEquals(validResponse ? "passed" : "failed", evidence.path("status").asText());
             }
         }
     }
