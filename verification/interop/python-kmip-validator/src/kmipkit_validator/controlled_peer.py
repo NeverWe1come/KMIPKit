@@ -481,6 +481,7 @@ class ControlledTlsPeer:
         result_statuses: list[int] | None = None,
         result_reasons: list[int | None] | None = None,
         response_factory: Callable[[bytes], bytes] | None = None,
+        connection_count: int = 1,
     ) -> None:
         self.status = status
         self.reason = reason
@@ -494,6 +495,7 @@ class ControlledTlsPeer:
         self.result_statuses = result_statuses
         self.result_reasons = result_reasons
         self.response_factory = response_factory
+        self.connection_count = connection_count
         self.peer_observed_effects: list[str] = []
         self.peer_observed_state_before_sha256: str | None = None
         self.peer_observed_state_after_sha256: str | None = None
@@ -518,91 +520,95 @@ class ControlledTlsPeer:
             context.load_verify_locations(cafile=PKI / "client-cert.pem")
             context.verify_mode = ssl.CERT_REQUIRED
             self.listener.settimeout(2 if self.expect_no_connection else 10)
-            try:
-                raw, _ = self.listener.accept()
-            except TimeoutError as error:
-                if not self.expect_no_connection:
-                    raise error
-                return
-            with raw, context.wrap_socket(raw, server_side=True) as stream:
-                if stream.version() != "TLSv1.3" or not stream.getpeercert(binary_form=True):
-                    raise AssertionError("TLS 1.3 mutual authentication was not negotiated")
-                if self.transport == "https":
-                    request, self.http_headers = read_https_request(stream)
-                elif self.encoding == "TTLV":
-                    request = frame(stream)
-                else:
-                    request = read_raw_document(stream, self.encoding)
-                self.requests.append(request)
-                if self.response_factory is not None:
-                    response = self.response_factory(request)
-                    self.responses.append(response)
-                    stream.sendall(response)
-                    return
-                self.request_observation = request_observation(request, self.encoding)
-                statuses = self.result_statuses or [self.status] * len(
-                    self.request_observation["operations"]
-                )
-                continuation = self.request_observation.get("batch_error_continuation_option")
-                if (continuation == 2 and statuses and statuses[0] == 1
-                        and len(self.request_observation["operations"]) > 1):
-                    self.peer_observed_effects = ["first_item_failed", "second_item_not_executed"]
-                elif (continuation == 1 and len(statuses) > 1
-                      and statuses[0] == 1 and statuses[1] == 0):
-                    self.peer_observed_effects = ["first_item_failed", "second_item_executed"]
-                if self.peer_observed_effects:
-                    # The catalogued Stop/Continue cases are read-only, so their
-                    # controlled managed-object snapshot is unchanged.
-                    self.peer_observed_state_before_sha256 = _read_only_fixture_state_sha256()
-                if self.encoding == "TTLV":
-                    if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
-                        response = discover_versions_response(
-                            request, self.status, self.reason, self.protocol_minor,
-                            include_response_extension=self.include_response_extension,
-                        )
-                    else:
-                        response = ping_response(
-                            request, self.status, self.reason, self.protocol_minor,
-                            self.cancellation_result, self.asynchronous_correlation_value,
-                            self.include_response_extension, self.result_statuses,
-                            self.result_reasons,
-                        )
-                else:
-                    response = text_response(
-                        str(self.request_observation["operation"]),
-                        self.encoding,
-                        self.status,
-                        self.reason,
-                        self.protocol_minor,
-                        supported_versions=((2, 1),)
-                        if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions"
-                        else None,
-                        operations=[str(value) for value in self.request_observation["operations"]],
-                        batch_ids=[None if value is None else str(value)
-                                   for value in self.request_observation.get("batch_ids", [])],
-                        result_statuses=self.result_statuses,
-                        result_reasons=self.result_reasons,
-                    )
-                self.responses.append(response)
-                if self.transport == "https":
-                    content_type = {
-                        "TTLV": "application/octet-stream",
-                        "JSON": "application/json",
-                        "XML": "text/xml",
-                    }[self.encoding]
-                    stream.sendall(
-                        f"HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\n".encode("ascii")
-                        + f"Content-Length: {len(response)}\r\nConnection: close\r\n\r\n".encode("ascii")
-                        + response
-                    )
-                else:
-                    stream.sendall(response)
-                if self.peer_observed_effects:
-                    self.peer_observed_state_after_sha256 = _read_only_fixture_state_sha256()
+            for _ in range(self.connection_count):
+                self._serve_one(context)
         except BaseException as error:  # Captured and surfaced by the owning test.
             self.error.put(error)
         finally:
             self.listener.close()
+
+    def _serve_one(self, context: ssl.SSLContext) -> None:
+        try:
+            raw, _ = self.listener.accept()
+        except TimeoutError as error:
+            if not self.expect_no_connection:
+                raise error
+            return
+        with raw, context.wrap_socket(raw, server_side=True) as stream:
+            if stream.version() != "TLSv1.3" or not stream.getpeercert(binary_form=True):
+                raise AssertionError("TLS 1.3 mutual authentication was not negotiated")
+            if self.transport == "https":
+                request, self.http_headers = read_https_request(stream)
+            elif self.encoding == "TTLV":
+                request = frame(stream)
+            else:
+                request = read_raw_document(stream, self.encoding)
+            self.requests.append(request)
+            if self.response_factory is not None:
+                response = self.response_factory(request)
+                self.responses.append(response)
+                stream.sendall(response)
+                return
+            self.request_observation = request_observation(request, self.encoding)
+            statuses = self.result_statuses or [self.status] * len(
+                self.request_observation["operations"]
+            )
+            continuation = self.request_observation.get("batch_error_continuation_option")
+            if (continuation == 2 and statuses and statuses[0] == 1
+                    and len(self.request_observation["operations"]) > 1):
+                self.peer_observed_effects = ["first_item_failed", "second_item_not_executed"]
+            elif (continuation == 1 and len(statuses) > 1
+                  and statuses[0] == 1 and statuses[1] == 0):
+                self.peer_observed_effects = ["first_item_failed", "second_item_executed"]
+            if self.peer_observed_effects:
+                # The catalogued Stop/Continue cases are read-only, so their
+                # controlled managed-object snapshot is unchanged.
+                self.peer_observed_state_before_sha256 = _read_only_fixture_state_sha256()
+            if self.encoding == "TTLV":
+                if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
+                    response = discover_versions_response(
+                        request, self.status, self.reason, self.protocol_minor,
+                        include_response_extension=self.include_response_extension,
+                    )
+                else:
+                    response = ping_response(
+                        request, self.status, self.reason, self.protocol_minor,
+                        self.cancellation_result, self.asynchronous_correlation_value,
+                        self.include_response_extension, self.result_statuses,
+                        self.result_reasons,
+                    )
+            else:
+                response = text_response(
+                    str(self.request_observation["operation"]),
+                    self.encoding,
+                    self.status,
+                    self.reason,
+                    self.protocol_minor,
+                    supported_versions=((2, 1),)
+                    if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions"
+                    else None,
+                    operations=[str(value) for value in self.request_observation["operations"]],
+                    batch_ids=[None if value is None else str(value)
+                               for value in self.request_observation.get("batch_ids", [])],
+                    result_statuses=self.result_statuses,
+                    result_reasons=self.result_reasons,
+                )
+            self.responses.append(response)
+            if self.transport == "https":
+                content_type = {
+                    "TTLV": "application/octet-stream",
+                    "JSON": "application/json",
+                    "XML": "text/xml",
+                }[self.encoding]
+                stream.sendall(
+                    f"HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\n".encode("ascii")
+                    + f"Content-Length: {len(response)}\r\nConnection: close\r\n\r\n".encode("ascii")
+                    + response
+                )
+            else:
+                stream.sendall(response)
+            if self.peer_observed_effects:
+                self.peer_observed_state_after_sha256 = _read_only_fixture_state_sha256()
 
     def close(self) -> None:
         self.thread.join(timeout=12)
