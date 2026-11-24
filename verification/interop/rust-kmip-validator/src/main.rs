@@ -97,7 +97,7 @@ fn dispatch(cli: Cli) -> Result<bool> {
             catalog.validate()?;
             emit(
                 &json!({ "capability_policy": "probe_all_applicable", "network_attempted": false,
-                "generic_ttlv_outbound": "read_only_query_and_discover_versions_raw_tls", "cases": catalog.test_cases.iter().map(|case| json!({"case_id": case.case_id,
+                "generic_ttlv_outbound": "read_only_query_discover_versions_and_kmip21_ping_raw_tls", "cases": catalog.test_cases.iter().map(|case| json!({"case_id": case.case_id,
                 "disposition": connection.as_ref().and_then(|c| runner::classify(case, c)).map_or("probe", |v| v.status)})).collect::<Vec<_>>() }),
             )?;
             Ok(true)
@@ -123,7 +123,7 @@ fn dispatch(cli: Cli) -> Result<bool> {
             emit(
                 &json!({"ready": result.is_ok(), "network_attempted": false, "diagnostic": result.err(),
                 "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"), "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
-                "generic_ttlv_outbound": "read_only_query_and_discover_versions_raw_tls"}),
+                "generic_ttlv_outbound": "read_only_query_discover_versions_and_kmip21_ping_raw_tls"}),
             )?;
             Ok(result.is_ok())
         }
