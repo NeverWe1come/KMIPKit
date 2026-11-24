@@ -136,6 +136,7 @@ class PythonKmipDriver:
         "Create", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
+        "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
     }
     _OPERATIONS = {
         "Discover Versions", "Ping", "Query", "Login", "Logout", "Delegated Login",
@@ -148,6 +149,10 @@ class PythonKmipDriver:
         "Delete Attribute", "Adjust Attribute", "Derive Key", "Join Split Key", "Hash", "RNG Retrieve", "RNG Seed", "Encrypt",
         "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify",
         "Poll", "Process", "Cancel", "Query Asynchronous Requests",
+    }
+    _CREATES_OBJECTS = {
+        "Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Certify",
+        "Re-certify", "Re-Provision", "Re-key", "Re-key Key Pair", "Derive Key", "Join Split Key",
     }
     _NO_OBJECT = {
         "Discover Versions", "Ping", "Query", "Login", "Logout", "Delegated Login", "Log",
@@ -277,6 +282,8 @@ class PythonKmipDriver:
     def route_limitation(cls, case: dict[str, Any], api_level: str) -> str:
         workflow = case.get("requires", {}).get("workflow_type")
         if api_level == "fluent":
+            if case.get("operation") == "Create Split Key":
+                return "the pinned Fluent Split Key builder cannot copy attributes from a public AttributeSet"
             return "the installed Python Fluent API has no equivalent recipe for this catalog case"
         if api_level == "high-level":
             if case.get("operation") in cls._HIGH_LEVEL_OPERATIONS:
@@ -308,7 +315,10 @@ class PythonKmipDriver:
             raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
         return [reference.tag(tag)]
 
-    def _build_fluent_item(self, case: dict[str, Any], identifier: Any, *, name: str) -> Any:
+    def _build_fluent_item(
+        self, case: dict[str, Any], identifier: Any, *, name: str,
+        data: bytes = b"A" * 16, auxiliary: bytes | None = None,
+    ) -> Any:
         from kmipkit import attribute_operations
         from kmipkit.fluent import Request
 
@@ -320,6 +330,26 @@ class PythonKmipDriver:
             return request.get_attributes(identifier, self._attribute_references(case)).build()
         if operation == "Get Attribute List":
             return request.get_attribute_list(identifier).build()
+        crypto_builders = {
+            "Encrypt": request.encrypt, "Decrypt": request.decrypt, "Hash": request.hash,
+            "MAC": request.mac, "MAC Verify": request.mac_verify,
+            "Sign": request.sign, "Signature Verify": request.signature_verify,
+        }
+        if operation in crypto_builders:
+            with (
+                crypto_builders[operation]() as builder,
+                self._cryptographic_parameters(case, operation) as parameters,
+            ):
+                builder.cryptographic_parameters_structure(parameters).data(data)
+                if operation != "Hash" and identifier is not None:
+                    builder.unique_identifier(identifier)
+                if operation in {"Encrypt", "Decrypt"}:
+                    builder.iv_counter_nonce(bytes(16))
+                if operation == "MAC Verify":
+                    builder.mac_data(auxiliary or bytes(32))
+                if operation == "Signature Verify":
+                    builder.signature_data(auxiliary or bytes(256))
+                return builder.build()
         if operation in {"Create", "Locate"}:
             with self._attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
                 if operation == "Create":
@@ -1764,13 +1794,29 @@ class PythonKmipDriver:
                 encrypted = self._exchange(self._build_item(test_case | {"operation": "Encrypt"}, target_identifier, name=unique_name))
                 if encrypted["status"] != "passed" or encrypted.get("_bytes") is None:
                     return encrypted
-                target = self._build_item(test_case, target_identifier, name=unique_name, data=encrypted["_bytes"], related_identifiers=identifiers)
+                if self._api_level == "fluent":
+                    target = self._build_fluent_item(
+                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"]
+                    )
+                else:
+                    target = self._build_item(
+                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"],
+                        related_identifiers=identifiers,
+                    )
             elif operation in {"MAC Verify", "Signature Verify"}:
                 source_case = test_case | {"operation": "MAC" if operation == "MAC Verify" else "Sign"}
                 signature = self._exchange(self._build_item(source_case, target_identifier, name=unique_name))
                 if signature["status"] != "passed" or signature.get("_bytes") is None:
                     return signature
-                target = self._build_item(test_case, target_identifier, name=unique_name, auxiliary=signature["_bytes"], related_identifiers=identifiers)
+                if self._api_level == "fluent":
+                    target = self._build_fluent_item(
+                        test_case, target_identifier, name=unique_name, auxiliary=signature["_bytes"]
+                    )
+                else:
+                    target = self._build_item(
+                        test_case, target_identifier, name=unique_name, auxiliary=signature["_bytes"],
+                        related_identifiers=identifiers,
+                    )
             else:
                 if self._api_level == "fluent":
                     target = self._build_fluent_item(test_case, target_identifier, name=unique_name)
@@ -1779,7 +1825,10 @@ class PythonKmipDriver:
                 else:
                     target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
             result = self._exchange(target)
-            identifiers.extend(result.get("_identifiers", []))
+            if operation in self._CREATES_OBJECTS and result["status"] == "passed":
+                for identifier in result.get("_identifiers", []):
+                    if identifier not in identifiers:
+                        identifiers.append(identifier)
             if operation == "Decrypt" and result["status"] == "passed" and result.get("_bytes") != b"A" * 16:
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown")
             outcome = result

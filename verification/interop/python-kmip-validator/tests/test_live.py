@@ -3,7 +3,7 @@
 import json
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, Mock, patch
 
 from kmipkit_validator.contract import DEFAULT_CATALOG
 from kmipkit_validator.driver import PythonKmipDriver
@@ -222,6 +222,33 @@ class ControlledExchangeTests(unittest.TestCase):
                         ["server_unsupported", "server_unsupported"],
                         [result["status"] for result in outcomes],
                     )
+
+    def test_locate_cleanup_destroys_only_the_owned_fixture(self):
+        from kmipkit import extensions
+
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        case = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-locate")
+        owned = extensions.UniqueIdentifier.text_string("owned-fixture")
+        unrelated = extensions.UniqueIdentifier.text_string("preexisting-server-object")
+        for api in ("typed-protocol", "fluent"):
+            with self.subTest(api=api):
+                driver = PythonKmipDriver.__new__(PythonKmipDriver)
+                driver._api_level = api
+                driver._extensions = Mock()
+                driver._attributes = Mock()
+                driver._build_item = Mock()
+                driver._build_fluent_item = Mock()
+                driver._exchange = Mock(side_effect=[
+                    {"status": "passed", "_identifiers": [owned]},
+                    {"status": "passed", "_identifiers": [owned, unrelated]},
+                    {"status": "passed"},
+                ])
+                self.assertEqual("passed", driver.execute_case(case)["status"])
+                self.assertEqual([call(owned)], driver._extensions.client_batch_item_destroy.call_args_list)
+                if api == "fluent":
+                    driver._build_fluent_item.assert_called_once()
+                else:
+                    driver._build_item.assert_called_once()
 
     def test_fluent_and_typed_requests_match_for_catalogued_attributes(self):
         from kmipkit import protocol_values
