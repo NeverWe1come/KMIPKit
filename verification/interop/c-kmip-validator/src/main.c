@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
         printf("capability profiles are hypotheses and do not suppress probes\n");
         printf("public C routes: typed-protocol, Fluent and local generic TTLV\n");
 #ifdef KMIPKIT_C_GENERIC_TLS
-        printf("Generic TTLV live recipes: KMIP 2.x Query and Discover Versions, KMIP 2.1 Ping via mutual TLS\n");
+        printf("Generic TTLV live recipes: KMIP 2.x Query, Discover Versions and Hash, KMIP 2.1 Ping via mutual TLS\n");
 #endif
         return 0;
     }

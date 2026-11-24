@@ -603,7 +603,7 @@ def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, 
 
 
 def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: str,
-                        operation: int, protocol_version: str = "3.0") -> int:
+                        operation: int, protocol_version: str = "3.0", *, bad_hash: bool = False) -> int:
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-draft-") as raw_directory:
         directory = Path(raw_directory)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -631,10 +631,10 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             0x02: b"",
             0x08: integer(0x4200d5, 0),
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
-            0x27: tlv(0x4200c2, 8, hashlib.sha256(b"abc").digest()),
+            0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if bad_hash else b"abc").digest()),
             0x3b: b"",
         }[operation]
-        if major < 3 and operation in (0x18, 0x1e, 0x3b):
+        if major < 3 and operation in (0x18, 0x1e, 0x27, 0x3b):
             apis = ("generic-ttlv",)
         else:
             apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
@@ -700,9 +700,9 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                                                 + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
                             client.sendall(tlv(0x42007b, 1, header + response_item))
                     _, errors = process.communicate(timeout=10)
-                    assert process.returncode == 0, errors
+                    assert process.returncode == (3 if bad_hash else 0), errors
                 row, = json.loads(result.read_text())["cases"]
-                assert row["status"] == "passed", row
+                assert row["status"] == ("failed" if bad_hash else "passed"), row
         if len(request_wires) > 1:
             assert request_wires[0] == request_wires[1]
     return 0
@@ -723,6 +723,8 @@ def main() -> int:
     if os.name == "posix":
         versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
         versioned_operation(binary, openssl, repository, "test-op-discover-versions", 0x1e, protocol_version)
+        versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27, protocol_version)
+        versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27, protocol_version, bad_hash=True)
         if protocol_version == "2.1":
             versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b, protocol_version)
     protocol_minor = int(protocol_version.split(".")[1])
