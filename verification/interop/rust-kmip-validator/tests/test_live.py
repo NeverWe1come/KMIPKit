@@ -442,7 +442,31 @@ class LiveContract(unittest.TestCase):
                     else:
                         self.assertTrue(normalized == baseline, "full-catalog normalized KMIP request/result parity differs")
 
-    def catalog_scenario(self, version, api="typed-protocol"):
+    def test_fluent_catalog_recipes_match_typed_exchanges(self):
+        operations = {
+            "Create", "Query", "Discover Versions", "Add Attribute", "Set Attribute",
+            "Modify Attribute", "Delete Attribute", "Get Usage Allocation", "RNG Retrieve",
+            "Revoke", "Get", "Get Attributes", "Get Attribute List", "Locate", "Ping",
+            "Get Constraints", "Activate", "Archive", "Recover", "Destroy",
+        }
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                cases = [
+                    case for case in CATALOG["test_cases"]
+                    if case["operation"] in operations
+                    and version in case["execution"]["protocol_versions"]
+                    and case["requires"].get("workflow_type") not in {
+                        "server_to_client", "async_poll", "batch_id_placeholder", "multipart_streaming",
+                    }
+                    and (case["operation"] != "Create"
+                         or case["requires"].get("object_type") in (None, "Symmetric Key"))
+                ]
+                self.assertGreater(len(cases), 50)
+                typed = self.catalog_scenario(version, "typed-protocol", cases)
+                fluent = self.catalog_scenario(version, "fluent", cases)
+                self.assertEqual(parity_signature(*typed), parity_signature(*fluent))
+
+    def catalog_scenario(self, version, api="typed-protocol", cases=None):
         elements = json.loads((ROOT / "verification/conformance/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
         cipher = (ROOT / "verification/interop/rust-kmip-validator/tests/fixtures/aes256-cbc.bin").read_bytes()
@@ -509,7 +533,8 @@ class LiveContract(unittest.TestCase):
                 results.append(ttlv(0x42000f, 1, fields))
             header = ttlv(0x42007a, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]), ttlv(0x420092, 9, 1794268800), ttlv(0x42000d, 2, len(results))])
             return ttlv(0x42007b, 1, [header, *results])
-        cases = CATALOG["test_cases"]
+        full_catalog = cases is None
+        cases = CATALOG["test_cases"] if full_catalog else cases
         environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"] or version == "2.0" and c["operation"] in {"Ping", "Process", "Query Asynchronous Requests", "Set Defaults"}}
         with ControlledPeer(self.pki, answer) as peer:
             _, report = self.command(self.connection(peer.port, version=version, api=api, mutations=True), cases)
@@ -518,7 +543,7 @@ class LiveContract(unittest.TestCase):
             failures = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "failed"]
             self.assertEqual(failures, [])
             by_id = {c["case_id"]: c for c in report["cases"]}
-            if version == "2.0":
+            if full_catalog and version == "2.0":
                 for name in ("ping", "process", "query-asynchronous-requests", "set-defaults"):
                     self.assertIn("not_applicable:", by_id["test-op-" + name]["diagnostic"])
                 for name in ("login", "logout", "delegated-login"):
@@ -527,9 +552,9 @@ class LiveContract(unittest.TestCase):
                     self.assertEqual(result["server_compatibility"], "supported")
                     self.assertEqual(result["library_correctness"], "passed")
             self.assertGreater(len(peer.operations), len(cases))
-            self.assertEqual(report["summary"]["total"], 218)
+            self.assertEqual(report["summary"]["total"], len(cases))
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
-            if evidence:
+            if evidence and full_catalog:
                 output = Path(evidence)
                 output.mkdir(parents=True, exist_ok=True)
                 (output / f"rust-controlled-{version}-{api}.json").write_text(json.dumps(report, indent=2) + "\n")
