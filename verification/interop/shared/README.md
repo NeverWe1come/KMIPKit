@@ -134,6 +134,32 @@ or `--live-report` on `campaign.py`. The report displays these results by
 catalog case, language and execution settings. An individual planned obligation
 receives a result when the consumer supplies evidence for its obligation ID.
 
+### Generic TTLV decode checks from OASIS scenarios
+
+`tools/oasis_ttlv.py` converts the pinned XML request and response messages
+into generic TTLV vectors with deterministic bindings for fixture symbols.
+With `--runner LANGUAGE EXECUTABLE`, the installed library decodes the vectors
+and the tool compares the ordered tag, type and child-count sequence for each
+message. The output retains fixture digests and artifact provenance.
+
+Supply the Rust `kmip30-campaign` binary, the C `kmip30_c_constructors` binary,
+the Java `tools/run_draft_campaign.sh` script, or the Python
+`tools/run_campaign.sh` script for the respective language. Repeat
+`--runner` to check multiple languages. Run the Python wrapper with the
+installed wheel environment activated.
+
+```sh
+python3 verification/interop/shared/tools/oasis_ttlv.py \
+  --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+  --output /tmp/oasis-ttlv.jsonl --require-complete
+python3 verification/interop/shared/tools/campaign.py \
+  --oasis-ttlv-report /tmp/oasis-ttlv.jsonl --output-dir /tmp/kmip-campaign
+```
+
+Each XML scenario step shows its request and response codec outcomes.
+Scenario execution remains pending until it has controlled or live
+exchange evidence.
+
 To launch a campaign-capable consumer, supply `--runner LANGUAGE EXECUTABLE`
 once per language and specify the scope. The runner is invoked directly
 with `--plan`, `--matrix-sha256`, `--scope` and `--evidence`. A live campaign

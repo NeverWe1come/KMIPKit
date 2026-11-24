@@ -20,6 +20,7 @@ if __package__ in (None, ""):
 
 from verification.interop.shared.tools.matrix.generator import selected_cells
 from verification.interop.shared.tools.catalog_reports import load_catalog_reports
+from verification.interop.shared.tools.oasis_ttlv import attach_decoder_evidence
 
 LANGUAGES = ("rust", "c", "java", "python")
 VERSIONS = ("2.0", "2.1", "3.0")
@@ -246,6 +247,8 @@ def write_report(destination, result, catalog_runs=()):
         lines.append(f"- Parity {status}: {count}")
     for status, count in overview["server_compatibility"].items():
         lines.append(f"- Live {status.replace('_', ' ')}: {count}")
+    for language, counts in overview.get("oasis_ttlv", {}).get("message_checks", {}).items():
+        lines.append(f"- {language} OASIS TTLV messages: " + ", ".join(f"{count} {status}" for status, count in counts.items()))
     if catalog_runs:
         lines.extend(("", "## Installed-validator execution catalog", "",
                       "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
@@ -344,6 +347,8 @@ def main():
                         help="Import an installed validator's controlled execution-catalog report")
     parser.add_argument("--live-report", type=Path, action="append", default=[],
                         help="Import an installed validator's live execution-catalog report")
+    parser.add_argument("--oasis-ttlv-report", type=Path,
+                        help="Import decoder evidence for OASIS request and response shapes")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -373,6 +378,8 @@ def main():
         catalog = json.loads((SHARED / "catalog/kmipkit-2x-matrix-catalog.json").read_text(encoding="utf-8"))
         operations = {case["case_id"]: case.get("requires", {}).get("operation") for case in catalog["test_cases"]}
         result = report(matrix, digest, runs, languages, profile, operations)
+        if args.oasis_ttlv_report:
+            attach_decoder_evidence(args.oasis_ttlv_report, result, args.library_commit)
         result["runner_failures"] = failures
         catalog_runs = load_catalog_reports(
             [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],
