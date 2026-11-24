@@ -44,6 +44,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
                     "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
         }
+        if (JavaKmipDriver.attributeRead(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The operation reads attributes from a newly created and isolated key.");
+        }
         return routeFor(testCase.operation());
     }
 

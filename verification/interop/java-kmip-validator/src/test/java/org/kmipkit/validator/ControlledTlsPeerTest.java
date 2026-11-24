@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -169,8 +171,9 @@ class ControlledTlsPeerTest {
         assertEquals("passed", outcome.status(), outcome.toString());
     }
 
-    @Test
-    void typedCreateUsesAnIsolatedNameAndDestroysTheCreatedObject() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"typed-protocol,false", "fluent,false", "typed-protocol,true", "fluent,true"})
+    void isolatedKeyRecipesReadAndCleanUp(String apiLevel, boolean readLength) throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
         byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -178,18 +181,18 @@ class ControlledTlsPeerTest {
         X509Certificate serverCertificate = certificate(serverCertificatePem);
         X509Certificate clientCertificate = certificate(clientCertificatePem);
         SSLServerSocket listener = listener(serverCertificate, privateKey(serverPrivateKeyPem), clientCertificate);
-        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveCreateCleanup(listener));
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveCreateCleanup(listener, readLength));
         Thread peerThread = new Thread(peer, "java-validator-controlled-create-peer");
         peerThread.setDaemon(true);
         peerThread.start();
 
         Path connectionFile = temporaryDirectory.resolve("create-connection.json");
         Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
-                clientCertificatePem, clientPrivateKeyPem, true));
+                clientCertificatePem, clientPrivateKeyPem, true, apiLevel));
         var connection = ConnectionConfig.load(connectionFile);
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
         var testCase = catalog.cases().stream()
-                .filter(value -> value.caseId().equals("test-op-create"))
+                .filter(value -> value.caseId().equals(readLength ? "test-attr-cryptographic-length" : "test-op-create"))
                 .findFirst().orElseThrow();
 
         JavaKmipDriver.CaseOutcome outcome;
@@ -200,12 +203,17 @@ class ControlledTlsPeerTest {
         }
         assertEquals("passed", outcome.status(), outcome.toString());
         List<byte[]> requests = peer.get(15, TimeUnit.SECONDS);
-        assertEquals(2, requests.size());
+        assertEquals(readLength ? 3 : 2, requests.size());
+        if (readLength) {
+            assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
+            assertTrue(contains(requests.get(1), item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+        }
+        byte[] cleanup = requests.get(requests.size() - 1);
         assertTrue(contains(requests.get(0), new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The controlled peer must receive Create before cleanup.");
         assertTrue(contains(requests.get(0), new byte[] {0x42, 0x00, 0x53, 1}),
                 "The Create request must include an isolated Name attribute.");
-        assertTrue(contains(requests.get(0), "kmipkit-create-".getBytes(StandardCharsets.UTF_8)),
+        assertTrue(contains(requests.get(0), (readLength ? "kmipkit-attr-cryptographic-length-" : "kmipkit-create-").getBytes(StandardCharsets.UTF_8)),
                 "The Create Name must use the catalog's unique prefix.");
         assertTrue(contains(requests.get(0), item(0x420054, 5, intBytes(1))),
                 "The Create Name must include the Name Type enumeration.");
@@ -213,19 +221,19 @@ class ControlledTlsPeerTest {
                 "The isolated object must request AES.");
         assertTrue(contains(requests.get(0), item(0x42002a, 2, intBytes(256))),
                 "The isolated object must request a 256-bit key.");
-        assertTrue(contains(requests.get(1), new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4, 0, 0, 0, 0x14}),
+        assertTrue(contains(cleanup, new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4, 0, 0, 0, 0x14}),
                 "The created object must be destroyed in a separate exchange.");
-        assertTrue(contains(requests.get(1), item(0x420094, 7,
+        assertTrue(contains(cleanup, item(0x420094, 7,
                 CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey) throws Exception {
-        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, false);
+        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, false, "typed-protocol");
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
-                                  byte[] clientPrivateKey, boolean allowMutations) throws Exception {
+                                  byte[] clientPrivateKey, boolean allowMutations, String apiLevel) throws Exception {
         Path serverCert = temporaryDirectory.resolve("server-cert.pem");
         Path clientCert = temporaryDirectory.resolve("client-cert.pem");
         Path clientKey = temporaryDirectory.resolve("client-key.pem");
@@ -238,7 +246,7 @@ class ControlledTlsPeerTest {
         root.put("protocol_version", "2.1");
         root.put("transport", "raw_tls");
         root.put("encoding", "TTLV");
-        root.put("api_level", "typed-protocol");
+        root.put("api_level", apiLevel);
         ObjectNode endpoints = root.putObject("endpoints");
         endpoints.putObject("raw_tls").put("host", "127.0.0.1").put("port", port);
         ObjectNode tls = root.putObject("tls");
@@ -345,9 +353,10 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, responseItem);
     }
 
-    private static List<byte[]> serveCreateCleanup(SSLServerSocket listener) throws Exception {
+    private static List<byte[]> serveCreateCleanup(SSLServerSocket listener, boolean readLength) throws Exception {
         var requests = new ArrayList<byte[]>();
-        for (int exchange = 0; exchange < 2; exchange++) {
+        int[] operations = readLength ? new int[] {1, 0x0b, 0x14} : new int[] {1, 0x14};
+        for (int exchange = 0; exchange < operations.length; exchange++) {
             try (SSLSocket socket = (SSLSocket) listener.accept()) {
                 socket.setEnabledProtocols(new String[] {"TLSv1.3"});
                 socket.setSoTimeout(10_000);
@@ -355,11 +364,15 @@ class ControlledTlsPeerTest {
                 byte[] request = readTtlv(socket.getInputStream());
                 requests.add(request);
                 byte[] operation = new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4,
-                        0, 0, 0, (byte) (exchange == 0 ? 1 : 0x14)};
+                        0, 0, 0, (byte) operations[exchange]};
                 if (!contains(request, operation)) {
                     throw new AssertionError("The controlled create recipe sent an unexpected operation.");
                 }
-                byte[] response = exchange == 0 ? createResponse() : destroyResponse();
+                byte[] response = switch (operations[exchange]) {
+                    case 1 -> createResponse();
+                    case 0x0b -> lengthResponse();
+                    default -> destroyResponse();
+                };
                 socket.getOutputStream().write(response);
                 socket.getOutputStream().flush();
             }
@@ -380,6 +393,17 @@ class ControlledTlsPeerTest {
                 item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
                 item(0x42007f, 5, intBytes(0)), payload);
         return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] lengthResponse() throws Exception {
+        return structure(0x42007b,
+                structure(0x42007a,
+                        structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1))),
+                        item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1))),
+                structure(0x42000f, item(0x42005c, 5, intBytes(0x0b)), item(0x42007f, 5, intBytes(0)),
+                        structure(0x42007c,
+                                item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)),
+                                structure(0x420125, item(0x42002a, 2, intBytes(256))))));
     }
 
     private static byte[] destroyResponse() throws Exception {

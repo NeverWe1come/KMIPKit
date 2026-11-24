@@ -32,7 +32,7 @@ public record ConnectionConfig(
     private static final Set<String> VERSIONS = Set.of("2.0", "2.1");
     private static final Set<String> TRANSPORTS = Set.of("raw_tls", "https");
     private static final Set<String> ENCODINGS = Set.of("TTLV", "JSON", "XML");
-    private static final Set<String> API_LEVELS = Set.of("high-level", "typed-protocol", "generic-ttlv");
+    private static final Set<String> API_LEVELS = Set.of("high-level", "typed-protocol", "fluent", "generic-ttlv");
     private static final ObjectMapper JSON = new ObjectMapper(
             com.fasterxml.jackson.core.JsonFactory.builder()
                     .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
