@@ -190,11 +190,17 @@ impl ProxyServer {
         config: &ProxyConfig,
         pki: Option<&AutoPki>,
     ) -> Result<rustls::ServerConfig, String> {
-        let (cert_der, key_der, ca_der) = if let Some(pki) = pki {
+        let (cert_chain, private_key, ca_certs) = if let Some(pki) = pki {
             (
-                pki.server_cert_der.clone(),
-                pki.server_key_der.to_vec(),
-                Some(pki.ca_cert_der.clone()),
+                vec![rustls::pki_types::CertificateDer::from(
+                    pki.server_cert_der.clone(),
+                )],
+                rustls::pki_types::PrivateKeyDer::Pkcs8(
+                    rustls::pki_types::PrivatePkcs8KeyDer::from(pki.server_key_der.to_vec()),
+                ),
+                vec![rustls::pki_types::CertificateDer::from(
+                    pki.ca_cert_der.clone(),
+                )],
             )
         } else {
             let cert_path = config
@@ -213,15 +219,22 @@ impl ProxyServer {
             let key_bytes = std::fs::read(key_path)
                 .map_err(|e| format!("failed reading key file {}: {e}", key_path.display()))?;
 
-            let ca_bytes =
-                if let Some(ca_path) = &config.listener.tls_client_ca_path {
-                    Some(std::fs::read(ca_path).map_err(|e| {
-                        format!("failed reading CA file {}: {e}", ca_path.display())
-                    })?)
-                } else {
-                    None
-                };
-            (cert_bytes, key_bytes, ca_bytes)
+            let ca_certs = if let Some(ca_path) = &config.listener.tls_client_ca_path {
+                let ca_bytes = std::fs::read(ca_path)
+                    .map_err(|e| format!("failed reading CA file {}: {e}", ca_path.display()))?;
+                parse_certificates_pem_or_der(&ca_bytes).map_err(|e| {
+                    format!("invalid CA certificate file {}: {e}", ca_path.display())
+                })?
+            } else {
+                Vec::new()
+            };
+
+            let cert_chain = parse_certificates_pem_or_der(&cert_bytes)
+                .map_err(|e| format!("invalid server certificate {}: {e}", cert_path.display()))?;
+            let private_key = parse_private_key_pem_or_der(&key_bytes)
+                .map_err(|e| format!("invalid server key {}: {e}", key_path.display()))?;
+
+            (cert_chain, private_key, ca_certs)
         };
 
         let crypto_provider = Arc::new(rustls_openssl::default_provider());
@@ -236,16 +249,11 @@ impl ProxyServer {
             .with_protocol_versions(protocol_versions)
             .map_err(|e| format!("TLS protocol version config error: {e}"))?;
 
-        let cert_chain = vec![rustls::pki_types::CertificateDer::from(cert_der)];
-        let private_key = rustls::pki_types::PrivateKeyDer::Pkcs8(
-            rustls::pki_types::PrivatePkcs8KeyDer::from(key_der),
-        );
-
         let server_config = if config.listener.require_client_cert {
             let mut root_store = rustls::RootCertStore::empty();
-            if let Some(ca) = ca_der {
+            for ca in ca_certs {
                 root_store
-                    .add(rustls::pki_types::CertificateDer::from(ca))
+                    .add(ca)
                     .map_err(|e| format!("CA cert error: {e}"))?;
             }
             let verifier = rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
@@ -263,6 +271,55 @@ impl ProxyServer {
 
         Ok(server_config)
     }
+}
+
+fn looks_like_pem(bytes: &[u8]) -> bool {
+    bytes.windows(10).any(|w| w == b"-----BEGIN")
+}
+
+fn parse_certificates_pem_or_der(
+    bytes: &[u8],
+) -> Result<Vec<rustls::pki_types::CertificateDer<'static>>, String> {
+    if looks_like_pem(bytes) {
+        let certs = openssl::x509::X509::stack_from_pem(bytes)
+            .map_err(|e| format!("PEM certificate parse error: {e}"))?;
+        if certs.is_empty() {
+            return Err("no certificates found in PEM input".to_string());
+        }
+        let mut out = Vec::with_capacity(certs.len());
+        for cert in certs {
+            let der = cert
+                .to_der()
+                .map_err(|e| format!("X509 DER serialization error: {e}"))?;
+            out.push(rustls::pki_types::CertificateDer::from(der));
+        }
+        Ok(out)
+    } else {
+        let cert = openssl::x509::X509::from_der(bytes)
+            .map_err(|e| format!("DER certificate parse error: {e}"))?;
+        let der = cert
+            .to_der()
+            .map_err(|e| format!("X509 DER serialization error: {e}"))?;
+        Ok(vec![rustls::pki_types::CertificateDer::from(der)])
+    }
+}
+
+fn parse_private_key_pem_or_der(
+    bytes: &[u8],
+) -> Result<rustls::pki_types::PrivateKeyDer<'static>, String> {
+    let pkey = if looks_like_pem(bytes) {
+        openssl::pkey::PKey::private_key_from_pem(bytes)
+            .map_err(|e| format!("PEM private key parse error: {e}"))?
+    } else {
+        openssl::pkey::PKey::private_key_from_der(bytes)
+            .map_err(|e| format!("DER private key parse error: {e}"))?
+    };
+    let pkcs8 = pkey
+        .private_key_to_pkcs8()
+        .map_err(|e| format!("private key PKCS8 conversion error: {e}"))?;
+    Ok(rustls::pki_types::PrivateKeyDer::Pkcs8(
+        rustls::pki_types::PrivatePkcs8KeyDer::from(pkcs8),
+    ))
 }
 
 async fn run_server_loop(

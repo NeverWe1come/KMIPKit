@@ -8,7 +8,7 @@
 
 use std::collections::BTreeMap;
 
-use kmipkit_ttlv::{Item, Value};
+use kmipkit_ttlv::{Item, Value, ValueView};
 
 use crate::kmip1x::mapping::{
     Cardinality, OperationPolicyHandling, UpstreamKmipVersion, downgrade_result_reason,
@@ -452,6 +452,97 @@ pub fn build_discover_versions_response_1x(
     build_response_message(client_major, client_minor, vec![batch])
 }
 
+const fn is_key_value_container_tag(tag: u32) -> bool {
+    matches!(
+        tag,
+        TAG_SYMMETRIC_KEY
+            | TAG_PUBLIC_KEY
+            | TAG_PRIVATE_KEY
+            | TAG_SPLIT_KEY
+            | TAG_SECRET_DATA
+            | TAG_PGP_KEY
+            | TAG_KEY_BLOCK
+            | TAG_KEY_VALUE
+    )
+}
+
+fn is_structure_item(item: &Item) -> bool {
+    let mut is_struct = false;
+    item.with_value(|view| {
+        is_struct = matches!(view, ValueView::Structure(_));
+    });
+    is_struct
+}
+
+/// Recursively translates KMIP 1.X `Attribute` (`0x420008`) items inside plaintext
+/// `Key Value` (`0x420045`) structures into KMIP 2.0+ `Attributes` (`0x420125`).
+/// Encrypted/wrapped `Key Value` items encoded as `ByteString` are left untouched.
+fn translate_key_value_attrs_1x_to_2x(
+    item: Item,
+    cfg: TranslatorConfig,
+    is_create_like: bool,
+) -> Result<Item, String> {
+    let tag = item.tag().raw();
+    if !is_key_value_container_tag(tag) || !is_structure_item(&item) {
+        return Ok(item);
+    }
+
+    if tag == TAG_KEY_VALUE {
+        let mut out = Vec::new();
+        let mut attrs_2x = Vec::new();
+        for child in children_of(&item) {
+            if child.tag().raw() == TAG_ATTRIBUTE {
+                if let Some(a2x) = translate_attribute_1x_to_2x(&child, cfg, is_create_like)? {
+                    attrs_2x.push(a2x);
+                }
+            } else {
+                out.push(child);
+            }
+        }
+        if !attrs_2x.is_empty() {
+            out.push(ttlv_struct(TAG_ATTRIBUTES, attrs_2x)?);
+        }
+        return ttlv_struct(TAG_KEY_VALUE, out);
+    }
+
+    let mut out = Vec::new();
+    for child in children_of(&item) {
+        out.push(translate_key_value_attrs_1x_to_2x(
+            child,
+            cfg,
+            is_create_like,
+        )?);
+    }
+    ttlv_struct(tag, out)
+}
+
+/// Recursively translates KMIP 2.0+ `Attributes` (`0x420125`) inside plaintext
+/// `Key Value` (`0x420045`) structures back into KMIP 1.X `Attribute` (`0x420008`) items.
+fn translate_key_value_attrs_2x_to_1x(item: Item, client_minor: i32) -> Result<Item, String> {
+    let tag = item.tag().raw();
+    if !is_key_value_container_tag(tag) || !is_structure_item(&item) {
+        return Ok(item);
+    }
+
+    if tag == TAG_KEY_VALUE {
+        let mut out = Vec::new();
+        for child in children_of(&item) {
+            if child.tag().raw() == TAG_ATTRIBUTES {
+                out.extend(translate_attributes_2x_to_1x(&child, client_minor)?);
+            } else {
+                out.push(child);
+            }
+        }
+        return ttlv_struct(TAG_KEY_VALUE, out);
+    }
+
+    let mut out = Vec::new();
+    for child in children_of(&item) {
+        out.push(translate_key_value_attrs_2x_to_1x(child, client_minor)?);
+    }
+    ttlv_struct(tag, out)
+}
+
 /// Translates a KMIP 1.X `RequestMessage` into a KMIP 2.0 / 2.1 / 3.0 `RequestMessage`,
 /// returning both the translated message and per-batch-item metadata for response restoration.
 pub fn translate_request_1x_to_2x(
@@ -666,7 +757,11 @@ fn translate_request_payload(
                 }
                 out.push(ttlv_struct(TAG_KEY_WRAPPING_SPECIFICATION, kws_children)?);
             }
-            // Everything else (Unique Identifier, Object Type, Key Block, Crypto Params, Data, IV, etc.)
+            // Managed objects / Key Block / Key Value: translate nested Key Value Attributes (1.X -> 2.0+)
+            tag if is_key_value_container_tag(tag) => {
+                out.push(translate_key_value_attrs_1x_to_2x(child, cfg, false)?);
+            }
+            // Everything else (Unique Identifier, Object Type, Crypto Params, Data, IV, etc.)
             _ => out.push(child),
         }
     }
@@ -850,6 +945,9 @@ fn translate_response_payload(
             }
             // Strip KMIP 2.0+/3.0-only Query capability tags (e.g., Quantum Safe Capability 0x420148)
             0x0042_0148 | 0x0042_0152 | 0x0042_015F | 0x0042_01B2 if op_1x == OP_QUERY => {}
+            tag if is_key_value_container_tag(tag) => {
+                out.push(translate_key_value_attrs_2x_to_1x(child, client_minor)?);
+            }
             _ => out.push(child),
         }
     }
@@ -879,6 +977,11 @@ pub fn translate_server_to_client_request_2x_to_1x(
                             if p_child.tag().raw() == TAG_ATTRIBUTES {
                                 p_children
                                     .extend(translate_attributes_2x_to_1x(&p_child, client_minor)?);
+                            } else if is_key_value_container_tag(p_child.tag().raw()) {
+                                p_children.push(translate_key_value_attrs_2x_to_1x(
+                                    p_child,
+                                    client_minor,
+                                )?);
                             } else {
                                 p_children.push(p_child);
                             }

@@ -67,10 +67,19 @@ impl Kmip1xBridge {
 
     #[must_use]
     pub fn with_config(upstream: Arc<dyn UpstreamKmipTransport>, config: TranslatorConfig) -> Self {
+        Self::with_template_store(upstream, config, Arc::new(TemplateStore::new()))
+    }
+
+    #[must_use]
+    pub fn with_template_store(
+        upstream: Arc<dyn UpstreamKmipTransport>,
+        config: TranslatorConfig,
+        templates: Arc<TemplateStore>,
+    ) -> Self {
         Self {
             upstream,
             config,
-            templates: Arc::new(TemplateStore::new()),
+            templates,
         }
     }
 

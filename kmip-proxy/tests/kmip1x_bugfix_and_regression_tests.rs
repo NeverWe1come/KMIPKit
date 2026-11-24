@@ -718,3 +718,323 @@ async fn test_max_response_size_zero_negative_and_disabled() {
         Some(1)
     );
 }
+
+#[tokio::test]
+async fn test_key_block_key_value_attributes_bidirectional_and_wrapped_bytestring() {
+    let upstream = RecordingUpstream::with_responder(|req| {
+        let bi = find_child(req, TAG_BATCH_ITEM).unwrap();
+        let op = find_child(&bi, TAG_OPERATION)
+            .and_then(|i| extract_enumeration(&i))
+            .unwrap();
+        let payload = find_child(&bi, TAG_REQUEST_PAYLOAD).unwrap();
+
+        let resp_bi = match op {
+            OP_REGISTER => {
+                // Plaintext Register: Key Block -> Key Value must have Attributes (0x420125), NOT 0x420008
+                let sym = find_child(&payload, TAG_SYMMETRIC_KEY).unwrap();
+                let kb = find_child(&sym, TAG_KEY_BLOCK).unwrap();
+                let kv = find_child(&kb, TAG_KEY_VALUE).unwrap();
+                assert!(find_child(&kv, TAG_KEY_MATERIAL).is_some());
+                assert!(find_child(&kv, TAG_ATTRIBUTE).is_none());
+                let attrs_2x = find_child(&kv, TAG_ATTRIBUTES).unwrap();
+                assert!(find_child(&attrs_2x, TAG_ACTIVATION_DATE).is_some());
+                assert!(find_child(&attrs_2x, TAG_ATTRIBUTE).is_some()); // custom vendor attr
+
+                build_success_batch_item(
+                    OP_REGISTER,
+                    None,
+                    vec![
+                        ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("reg-kv-1".into()))
+                            .unwrap(),
+                    ],
+                )
+                .unwrap()
+            }
+            OP_GET => {
+                let uid = find_child(&payload, TAG_UNIQUE_IDENTIFIER)
+                    .and_then(|i| extract_text_string(&i))
+                    .unwrap();
+                if uid == "wrapped-1" {
+                    // Wrapped Key Value encoded as ByteString must survive untouched
+                    let kv_wrapped = ttlv_struct(
+                        TAG_SYMMETRIC_KEY,
+                        vec![
+                            ttlv_struct(
+                                TAG_KEY_BLOCK,
+                                vec![
+                                    ttlv_item(
+                                        TAG_KEY_VALUE,
+                                        Value::byte_string(vec![0xDE, 0xAD, 0xBE, 0xEF]),
+                                    )
+                                    .unwrap(),
+                                ],
+                            )
+                            .unwrap(),
+                        ],
+                    )
+                    .unwrap();
+                    build_success_batch_item(
+                        OP_GET,
+                        None,
+                        vec![
+                            ttlv_item(
+                                TAG_OBJECT_TYPE,
+                                Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                            )
+                            .unwrap(),
+                            ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid)).unwrap(),
+                            kv_wrapped,
+                        ],
+                    )
+                    .unwrap()
+                } else {
+                    // Plaintext Get response with KMIP 2.1 Attributes inside Key Value
+                    let sym = ttlv_struct(
+                        TAG_SYMMETRIC_KEY,
+                        vec![
+                            ttlv_struct(
+                                TAG_KEY_BLOCK,
+                                vec![
+                                    ttlv_struct(
+                                        TAG_KEY_VALUE,
+                                        vec![
+                                            ttlv_struct(
+                                                TAG_KEY_MATERIAL,
+                                                vec![
+                                                    ttlv_item(
+                                                        0x0042_0043,
+                                                        Value::byte_string(vec![1, 2, 3, 4]),
+                                                    )
+                                                    .unwrap(),
+                                                ],
+                                            )
+                                            .unwrap(),
+                                            ttlv_struct(
+                                                TAG_ATTRIBUTES,
+                                                vec![
+                                                    ttlv_item(
+                                                        TAG_ACTIVATION_DATE,
+                                                        Value::date_time(1_700_000_000),
+                                                    )
+                                                    .unwrap(),
+                                                ],
+                                            )
+                                            .unwrap(),
+                                        ],
+                                    )
+                                    .unwrap(),
+                                ],
+                            )
+                            .unwrap(),
+                        ],
+                    )
+                    .unwrap();
+                    build_success_batch_item(
+                        OP_GET,
+                        None,
+                        vec![
+                            ttlv_item(
+                                TAG_OBJECT_TYPE,
+                                Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                            )
+                            .unwrap(),
+                            ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid)).unwrap(),
+                            sym,
+                        ],
+                    )
+                    .unwrap()
+                }
+            }
+            other => panic!("unexpected op 0x{other:X}"),
+        };
+        build_response_message(2, 1, vec![resp_bi])
+    });
+
+    let bridge = Kmip1xBridge::new(upstream, UpstreamKmipVersion::V2_1);
+
+    // 1. Plaintext Register with Attribute items inside Key Value
+    let reg_bi = ttlv_struct(
+        TAG_BATCH_ITEM,
+        vec![
+            ttlv_item(TAG_OPERATION, Value::enumeration(OP_REGISTER)).unwrap(),
+            ttlv_struct(
+                TAG_REQUEST_PAYLOAD,
+                vec![
+                    ttlv_item(
+                        TAG_OBJECT_TYPE,
+                        Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                    )
+                    .unwrap(),
+                    ttlv_struct(
+                        TAG_SYMMETRIC_KEY,
+                        vec![
+                            ttlv_struct(
+                                TAG_KEY_BLOCK,
+                                vec![
+                                    ttlv_struct(
+                                        TAG_KEY_VALUE,
+                                        vec![
+                                            ttlv_item(
+                                                TAG_KEY_MATERIAL,
+                                                Value::byte_string(vec![9; 16]),
+                                            )
+                                            .unwrap(),
+                                            build_1x_attribute(
+                                                "Activation Date",
+                                                None,
+                                                Value::date_time(1_700_000_000),
+                                            )
+                                            .unwrap(),
+                                            build_1x_attribute(
+                                                "x-kv-meta",
+                                                None,
+                                                Value::text_string("kv-val".into()),
+                                            )
+                                            .unwrap(),
+                                        ],
+                                    )
+                                    .unwrap(),
+                                ],
+                            )
+                            .unwrap(),
+                        ],
+                    )
+                    .unwrap(),
+                ],
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    let reg_resp = bridge
+        .dispatch(&build_1x_request(1, 4, vec![reg_bi]))
+        .await
+        .unwrap();
+    assert_eq!(
+        find_child(
+            &find_child(&reg_resp, TAG_BATCH_ITEM).unwrap(),
+            TAG_RESULT_STATUS
+        )
+        .and_then(|i| extract_enumeration(&i)),
+        Some(STATUS_SUCCESS)
+    );
+
+    // 2. Plaintext Get translates Key Value -> Attributes back to 1.X Attribute items
+    let get_bi = ttlv_struct(
+        TAG_BATCH_ITEM,
+        vec![
+            ttlv_item(TAG_OPERATION, Value::enumeration(OP_GET)).unwrap(),
+            ttlv_struct(
+                TAG_REQUEST_PAYLOAD,
+                vec![
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string("reg-kv-1".into()))
+                        .unwrap(),
+                ],
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    let get_resp = bridge
+        .dispatch(&build_1x_request(1, 4, vec![get_bi]))
+        .await
+        .unwrap();
+    let rp = find_child(
+        &find_child(&get_resp, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
+    let kv_1x = find_child(
+        &find_child(&find_child(&rp, TAG_SYMMETRIC_KEY).unwrap(), TAG_KEY_BLOCK).unwrap(),
+        TAG_KEY_VALUE,
+    )
+    .unwrap();
+    assert!(find_child(&kv_1x, TAG_ATTRIBUTES).is_none());
+    let attr_1x = find_child(&kv_1x, TAG_ATTRIBUTE).unwrap();
+    assert_eq!(
+        find_child(&attr_1x, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i)),
+        Some("Activation Date".to_string())
+    );
+
+    // 3. Wrapped ByteString Key Value survives Get completely intact
+    let wrapped_bi = ttlv_struct(
+        TAG_BATCH_ITEM,
+        vec![
+            ttlv_item(TAG_OPERATION, Value::enumeration(OP_GET)).unwrap(),
+            ttlv_struct(
+                TAG_REQUEST_PAYLOAD,
+                vec![
+                    ttlv_item(
+                        TAG_UNIQUE_IDENTIFIER,
+                        Value::text_string("wrapped-1".into()),
+                    )
+                    .unwrap(),
+                ],
+            )
+            .unwrap(),
+        ],
+    )
+    .unwrap();
+    let wrapped_resp = bridge
+        .dispatch(&build_1x_request(1, 4, vec![wrapped_bi]))
+        .await
+        .unwrap();
+    let wrapped_rp = find_child(
+        &find_child(&wrapped_resp, TAG_BATCH_ITEM).unwrap(),
+        TAG_RESPONSE_PAYLOAD,
+    )
+    .unwrap();
+    let kv_bytes = find_child(
+        &find_child(
+            &find_child(&wrapped_rp, TAG_SYMMETRIC_KEY).unwrap(),
+            TAG_KEY_BLOCK,
+        )
+        .unwrap(),
+        TAG_KEY_VALUE,
+    )
+    .unwrap();
+    assert_eq!(
+        kmipkit_proxy::kmip1x::ttlv_helpers::extract_byte_string(&kv_bytes),
+        Some(vec![0xDE, 0xAD, 0xBE, 0xEF])
+    );
+}
+
+#[test]
+fn test_template_store_persistence_across_restart_and_seq_recovery() {
+    let dir = tempfile::tempdir().unwrap();
+    let store_path = dir.path().join("kmip1x_templates.json");
+
+    let attr_alg = build_1x_attribute(
+        "Cryptographic Algorithm",
+        None,
+        Value::enumeration(0x0000_0003),
+    )
+    .unwrap();
+    let attr_len = build_1x_attribute("Cryptographic Length", None, Value::integer(256)).unwrap();
+
+    let (id1, id2) = {
+        let store = TemplateStore::with_persistence(store_path.clone()).unwrap();
+        let id1 = store.register(vec!["corp-aes-256".into()], vec![attr_alg, attr_len]);
+        let id2 = store.register(vec!["corp-temp".into()], vec![]);
+        (id1, id2)
+    };
+
+    // Reload from disk into fresh instance
+    let reloaded = TemplateStore::with_persistence(store_path.clone()).unwrap();
+    assert!(reloaded.contains_id(&id1));
+    assert!(reloaded.contains_id(&id2));
+    let tpl1 = reloaded.get_by_name("corp-aes-256").unwrap();
+    assert_eq!(tpl1.unique_id, id1);
+    assert_eq!(tpl1.attributes_1x.len(), 2);
+
+    // Next registered template advances sequence (no ID collision)
+    let id3 = reloaded.register(vec!["corp-new".into()], vec![]);
+    assert_eq!(id3, "kmip1x-template-000003");
+    assert!(reloaded.destroy(&id2));
+
+    // Reload once more after destroy
+    let reloaded2 = TemplateStore::with_persistence(store_path).unwrap();
+    assert!(reloaded2.contains_id(&id1));
+    assert!(!reloaded2.contains_id(&id2));
+    assert!(reloaded2.contains_id(&id3));
+}

@@ -7,10 +7,14 @@
 #![forbid(unsafe_code)]
 
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::sync::RwLock;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use kmipkit_ttlv::{Item, Value};
+use serde::{Deserialize, Serialize};
+
+use crate::codec::Format;
 
 use crate::kmip1x::tags::{
     OBJECT_TYPE_TEMPLATE, TAG_ATTRIBUTE, TAG_ATTRIBUTE_NAME, TAG_NAME, TAG_NAME_TYPE,
@@ -76,10 +80,18 @@ struct TemplateStoreInner {
     id_by_name: BTreeMap<String, String>,
 }
 
-/// Thread-safe in-memory KMIP 1.X `Template` registry.
+#[derive(Debug, Serialize, Deserialize)]
+struct PersistedTemplate {
+    unique_id: String,
+    names: Vec<String>,
+    attributes_ttlv_hex: Vec<String>,
+}
+
+/// Thread-safe in-memory KMIP 1.X `Template` registry with optional atomic JSON persistence.
 pub struct TemplateStore {
     next_id: AtomicU64,
     inner: RwLock<TemplateStoreInner>,
+    persistence_path: Option<PathBuf>,
 }
 
 impl Default for TemplateStore {
@@ -94,6 +106,86 @@ impl TemplateStore {
         Self {
             next_id: AtomicU64::new(1),
             inner: RwLock::new(TemplateStoreInner::default()),
+            persistence_path: None,
+        }
+    }
+
+    /// Creates a `TemplateStore` backed by an atomic JSON file on disk, reloading
+    /// any previously persisted templates if the file already exists.
+    pub fn with_persistence(path: PathBuf) -> Result<Self, String> {
+        let mut inner = TemplateStoreInner::default();
+        let mut max_seq: u64 = 0;
+
+        if path.exists() {
+            let content = std::fs::read_to_string(&path)
+                .map_err(|e| format!("failed reading template store {}: {e}", path.display()))?;
+            if !content.trim().is_empty() {
+                let entries: Vec<PersistedTemplate> = serde_json::from_str(&content)
+                    .map_err(|e| format!("invalid template store JSON {}: {e}", path.display()))?;
+                for entry in entries {
+                    if let Some(seq_str) = entry.unique_id.strip_prefix("kmip1x-template-") {
+                        if let Ok(seq) = seq_str.parse::<u64>() {
+                            max_seq = max_seq.max(seq);
+                        }
+                    }
+                    let mut attrs = Vec::with_capacity(entry.attributes_ttlv_hex.len());
+                    for hex_str in entry.attributes_ttlv_hex {
+                        let bytes = hex::decode(&hex_str)
+                            .map_err(|e| format!("invalid persisted attribute hex: {e}"))?;
+                        attrs.push(Format::Ttlv.decode(&bytes)?);
+                    }
+                    for name in &entry.names {
+                        inner
+                            .id_by_name
+                            .insert(name.clone(), entry.unique_id.clone());
+                    }
+                    inner.by_id.insert(
+                        entry.unique_id.clone(),
+                        StoredTemplate {
+                            unique_id: entry.unique_id,
+                            names: entry.names,
+                            attributes_1x: attrs,
+                        },
+                    );
+                }
+            }
+        }
+
+        Ok(Self {
+            next_id: AtomicU64::new(max_seq + 1),
+            inner: RwLock::new(inner),
+            persistence_path: Some(path),
+        })
+    }
+
+    fn persist_locked(&self, guard: &TemplateStoreInner) {
+        let Some(path) = &self.persistence_path else {
+            return;
+        };
+        if let Some(parent) = path.parent() {
+            if !parent.as_os_str().is_empty() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+        }
+        let mut entries = Vec::with_capacity(guard.by_id.len());
+        for tpl in guard.by_id.values() {
+            let mut hex_attrs = Vec::with_capacity(tpl.attributes_1x.len());
+            for attr in &tpl.attributes_1x {
+                if let Ok(bytes) = Format::Ttlv.encode(attr) {
+                    hex_attrs.push(hex::encode(bytes));
+                }
+            }
+            entries.push(PersistedTemplate {
+                unique_id: tpl.unique_id.clone(),
+                names: tpl.names.clone(),
+                attributes_ttlv_hex: hex_attrs,
+            });
+        }
+        if let Ok(json) = serde_json::to_string_pretty(&entries) {
+            let tmp_path = path.with_extension("json.tmp");
+            if std::fs::write(&tmp_path, json).is_ok() {
+                let _ = std::fs::rename(&tmp_path, path);
+            }
         }
     }
 
@@ -113,6 +205,7 @@ impl TemplateStore {
                 guard.id_by_name.insert(name, unique_id.clone());
             }
             guard.by_id.insert(unique_id.clone(), stored);
+            self.persist_locked(&guard);
         }
 
         unique_id
@@ -166,6 +259,7 @@ impl TemplateStore {
                     guard.id_by_name.remove(&name);
                 }
             }
+            self.persist_locked(&guard);
             return true;
         }
         false

@@ -108,6 +108,10 @@ pub struct KmipUpstreamConfig {
     /// Policy for handling KMIP 1.X `Operation Policy Name`.
     #[serde(default)]
     pub operation_policy_mode: OperationPolicyMode,
+    /// Maximum concurrent upstream connections in the pool (default: 8).
+    pub max_connections: Option<usize>,
+    /// Optional path to persist KMIP 1.X Template objects across restarts (in-memory only if unset).
+    pub template_store_path: Option<PathBuf>,
 }
 
 fn default_upstream_version() -> String {
@@ -126,6 +130,8 @@ impl Default for KmipUpstreamConfig {
             allow_tls12: false,
             timeout_secs: Some(30),
             operation_policy_mode: OperationPolicyMode::Ignore,
+            max_connections: Some(8),
+            template_store_path: None,
         }
     }
 }

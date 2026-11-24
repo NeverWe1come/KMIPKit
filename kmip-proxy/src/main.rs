@@ -64,15 +64,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             OperationPolicyMode::Reject => OperationPolicyHandling::Reject,
         };
+        let templates = if let Some(path) = &config.backend.kmip_upstream.template_store_path {
+            Arc::new(
+                kmipkit_proxy::kmip1x::template_store::TemplateStore::with_persistence(
+                    path.clone(),
+                )
+                .map_err(|e| format!("template store initialization failed: {e}"))?,
+            )
+        } else {
+            Arc::new(kmipkit_proxy::kmip1x::template_store::TemplateStore::new())
+        };
         let transport = KmipKitUpstreamTransport::from_config(&config.backend.kmip_upstream)
             .map_err(|e| format!("upstream transport initialization failed: {e}"))?;
-        let bridge = Arc::new(Kmip1xBridge::with_config(
+        let bridge = Arc::new(Kmip1xBridge::with_template_store(
             Arc::new(transport),
             TranslatorConfig {
                 upstream_version: upstream_ver,
                 operation_policy_handling: policy,
                 ..TranslatorConfig::default()
             },
+            templates,
         ));
 
         println!(

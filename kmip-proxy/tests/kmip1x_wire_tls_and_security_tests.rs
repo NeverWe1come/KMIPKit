@@ -5,15 +5,20 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use kmipkit_proxy::KmipKitUpstreamTransport;
 use kmipkit_proxy::codec::Format;
-use kmipkit_proxy::config::{CliArgs, OperationPolicyMode, ProxyConfig};
+use kmipkit_proxy::config::{CliArgs, KmipUpstreamConfig, OperationPolicyMode, ProxyConfig};
 use kmipkit_proxy::kmip1x::mapping::UpstreamKmipVersion;
 use kmipkit_proxy::kmip1x::tags::*;
+use kmipkit_proxy::kmip1x::template_store::TemplateStore;
+use kmipkit_proxy::kmip1x::translator::TranslatorConfig;
 use kmipkit_proxy::kmip1x::ttlv_helpers::{
     build_protocol_version, build_response_message, build_success_batch_item, extract_enumeration,
-    extract_integer, find_child, ttlv_item, ttlv_struct,
+    extract_integer, extract_text_string, find_child, ttlv_item, ttlv_struct,
 };
 use kmipkit_proxy::kmip1x::{Kmip1xBridge, UpstreamKmipTransport};
+use kmipkit_proxy::pki::AutoPki;
+use kmipkit_proxy::providers::InMemoryMockProvider;
 use kmipkit_proxy::server::ProxyServer;
 use kmipkit_ttlv::{Item, Value};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer, ServerName};
@@ -432,4 +437,237 @@ async fn test_64_concurrent_tcp_clients_mixed_operations_on_live_bridge() {
         t.await.unwrap();
     }
     handle.shutdown().await.unwrap();
+}
+
+#[tokio::test]
+async fn test_e2e_double_hop_mtls_pem_and_der_files_with_pooled_upstream_to_real_server() {
+    let dir = tempfile::tempdir().unwrap();
+    let pki = AutoPki::generate().unwrap();
+    pki.export_to_directory(dir.path()).unwrap();
+
+    // Also export DER copies to test DER disk loading in ProxyServer
+    let der_cert_path = dir.path().join("server.der");
+    let der_key_path = dir.path().join("server.key.der");
+    let der_ca_path = dir.path().join("ca.der");
+    std::fs::write(&der_cert_path, &pki.server_cert_der).unwrap();
+    std::fs::write(&der_key_path, pki.server_key_der.as_slice()).unwrap();
+    std::fs::write(&der_ca_path, &pki.ca_cert_der).unwrap();
+
+    // 1. Real Upstream KMIP 2.1 Server (InMemoryMockProvider) listening with mTLS + PEM files on disk
+    let mut upstream_srv_cfg = ProxyConfig::default();
+    upstream_srv_cfg.listener.bind_addr = "127.0.0.1:0".parse().unwrap();
+    upstream_srv_cfg.listener.tls_enabled = true;
+    upstream_srv_cfg.listener.allow_tls12 = false; // Strict TLS 1.3 upstream
+    upstream_srv_cfg.listener.require_client_cert = true;
+    upstream_srv_cfg.listener.tls_cert_path = Some(dir.path().join("server.crt"));
+    upstream_srv_cfg.listener.tls_key_path = Some(dir.path().join("server.key"));
+    upstream_srv_cfg.listener.tls_client_ca_path = Some(dir.path().join("ca.crt"));
+
+    let upstream_srv =
+        ProxyServer::start(upstream_srv_cfg, Arc::new(InMemoryMockProvider::default()))
+            .await
+            .unwrap();
+    let upstream_addr = upstream_srv.local_addr();
+
+    // 2. Real KmipKitUpstreamTransport::from_config with pooled connections (max_connections = 4) over mTLS PEM
+    let upstream_client_cfg = KmipUpstreamConfig {
+        endpoint: format!("127.0.0.1:{}", upstream_addr.port()),
+        target_version: "2.1".to_string(),
+        wire_encoding: Some("ttlv".to_string()),
+        client_cert_path: Some(dir.path().join("client.crt")),
+        client_key_path: Some(dir.path().join("client.key")),
+        ca_cert_path: Some(dir.path().join("ca.crt")),
+        allow_tls12: false,
+        timeout_secs: Some(15),
+        operation_policy_mode: OperationPolicyMode::Ignore,
+        max_connections: Some(4),
+        template_store_path: Some(dir.path().join("templates.json")),
+    };
+    let transport = Arc::new(KmipKitUpstreamTransport::from_config(&upstream_client_cfg).unwrap());
+    let tpl_store =
+        Arc::new(TemplateStore::with_persistence(dir.path().join("templates.json")).unwrap());
+    let bridge = Arc::new(Kmip1xBridge::with_template_store(
+        transport,
+        TranslatorConfig {
+            upstream_version: UpstreamKmipVersion::V2_1,
+            ..TranslatorConfig::default()
+        },
+        tpl_store,
+    ));
+
+    // 3. Bridge ProxyServer configured with DER files on disk + TLS 1.2 compat + mTLS
+    let mut bridge_cfg = ProxyConfig::default();
+    bridge_cfg.listener.bind_addr = "127.0.0.1:0".parse().unwrap();
+    bridge_cfg.listener.tls_enabled = true;
+    bridge_cfg.listener.allow_tls12 = true;
+    bridge_cfg.listener.require_client_cert = true;
+    bridge_cfg.listener.tls_cert_path = Some(der_cert_path);
+    bridge_cfg.listener.tls_key_path = Some(der_key_path);
+    bridge_cfg.listener.tls_client_ca_path = Some(der_ca_path);
+
+    let bridge_srv = ProxyServer::start_kmip1x_bridge(bridge_cfg, bridge)
+        .await
+        .unwrap();
+    let bridge_addr = bridge_srv.local_addr();
+
+    // 4. 8 concurrent KMIP 1.4 clients (half TLS 1.2, half TLS 1.3) hitting the double-hop mTLS chain
+    let pki = Arc::new(pki);
+    let mut handles = Vec::new();
+    for idx in 0..8 {
+        let pki_c = Arc::clone(&pki);
+        handles.push(tokio::spawn(async move {
+            let proto = if idx % 2 == 0 {
+                &rustls::version::TLS12
+            } else {
+                &rustls::version::TLS13
+            };
+            let tls_cfg = build_tls_client_config(&pki_c, proto, true);
+            let tcp = TcpStream::connect(bridge_addr).await.unwrap();
+            let mut tls_stream = TlsConnector::from(tls_cfg)
+                .connect(ServerName::try_from("localhost").unwrap(), tcp)
+                .await
+                .unwrap();
+
+            // Create Symmetric Key via real KMIP 1.4 -> Bridge -> real KMIP 2.1 InMemoryMockProvider
+            let create_req = ttlv_struct(
+                TAG_REQUEST_MESSAGE,
+                vec![
+                    ttlv_struct(
+                        TAG_REQUEST_HEADER,
+                        vec![
+                            build_protocol_version(1, 4).unwrap(),
+                            ttlv_item(TAG_BATCH_COUNT, Value::integer(1)).unwrap(),
+                        ],
+                    )
+                    .unwrap(),
+                    ttlv_struct(
+                        TAG_BATCH_ITEM,
+                        vec![
+                            ttlv_item(TAG_OPERATION, Value::enumeration(OP_CREATE)).unwrap(),
+                            ttlv_struct(
+                                TAG_REQUEST_PAYLOAD,
+                                vec![
+                                    ttlv_item(
+                                        TAG_OBJECT_TYPE,
+                                        Value::enumeration(OBJECT_TYPE_SYMMETRIC_KEY),
+                                    )
+                                    .unwrap(),
+                                    ttlv_struct(
+                                        TAG_TEMPLATE_ATTRIBUTE,
+                                        vec![
+                                            ttlv_struct(
+                                                TAG_ATTRIBUTE,
+                                                vec![
+                                                    ttlv_item(
+                                                        TAG_ATTRIBUTE_NAME,
+                                                        Value::text_string(
+                                                            "Cryptographic Algorithm".into(),
+                                                        ),
+                                                    )
+                                                    .unwrap(),
+                                                    ttlv_item(
+                                                        TAG_ATTRIBUTE_VALUE,
+                                                        Value::enumeration(3),
+                                                    )
+                                                    .unwrap(),
+                                                ],
+                                            )
+                                            .unwrap(),
+                                            ttlv_struct(
+                                                TAG_ATTRIBUTE,
+                                                vec![
+                                                    ttlv_item(
+                                                        TAG_ATTRIBUTE_NAME,
+                                                        Value::text_string(
+                                                            "Cryptographic Length".into(),
+                                                        ),
+                                                    )
+                                                    .unwrap(),
+                                                    ttlv_item(
+                                                        TAG_ATTRIBUTE_VALUE,
+                                                        Value::integer(256),
+                                                    )
+                                                    .unwrap(),
+                                                ],
+                                            )
+                                            .unwrap(),
+                                        ],
+                                    )
+                                    .unwrap(),
+                                ],
+                            )
+                            .unwrap(),
+                        ],
+                    )
+                    .unwrap(),
+                ],
+            )
+            .unwrap();
+            let create_bytes = Format::Ttlv.encode(&create_req).unwrap();
+            let create_resp = send_raw_ttlv_over_stream(&mut tls_stream, &create_bytes)
+                .await
+                .unwrap();
+            let cbi = find_child(&create_resp, TAG_BATCH_ITEM).unwrap();
+            assert_eq!(
+                find_child(&cbi, TAG_RESULT_STATUS).and_then(|i| extract_enumeration(&i)),
+                Some(STATUS_SUCCESS)
+            );
+            let uid = find_child(&cbi, TAG_RESPONSE_PAYLOAD)
+                .and_then(|rp| find_child(&rp, TAG_UNIQUE_IDENTIFIER))
+                .and_then(|i| extract_text_string(&i))
+                .unwrap();
+
+            // Activate & Destroy the created key
+            for op in [OP_ACTIVATE, OP_DESTROY] {
+                let op_req = ttlv_struct(
+                    TAG_REQUEST_MESSAGE,
+                    vec![
+                        ttlv_struct(
+                            TAG_REQUEST_HEADER,
+                            vec![
+                                build_protocol_version(1, 4).unwrap(),
+                                ttlv_item(TAG_BATCH_COUNT, Value::integer(1)).unwrap(),
+                            ],
+                        )
+                        .unwrap(),
+                        ttlv_struct(
+                            TAG_BATCH_ITEM,
+                            vec![
+                                ttlv_item(TAG_OPERATION, Value::enumeration(op)).unwrap(),
+                                ttlv_struct(
+                                    TAG_REQUEST_PAYLOAD,
+                                    vec![
+                                        ttlv_item(
+                                            TAG_UNIQUE_IDENTIFIER,
+                                            Value::text_string(uid.clone()),
+                                        )
+                                        .unwrap(),
+                                    ],
+                                )
+                                .unwrap(),
+                            ],
+                        )
+                        .unwrap(),
+                    ],
+                )
+                .unwrap();
+                let op_bytes = Format::Ttlv.encode(&op_req).unwrap();
+                let op_resp = send_raw_ttlv_over_stream(&mut tls_stream, &op_bytes)
+                    .await
+                    .unwrap();
+                let obi = find_child(&op_resp, TAG_BATCH_ITEM).unwrap();
+                assert_eq!(
+                    find_child(&obi, TAG_RESULT_STATUS).and_then(|i| extract_enumeration(&i)),
+                    Some(STATUS_SUCCESS)
+                );
+            }
+        }));
+    }
+
+    for h in handles {
+        h.await.unwrap();
+    }
+
+    bridge_srv.shutdown().await.unwrap();
+    upstream_srv.shutdown().await.unwrap();
 }
