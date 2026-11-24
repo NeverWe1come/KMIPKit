@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
@@ -34,11 +35,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HexFormat;
 
 final class GenericExchange {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
     private static final int QUERY = 0x18;
     private static final int DISCOVER_VERSIONS = 0x1e;
+    private static final int HASH = 0x27;
+    private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] HASH_DIGEST = HexFormat.of().parseHex(
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
     private static final int PING = 0x3b;
 
     private GenericExchange() { }
@@ -57,6 +63,7 @@ final class GenericExchange {
         return switch (testCase.caseId()) {
             case "test-op-query" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
+            case "test-op-hash", "test-crypto-hash-sha_256-0" -> HASH;
             case "test-op-ping" -> "2.1".equals(version) ? PING : 0;
             default -> 0;
         };
@@ -82,11 +89,19 @@ final class GenericExchange {
                 var payload = switch (operation) {
                     case QUERY -> structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)));
                     case DISCOVER_VERSIONS -> structureItem(0x420079, version(minor));
+                    case HASH -> hashPayload();
                     case PING -> structureItem(0x420079);
                     default -> throw new IllegalArgumentException("Unsupported generic operation");
                 };
                 var batch = structureItem(0x42000f, identifier, payload)) {
             return structureItem(0x420078, header, batch);
+        }
+    }
+
+    private static TtlvItem hashPayload() {
+        try (var parameters = structureItem(0x42002b, item(0x420038, TtlvValue.Enumeration(6)));
+                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS))) {
+            return structureItem(0x420079, parameters, data);
         }
     }
 
@@ -133,6 +148,7 @@ final class GenericExchange {
                 }
                 case Integer -> ByteBuffer.allocate(4).putInt(value.integer()).array();
                 case Enumeration -> ByteBuffer.allocate(4).putInt((int) value.enumeration()).array();
+                case ByteString -> value.bytes();
                 default -> throw new IllegalArgumentException("Unsupported generic probe item type");
             };
             return ByteBuffer.allocate(8 + ((body.length + 7) & ~7))
@@ -270,6 +286,13 @@ final class GenericExchange {
 
     private static boolean matches(TtlvStructureView payload, int operation, int minor) {
         if (operation == PING) return payload.itemCount() == 0;
+        if (operation == HASH) {
+            if (payload.itemCount() != 1) return false;
+            try (var field = payload.itemAt(0); var tag = field.tag(); var value = field.value()) {
+                return tag.raw() == 0x4200c2 && field.itemType() == TtlvItemType.ByteString
+                        && Arrays.equals(value.bytes(), HASH_DIGEST);
+            }
+        }
         if (operation == DISCOVER_VERSIONS) {
             if (payload.itemCount() != 1) return false;
             try (var actual = payload.itemAt(0); var expected = version(minor); var expectedView = expected.view()) {

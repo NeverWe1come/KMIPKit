@@ -62,7 +62,7 @@ Asynchronous request types that only build payloads and operations with no
 public client request route carry separate API limitation reasons. The
 validator also constructs and decodes generic TTLV values. Use
 `api_level: generic-ttlv` with `raw_tls` and `TTLV` to run Query and
-Discover Versions in KMIP 2.0 and 2.1, and Ping in 2.1. These probes use a
+Discover Versions and single-part SHA-256 Hash in KMIP 2.0 and 2.1, and Ping in 2.1. These probes use a
 CA, a client certificate chain, and an unencrypted PKCS#8 PEM client key.
 Archive and Recover use the isolated key lifecycle through the typed and
 Fluent routes.

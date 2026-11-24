@@ -409,7 +409,8 @@ class ControlledTlsPeerTest {
 
     @ParameterizedTest
     @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
-            "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59"})
+            "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59",
+            "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39"})
     void genericTagsReachThePeerThroughMain(String version, String caseId, int operation) throws Exception {
         var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         var mapper = new ObjectMapper();
@@ -425,6 +426,8 @@ class ControlledTlsPeerTest {
         byte[] requestPayload = switch (operation) {
             case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
             case 30 -> structure(0x420079, offered);
+            case 39 -> structure(0x420079, structure(0x42002b, item(0x420038, 5, intBytes(6))),
+                    item(0x4200c2, 8, new byte[] {97, 98, 99}));
             default -> structure(0x420079);
         };
         byte[][] fields = switch (operation) {
@@ -441,7 +444,14 @@ class ControlledTlsPeerTest {
                         serverPem, clientPem, fixture("client-key.pem"), false, "generic-ttlv"));
                 Path connection = temporaryDirectory.resolve("generic-connection.json");
                 mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
-                byte[] response = legacyKeyResponse(matchingVersion ? minor : 1 - minor, operation, fields);
+                byte[] response;
+                if (operation == 39) {
+                    byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(
+                            matchingVersion ? new byte[] {97, 98, 99} : new byte[] {0});
+                    response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, digest));
+                } else {
+                    response = legacyKeyResponse(matchingVersion ? minor : 1 - minor, operation, fields);
+                }
                 var peer = new FutureTask<>(() -> serveOneResponse(listener, response));
                 Thread thread = new Thread(peer, "java-validator-generic-tags");
                 thread.setDaemon(true);
