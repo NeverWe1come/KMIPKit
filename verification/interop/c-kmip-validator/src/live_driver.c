@@ -9336,10 +9336,15 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         kmipkit_ttlv_structure_create(&batch) == 0 &&
         add_generic_number(client, &batch, 0x42005c, (int32_t)operation, true) &&
         kmipkit_ttlv_structure_create(&payload) == 0;
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE)
+        valid = add_generic_number(client, &payload, 0x42004f, 1, false) &&
+            add_generic_number(client, &payload, 0x4200d4, 0, false);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY)
         valid = add_generic_number(client, &payload, 0x420074, 1, true);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
         valid = add_generic_version(client, &payload);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE)
+        valid = add_generic_number(client, &payload, 0x4200c4, 32, false);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH)
         valid = add_generic_hash_input(client, &payload);
     valid = valid && add_generic_structure(client, &batch, 0x420079, &payload) &&
@@ -9496,14 +9501,52 @@ static bool generic_hash_matches(kmipkit_ttlv_structure_view_t *payload) {
     return valid;
 }
 
+static bool generic_rng_matches(kmipkit_ttlv_structure_view_t *payload) {
+    kmipkit_ttlv_value_view_t *data = NULL;
+    uint64_t size = 0;
+    bool valid = structure_view_find_value(payload, 0x4200c2, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &data) &&
+        kmipkit_ttlv_value_view_byte_length(data, &size) == 0 && size == 32;
+    if (data) kmipkit_ttlv_value_view_release(data);
+    return valid;
+}
+
+static bool generic_locate_matches(kmipkit_ttlv_structure_view_t *payload, uint64_t fields) {
+    int32_t total = 0;
+    bool has_total = false;
+    int32_t identifiers = 0;
+    for (uint64_t index = 0; index < fields; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        if (kmipkit_ttlv_structure_view_item_at(payload, index, &field) != 0) return false;
+        kmipkit_ttlv_value_view_t *count = NULL;
+        bool valid;
+        if (!has_total && item_view_has_tag(field, 0x4200d5, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, &count)) {
+            valid = kmipkit_ttlv_value_view_integer(count, &total) == 0;
+            has_total = true;
+        } else {
+            valid = item_view_has_tag(field, 0x420094, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, NULL) ||
+                item_view_has_tag(field, 0x420094, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, NULL) ||
+                item_view_has_tag(field, 0x420094, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, NULL);
+            identifiers++;
+        }
+        if (count) kmipkit_ttlv_value_view_release(count);
+        kmipkit_ttlv_item_view_release(field);
+        if (!valid || identifiers > 1) return false;
+    }
+    return !has_total || total >= identifiers;
+}
+
 static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor) {
     kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
     uint64_t fields = 0, version_fields = 0;
     uint32_t advertised_operation = 0;
     bool valid = generic_structure_field(batch, 0x42007c, &payload) &&
         kmipkit_ttlv_structure_view_item_count(payload, &fields) == 0;
-    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
+        valid = generic_locate_matches(payload, fields);
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
         valid = fields == 0;
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE) {
+        valid = fields == 1 && generic_rng_matches(payload);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
         valid = fields == 1 && generic_hash_matches(payload);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
@@ -9715,14 +9758,20 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(client->api_level, "generic-ttlv") == 0) {
 #ifdef KMIPKIT_C_GENERIC_TLS
         const kmip_connection_config_t *connection = client->configuration;
+        bool rng = strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
         if (connection && client->protocol_major == 2 && client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             !connection->username_env[0] && !connection->password_env[0] &&
-            strcmp(test_case->mode, "server_exchange") == 0 && strcmp(test_case->mutation, "read_only") == 0) {
+            strcmp(test_case->mode, "server_exchange") == 0 &&
+            (strcmp(test_case->mutation, "read_only") == 0 || (rng && client->allow_mutations))) {
+            if (rng)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE);
             if (strcmp(test_case->case_id, "test-op-query") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
+            if (locate_workflow)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE);
             if (hash_workflow)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_HASH);
             if (client->protocol_minor == 1 && strcmp(test_case->case_id, "test-op-ping") == 0)
