@@ -1,7 +1,10 @@
 package org.kmipkit.validator;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.InvalidExtensionSchemaException;
+import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvStructure;
 
 import java.io.IOException;
@@ -13,7 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-/** Local KMIP 3.0 draft constructor evidence from the installed Java/JNI package. */
+/** Local draft and generic TTLV evidence from the installed Java/JNI package. */
 final class DraftCampaign {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final String PREFIX = "org.kmipkit.extensions.ClientBatchItem.";
@@ -27,6 +30,8 @@ final class DraftCampaign {
             }
         }
     }
+
+    private record Outcome(boolean passed, String assertion) { }
 
     private static final Map<String, Constructor> ROUTES = Map.of(
             PREFIX + "createGroup", new Constructor(ClientBatchItem::createGroup, 0x3c),
@@ -62,31 +67,66 @@ final class DraftCampaign {
         if (options.containsKey("--connection")) throw new IllegalArgumentException("Local campaigns do not take a connection");
         var events = JSON.createArrayNode();
         boolean allPassed = true;
+        var tags = new HashMap<String, Boolean>();
+        var catalog = Path.of("../shared/catalog/kmipkit-2x-matrix-catalog.json");
+        try (var reader = Files.newBufferedReader(catalog)) {
+            for (JsonNode target : JSON.readTree(reader).path("normative_targets")) {
+                if (target.path("kind").asText().equals("tag")) {
+                    tags.put(target.path("target_id").asText(), target.path("allocation").asText().equals("assigned"));
+                }
+            }
+        }
         try (var reader = Files.newBufferedReader(Path.of(options.get("--plan")))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 var row = JSON.readTree(line);
                 if (!"java".equals(row.path("language").asText())
-                        || !"3.0".equals(row.path("protocol_version").asText())
-                        || !"public_route".equals(row.path("kind").asText())
                         || !"construct".equals(row.path("action").asText())
                         || !"required".equals(row.path("execution_status").asText())) {
                     continue;
                 }
                 String symbol = row.path("public_api_symbol").asText();
-                Constructor route = ROUTES.get(symbol);
-                if (route == null) continue;
+                Outcome outcome = localOutcome(row, symbol, tags);
+                if (outcome == null) continue;
                 String id = row.path("obligation_id").asText();
                 if (!id.matches("[0-9a-f]{64}")) throw new IllegalArgumentException("Invalid obligation ID");
-                boolean passed = route.check();
-                allPassed &= passed;
+                allPassed &= outcome.passed();
                 events.addObject().put("obligation_id", id).put("public_api_symbol", symbol)
-                        .put("status", passed ? "passed" : "failed").put("assertion", "draft_operation_code");
+                        .put("status", outcome.passed() ? "passed" : "failed").put("assertion", outcome.assertion());
             }
         }
-        if (events.isEmpty()) throw new IllegalArgumentException("The plan has no supported draft routes");
+        if (events.isEmpty()) throw new IllegalArgumentException("The plan has no supported Java local routes");
         result.set("events", events);
         return allPassed ? 0 : 1;
+    }
+
+    private static Outcome localOutcome(JsonNode row, String symbol, Map<String, Boolean> tags) {
+        String version = row.path("protocol_version").asText();
+        if (version.equals("3.0") && row.path("kind").asText().equals("public_route")) {
+            Constructor route = ROUTES.get(symbol);
+            return route == null ? null : new Outcome(route.check(), "draft_operation_code");
+        }
+        if ((!version.equals("2.0") && !version.equals("2.1")) || !row.path("mode").asText().equals("local")
+                || !row.path("case_id").asText().equals("test-enum-tag")) {
+            return null;
+        }
+        String target = row.path("target_id").asText();
+        Boolean assigned = tags.get(target);
+        if (assigned == null || !target.matches("KMIPKIT-ELEM-TAG-[0-9A-Fa-f]{6}")) return null;
+        boolean checked = symbol.equals("org.kmipkit.ttlv.RawTag.checked");
+        if (!checked && !symbol.equals("org.kmipkit.ttlv.RawTag.fromRaw")) return null;
+        int code = Integer.parseInt(target.substring("KMIPKIT-ELEM-TAG-".length()), 16);
+        String assertion = checked ? "generic_ttlv_checked_tag_value" : "generic_ttlv_raw_tag_value";
+        try (var raw = RawTag.fromRaw(code)) {
+            if (!checked) return new Outcome(raw.raw() == code, assertion);
+            try (var tag = raw.checked()) {
+                return new Outcome(assigned && tag.raw() == code, assertion);
+            } catch (InvalidExtensionSchemaException rejected) {
+                return new Outcome(!assigned, assertion);
+            }
+        } catch (RuntimeException rejected) {
+            return new Outcome(false, assertion);
+        }
     }
 
     private static Path loadedJar() throws IOException {
