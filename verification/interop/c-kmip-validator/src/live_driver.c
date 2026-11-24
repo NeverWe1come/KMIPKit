@@ -9121,14 +9121,15 @@ static int32_t build_hash_request(kmip_live_client_t *client, bool fluent,
     return status;
 }
 
+static const uint8_t expected_sha256[] = {
+    0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
+    0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+    0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+    0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
+};
+
 static bool hash_response_matches_fixture(kmipkit_client_batch_item_response_t *item,
                                           int32_t *status) {
-    static const uint8_t expected_sha256[] = {
-        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
-        0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
-        0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
-        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
-    };
     uint8_t present = 0, data_present = 0, correlation_present = 0;
     kmipkit_byte_span_v1_t data = {0}, correlation = {0};
     *status = kmipkit_client_batch_item_response_hash(
@@ -9307,6 +9308,20 @@ static bool add_generic_version(kmip_live_client_t *client, kmipkit_ttlv_structu
     return valid;
 }
 
+static bool add_generic_hash_input(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload) {
+    static const uint8_t input[] = {'a', 'b', 'c'};
+    kmipkit_ttlv_structure_t *parameters = NULL;
+    kmipkit_ttlv_value_t *data = NULL;
+    bool valid = kmipkit_ttlv_structure_create(&parameters) == 0 &&
+        add_generic_number(client, &parameters, 0x420038, 6, true) &&
+        add_generic_structure(client, payload, 0x42002b, &parameters) &&
+        kmipkit_ttlv_value_byte_string(client->limits, input, sizeof(input), &data) == 0 &&
+        append_ttlv_value(client, payload, 0x4200c2, &data);
+    if (data) kmipkit_ttlv_value_release(data);
+    if (parameters) kmipkit_ttlv_structure_release(parameters);
+    return valid;
+}
+
 static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t operation) {
     kmipkit_ttlv_structure_t *root = NULL, *header = NULL, *batch = NULL, *payload = NULL;
     kmipkit_ttlv_value_t *value = NULL;
@@ -9325,6 +9340,8 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         valid = add_generic_number(client, &payload, 0x420074, 1, true);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
         valid = add_generic_version(client, &payload);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH)
+        valid = add_generic_hash_input(client, &payload);
     valid = valid && add_generic_structure(client, &batch, 0x420079, &payload) &&
         add_generic_structure(client, &root, 0x42000f, &batch) &&
         structure_into_value(client, &root, &value) &&
@@ -9351,7 +9368,7 @@ static void put_u32(uint8_t *output, uint32_t value) {
     output[3] = (uint8_t)value;
 }
 
-/* The three read-only probes construct only Structure, Integer and Enumeration. */
+/* Serialize the item types used by the read-only probes. */
 static bool encode_generic_probe(kmipkit_ttlv_item_view_t *item,
                                  uint8_t *wire, size_t capacity, size_t *offset) {
     if (*offset > capacity || capacity - *offset < 8) return false;
@@ -9378,6 +9395,18 @@ static bool encode_generic_probe(kmipkit_ttlv_item_view_t *item,
             if (child) kmipkit_ttlv_item_view_release(child);
         }
         body_length = (uint32_t)(*offset - header - 8);
+    } else if (valid && type == KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING) {
+        uint64_t length = 0;
+        valid = kmipkit_ttlv_value_view_byte_length(value, &length) == 0 &&
+            length <= ((capacity - *offset) & ~(size_t)7);
+        if (valid) {
+            body_length = (uint32_t)length;
+            for (uint64_t index = 0; valid && index < length; ++index)
+                valid = kmipkit_ttlv_value_view_byte_at(value, index, wire + *offset + index) == 0;
+            size_t padded = ((size_t)length + 7) & ~(size_t)7;
+            memset(wire + *offset + length, 0, padded - (size_t)length);
+            *offset += padded;
+        }
     } else if (valid && capacity - *offset >= 8) {
         uint32_t number = 0;
         if (type == KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION) {
@@ -9454,6 +9483,19 @@ static bool generic_integer_field(kmipkit_ttlv_structure_view_t *fields, uint32_
     return valid;
 }
 
+static bool generic_hash_matches(kmipkit_ttlv_structure_view_t *payload) {
+    kmipkit_ttlv_value_view_t *data = NULL;
+    uint64_t size = 0;
+    bool valid = structure_view_find_value(payload, 0x4200c2, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &data) &&
+        kmipkit_ttlv_value_view_byte_length(data, &size) == 0 && size == sizeof(expected_sha256);
+    for (uint64_t index = 0; valid && index < size; ++index) {
+        uint8_t byte = 0;
+        valid = kmipkit_ttlv_value_view_byte_at(data, index, &byte) == 0 && byte == expected_sha256[index];
+    }
+    if (data) kmipkit_ttlv_value_view_release(data);
+    return valid;
+}
+
 static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor) {
     kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
     uint64_t fields = 0, version_fields = 0;
@@ -9462,6 +9504,8 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         kmipkit_ttlv_structure_view_item_count(payload, &fields) == 0;
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
         valid = fields == 0;
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
+        valid = fields == 1 && generic_hash_matches(payload);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
         valid = generic_enum_field(payload, 0x42005c, &advertised_operation) && advertised_operation != 0;
     } else if (valid) {
@@ -9679,6 +9723,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
+            if (hash_workflow)
+                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_HASH);
             if (client->protocol_minor == 1 && strcmp(test_case->case_id, "test-op-ping") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_PING);
         }
