@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
                connection.server_id, connection.protocol_version, case_count, applicable,
                server_exchange, local_model, mutations, incoming);
         printf("capability profiles are hypotheses and do not suppress probes\n");
-        printf("public C routes: typed-protocol and local generic TTLV; "
+        printf("public C routes: typed-protocol, Fluent Create/Ping and local generic TTLV; "
                "high-level and outbound generic TTLV are unavailable\n");
         return 0;
     }
@@ -210,14 +210,14 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Preflight: dedicated test environment confirmation is required.\n");
             return 2;
         }
-        if (strcmp(connection.api_level, "typed-protocol") == 0 &&
+        if ((strcmp(connection.api_level, "typed-protocol") == 0 || strcmp(connection.api_level, "fluent") == 0) &&
             (!file_is_readable(connection.ca_cert_path) ||
              !file_is_readable(connection.client_cert_path) ||
              !file_is_readable(connection.client_key_path))) {
             fprintf(stderr, "Preflight: a TLS CA, client certificate or client key is unavailable.\n");
             return 2;
         }
-        if (strcmp(connection.api_level, "typed-protocol") == 0 &&
+        if ((strcmp(connection.api_level, "typed-protocol") == 0 || strcmp(connection.api_level, "fluent") == 0) &&
             !authentication_environment_is_available(&connection)) {
             fprintf(stderr, "Preflight: configured Username/Password environment variables are unavailable.\n");
             return 2;
