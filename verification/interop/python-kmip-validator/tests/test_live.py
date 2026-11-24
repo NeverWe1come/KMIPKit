@@ -2,6 +2,7 @@
 
 import json
 import os
+import struct
 import unittest
 from unittest.mock import call, MagicMock, Mock, patch
 
@@ -9,7 +10,7 @@ from kmipkit_validator.contract import DEFAULT_CATALOG
 from kmipkit_validator.driver import PythonKmipDriver
 from kmipkit_validator.controlled_peer import (
     ControlledTlsPeer, PKI, find_value, normalized_operation_name,
-    parse_children, ping_response, text_response,
+    discover_versions_response, enumeration, item, parse_children, ping_response, structure, text_response,
 )
 
 
@@ -249,6 +250,64 @@ class ControlledExchangeTests(unittest.TestCase):
                     self.assertEqual("server_unsupported", result["status"])
                     observations.append((peer.requests[0], peer.responses[0]))
                 self.assertEqual(*observations)
+
+    def test_generic_tags_reach_a_kmip2_peer_through_the_normal_runner(self):
+        from kmipkit_validator.cli import _plan, _run
+
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        selected = {"test-op-query", "test-op-discover-versions"}
+        catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
+        for version in ("2.0", "2.1"):
+            minor = int(version[-1])
+            for case in catalog["test_cases"]:
+                case_id = case["case_id"]
+                for expected in ("passed", "server_unsupported", "failed"):
+                    with self.subTest(version=version, case=case_id, expected=expected):
+                        query = case_id == "test-op-query"
+                        operation = 0x18 if query else 0x1E
+
+                        def reply(request):
+                            tree = parse_children(request[8:])
+                            payload = parse_children(find_value(tree, 0x420079))
+                            if query:
+                                self.assertEqual(find_value(payload, 0x420074), struct.pack(">I", 1))
+                            else:
+                                self.assertEqual(find_value(payload, 0x42006B), struct.pack(">i", minor))
+                            if expected == "server_unsupported":
+                                return ping_response(request, 1, 5, protocol_minor=minor)
+                            reply_minor = 1 - minor if expected == "failed" else minor
+                            if not query:
+                                return discover_versions_response(request, 0, None, reply_minor, ((2, minor),))
+                            protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
+                                                 item(0x42006B, 2, struct.pack(">i", reply_minor)))
+                            header = structure(0x42007A, protocol, item(0x420092, 9, struct.pack(">q", 1)),
+                                               item(0x42000D, 2, struct.pack(">i", 1)))
+                            batch = structure(0x42000F, enumeration(0x42005C, operation),
+                                              enumeration(0x42007F, 0), structure(0x42007C, enumeration(0x42005C, 1)))
+                            return structure(0x42007B, header, batch)
+
+                        peer = ControlledTlsPeer(response_factory=reply, protocol_version=version)
+                        try:
+                            connection = {
+                                "server_id": "generic-loopback", "protocol_version": version,
+                                "transport": "raw_tls", "encoding": "TTLV", "api_level": "generic-ttlv",
+                                "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+                                "tls": {
+                                    "ca_cert_path": str(PKI / "server-cert.pem"),
+                                    "client_cert_path": str(PKI / "client-cert.pem"),
+                                    "client_key_path": str(PKI / "client-key.pem"),
+                                    "server_name_override": "localhost",
+                                },
+                                "execution_policy": {"allow_mutations": False, "probe_unsupported": True},
+                            }
+                            selection = {**catalog, "test_cases": [case]}
+                            plan = _plan(connection, selection, b"{}")
+                            self.assertTrue(plan["cases"][0]["route_available"])
+                            result, = _run(connection, b"{}", selection, b"{}", {}, None, False)
+                            self.assertEqual(expected, result["status"], result)
+                        finally:
+                            peer.close()
+                        self.assertEqual(1, len(peer.requests))
 
     def test_rejected_ml_kem_setup_is_not_reported_as_a_target_exchange(self):
         for operation in ("Encapsulate", "Decapsulate"):
