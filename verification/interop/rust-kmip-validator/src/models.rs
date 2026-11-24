@@ -18,6 +18,9 @@ pub(crate) fn load<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
 #[derive(Deserialize)]
 pub(crate) struct Connection {
     pub server_id: String,
+    pub server_product: Option<String>,
+    pub server_version: Option<String>,
+    pub server_configuration_fingerprint: Option<String>,
     pub protocol_version: String,
     pub transport: String,
     pub encoding: String,
@@ -86,6 +89,18 @@ impl Connection {
                 .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-')
         {
             return Err("invalid server identity");
+        }
+        if self
+            .server_configuration_fingerprint
+            .as_ref()
+            .is_some_and(|hash| {
+                hash.len() != 64
+                    || !hash
+                        .bytes()
+                        .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+            })
+        {
+            return Err("invalid server configuration fingerprint");
         }
         if !["2.0", "2.1"].contains(&self.protocol_version.as_str())
             || !["TTLV", "JSON", "XML"].contains(&self.encoding.as_str())
