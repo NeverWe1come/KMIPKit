@@ -248,7 +248,7 @@ MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
 Verify. Estos estados verificados describen solo los mapeos de API de los
 cuatro lenguajes; no acreditan la paridad completa de operaciones, la
 conformidad KMIP ni la interoperabilidad con servidores.
-Las API asíncronas siguen el alcance aprobado de asynchronous client operations; el trabajo
+Las API asíncronas siguen el alcance aprobado de operaciones cliente asíncronas; el trabajo
 separado sobre el catálogo y la revisión de Process Table 278 continúa
 registrado independientemente. No se debe inferir que una operación está
 disponible solo porque haya tipos o código en otra parte del repositorio.

@@ -3,7 +3,7 @@
 The reviewed source of truth for the complete 1.0 cross-language API is
 `bindings/shared/public-api.json`, validated by
 `bindings/shared/public-api.schema.json`. It uses manifest v2 and retains the
-the extension registry registry declarations as a registry slice while owning the full
+the extension registry declarations as a registry slice while owning the full
 public-package, declaration, operation-readiness, and parity inventory. The
 first six generated destinations preserve the registry slice; the six
 additional destinations carry the full public API contract. Only declarations

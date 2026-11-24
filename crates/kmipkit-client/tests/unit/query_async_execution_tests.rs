@@ -68,7 +68,7 @@ fn query_executes_once_and_exposes_generic_response_structure() {
 
     let result = client
         .execute_query_async_requests(request, None, &CodecLimits::defaults())
-        .expect("Query response remains generic while DISC-039 is unresolved");
+        .expect("Query response remains generic for asynchronous query responses");
 
     assert_eq!(result.result().status().raw(), 0);
     assert_eq!(

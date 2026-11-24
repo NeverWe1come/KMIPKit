@@ -238,7 +238,7 @@ fn request_without_request_value_rejects_id_placeholder_as_public_key_identifier
 
     assert!(
         request.into_ttlv_payload().is_err(),
-        "DEC-013 requires a direct public-key identifier, not the ID Placeholder"
+        "OASIS KMIP requires a direct public-key identifier, not the ID Placeholder"
     );
 }
 

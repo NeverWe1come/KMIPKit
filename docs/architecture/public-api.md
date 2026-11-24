@@ -37,7 +37,7 @@ lifecycle calls. The maintainer approved asynchronous client operations for impl
 API mappings and each method performs one explicit exchange. These mappings do
 not claim conformance: the Process Table 278 catalog requirement gap and
 reviewer-owned checklists remain open. Query Asynchronous Requests retains its
-generic TTLV response under KMIPKIT-DEC-015.
+generic TTLV response under standard protocol response preservation.
 
 | KMIP operation | Four-language 1.0 mapping |
 |---|---|
@@ -46,7 +46,7 @@ generic TTLV response under KMIPKIT-DEC-015.
 | Process | verified |
 | Query Asynchronous Requests | verified |
 
-the transport subsystem adds synchronous production construction from a separate
+The transport subsystem adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
 arbitrary caller-implemented transport. This request set is not full KMIP 2.1
@@ -56,7 +56,7 @@ for the current boundary and examples.
 
 ### Low-level transport
 
-kmipkit-transport is a public reusable Rust crate under the modular workspace architecture. the low-level transport exchange specification
+kmipkit-transport is a public reusable Rust crate under the modular workspace architecture. The low-level transport exchange specification
 defines its documented bounded byte-exchange contract. It is not re-exported
 by the kmipkit facade and cannot be injected into the typed client. Direct
 callers supply and own request bytes; this API does not encode or validate
@@ -64,19 +64,19 @@ KMIP messages and does not provide the typed client's request-owner guarantee.
 On success, `TransportResponse` lends bytes through a borrowed view, redacts
 `Debug` output, and zeroizes initialized bytes in its current owned allocation
 on drop. Partial and error cleanup limits, including allocation growth and
-external copies, are defined by the low-level transport exchange contract. the transport subsystem provides production
+external copies, are defined by the low-level transport exchange contract. The transport subsystem provides production
 raw-TLS and HTTPS/HTTP 1.1 adapters; only the validated adapters are reachable
 from the typed client. Direct users may call each adapter's bounded byte API.
 
 ### Typed protocol
 
-the client execution model provides synchronous Rust `Client::execute` over an ordered
+The client execution model provides synchronous Rust `Client::execute` over an ordered
 `ClientBatch` with a closed typed request set. The complete Rust typed request
 set covers all 56 `client_1_0` operation types, including explicit asynchronous
 follow-up operations (Cancel, Poll, Process, and Query Asynchronous Requests) as
 typed batch items, with verified four-language API mappings. This API status
 does not establish conformance. The Query Asynchronous Requests response
-remains available as a generic TTLV response under KMIPKIT-DEC-015.
+remains available as a generic TTLV response under standard protocol response preservation.
 Variants: Discover Versions,
 Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
 Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
