@@ -1,4 +1,4 @@
-//! KMIPKit Cloud Proxy CLI entrypoint.
+//! KMIPKit Proxy CLI entrypoint (Cloud KMS Bridge & KMIP 1.X -> 2.0/2.1/3.0 Bridge).
 #![forbid(unsafe_code)]
 #![allow(
     unknown_lints,
@@ -28,11 +28,12 @@
     clippy::manual_range_contains
 )]
 
+use std::sync::Arc;
+
 use clap::Parser;
-use kmipkit_proxy::config::{CliArgs, ProxyConfig};
+use kmipkit_proxy::config::{CliArgs, OperationPolicyMode, ProxyConfig};
 use kmipkit_proxy::providers::{CloudKmsProvider, InMemoryMockProvider};
 use kmipkit_proxy::server::ProxyServer;
-use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -45,6 +46,69 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let default_config = ProxyConfig::default();
         args.merge_into(default_config)
     };
+
+    #[cfg(feature = "kmip1x-bridge")]
+    if config.backend.provider == "kmip-upstream" {
+        use kmipkit_proxy::{
+            Kmip1xBridge, KmipKitUpstreamTransport, OperationPolicyHandling, TranslatorConfig,
+            UpstreamKmipVersion,
+        };
+
+        let upstream_ver =
+            UpstreamKmipVersion::parse_str(&config.backend.kmip_upstream.target_version)
+                .map_err(|e| format!("invalid upstream version: {e}"))?;
+        let policy = match config.backend.kmip_upstream.operation_policy_mode {
+            OperationPolicyMode::Ignore => OperationPolicyHandling::Ignore,
+            OperationPolicyMode::StoreAsVendorAttribute => {
+                OperationPolicyHandling::StoreAsVendorAttribute
+            }
+            OperationPolicyMode::Reject => OperationPolicyHandling::Reject,
+        };
+        let templates = if let Some(path) = &config.backend.kmip_upstream.template_store_path {
+            Arc::new(
+                kmipkit_proxy::kmip1x::template_store::TemplateStore::with_persistence(
+                    path.clone(),
+                )
+                .map_err(|e| format!("template store initialization failed: {e}"))?,
+            )
+        } else {
+            Arc::new(kmipkit_proxy::kmip1x::template_store::TemplateStore::new())
+        };
+        let transport = KmipKitUpstreamTransport::from_config(&config.backend.kmip_upstream)
+            .map_err(|e| format!("upstream transport initialization failed: {e}"))?;
+        let bridge = Arc::new(Kmip1xBridge::with_template_store(
+            Arc::new(transport),
+            TranslatorConfig {
+                upstream_version: upstream_ver,
+                operation_policy_handling: policy,
+                ..TranslatorConfig::default()
+            },
+            templates,
+        ));
+
+        println!(
+            "Starting KMIPKit 1.X -> {} Bridge on {} (upstream: {}, tls: {}, allow_tls12: {})",
+            config.backend.kmip_upstream.target_version,
+            config.listener.bind_addr,
+            config.backend.kmip_upstream.endpoint,
+            config.listener.tls_enabled,
+            config.listener.allow_tls12,
+        );
+
+        let handle = ProxyServer::start_kmip1x_bridge(config, bridge)
+            .await
+            .map_err(|e| format!("KMIP 1.X bridge startup failed: {e}"))?;
+
+        println!("KMIPKit 1.X Bridge listening on {}", handle.local_addr());
+        tokio::signal::ctrl_c().await?;
+        println!("Shutting down KMIPKit 1.X Bridge...");
+        handle
+            .shutdown()
+            .await
+            .map_err(|e| format!("Shutdown error: {e}"))?;
+        println!("Shutdown complete.");
+        return Ok(());
+    }
 
     let provider: Arc<dyn CloudKmsProvider> = match config.backend.provider.as_str() {
         "mock" => Arc::new(InMemoryMockProvider::default()),
@@ -76,9 +140,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &config.backend.oci,
         )?),
         other => {
-            eprintln!(
-                "Unknown or unconfigured cloud provider: {other}, defaulting to in-memory mock"
-            );
+            eprintln!("Unknown or unconfigured provider: {other}, defaulting to in-memory mock");
             Arc::new(InMemoryMockProvider::default())
         }
     };

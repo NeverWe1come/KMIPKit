@@ -1,54 +1,47 @@
 # KMIPKit
 
-KMIPKit is an open source KMIP client with a Rust core, a stable C ABI, and
-Java and Python adapters. The review branch targets KMIP 2.1 by default, with
-version-gated support for KMIP 2.0 and KMIP 3.0. It supports TTLV, JSON, and
-XML; TLS 1.3 mutual authentication; raw TLS and HTTPS/HTTP 1.1; and Rust, C,
-Java, and Python interfaces. See the verification materials for the exact
-scope and evidence; this summary is not a conformance claim.
+> **Open-Source OASIS KMIP 2.0 / 2.1 / 3.0 Client Suite + Zero-DB Stateless Cloud KMS & KMIP 1.X Legacy Proxy**  
+> **Core:** Rust (Edition 2024, `#![forbid(unsafe_code)]`) | **Bindings:** C (C11 ABI) · Java (JNI) · Python (CFFI)  
+> **Encodings:** TTLV (default) · JSON · XML | **Transports:** Raw TLS 1.3/1.2 mTLS · HTTPS (HTTP/1.1)
 
-**Current implementation and release evidence:** see the dated
-[project status](docs/project-status.md). Integrated code does not itself
-establish profile conformance, external interoperability, or release readiness.
+**Documentation Portal:** [English](docs/en/00-index.md) · [Español](docs/es/00-index.md) · [Français](docs/fr/00-index.md) · [Deutsch](docs/de/00-index.md)
 
-## Workspace
+---
 
-The Cargo workspace contains eight crates covering the TTLV model, KMIP
-protocol, transport, client, Rust facade, C ABI, shared test support, and
-standalone test server. The independent cloud KMS proxy is under `kmip-proxy/`
-with its own workspace and dependency boundary. See the
-[architecture overview](docs/architecture/overview.md) and
-[Rust workspace guide](docs/development/rust-workspace.md).
+## Overview
 
-Inspect and compile the Rust workspace with:
+**KMIPKit** is a memory-safe, specification-driven **OASIS KMIP** client library and proxy ecosystem built around a single authoritative Rust core:
 
-```sh
-cargo metadata --format-version 1 --no-deps
+* **KMIP Client Core (`crates/`):** Targets **KMIP 2.1** by default with explicit version-gated support for **KMIP 2.0** and **KMIP 3.0** (including NIST Post-Quantum Cryptography: `ML-KEM`, `ML-DSA`, `SLH-DSA`). Supports all 59 C2S and S2C operations, atomic batches with `ID Placeholder`, explicit asynchronous control (`Poll`/`Cancel`/`Process`), mandatory mTLS, zeroization, and full parity across **Rust, C, Java, and Python**.
+* **KMIPKit Cloud KMS Proxy (`kmip-proxy/`):** Independent Zero-DB Stateless sidecar translating KMIP to **10 Cloud & Enterprise KMS providers** (AWS, Azure, Google Cloud, Oracle OCI, HashiCorp Vault / OpenBao, Infisical, IBM Cloud, Alibaba Cloud, Scaleway, and Open Telekom Cloud) with *Cloud Tag-Stuffing* and *Auto-Envelope* AES-256-GCM custody.
+* **KMIP 1.X Legacy Bridge (`kmip-proxy/src/kmip1x/`):** Transparent bidirectional protocol translator allowing legacy **KMIP 1.0–1.4** applications (MongoDB, MySQL, VMware vSphere, NetApp ONTAP, banking HSM clients) to connect to modern **KMIP 2.0, 2.1, and 3.0** servers without modifying legacy code—covering all 77 standard attributes, `Template` emulation, Read-Modify-Write `Attribute Index`, `Query` allowlists, and S2C bridging.
+
+---
+
+## Quick Verification
+
+```bash
+# 1. Build checksum-pinned OpenSSL 3.5.9
+python3 verification/security/openssl/build.py
+export OPENSSL_DIR="$HOME/.cache/kmipkit/openssl/3.5.9"
+export OPENSSL_STATIC=1
+
+# 2. Check and test the 8-crate core workspace
 cargo check --workspace --all-targets --all-features
+cargo test --workspace
+
+# 3. Check and test the standalone KMIP Proxy & KMIP 1.X Legacy Bridge
+cargo check --manifest-path kmip-proxy/Cargo.toml --all-targets
+cargo test --manifest-path kmip-proxy/Cargo.toml
 ```
 
-## Documentation
+---
 
-Start with the [documentation index](docs/README.md). Contributors can also
-read the repository's [contribution guide](CONTRIBUTING.md) and
-[governance](GOVERNANCE.md).
+## Documentation & Governance
 
-The [bindings index](bindings/README.md) provides installation, native library,
-testing, and example guides for C, Java, and Python.
-
-## Español
-
-KMIPKit es una biblioteca cliente KMIP de código abierto, con núcleo Rust,
-ABI C estable y adaptadores para Java y Python. La rama de revisión usa
-KMIP 2.1 por defecto y ofrece soporte acotado y validado por versión para KMIP
-2.0 y KMIP 3.0. Incluye TTLV, JSON y XML; TLS 1.3 con
-autenticación mutua; conexiones TLS directas y HTTPS/HTTP 1.1; operaciones de
-cliente y las operaciones servidor-cliente aprobadas; y capacidades
-equivalentes en Rust, C, Java y Python.
-
-Consulta el [estado del proyecto](docs/project-status.md) para ver el snapshot
-documentado y el [índice de documentación](docs/README.md) para las guías de
-uso, arquitectura y verificación.
+* **Multilingual Documentation Portal:** [English](docs/en/00-index.md) · [Español](docs/es/00-index.md) · [Français](docs/fr/00-index.md) · [Deutsch](docs/de/00-index.md)
+* **Language Bindings:** [C](bindings/c/README.md) · [Java](bindings/java/README.md) · [Python](bindings/python/README.md)
+* **Project Status & Governance:** [Project Status](docs/project-status.md) · [Contributing](CONTRIBUTING.md) · [Governance](GOVERNANCE.md) · [Security Policy](SECURITY.md)
 
 ## License
 

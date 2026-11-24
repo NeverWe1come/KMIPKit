@@ -1,11 +1,11 @@
 //! TTLV encoding and decoding for kmipkit-test-server.
 
-use kmipkit_ttlv::codec::{DecodeError, decode};
+use kmipkit_ttlv::codec::{DecodeError, decode_allow_reserved};
 use kmipkit_ttlv::{Item, ValueView};
 
 /// Decodes raw TTLV bytes into a generic KMIP [`Item`].
 pub fn decode_ttlv(bytes: &[u8]) -> Result<Item, DecodeError> {
-    decode(bytes)
+    decode_allow_reserved(bytes)
 }
 
 /// Encodes a generic KMIP [`Item`] into standard OASIS TTLV bytes.

@@ -5,7 +5,17 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/kmipkit-ttlv"
+readme = "../../README.md"
+keywords = ["kmip", "kms", "hsm", "cryptography", "oasis"]
+categories = ["cryptography", "api-bindings", "network-programming"]
 description = "Generic TTLV value types and bounded decoding for KMIPKit"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 zeroize.workspace = true
