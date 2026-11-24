@@ -21,6 +21,7 @@ kmipkit-protocol.workspace = true
 kmipkit-ttlv.workspace = true
 rcgen.workspace = true
 kmipkit-test-support = { workspace = true, features = ["fixtures"] }
+kmipkit-transport = { workspace = true, features = ["test-support"] }
 roxmltree.workspace = true
 rustls.workspace = true
 serde_json.workspace = true
@@ -30,7 +31,6 @@ zeroize = { workspace = true, features = ["alloc"] }
 
 [dev-dependencies]
 kmipkit-client.workspace = true
-kmipkit-transport.workspace = true
 
 [lints]
 workspace = true

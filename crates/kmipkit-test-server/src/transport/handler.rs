@@ -1,12 +1,13 @@
-//! Unified connection handler for Raw TLS TTLV and HTTPS (TTLV, JSON, XML).
+//! Unified connection handler for raw TLS and HTTPS with TTLV, JSON and XML.
 
+use kmipkit_transport::{WireEncoding, test_support::TextDocumentFramer};
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use crate::codec::Format;
 use crate::ops::Dispatcher;
 
-/// Handles an established TLS stream. Supports both Raw TTLV frames and HTTP/1.1 POST /kmip requests.
+/// Handles an established TLS stream using raw messages or HTTP/1.1 POST requests.
 pub async fn handle_connection<S>(mut stream: S, dispatcher: Arc<Dispatcher>) -> Result<(), String>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -32,7 +33,9 @@ where
             if !keep_alive {
                 break;
             }
-        } else {
+        } else if matches!(first_byte[0], b'{' | b'<' | 0xef) {
+            handle_raw_text(&mut stream, first_byte[0], &dispatcher).await?;
+        } else if !first_byte[0].is_ascii_whitespace() {
             return Err(format!(
                 "unrecognized protocol starting with byte: 0x{:02x}",
                 first_byte[0]
@@ -41,6 +44,34 @@ where
     }
 
     Ok(())
+}
+
+async fn handle_raw_text<S>(
+    stream: &mut S,
+    first_byte: u8,
+    dispatcher: &Dispatcher,
+) -> Result<(), String>
+where
+    S: AsyncRead + AsyncWrite + Unpin,
+{
+    let (encoding, format) = if first_byte == b'{' {
+        (WireEncoding::Json, Format::Json)
+    } else {
+        (WireEncoding::Xml, Format::Xml)
+    };
+    let max_message = kmipkit_ttlv::codec::CodecLimits::defaults().max_message_bytes();
+    let mut framer = TextDocumentFramer::new(encoding).map_err(|error| error.to_string())?;
+    let mut request = vec![first_byte];
+    framer.feed(first_byte).map_err(|error| error.to_string())?;
+    while !framer.is_complete() {
+        if request.len() >= max_message {
+            return Err("raw text request exceeds the KMIP codec limit".to_owned());
+        }
+        let byte = stream.read_u8().await.map_err(|error| error.to_string())?;
+        framer.feed(byte).map_err(|error| error.to_string())?;
+        request.push(byte);
+    }
+    respond_raw(stream, &request, format, dispatcher).await
 }
 
 async fn handle_raw_ttlv<S>(
@@ -81,14 +112,21 @@ where
     full_request.extend_from_slice(&full_header);
     full_request.extend_from_slice(&payload);
 
-    let request_item = Format::Ttlv
-        .decode(&full_request)
-        .map_err(|e| format!("TTLV decode error: {e}"))?;
+    respond_raw(stream, &full_request, Format::Ttlv, dispatcher).await
+}
 
+async fn respond_raw<S>(
+    stream: &mut S,
+    request: &[u8],
+    format: Format,
+    dispatcher: &Dispatcher,
+) -> Result<(), String>
+where
+    S: AsyncWrite + Unpin,
+{
+    let request_item = format.decode(request)?;
     let response_item = dispatcher.dispatch(&request_item)?;
-    let response_bytes = Format::Ttlv
-        .encode(&response_item)
-        .map_err(|e| format!("TTLV encode error: {e}"))?;
+    let response_bytes = format.encode(&response_item)?;
 
     stream
         .write_all(&response_bytes)
