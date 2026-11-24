@@ -28,6 +28,13 @@ export function createIdeBridge(): IdeBridge {
       },
       onMessage(handler) {
         const listener = (event: MessageEvent) => {
+          if (
+            event.origin &&
+            event.origin !== window.location.origin &&
+            !event.origin.startsWith("vscode-webview://")
+          ) {
+            return;
+          }
           const data = event.data;
           if (data && typeof data.type === "string") {
             handler(data.type, data.payload);

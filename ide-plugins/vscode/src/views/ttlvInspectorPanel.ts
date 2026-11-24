@@ -23,7 +23,7 @@ export class TtlvInspectorPanel {
     if (TtlvInspectorPanel.currentPanel) {
       TtlvInspectorPanel.currentPanel.panel.reveal(column);
       if (initialInput) {
-        TtlvInspectorPanel.currentPanel.decodeAndShow(initialInput);
+        void TtlvInspectorPanel.currentPanel.decodeAndShow(initialInput);
       }
       return TtlvInspectorPanel.currentPanel;
     }

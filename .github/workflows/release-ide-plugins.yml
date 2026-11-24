@@ -50,11 +50,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Test core (host)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: cargo test --manifest-path ide-plugins/core/Cargo.toml
+        run: cargo test --locked --manifest-path ide-plugins/core/Cargo.toml
       - name: Build kmip-lsp
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-        run: cargo build --manifest-path ide-plugins/core/Cargo.toml --release --target ${{ matrix.target }}
+        run: cargo build --locked --manifest-path ide-plugins/core/Cargo.toml --release --target ${{ matrix.target }}
       - name: Stage binary
         shell: bash
         run: |
@@ -84,7 +84,7 @@ jobs:
       - name: Build and test webview-ui
         run: |
           cd ide-plugins/webview-ui
-          npm ci
+          npm ci --ignore-scripts
           npm test
           npm run build
       - name: Sync webview-ui bundle
@@ -92,13 +92,13 @@ jobs:
       - name: Build and test VS Code extension
         run: |
           cd ide-plugins/vscode
-          npm ci
+          npm ci --ignore-scripts
           npm run compile
           npm test
       - name: Package VSIX
         run: |
           cd ide-plugins/vscode
-          npx @vscode/vsce package --out ../kmipkit-vscode.vsix
+          ./node_modules/.bin/vsce package --out ../kmipkit-vscode.vsix
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: kmipkit-vscode-vsix
@@ -122,7 +122,7 @@ jobs:
       - name: Build webview-ui & sync to JetBrains
         run: |
           cd ide-plugins/webview-ui
-          npm ci
+          npm ci --ignore-scripts
           npm run build
           cd ../..
           ./ide-plugins/scripts/build-webview.sh
@@ -150,7 +150,7 @@ jobs:
         with:
           targets: wasm32-wasip1
       - name: Build Zed WASM extension
-        run: cargo build --manifest-path ide-plugins/zed/Cargo.toml --target wasm32-wasip1 --release
+        run: cargo build --locked --manifest-path ide-plugins/zed/Cargo.toml --target wasm32-wasip1 --release
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: release-artifacts

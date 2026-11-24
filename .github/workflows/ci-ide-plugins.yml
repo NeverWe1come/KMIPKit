@@ -54,7 +54,7 @@ jobs:
       - name: Test and build webview-ui
         run: |
           cd ide-plugins/webview-ui
-          npm ci
+          npm ci --ignore-scripts
           npm test
           npm run build
       - name: Sync webview bundle
@@ -62,7 +62,7 @@ jobs:
       - name: Compile and test VS Code extension
         run: |
           cd ide-plugins/vscode
-          npm ci
+          npm ci --ignore-scripts
           npm run compile
           npm test
 
@@ -82,7 +82,7 @@ jobs:
           package-manager-cache: false
       - name: Build webview-ui and sync to JetBrains
         run: |
-          cd ide-plugins/webview-ui && npm ci && cd ../..
+          cd ide-plugins/webview-ui && npm ci --ignore-scripts && cd ../..
           ./ide-plugins/scripts/build-webview.sh
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
         with:

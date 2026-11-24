@@ -107,14 +107,30 @@ export class PlaygroundView {
     if (this.profile.environment === "PROD" && MUTATING_OPS.has(this.operation)) {
       const warn = document.createElement("div");
       warn.className = "alert-banner";
-      warn.innerHTML = `
-        <strong>PROD Guardrail Active:</strong> Destructive/mutating operation <code>${this.operation}</code> is blocked by default.
-        <label style="margin-left:8px;"><input id="pg-unlock-prod" type="checkbox" ${this.unlockProd ? "checked" : ""} /> Unlock PROD execution</label>
-      `;
-      card.appendChild(warn);
-      warn.querySelector<HTMLInputElement>("#pg-unlock-prod")?.addEventListener("change", (e) => {
-        this.unlockProd = (e.target as HTMLInputElement).checked;
+      const strong = document.createElement("strong");
+      strong.textContent = "PROD Guardrail Active:";
+      const msgText = document.createTextNode(" Destructive/mutating operation ");
+      const opCode = document.createElement("code");
+      opCode.textContent = this.operation;
+      const tailText = document.createTextNode(" is blocked by default.");
+      const unlockLabel = document.createElement("label");
+      unlockLabel.style.marginLeft = "8px";
+      const unlockInput = document.createElement("input");
+      unlockInput.id = "pg-unlock-prod";
+      unlockInput.type = "checkbox";
+      unlockInput.checked = this.unlockProd;
+      unlockInput.addEventListener("change", () => {
+        this.unlockProd = unlockInput.checked;
       });
+      unlockLabel.appendChild(unlockInput);
+      unlockLabel.appendChild(document.createTextNode(" Unlock PROD execution"));
+
+      warn.appendChild(strong);
+      warn.appendChild(msgText);
+      warn.appendChild(opCode);
+      warn.appendChild(tailText);
+      warn.appendChild(unlockLabel);
+      card.appendChild(warn);
     }
 
     const execBtn = document.createElement("button");
@@ -142,12 +158,27 @@ export class PlaygroundView {
     if (this.lastResult) {
       const resBox = document.createElement("div");
       resBox.style.marginTop = "10px";
-      resBox.innerHTML = `
-        <div class="alert-banner" style="border-color: var(--kmip-accent); background: rgba(14,99,156,0.12);">
-          <strong>${this.lastResult.operation}</strong> · Status: <code>${this.lastResult.resultStatus}</code> · Latency: <strong>${this.lastResult.latencyMs} ms</strong><br/>
-          ${this.lastResult.summary}
-        </div>
-      `;
+      const banner = document.createElement("div");
+      banner.className = "alert-banner";
+      banner.style.borderColor = "var(--kmip-accent)";
+      banner.style.background = "rgba(14,99,156,0.12)";
+
+      const opStrong = document.createElement("strong");
+      opStrong.textContent = this.lastResult.operation;
+      const statusCode = document.createElement("code");
+      statusCode.textContent = this.lastResult.resultStatus;
+      const latStrong = document.createElement("strong");
+      latStrong.textContent = `${this.lastResult.latencyMs} ms`;
+
+      banner.appendChild(opStrong);
+      banner.appendChild(document.createTextNode(" · Status: "));
+      banner.appendChild(statusCode);
+      banner.appendChild(document.createTextNode(" · Latency: "));
+      banner.appendChild(latStrong);
+      banner.appendChild(document.createElement("br"));
+      banner.appendChild(document.createTextNode(this.lastResult.summary));
+
+      resBox.appendChild(banner);
       card.appendChild(resBox);
     }
 
