@@ -23,6 +23,7 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 </table></div>
 <p id="compatibility"></p>
 <p id="inventory"></p>
+<p id="oasis-ttlv"></p>
 <details id="catalog-results" hidden>
 <summary>Installed-validator execution catalog</summary>
 <div class="scroll"><table id="catalog">
@@ -50,6 +51,10 @@ byId("server").textContent = server ? `${server.product} ${server.version} (${se
 byId("compatibility").textContent = Object.entries(server_compatibility)
   .map(([state, count]) => `${state.replaceAll("_", " ")}: ${count}`).join(" · ");
 byId("inventory").textContent = `Unmapped normative entries: ${report.summary.unmapped_inventory}`;
+const codec = report.summary.oasis_ttlv?.message_checks || {};
+byId("oasis-ttlv").textContent = Object.entries(codec).map(([name, counts]) =>
+  `${name} OASIS TTLV: ${Object.entries(counts).map(([state, count]) => `${count} ${state}`).join(", ")}`
+).join(" · ");
 function cells(parent, values) {
   for (const value of values) parent.insertCell().textContent = value ?? "—";
 }
