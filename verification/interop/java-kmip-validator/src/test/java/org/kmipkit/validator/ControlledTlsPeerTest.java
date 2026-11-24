@@ -365,6 +365,7 @@ class ControlledTlsPeerTest {
                 "test-op-activate", "test-op-revoke"));
         if ("generic-ttlv".equals(apiLevel)) {
             cases.add("test-op-create");
+            cases.addAll(List.of("test-op-check", "test-op-check-invalid"));
             cases.add("test-op-get-invalid");
             cases.add("test-op-get-attributes");
             cases.add("test-op-get-attributes-invalid");
@@ -382,6 +383,9 @@ class ControlledTlsPeerTest {
         for (String id : cases) {
             List<byte[]> responses = switch (id) {
                 case "test-op-get" -> List.of(create, get, destroy);
+                case "test-op-check", "test-op-check-invalid" -> List.of(create, activate,
+                        legacyKeyResponse(minor, 9, identifier, item(0x42002c, 2,
+                                intBytes(id.endsWith("-invalid") ? 8 : 4))), revoke, destroy);
                 case "test-op-activate", "test-op-revoke" -> List.of(create, activate, revoke, destroy);
                 case "test-op-activate-invalid" -> List.of(create, legacyKeyResponse(minor, 18, foreignId), revoke, destroy);
                 case "test-op-revoke-invalid" -> List.of(create, activate, legacyKeyResponse(minor, 19, foreignId), destroy);
@@ -396,6 +400,7 @@ class ControlledTlsPeerTest {
             };
             List<Integer> operations = switch (id) {
                 case "test-op-get", "test-op-get-invalid" -> List.of(1, 0x0a, 0x14);
+                case "test-op-check", "test-op-check-invalid" -> List.of(1, 18, 9, 19, 20);
                 case "test-op-activate", "test-op-revoke", "test-op-activate-invalid",
                         "test-op-revoke-invalid" -> List.of(1, 18, 19, 20);
                 case "test-op-get-attribute-list", "test-op-get-attribute-list-invalid" -> List.of(1, 12, 20);
@@ -461,7 +466,11 @@ class ControlledTlsPeerTest {
                     assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
                 }
                 if (operations.contains(19)) {
-                    assertTrue(contains(requests.get(2), structure(0x420081, item(0x420082, 5, intBytes(6)))));
+                    assertTrue(contains(requests.get(operations.indexOf(19)), structure(0x420081,
+                            item(0x420082, 5, intBytes(6)))));
+                }
+                if ("test-op-check".equals(caseId)) {
+                    assertTrue(contains(requests.get(2), structure(0x420079, identifier, item(0x42002c, 2, intBytes(4)))));
                 }
                 for (int index = 1; index < requests.size(); index++) {
                     assertTrue(contains(requests.get(index), identifier));

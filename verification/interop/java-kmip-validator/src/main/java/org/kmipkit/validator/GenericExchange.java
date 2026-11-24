@@ -42,6 +42,7 @@ import java.util.function.Predicate;
 final class GenericExchange {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
     private static final int CREATE = 0x01;
+    private static final int CHECK = 0x09;
     private static final int GET = 0x0a;
     private static final int GET_ATTRIBUTES = 0x0b;
     private static final int GET_ATTRIBUTE_LIST = 0x0c;
@@ -76,6 +77,7 @@ final class GenericExchange {
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
+            case "test-op-check" -> CHECK;
             case "test-op-get" -> GET;
             case "test-op-get-attributes" -> GET_ATTRIBUTES;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
@@ -104,7 +106,7 @@ final class GenericExchange {
 
     private static boolean usesOwnedKey(int operation) {
         return switch (operation) {
-            case CREATE, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
+            case CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
             default -> false;
         };
     }
@@ -141,9 +143,13 @@ final class GenericExchange {
             target = execute(connection, GET_ATTRIBUTE_LIST, minor, id,
                     payload -> sameId.test(payload) && hasLengthReference(payload), start);
         }
-        if ("passed".equals(create.status()) && (operation == ACTIVATE || operation == REVOKE)) {
+        if ("passed".equals(create.status()) && (operation == ACTIVATE || operation == REVOKE || operation == CHECK)) {
             var activate = execute(connection, ACTIVATE, minor, id, sameId, start);
             target = activate;
+            if ("passed".equals(activate.status()) && operation == CHECK) {
+                target = execute(connection, CHECK, minor, id,
+                        payload -> sameId.test(payload) && matchesCheckUsage(payload), start);
+            }
             if (activate.resultStatusCode() == null || activate.resultStatusCode() == 0) {
                 var revoke = execute(connection, REVOKE, minor, id, sameId, start);
                 if ("passed".equals(activate.status())) {
@@ -152,7 +158,7 @@ final class GenericExchange {
                         target = JavaKmipDriver.CaseOutcome.failed("Cleanup Revoke failed for the activated key.", elapsed(start));
                     }
                 }
-            } else if (operation == REVOKE) {
+            } else if (operation != ACTIVATE) {
                 target = JavaKmipDriver.CaseOutcome.notRun("Server rejected isolated Activate setup.", elapsed(start));
             }
         }
@@ -199,6 +205,9 @@ final class GenericExchange {
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var payload = switch (operation) {
                     case CREATE -> createPayload();
+                    case CHECK -> structureItem(0x420079,
+                            item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
+                            item(0x42002c, TtlvValue.Integer(4)));
                     case GET_ATTRIBUTES -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42013b, TtlvValue.Enumeration(0x42002a)));
@@ -479,6 +488,18 @@ final class GenericExchange {
             }
         }
         return found;
+    }
+
+    private static boolean matchesCheckUsage(TtlvStructureView payload) {
+        boolean found = false;
+        for (long index = 0; index < payload.itemCount(); index++) {
+            try (var field = payload.itemAt(index); var tag = field.tag(); var value = field.value()) {
+                if (tag.raw() != 0x42002c) continue;
+                if (found || field.itemType() != TtlvItemType.Integer || (value.integer() & 4) == 0) return false;
+                found = true;
+            }
+        }
+        return true;
     }
 
     private static boolean hasLengthReference(TtlvStructureView payload) {
