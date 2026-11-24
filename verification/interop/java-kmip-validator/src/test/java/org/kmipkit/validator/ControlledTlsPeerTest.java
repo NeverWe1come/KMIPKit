@@ -41,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
@@ -341,6 +342,71 @@ class ControlledTlsPeerTest {
                 "The created object must be destroyed in a separate exchange.");
         assertTrue(contains(cleanup, item(0x420094, 7,
                 CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent",
+            "3.0,typed-protocol", "3.0,fluent"})
+    void hashAndLocateRunThroughBothApis(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        assertEquals("passed", probeReadOnly(catalog, "test-op-locate", 0x08, version, apiLevel,
+                item(0x4200d5, 2, intBytes(0))).status());
+        byte[] input = "abc".getBytes(StandardCharsets.US_ASCII);
+        byte[] digest = MessageDigest.getInstance("SHA-256").digest(input);
+        String hash = "test-crypto-hash-sha_256-0";
+        assertEquals("passed", probeReadOnly(catalog, hash, 0x27, version, apiLevel,
+                item(0x4200c2, 8, digest)).status());
+        digest[0] ^= 1;
+        assertEquals("failed", probeReadOnly(catalog, hash, 0x27, version, apiLevel,
+                item(0x4200c2, 8, digest)).status());
+    }
+
+    private JavaKmipDriver.CaseOutcome probeReadOnly(CatalogLoader.Catalog catalog, String caseId,
+            int operation, String version, String apiLevel, byte[] responseField) throws Exception {
+        var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(caseId))
+                .findFirst().orElseThrow();
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] clientKey = fixture("client-key.pem");
+        boolean draft = version.equals("3.0");
+        int major = draft ? 3 : 2;
+        int minor = version.equals("2.1") ? 1 : 0;
+        byte[] versionField = structure(0x420069,
+                item(0x42006a, 2, intBytes(major)), item(0x42006b, 2, intBytes(minor)));
+        byte[] timestamp = item(0x420092, 9, longBytes(1));
+        byte[] header = draft ? structure(0x42007a, versionField, timestamp)
+                : structure(0x42007a, versionField, timestamp, item(0x42000d, 2, intBytes(1)));
+        byte[] operationField = item(0x42005c, 5, intBytes(operation));
+        byte[] status = item(0x42007f, 5, intBytes(0));
+        byte[] payload = structure(0x42007c, responseField);
+        byte[] batch = draft ? structure(0x42000f, operationField, status, payload)
+                : structure(0x42000f, operationField,
+                        item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)), status, payload);
+        byte[] response = structure(0x42007b, header, batch);
+        try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                certificate(clientPem))) {
+            var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                    serverPem, clientPem, clientKey, true, apiLevel));
+            Path connectionFile = temporaryDirectory.resolve("probe-connection.json");
+            Files.writeString(connectionFile, config.put("protocol_version", version).toString());
+            var peer = new FutureTask<>(() -> serveOneResponse(listener, response));
+            Thread thread = new Thread(peer, "java-validator-probe");
+            thread.setDaemon(true);
+            thread.start();
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                var outcome = driver.execute(testCase);
+                byte[] request = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(request, versionField));
+                assertTrue(contains(request, operationField));
+                if (operation == 0x27) {
+                    assertTrue(contains(request, item(0x420038, 5, intBytes(6))));
+                    assertTrue(contains(request, item(0x4200c2, 8, "abc".getBytes(StandardCharsets.US_ASCII))));
+                } else {
+                    assertTrue(contains(request, "kmipkit-locate-".getBytes(StandardCharsets.US_ASCII)));
+                }
+                return outcome;
+            }
+        }
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,

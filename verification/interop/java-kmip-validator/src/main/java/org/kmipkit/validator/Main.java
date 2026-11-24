@@ -208,8 +208,7 @@ public final class Main {
 
     private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, String apiLevel) {
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
-                || "fluent".equals(apiLevel) && (JavaKmipDriver.attributeRead(testCase)
-                || Set.of("Create", "Ping").contains(testCase.operation())));
+                || "fluent".equals(apiLevel) && JavaKmipDriver.supportsFluent(testCase));
     }
 
     private static boolean hasTypedRoute(CatalogLoader.CatalogCase testCase) {
