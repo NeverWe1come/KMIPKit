@@ -11,6 +11,13 @@ pub(crate) fn supports(case: &Case) -> bool {
     ) && matches!(
         case.operation.as_str(),
         "Create"
+            | "Create Group"
+            | "Create User"
+            | "Create Credential"
+            | "Deactivate"
+            | "Obliterate"
+            | "Encapsulate"
+            | "Decapsulate"
             | "Query"
             | "Discover Versions"
             | "Add Attribute"

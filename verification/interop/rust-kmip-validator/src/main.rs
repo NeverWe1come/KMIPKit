@@ -18,7 +18,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[command(about = "KMIP 2.0/2.1 installed-library interoperability consumer")]
+#[command(about = "KMIP 2.0, 2.1 and 3.0 installed-library interoperability consumer")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
