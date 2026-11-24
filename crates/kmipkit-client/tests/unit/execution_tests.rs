@@ -164,6 +164,7 @@ fn candidate_associate_response(
             operation: item.operation,
             unique_batch_item_id: item.unique_batch_item_id.clone(),
             response_context: None,
+            offered_versions: None,
         })
         .collect::<Vec<_>>();
     let response_items = response
@@ -173,6 +174,7 @@ fn candidate_associate_response(
             operation: item.operation,
             unique_batch_item_id: item.unique_batch_item_id.clone(),
             response_context: None,
+            offered_versions: None,
         })
         .collect::<Vec<_>>();
     associate_batch_items(&request_items, &response_items)

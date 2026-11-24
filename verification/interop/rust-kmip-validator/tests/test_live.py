@@ -342,6 +342,40 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(peer.operations, [])
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
+    def test_discover_versions_accepts_only_the_version_offered_by_each_api(self):
+        operation = 0x1e
+
+        def protocol_version(major, minor):
+            return ttlv(0x420069, 1, [
+                ttlv(0x42006a, 2, major),
+                ttlv(0x42006b, 2, minor),
+            ])
+
+        for version, api, matches in product(
+            ("2.0", "2.1", "3.0"), ("typed-protocol", "fluent"), (True, False)
+        ):
+            with self.subTest(version=version, api=api, matches=matches):
+                major, minor = map(int, version.split("."))
+                returned = (major, minor) if matches else ((2, 0) if version == "2.1" else (2, 1))
+
+                def reply(tree):
+                    payload = find(tree, 0x420079)
+                    self.assertEqual(payload, parse(protocol_version(major, minor)))
+                    return response(
+                        operation, major=major, minor=minor, status=0, reason=None,
+                        payload=[protocol_version(*returned)],
+                    )
+
+                cases = self.rows("test-op-discover-versions")
+                cases[0] = {
+                    **cases[0],
+                    "execution": {**cases[0]["execution"], "protocol_versions": [version]},
+                }
+                with ControlledPeer(self.pki, reply) as peer:
+                    _, report = self.command(self.connection(peer.port, version=version, api=api), cases)
+                    self.assertEqual(peer.operations, [operation])
+                self.assertEqual(report["cases"][0]["status"], "passed" if matches else "failed")
+
     def test_all_new_kmip30_operations_use_the_versioned_typed_and_fluent_exchanges(self):
         operations = {
             "Create Group": 0x3c, "Obliterate": 0x3d, "Create User": 0x3e,
