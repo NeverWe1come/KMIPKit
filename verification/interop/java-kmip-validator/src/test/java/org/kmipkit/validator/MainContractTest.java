@@ -58,7 +58,7 @@ class MainContractTest {
         Path connection = connection("2.0", "typed-protocol");
         String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
                 "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 11"));
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 16"));
         assertFalse(plan.contains("KMIP 2.0 live routes are blocked"));
     }
 
@@ -96,7 +96,7 @@ class MainContractTest {
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         var selected = mapper.createArrayNode();
         for (String caseId : new String[] {
-                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints"}) {
+                "test-op-log", "test-op-add-attribute", "test-op-get-constraints"}) {
             catalog.path("test_cases").forEach(testCase -> {
                 if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
             });
@@ -117,10 +117,10 @@ class MainContractTest {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
-        JsonNode getAttributeList = catalog.path("test_cases").findParents("case_id").stream()
-                .filter(testCase -> "test-op-get-attribute-list".equals(testCase.path("case_id").asText()))
+        JsonNode addAttribute = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-add-attribute".equals(testCase.path("case_id").asText()))
                 .findFirst().orElseThrow();
-        catalog.set("test_cases", mapper.createArrayNode().add(getAttributeList.deepCopy()));
+        catalog.set("test_cases", mapper.createArrayNode().add(addAttribute.deepCopy()));
         ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
         Path catalogFile = temporaryDirectory.resolve("pending-mutating-case.json");
         mapper.writeValue(catalogFile.toFile(), catalog);
@@ -134,7 +134,7 @@ class MainContractTest {
         JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
         assertEquals("not_run", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
-        assertTrue(result.path("diagnostic").asText().contains("isolated object fixture"));
+        assertTrue(result.path("diagnostic").asText().contains("executable recipe"));
     }
 
     @Test

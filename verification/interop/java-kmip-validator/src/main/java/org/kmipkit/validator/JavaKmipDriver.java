@@ -3,7 +3,9 @@ package org.kmipkit.validator;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.SecretText;
-import org.kmipkit.extensions.Client;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
@@ -27,14 +29,15 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
-    private final Client client;
+    private final KmipClient client;
     private final ConnectionConfig connection;
 
-    private JavaKmipDriver(Client client, ConnectionConfig connection) {
+    private JavaKmipDriver(KmipClient client, ConnectionConfig connection) {
         this.client = client;
         this.connection = connection;
     }
@@ -50,17 +53,24 @@ public final class JavaKmipDriver implements AutoCloseable {
                 toProtocolVersion(connection.protocolVersion()));
         TransportConfiguration transport = buildTransport(connection);
         try (registry; baseConfiguration; encodingConfiguration; protocolConfiguration; transport) {
-            return new JavaKmipDriver(Client.create(protocolConfiguration, transport), connection);
+            return new JavaKmipDriver(KmipClient.create(protocolConfiguration, transport), connection);
         }
     }
 
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
-        if ("Create".equals(testCase.operation())) {
+        if ("Create".equals(testCase.operation()) || attributeRead(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
-        ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
+        ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
+                ? client.request().ping().build().withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII))
+                : TypedRequestFactory.create(testCase.operation());
+        return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
+    }
+
+    private CaseOutcome executeRequest(CatalogLoader.CatalogCase testCase, ClientBatchItem request,
+            Predicate<ClientBatchItemResult> verify, long start) {
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -82,7 +92,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     long statusCode = result.resultStatus();
                     long reasonCode = result.resultReason().orElse(-1);
                     if (statusCode == 0) {
-                        if (!verifyTypedResponse(testCase.operation(), result)) {
+                        if (!verify.test(result)) {
                             return CaseOutcome.failed("The typed response shape did not match the request.",
                                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
                         }
@@ -116,7 +126,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         long createReason = -1;
         long createObjectType = -1;
         try (TtlvStructure attributes = createTestKeyAttributes(objectName);
-                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                ClientBatchItem request = buildCreate(attributes, !attributeRead(testCase))
                         .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
@@ -158,6 +168,15 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
 
+        CaseOutcome target = null;
+        if (attributeRead(testCase)) {
+            try {
+                target = readAttributes(testCase, createdIdentifier, start);
+            } catch (RuntimeException exception) {
+                target = exchangeFailure(exception, start);
+            }
+        }
+
         try (ClientBatchItem request = ClientBatchItem.destroy(createdIdentifier)
                         .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
                 ClientBatch batch = ClientBatch.create()) {
@@ -195,7 +214,74 @@ public final class JavaKmipDriver implements AutoCloseable {
             return CaseOutcome.failed("Create returned an object type different from Symmetric Key.",
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
-        return CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason));
+        return target == null ? CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason)) : target;
+    }
+
+    private ClientBatchItem buildCreate(TtlvStructure source, boolean target) {
+        if (!target || !"fluent".equals(connection.apiLevel())) {
+            return ClientBatchItem.create(2, source, null);
+        }
+        try (var attributes = AttributeSet.tryNew(source); var builder = client.request().create()) {
+            return builder.objectType(2).attributes(attributes).build();
+        }
+    }
+
+    static boolean attributeRead(CatalogLoader.CatalogCase testCase) {
+        return switch (testCase.caseId()) {
+            case "test-op-get-attributes", "test-op-get-attribute-list", "test-attr-name",
+                    "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length" -> true;
+            default -> false;
+        };
+    }
+
+    private CaseOutcome readAttributes(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        if ("Get Attribute List".equals(testCase.operation())) {
+            var request = fluent ? client.request().getAttributeList(id).build() : ClientBatchItem.getAttributeList(id);
+            return executeRequest(testCase, request, result -> {
+                var payload = result.getAttributeListResponse().orElse(null);
+                if (payload == null) return false;
+                try (payload) {
+                    return sameIdentifier(id, payload.uniqueIdentifier())
+                            && payload.attributeReferences().contains(AttributeReference.tag(0x0042_0053));
+                }
+            }, start);
+        }
+
+        int rawTag = switch (testCase.caseId()) {
+            case "test-attr-cryptographic-algorithm" -> 0x0042_0028;
+            case "test-attr-cryptographic-length" -> 0x0042_002a;
+            default -> 0x0042_0053;
+        };
+        var references = List.of(AttributeReference.tag(rawTag));
+        var request = fluent ? client.request().getAttributes(id, references).build()
+                : ClientBatchItem.getAttributes(id, references);
+        return executeRequest(testCase, request, result -> {
+            var payload = result.getAttributesResponse().orElse(null);
+            if (payload == null) return false;
+            try (payload) {
+                return id.text().equals(payload.uniqueIdentifier()) && payload.attributes()
+                        .map(attributes -> containsAttribute(attributes, rawTag)).orElse(false);
+            }
+        }, start);
+    }
+
+    private static boolean containsAttribute(TtlvStructure attributes, int rawTag) {
+        try (var view = attributes.view()) {
+            for (long index = 0; index < view.itemCount(); index++) {
+                try (var item = view.itemAt(index); var tag = item.tag()) {
+                    if (tag.raw() != rawTag) continue;
+                    try (var value = item.value()) {
+                        return switch (rawTag) {
+                            case 0x0042_0028 -> value.enumeration() == 3;
+                            case 0x0042_002a -> value.integer() == 256;
+                            default -> item.itemType() == org.kmipkit.ttlv.TtlvItemType.Structure;
+                        };
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static TtlvStructure createTestKeyAttributes(String objectName) {

@@ -63,8 +63,8 @@ public final class Main {
         JavaRouteInventory.classify(catalog);
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
-        long typed = "typed-protocol".equals(connection.apiLevel())
-                ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
+        long typed = applicable.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
+                .filter(testCase -> supportsRoute(testCase, connection.apiLevel())).count();
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
         long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
@@ -112,9 +112,7 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
-                        && JavaRouteInventory.routeFor(testCase).status()
-                                == JavaRouteInventory.Status.EXECUTABLE_TYPED
-                        && "typed-protocol".equals(connection.apiLevel())
+                        && supportsRoute(testCase, connection.apiLevel())
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
@@ -159,11 +157,11 @@ public final class Main {
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
                     : JavaKmipDriver.CaseOutcome.failed("Local TTLV model assertion failed.", elapsedMillis(start));
         }
-        if (!"typed-protocol".equals(connection.apiLevel())) {
-            return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no server request route.",
-                    elapsedMillis(start));
-        }
-        if (!hasTypedRoute(testCase)) {
+        if (!supportsRoute(testCase, connection.apiLevel())) {
+            if (!"typed-protocol".equals(connection.apiLevel())) {
+                return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no equivalent recipe.",
+                        elapsedMillis(start));
+            }
             return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase).reason(),
                     elapsedMillis(start));
         }
@@ -206,6 +204,12 @@ public final class Main {
             CatalogLoader.Catalog catalog, String version) {
         return catalog.cases().stream().filter(testCase ->
                 testCase.execution().protocolVersions().contains(version)).toList();
+    }
+
+    private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, String apiLevel) {
+        return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
+                || "fluent".equals(apiLevel) && (JavaKmipDriver.attributeRead(testCase)
+                || Set.of("Create", "Ping").contains(testCase.operation())));
     }
 
     private static boolean hasTypedRoute(CatalogLoader.CatalogCase testCase) {
