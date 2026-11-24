@@ -3,8 +3,11 @@
 mod adapters;
 mod driver;
 mod fixtures;
+mod fluent;
+mod generic;
 mod incoming;
 mod models;
+mod query_campaign;
 mod recipes;
 mod report;
 mod runner;
@@ -16,13 +19,15 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[command(about = "KMIP 2.0/2.1 installed-library interoperability consumer")]
+#[command(about = "KMIP 2.0, 2.1 and 3.0 installed-library interoperability consumer")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
 }
 #[derive(Subcommand)]
 enum Command {
+    /// Run one planned typed Query against a configured server.
+    QueryCampaign(query_campaign::QueryArgs),
     /// Offline catalog planning; profiles never suppress probes.
     Plan {
         #[arg(long)]
@@ -75,6 +80,7 @@ fn emit(value: &Value) -> Result<()> {
 }
 fn dispatch(cli: Cli) -> Result<bool> {
     match cli.command {
+        Command::QueryCampaign(args) => query_campaign::run(&args),
         Command::Plan {
             capabilities,
             connection,
@@ -91,7 +97,7 @@ fn dispatch(cli: Cli) -> Result<bool> {
             catalog.validate()?;
             emit(
                 &json!({ "capability_policy": "probe_all_applicable", "network_attempted": false,
-                "generic_ttlv_outbound": "unavailable", "cases": catalog.test_cases.iter().map(|case| json!({"case_id": case.case_id,
+                "generic_ttlv_outbound": "create_check_get_get_attributes_get_attribute_list_activate_revoke_destroy_archive_recover_locate_query_discover_versions_rng_retrieve_hash_and_kmip21_ping_raw_tls", "cases": catalog.test_cases.iter().map(|case| json!({"case_id": case.case_id,
                 "disposition": connection.as_ref().and_then(|c| runner::classify(case, c)).map_or("probe", |v| v.status)})).collect::<Vec<_>>() }),
             )?;
             Ok(true)
@@ -117,7 +123,7 @@ fn dispatch(cli: Cli) -> Result<bool> {
             emit(
                 &json!({"ready": result.is_ok(), "network_attempted": false, "diagnostic": result.err(),
                 "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"), "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
-                "generic_ttlv_outbound": "unavailable"}),
+                "generic_ttlv_outbound": "create_check_get_get_attributes_get_attribute_list_activate_revoke_destroy_archive_recover_locate_query_discover_versions_rng_retrieve_hash_and_kmip21_ping_raw_tls"}),
             )?;
             Ok(result.is_ok())
         }

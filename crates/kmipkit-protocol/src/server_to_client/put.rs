@@ -175,7 +175,9 @@ impl ServerPutRequest {
                         }
                         UNIQUE_IDENTIFIER => {
                             if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) => Some(s.to_string()),
+                                ValueView::TextString(s) | ValueView::Identifier(s) => {
+                                    Some(s.to_string())
+                                }
                                 _ => None,
                             }) {
                                 uid = Some(text);
@@ -183,7 +185,9 @@ impl ServerPutRequest {
                         }
                         REPLACED_UNIQUE_IDENTIFIER => {
                             if let Some(text) = field.with_value(|v| match v {
-                                ValueView::TextString(s) => Some(s.to_string()),
+                                ValueView::TextString(s) | ValueView::Identifier(s) => {
+                                    Some(s.to_string())
+                                }
                                 _ => None,
                             }) {
                                 replaced_uid = Some(text);

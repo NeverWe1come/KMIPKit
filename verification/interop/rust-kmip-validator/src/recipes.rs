@@ -11,6 +11,8 @@ use kmipkit::protocol::{
 };
 use kmipkit::{Client, ClientRequest};
 
+mod draft;
+
 pub(crate) enum Failure {
     LocalRejection(&'static str),
     Prerequisite(&'static str),
@@ -67,7 +69,7 @@ impl Attempt<'_> {
             "HMAC_SHA256" => 9,
             _ => 3,
         };
-        let attrs = adapters::attributes(&self.name, raw, bits)?;
+        let attrs = adapters::attributes(&self.name, raw, bits, &self.connection.protocol_version)?;
         let request = if [4, 6].contains(&raw) {
             ClientRequest::CreateKeyPair(CreateKeyPairRequest::new().with_common_attributes(attrs))
         } else {
@@ -138,6 +140,9 @@ impl Attempt<'_> {
             Some("multipart_streaming") => return self.multipart(case),
             _ => {}
         }
+        if draft::supports(&case.operation) {
+            return self.run_draft(case);
+        }
         match case.operation.as_str() {
             "Poll" | "Process" | "Cancel" => return self.asynchronous(&case.operation),
             "Query Asynchronous Requests" => {
@@ -162,7 +167,8 @@ impl Attempt<'_> {
                 return self.crypto(case);
             }
             "Login" | "Delegated Login" => {
-                let request = adapters::request(case, None, &self.name)?;
+                let request =
+                    adapters::request(case, None, &self.name, &self.connection.protocol_version)?;
                 let mut response = self.exchange(request)?;
                 if let Some(ticket) = response.ticket.take() {
                     self.setup(ClientRequest::Logout(LogoutRequest::new(ticket)))?;
@@ -178,6 +184,7 @@ impl Attempt<'_> {
             "Query",
             "Interop",
             "Log",
+            "Set Endpoint Role",
             "Create",
             "Create Key Pair",
             "Create Split Key",
@@ -201,7 +208,10 @@ impl Attempt<'_> {
                 .is_some_and(|v| v.contains("Certificate") || v.starts_with("X.509"))
                 || case.operation == "Re-certify"
             {
-                let response = self.setup(fixtures::register("Certificate")?)?;
+                let response = self.setup(fixtures::register(
+                    "Certificate",
+                    &self.connection.protocol_version,
+                )?)?;
                 self.own(&response);
                 identifier = response.identifier;
             } else if case.operation == "Re-key Key Pair" {
@@ -221,7 +231,12 @@ impl Attempt<'_> {
             }
         }
         let target_identifier = identifier.clone();
-        let request = adapters::request(case, identifier.as_ref(), &self.name)?;
+        let request = adapters::request(
+            case,
+            identifier.as_ref(),
+            &self.name,
+            &self.connection.protocol_version,
+        )?;
         if case.case_id == "test-neg-modify-readonly-attribute"
             && !request.validation_report().is_valid()
         {
@@ -229,6 +244,11 @@ impl Attempt<'_> {
                 "library_preflight_rejection: State modification is rejected locally under OASIS KMIP 2.1 §4.57; server negative probe cannot be sent",
             ));
         }
+        let request = if self.connection.api_level == "fluent" {
+            crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+        } else {
+            request
+        };
         let response = self.exchange(request)?;
         if case.operation == "Destroy" && response.status == 0 {
             self.owned
@@ -265,7 +285,7 @@ impl Attempt<'_> {
                 "library_api_unavailable: public asynchronous follow-up methods cannot attach Request Header Authentication",
             ));
         }
-        let request = adapters::create(&self.name)?;
+        let request = adapters::create(&self.name, &self.connection.protocol_version)?;
         let mut response = driver::batch(self.client, self.connection, vec![request], true)?
             .into_iter()
             .next()
@@ -291,7 +311,7 @@ impl Attempt<'_> {
             2,
             2,
             SplitKeyMethod::XOR,
-            adapters::attributes(&self.name, 3, 256)?,
+            adapters::attributes(&self.name, 3, 256, &self.connection.protocol_version)?,
         ));
         let response = self.setup(request)?;
         self.own(&response);
@@ -306,8 +326,9 @@ impl Attempt<'_> {
             .map(|id| SplitKeyReference::new(id).with_split_key_threshold(2))
             .collect();
         let result = self.exchange(ClientRequest::JoinSplitKey(
-            JoinSplitKeyRequest::new(ObjectType::from_raw(2), refs)
-                .with_attributes(adapters::attributes(&self.name, 3, 256)?),
+            JoinSplitKeyRequest::new(ObjectType::from_raw(2), refs).with_attributes(
+                adapters::attributes(&self.name, 3, 256, &self.connection.protocol_version)?,
+            ),
         ))?;
         if result.status == 0 {
             self.own(&result);
@@ -317,14 +338,14 @@ impl Attempt<'_> {
     fn batch(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
         let requests = if case.case_id == "test-batch-create-activate-destroy" {
             vec![
-                adapters::create(&self.name)?,
+                adapters::create(&self.name, &self.connection.protocol_version)?,
                 ClientRequest::Activate(ActivateRequest::new(None)),
                 ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
                 ClientRequest::Destroy(DestroyRequest::new(None)),
             ]
         } else {
             vec![
-                fixtures::register("Symmetric Key")?,
+                fixtures::register("Symmetric Key", &self.connection.protocol_version)?,
                 ClientRequest::Activate(ActivateRequest::new(None)),
                 ClientRequest::Encrypt(
                     EncryptRequest::new(None, Some(plain()))
