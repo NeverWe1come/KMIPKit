@@ -345,14 +345,14 @@ class ControlledExchangeTests(unittest.TestCase):
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
         routes = {"create": [1, 20], "destroy": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20],
-                  "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
+                  "check": [1, 18, 9, 19, 20], "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
                   "get-attribute-list": [1, 12, 20], "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
         combinations = [("generic-ttlv", target, operations) for target, operations in routes.items()]
         combinations += [(api, target, routes[target]) for api in ("typed-protocol", "fluent")
                          for target in ("activate", "revoke")]
         for version in ("2.0", "2.1"):
             for api, target, operations in combinations:
-                for valid_get in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke")
+                for valid_get in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check")
                                   and (target != "revoke" or api == "generic-ttlv") else (True,)):
                     with self.subTest(version=version, api=api, target=target, valid_get=valid_get):
                         minor = int(version[-1])
@@ -385,6 +385,9 @@ class ControlledExchangeTests(unittest.TestCase):
                                 fields += enumeration(0x42013B, 0x420028)
                                 if valid_get:
                                     fields += enumeration(0x42013B, 0x42002A)
+                            if operation == 9:
+                                self.assertEqual(find_value(payload, 0x42002C), struct.pack(">i", 4))
+                                fields += item(0x42002C, 2, struct.pack(">i", 4 if valid_get else 8))
                             if operation == 19:
                                 self.assertEqual(parse_children(find_value(payload, 0x420081)),
                                                  [(0x420082, 5, struct.pack(">I", 6 if api == "generic-ttlv" else 1))])
