@@ -605,12 +605,11 @@ jobs:
           merge-multiple: true
 
       - name: Generate SHA256SUMS.txt, CycloneDX SBOM, and Release Notes
+        env:
+          KMIPKIT_RELEASE_BUNDLE_DIR: release-bundle/files
         run: |
           python3 -B verification/release/generate_release_metadata.py \
-            --repo . \
-            --version "$RELEASE_VERSION" \
-            --artifacts-dir release-bundle/files \
-            --output-dir release-bundle/files
+            --version "$RELEASE_VERSION"
 
       - name: Upload assembled release bundle artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1

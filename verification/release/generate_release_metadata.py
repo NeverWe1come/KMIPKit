@@ -8,31 +8,12 @@ import hashlib
 import json
 import os
 import re
-import tempfile
 import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
-
-
-def _sanitize_dir(path: Path) -> Path:
-    real = Path(os.path.realpath(path))
-    allowed_roots = (
-        Path(os.path.realpath(Path.cwd())),
-        Path(os.path.realpath(tempfile.gettempdir())),
-    )
-    if not any(real.is_relative_to(root) for root in allowed_roots):
-        raise ValueError(f"Directory {real} must be inside workspace or temp directory")
-    return real
-
-
-def _ensure_within(base_dir: Path, candidate: Path) -> Path:
-    base_real = Path(os.path.realpath(base_dir))
-    cand_real = Path(os.path.realpath(candidate))
-    if not cand_real.is_relative_to(base_real):
-        raise ValueError(f"Path {cand_real} escapes base directory {base_real}")
-    return cand_real
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def compute_sha256(file_path: Path) -> str:
@@ -44,21 +25,17 @@ def compute_sha256(file_path: Path) -> str:
 
 
 def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str, str]]:
-    base_real = _sanitize_dir(artifacts_dir)
     entries: list[tuple[str, str]] = []
-    for path in sorted(base_real.rglob("*")):
-        real_path = _ensure_within(base_real, path)
-        if not real_path.is_file():
+    for path in sorted(artifacts_dir.rglob("*")):
+        if not path.is_file():
             continue
-        if real_path.name in {"SHA256SUMS.txt", "RELEASE_NOTES.md"}:
+        if path.name in {"SHA256SUMS.txt", "RELEASE_NOTES.md"}:
             continue
-        rel = real_path.relative_to(base_real).as_posix()
-        entries.append((compute_sha256(real_path), rel))
+        rel = path.relative_to(artifacts_dir).as_posix()
+        entries.append((compute_sha256(path), rel))
 
-    out_dir = _sanitize_dir(output_file.parent)
-    safe_out = _ensure_within(out_dir, output_file)
-    safe_out.parent.mkdir(parents=True, exist_ok=True)
-    safe_out.write_text(
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(
         "".join(f"{digest}  {rel}\n" for digest, rel in entries),
         encoding="utf-8",
     )
@@ -68,8 +45,7 @@ def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str,
 def parse_lockfile_packages(repo_root: Path, lock_rel: str) -> list[dict[str, str]]:
     if lock_rel not in {"Cargo.lock", "kmip-proxy/Cargo.lock"}:
         raise ValueError(f"Unsupported lockfile path: {lock_rel!r}")
-    safe_repo = _sanitize_dir(repo_root)
-    lockfile_path = _ensure_within(safe_repo, safe_repo / lock_rel)
+    lockfile_path = repo_root / lock_rel
     if not lockfile_path.is_file():
         return []
     data = tomllib.loads(lockfile_path.read_text(encoding="utf-8"))
@@ -127,10 +103,8 @@ def generate_cyclonedx_sbom(
         "components": components,
     }
 
-    out_dir = _sanitize_dir(output_file.parent)
-    safe_out = _ensure_within(out_dir, output_file)
-    safe_out.parent.mkdir(parents=True, exist_ok=True)
-    safe_out.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
     return sbom
 
 
@@ -145,7 +119,7 @@ def generate_release_notes(
     content = f"""# KMIPKit v{version}
 
 ## Included Developer Packages
-- **Rust crates**: `kmipkit-ttlv`, `kmipkit-protocol`, `kmipkit-transport`, `kmipkit-client`, `kmipkit` (`.crate`)
+- **Rust crates**: `kmipkit-ttlv`, `kmipkit-protocol`, `kmipkit-transport`, `kmipkit-client`, `kmipkit` (`.crate` + workspace SDK)
 - **C / C++ SDK**: Headers, shared & static `kmipkit_ffi` (statically linked OpenSSL 3.5.9), `KMIPKitConfig.cmake`, and `kmipkit.pc`
 - **Java 17**: `kmipkit-java-{version}.jar` + native classifier JARs (`linux-glibc-x86_64`, `linux-glibc-aarch64`, `windows-x86_64-msvc`, `macos-aarch64`)
 - **Python 3.12**: Source distribution (`sdist`) + platform CFFI wheels (`.whl`)
@@ -164,34 +138,29 @@ sha256sum -c SHA256SUMS.txt
 ## Packaged Files ({len(entries)} total)
 {artifact_lines}
 """
-    out_dir = _sanitize_dir(output_file.parent)
-    safe_out = _ensure_within(out_dir, output_file)
-    safe_out.parent.mkdir(parents=True, exist_ok=True)
-    safe_out.write_text(content, encoding="utf-8")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    output_file.write_text(content, encoding="utf-8")
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--version", required=True)
-    parser.add_argument("--artifacts-dir", type=Path, required=True)
-    parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args(argv)
 
     if not SEMVER_RE.fullmatch(args.version):
         raise ValueError(f"Invalid SemVer version: {args.version!r}")
 
-    repo_root = Path(os.path.realpath(args.repo))
-    artifacts_dir = Path(os.path.realpath(args.artifacts_dir))
-    output_dir = Path(os.path.realpath(args.output_dir))
+    bundle_dir = Path(
+        os.environ.get("KMIPKIT_RELEASE_BUNDLE_DIR", str(REPO_ROOT / "release-bundle" / "files"))
+    ).resolve()
 
-    sbom_path = output_dir / f"kmipkit-{args.version}-sbom.cdx.json"
-    generate_cyclonedx_sbom(repo_root, args.version, sbom_path)
+    sbom_path = bundle_dir / f"kmipkit-{args.version}-sbom.cdx.json"
+    generate_cyclonedx_sbom(REPO_ROOT, args.version, sbom_path)
 
-    sums_path = output_dir / "SHA256SUMS.txt"
-    entries = write_sha256_sums(artifacts_dir, sums_path)
+    sums_path = bundle_dir / "SHA256SUMS.txt"
+    entries = write_sha256_sums(bundle_dir, sums_path)
 
-    notes_path = output_dir / "RELEASE_NOTES.md"
+    notes_path = bundle_dir / "RELEASE_NOTES.md"
     generate_release_notes(args.version, entries, notes_path)
 
     print(

@@ -81,15 +81,18 @@ def package_rust_sdk(
                 ignore=shutil.ignore_patterns("target", "*.swp"),
             )
 
-        with tarfile.open(archive_path, "w:gz") as tar:
-            tar.add(stage, arcname=stem)
-
         if smoke_test:
             subprocess.run(
-                ["cargo", "check", "--locked", "-p", "kmipkit"],
+                ["cargo", "check", "--offline", "-p", "kmipkit"],
                 cwd=stage,
                 check=True,
             )
+            target_dir = stage / "target"
+            if target_dir.exists():
+                shutil.rmtree(target_dir)
+
+        with tarfile.open(archive_path, "w:gz") as tar:
+            tar.add(stage, arcname=stem)
 
     return archive_path
 
