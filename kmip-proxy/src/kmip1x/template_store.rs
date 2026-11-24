@@ -70,11 +70,16 @@ impl StoredTemplate {
     }
 }
 
+#[derive(Debug, Default)]
+struct TemplateStoreInner {
+    by_id: BTreeMap<String, StoredTemplate>,
+    id_by_name: BTreeMap<String, String>,
+}
+
 /// Thread-safe in-memory KMIP 1.X `Template` registry.
 pub struct TemplateStore {
     next_id: AtomicU64,
-    by_id: RwLock<BTreeMap<String, StoredTemplate>>,
-    id_by_name: RwLock<BTreeMap<String, String>>,
+    inner: RwLock<TemplateStoreInner>,
 }
 
 impl Default for TemplateStore {
@@ -88,8 +93,7 @@ impl TemplateStore {
     pub fn new() -> Self {
         Self {
             next_id: AtomicU64::new(1),
-            by_id: RwLock::new(BTreeMap::new()),
-            id_by_name: RwLock::new(BTreeMap::new()),
+            inner: RwLock::new(TemplateStoreInner::default()),
         }
     }
 
@@ -104,13 +108,11 @@ impl TemplateStore {
             attributes_1x,
         };
 
-        if let Ok(mut by_name) = self.id_by_name.write() {
+        if let Ok(mut guard) = self.inner.write() {
             for name in names {
-                by_name.insert(name, unique_id.clone());
+                guard.id_by_name.insert(name, unique_id.clone());
             }
-        }
-        if let Ok(mut by_id) = self.by_id.write() {
-            by_id.insert(unique_id.clone(), stored);
+            guard.by_id.insert(unique_id.clone(), stored);
         }
 
         unique_id
@@ -118,56 +120,50 @@ impl TemplateStore {
 
     #[must_use]
     pub fn contains_id(&self, unique_id: &str) -> bool {
-        self.by_id
+        self.inner
             .read()
-            .map(|m| m.contains_key(unique_id))
+            .map(|g| g.by_id.contains_key(unique_id))
             .unwrap_or(false)
     }
 
     #[must_use]
     pub fn get_by_id(&self, unique_id: &str) -> Option<StoredTemplate> {
-        self.by_id
+        self.inner
             .read()
             .ok()?
+            .by_id
             .get(unique_id)
             .and_then(|t| t.try_clone().ok())
     }
 
     #[must_use]
     pub fn get_by_name(&self, name: &str) -> Option<StoredTemplate> {
-        let id = self.id_by_name.read().ok()?.get(name)?.clone();
-        self.get_by_id(&id)
+        let guard = self.inner.read().ok()?;
+        let id = guard.id_by_name.get(name)?;
+        guard.by_id.get(id).and_then(|t| t.try_clone().ok())
     }
 
     /// Locates stored templates matching an optional Name filter.
     #[must_use]
     pub fn locate(&self, name_filter: Option<&str>) -> Vec<String> {
+        let Ok(guard) = self.inner.read() else {
+            return Vec::new();
+        };
         if let Some(name) = name_filter {
-            return self
-                .id_by_name
-                .read()
-                .ok()
-                .and_then(|m| m.get(name).cloned())
-                .into_iter()
-                .collect();
+            return guard.id_by_name.get(name).cloned().into_iter().collect();
         }
-        self.by_id
-            .read()
-            .map(|m| m.keys().cloned().collect())
-            .unwrap_or_default()
+        guard.by_id.keys().cloned().collect()
     }
 
     /// Destroys a stored template by Unique Identifier.
     pub fn destroy(&self, unique_id: &str) -> bool {
-        let removed = self
-            .by_id
-            .write()
-            .ok()
-            .and_then(|mut map| map.remove(unique_id));
-        if let Some(tpl) = removed {
-            if let Ok(mut by_name) = self.id_by_name.write() {
-                for name in tpl.names {
-                    by_name.remove(&name);
+        let Ok(mut guard) = self.inner.write() else {
+            return false;
+        };
+        if let Some(tpl) = guard.by_id.remove(unique_id) {
+            for name in tpl.names {
+                if guard.id_by_name.get(&name).map(String::as_str) == Some(unique_id) {
+                    guard.id_by_name.remove(&name);
                 }
             }
             return true;

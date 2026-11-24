@@ -41,3 +41,36 @@ fn external_callers_can_decode_reserved_tags_with_allow_reserved() {
     assert!(decode_allow_reserved(&unallocated_wire).is_err());
     assert!(decode_with_limits_allow_reserved(&unallocated_wire, &limits).is_err());
 }
+
+#[test]
+fn all_legacy_kmip1x_reserved_tags_decode_only_with_allow_reserved() {
+    // Tags reserved in KMIP 2.0+ but required by KMIP 1.0-1.4:
+    // Template-Attribute (0x420091), Template (0x420090), Common Template-Attribute (0x42001F),
+    // Private Key Template-Attribute (0x420065), Public Key Template-Attribute (0x42006E),
+    // Operation Policy Name (0x42005D), Certificate Identifier 1.0 (0x420014),
+    // Certificate Issuer 1.0 (0x420015), Certificate Subject 1.0 (0x42001A)
+    let legacy_reserved_tags: [u32; 9] = [
+        0x0042_0091,
+        0x0042_0090,
+        0x0042_001F,
+        0x0042_0065,
+        0x0042_006E,
+        0x0042_005D,
+        0x0042_0014,
+        0x0042_0015,
+        0x0042_001A,
+    ];
+
+    for tag in legacy_reserved_tags {
+        let [_, b1, b2, b3] = tag.to_be_bytes();
+        // Encode an empty Structure (0x01) of length 0
+        let wire = [b1, b2, b3, 0x01, 0, 0, 0, 0];
+        assert!(
+            decode(&wire).is_err(),
+            "strict decode must reject reserved tag 0x{tag:06X}"
+        );
+        let item = decode_allow_reserved(&wire)
+            .unwrap_or_else(|e| panic!("allow_reserved failed for 0x{tag:06X}: {e:?}"));
+        assert_eq!(item.tag().raw(), tag);
+    }
+}

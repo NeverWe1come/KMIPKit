@@ -18,7 +18,10 @@ use async_trait::async_trait;
 use kmipkit_ttlv::{Item, Value};
 
 use crate::codec::Format;
-use crate::kmip1x::mapping::{OperationPolicyHandling, UpstreamKmipVersion, lookup_by_name_1x};
+use crate::kmip1x::mapping::{
+    OperationPolicyHandling, UpstreamKmipVersion, is_custom_attribute_1x, lookup_by_name_1x,
+    operation_supports_id_placeholder, v3_link_tag_to_link_type,
+};
 use crate::kmip1x::tags::*;
 use crate::kmip1x::template_store::TemplateStore;
 use crate::kmip1x::translator::{
@@ -156,6 +159,7 @@ impl Kmip1xBridge {
             let req_header = find_child(request, TAG_REQUEST_HEADER)
                 .ok_or_else(|| "missing Request Header".to_string())?;
             let mut resp_items = Vec::with_capacity(batch_items.len());
+            let mut last_uid: Option<String> = None;
 
             for (idx, bi) in batch_items.iter().enumerate() {
                 let item_resp = self
@@ -163,10 +167,14 @@ impl Kmip1xBridge {
                         &req_header,
                         bi,
                         idx > 0,
+                        last_uid.as_deref(),
                         client_major,
                         client_minor,
                     )
                     .await?;
+                if let Some(uid) = extract_response_uid(&item_resp) {
+                    last_uid = Some(uid);
+                }
                 resp_items.push(item_resp);
             }
             build_response_message(client_major, client_minor, resp_items)?
@@ -208,6 +216,7 @@ impl Kmip1xBridge {
         req_header: &Item,
         batch_item: &Item,
         can_use_id_placeholder: bool,
+        last_uid: Option<&str>,
         client_major: i32,
         client_minor: i32,
     ) -> Result<Item, String> {
@@ -243,21 +252,51 @@ impl Kmip1xBridge {
                     op,
                     bid.as_deref(),
                     payload.as_ref(),
+                    if can_use_id_placeholder {
+                        last_uid
+                    } else {
+                        None
+                    },
                     client_minor,
                 )
                 .await;
         }
 
         // 4. Standard single-item forwarding
+        // Because each orchestrated item is sent as a standalone 1-item RequestMessage,
+        // replace implicit ID Placeholder with the tracked `last_uid` if present.
+        let effective_bi = if can_use_id_placeholder && operation_supports_id_placeholder(op) {
+            if let Some(uid) = last_uid {
+                inject_uid_if_missing(batch_item, uid)?
+            } else {
+                clone_item(batch_item)?
+            }
+        } else {
+            clone_item(batch_item)?
+        };
+
         let (up_major, up_minor) = self.config.upstream_version.major_minor();
         let mut single_header = rewrite_header_version(req_header, up_major, up_minor)?;
         single_header = set_header_batch_count(&single_header, 1)?;
-        let (translated_bi, meta) = translate_request_batch_item(
-            batch_item,
-            can_use_id_placeholder,
+        let (translated_bi, meta) = match translate_request_batch_item(
+            &effective_bi,
+            false,
             self.config,
             &self.templates,
-        )?;
+        ) {
+            Ok(res) => res,
+            Err(err_msg) => {
+                let reason = if self.config.operation_policy_handling
+                    == OperationPolicyHandling::Reject
+                    && err_msg.contains("Operation Policy Name")
+                {
+                    REASON_OPERATION_NOT_SUPPORTED
+                } else {
+                    REASON_INVALID_FIELD
+                };
+                return build_error_batch_item(op, bid.as_deref(), reason, &err_msg);
+            }
+        };
         let single_req = ttlv_struct(TAG_REQUEST_MESSAGE, vec![single_header, translated_bi])?;
         let up_resp = self.upstream.send_ttlv(&single_req).await?;
         let resp_1x = translate_response_2x_to_1x(&up_resp, client_major, client_minor, &[meta])?;
@@ -439,12 +478,15 @@ impl Kmip1xBridge {
         op: u32,
         bid: Option<&[u8]>,
         payload: Option<&Item>,
+        fallback_uid: Option<&str>,
         client_minor: i32,
     ) -> Result<Item, String> {
         let Some(p) = payload else {
             return build_error_batch_item(op, bid, REASON_MISSING_DATA, "missing request payload");
         };
-        let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
+        let Some(uid) = find_child(p, TAG_UNIQUE_IDENTIFIER)
+            .and_then(|i| extract_text_string(&i))
+            .or_else(|| fallback_uid.map(ToOwned::to_owned))
         else {
             return build_error_batch_item(
                 op,
@@ -566,13 +608,35 @@ impl Kmip1xBridge {
         let attrs_struct = find_child(&get_payload, TAG_ATTRIBUTES)
             .ok_or_else(|| "upstream GetAttributes missing Attributes".to_string())?;
 
-        // Filter matching instances in order
+        // Filter matching instances in order (supporting standard, KMIP 3.0 typed Links, and custom vendor attrs)
         let expected_tag = lookup_by_name_1x(&attr_name).map(|s| s.tag_2x);
         let matching_instances: Vec<Item> = children_of(&attrs_struct)
             .into_iter()
             .filter(|c| match expected_tag {
+                Some(TAG_LINK) => {
+                    c.tag().raw() == TAG_LINK || v3_link_tag_to_link_type(c.tag().raw()).is_some()
+                }
                 Some(t) => c.tag().raw() == t,
-                None => c.tag().raw() == TAG_ATTRIBUTE,
+                None => {
+                    if c.tag().raw() != TAG_ATTRIBUTE {
+                        return false;
+                    }
+                    let (expected_vendor, expected_attr_name) =
+                        if is_custom_attribute_1x(&attr_name) {
+                            attr_name.split_once('-').unwrap_or(("x", &attr_name))
+                        } else {
+                            (
+                                crate::kmip1x::translator::PROXY_VENDOR_ID,
+                                attr_name.as_str(),
+                            )
+                        };
+                    let actual_vendor = find_child(c, TAG_VENDOR_IDENTIFICATION)
+                        .and_then(|i| extract_text_string(&i));
+                    let actual_name =
+                        find_child(c, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i));
+                    actual_vendor.as_deref() == Some(expected_vendor)
+                        && actual_name.as_deref() == Some(expected_attr_name)
+                }
             })
             .collect();
 
@@ -692,4 +756,28 @@ fn set_header_batch_count(header: &Item, count: i32) -> Result<Item, String> {
         children.push(ttlv_item(TAG_BATCH_COUNT, Value::integer(count))?);
     }
     ttlv_struct(header.tag().raw(), children)
+}
+
+fn extract_response_uid(resp_bi: &Item) -> Option<String> {
+    let payload = find_child(resp_bi, TAG_RESPONSE_PAYLOAD)?;
+    find_child(&payload, TAG_UNIQUE_IDENTIFIER).and_then(|i| extract_text_string(&i))
+}
+
+fn inject_uid_if_missing(batch_item: &Item, uid: &str) -> Result<Item, String> {
+    let mut bi_children = Vec::new();
+    for child in children_of(batch_item) {
+        if child.tag().raw() == TAG_REQUEST_PAYLOAD {
+            let mut p_children = children_of(&child);
+            if find_child(&child, TAG_UNIQUE_IDENTIFIER).is_none() {
+                p_children.insert(
+                    0,
+                    ttlv_item(TAG_UNIQUE_IDENTIFIER, Value::text_string(uid.to_string()))?,
+                );
+            }
+            bi_children.push(ttlv_struct(TAG_REQUEST_PAYLOAD, p_children)?);
+        } else {
+            bi_children.push(child);
+        }
+    }
+    ttlv_struct(TAG_BATCH_ITEM, bi_children)
 }

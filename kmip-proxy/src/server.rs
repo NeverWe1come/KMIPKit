@@ -445,7 +445,10 @@ where
     for line in header_str.lines() {
         let line_lower = line.to_ascii_lowercase();
         if let Some(val) = line_lower.strip_prefix("content-length:") {
-            content_length = val.trim().parse::<usize>().unwrap_or(0);
+            content_length = val
+                .trim()
+                .parse::<usize>()
+                .map_err(|e| format!("invalid Content-Length header: {e}"))?;
         } else if let Some(val) = line.strip_prefix("Content-Type:") {
             content_type = Some(val.trim().to_string());
         } else if let Some(val) = line_lower.strip_prefix("content-type:") {

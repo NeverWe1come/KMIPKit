@@ -70,12 +70,14 @@ pub fn extract_protocol_version(msg: &Item) -> Option<(i32, i32)> {
     Some((major, minor))
 }
 
-/// Extracts `Maximum Response Size` from a KMIP Request Header, if present.
+/// Extracts `Maximum Response Size` from a KMIP Request Header, if present and positive.
 #[must_use]
 pub fn extract_max_response_size(req: &Item) -> Option<usize> {
     let header = find_child(req, TAG_REQUEST_HEADER)?;
     let mrs = find_child(&header, TAG_MAXIMUM_RESPONSE_SIZE)?;
-    extract_integer(&mrs).and_then(|v| usize::try_from(v).ok())
+    extract_integer(&mrs)
+        .filter(|&v| v > 0)
+        .and_then(|v| usize::try_from(v).ok())
 }
 
 /// Rewrites `Protocol Version` inside a `Request Header` or `Response Header`.
@@ -760,6 +762,7 @@ fn translate_response_payload(
     client_minor: i32,
 ) -> Result<Item, String> {
     let mut out = Vec::new();
+    let mut seen_attr_list_names = std::collections::BTreeSet::new();
 
     for child in children_of(payload) {
         match child.tag().raw() {
@@ -769,32 +772,51 @@ fn translate_response_payload(
             }
             // Get Attribute List: Attribute Reference (Enum or Vendor) -> Attribute Name (TextString)
             TAG_ATTRIBUTE_REFERENCE if op_1x == OP_GET_ATTRIBUTE_LIST => {
-                if let Some(tag_val) = extract_enumeration(&child) {
+                let maybe_name: Option<String> = if let Some(tag_val) = extract_enumeration(&child)
+                {
                     if let Some(spec) = lookup_by_tag_2x(tag_val) {
                         if spec.min_minor_1x <= client_minor {
-                            out.push(ttlv_item(
-                                TAG_ATTRIBUTE_NAME,
-                                Value::text_string(spec.name_1x.to_string()),
-                            )?);
+                            Some(spec.name_1x.to_string())
+                        } else if client_minor == 0 {
+                            match spec.name_1x {
+                                "X.509 Certificate Identifier" => {
+                                    Some("Certificate Identifier".to_string())
+                                }
+                                "X.509 Certificate Subject" => {
+                                    Some("Certificate Subject".to_string())
+                                }
+                                "X.509 Certificate Issuer" => {
+                                    Some("Certificate Issuer".to_string())
+                                }
+                                _ => None,
+                            }
+                        } else {
+                            None
                         }
                     } else if v3_link_tag_to_link_type(tag_val).is_some() {
                         // Map KMIP 3.0 typed link reference back to "Link"
-                        out.push(ttlv_item(
-                            TAG_ATTRIBUTE_NAME,
-                            Value::text_string("Link".to_string()),
-                        )?);
+                        Some("Link".to_string())
+                    } else {
+                        None
                     }
                 } else if let (Some(vendor), Some(aname)) = (
                     find_child(&child, TAG_VENDOR_IDENTIFICATION)
                         .and_then(|i| extract_text_string(&i)),
                     find_child(&child, TAG_ATTRIBUTE_NAME).and_then(|i| extract_text_string(&i)),
                 ) {
-                    let full = if vendor == PROXY_VENDOR_ID {
-                        aname
+                    if vendor == PROXY_VENDOR_ID {
+                        Some(aname)
                     } else {
-                        format!("{vendor}-{aname}")
-                    };
-                    out.push(ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string(full))?);
+                        Some(format!("{vendor}-{aname}"))
+                    }
+                } else {
+                    None
+                };
+
+                if let Some(name) = maybe_name {
+                    if seen_attr_list_names.insert(name.clone()) {
+                        out.push(ttlv_item(TAG_ATTRIBUTE_NAME, Value::text_string(name))?);
+                    }
                 }
             }
             // Query response allowlist filtering per client KMIP 1.X minor version

@@ -27,7 +27,7 @@ enum TransportKind {
 /// Supports both Raw TLS (`host:port`) and HTTPS (`https://host:port/kmip`) endpoints,
 /// with TTLV, JSON, or XML wire encoding toward the upstream KMIP server.
 pub struct KmipKitUpstreamTransport {
-    transport: TransportKind,
+    transport: Arc<TransportKind>,
     wire_format: Format,
     max_response_bytes: usize,
 }
@@ -127,7 +127,7 @@ impl KmipKitUpstreamTransport {
         };
 
         Ok(Self {
-            transport,
+            transport: Arc::new(transport),
             wire_format,
             max_response_bytes: DEFAULT_MAX_RESPONSE_BYTES,
         })
@@ -151,8 +151,9 @@ impl UpstreamKmipTransport for KmipKitUpstreamTransport {
         let req_bytes = self.wire_format.encode(request)?;
         let max_bytes = self.max_response_bytes;
         let wire_format = self.wire_format;
+        let transport = Arc::clone(&self.transport);
 
-        let resp_bytes = match &self.transport {
+        let resp_bytes = tokio::task::spawn_blocking(move || match transport.as_ref() {
             TransportKind::RawTls(mutex) => {
                 let mut guard = mutex
                     .lock()
@@ -161,7 +162,7 @@ impl UpstreamKmipTransport for KmipKitUpstreamTransport {
                 let resp = guard
                     .exchange_with_options(&req_bytes, max_bytes, &opts)
                     .map_err(|e| format!("upstream RawTLS exchange failed: {e}"))?;
-                resp.as_bytes().to_vec()
+                Ok::<Vec<u8>, String>(resp.as_bytes().to_vec())
             }
             TransportKind::Https(mutex) => {
                 let mut guard = mutex
@@ -171,9 +172,11 @@ impl UpstreamKmipTransport for KmipKitUpstreamTransport {
                 let resp = guard
                     .exchange_with_options(&req_bytes, max_bytes, &opts)
                     .map_err(|e| format!("upstream HTTPS exchange failed: {e}"))?;
-                resp.as_bytes().to_vec()
+                Ok::<Vec<u8>, String>(resp.as_bytes().to_vec())
             }
-        };
+        })
+        .await
+        .map_err(|e| format!("upstream blocking task join error: {e}"))??;
 
         wire_format.decode(&resp_bytes)
     }
