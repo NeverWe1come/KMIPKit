@@ -13,6 +13,12 @@ use crate::kmip1x::tags::{
 };
 
 /// Constructs a validated TTLV `Item` from a raw 24-bit KMIP tag and `Value`.
+///
+/// Allows legacy KMIP 1.X tags marked reserved in KMIP 2.0+.
+///
+/// # Errors
+///
+/// Returns an error string if `tag` is out of range, unallocated, or incompatible with `val`.
 pub fn ttlv_item(tag: u32, val: Value) -> Result<Item, String> {
     let raw = RawTag::new(tag)
         .map_err(|e| format!("invalid raw tag 0x{tag:06X}: {e}"))?
@@ -22,6 +28,10 @@ pub fn ttlv_item(tag: u32, val: Value) -> Result<Item, String> {
 }
 
 /// Builds a `Structure` from a list of `Item`s.
+///
+/// # Errors
+///
+/// Returns an error string if pushing a child item fails or the structure tag is invalid.
 pub fn ttlv_struct(tag: u32, children: Vec<Item>) -> Result<Item, String> {
     let mut s = Structure::new();
     for child in children {
@@ -32,12 +42,20 @@ pub fn ttlv_struct(tag: u32, children: Vec<Item>) -> Result<Item, String> {
 }
 
 /// Clones an `Item` using `kmipkit-ttlv`'s fallible `try_clone`.
+///
+/// # Errors
+///
+/// Returns an error string if cloning exceeds `kmipkit-ttlv` limits.
 pub fn clone_item(item: &Item) -> Result<Item, String> {
     item.try_clone()
         .map_err(|e| format!("failed cloning TTLV item 0x{:06X}: {e}", item.tag().raw()))
 }
 
 /// Extracts an owned `Value` from any `Item` so it can be re-tagged.
+///
+/// # Errors
+///
+/// Returns an error string if any nested child fails to clone or uses an unsupported value variant.
 pub fn clone_item_value(item: &Item) -> Result<Value, String> {
     let mut out: Option<Result<Value, String>> = None;
     item.with_value(|view| {
@@ -78,6 +96,10 @@ pub fn clone_item_value(item: &Item) -> Result<Value, String> {
 }
 
 /// Re-tags an `Item` while preserving its exact underlying `Value`.
+///
+/// # Errors
+///
+/// Returns an error string if cloning the value or constructing the re-tagged `Item` fails.
 pub fn retag_item(item: &Item, new_tag: u32) -> Result<Item, String> {
     let val = clone_item_value(item)?;
     ttlv_item(new_tag, val)
@@ -130,6 +152,7 @@ pub fn find_children(item: &Item, tag: u32) -> Vec<Item> {
     out
 }
 
+/// Extracts a `ValueView::Integer` from `item`, or `None` if the value has another TTLV type.
 pub fn extract_integer(item: &Item) -> Option<i32> {
     let mut out = None;
     item.with_value(|v| {
@@ -140,6 +163,7 @@ pub fn extract_integer(item: &Item) -> Option<i32> {
     out
 }
 
+/// Extracts a `ValueView::Enumeration` from `item`, or `None` if the value has another TTLV type.
 pub fn extract_enumeration(item: &Item) -> Option<u32> {
     let mut out = None;
     item.with_value(|v| {
@@ -150,6 +174,7 @@ pub fn extract_enumeration(item: &Item) -> Option<u32> {
     out
 }
 
+/// Extracts a `ValueView::Boolean` from `item`, or `None` if the value has another TTLV type.
 pub fn extract_boolean(item: &Item) -> Option<bool> {
     let mut out = None;
     item.with_value(|v| {
@@ -160,6 +185,7 @@ pub fn extract_boolean(item: &Item) -> Option<bool> {
     out
 }
 
+/// Extracts an owned `String` from a `ValueView::TextString`, or `None` if not a text string.
 pub fn extract_text_string(item: &Item) -> Option<String> {
     let mut out = None;
     item.with_value(|v| {
@@ -170,6 +196,7 @@ pub fn extract_text_string(item: &Item) -> Option<String> {
     out
 }
 
+/// Extracts an owned `Vec<u8>` from a `ValueView::ByteString`, or `None` if not a byte string.
 pub fn extract_byte_string(item: &Item) -> Option<Vec<u8>> {
     let mut out = None;
     item.with_value(|v| {
@@ -180,6 +207,7 @@ pub fn extract_byte_string(item: &Item) -> Option<Vec<u8>> {
     out
 }
 
+/// Returns the current UNIX epoch timestamp in seconds (or `0` if before epoch).
 #[must_use]
 pub fn now_unix_seconds() -> i64 {
     SystemTime::now()
@@ -188,7 +216,11 @@ pub fn now_unix_seconds() -> i64 {
         .unwrap_or(0)
 }
 
-/// Builds a ProtocolVersion structure `(major, minor)`.
+/// Builds a `ProtocolVersion` structure `(major, minor)`.
+///
+/// # Errors
+///
+/// Returns an error string if item or structure construction fails.
 pub fn build_protocol_version(major: i32, minor: i32) -> Result<Item, String> {
     ttlv_struct(
         TAG_PROTOCOL_VERSION,
@@ -199,7 +231,11 @@ pub fn build_protocol_version(major: i32, minor: i32) -> Result<Item, String> {
     )
 }
 
-/// Builds a successful Response Batch Item.
+/// Builds a successful Response `Batch Item`.
+///
+/// # Errors
+///
+/// Returns an error string if building any TTLV child or the response batch item fails.
 pub fn build_success_batch_item(
     op: u32,
     unique_batch_item_id: Option<&[u8]>,
@@ -220,7 +256,11 @@ pub fn build_success_batch_item(
     ttlv_struct(TAG_BATCH_ITEM, children)
 }
 
-/// Builds a failed Response Batch Item.
+/// Builds a failed Response `Batch Item`.
+///
+/// # Errors
+///
+/// Returns an error string if building any TTLV child or the error batch item fails.
 pub fn build_error_batch_item(
     op: u32,
     unique_batch_item_id: Option<&[u8]>,
@@ -247,6 +287,10 @@ pub fn build_error_batch_item(
 }
 
 /// Builds a full KMIP `ResponseMessage` for `(major, minor)`.
+///
+/// # Errors
+///
+/// Returns an error string if building the header or outer `ResponseMessage` fails.
 pub fn build_response_message(
     major: i32,
     minor: i32,

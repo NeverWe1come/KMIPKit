@@ -14,7 +14,7 @@ KMIPKit utiliza **OpenSSL 3.5.x** como proveedor criptográfico y TLS (`rustls-o
 | **OpenSSL** | `3.5.9` (fijado) | Compilado con `verification/security/openssl/build.py` |
 | **Compilador C / CMake** | C11 / CMake `3.20+` | Necesario para bindings C y biblioteca nativa JNI |
 | **Java** | JDK `17+` | Bindings Java (Gradle / Maven) |
-| **Python** | Python `3.10+` | Bindings CFFI |
+| **Python** | Python `3.12` | Bindings CFFI |
 
 ### Compilar OpenSSL Fijado y Verificar el Workspace
 

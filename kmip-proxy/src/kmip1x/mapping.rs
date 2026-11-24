@@ -1,10 +1,10 @@
 //! Exhaustive bidirectional mapping tables between KMIP 1.0–1.4 and KMIP 2.0 / 2.1 / 3.0.
 //!
 //! Covers:
-//! - All 48+ KMIP 1.0–1.4 standard attributes (with cardinality and KMIP 3.0 read-only flags)
+//! - All 77 KMIP 1.0–1.4 standard attributes (with cardinality and KMIP 3.0 read-only flags)
 //! - Deprecated KMIP 1.0 certificate attributes normalization
-//! - Custom `x-*` / `y-*` attributes <-> KMIP 2.0+ Vendor Attributes
-//! - KMIP 1.X `Link` (0x42004A) <-> KMIP 3.0 typed link attributes (0x420190..=0x42019D)
+//! - Custom `x-*` / `y-*` attributes `<->` KMIP 2.0+ Vendor Attributes
+//! - KMIP 1.X `Link` (`0x42004A`) `<->` KMIP 3.0 typed link attributes (`0x420190..=0x42019D`)
 //! - All KMIP 2.0 / 2.1 / 3.0 Result Reasons downgraded to valid KMIP 1.X Result Reasons
 //! - Version-gated `Query` allowlists (Operations, Object Types, Algorithms, Query Functions)
 #![forbid(unsafe_code)]
@@ -14,13 +14,17 @@ use crate::kmip1x::tags::*;
 /// Target upstream KMIP version spoken with the modern KMIP server.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum UpstreamKmipVersion {
+    /// OASIS KMIP 2.0.
     V2_0,
+    /// OASIS KMIP 2.1 (default upstream version).
     #[default]
     V2_1,
+    /// OASIS KMIP 3.0 (supports typed links and strict read-only create rules).
     V3_0,
 }
 
 impl UpstreamKmipVersion {
+    /// Returns the numeric `(major, minor)` protocol version pair.
     #[must_use]
     pub const fn major_minor(self) -> (i32, i32) {
         match self {
@@ -30,6 +34,11 @@ impl UpstreamKmipVersion {
         }
     }
 
+    /// Parses a textual version identifier (`"2.0"`, `"2.1"`, `"3.0"`, etc.).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if `s` is not one of the supported KMIP 2.0, 2.1, or 3.0 formats.
     pub fn parse_str(s: &str) -> Result<Self, String> {
         match s.trim() {
             "2.0" | "2_0" | "v2.0" => Ok(Self::V2_0),
@@ -57,21 +66,24 @@ pub enum OperationPolicyHandling {
 /// Cardinality of an attribute in KMIP 2.0 / 2.1 / 3.0.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cardinality {
-    /// Single-instance: `Add Attribute` / `Modify Attribute` route to `Set Attribute` (0x31).
+    /// Single-instance: `Add Attribute` / `Modify Attribute` route to `Set Attribute` (`0x31`).
     SingleInstance,
-    /// Multi-instance: `Add Attribute` stays `Add Attribute` (0x0D); `Modify`/`Delete` use RMW.
+    /// Multi-instance: `Add Attribute` stays `Add Attribute` (`0x0D`); `Modify`/`Delete` use RMW.
     MultiInstance,
 }
 
 /// Normative descriptor for a KMIP 1.0–1.4 standard attribute.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AttributeSpec {
+    /// Canonical KMIP 1.X string attribute name.
     pub name_1x: &'static str,
+    /// Corresponding KMIP 2.0 / 2.1 / 3.0 24-bit TTLV tag.
     pub tag_2x: u32,
+    /// Single-instance vs multi-instance cardinality in KMIP 2.0+.
     pub cardinality: Cardinality,
-    /// Minimum KMIP 1.X minor version where this attribute was introduced (0..=4).
+    /// Minimum KMIP 1.X minor version where this attribute was introduced (`0..=4`).
     pub min_minor_1x: i32,
-    /// True if server-managed/read-only (must be stripped from Create/Register in KMIP 3.0).
+    /// `true` if server-managed/read-only (stripped from `Create`/`Register` when enabled).
     pub read_only_on_create: bool,
 }
 

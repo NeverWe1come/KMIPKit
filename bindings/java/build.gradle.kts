@@ -27,7 +27,7 @@ tasks.withType<Javadoc>().configureEach {
         addBooleanOption("html5", true)
         addStringOption("Xdoclint:all,-missing", "-quiet")
     }
-    exclude("**/org/kmipkit/native/**")
+    exclude("**/org/kmipkit/internal/**")
 }
 
 group = "org.kmipkit"

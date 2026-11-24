@@ -22,7 +22,7 @@ KMIPKit/
 ├── bindings/                   # Native Language Adapters
 │   ├── c/                      # C11 headers, CMake, ABI consumer tests
 │   ├── java/                   # JNI C++ bridge + idiomatic Java 17 API
-│   └── python/                 # CFFI bridge + typed Python 3.10+ API
+│   └── python/                 # CFFI bridge + typed Python 3.12 API
 └── kmip-proxy/                 # Independent Standalone Proxy Workspace
     ├── src/providers/          # 10 Cloud / Enterprise KMS bridges
     └── src/kmip1x/             # KMIP 1.0-1.4 <-> KMIP 2.0/2.1/3.0 Translation Bridge

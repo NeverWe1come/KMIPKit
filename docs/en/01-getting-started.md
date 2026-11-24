@@ -14,7 +14,7 @@ KMIPKit uses **OpenSSL 3.5.x** as its unified cryptographic and `rustls-openssl`
 | **OpenSSL** | `3.5.9` (pinned) | Built via `verification/security/openssl/build.py` |
 | **C Compiler / CMake** | C11 / CMake `3.20+` | Required for C bindings & JNI native library |
 | **Java** | JDK `17+` | Gradle / Maven Java bindings |
-| **Python** | Python `3.10+` | CFFI bindings |
+| **Python** | Python `3.12` | CFFI bindings |
 
 ### Build the Pinned OpenSSL & Verify the Workspace
 

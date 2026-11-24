@@ -6,7 +6,7 @@ KMIPKit provides **1:1 functional parity** across **C (C11 ABI)**, **Java (JNI)*
 | :--- | :--- | :--- | :--- |
 | **[C](c/README.md)** | Stable C11 ABI (`kmipkit.h`, `kmipkit_fluent.h`) | C11 / CMake 3.20+ | `libkmipkit_ffi.{so,dylib,dll}` |
 | **[Java](java/README.md)** | JNI C++ Bridge (`kmipkit_jni`) | JDK 17+ | `org.kmipkit:kmipkit-java:1.0.0` |
-| **[Python](python/README.md)** | CFFI Native Adapter | Python 3.10+ | `pip install kmipkit` |
+| **[Python](python/README.md)** | CFFI Native Adapter | Python 3.12 | `pip install kmipkit` |
 
 ## Shared Guarantees Across All Bindings
 

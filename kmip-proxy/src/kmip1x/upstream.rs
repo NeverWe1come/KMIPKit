@@ -76,6 +76,11 @@ pub struct KmipKitUpstreamTransport {
 
 impl KmipKitUpstreamTransport {
     /// Constructs a pooled production upstream transport from `KmipUpstreamConfig`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if the endpoint URI/address, TLS certificates/keys, or
+    /// underlying `kmipkit-transport` configuration fails validation.
     pub fn from_config(cfg: &KmipUpstreamConfig) -> Result<Self, String> {
         let initial_config = build_transport_config(cfg)?;
         let initial_transport = TransportKind::from_transport_config(initial_config)?;
@@ -95,6 +100,10 @@ impl KmipKitUpstreamTransport {
     }
 
     /// Constructs a single-connection upstream transport from a pre-built `TransportConfig`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if initializing `RawTlsTransport` or `HttpsTransport` fails.
     pub fn from_transport_config(
         transport_config: TransportConfig,
         wire_format: Format,

@@ -1,7 +1,21 @@
-//! KMIP 1.X (1.0–1.4) -> KMIP 2.0 / 2.1 / 3.0 protocol translation bridge.
+//! KMIP 1.X (1.0–1.4) to KMIP 2.0 / 2.1 / 3.0 protocol translation bridge.
 //!
-//! Architecture:
-//! `KMIP 1.X Legacy App -> Kmip1xBridge -> UpstreamKmipTransport (kmipkit-transport) -> KMIP 2.0/2.1/3.0 Server`
+//! ## Architecture
+//!
+//! ```text
+//! KMIP 1.X Legacy App ──▶ Kmip1xBridge ──▶ UpstreamKmipTransport ──▶ KMIP 2.0/2.1/3.0 Server
+//!   (TLS 1.2/1.3, TTLV)     (Local Template    (Raw TLS / HTTPS         (Native or Cloud KMS
+//!                            Store & RMW)       TTLV / JSON / XML)       via LocalDispatcher)
+//! ```
+//!
+//! Supported features:
+//! - Full bidirectional translation across KMIP `1.0`, `1.1`, `1.2`, `1.3`, and `1.4`
+//!   toward KMIP `2.0`, `2.1`, or `3.0`.
+//! - Local interception of `Discover Versions` and complete KMIP 1.X `Template` lifecycle
+//!   (in-memory by default or optional atomic JSON persistence).
+//! - Read-Modify-Write (`Get Attributes` followed by `Modify Attribute` / `Delete Attribute`)
+//!   for multi-instance attribute index resolution.
+//! - Zero-overhead pass-through when `major >= 2`.
 #![forbid(unsafe_code)]
 
 pub mod mapping;
@@ -40,10 +54,15 @@ use crate::kmip1x::ttlv_helpers::{
 /// Async transport abstraction for forwarding translated KMIP 2.0 / 2.1 / 3.0 TTLV messages.
 #[async_trait]
 pub trait UpstreamKmipTransport: Send + Sync + 'static {
+    /// Sends a translated KMIP 2.0+ `RequestMessage` upstream and returns the parsed `ResponseMessage`.
+    ///
+    /// # Errors
+    ///
+    /// Returns a descriptive error string if transport I/O or TTLV/JSON/XML decoding fails.
     async fn send_ttlv(&self, request: &Item) -> Result<Item, String>;
 }
 
-/// Complete KMIP 1.X <-> KMIP 2.0 / 2.1 / 3.0 translation proxy engine.
+/// Complete KMIP 1.X `<->` KMIP 2.0 / 2.1 / 3.0 translation proxy engine.
 pub struct Kmip1xBridge {
     upstream: Arc<dyn UpstreamKmipTransport>,
     config: TranslatorConfig,
@@ -51,6 +70,8 @@ pub struct Kmip1xBridge {
 }
 
 impl Kmip1xBridge {
+    /// Creates a new bridge targeting `upstream_version` with default translator settings
+    /// and an ephemeral in-memory [`TemplateStore`].
     #[must_use]
     pub fn new(
         upstream: Arc<dyn UpstreamKmipTransport>,
@@ -65,11 +86,13 @@ impl Kmip1xBridge {
         )
     }
 
+    /// Creates a new bridge with explicit [`TranslatorConfig`] and an ephemeral [`TemplateStore`].
     #[must_use]
     pub fn with_config(upstream: Arc<dyn UpstreamKmipTransport>, config: TranslatorConfig) -> Self {
         Self::with_template_store(upstream, config, Arc::new(TemplateStore::new()))
     }
 
+    /// Creates a new bridge sharing or restoring an explicit [`TemplateStore`].
     #[must_use]
     pub fn with_template_store(
         upstream: Arc<dyn UpstreamKmipTransport>,
@@ -83,11 +106,13 @@ impl Kmip1xBridge {
         }
     }
 
+    /// Returns a handle to the bridge's [`TemplateStore`].
     #[must_use]
     pub fn template_store(&self) -> &Arc<TemplateStore> {
         &self.templates
     }
 
+    /// Returns the immutable [`TranslatorConfig`] used by this bridge.
     #[must_use]
     pub const fn config(&self) -> TranslatorConfig {
         self.config
@@ -96,10 +121,15 @@ impl Kmip1xBridge {
     /// Dispatches an incoming KMIP request.
     ///
     /// - If `major >= 2`, forwards directly to upstream (zero-overhead pass-through).
-    /// - If `major == 1`, translates KMIP 1.0–1.4 -> configured KMIP 2.0/2.1/3.0,
+    /// - If `major == 1`, translates KMIP 1.0–1.4 `->` configured KMIP 2.0/2.1/3.0,
     ///   handles local interceptions (`Discover Versions`, `Template` lifecycle) and
     ///   Read-Modify-Write `Attribute Index` resolution, forwards to upstream, translates
     ///   the response back to the client's exact 1.X version, and enforces `Maximum Response Size`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if the request lacks `Batch Item`s or `Request Header`,
+    /// or if upstream forwarding / response translation fails.
     pub async fn dispatch(&self, request: &Item) -> Result<Item, String> {
         let (client_major, client_minor) = extract_protocol_version(request).unwrap_or((1, 4));
 

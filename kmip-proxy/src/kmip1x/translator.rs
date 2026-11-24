@@ -25,14 +25,17 @@ use crate::kmip1x::ttlv_helpers::{
     find_child, find_children, retag_item, ttlv_item, ttlv_struct,
 };
 
+/// Vendor identification string attached to fallback vendor attributes created by the bridge.
 pub const PROXY_VENDOR_ID: &str = "kmip1x-proxy";
 
-/// Configuration options controlling KMIP 1.X <-> 2.0/2.1/3.0 translation semantics.
+/// Configuration options controlling KMIP 1.X `<->` 2.0/2.1/3.0 translation semantics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TranslatorConfig {
+    /// Target KMIP 2.0 / 2.1 / 3.0 protocol version used with the upstream server.
     pub upstream_version: UpstreamKmipVersion,
+    /// Policy governing legacy KMIP 1.X `Operation Policy Name` attributes.
     pub operation_policy_handling: OperationPolicyHandling,
-    /// Strip server-managed read-only attributes on Create/Register/Import/etc.
+    /// Strip server-managed read-only attributes on `Create`/`Register`/`Import`.
     pub strip_readonly_on_create: bool,
     /// Enforce KMIP 1.X `Maximum Response Size` on the final 1.X serialized TTLV.
     pub enforce_max_response_size: bool,

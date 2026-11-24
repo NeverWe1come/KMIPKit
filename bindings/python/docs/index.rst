@@ -1,7 +1,7 @@
 KMIPKit Python API Reference
 ============================
 
-Memory-safe **OASIS KMIP 2.0, 2.1, and 3.0** client for Python 3.10+, backed by the
+Memory-safe **OASIS KMIP 2.0, 2.1, and 3.0** client for Python 3.12, backed by the
 authoritative KMIPKit Rust core via CFFI.
 
 .. toctree::

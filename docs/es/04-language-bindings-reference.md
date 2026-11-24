@@ -81,12 +81,16 @@ void inspect_last_error(void) {
 }
 ```
 
-### Integración con CMake
+### Integración y Enlazado con CMake
 
 ```cmake
-find_package(KMIPKit REQUIRED)
+# Consumidor local del repositorio:
+# cmake -S bindings/c -B build/c-release -DKMIPKIT_TARGET_DIR="$PWD/target/release"
+
+# Enlazado en aplicación C11 externa:
 add_executable(my_hsm_app main.c)
-target_link_libraries(my_hsm_app PRIVATE KMIPKit::kmipkit_ffi)
+target_include_directories(my_hsm_app PRIVATE /ruta/a/KMIPKit/bindings/c/include)
+target_link_libraries(my_hsm_app PRIVATE /ruta/a/libkmipkit_ffi.so)
 ```
 
 ### Reglas de Propiedad de Memoria
@@ -132,7 +136,7 @@ try (Client client = Client.create(config, transport);
 
 ```bash
 pip install kmipkit
-export KMIPKIT_NATIVE_LIB=/opt/kmipkit/libkmipkit_ffi.so
+export KMIPKIT_NATIVE_LIBRARY=/opt/kmipkit/libkmipkit_ffi.so
 ```
 
 ```python

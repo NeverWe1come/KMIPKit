@@ -1,8 +1,15 @@
-//! Complete Server-to-Client (S2C) translation bridge:
-//! `KMIP 2.0/2.1/3.0 Server -> Kmip1xS2cBridge -> S2cClientTransport -> Legacy KMIP 1.X Client`
+//! Complete Server-to-Client (S2C) translation bridge.
 //!
-//! Supports all KMIP 1.X S2C operations: `Notify` (0x1B), `Put` (0x1C),
-//! `Discover Versions` (0x1E), and `Query` (0x18).
+//! ## Architecture
+//!
+//! ```text
+//! KMIP 2.0/2.1/3.0 Server ──▶ Kmip1xS2cBridge ──▶ S2cClientTransport ──▶ Legacy KMIP 1.X Client
+//!   (Notify / Put /            (2.x -> 1.X          (Role-reversed         (1.0–1.4 Response
+//!    Discover Versions)         Attributes)          TLS channel)           -> 2.x Server)
+//! ```
+//!
+//! Supports all KMIP 1.X S2C operations: `Notify` (`0x1B`), `Put` (`0x1C`),
+//! `Discover Versions` (`0x1E`), and `Query` (`0x18`).
 #![forbid(unsafe_code)]
 
 use std::sync::Arc;
@@ -24,6 +31,11 @@ use crate::kmip1x::ttlv_helpers::{
 /// Async transport abstraction for delivering translated S2C KMIP 1.X requests to a legacy client.
 #[async_trait]
 pub trait S2cClientTransport: Send + Sync + 'static {
+    /// Sends a translated KMIP 1.X Server-to-Client request and awaits the client's KMIP 1.X response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if the role-reversed connection fails or times out.
     async fn send_to_client(&self, request_1x: &Item) -> Result<Item, String>;
 }
 
@@ -36,6 +48,8 @@ pub struct Kmip1xS2cBridge {
 }
 
 impl Kmip1xS2cBridge {
+    /// Constructs an S2C bridge targeting a legacy KMIP `1.<client_minor_1x>` client
+    /// (clamped to `0..=4`) and translating replies back to `upstream_version`.
     #[must_use]
     pub fn new(
         client_transport: Arc<dyn S2cClientTransport>,
@@ -50,6 +64,10 @@ impl Kmip1xS2cBridge {
     }
 
     /// Handles an incoming Server-to-Client request initiated by a KMIP 2.0 / 2.1 / 3.0 server.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if translation or client transport delivery fails.
     pub async fn handle_server_request(&self, server_req_2x: &Item) -> Result<Item, String> {
         let (srv_major, srv_minor) = extract_protocol_version(server_req_2x)
             .unwrap_or_else(|| self.upstream_version.major_minor());

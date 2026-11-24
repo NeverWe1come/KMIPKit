@@ -1,6 +1,6 @@
 # KMIPKit Python Bindings (CFFI)
 
-Typed Python 3.10+ API backed by `libkmipkit_ffi` via CFFI. Supports context managers (`with ... as ...`) for deterministic native handle release and secret zeroization.
+Typed Python 3.12 API backed by `libkmipkit_ffi` via CFFI. Supports context managers (`with ... as ...`) for deterministic native handle release and secret zeroization.
 
 * **[Installation](docs/installation.md)**
 * **[Native Library Handling](docs/native-library.md)**

@@ -4,7 +4,7 @@
 > **Lenguajes:** Rust · C (ABI C11) · Java (JNI) · Python (CFFI)  
 > **Codificaciones:** TTLV (por defecto) · JSON · XML | **Transportes:** Raw TLS 1.3/1.2 · HTTPS (HTTP/1.1)
 
-**Idioma / Language / Langue:** [English](../en/00-index.md) · **Español** · [Français](../fr/00-index.md)
+**Idioma / Language / Langue / Sprache:** [English](../en/00-index.md) · **Español** · [Français](../fr/00-index.md) · [Deutsch](../de/00-index.md)
 
 ---
 

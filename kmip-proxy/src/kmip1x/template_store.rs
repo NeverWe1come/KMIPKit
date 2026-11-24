@@ -24,15 +24,23 @@ use crate::kmip1x::ttlv_helpers::{
     clone_item, extract_text_string, find_child, find_children, ttlv_item, ttlv_struct,
 };
 
+/// In-memory representation of a stored KMIP 1.X `Template` managed object.
 #[derive(Debug)]
 pub struct StoredTemplate {
+    /// Server-assigned `Unique Identifier` for this template.
     pub unique_id: String,
+    /// Associated `Name` values indexing this template.
     pub names: Vec<String>,
     /// Original KMIP 1.X `Attribute` structures stored in the template.
     pub attributes_1x: Vec<Item>,
 }
 
 impl StoredTemplate {
+    /// Clones this template including all nested KMIP 1.X `Attribute` TTLV items.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if cloning any TTLV attribute fails.
     pub fn try_clone(&self) -> Result<Self, String> {
         let mut attrs = Vec::with_capacity(self.attributes_1x.len());
         for a in &self.attributes_1x {
@@ -46,6 +54,10 @@ impl StoredTemplate {
     }
 
     /// Reconstructs a KMIP 1.X `Template` object structure (`0x420090`) for `Get`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if cloning attributes or constructing the `Template` structure fails.
     pub fn to_template_object(&self) -> Result<Item, String> {
         let mut children = Vec::with_capacity(self.attributes_1x.len());
         for a in &self.attributes_1x {
@@ -112,6 +124,10 @@ impl TemplateStore {
 
     /// Creates a `TemplateStore` backed by an atomic JSON file on disk, reloading
     /// any previously persisted templates if the file already exists.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if an existing persistence file cannot be read, parsed, or decoded.
     pub fn with_persistence(path: PathBuf) -> Result<Self, String> {
         let mut inner = TemplateStoreInner::default();
         let mut max_seq: u64 = 0;
@@ -266,6 +282,10 @@ impl TemplateStore {
     }
 
     /// Builds KMIP 1.X `Get Attributes` response items for a locally stored Template.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error string if building any TTLV response attribute fails.
     pub fn build_get_attributes_items(
         &self,
         unique_id: &str,

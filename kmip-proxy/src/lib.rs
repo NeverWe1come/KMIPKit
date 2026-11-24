@@ -57,6 +57,7 @@ pub use error::ProxyError;
 pub use kmip1x::{
     Kmip1xBridge, UpstreamKmipTransport,
     mapping::{OperationPolicyHandling, UpstreamKmipVersion},
+    s2c::{Kmip1xS2cBridge, S2cClientTransport},
     translator::TranslatorConfig,
     upstream::{KmipKitUpstreamTransport, LocalDispatcherUpstream},
 };

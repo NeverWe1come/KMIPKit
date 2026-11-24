@@ -83,12 +83,16 @@ void inspect_last_error(void) {
 }
 ```
 
-### CMake Integration
+### CMake Consumer & Linking
 
 ```cmake
-find_package(KMIPKit REQUIRED)
+# Local repository consumer build:
+# cmake -S bindings/c -B build/c-release -DKMIPKIT_TARGET_DIR="$PWD/target/release"
+
+# External C11 target linking:
 add_executable(my_hsm_app main.c)
-target_link_libraries(my_hsm_app PRIVATE KMIPKit::kmipkit_ffi)
+target_include_directories(my_hsm_app PRIVATE /path/to/KMIPKit/bindings/c/include)
+target_link_libraries(my_hsm_app PRIVATE /path/to/libkmipkit_ffi.so)
 ```
 
 ### Memory Ownership Rules
@@ -141,7 +145,7 @@ try (Client client = Client.create(config, transport);
 ```bash
 pip install kmipkit
 # Or load a custom-built native library explicitly:
-export KMIPKIT_NATIVE_LIB=/opt/kmipkit/libkmipkit_ffi.so
+export KMIPKIT_NATIVE_LIBRARY=/opt/kmipkit/libkmipkit_ffi.so
 ```
 
 ### HTTPS + JSON + Async Poll Example in Python
