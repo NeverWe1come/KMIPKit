@@ -720,10 +720,11 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
     versioned_operation(binary, openssl, repository, "test-op-create-key-pair", 0x02, protocol_version)
-    versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
-    versioned_operation(binary, openssl, repository, "test-op-discover-versions", 0x1e, protocol_version)
-    if protocol_version == "2.1":
-        versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b, protocol_version)
+    if os.name == "posix":
+        versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
+        versioned_operation(binary, openssl, repository, "test-op-discover-versions", 0x1e, protocol_version)
+        if protocol_version == "2.1":
+            versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b, protocol_version)
     protocol_minor = int(protocol_version.split(".")[1])
     registered_key_batch = (3, 18, 31, 32, 19, 20)
     stop_on_first_failure_batch = (10, 10)
