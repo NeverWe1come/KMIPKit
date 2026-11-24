@@ -36,11 +36,6 @@ pub use kmipkit_protocol as protocol;
 /// Generic TTLV values and the bounded decoder.
 pub use kmipkit_ttlv as ttlv;
 
-/// Bounded encoding for generic TTLV trees.
-pub mod generic_ttlv {
-    pub use kmipkit_client::{GenericTtlvEncodingError, with_encoded_generic_ttlv};
-}
-
 /// Configuration for client-owned vendor extension definitions.
 pub mod client_config {
     pub use kmipkit_client::extension_registry::{
