@@ -71,7 +71,7 @@ and single-part SHA-256 Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. The probes
 use certificate authentication and the installed low-level raw TLS transport.
 RNG Retrieve follows the catalog's mutation opt-in.
 
-With mutation opt-in, the direct tag route also runs Create, Get, Get
+With mutation opt-in, the direct tag route also runs Create, Check, Get, Get
 Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
 Each case uses the Text String identifier returned when it creates an isolated
 AES-256 key. The lifecycle checks validate the response identifier and confirm

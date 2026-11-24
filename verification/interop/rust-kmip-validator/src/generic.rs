@@ -12,6 +12,7 @@ use sha2::{Digest, Sha256};
 
 const HASH_INPUT: &[u8] = b"abc";
 const CREATE: u32 = 1;
+const CHECK: u32 = 9;
 const GET: u32 = 10;
 const GET_ATTRIBUTES: u32 = 11;
 const GET_ATTRIBUTE_LIST: u32 = 12;
@@ -25,6 +26,7 @@ fn uses_owned_key(operation: u32) -> bool {
     matches!(
         operation,
         CREATE
+            | CHECK
             | GET
             | GET_ATTRIBUTES
             | GET_ATTRIBUTE_LIST
@@ -52,6 +54,7 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
         ("test-op-create", "2.0" | "2.1") => Some(CREATE),
+        ("test-op-check", "2.0" | "2.1") => Some(CHECK),
         ("test-op-get", "2.0" | "2.1") => Some(GET),
         ("test-op-get-attributes", "2.0" | "2.1") => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
@@ -134,7 +137,7 @@ fn run_owned_key(
     if create == Ok((0, None)) && operation == DESTROY {
         return outcome(case, send(DESTROY));
     }
-    if create == Ok((0, None)) && matches!(operation, ACTIVATE | REVOKE) {
+    if create == Ok((0, None)) && matches!(operation, ACTIVATE | REVOKE | CHECK) {
         let target = activate_and_revoke(case, operation, connection, version, &id);
         return if send(DESTROY) == Ok((0, None)) {
             target
@@ -241,13 +244,25 @@ fn activate_and_revoke(
     let same_id =
         |batch: ResponseBatchItemView<'_>| Ok(text_identifier(batch).as_deref() == Some(id));
     let activation = exchange(connection, version, ACTIVATE, Some(id), same_id);
-    if matches!(activation, Ok((1, _))) && operation == REVOKE {
+    if matches!(activation, Ok((1, _))) && operation != ACTIVATE {
         return CaseResult::non_run(
             case,
             "not_run",
             "server rejected isolated Activate setup".to_owned(),
         );
     }
+    let target = if activation == Ok((0, None)) && operation == CHECK {
+        exchange(connection, version, CHECK, Some(id), |batch| {
+            let response = kmipkit::protocol::CheckResponse::try_from_response_item(batch)
+                .map_err(|_| "invalid Check response")?;
+            Ok(same_id(batch)?
+                && response
+                    .cryptographic_usage_mask()
+                    .is_none_or(|mask| mask & 4 == 4))
+        })
+    } else {
+        activation
+    };
     if activation == Ok((0, None)) || activation.is_err() {
         let revocation = exchange(connection, version, REVOKE, Some(id), same_id);
         if activation == Ok((0, None)) {
@@ -259,7 +274,7 @@ fn activate_and_revoke(
             }
         }
     }
-    outcome(case, activation)
+    outcome(case, target)
 }
 
 fn text_identifier(batch: ResponseBatchItemView<'_>) -> Option<String> {
@@ -334,6 +349,13 @@ fn exchange(
                 Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
             )?,
             item(0x0042_013b, Value::enumeration(0x0042_002a))?,
+        ],
+        CHECK => vec![
+            item(
+                0x0042_0094,
+                Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
+            )?,
+            item(0x0042_002c, Value::integer(4))?,
         ],
         REVOKE => vec![
             item(

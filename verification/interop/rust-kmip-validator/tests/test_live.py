@@ -415,10 +415,10 @@ class LiveContract(unittest.TestCase):
 
     def test_generic_key_lifecycle_uses_created_identifier_and_checks_cleanup(self):
         routes = {"create": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20], "destroy": [1, 20],
-                  "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
+                  "check": [1, 18, 9, 19, 20], "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
                   "get-attribute-list": [1, 12, 20], "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
         for version, (target, operations) in product(("2.0", "2.1"), routes.items()):
-            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke") else (True,)):
+            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check") else (True,)):
                 with self.subTest(version=version, target=target, valid=valid):
                     minor = int(version[-1])
                     owned = "controlled-owned-key"
@@ -450,6 +450,9 @@ class LiveContract(unittest.TestCase):
                             fields.append(ttlv(0x42013b, 5, 0x420028))
                             if valid:
                                 fields.append(ttlv(0x42013b, 5, 0x42002a))
+                        if operation == 9:
+                            self.assertEqual(4, find(payload, 0x42002c))
+                            fields.append(ttlv(0x42002c, 2, 4 if valid else 8))
                         if operation == 19:
                             self.assertEqual([(0x420082, 5, 6)], find(payload, 0x420081))
                         if not valid and ((target == "activate" and operation == 18)
