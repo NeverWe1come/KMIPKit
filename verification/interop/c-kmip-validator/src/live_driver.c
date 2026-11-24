@@ -32,6 +32,11 @@ static kmipkit_timeout_limit_v1_t bounded_timeout(uint64_t seconds) {
 }
 
 static bool parse_version(const char *text, int32_t *major, int32_t *minor) {
+    if (strcmp(text, "3.0") == 0) {
+        *major = 3;
+        *minor = 0;
+        return true;
+    }
     if (strcmp(text, "2.0") == 0) {
         *major = 2;
         *minor = 0;
@@ -9067,6 +9072,63 @@ static int32_t build_fluent_ping(kmipkit_client_batch_item_t **out) {
     return status;
 }
 
+static kmip_execution_outcome_t execute_single_versioned_diagnostic(
+    kmip_live_client_t *client, bool ping, bool fluent) {
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_response_t *item = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_client_batch_item_metadata_v2_t metadata = {
+        .struct_size = (uint32_t)sizeof(metadata), .abi_version = 2
+    };
+    int32_t status;
+    if (ping) {
+        status = fluent ? build_fluent_ping(&request) : kmipkit_client_batch_item_ping(&request);
+    } else {
+        status = kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, &request);
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0 && client->username_env[0] != 0) {
+        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+        else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status == 0) authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &request);
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status == 0) status = kmipkit_client_batch_response_item_at(response, 0, &item);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(item, &metadata);
+    if (status != 0 || metadata.operation != (ping ? 0x3bU : 0x32U)) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "versioned C exchange did not return the target operation");
+    } else {
+        record_kmip_result(&outcome, &metadata);
+        if (outcome.success) {
+            uint8_t present = 0;
+            if (ping) {
+                status = kmipkit_client_batch_item_response_ping(item, &present);
+            } else {
+                uint32_t role = 0;
+                kmipkit_byte_span_v1_t vendor = {0};
+                status = kmipkit_client_batch_item_response_set_endpoint_role(item, &present, &role, &vendor);
+                if (role != 1) present = 0;
+            }
+            outcome.success = status == 0 && present;
+            if (!outcome.success) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                                           "target response did not match its typed payload");
+        }
+    }
+    if (item) kmipkit_client_batch_item_response_release(item);
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (request) kmipkit_client_batch_item_release(request);
+    if (authentication) kmipkit_authentication_release(authentication);
+    return outcome;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -9099,6 +9161,19 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-delete-attribute") != 0) {
         return outcome_not_run("the C Fluent API has no equivalent recipe for this case");
     }
+    if (strcmp(test_case->mode, "server_exchange") == 0 &&
+        strcmp(client->api_level, "generic-ttlv") != 0) {
+        if (strcmp(test_case->operation, "Set Endpoint Role") == 0 &&
+            strcmp(test_case->workflow_type, "client_to_server") == 0) {
+            if (strcmp(test_case->mutation, "mutating") != 0)
+                return outcome_not_run("outbound role exchange requires a mutating fixture");
+            return execute_single_versioned_diagnostic(client, false, false);
+        }
+        if (client->protocol_major == 3 && strcmp(test_case->operation, "Ping") == 0)
+            return execute_single_versioned_diagnostic(client, true, fluent_route);
+    }
+    if (client->protocol_major == 3)
+        return outcome_not_run("C recipe requires a KMIP 3.0 request and response fixture");
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
         strcmp(test_case->case_id, "test-v20-reject-ping") == 0 ||
