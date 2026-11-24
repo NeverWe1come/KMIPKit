@@ -413,6 +413,48 @@ class LiveContract(unittest.TestCase):
                     self.assertEqual(peer.operations, [operation])
                 self.assertEqual(report["cases"][0]["status"], result)
 
+    def test_generic_key_lifecycle_uses_created_identifier_and_checks_cleanup(self):
+        routes = {"create": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20], "destroy": [1, 20],
+                  "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+        for version, (target, operations) in product(("2.0", "2.1"), routes.items()):
+            for valid in ((True, False) if target in ("get", "get-attributes") else (True,)):
+                with self.subTest(version=version, target=target, valid=valid):
+                    minor = int(version[-1])
+                    owned = "controlled-owned-key"
+                    identity = ttlv(0x420094, 7, owned)
+                    object_type = ttlv(0x420057, 5, 2)
+
+                    def answer(tree):
+                        operation = find(tree, 0x42005c)
+                        payload = find(tree, 0x420079)
+                        fields = [identity]
+                        if operation == 1:
+                            self.assertEqual(2, find(payload, 0x420057))
+                            self.assertEqual(3, find(payload, 0x420028))
+                            self.assertEqual(256, find(payload, 0x42002a))
+                            fields.insert(0, object_type)
+                        else:
+                            self.assertEqual(owned, find(payload, 0x420094))
+                        if operation == 10:
+                            key = ttlv(0x42008f, 1, [ttlv(0x420040, 1, [
+                                ttlv(0x420042, 5, 1),
+                                ttlv(0x420045, 1, [ttlv(0x420043, 8, bytes(32))]),
+                                ttlv(0x420028, 5, 3), ttlv(0x42002a, 2, 256),
+                            ])])
+                            fields = [object_type, identity if valid else ttlv(0x420094, 7, "foreign-key"), key]
+                        if operation == 11:
+                            self.assertEqual(0x42002a, find(payload, 0x42013b))
+                            fields.append(ttlv(0x420125, 1, [ttlv(0x42002a, 2, 256 if valid else 128)]))
+                        return response(operation, minor, 0, None, fields)
+
+                    with ControlledPeer(self.pki, answer) as peer:
+                        _, report = self.command(
+                            self.connection(peer.port, version=version, api="generic-ttlv", mutations=True),
+                            self.rows(f"test-op-{target}"),
+                        )
+                        self.assertEqual(operations, peer.operations)
+                    self.assertEqual("passed" if valid else "failed", report["cases"][0]["status"])
+
     def test_discover_versions_accepts_only_the_version_offered_by_each_api(self):
         operation = 0x1e
 

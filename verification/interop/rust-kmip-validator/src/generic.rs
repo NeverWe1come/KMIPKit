@@ -1,27 +1,51 @@
-//! Read-only KMIP 2.x exchanges constructed using public raw-tag models.
+//! KMIP 2.x exchanges constructed using public raw-tag models.
 use crate::driver::{item, structure, transport_config};
 use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
     DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse, ProtocolVersion,
-    QueryResponse, ResponseMessage, RngRetrieveResponse,
+    QueryResponse, ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
 use sha2::{Digest, Sha256};
 
 const HASH_INPUT: &[u8] = b"abc";
+const CREATE: u32 = 1;
+const GET: u32 = 10;
+const GET_ATTRIBUTES: u32 = 11;
+const DESTROY: u32 = 20;
+const ARCHIVE: u32 = 21;
+const RECOVER: u32 = 22;
+
+fn uses_owned_key(operation: u32) -> bool {
+    matches!(
+        operation,
+        CREATE | GET | GET_ATTRIBUTES | DESTROY | ARCHIVE | RECOVER
+    )
+}
 
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
-    operation(case, connection).is_some()
-        && connection.transport == "raw_tls"
+    connection.transport == "raw_tls"
         && connection.encoding == "TTLV"
         && connection.authentication.is_none()
-        && (case.execution.mutation == "read_only" || operation(case, connection) == Some(0x25))
+        && operation(case, connection).is_some_and(|operation| {
+            if uses_owned_key(operation) {
+                case.execution.mutation == "mutating"
+            } else {
+                case.execution.mutation == "read_only" || operation == 0x25
+            }
+        })
 }
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
+        ("test-op-create", "2.0" | "2.1") => Some(CREATE),
+        ("test-op-get", "2.0" | "2.1") => Some(GET),
+        ("test-op-get-attributes", "2.0" | "2.1") => Some(GET_ATTRIBUTES),
+        ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
+        ("test-op-archive", "2.0" | "2.1") => Some(ARCHIVE),
+        ("test-op-recover", "2.0" | "2.1") => Some(RECOVER),
         ("test-op-locate", "2.0" | "2.1") => Some(0x08),
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
@@ -34,22 +58,175 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
 
 pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     let start = std::time::Instant::now();
-    let mut result = match exchange(case, connection) {
+    let version = ProtocolVersion::from_raw(2, i32::from(connection.protocol_version == "2.1"));
+    let mut result = match operation(case, connection) {
+        Some(operation) if uses_owned_key(operation) => {
+            run_owned_key(case, connection, version, operation)
+        }
+        Some(operation) => outcome(
+            case,
+            exchange(connection, version, operation, None, |batch| {
+                check_probe(batch, operation, version)
+            }),
+        ),
+        None => CaseResult::non_run(case, "not_run", "no generic exchange recipe".to_owned()),
+    };
+    result.duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+    result
+}
+
+type ExchangeResult = Result<(u32, Option<u32>)>;
+
+fn outcome(case: &Case, result: ExchangeResult) -> CaseResult {
+    match result {
         Ok((status, reason)) => {
             let mut result = crate::runner::observed_result(case, status, reason);
             "generic TTLV request and response validated".clone_into(&mut result.diagnostic);
             result
         }
         Err(problem) => CaseResult::non_run(case, "failed", problem.to_owned()),
-    };
-    result.duration_ms = start.elapsed().as_secs_f64() * 1000.0;
-    result
+    }
 }
 
-fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> {
+fn run_owned_key(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+) -> CaseResult {
+    let mut identifier = None;
+    let create = exchange(connection, version, CREATE, None, |batch| {
+        identifier = text_identifier(batch);
+        Ok(identifier.is_some()
+            && has_field(batch, 0x0042_0057, |v| {
+                matches!(v, ValueView::Enumeration(2))
+            }))
+    });
+    let Some(id) = identifier else {
+        if operation != CREATE && matches!(create, Ok((1, _))) {
+            return CaseResult::non_run(
+                case,
+                "not_run",
+                "server rejected isolated Create setup".to_owned(),
+            );
+        }
+        return outcome(case, create);
+    };
+    let same_id = |batch: ResponseBatchItemView<'_>| {
+        Ok(text_identifier(batch).as_deref() == Some(id.as_str()))
+    };
+    let send = |operation| exchange(connection, version, operation, Some(&id), same_id);
+
+    if create == Ok((0, None)) && operation == DESTROY {
+        return outcome(case, send(DESTROY));
+    }
+    let mut result = outcome(case, create);
+    if create == Ok((0, None)) {
+        if operation == GET {
+            result = outcome(
+                case,
+                exchange(connection, version, GET, Some(&id), |batch| {
+                    Ok(same_id(batch)?
+                        && has_field(batch, 0x0042_0057, |v| {
+                            matches!(v, ValueView::Enumeration(2))
+                        })
+                        && has_field(batch, 0x0042_008f, |v| matches!(v, ValueView::Structure(_))))
+                }),
+            );
+        }
+        if operation == GET_ATTRIBUTES {
+            result = outcome(
+                case,
+                exchange(connection, version, GET_ATTRIBUTES, Some(&id), |batch| {
+                    Ok(same_id(batch)?
+                        && has_field(batch, 0x0042_0125, |value| match value {
+                            ValueView::Structure(attrs) => match attrs.children() {
+                                [length] if length.tag().raw() == 0x0042_002a => length
+                                    .with_value(|value| matches!(value, ValueView::Integer(256))),
+                                _ => false,
+                            },
+                            _ => false,
+                        }))
+                }),
+            );
+        }
+        if matches!(operation, ARCHIVE | RECOVER) {
+            let mut archived = false;
+            let archive = exchange(connection, version, ARCHIVE, Some(&id), |batch| {
+                archived = true;
+                same_id(batch)
+            });
+            result = outcome(case, archive);
+            if archived {
+                let recover = send(RECOVER);
+                if archive == Ok((0, None)) {
+                    if operation == RECOVER {
+                        result = outcome(case, recover);
+                    } else if recover != Ok((0, None)) {
+                        result = outcome(case, Err("cleanup Recover failed"));
+                    }
+                }
+            } else if operation == RECOVER && matches!(archive, Ok((1, _))) {
+                result = CaseResult::non_run(
+                    case,
+                    "not_run",
+                    "server rejected Archive setup".to_owned(),
+                );
+            }
+        }
+    }
+    if send(DESTROY) == Ok((0, None)) {
+        result
+    } else {
+        outcome(case, Err("cleanup Destroy failed for the isolated key"))
+    }
+}
+
+fn text_identifier(batch: ResponseBatchItemView<'_>) -> Option<String> {
+    batch
+        .with_response_payload(|payload| {
+            let mut fields = payload
+                .children()
+                .iter()
+                .filter(|item| item.tag().raw() == 0x0042_0094);
+            let field = fields.next()?;
+            if fields.next().is_some() {
+                return None;
+            }
+            field.with_value(|value| match value {
+                ValueView::TextString(text) if !text.is_empty() => Some(text.to_string()),
+                _ => None,
+            })
+        })
+        .flatten()
+}
+
+fn has_field(
+    batch: ResponseBatchItemView<'_>,
+    tag: u32,
+    check: impl FnOnce(ValueView<'_>) -> bool,
+) -> bool {
+    batch
+        .with_response_payload(|payload| {
+            let mut fields = payload
+                .children()
+                .iter()
+                .filter(|item| item.tag().raw() == tag);
+            fields
+                .next()
+                .is_some_and(|field| fields.next().is_none() && field.with_value(check))
+        })
+        .unwrap_or_default()
+}
+
+fn exchange(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    id: Option<&str>,
+    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+) -> ExchangeResult {
     let minor = i32::from(connection.protocol_version == "2.1");
-    let version = ProtocolVersion::from_raw(2, minor);
-    let operation = operation(case, connection).ok_or("no generic exchange recipe")?;
     let version_item = || {
         node(
             0x0042_0069,
@@ -60,6 +237,28 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
         )
     };
     let payload_fields = match operation {
+        CREATE => vec![
+            item(0x0042_0057, Value::enumeration(2))?,
+            node(
+                0x0042_0125,
+                vec![
+                    item(0x0042_0028, Value::enumeration(3))?,
+                    item(0x0042_002a, Value::integer(256))?,
+                    item(0x0042_002c, Value::integer(4))?,
+                ],
+            )?,
+        ],
+        GET_ATTRIBUTES => vec![
+            item(
+                0x0042_0094,
+                Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
+            )?,
+            item(0x0042_013b, Value::enumeration(0x0042_002a))?,
+        ],
+        GET | DESTROY | ARCHIVE | RECOVER => vec![item(
+            0x0042_0094,
+            Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
+        )?],
         0x08 => vec![
             item(0x0042_004f, Value::integer(1))?,
             item(0x0042_00d4, Value::integer(0))?,
@@ -101,14 +300,15 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
             &RequestOptions::default(),
         )
         .map_err(|_| "generic TTLV exchange failed")?;
-    check_response(response.as_bytes(), operation, version)
+    check_response(response.as_bytes(), operation, version, check)
 }
 
 fn check_response(
     wire: &[u8],
     operation: u32,
     version: ProtocolVersion,
-) -> Result<(u32, Option<u32>)> {
+    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+) -> ExchangeResult {
     let root = codec::decode(wire).map_err(|_| "generic response failed TTLV decoding")?;
     if root.tag().raw() != 0x0042_007b {
         return Err("generic response has the wrong root tag");
@@ -131,43 +331,8 @@ fn check_response(
         .result_status()
         .ok_or("response status missing")?
         .raw();
-    if status == 0 {
-        let matches = if operation == 0x08 {
-            let locate = LocateResponse::try_from_response_item(batch)
-                .map_err(|_| "invalid Locate response")?;
-            let returned = locate.unique_identifiers().len();
-            returned <= 1
-                && locate
-                    .located_items()
-                    .is_none_or(|total| usize::try_from(total).is_ok_and(|total| total >= returned))
-        } else if operation == 0x18 {
-            let query = QueryResponse::try_from_response_item(batch)
-                .map_err(|_| "invalid Query response")?;
-            query.operations().next().is_some()
-        } else if operation == 0x1e {
-            let discover =
-                DiscoverVersionsResponse::try_from_response_item_for_offer(batch, &[version])
-                    .map_err(|_| "invalid Discover Versions response")?;
-            discover.supported_versions() == Some(&[version])
-        } else if operation == 0x25 {
-            RngRetrieveResponse::try_from_response_item(batch)
-                .map_err(|_| "invalid RNG Retrieve response")?
-                .data()
-                .is_some_and(|data| data.with_bytes(|bytes| bytes.len() == 32))
-        } else if operation == 0x27 {
-            let hash =
-                HashResponse::try_from_response_item(batch).map_err(|_| "invalid Hash response")?;
-            let expected = Sha256::digest(HASH_INPUT);
-            hash.correlation_value().is_none()
-                && hash
-                    .data()
-                    .is_some_and(|data| data.with_bytes(|bytes| bytes == &expected[..]))
-        } else {
-            PingResponse::try_from_response_item(batch).is_ok()
-        };
-        if !matches {
-            return Err("response did not confirm the requested capability");
-        }
+    if status == 0 && !check(batch)? {
+        return Err("generic success payload did not satisfy the case");
     }
     Ok((
         status,
@@ -175,11 +340,51 @@ fn check_response(
     ))
 }
 
+fn check_probe(
+    batch: ResponseBatchItemView<'_>,
+    operation: u32,
+    version: ProtocolVersion,
+) -> Result<bool> {
+    Ok(if operation == 0x08 {
+        let locate =
+            LocateResponse::try_from_response_item(batch).map_err(|_| "invalid Locate response")?;
+        let returned = locate.unique_identifiers().len();
+        returned <= 1
+            && locate
+                .located_items()
+                .is_none_or(|total| usize::try_from(total).is_ok_and(|total| total >= returned))
+    } else if operation == 0x18 {
+        let query =
+            QueryResponse::try_from_response_item(batch).map_err(|_| "invalid Query response")?;
+        query.operations().next().is_some()
+    } else if operation == 0x1e {
+        let discover =
+            DiscoverVersionsResponse::try_from_response_item_for_offer(batch, &[version])
+                .map_err(|_| "invalid Discover Versions response")?;
+        discover.supported_versions() == Some(&[version])
+    } else if operation == 0x25 {
+        RngRetrieveResponse::try_from_response_item(batch)
+            .map_err(|_| "invalid RNG Retrieve response")?
+            .data()
+            .is_some_and(|data| data.with_bytes(|bytes| bytes.len() == 32))
+    } else if operation == 0x27 {
+        let hash =
+            HashResponse::try_from_response_item(batch).map_err(|_| "invalid Hash response")?;
+        let expected = Sha256::digest(HASH_INPUT);
+        hash.correlation_value().is_none()
+            && hash
+                .data()
+                .is_some_and(|data| data.with_bytes(|bytes| bytes == &expected[..]))
+    } else {
+        PingResponse::try_from_response_item(batch).is_ok()
+    })
+}
+
 fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
     item(tag, Value::structure(structure(tag, children)?))
 }
 
-// Encode the native generic tree for the read-only probes.
+// Encode the native generic tree for the exchange recipes.
 fn encode(item: &Item, output: &mut Vec<u8>) -> Result<()> {
     let start = output.len();
     output.extend_from_slice(&item.tag().raw().to_be_bytes()[1..]);
@@ -199,6 +404,10 @@ fn encode(item: &Item, output: &mut Vec<u8>) -> Result<()> {
             ValueView::Enumeration(value) => {
                 output.extend_from_slice(&value.to_be_bytes());
                 5
+            }
+            ValueView::TextString(value) => {
+                output.extend_from_slice(value.as_bytes());
+                7
             }
             ValueView::ByteString(value) => {
                 output.extend_from_slice(value);
