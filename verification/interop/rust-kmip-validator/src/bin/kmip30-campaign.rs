@@ -2,7 +2,7 @@
 #![forbid(unsafe_code)]
 
 use clap::{Parser, ValueEnum};
-use kmipkit::ttlv::{Item, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
+use kmipkit::ttlv::{Item, ItemType, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
 use kmipkit::{ClientBatchItem, ClientRequest};
 use serde_json::{Value, json};
 use std::collections::HashMap;
@@ -10,6 +10,23 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
+
+const TTLV_TYPES: [ItemType; 14] = [
+    ItemType::Structure,
+    ItemType::Integer,
+    ItemType::LongInteger,
+    ItemType::BigInteger,
+    ItemType::Enumeration,
+    ItemType::Boolean,
+    ItemType::TextString,
+    ItemType::ByteString,
+    ItemType::DateTime,
+    ItemType::Interval,
+    ItemType::DateTimeExtended,
+    ItemType::Identifier,
+    ItemType::Reference,
+    ItemType::NameReference,
+];
 
 #[derive(Clone, Copy, ValueEnum)]
 enum Scope {
@@ -163,6 +180,13 @@ fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
 }
 
 fn main() -> ExitCode {
+    if std::env::args().skip(1).eq(["--inspect-oasis-ttlv"]) {
+        return if inspect_ttlv().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
     match run(Args::parse()) {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
@@ -171,6 +195,57 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+fn inspect_ttlv() -> Result<(), Box<dyn std::error::Error>> {
+    let mut output = BufWriter::new(std::io::stdout().lock());
+    writeln!(
+        output,
+        "{}",
+        json!({
+            "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),
+            "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
+        })
+    )?;
+    for line in std::io::stdin().lock().lines() {
+        let line = line?;
+        if line.len() % 2 != 0 {
+            return Err("fixture hex length is not even".into());
+        }
+        let wire = (0..line.len())
+            .step_by(2)
+            .map(|index| u8::from_str_radix(line.get(index..index + 2).unwrap_or(""), 16))
+            .collect::<Result<Vec<_>, _>>()?;
+        let result = if let Ok(item) = kmipkit::ttlv::codec::decode(&wire) {
+            let mut nodes = Vec::new();
+            append_node(&item, &mut nodes)?;
+            json!(nodes)
+        } else {
+            Value::Null
+        };
+        writeln!(output, "{result}")?;
+    }
+    output.flush()?;
+    Ok(())
+}
+
+fn append_node(item: &Item, nodes: &mut Vec<(u32, usize, usize)>) -> Result<(), &'static str> {
+    let kind = TTLV_TYPES
+        .iter()
+        .position(|kind| *kind == item.item_type())
+        .ok_or("unknown decoded item type")?
+        + 1;
+    item.with_value(|value| {
+        if let ValueView::Structure(structure) = value {
+            nodes.push((item.tag().raw(), kind, structure.children().len()));
+            for child in structure.children() {
+                append_node(child, nodes)?;
+            }
+        } else {
+            nodes.push((item.tag().raw(), kind, 0));
+        }
+        Ok(())
+    })
 }
 
 #[cfg(test)]
