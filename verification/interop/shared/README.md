@@ -224,3 +224,9 @@ and 69 for the 3.0 Working Draft. Existing recipes are selected once for
 each direction. A planned row requires a tested recipe in the chosen
 consumer before the validator can report exchange evidence. A server
 rejection or a local delivery error remains visible in its result.
+
+Add `--with-variants` to either command to include the catalogued
+attribute, object, cryptography, batch and boundary cases alongside the
+operation cases. This selection retains the variants explicitly assigned
+to each version. KMIP 3.0 receives its operation cases and any variants
+explicitly assigned to 3.0 in the shared catalog.

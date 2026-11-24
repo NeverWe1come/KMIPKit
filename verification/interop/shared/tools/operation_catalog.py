@@ -66,7 +66,7 @@ def new_recipe(name, flow):
     }
 
 
-def build_catalog(root: Path, version: str) -> dict:
+def build_catalog(root: Path, version: str, *, include_variants: bool = False) -> dict:
     source = inventory(root)["versions"][version]
     original = json.loads((root / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
     templates = candidate_recipes(original["test_cases"], "2.1" if version == "3.0" else version)
@@ -84,8 +84,21 @@ def build_catalog(root: Path, version: str) -> dict:
             "normative_refs": [{"document": DOCUMENTS[version], "section": section}],
         })
         counts[flow] += 1
+    if include_variants:
+        operation_keys = {(case["operation"], direction(case)) for case in cases}
+        existing_ids = {case["case_id"] for case in cases}
+        for case in original["test_cases"]:
+            execution = case["execution"]
+            if case["case_id"] in existing_ids or version not in execution["protocol_versions"]:
+                continue
+            if (execution["mode"] == "server_exchange"
+                    and case["category"] != "version_boundaries"
+                    and (case["operation"], direction(case)) not in operation_keys):
+                continue
+            cases.append({**case, "execution": {**execution, "protocol_versions": [version]}})
     if len({case["case_id"] for case in cases}) != len(cases):
         raise ValueError("operation catalog has duplicate case identifiers")
+    categories = Counter(case["category"] for case in cases)
     return {
         **original,
         "catalog_source": str(source["source"]),
@@ -94,8 +107,10 @@ def build_catalog(root: Path, version: str) -> dict:
         "statistics": {
             "operations_covered": counts["client_to_server"],
             "server_to_client_operations_covered": counts["server_to_client"],
-            "managed_objects_covered": 0,
-            "attributes_covered": 0,
+            "managed_objects_covered": categories["managed_objects"],
+            "attributes_covered": categories["attributes"],
+            "enumerations_covered": sum(case["case_id"].startswith("test-enum-") for case in cases),
+            "bitmasks_covered": sum(case["case_id"].startswith("test-bitmask-") for case in cases),
             "total_cases": len(cases),
         },
     }
@@ -104,9 +119,12 @@ def build_catalog(root: Path, version: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", choices=VERSIONS, required=True)
+    parser.add_argument("--with-variants", action="store_true",
+                        help="Include version-specific attribute, object, and workflow cases")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = json.dumps(build_catalog(ROOT, args.version), indent=2, ensure_ascii=False) + "\n"
+    catalog = build_catalog(ROOT, args.version, include_variants=args.with_variants)
+    result = json.dumps(catalog, indent=2, ensure_ascii=False) + "\n"
     if args.output is None:
         print(result, end="")
     else:
