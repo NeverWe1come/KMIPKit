@@ -733,7 +733,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
     catalog = json.loads(source.read_text())
     cases = {row["case_id"]: row for row in catalog["test_cases"]}
     operations = {"create": (1, 20), "get": (1, 10, 20), "destroy": (1, 20), "get-attributes": (1, 11, 20),
-                  "get-attribute-list": (1, 12, 20), "activate": (1, 18, 19, 20),
+                  "get-attribute-list": (1, 12, 20), "activate": (1, 18, 19, 20), "check": (1, 18, 9, 19, 20),
                   "revoke": (1, 18, 19, 20), "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
     with tempfile.TemporaryDirectory(prefix="kmip-c-owned-") as temporary:
         directory = Path(temporary)
@@ -751,7 +751,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
         header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
                      + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
         for target, exchanges in operations.items():
-            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke") else (True,)):
+            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check") else (True,)):
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
@@ -790,7 +790,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                         fields = object_type + owned_id
                                     else:
                                         assert owned_id in request
-                                        if operation not in (11, 19):
+                                        if operation not in (9, 11, 19):
                                             assert tlv(0x420079, 1, owned_id) in request
                                     if operation == 10:
                                         returned_id = owned_id if valid else tlv(0x420094, 7, b"foreign-key")
@@ -802,6 +802,9 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                         fields += enumeration(0x42013b, 0x420028)
                                         if valid:
                                             fields += enumeration(0x42013b, 0x42002a)
+                                    if operation == 9:
+                                        assert tlv(0x420079, 1, owned_id + integer(0x42002c, 4)) in request
+                                        fields += integer(0x42002c, 4 if valid else 8)
                                     if operation == 19:
                                         assert tlv(0x420079, 1, owned_id + tlv(0x420081, 1, enumeration(0x420082, 6))) in request
                                     if not valid and ((target == "activate" and operation == 18)

@@ -9381,6 +9381,8 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
     if (valid && identifier)
         valid = kmipkit_ttlv_value_text_string(client->limits, identifier->data, identifier->size, &value) == 0 &&
             append_ttlv_value(client, &payload, 0x420094, &value);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
+        valid = add_generic_number(client, &payload, 0x42002c, 4, false);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)
         valid = add_generic_revoke_reason(client, &payload);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES)
@@ -9646,6 +9648,30 @@ static bool generic_has_length_reference(kmipkit_ttlv_structure_view_t *payload,
     return false;
 }
 
+static bool generic_check_usage_matches(kmipkit_ttlv_structure_view_t *payload, uint64_t count) {
+    bool found = false;
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_tag_t *tag = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint32_t raw = 0;
+        int32_t mask = 0;
+        bool valid = kmipkit_ttlv_structure_view_item_at(payload, index, &field) == 0 &&
+            kmipkit_ttlv_item_view_tag(field, &tag) == 0 &&
+            kmipkit_ttlv_tag_value(tag, &raw) == 0;
+        if (valid && raw == 0x42002c) {
+            valid = !found && kmipkit_ttlv_item_view_value(field, &value) == 0 &&
+                kmipkit_ttlv_value_view_integer(value, &mask) == 0 && (mask & 4) != 0;
+            found = true;
+        }
+        if (value) kmipkit_ttlv_value_view_release(value);
+        if (tag) kmipkit_tag_release(tag);
+        if (field) kmipkit_ttlv_item_view_release(field);
+        if (!valid) return false;
+    }
+    return true;
+}
+
 static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor,
                                   const generic_identifier_t *expected, generic_identifier_t *created) {
     kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
@@ -9661,6 +9687,8 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
             if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET)
                 valid = generic_structure_field(payload, 0x42008f, &offered);
         }
+        if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
+            valid = generic_check_usage_matches(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST)
             valid = generic_has_length_reference(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
@@ -9804,16 +9832,20 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
                             operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST))
         outcome = execute_generic_exchange(client, operation, &id, NULL);
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_ACTIVATE ||
-                            operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)) {
+                            operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE ||
+                            operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)) {
         outcome = execute_generic_exchange(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, &id, NULL);
         if ((outcome.has_result_status_code && outcome.result_status_code == 0) || outcome.library_failed) {
+            bool activated = outcome.success;
+            if (activated && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
+                outcome = execute_generic_exchange(client, operation, &id, NULL);
             kmip_execution_outcome_t revoke = execute_generic_exchange(
                 client, KMIPKIT_ENUMERATION_OPERATION_REVOKE, &id, NULL);
-            if (outcome.success) {
+            if (activated) {
                 if (operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE) outcome = revoke;
                 else if (!revoke.success) outcome = generic_cleanup_failure("Cleanup Revoke failed for the activated key.");
             }
-        } else if (operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE) {
+        } else if (operation != KMIPKIT_ENUMERATION_OPERATION_ACTIVATE) {
             outcome = outcome_not_run("server rejected isolated Activate setup");
         }
     }
@@ -9836,6 +9868,7 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
 
 static uint32_t generic_owned_operation(const char *id) {
     if (strcmp(id, "test-op-create") == 0) return KMIPKIT_ENUMERATION_OPERATION_CREATE;
+    if (strcmp(id, "test-op-check") == 0) return KMIPKIT_ENUMERATION_OPERATION_CHECK;
     if (strcmp(id, "test-op-get") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET;
     if (strcmp(id, "test-op-get-attributes") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES;
     if (strcmp(id, "test-op-get-attribute-list") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST;
