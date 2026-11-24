@@ -1,8 +1,12 @@
 """KMIP 2.x exchanges built from generic tags using standard Python TLS."""
 
+import hashlib
 import socket
 import ssl
 import struct
+
+
+HASH_INPUT = b"abc"
 
 
 def _operation(case, version):
@@ -10,7 +14,8 @@ def _operation(case, version):
         return None
     if case["case_id"] == "test-op-ping":
         return 0x3B if version == "2.1" else None
-    return {"test-op-query": 0x18, "test-op-discover-versions": 0x1E}.get(case["case_id"])
+    return {"test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+            "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27}.get(case["case_id"])
 
 
 def supports(case, connection):
@@ -44,6 +49,8 @@ def _encode(view):
             body = struct.pack(">i", ttlv.ttlv_value_view_integer(value))
         elif kind == ttlv.ItemType.Enumeration:
             body = struct.pack(">I", ttlv.ttlv_value_view_enumeration(value))
+        elif kind == ttlv.ItemType.ByteString:
+            body = ttlv.ttlv_value_view_bytes(value)
         else:
             raise ValueError("unsupported generic probe field type")
     return code.to_bytes(3, "big") + bytes([kind]) + struct.pack(">I", len(body)) + body + bytes(-len(body) % 8)
@@ -94,6 +101,9 @@ def run(driver, case):
         payload_fields = [item(0x420074, "enumeration", 1)]
     elif operation == 0x1E:
         payload_fields = [protocol()]
+    elif operation == 0x27:
+        payload_fields = [node(0x42002B, [item(0x420038, "enumeration", 6)]),
+                          item(0x4200C2, "bytes", HASH_INPUT)]
     else:
         payload_fields = []
 
@@ -153,6 +163,12 @@ def _matches(payload, operation, protocol):
         return False
     if ttlv.ttlv_structure_view_item_count(payload) != 1:
         return False
+    if operation == 0x27:
+        with ttlv.ttlv_structure_view_item_at(payload, 0) as field:
+            with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:
+                return (ttlv.tag_value(tag) == 0x4200C2
+                        and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.ByteString
+                        and ttlv.ttlv_value_view_bytes(value) == hashlib.sha256(HASH_INPUT).digest())
     with protocol() as expected, ttlv.ttlv_item_view_from_item(expected) as expected_view:
         with ttlv.ttlv_structure_view_item_at(payload, 0) as actual:
             return _encode(actual) == _encode(expected_view)
