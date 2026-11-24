@@ -6,9 +6,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import re
 import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
+
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
 def compute_sha256(file_path: Path) -> str:
@@ -138,9 +142,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args(argv)
 
-    repo_root = args.repo.resolve()
-    artifacts_dir = args.artifacts_dir.resolve()
-    output_dir = args.output_dir.resolve()
+    if not SEMVER_RE.fullmatch(args.version):
+        raise ValueError(f"Invalid SemVer version: {args.version!r}")
+
+    repo_root = Path(os.path.realpath(args.repo))
+    artifacts_dir = Path(os.path.realpath(args.artifacts_dir))
+    output_dir = Path(os.path.realpath(args.output_dir))
 
     sbom_path = output_dir / f"kmipkit-{args.version}-sbom.cdx.json"
     generate_cyclonedx_sbom(repo_root, args.version, sbom_path)

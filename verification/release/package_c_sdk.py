@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -11,6 +13,8 @@ import tarfile
 import tempfile
 import zipfile
 from pathlib import Path
+
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 TARGET_FILES = {
     "linux-glibc-x86_64": {
@@ -142,12 +146,18 @@ def package_c_sdk(
     target: str,
     smoke_test: bool = False,
 ) -> Path:
+    if not SEMVER_RE.fullmatch(version):
+        raise ValueError(f"Invalid SemVer version: {version!r}")
     if target not in TARGET_FILES:
         raise ValueError(f"Unsupported C SDK target: {target!r}")
 
+    safe_repo = Path(os.path.realpath(repo_root))
+    safe_target_dir = Path(os.path.realpath(target_dir))
+    safe_output_dir = Path(os.path.realpath(output_dir))
+
     spec = TARGET_FILES[target]
     package_dir_name = f"kmipkit-c-{version}-{target}"
-    archive_path = output_dir / f"{package_dir_name}.{spec['archive']}"
+    archive_path = safe_output_dir / f"{package_dir_name}.{spec['archive']}"
 
     with tempfile.TemporaryDirectory() as tmp:
         staging_root = Path(tmp)
@@ -161,12 +171,12 @@ def package_c_sdk(
         cmake_dst.mkdir(parents=True, exist_ok=True)
         pc_dst.mkdir(parents=True, exist_ok=True)
 
-        include_src = repo_root / "bindings" / "c" / "include"
+        include_src = safe_repo / "bindings" / "c" / "include"
         for header in sorted(include_src.glob("*.h")):
             shutil.copy2(header, include_dst / header.name)
 
         for lib_name in [*spec["shared"], *spec["static"]]:
-            src_lib = target_dir / lib_name
+            src_lib = safe_target_dir / lib_name
             if not src_lib.is_file():
                 raise FileNotFoundError(f"Expected compiled FFI library not found: {src_lib}")
             shutil.copy2(src_lib, lib_dst / lib_name)
@@ -182,10 +192,10 @@ def package_c_sdk(
         )
 
         for doc_name in ("LICENSE", "NOTICE"):
-            doc_src = repo_root / doc_name
+            doc_src = safe_repo / doc_name
             if doc_src.is_file():
                 shutil.copy2(doc_src, pkg_root / doc_name)
-        readme_src = repo_root / "bindings" / "c" / "README.md"
+        readme_src = safe_repo / "bindings" / "c" / "README.md"
         if readme_src.is_file():
             shutil.copy2(readme_src, pkg_root / "README.md")
 
@@ -232,6 +242,7 @@ def run_smoke_test(archive_path: Path, package_dir_name: str, fmt: str) -> None:
             encoding="utf-8",
         )
         build_dir = tmp_path / "build"
+        prefix_arg = f"-DCMAKE_PREFIX_PATH={Path(os.path.realpath(sdk_prefix))}"
         subprocess.run(
             [
                 "cmake",
@@ -239,7 +250,7 @@ def run_smoke_test(archive_path: Path, package_dir_name: str, fmt: str) -> None:
                 str(consumer_src),
                 "-B",
                 str(build_dir),
-                f"-DCMAKE_PREFIX_PATH={sdk_prefix}",
+                prefix_arg,
             ],
             check=True,
         )

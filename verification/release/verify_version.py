@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import tomllib
@@ -116,7 +117,8 @@ def write_github_outputs(output_path: Path, version: str) -> None:
         f"minor={minor}",
         f"patch={patch}",
     ]
-    with output_path.open("a", encoding="utf-8") as handle:
+    resolved_output = Path(os.path.realpath(output_path))
+    with resolved_output.open("a", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
 
 

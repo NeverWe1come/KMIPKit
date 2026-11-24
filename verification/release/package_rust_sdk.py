@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
 import tarfile
 import tempfile
 from pathlib import Path
+
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 PUBLISHABLE_CRATES = (
     "kmipkit-ttlv",
@@ -45,22 +48,26 @@ def package_rust_sdk(
     version: str,
     smoke_test: bool = False,
 ) -> Path:
+    if not SEMVER_RE.fullmatch(version):
+        raise ValueError(f"Invalid SemVer version: {version!r}")
+    safe_repo = Path(os.path.realpath(repo_root))
+    safe_output = Path(os.path.realpath(output_dir))
     stem = f"kmipkit-rust-sdk-{version}"
-    archive_path = output_dir / f"{stem}.tar.gz"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = safe_output / f"{stem}.tar.gz"
+    safe_output.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp) / stem
         stage.mkdir(parents=True)
 
-        root_toml = (repo_root / "Cargo.toml").read_text(encoding="utf-8")
+        root_toml = (safe_repo / "Cargo.toml").read_text(encoding="utf-8")
         (stage / "Cargo.toml").write_text(
             rewrite_workspace_toml(root_toml), encoding="utf-8"
         )
-        shutil.copy2(repo_root / "Cargo.lock", stage / "Cargo.lock")
+        shutil.copy2(safe_repo / "Cargo.lock", stage / "Cargo.lock")
 
         for doc in ("LICENSE", "NOTICE", "README.md"):
-            src = repo_root / doc
+            src = safe_repo / doc
             if src.is_file():
                 shutil.copy2(src, stage / doc)
 
@@ -68,7 +75,7 @@ def package_rust_sdk(
         crates_dst.mkdir()
         for crate in PUBLISHABLE_CRATES:
             shutil.copytree(
-                repo_root / "crates" / crate,
+                safe_repo / "crates" / crate,
                 crates_dst / crate,
                 ignore=shutil.ignore_patterns("target", "*.swp"),
             )

@@ -5,12 +5,15 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import tarfile
 import tempfile
 import zipfile
 from pathlib import Path
+
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 ALL_VARIANTS = (
     "all-clouds",
@@ -65,8 +68,17 @@ def package_variant(
     target: str,
     variant: str,
 ) -> Path:
-    manifest_path = repo_root / "kmip-proxy" / "Cargo.toml"
-    cargo_target_dir = repo_root / "kmip-proxy" / "target"
+    if not SEMVER_RE.fullmatch(version):
+        raise ValueError(f"Invalid SemVer version: {version!r}")
+    if variant not in ALL_VARIANTS:
+        raise ValueError(f"Unsupported proxy variant: {variant!r}")
+    if target not in ARCHIVE_FORMATS:
+        raise ValueError(f"Unsupported proxy target: {target!r}")
+
+    safe_repo = Path(os.path.realpath(repo_root))
+    safe_output = Path(os.path.realpath(output_dir))
+    manifest_path = safe_repo / "kmip-proxy" / "Cargo.toml"
+    cargo_target_dir = safe_repo / "kmip-proxy" / "target"
 
     env = os.environ.copy()
     env["CARGO_TARGET_DIR"] = str(cargo_target_dir)
@@ -97,7 +109,7 @@ def package_variant(
 
     stem = archive_stem(variant, version, target)
     fmt = ARCHIVE_FORMATS[target]
-    archive_path = output_dir / f"{stem}.{fmt}"
+    archive_path = safe_output / f"{stem}.{fmt}"
     archive_path.parent.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -105,10 +117,10 @@ def package_variant(
         stage.mkdir(parents=True, exist_ok=True)
         shutil.copy2(built_binary, stage / binary_name)
         for doc_name in ("LICENSE", "NOTICE"):
-            doc_src = repo_root / doc_name
+            doc_src = safe_repo / doc_name
             if doc_src.is_file():
                 shutil.copy2(doc_src, stage / doc_name)
-        readme_src = repo_root / "kmip-proxy" / "README.md"
+        readme_src = safe_repo / "kmip-proxy" / "README.md"
         if readme_src.is_file():
             shutil.copy2(readme_src, stage / "README.md")
 
@@ -123,7 +135,8 @@ def package_variant(
 
     if docker_staging_dir is not None and target in DOCKER_ARCH_BY_TARGET:
         arch = DOCKER_ARCH_BY_TARGET[target]
-        staged_bin = docker_staging_dir / variant / arch / "kmipkit-proxy"
+        safe_staging = Path(os.path.realpath(docker_staging_dir))
+        staged_bin = safe_staging / variant / arch / "kmipkit-proxy"
         staged_bin.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(built_binary, staged_bin)
 

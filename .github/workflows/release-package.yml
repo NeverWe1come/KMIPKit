@@ -182,7 +182,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
       - name: Build Java API JAR
         working-directory: bindings/java
@@ -235,7 +234,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
       - name: Build and smoke-test release native JAR
         shell: pwsh
@@ -286,11 +284,12 @@ jobs:
           python-version: '3.12'
           activate-environment: true
           no-project: true
+          enable-cache: false
 
       - name: Build Python sdist with maturin
         working-directory: bindings/python
         run: |
-          uv pip install --requirement requirements-coverage.txt
+          uv pip install --only-binary :all: --requirement requirements-coverage.txt
           maturin sdist --out ../../dist/python-sdist
 
       - name: Upload Python sdist
@@ -342,11 +341,12 @@ jobs:
           python-version: '3.12'
           activate-environment: true
           no-project: true
+          enable-cache: false
 
       - name: Build release wheel and run import smoke test
         shell: pwsh
         run: |
-          uv pip install --requirement bindings/python/requirements-coverage.txt
+          uv pip install --only-binary :all: --requirement bindings/python/requirements-coverage.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Push-Location bindings/python
           try {
