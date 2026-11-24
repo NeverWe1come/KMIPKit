@@ -63,6 +63,7 @@ class ValidatorContractTests(unittest.TestCase):
         catalog, _ = load_catalog(CATALOG)
         by_id = {case["case_id"]: case for case in catalog["test_cases"]}
         driver = object.__new__(PythonKmipDriver)
+        driver._connection = {"protocol_version": "2.1"}
         driver._extensions = extensions
         driver._api_level = "high-level"
         identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
@@ -121,6 +122,7 @@ class ValidatorContractTests(unittest.TestCase):
 
         catalog, _ = load_catalog(CATALOG)
         driver = object.__new__(PythonKmipDriver)
+        driver._connection = {"protocol_version": "2.1"}
         driver._extensions = extensions
         identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
         advertised = [
@@ -167,6 +169,7 @@ class ValidatorContractTests(unittest.TestCase):
             setattr(owner, attribute, track_call)
 
         driver = object.__new__(PythonKmipDriver)
+        driver._connection = {"protocol_version": "2.1"}
         driver._extensions = extensions
         identifier = extensions.UniqueIdentifier.text_string("constructor-route-fixture")
         try:
@@ -251,6 +254,7 @@ class ValidatorContractTests(unittest.TestCase):
         catalog, _ = load_catalog(CATALOG)
         by_id = {case["case_id"]: case for case in catalog["test_cases"]}
         driver = object.__new__(PythonKmipDriver)
+        driver._connection = {"protocol_version": "2.1"}
         driver._extensions = extensions
         identifier = extensions.UniqueIdentifier.text_string("dedicated-fixture")
         for case_id in (

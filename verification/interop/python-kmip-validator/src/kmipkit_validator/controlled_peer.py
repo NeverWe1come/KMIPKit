@@ -96,7 +96,8 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
                   asynchronous_correlation_value: bytes | None = None,
                   include_response_extension: bool = False,
                   result_statuses: list[int] | None = None,
-                  result_reasons: list[int | None] | None = None) -> bytes:
+                  result_reasons: list[int | None] | None = None,
+                  *, protocol_major: int = 2) -> bytes:
     tree = parse_children(request[8:])
     request_batch = [parse_children(value) for tag, kind, value in tree
                      if tag == 0x42000F and kind == 1]
@@ -138,15 +139,13 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
         response_batch.append(structure(0x42000F, *payload))
     version = structure(
         0x420069,
-        item(0x42006A, 2, struct.pack(">i", 2)),
+        item(0x42006A, 2, struct.pack(">i", protocol_major)),
         item(0x42006B, 2, struct.pack(">i", protocol_minor)),
     )
-    header = structure(
-        0x42007A,
-        version,
-        item(0x420092, 9, struct.pack(">q", 1_794_268_800)),
-        item(0x42000D, 2, struct.pack(">i", len(response_batch))),
-    )
+    fields = [version, item(0x420092, 9, struct.pack(">q", 1_794_268_800))]
+    if protocol_major < 3:
+        fields.append(item(0x42000D, 2, struct.pack(">i", len(response_batch))))
+    header = structure(0x42007A, *fields)
     return structure(0x42007B, header, *response_batch)
 
 
