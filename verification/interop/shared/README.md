@@ -125,9 +125,10 @@ python3 verification/interop/shared/tools/run_all.py \
 Supply `--project LANGUAGE PATH` for consumers built in separate worktrees
 and `--python PATH` for the interpreter with the installed KMIPKit wheel.
 The output directory has one fresh report per language, consolidated
-catalog reports, and `campaign/index.html`. Repeat the run with a fresh output
-directory for each protocol, transport, encoding, and API selection. Pass
-`--enable-mutations` when the connection opts into mutations.
+catalog reports, and `campaign/index.html`. Repeat `--connection` with one
+file per protocol, transport, encoding and API selection to group multiple
+configurations in one report. Pass `--enable-mutations` when the configured
+connections opt into mutations.
 
 Import previous `results.json` reports by repeating `--controlled-report`
 or `--live-report` on `campaign.py`. The report displays these results by
