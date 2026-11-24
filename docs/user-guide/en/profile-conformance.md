@@ -79,7 +79,7 @@ and non-deletable by the client, so Modify, Delete, and Set are rejected even
 when the caller reports it absent; after it is set, §4.38 also prohibits
 updates or deletion. For Usage Limits, §4.59 and Table 149 prohibit a Total
 change after protection use begins or after Get Usage Allocation under
-DEC-024. A Set that changes Total requires known-present Usage Limits and the
+standard protocol rules. A Set that changes Total requires known-present Usage Limits and the
 current Total and Count, preserves Count, and rejects a malformed structure
 that omits a required member from §7.40 Table 392. The separate attribute operations
 restriction on Add/Modify Usage Limits remains in force. These checks enforce
@@ -169,7 +169,7 @@ pass, or profile conformance.
 
 KMIP Specification v2.1 §4.57 paragraph 2 prohibits using a Pre-Active object
 for any cryptographic purpose but does not identify an actor or message
-direction. KMIPKIT-DEC-020 interprets this as server-only for the KMIPKit 1.0
+direction. The implementation model interprets this as server-only for the KMIPKit 1.0
 client: §4.57 says State is known to and changed only by the server, and
 §6.1.17 defines Encrypt as a client request for the server to perform
 encryption. The source clause remains in client profile clause closures, but

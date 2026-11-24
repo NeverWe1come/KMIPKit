@@ -130,8 +130,7 @@ incomplete; per-exchange validation rejects the selected target before
 network I/O. This gate does not establish server interoperability or close the
 external evidence gates.
 The registry also includes a mapping for Wrapped Secret Data under
-KMIP-REQ-SPEC-2.7-001. See the
-the profile conformance model specification for
+OASIS KMIP specifications. See the profile conformance model specification for
 its exact scope and acceptance criteria.
 
 The same report lists each tag range separately, groups named tags by their

@@ -276,7 +276,7 @@ pub(crate) fn new_for_test_with_lifecycle_controls(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation raw TLS target observes candidate-to-dispatch ordering.
+#[allow(dead_code)] // The implementation raw TLS target observes candidate-to-dispatch ordering.
 pub(crate) fn new_for_test_with_candidate_observer(
     configuration: TransportConfig,
     resolver: Resolver,
@@ -288,7 +288,7 @@ pub(crate) fn new_for_test_with_candidate_observer(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation integration target is the only caller.
+#[allow(dead_code)] // The implementation integration target is the only caller.
 pub(crate) fn new_for_test_with_response_allocation_observer(
     configuration: TransportConfig,
     observer: ResponseAllocationObserver,
@@ -780,7 +780,7 @@ impl ResponseBuffer {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum CandidateEvent {
     HandshakeFailed(SocketAddr),
@@ -789,7 +789,7 @@ pub(crate) enum CandidateEvent {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Default)]
 struct CandidateEventState {
     events: Vec<CandidateEvent>,
@@ -797,14 +797,14 @@ struct CandidateEventState {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Clone, Default)]
 pub(crate) struct CandidateEventObserver {
     state: Arc<Mutex<CandidateEventState>>,
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The the implementation source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 impl CandidateEventObserver {
     pub(crate) fn new() -> Self {
         Self::default()

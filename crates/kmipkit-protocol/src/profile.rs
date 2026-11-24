@@ -4699,7 +4699,7 @@ fn client_sends_maximum_response_size_only_for_possible_large_replies(
         return true;
     }
 
-    // KMIPKIT-0007 classifies Discover Versions as not likely to return a
+    // Discover Versions is classified as not likely to return a
     // large reply. Other operations are left to their operation specifications.
     request
         .batch_items()
