@@ -30,7 +30,7 @@
     "protocol_version": { "enum": ["2.0", "2.1", "3.0"] },
     "transport": { "enum": ["raw_tls", "https"] },
     "encoding": { "enum": ["TTLV", "JSON", "XML"] },
-    "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },
+    "api_level": { "enum": ["high-level", "typed-protocol", "fluent", "generic-ttlv"] },
     "endpoints": {
       "type": "object",
       "properties": {
@@ -98,7 +98,7 @@
         },
         "api_levels": {
           "type": "array",
-          "items": { "type": "string", "enum": ["high-level", "typed-protocol", "generic-ttlv"] }
+          "items": { "type": "string", "enum": ["high-level", "typed-protocol", "fluent", "generic-ttlv"] }
         },
         "cleanup_on_failure": { "type": "boolean", "default": true }
       },

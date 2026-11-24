@@ -337,11 +337,40 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(peer.operations, [])
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
+    def test_typed_and_fluent_attribute_requests_match_at_the_peer(self):
+        cases = self.rows("test-op-get-attributes", "test-attr-name", "test-op-get-attribute-list")
+        self.assertEqual(len(cases), 3)
+        for minor in (0, 1):
+            for case in cases:
+                with self.subTest(case=case["case_id"], minor=minor):
+                    observations = []
+                    for api in ("typed-protocol", "fluent"):
+                        def reply(tree):
+                            operation = find(tree, 0x42005c)
+                            if operation == 1:
+                                payload = [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, "fixture-key")]
+                            elif operation == 0x14:
+                                payload = [ttlv(0x420094, 7, "fixture-key")]
+                            else:
+                                return response(operation, minor=minor)
+                            return response(operation, minor=minor, status=0, reason=None, payload=payload)
+
+                        with ControlledPeer(self.pki, reply) as peer:
+                            _, report = self.command(
+                                self.connection(peer.port, version=f"2.{minor}", api=api, mutations=True),
+                                [case],
+                            )
+                        self.assertEqual("server_unsupported", report["cases"][0]["status"], report)
+                        operation = 0x0c if case["operation"] == "Get Attribute List" else 0x0b
+                        index, = [index for index, observed in enumerate(peer.operations) if observed == operation]
+                        observations.append((peer.request_trees[index], peer.response_trees[index]))
+                    self.assertEqual(*observations)
+
     def test_native_server_query_parity_across_apis_encodings_and_versions(self):
         normalized = []
         for version in ("2.0", "2.1"):
             for encoding in ("TTLV", "JSON", "XML"):
-                for api in ("high-level", "typed-protocol"):
+                for api in ("high-level", "typed-protocol", "fluent"):
                     with self.subTest(version=version, encoding=encoding, api=api):
                         _, report = self.command(self.connection(version=version, transport="https", encoding=encoding, api=api), self.rows("test-op-query"))
                         case = report["cases"][0]

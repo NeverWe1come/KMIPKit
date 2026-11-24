@@ -46,6 +46,16 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
     if connection.api_level == "generic-ttlv" && case.execution.mode != "local_model" {
         return Some(CaseResult::non_run(case, "not_run", "library_api_unavailable: generic TTLV outbound KMIP 2.0/2.1 construction; KMIPKIT-0083-FR-007".to_owned()));
     }
+    if connection.api_level == "fluent"
+        && case.execution.mode != "local_model"
+        && !crate::fluent::supports(case)
+    {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "no equivalent Rust Fluent request recipe".to_owned(),
+        ));
+    }
     None
 }
 

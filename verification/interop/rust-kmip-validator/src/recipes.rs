@@ -229,6 +229,11 @@ impl Attempt<'_> {
                 "library_preflight_rejection: State modification is rejected locally under OASIS KMIP 2.1 §4.57; server negative probe cannot be sent",
             ));
         }
+        let request = if self.connection.api_level == "fluent" {
+            crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+        } else {
+            request
+        };
         let response = self.exchange(request)?;
         if case.operation == "Destroy" && response.status == 0 {
             self.owned

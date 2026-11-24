@@ -105,7 +105,8 @@ impl Connection {
         if !["2.0", "2.1"].contains(&self.protocol_version.as_str())
             || !["TTLV", "JSON", "XML"].contains(&self.encoding.as_str())
             || !["raw_tls", "https"].contains(&self.transport.as_str())
-            || !["high-level", "typed-protocol", "generic-ttlv"].contains(&self.api_level.as_str())
+            || !["high-level", "typed-protocol", "fluent", "generic-ttlv"]
+                .contains(&self.api_level.as_str())
         {
             return Err("unsupported execution selection");
         }
@@ -132,7 +133,8 @@ impl Connection {
                 .as_ref()
                 .is_some_and(|values| {
                     !values.iter().all(|v| {
-                        ["high-level", "typed-protocol", "generic-ttlv"].contains(&v.as_str())
+                        ["high-level", "typed-protocol", "fluent", "generic-ttlv"]
+                            .contains(&v.as_str())
                     })
                 })
         {
