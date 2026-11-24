@@ -602,7 +602,7 @@ def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, 
             directory / "client-cert.pem", directory / "client-key.pem")
 
 
-def draft_ping(binary: Path, openssl: str, repository: Path) -> int:
+def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, operation: int) -> int:
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-draft-") as raw_directory:
         directory = Path(raw_directory)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -612,7 +612,7 @@ def draft_ping(binary: Path, openssl: str, repository: Path) -> int:
         context.load_verify_locations(ca)
         context.verify_mode = ssl.CERT_REQUIRED
         catalog = json.loads((repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
-        case = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-ping")
+        case = next(case for case in catalog["test_cases"] if case["case_id"] == case_id)
         case["execution"]["protocol_versions"] = ["3.0"]
         case["normative_refs"] = [{"document": "OASIS KMIP 3.0 Working Draft", "section": "6.1"}]
         catalog["test_cases"] = [case]
@@ -621,6 +621,8 @@ def draft_ping(binary: Path, openssl: str, repository: Path) -> int:
         catalog_path = directory / "catalog.json"
         catalog_path.write_text(json.dumps(catalog))
         request_wires = []
+        hash_operation = operation == 0x27
+        payload = tlv(0x4200c2, 8, hashlib.sha256(b"abc").digest()) if hash_operation else b""
         for api in ("typed-protocol", "fluent"):
             with socket.socket() as server:
                 server.bind(("127.0.0.1", 0))
@@ -634,25 +636,30 @@ def draft_ping(binary: Path, openssl: str, repository: Path) -> int:
                     "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
                             "client_key_path": str(client_key), "server_name_override": "localhost"},
                     "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
-                    "execution_policy": {"probe_unsupported": True, "allow_mutations": False},
+                    "execution_policy": {"probe_unsupported": True, "allow_mutations": hash_operation},
                 }
                 config = directory / f"{api}.json"
                 result = directory / f"{api}-result.json"
                 config.write_text(json.dumps(connection))
-                with subprocess.Popen([str(binary), "run", "--connection", str(config),
-                                       "--catalog", str(catalog_path), "--output", str(result)],
-                                      cwd=repository, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE) as process:
+                command = [str(binary), "run", "--connection", str(config),
+                           "--catalog", str(catalog_path), "--output", str(result)]
+                if hash_operation:
+                    command.append("--allow-mutations")
+                with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
+                                      stderr=subprocess.PIPE) as process:
                     raw, _ = server.accept()
                     with context.wrap_socket(raw, server_side=True) as client:
                         client.settimeout(5)
                         request = read_message(client)
-                        assert request and enumeration(0x42005c, 0x3b) in request
+                        assert request and enumeration(0x42005c, operation) in request
                         assert integer(0x42006a, 3) in request and bytes.fromhex("42000d02") not in request
+                        if hash_operation:
+                            assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
                         request_wires.append(request)
                         version = tlv(0x420069, 1, integer(0x42006a, 3) + integer(0x42006b, 0))
                         header = tlv(0x42007a, 1, version + tlv(0x420092, 9, (1).to_bytes(8, "big")))
-                        response_item = tlv(0x42000f, 1, enumeration(0x42005c, 0x3b)
-                                            + enumeration(0x42007f, 0) + tlv(0x42007c, 1, b""))
+                        response_item = tlv(0x42000f, 1, enumeration(0x42005c, operation)
+                                            + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
                         client.sendall(tlv(0x42007b, 1, header + response_item))
                     _, errors = process.communicate(timeout=10)
                     assert process.returncode == 0, errors
@@ -666,7 +673,8 @@ def main() -> int:
     binary, openssl, repository = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
     protocol_version = sys.argv[4] if len(sys.argv) > 4 else "2.1"
     if protocol_version == "3.0":
-        return draft_ping(binary, openssl, repository)
+        draft_operation(binary, openssl, repository, "test-op-ping", 0x3b)
+        return draft_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27)
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
