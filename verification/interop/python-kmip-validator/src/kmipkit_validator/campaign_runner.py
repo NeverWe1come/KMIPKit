@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from .cli import _is_installed_package
 from .contract import load_connection, validate_artifact, validate_local_inputs
-from .driver import PythonKmipDriver
+from .driver import PythonKmipDriver, _catalog_model_data
 from .oasis_query import oasis_query_evidence
 
 OPERATION_CODES = {
@@ -47,6 +47,56 @@ def draft_events(lines):
             "obligation_id": row["obligation_id"], "public_api_symbol": symbol,
             "status": "passed" if passed else "failed", "assertion": "draft_operation_code",
         }
+
+
+def local_events(lines):
+    """Check exact generic TTLV symbols and concrete normative tag/type targets."""
+    targets, _, _ = _catalog_model_data()
+    for line in lines:
+        row = json.loads(line)
+        if row.get("protocol_version") == "3.0":
+            yield from draft_events((line,))
+            continue
+        if (row.get("language"), row.get("mode"), row.get("execution_status")) != ("python", "local", "required"):
+            continue
+        target = targets.get(row.get("target_id"))
+        if target is None:
+            continue
+        symbol = row["public_api_symbol"]
+        api = symbol.removeprefix("kmipkit.ttlv.")
+        if symbol == api:
+            continue
+        try:
+            assertion = _check_local_target(api, row["action"], target)
+            passed = True
+        except Exception:
+            # Keep native details and fixture values out of campaign evidence.
+            assertion = "generic_ttlv_check_failed"
+            passed = False
+        if assertion is not None:
+            yield {
+                "obligation_id": row["obligation_id"], "public_api_symbol": symbol,
+                "status": "passed" if passed else "failed", "assertion": assertion,
+            }
+
+
+def _check_local_target(api, action, target):
+    if target["kind"] in {"tag", "tag_range"} and action == "construct" and api in {
+        "raw_tag_from_raw", "raw_tag_try_checked",
+    }:
+        PythonKmipDriver._execute_catalog_tag({"requires": {
+            "wire_value": target["wire_value"], "target_kind": target["kind"], "allocation": target["allocation"],
+        }}, check_allocation=api == "raw_tag_try_checked")
+        return "generic_ttlv_tag_allocation" if api == "raw_tag_try_checked" else "generic_ttlv_raw_tag_value"
+    if target["kind"] != "data_type":
+        return None
+    if (api, action) == ("ttlv_item_create", "construct"):
+        PythonKmipDriver._exercise_generic_type(target["name"])
+        return "generic_ttlv_construct_boundary_values"
+    if action == "decode" and api in {"ttlv_decode", "ttlv_item_view_from_item"}:
+        PythonKmipDriver._execute_data_type_case(target["name"], bounded=api == "ttlv_item_view_from_item")
+        return "generic_ttlv_decode_boundary_vectors"
+    return None
 
 
 def query_evidence(lines, connection):
@@ -130,7 +180,7 @@ def main():
             if args.scope == "local":
                 if args.connection is not None:
                     raise ValueError("Local campaigns do not take a connection")
-                events = list(draft_events(source))
+                events = list(local_events(source))
             elif args.scope == "controlled":
                 if args.connection is not None:
                     raise ValueError("The controlled OASIS scenario supplies its own loopback peer")

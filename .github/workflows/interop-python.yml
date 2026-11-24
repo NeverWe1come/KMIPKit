@@ -57,7 +57,6 @@ jobs:
           python3 verification/interop/shared/tools/campaign.py --version 3.0 \
             --runner python "$validator/tools/run_campaign.sh" --output-dir "$report_dir"
           python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); assert s["public_api"]["python"] == {"total": 7, "complete": 7}' "$report_dir/summary.json"
-          status=0
           python3 verification/interop/shared/tools/campaign.py --version 3.0 --scope controlled \
-            --runner python "$validator/tools/run_campaign.sh" --output-dir "$report_dir" "$report_dir/evidence-python-local.json" || status=$?
-          python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); assert len(s["events"]) == 1 and (s["events"][0]["assertion"], int(sys.argv[2])) in {("oasis_query_response_rejected", 1), ("oasis_query_operations_in_order", 0)}' "$report_dir/evidence-python-controlled.json" "$status"
+            --runner python "$validator/tools/run_campaign.sh" --output-dir "$report_dir" "$report_dir/evidence-python-local.json"
+          python3 -c 'import json,sys; s=json.load(open(sys.argv[1])); assert len(s["events"]) == 1 and s["events"][0]["assertion"] == "oasis_query_operations_in_order"' "$report_dir/evidence-python-controlled.json"
