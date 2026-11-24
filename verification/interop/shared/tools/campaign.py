@@ -345,6 +345,8 @@ def main():
     parser.add_argument("--library-commit", help="Require evidence from this exact source commit")
     parser.add_argument("--controlled-report", type=Path, action="append", default=[],
                         help="Import an installed validator's controlled execution-catalog report")
+    parser.add_argument("--catalog-source", type=Path, action="append", default=[],
+                        help="Additional case catalog for matching installed-validator reports")
     parser.add_argument("--live-report", type=Path, action="append", default=[],
                         help="Import an installed validator's live execution-catalog report")
     parser.add_argument("--oasis-ttlv-report", type=Path,
@@ -383,7 +385,8 @@ def main():
         result["runner_failures"] = failures
         catalog_runs = load_catalog_reports(
             [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],
-            (SHARED / "catalog/kmipkit-1.0-test-catalog.json", SHARED / "catalog/kmipkit-2x-matrix-catalog.json"),
+            (SHARED / "catalog/kmipkit-1.0-test-catalog.json",
+             SHARED / "catalog/kmipkit-2x-matrix-catalog.json", *args.catalog_source),
             languages, tuple(args.version or VERSIONS), read_validated,
         )
         if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
