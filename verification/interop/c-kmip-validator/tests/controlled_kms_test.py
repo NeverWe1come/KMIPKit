@@ -621,9 +621,15 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
         catalog_path = directory / "catalog.json"
         catalog_path.write_text(json.dumps(catalog))
         request_wires = []
-        hash_operation = operation == 0x27
-        payload = tlv(0x4200c2, 8, hashlib.sha256(b"abc").digest()) if hash_operation else b""
-        for api in ("typed-protocol", "fluent"):
+        allow_mutations = case["execution"]["mutation"] == "mutating"
+        payload = {
+            0x08: integer(0x4200d5, 0),
+            0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
+            0x27: tlv(0x4200c2, 8, hashlib.sha256(b"abc").digest()),
+            0x3b: b"",
+        }[operation]
+        apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
+        for api in apis:
             with socket.socket() as server:
                 server.bind(("127.0.0.1", 0))
                 server.listen(1)
@@ -636,14 +642,14 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
                     "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
                             "client_key_path": str(client_key), "server_name_override": "localhost"},
                     "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
-                    "execution_policy": {"probe_unsupported": True, "allow_mutations": hash_operation},
+                    "execution_policy": {"probe_unsupported": True, "allow_mutations": allow_mutations},
                 }
                 config = directory / f"{api}.json"
                 result = directory / f"{api}-result.json"
                 config.write_text(json.dumps(connection))
                 command = [str(binary), "run", "--connection", str(config),
                            "--catalog", str(catalog_path), "--output", str(result)]
-                if hash_operation:
+                if allow_mutations:
                     command.append("--allow-mutations")
                 with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
                                       stderr=subprocess.PIPE) as process:
@@ -653,8 +659,12 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
                         request = read_message(client)
                         assert request and enumeration(0x42005c, operation) in request
                         assert integer(0x42006a, 3) in request and bytes.fromhex("42000d02") not in request
-                        if hash_operation:
+                        if operation == 0x27:
                             assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
+                        if operation == 0x08:
+                            assert enumeration(0x420028, 3) in request and integer(0x42004f, 1) in request
+                        if operation == 0x18:
+                            assert enumeration(0x420074, 1) in request
                         request_wires.append(request)
                         version = tlv(0x420069, 1, integer(0x42006a, 3) + integer(0x42006b, 0))
                         header = tlv(0x42007a, 1, version + tlv(0x420092, 9, (1).to_bytes(8, "big")))
@@ -665,7 +675,8 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
                     assert process.returncode == 0, errors
                 row, = json.loads(result.read_text())["cases"]
                 assert row["status"] == "passed", row
-        assert request_wires[0] == request_wires[1]
+        if len(apis) > 1:
+            assert request_wires[0] == request_wires[1]
     return 0
 
 
@@ -674,7 +685,9 @@ def main() -> int:
     protocol_version = sys.argv[4] if len(sys.argv) > 4 else "2.1"
     if protocol_version == "3.0":
         draft_operation(binary, openssl, repository, "test-op-ping", 0x3b)
-        return draft_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27)
+        draft_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27)
+        draft_operation(binary, openssl, repository, "test-op-locate", 0x08)
+        return draft_operation(binary, openssl, repository, "test-op-query", 0x18)
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])

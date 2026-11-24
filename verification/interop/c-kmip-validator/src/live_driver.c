@@ -9125,6 +9125,61 @@ static bool hash_response_matches_fixture(kmipkit_client_batch_item_response_t *
     return valid;
 }
 
+static int32_t build_bounded_locate(kmip_live_client_t *client, bool fluent,
+                                    kmipkit_client_batch_item_t **out) {
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_value_t *algorithm = NULL;
+    kmipkit_locate_builder_t *builder = NULL;
+    int32_t status = kmipkit_ttlv_structure_create(&attributes);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, &algorithm);
+    if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x420028), &algorithm))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0 && fluent) {
+        status = kmipkit_locate_builder_create(attributes, &builder);
+        if (status == 0) status = kmipkit_locate_builder_set_maximum_items(builder, 1);
+        if (status == 0) status = kmipkit_locate_builder_set_offset_items(builder, 0);
+        if (status == 0) status = kmipkit_locate_builder_build_batch_item(builder, out);
+    } else if (status == 0) {
+        status = kmipkit_client_batch_item_locate(1, 1, 1, 0, 0, 0, 0, 0, attributes, out);
+    }
+    if (builder) kmipkit_locate_builder_release(builder);
+    if (algorithm) kmipkit_ttlv_value_release(algorithm);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    return status;
+}
+
+static bool bounded_locate_response(kmipkit_client_batch_item_response_t *item, int32_t *status) {
+    uint8_t present = 0, payload_present = 0, count_present = 0;
+    int32_t located_items = 0;
+    uint64_t identifier_count = 0;
+    *status = kmipkit_client_batch_item_response_locate(
+        item, &present, &payload_present, &count_present, &located_items, &identifier_count);
+    return *status == 0 && present && payload_present && identifier_count <= 1
+        && (!count_present || located_items >= (int32_t)identifier_count);
+}
+
+static bool query_response_has_operations(kmipkit_client_batch_item_response_t *item,
+                                          int32_t *status) {
+    uint8_t present = 0;
+    uint64_t field_count = 0;
+    *status = kmipkit_client_batch_item_response_query_field_count(item, &present, &field_count);
+    if (*status != 0 || !present) return false;
+    bool operation_found = false;
+    for (uint64_t index = 0; index < field_count; ++index) {
+        uint8_t field_present = 0, field_kind = 0;
+        uint32_t field_tag = 0, enumeration = 0;
+        kmipkit_ttlv_item_t *field = NULL;
+        *status = kmipkit_client_batch_item_response_query_field_at(
+            item, index, &field_present, &field_tag, &field_kind, &enumeration, &field);
+        if (field) kmipkit_ttlv_item_release(field);
+        if (*status != 0 || !field_present) return false;
+        if (field_tag == UINT32_C(0x42005C) && field_kind == 1 && enumeration != 0)
+            operation_found = true;
+    }
+    return operation_found && query_response_ttlv_matches_field_count(item, field_count, status);
+}
+
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     kmip_live_client_t *client, uint32_t operation, bool fluent) {
     kmip_execution_outcome_t outcome = {.executed = true};
@@ -9141,6 +9196,11 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         status = fluent ? build_fluent_ping(&request) : kmipkit_client_batch_item_ping(&request);
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
         status = build_hash_request(client, fluent, &request);
+    } else if (operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
+        status = build_bounded_locate(client, fluent, &request);
+    } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
+        const uint32_t function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
+        status = kmipkit_client_batch_item_query(&function, 1, 0, NULL, 0, &request);
     } else {
         status = kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, &request);
     }
@@ -9167,6 +9227,10 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
                 status = kmipkit_client_batch_item_response_ping(item, &present);
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
                 present = hash_response_matches_fixture(item, &status);
+            } else if (operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
+                present = bounded_locate_response(item, &status);
+            } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
+                present = query_response_has_operations(item, &status);
             } else {
                 uint32_t role = 0;
                 kmipkit_byte_span_v1_t vendor = {0};
@@ -9211,9 +9275,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool fluent_route = strcmp(client->api_level, "fluent") == 0;
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
+    bool draft_locate = client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-locate") == 0;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        !hash_workflow && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
+        !hash_workflow && !draft_locate && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
         strcmp(test_case->case_id, "test-op-set-attribute") != 0 &&
@@ -9233,6 +9298,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_PING, fluent_route);
         if (hash_workflow)
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route);
+        if (draft_locate)
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route);
+        if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false);
     }
     if (client->protocol_major == 3)
         return outcome_not_run("C recipe requires a KMIP 3.0 request and response fixture");
