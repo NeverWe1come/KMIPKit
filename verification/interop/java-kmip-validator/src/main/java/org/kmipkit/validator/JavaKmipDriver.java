@@ -147,6 +147,10 @@ public final class JavaKmipDriver implements AutoCloseable {
                     createStatus = result.resultStatus();
                     createReason = result.resultReason().orElse(-1);
                     if (createStatus != 0) {
+                        if (attributeRead(testCase)) {
+                            return CaseOutcome.notRun("The server rejected the isolated key setup.",
+                                    elapsedMillis(start));
+                        }
                         return nonSuccessOutcome(testCase, createStatus, createReason, start);
                     }
                     var payload = result.createResponse();
@@ -171,7 +175,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         CaseOutcome target = null;
         if (attributeRead(testCase)) {
             try {
-                target = readAttributes(testCase, createdIdentifier, start);
+                target = readAttributes(testCase, createdIdentifier, objectName, start);
             } catch (RuntimeException exception) {
                 target = exchangeFailure(exception, start);
             }
@@ -234,7 +238,8 @@ public final class JavaKmipDriver implements AutoCloseable {
         };
     }
 
-    private CaseOutcome readAttributes(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+    private CaseOutcome readAttributes(CatalogLoader.CatalogCase testCase, UniqueIdentifier id,
+                                       String objectName, long start) {
         boolean fluent = "fluent".equals(connection.apiLevel());
         if ("Get Attribute List".equals(testCase.operation())) {
             var request = fluent ? client.request().getAttributeList(id).build() : ClientBatchItem.getAttributeList(id);
@@ -261,12 +266,12 @@ public final class JavaKmipDriver implements AutoCloseable {
             if (payload == null) return false;
             try (payload) {
                 return id.text().equals(payload.uniqueIdentifier()) && payload.attributes()
-                        .map(attributes -> containsAttribute(attributes, rawTag)).orElse(false);
+                        .map(attributes -> containsAttribute(attributes, rawTag, objectName)).orElse(false);
             }
         }, start);
     }
 
-    private static boolean containsAttribute(TtlvStructure attributes, int rawTag) {
+    private static boolean containsAttribute(TtlvStructure attributes, int rawTag, String objectName) {
         try (var view = attributes.view()) {
             for (long index = 0; index < view.itemCount(); index++) {
                 try (var item = view.itemAt(index); var tag = item.tag()) {
@@ -275,8 +280,24 @@ public final class JavaKmipDriver implements AutoCloseable {
                         return switch (rawTag) {
                             case 0x0042_0028 -> value.enumeration() == 3;
                             case 0x0042_002a -> value.integer() == 256;
-                            default -> item.itemType() == org.kmipkit.ttlv.TtlvItemType.Structure;
+                            default -> containsName(value, objectName);
                         };
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsName(org.kmipkit.ttlv.TtlvValueView value, String objectName) {
+        if (value.itemType() != org.kmipkit.ttlv.TtlvItemType.Structure) return false;
+        try (var name = value.structure()) {
+            for (long index = 0; index < name.itemCount(); index++) {
+                try (var field = name.itemAt(index); var tag = field.tag()) {
+                    if (tag.raw() != 0x0042_0055) continue;
+                    try (var text = field.value()) {
+                        return java.util.Arrays.equals(text.bytes(),
+                                objectName.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                     }
                 }
             }

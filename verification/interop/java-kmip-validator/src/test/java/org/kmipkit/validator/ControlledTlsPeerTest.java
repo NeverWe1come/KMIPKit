@@ -172,8 +172,10 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"typed-protocol,false", "fluent,false", "typed-protocol,true", "fluent,true"})
-    void isolatedKeyRecipesReadAndCleanUp(String apiLevel, boolean readLength) throws Exception {
+    @CsvSource({"typed-protocol,0", "fluent,0", "typed-protocol,256", "fluent,256",
+            "typed-protocol,128", "fluent,128"})
+    void isolatedKeyRecipesReadAndCleanUp(String apiLevel, int returnedLength) throws Exception {
+        boolean readLength = returnedLength != 0;
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
         byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -181,7 +183,7 @@ class ControlledTlsPeerTest {
         X509Certificate serverCertificate = certificate(serverCertificatePem);
         X509Certificate clientCertificate = certificate(clientCertificatePem);
         SSLServerSocket listener = listener(serverCertificate, privateKey(serverPrivateKeyPem), clientCertificate);
-        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveCreateCleanup(listener, readLength));
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveCreateCleanup(listener, returnedLength));
         Thread peerThread = new Thread(peer, "java-validator-controlled-create-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -201,7 +203,7 @@ class ControlledTlsPeerTest {
         } finally {
             listener.close();
         }
-        assertEquals("passed", outcome.status(), outcome.toString());
+        assertEquals(returnedLength == 128 ? "failed" : "passed", outcome.status(), outcome.toString());
         List<byte[]> requests = peer.get(15, TimeUnit.SECONDS);
         assertEquals(readLength ? 3 : 2, requests.size());
         if (readLength) {
@@ -353,9 +355,9 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, responseItem);
     }
 
-    private static List<byte[]> serveCreateCleanup(SSLServerSocket listener, boolean readLength) throws Exception {
+    private static List<byte[]> serveCreateCleanup(SSLServerSocket listener, int returnedLength) throws Exception {
         var requests = new ArrayList<byte[]>();
-        int[] operations = readLength ? new int[] {1, 0x0b, 0x14} : new int[] {1, 0x14};
+        int[] operations = returnedLength != 0 ? new int[] {1, 0x0b, 0x14} : new int[] {1, 0x14};
         for (int exchange = 0; exchange < operations.length; exchange++) {
             try (SSLSocket socket = (SSLSocket) listener.accept()) {
                 socket.setEnabledProtocols(new String[] {"TLSv1.3"});
@@ -370,7 +372,7 @@ class ControlledTlsPeerTest {
                 }
                 byte[] response = switch (operations[exchange]) {
                     case 1 -> createResponse();
-                    case 0x0b -> lengthResponse();
+                    case 0x0b -> lengthResponse(returnedLength);
                     default -> destroyResponse();
                 };
                 socket.getOutputStream().write(response);
@@ -395,7 +397,7 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, responseItem);
     }
 
-    private static byte[] lengthResponse() throws Exception {
+    private static byte[] lengthResponse(int returnedLength) throws Exception {
         return structure(0x42007b,
                 structure(0x42007a,
                         structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1))),
@@ -403,7 +405,7 @@ class ControlledTlsPeerTest {
                 structure(0x42000f, item(0x42005c, 5, intBytes(0x0b)), item(0x42007f, 5, intBytes(0)),
                         structure(0x42007c,
                                 item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)),
-                                structure(0x420125, item(0x42002a, 2, intBytes(256))))));
+                                structure(0x420125, item(0x42002a, 2, intBytes(returnedLength))))));
     }
 
     private static byte[] destroyResponse() throws Exception {
