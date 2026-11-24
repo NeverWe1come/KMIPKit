@@ -340,6 +340,72 @@ class ControlledExchangeTests(unittest.TestCase):
                             peer.close()
                         self.assertEqual(1, len(peer.requests))
 
+    def test_generic_owned_key_operations_use_only_the_created_identifier(self):
+        from kmipkit_validator.cli import _run
+
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        routes = {"create": [1, 20], "destroy": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20],
+                  "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+        for version in ("2.0", "2.1"):
+            for target, operations in routes.items():
+                for valid_get in ((True, False) if target in ("get", "get-attributes") else (True,)):
+                    with self.subTest(version=version, target=target, valid_get=valid_get):
+                        minor = int(version[-1])
+                        owned_id = b"owned-key-id"
+                        seen = []
+
+                        def answer(request):
+                            tree = parse_children(request[8:])
+                            operation = int.from_bytes(find_value(tree, 0x42005C), "big")
+                            seen.append(operation)
+                            payload = parse_children(find_value(tree, 0x420079))
+                            fields = item(0x420094, 7, owned_id)
+                            if operation == 1:
+                                self.assertEqual(find_value(payload, 0x420028), struct.pack(">I", 3))
+                                self.assertEqual(find_value(payload, 0x42002A), struct.pack(">i", 256))
+                                fields = enumeration(0x420057, 2) + fields
+                            else:
+                                self.assertEqual(find_value(payload, 0x420094), owned_id)
+                            if operation == 10:
+                                key = structure(0x42008F, structure(0x420040,
+                                    enumeration(0x420042, 1),
+                                    structure(0x420045, item(0x420043, 8, bytes(32))),
+                                    enumeration(0x420028, 3), item(0x42002A, 2, struct.pack(">i", 256))))
+                                fields = (enumeration(0x420057, 2)
+                                          + item(0x420094, 7, owned_id if valid_get else b"foreign-key-id") + key)
+                            if operation == 11:
+                                self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x42002A))
+                                fields += structure(0x420125, item(0x42002A, 2, struct.pack(">i", 256 if valid_get else 128)))
+                            protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
+                                                 item(0x42006B, 2, struct.pack(">i", minor)))
+                            header = structure(0x42007A, protocol, item(0x420092, 9, struct.pack(">q", 1)),
+                                               item(0x42000D, 2, struct.pack(">i", 1)))
+                            batch = structure(0x42000F, enumeration(0x42005C, operation),
+                                              enumeration(0x42007F, 0), structure(0x42007C, fields))
+                            return structure(0x42007B, header, batch)
+
+                        peer = ControlledTlsPeer(response_factory=answer, protocol_version=version,
+                                                 connection_count=len(operations))
+                        try:
+                            connection = {
+                                "server_id": "owned-key-loopback", "protocol_version": version,
+                                "transport": "raw_tls", "encoding": "TTLV", "api_level": "generic-ttlv",
+                                "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+                                "tls": {"ca_cert_path": str(PKI / "server-cert.pem"),
+                                        "client_cert_path": str(PKI / "client-cert.pem"),
+                                        "client_key_path": str(PKI / "client-key.pem"),
+                                        "server_name_override": "localhost",
+                                        "connect_timeout_seconds": 2, "read_timeout_seconds": 2},
+                                "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                            }
+                            case = next(row for row in catalog["test_cases"] if row["case_id"] == f"test-op-{target}")
+                            selection = {**catalog, "test_cases": [case]}
+                            result, = _run(connection, b"{}", selection, b"{}", {}, None, True)
+                            self.assertEqual("passed" if valid_get else "failed", result["status"], result)
+                            self.assertEqual(operations, seen)
+                        finally:
+                            peer.close()
+
     def test_rejected_ml_kem_setup_is_not_reported_as_a_target_exchange(self):
         for operation in ("Encapsulate", "Decapsulate"):
             for api in ("typed-protocol", "fluent"):
