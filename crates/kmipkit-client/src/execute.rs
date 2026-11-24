@@ -141,38 +141,6 @@ mod signature_verify_execution_tests;
 #[path = "wire_encoder.rs"]
 mod private_wire_writer;
 
-/// Failure to encode a caller-owned generic TTLV item.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct GenericTtlvEncodingError;
-
-impl std::fmt::Display for GenericTtlvEncodingError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("generic TTLV encoding failed")
-    }
-}
-
-impl std::error::Error for GenericTtlvEncodingError {}
-
-/// Encodes a generic TTLV item within the supplied size, depth, and count limits.
-///
-/// The callback borrows the encoded bytes until it returns. `KMIPKit` zeroizes
-/// its output buffer on drop. This codec validates TTLV framing; callers
-/// provide any KMIP operation, message, and transport validation.
-///
-/// # Errors
-///
-/// Returns a redacted error if the item cannot be represented in TTLV,
-/// exceeds the supplied limits, or cannot be allocated.
-pub fn with_encoded_generic_ttlv<T>(
-    item: &kmipkit_ttlv::Item,
-    limits: &CodecLimits,
-    use_bytes: impl FnOnce(&[u8]) -> T,
-) -> Result<T, GenericTtlvEncodingError> {
-    let encoded =
-        private_wire_writer::encode_generic(item, limits).map_err(|_| GenericTtlvEncodingError)?;
-    Ok(use_bytes(encoded.as_bytes()))
-}
-
 pub(crate) fn render_response_message(
     response: &ResponseMessage,
     limits: &CodecLimits,

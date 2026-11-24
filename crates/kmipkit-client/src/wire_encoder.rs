@@ -449,23 +449,6 @@ fn encode_item(item: &Item) -> Result<EncodedOwner, EncodeError> {
     )
 }
 
-/// Uses the bounded TTLV writer for caller-owned generic Items.
-pub(super) fn encode_generic(
-    item: &Item,
-    limits: &CodecLimits,
-) -> Result<EncodedOwner, EncodeError> {
-    encode_item_inner(
-        item,
-        limits,
-        #[cfg(test)]
-        &tests::EncodingObserver::default(),
-        #[cfg(test)]
-        None,
-        #[cfg(test)]
-        None,
-    )
-}
-
 /// Writes a request selected by the parent execute module and authorized by
 /// its private operation permit.
 pub(super) fn encode_for_execute(

@@ -69,8 +69,8 @@ steps. Failed requests are never retried; cleanup failure is visible.
 Generic TTLV construction, navigation and bounded decoding run locally. The
 `generic-ttlv` validator route also builds and sends the read-only Query and
 Discover Versions requests over the installed low-level raw TLS transport
-in KMIP 2.0 and 2.1, plus Ping in 2.1. Its bounded encoder accepts native generic
-TTLV trees. It uses certificate authentication and TTLV encoding.
+in KMIP 2.0 and 2.1, plus Ping in 2.1. The probes use certificate authentication
+and TTLV encoding.
 The route checks response framing, version, operation and the requested
 capability.
 The State server-negative case is different: its typed constructor exists, but
