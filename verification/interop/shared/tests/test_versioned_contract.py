@@ -11,7 +11,8 @@ from pathlib import Path
 
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
 from verification.interop.shared.tools.operation_variants import plan as plan_operation_variants
-from verification.interop.shared.tools.operation_catalog import build_catalog, direction
+from verification.interop.shared.tools.operation_catalog import build_catalog, direction, select_cases
+from verification.interop.shared.tools.run_all import incomplete_case_ids
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -356,6 +357,33 @@ class VersionedContractTests(unittest.TestCase):
                 self.assertEqual(version != "3.0", "test-attr-name" in cases)
                 self.assertEqual(version == "2.0", "test-v20-reject-ping" in cases)
 
+    def test_catalog_completion_requires_evidence_for_each_selected_case(self) -> None:
+        catalog = build_catalog(ROOT, "2.1")
+        catalog = select_cases(catalog, operations=["Query", "Ping"], case_ids=[])
+        outgoing = "test-op-query"
+        incoming = "test-s2c-query"
+        ping = "test-op-ping"
+        results = {"cases": [
+            {"case_id": outgoing, "status": "passed", "library_correctness": "passed"},
+            {"case_id": incoming, "status": "not_run", "library_correctness": "not_checked"},
+            {"case_id": ping, "status": "server_unsupported", "library_correctness": "passed"},
+        ]}
+        self.assertEqual([ping, incoming], incomplete_case_ids(catalog, results))
+        results["cases"][2]["result_status_code"] = 1
+        self.assertEqual([incoming], incomplete_case_ids(catalog, results))
+
+    def test_catalog_filters_keep_exact_version_direction_and_case(self) -> None:
+        catalog = build_catalog(ROOT, "2.0", include_variants=True)
+        selected = select_cases(catalog, operations=["set endpoint role"],
+                                case_ids=["test-v20-reject-ping"])
+        self.assertEqual(3, selected["statistics"]["total_cases"])
+        self.assertEqual(1, selected["statistics"]["operations_covered"])
+        self.assertEqual(1, selected["statistics"]["server_to_client_operations_covered"])
+        self.assertEqual({"client_to_server", "server_to_client"},
+                         {direction(case) for case in selected["test_cases"] if case["operation"] == "Set Endpoint Role"})
+        with self.assertRaisesRegex(ValueError, "unknown operation or case"):
+            select_cases(catalog, operations=[], case_ids=["test-op-ping"])
+
     def test_operation_variants_preserve_versions_and_stable_identifiers(self) -> None:
         rows = list(plan_operation_variants(ROOT))
         self.assertEqual(len(rows), len({row["variant_id"] for row in rows}))
@@ -363,6 +391,8 @@ class VersionedContractTests(unittest.TestCase):
         for version in ("2.0", "2.1", "3.0"):
             with self.subTest(version=version):
                 selected = [row for row in rows if row["protocol_version"] == version]
+                self.assertTrue(all(("generic-ttlv" in row["api_levels"]) == (version != "3.0")
+                                    for row in selected))
                 self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "request"
                                     for row in selected))
                 self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "response"
