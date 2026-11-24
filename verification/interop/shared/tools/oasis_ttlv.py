@@ -35,6 +35,12 @@ DECODERS = {
     "java": "org.kmipkit.ttlv.TtlvCodec.decode",
     "python": "kmipkit.ttlv.ttlv_decode",
 }
+CONSTRUCTORS = {
+    "rust": "kmipkit::ttlv::Item::new",
+    "c": "kmipkit_ttlv_item_create",
+    "java": "org.kmipkit.ttlv.TtlvItem.create",
+    "python": "kmipkit.ttlv.ttlv_item_create",
+}
 ENUM_FAMILY = {
     "maskgeneratorhashingalgorithm": "hashingalgorithm",
 }
@@ -187,24 +193,26 @@ def vectors(root: Path, versions: tuple[str, ...]):
                     yield {**entry, "status": "ready", "ttlv": wire.hex(), "items": structure}
 
 
-def inspect_vectors(rows, runners):
+def inspect_vectors(rows, runners, *, construct=False):
     positions = [index for index, row in enumerate(rows) if row["status"] == "ready"]
     source = "".join(rows[index]["ttlv"] + "\n" for index in positions)
     artifacts = {}
+    command = "--construct-oasis-ttlv" if construct else "--inspect-oasis-ttlv"
+    symbols = CONSTRUCTORS if construct else DECODERS
     for language, executable in runners.items():
         completed = subprocess.run(
-            [str(executable.resolve(strict=True)), "--inspect-oasis-ttlv"],
+            [str(executable.resolve(strict=True)), command],
             input=source, text=True, capture_output=True, check=False,
         )
         output = completed.stdout.splitlines()
         if completed.returncode != 0 or len(output) != len(positions) + 1:
-            raise ValueError(f"{language} decoder runner did not return one result for every vector")
+            raise ValueError(f"{language} fixture runner did not return one result for every vector")
         artifact = json.loads(output[0])
         for field, width in (("library_commit", 40), ("artifact_sha256", 64)):
             if not re.fullmatch(rf"[0-9a-f]{{{width}}}", artifact[field]):
-                raise ValueError(f"{language} decoder runner returned invalid provenance")
+                raise ValueError(f"{language} fixture runner returned invalid provenance")
         artifacts[language] = {field: artifact[field] for field in ("library_commit", "artifact_sha256")}
-        artifacts[language]["public_api_symbol"] = DECODERS[language]
+        artifacts[language]["public_api_symbol"] = symbols[language]
         for index, line in zip(positions, output[1:], strict=True):
             observed = json.loads(line)
             row = rows[index]
@@ -213,8 +221,11 @@ def inspect_vectors(rows, runners):
     return artifacts
 
 
-def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | None):
-    """Attach request/response codec observations to their pinned scenario step."""
+def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | None, *, construct=False):
+    """Attach local request/response observations to their pinned scenario step."""
+    symbols = CONSTRUCTORS if construct else DECODERS
+    summary_key = "oasis_ttlv_construction" if construct else "oasis_ttlv"
+    check_key = "fixture_construction" if construct else "fixture_codec"
     rows = report["rows"]
     known = {
         (row["protocol_version"], row["fixture"]["path"], row["step_index"]): row["fixture"]["sha256"]
@@ -225,10 +236,12 @@ def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | Non
     counts = defaultdict(Counter)
     with path.open(encoding="utf-8") as source:
         header = json.loads(source.readline())
+        if header.get("mode", "decode") != ("construct" if construct else "decode"):
+            raise ValueError("fixture evidence mode does not match the requested check")
         artifacts = {lang: value for lang, value in header["artifacts"].items() if lang in report["languages"]}
         for language, artifact in artifacts.items():
-            if artifact["public_api_symbol"] != DECODERS.get(language):
-                raise ValueError("codec report identifies an unexpected decoder")
+            if artifact["public_api_symbol"] != symbols.get(language):
+                raise ValueError("fixture report identifies an unexpected public API")
             if expected_commit is not None and artifact["library_commit"] != expected_commit:
                 raise ValueError("codec evidence does not match the requested library commit")
         seen = set()
@@ -254,8 +267,8 @@ def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | Non
             continue
         key = (row["protocol_version"], row["fixture"]["path"], row["step_index"])
         for language, observation in observations.get(key, {}).items():
-            row["checks"][language]["fixture_codec"] = observation
-    report["oasis_ttlv"] = {"artifacts": artifacts, "message_checks": counts}
+            row["checks"][language][check_key] = observation
+    report[summary_key] = {"artifacts": artifacts, "message_checks": counts}
 
 
 def main() -> int:
@@ -263,20 +276,26 @@ def main() -> int:
     parser.add_argument("--version", choices=VERSION_CODES, action="append")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--require-complete", action="store_true")
+    parser.add_argument("--construct", action="store_true",
+                        help="Rebuild complete KMIP 2.x messages with the installed generic tag constructors")
     parser.add_argument("--runner", nargs=2, metavar=("LANGUAGE", "EXECUTABLE"), action="append", default=[])
     args = parser.parse_args()
     runners = {language: Path(executable) for language, executable in args.runner}
     if len(runners) != len(args.runner) or not set(runners).issubset(DECODERS):
         parser.error("select at most one runner per supported language")
+    versions = tuple(dict.fromkeys(args.version or (VERSION_CODES[:2] if args.construct else VERSION_CODES)))
+    if args.construct and (not runners or "3.0" in versions):
+        parser.error("--construct requires an installed runner and a KMIP 2.x version")
     try:
-        rows = list(vectors(ROOT, tuple(dict.fromkeys(args.version or VERSION_CODES))))
-        artifacts = inspect_vectors(rows, runners)
+        rows = list(vectors(ROOT, versions))
+        artifacts = inspect_vectors(rows, runners, construct=args.construct)
         counts = Counter(row["status"] for row in rows)
         checks = {language: Counter(row.get("checks", {}).get(language, "blocked") for row in rows)
                   for language in runners}
         with args.output.open("x", encoding="utf-8") as output:
             if artifacts:
-                output.write(json.dumps({"artifacts": artifacts, "counts": counts, "checks": checks}) + "\n")
+                output.write(json.dumps({"mode": "construct" if args.construct else "decode",
+                                         "artifacts": artifacts, "counts": counts, "checks": checks}) + "\n")
             for row in rows:
                 result = {key: value for key, value in row.items() if key not in {"ttlv", "items"}} if runners else row
                 output.write(json.dumps(result, separators=(",", ":")) + "\n")

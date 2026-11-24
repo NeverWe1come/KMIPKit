@@ -51,9 +51,14 @@ byId("server").textContent = server ? `${server.product} ${server.version} (${se
 byId("compatibility").textContent = Object.entries(server_compatibility)
   .map(([state, count]) => `${state.replaceAll("_", " ")}: ${count}`).join(" · ");
 byId("inventory").textContent = `Unmapped normative entries: ${report.summary.unmapped_inventory}`;
-const codec = report.summary.oasis_ttlv?.message_checks || {};
-byId("oasis-ttlv").textContent = Object.entries(codec).map(([name, counts]) =>
-  `${name} OASIS TTLV: ${Object.entries(counts).map(([state, count]) => `${count} ${state}`).join(", ")}`
+const fixtureChecks = [
+  ["decode", report.summary.oasis_ttlv?.message_checks || {}],
+  ["construction", report.summary.oasis_ttlv_construction?.message_checks || {}]
+];
+byId("oasis-ttlv").textContent = fixtureChecks.flatMap(([label, checks]) =>
+  Object.entries(checks).map(([name, counts]) =>
+    `${name} OASIS TTLV ${label}: ${Object.entries(counts).map(([state, count]) => `${count} ${state}`).join(", ")}`
+  )
 ).join(" · ");
 function cells(parent, values) {
   for (const value of values) parent.insertCell().textContent = value ?? "—";

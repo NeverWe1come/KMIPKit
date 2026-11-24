@@ -46,3 +46,26 @@ class OasisTtlvTests(unittest.TestCase):
             self.assertEqual(check, {"status": "pending", "fixture_codec": {"response": "passed"}})
             with self.assertRaisesRegex(ValueError, "library commit"):
                 oasis_ttlv.attach_decoder_evidence(path, report, "b" * 40)
+
+    def test_construction_evidence_cannot_be_imported_as_decode_or_server_evidence(self):
+        row = {
+            "kind": "scenario_item", "origin": "xml", "case_id": "QS-M-1-21",
+            "protocol_version": "2.1", "step_index": 0, "item_index": 0,
+            "operation": "Query", "fixture": {"path": "fixture.xml", "sha256": "f" * 64},
+        }
+        digest, matrix = campaign.plan([row])
+        report = campaign.report(matrix, digest, [], ("rust",))
+        artifact = {"public_api_symbol": oasis_ttlv.CONSTRUCTORS["rust"], "library_commit": "a" * 40}
+        result = {
+            "protocol_version": "2.1", "fixture": "fixture.xml", "fixture_sha256": "f" * 64,
+            "step": 0, "message": "RequestMessage", "checks": {"rust": "passed"},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "oasis.jsonl"
+            header = {"mode": "construct", "artifacts": {"rust": artifact}}
+            path.write_text(json.dumps(header) + "\n" + json.dumps(result) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "evidence mode"):
+                oasis_ttlv.attach_decoder_evidence(path, report, "a" * 40)
+            oasis_ttlv.attach_decoder_evidence(path, report, "a" * 40, construct=True)
+            self.assertEqual(report["rows"][0]["checks"]["rust"],
+                             {"status": "pending", "fixture_construction": {"request": "passed"}})
