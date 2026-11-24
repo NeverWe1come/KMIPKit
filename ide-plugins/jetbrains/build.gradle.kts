@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
@@ -46,8 +47,8 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create(
-                providers.gradleProperty("platformType").get(),
+            ide(
+                IntelliJPlatformType.IntellijIdeaCommunity,
                 providers.gradleProperty("platformVersion").get()
             )
         }
