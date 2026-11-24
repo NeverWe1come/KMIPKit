@@ -3,10 +3,14 @@ use crate::driver::{item, structure, transport_config};
 use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
-    DiscoverVersionsResponse, PingResponse, ProtocolVersion, QueryResponse, ResponseMessage,
+    DiscoverVersionsResponse, HashResponse, PingResponse, ProtocolVersion, QueryResponse,
+    ResponseMessage,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
+use sha2::{Digest, Sha256};
+
+const HASH_INPUT: &[u8] = b"abc";
 
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
     operation(case, connection).is_some()
@@ -20,6 +24,7 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
+        ("test-op-hash" | "test-crypto-hash-sha_256-0", "2.0" | "2.1") => Some(0x27),
         ("test-op-ping", "2.1") => Some(0x3b),
         _ => None,
     }
@@ -55,6 +60,10 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
     let payload_fields = match operation {
         0x18 => vec![item(0x0042_0074, Value::enumeration(1))?],
         0x1e => vec![version_item()?],
+        0x27 => vec![
+            node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
+            item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
+        ],
         _ => Vec::new(),
     };
     let request = node(
@@ -85,8 +94,15 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
             &RequestOptions::default(),
         )
         .map_err(|_| "generic TTLV exchange failed")?;
-    let root =
-        codec::decode(response.as_bytes()).map_err(|_| "generic response failed TTLV decoding")?;
+    check_response(response.as_bytes(), operation, version)
+}
+
+fn check_response(
+    wire: &[u8],
+    operation: u32,
+    version: ProtocolVersion,
+) -> Result<(u32, Option<u32>)> {
+    let root = codec::decode(wire).map_err(|_| "generic response failed TTLV decoding")?;
     if root.tag().raw() != 0x0042_007b {
         return Err("generic response has the wrong root tag");
     }
@@ -118,6 +134,14 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
                 DiscoverVersionsResponse::try_from_response_item_for_offer(batch, &[version])
                     .map_err(|_| "invalid Discover Versions response")?;
             discover.supported_versions() == Some(&[version])
+        } else if operation == 0x27 {
+            let hash =
+                HashResponse::try_from_response_item(batch).map_err(|_| "invalid Hash response")?;
+            let expected = Sha256::digest(HASH_INPUT);
+            hash.correlation_value().is_none()
+                && hash
+                    .data()
+                    .is_some_and(|data| data.with_bytes(|bytes| bytes == &expected[..]))
         } else {
             PingResponse::try_from_response_item(batch).is_ok()
         };
@@ -135,7 +159,7 @@ fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
     item(tag, Value::structure(structure(tag, children)?))
 }
 
-// The read-only probes use Structure, Integer and Enumeration.
+// Encode the native generic tree for the read-only probes.
 fn encode(item: &Item, output: &mut Vec<u8>) -> Result<()> {
     let start = output.len();
     output.extend_from_slice(&item.tag().raw().to_be_bytes()[1..]);
@@ -155,6 +179,10 @@ fn encode(item: &Item, output: &mut Vec<u8>) -> Result<()> {
             ValueView::Enumeration(value) => {
                 output.extend_from_slice(&value.to_be_bytes());
                 5
+            }
+            ValueView::ByteString(value) => {
+                output.extend_from_slice(value);
+                8
             }
             _ => return Err("fixture contains an unsupported request value"),
         })
