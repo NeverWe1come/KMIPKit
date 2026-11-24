@@ -31,3 +31,4 @@ HTML_OUTPUT            = html
 GENERATE_LATEX         = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
+HAVE_DOT               = NO
