@@ -38,6 +38,9 @@ public final class Main {
             return 0;
         }
         try {
+            if (args.length == 1 && "--inspect-oasis-ttlv".equals(args[0])) {
+                return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST));
+            }
             if ("--plan".equals(args[0])) {
                 return DraftCampaign.run(args, Path.of(DEFAULT_MANIFEST));
             }
