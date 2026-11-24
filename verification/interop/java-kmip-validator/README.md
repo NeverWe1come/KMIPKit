@@ -86,6 +86,10 @@ all seven public generic-payload constructors through JNI, and checks their
 operation codes. It generates local evidence. The existing live runner
 handles KMIP 2.0 and 2.1.
 
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
 For one live typed KMIP 2.x Query Operations exchange, reuse the Java
 runner with `--scope live --connection PATH`. The report retains the numeric
 KMIP result and the outcome of the installed typed response checks.
