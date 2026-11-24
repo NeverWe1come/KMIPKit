@@ -1,3 +1,4 @@
+#include "kmipkit_fluent.h"
 #include "live_driver.h"
 
 #include <stdio.h>
@@ -1449,12 +1450,12 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         set_error(error, error_capacity, "unsupported KMIP version or encoding", 0);
         return false;
     }
-    if (strcmp(configuration->api_level, "typed-protocol") == 0 &&
+    if ((strcmp(configuration->api_level, "typed-protocol") == 0 || strcmp(configuration->api_level, "fluent") == 0) &&
         !has_tls_material(configuration)) {
         set_error(error, error_capacity, "CA certificate, client certificate and client key are required", 0);
         return false;
     }
-    if (strcmp(configuration->api_level, "typed-protocol") == 0 &&
+    if ((strcmp(configuration->api_level, "typed-protocol") == 0 || strcmp(configuration->api_level, "fluent") == 0) &&
         (configuration->username_env[0] != '\0' || configuration->password_env[0] != '\0')) {
         if (configuration->username_env[0] == '\0' || configuration->password_env[0] == '\0' ||
             !getenv(configuration->username_env) || getenv(configuration->username_env)[0] == '\0' ||
@@ -1471,7 +1472,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
     snprintf(out_client->api_level, sizeof(out_client->api_level), "%s", configuration->api_level);
     out_client->configured_version_propagation_available =
         KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE != 0;
-    if (strcmp(out_client->api_level, "typed-protocol") == 0 &&
+    if ((strcmp(out_client->api_level, "typed-protocol") == 0 || strcmp(out_client->api_level, "fluent") == 0) &&
         out_client->protocol_minor == 0 &&
         !out_client->configured_version_propagation_available) {
         set_error(error, error_capacity,
@@ -1484,7 +1485,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         kmip_live_client_close(out_client);
         return false;
     }
-    if (strcmp(out_client->api_level, "typed-protocol") == 0 &&
+    if ((strcmp(out_client->api_level, "typed-protocol") == 0 || strcmp(out_client->api_level, "fluent") == 0) &&
         !create_client(configuration, out_client, error, error_capacity)) {
         kmip_live_client_close(out_client);
         return false;
@@ -5215,11 +5216,37 @@ static bool attribute_mutation_payload_matches(
     return status == 0 && identifier_matches && comment_matches;
 }
 
+static int32_t build_fluent_comment_mutation(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    attribute_mutation_kind_t mutation,
+    kmipkit_ttlv_item_t *attribute,
+    kmipkit_client_batch_item_t **out_item) {
+    if (mutation == ATTRIBUTE_MUTATION_SET) {
+        kmipkit_set_attribute_builder_t *builder = NULL;
+        int32_t status = kmipkit_set_attribute_builder_create(&builder);
+        if (status == 0) status = kmipkit_set_attribute_builder_set_unique_identifier(
+            builder, identifier->text_data, identifier->text_length);
+        if (status == 0) status = kmipkit_set_attribute_builder_add_attribute_item(builder, attribute);
+        if (status == 0) status = kmipkit_set_attribute_builder_build_batch_item(builder, out_item);
+        kmipkit_set_attribute_builder_release(builder);
+        return status;
+    }
+    kmipkit_add_attribute_builder_t *builder = NULL;
+    int32_t status = kmipkit_add_attribute_builder_create(&builder);
+    if (status == 0) status = kmipkit_add_attribute_builder_set_unique_identifier(
+        builder, identifier->text_data, identifier->text_length);
+    if (status == 0) status = kmipkit_add_attribute_builder_add_attribute_item(builder, attribute);
+    if (status == 0) status = kmipkit_add_attribute_builder_build_batch_item(builder, out_item);
+    kmipkit_add_attribute_builder_release(builder);
+    return status;
+}
+
 static int32_t build_comment_attribute_mutation_item(
     kmip_live_client_t *client,
     const kmipkit_unique_identifier_v1_t *identifier,
     attribute_mutation_kind_t mutation,
     bool mismatched_current,
+    bool fluent,
     kmipkit_client_batch_item_t **out_item) {
     static const char comment[] = "KMIPKit interoperability comment";
     kmipkit_ttlv_item_t *attribute = NULL;
@@ -5255,7 +5282,9 @@ static int32_t build_comment_attribute_mutation_item(
         status = create_named_comment_attribute(
             client, mismatched_current ? "KMIPKit interop test" : comment, &attribute);
     }
-    if (status == 0 && mutation != ATTRIBUTE_MUTATION_MODIFY &&
+    if (status == 0 && fluent) {
+        status = build_fluent_comment_mutation(identifier, mutation, attribute, out_item);
+    } else if (status == 0 && mutation != ATTRIBUTE_MUTATION_MODIFY &&
         standalone_attribute_route_selected()) {
         if (mutation == ATTRIBUTE_MUTATION_SET) {
             status = kmipkit_set_attribute_request_create(identifier, attribute, &set_request);
@@ -5372,6 +5401,7 @@ static bool delete_attribute_payload_matches(
 
 static int32_t build_delete_comment_attribute_item(
     const kmipkit_unique_identifier_v1_t *identifier,
+    bool fluent,
     kmipkit_client_batch_item_t **out_item) {
     kmipkit_attribute_reference_v1_t reference = {
         .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
@@ -5382,7 +5412,15 @@ static int32_t build_delete_comment_attribute_item(
     kmipkit_delete_attribute_request_t *request = NULL;
     kmipkit_ttlv_structure_t *payload = NULL;
     int32_t status = 0;
-    if (standalone_attribute_route_selected()) {
+    if (fluent) {
+        kmipkit_delete_attribute_builder_t *builder = NULL;
+        status = kmipkit_delete_attribute_builder_create(&builder);
+        if (status == 0) status = kmipkit_delete_attribute_builder_set_unique_identifier(
+            builder, identifier->text_data, identifier->text_length);
+        if (status == 0) status = kmipkit_delete_attribute_builder_set_attribute_reference(builder, &reference);
+        if (status == 0) status = kmipkit_delete_attribute_builder_build_batch_item(builder, out_item);
+        kmipkit_delete_attribute_builder_release(builder);
+    } else if (standalone_attribute_route_selected()) {
         status = kmipkit_delete_attribute_request_create(identifier, NULL, &reference, &request);
         if (status == 0) status = kmipkit_delete_attribute_request_to_ttlv_payload(request, &payload);
         if (status == 0 && !delete_attribute_payload_matches(payload, identifier)) {
@@ -5496,7 +5534,7 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
 
     if (mutation == ATTRIBUTE_MUTATION_DELETE || mutation == ATTRIBUTE_MUTATION_MODIFY) {
         status = build_comment_attribute_mutation_item(
-            client, &created_identifier, ATTRIBUTE_MUTATION_ADD, expect_rejection, &seed_item);
+            client, &created_identifier, ATTRIBUTE_MUTATION_ADD, expect_rejection, false, &seed_item);
         if (status == 0) status = set_batch_item_id(&seed_item, "interop-attributes");
         if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
         if (status == 0 && client->username_env[0] != '\0') {
@@ -5552,11 +5590,12 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         }
     }
 
+    bool fluent = strcmp(client->api_level, "fluent") == 0;
     status = mutation == ATTRIBUTE_MUTATION_DELETE ? build_delete_comment_attribute_item(
-        &created_identifier, &mutation_item) : mutation == ATTRIBUTE_MUTATION_ADJUST ?
+        &created_identifier, fluent, &mutation_item) : mutation == ATTRIBUTE_MUTATION_ADJUST ?
         build_adjust_attribute_item(&created_identifier, &mutation_item) :
         build_comment_attribute_mutation_item(
-            client, &created_identifier, mutation, expect_rejection, &mutation_item);
+            client, &created_identifier, mutation, expect_rejection, fluent, &mutation_item);
     if (status == 0) status = set_batch_item_id(
         &mutation_item, mutation == ATTRIBUTE_MUTATION_DELETE ?
             "interop-delete-attribute" : "interop-attributes");
@@ -9008,6 +9047,26 @@ cleanup:
     return outcome;
 }
 
+static int32_t build_fluent_create(uint32_t object_type, kmipkit_ttlv_structure_t *attributes,
+                                    kmipkit_ttlv_structure_t *masks, kmipkit_client_batch_item_t **out) {
+    kmipkit_create_builder_t *builder = NULL;
+    int32_t status = kmipkit_create_builder_create(&builder);
+    if (status == 0) status = kmipkit_create_builder_set_object_type(builder, object_type);
+    if (status == 0) status = kmipkit_create_builder_set_attributes(builder, attributes);
+    if (status == 0 && masks) status = kmipkit_create_builder_set_protection_storage_masks(builder, masks);
+    if (status == 0) status = kmipkit_create_builder_build_batch_item(builder, out);
+    kmipkit_create_builder_release(builder);
+    return status;
+}
+
+static int32_t build_fluent_ping(kmipkit_client_batch_item_t **out) {
+    kmipkit_ping_builder_t *builder = NULL;
+    int32_t status = kmipkit_ping_builder_create(&builder);
+    if (status == 0) status = kmipkit_ping_builder_build_batch_item(builder, out);
+    kmipkit_ping_builder_release(builder);
+    return status;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -9029,6 +9088,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(client->api_level, "high-level") == 0) {
         return outcome_not_run(
             "the C binding exposes no high-level client route for this case");
+    }
+    bool fluent_route = strcmp(client->api_level, "fluent") == 0;
+    if (fluent_route && strcmp(test_case->mode, "local_model") != 0 &&
+        strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
+        strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
+        strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
+        strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
+        strcmp(test_case->case_id, "test-op-set-attribute") != 0 &&
+        strcmp(test_case->case_id, "test-op-delete-attribute") != 0) {
+        return outcome_not_run("the C Fluent API has no equivalent recipe for this case");
     }
     bool unsupported_version_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
@@ -9466,6 +9535,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         (get_workflow && !single_item_default_continuation_workflow) ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
+    if (fluent_route && strcmp(test_case->operation, "Create") == 0 &&
+        (!create_workflow || register_object_workflow)) {
+        return outcome_not_run("C Fluent Create requires an isolated Create request fixture");
+    }
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
         !batch_create_activate_get_attribute_list_revoke_destroy_workflow &&
         !batch_placeholder_chain_workflow && !batch_order_placeholder_workflow &&
@@ -9551,7 +9624,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else if (strcmp(test_case->operation, "Discover Versions") == 0) {
         status = kmipkit_client_batch_item_discover_versions(&item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
-        status = kmipkit_client_batch_item_ping(&item);
+        status = fluent_route ? build_fluent_ping(&item) : kmipkit_client_batch_item_ping(&item);
     } else if (strcmp(test_case->operation, "Locate") == 0) {
         status = kmipkit_ttlv_structure_create(&request_attributes);
         if (status == 0) {
@@ -9779,8 +9852,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             request_construction_step = rsa_key_workflow ? "Create RSA Key" :
                 "Create Symmetric Key";
             kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
-            status = kmipkit_client_batch_item_create(
-                requested_object_type, request_attributes, request_storage_masks, create_item);
+            status = fluent_route && create_workflow
+                ? build_fluent_create(requested_object_type, request_attributes, request_storage_masks, create_item)
+                : kmipkit_client_batch_item_create(
+                      requested_object_type, request_attributes, request_storage_masks, create_item);
             if (status == 0 && !request_item_is_valid(
                     *create_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -9914,7 +9989,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 }
             } else if (add_attribute_workflow) {
                 status = build_comment_attribute_mutation_item(
-                    client, &placeholder, ATTRIBUTE_MUTATION_ADD, false, &item);
+                    client, &placeholder, ATTRIBUTE_MUTATION_ADD, false, false, &item);
             } else {
                 const kmipkit_unique_identifier_v1_t *identifier =
                     normative_get_attribute_list_payload_workflow &&

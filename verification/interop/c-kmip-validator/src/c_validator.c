@@ -138,6 +138,7 @@ bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_c
          strcmp(out_connection->encoding, "XML") == 0) &&
         (strcmp(out_connection->api_level, "high-level") == 0 ||
          strcmp(out_connection->api_level, "typed-protocol") == 0 ||
+         strcmp(out_connection->api_level, "fluent") == 0 ||
          strcmp(out_connection->api_level, "generic-ttlv") == 0);
     if (valid && strcmp(out_connection->transport, "raw_tls") == 0) {
         valid = raw_tls >= 0 &&
