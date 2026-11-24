@@ -180,8 +180,13 @@ fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
 }
 
 fn main() -> ExitCode {
-    if std::env::args().skip(1).eq(["--inspect-oasis-ttlv"]) {
-        return if inspect_ttlv().is_ok() {
+    let mode = std::env::args().nth(1);
+    if matches!(
+        mode.as_deref(),
+        Some("--inspect-oasis-ttlv" | "--construct-oasis-ttlv")
+    ) {
+        let construct = mode.as_deref() == Some("--construct-oasis-ttlv");
+        return if inspect_ttlv(construct).is_ok() {
             ExitCode::SUCCESS
         } else {
             ExitCode::FAILURE
@@ -197,7 +202,7 @@ fn main() -> ExitCode {
     }
 }
 
-fn inspect_ttlv() -> Result<(), Box<dyn std::error::Error>> {
+fn inspect_ttlv(construct: bool) -> Result<(), Box<dyn std::error::Error>> {
     let mut output = BufWriter::new(std::io::stdout().lock());
     writeln!(
         output,
@@ -216,7 +221,14 @@ fn inspect_ttlv() -> Result<(), Box<dyn std::error::Error>> {
             .step_by(2)
             .map(|index| u8::from_str_radix(line.get(index..index + 2).unwrap_or(""), 16))
             .collect::<Result<Vec<_>, _>>()?;
-        let result = if let Ok(item) = kmipkit::ttlv::codec::decode(&wire) {
+        let item = if construct {
+            construct_item(&wire, 0)
+                .filter(|(_, remaining)| remaining.is_empty())
+                .map(|(item, _)| item)
+        } else {
+            kmipkit::ttlv::codec::decode(&wire).ok()
+        };
+        let result = if let Some(item) = item {
             let mut nodes = Vec::new();
             append_node(&item, &mut nodes)?;
             json!(nodes)
@@ -227,6 +239,51 @@ fn inspect_ttlv() -> Result<(), Box<dyn std::error::Error>> {
     }
     output.flush()?;
     Ok(())
+}
+
+fn construct_item(wire: &[u8], depth: u8) -> Option<(Item, &[u8])> {
+    if depth >= 32 {
+        return None;
+    }
+    let (header, rest) = wire.split_at_checked(8)?;
+    let tag = RawTag::new(u32::from_be_bytes([0, header[0], header[1], header[2]]))
+        .ok()?
+        .try_checked()
+        .ok()?;
+    let len = usize::try_from(u32::from_be_bytes(header[4..].try_into().ok()?)).ok()?;
+    let (padded, remaining) = rest.split_at_checked(len.checked_next_multiple_of(8)?)?;
+    let (body, padding) = padded.split_at_checked(len)?;
+    if padding.iter().any(|byte| *byte != 0) {
+        return None;
+    }
+    let value = match header[3] {
+        1 => {
+            let mut fields = Structure::new();
+            let mut children = body;
+            while !children.is_empty() {
+                let (field, remaining) = construct_item(children, depth + 1)?;
+                fields.try_push(field).ok()?;
+                children = remaining;
+            }
+            TtlvValue::structure(fields)
+        }
+        2 => TtlvValue::integer(i32::from_be_bytes(body.try_into().ok()?)),
+        3 => TtlvValue::long_integer(i64::from_be_bytes(body.try_into().ok()?)),
+        4 if !body.is_empty() && len % 8 == 0 => TtlvValue::big_integer(body.to_vec()),
+        5 => TtlvValue::enumeration(u32::from_be_bytes(body.try_into().ok()?)),
+        6 => TtlvValue::boolean(match u64::from_be_bytes(body.try_into().ok()?) {
+            0 => false,
+            1 => true,
+            _ => return None,
+        }),
+        7 => TtlvValue::text_string(std::str::from_utf8(body).ok()?.to_owned()),
+        8 => TtlvValue::byte_string(body.to_vec()),
+        9 => TtlvValue::date_time(i64::from_be_bytes(body.try_into().ok()?)),
+        10 => TtlvValue::interval(u32::from_be_bytes(body.try_into().ok()?)),
+        11 => TtlvValue::date_time_extended(i64::from_be_bytes(body.try_into().ok()?)),
+        _ => return None,
+    };
+    Some((Item::new(tag, value).ok()?, remaining))
 }
 
 fn append_node(item: &Item, nodes: &mut Vec<(u32, usize, usize)>) -> Result<(), &'static str> {

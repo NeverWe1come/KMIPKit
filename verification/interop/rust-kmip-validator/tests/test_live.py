@@ -164,6 +164,33 @@ class ParityContract(unittest.TestCase):
         self.assertNotEqual(parity_signature(self.case(), (aes256,)), parity_signature(self.case(), (aes128,)))
 
 
+class TagFixtureContract(unittest.TestCase):
+    def test_constructs_all_kmip2_scalar_types_without_the_decoder(self):
+        tag = 0x420094
+        values = [
+            (2, b"\xff" * 4), (3, b"\xff" * 8), (4, b"\x01" * 8),
+            (5, b"\x00\x00\x00\x05"), (6, b"\x00" * 7 + b"\x01"),
+            (7, "á".encode()), (8, b"abc"), (9, b"\x00" * 8),
+            (10, b"\x00\x00\x00\x01"), (11, b"\x00" * 8),
+        ]
+        fields = [
+            tag.to_bytes(3, "big") + bytes([kind]) + struct.pack(">I", len(value))
+            + value + bytes(-len(value) % 8)
+            for kind, value in values
+        ]
+        root = ttlv(0x420078, 1, fields)
+        malformed = root[:-1]
+        invalid_boolean = ttlv(tag, 8, b"\x00" * 7 + b"\x02")
+        invalid_boolean = invalid_boolean[:3] + b"\x06" + invalid_boolean[4:]
+        expected = [[0x420078, 1, len(fields)], *[[tag, kind, 0] for kind, _ in values]]
+        runner = VALIDATOR.with_name("kmip30-campaign")
+        for command in ("--construct-oasis-ttlv", "--inspect-oasis-ttlv"):
+            process = subprocess.run([str(runner), command], check=True, capture_output=True, text=True,
+                                     input="".join(frame.hex() + "\n" for frame in (root, malformed, invalid_boolean)))
+            rows = process.stdout.splitlines()
+            self.assertEqual([expected, None, None], [json.loads(row) for row in rows[1:]])
+
+
 class ControlledPeer:
     def __init__(self, pki, responder):
         self.listener = socket.socket()
@@ -341,6 +368,33 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(report["summary"]["passed"], 2)
             self.assertEqual(peer.operations, [])
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
+
+    def test_generic_tags_reach_the_peer_in_both_kmip_2_versions(self):
+        for version, operation, result in product(("2.0", "2.1"), (0x18, 0x1e), ("passed", "server_unsupported", "failed")):
+            with self.subTest(version=version, operation=operation, result=result):
+                minor = int(version[-1])
+                name = "query" if operation == 0x18 else "discover-versions"
+                protocol = ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)])
+                query_function = ttlv(0x420074, 5, 1)
+
+                def reply(tree):
+                    expected = protocol if operation == 0x1e else query_function
+                    self.assertEqual(find(tree, 0x420079), parse(expected))
+                    if result == "server_unsupported":
+                        return response(operation, minor)
+                    if result == "failed":
+                        return response(operation, 1 - minor)
+                    payload = [protocol] if operation == 0x1e else [
+                        ttlv(0x42005c, 5, operation), ttlv(0x42015f, 1, []),
+                    ]
+                    return response(operation, minor, 0, None, payload)
+
+                with ControlledPeer(self.pki, reply) as peer:
+                    _, report = self.command(
+                        self.connection(peer.port, version=version, api="generic-ttlv"), self.rows(f"test-op-{name}")
+                    )
+                    self.assertEqual(peer.operations, [operation])
+                self.assertEqual(report["cases"][0]["status"], result)
 
     def test_discover_versions_accepts_only_the_version_offered_by_each_api(self):
         operation = 0x1e

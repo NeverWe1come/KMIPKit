@@ -66,8 +66,12 @@ server-provided tickets/correlations, distinct batch IDs and ordered steps.
 Poll, Process, Cancel, multipart continuation and teardown are explicit recipe
 steps. Failed requests are never retried; cleanup failure is visible.
 
-Generic TTLV construction/navigation and bounded decoding run locally. Generic
-outbound KMIP 2.0/2.1 submission is unavailable under KMIPKIT-0083-FR-007.
+Generic TTLV construction, navigation and bounded decoding run locally. The
+`generic-ttlv` validator route also builds and sends the read-only Query and
+Discover Versions requests over the installed low-level raw TLS transport
+in KMIP 2.0 and 2.1. It uses certificate authentication and TTLV encoding.
+The route checks response framing, version, operation and the requested
+capability.
 The State server-negative case is different: its typed constructor exists, but
 preflight rejects direct State modification under KMIPKIT-0051-R282 and OASIS
 KMIP 2.1 §4.57, independently of mutation opt-in. Its status remains `not_run`,
