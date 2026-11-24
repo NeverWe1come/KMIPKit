@@ -45,7 +45,7 @@ fn main() -> Result<(), kmipkit_protocol::ProtocolError> {
 }
 ```
 
-Log sigue §6.1.29, Tablas 250–252. La decisión aprobada DISC-017 asigna la
+Log sigue §6.1.29, Tablas 250–252. La especificación del protocolo asigna la
 Tabla 252 a Log. Log Message es obligatorio y el payload de éxito está vacío.
 El usuario no debe enviar secretos al log del servidor. KMIPKit conserva el
 texto en `SecretText`, lo oculta en los diagnósticos y lo mueve al payload

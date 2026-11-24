@@ -1,4 +1,4 @@
-//! Integration tests for Open Telekom Cloud KMS, TMS, and CSMS provider bridge (specification requirement).
+//! Integration tests for Open Telekom Cloud KMS, TMS, and CSMS provider bridge.
 #![forbid(unsafe_code)]
 #![allow(
     clippy::missing_errors_doc,
