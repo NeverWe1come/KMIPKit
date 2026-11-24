@@ -6,6 +6,7 @@ vendor compatibility evidence.
 """
 import contextlib
 import json
+from itertools import product
 import os
 from pathlib import Path
 import select
@@ -348,8 +349,8 @@ class LiveContract(unittest.TestCase):
             "Encapsulate": 0x41, "Decapsulate": 0x42,
         }
         template, = self.rows("test-op-create")
-        for name, target in operations.items():
-            with self.subTest(operation=name):
+        for (name, target), result_status in product(operations.items(), (0, 1)):
+            with self.subTest(operation=name, result_status=result_status):
                 case = {
                     **template, "case_id": "test-op-" + name.lower().replace(" ", "-"),
                     "operation": name, "requires": {},
@@ -362,7 +363,7 @@ class LiveContract(unittest.TestCase):
                         self.assertEqual(3, find(tree, 0x42006a))
                         self.assertIsNone(find(tree, 0x42000d))
                         operation = find(tree, 0x42005c)
-                        if operation == target:
+                        if operation == target and result_status == 1:
                             return response(operation, minor=0, major=3)
                         identifier = find(tree, 0x420094) or "owned-draft-fixture"
                         payload = [ttlv(0x420094, 12, identifier)]
@@ -374,13 +375,18 @@ class LiveContract(unittest.TestCase):
                         elif operation == 0x41:
                             payload = [ttlv(0x420094, 12, "owned-encapsulated"),
                                        ttlv(0x4200c2, 8, b"fixture-ciphertext")]
+                        elif operation == 0x3D:
+                            payload = []
+                        elif operation == 0x42:
+                            payload = [ttlv(0x420094, 12, "owned-decapsulated")]
                         return response(operation, minor=0, major=3, status=0, reason=None, payload=payload)
                     with ControlledPeer(self.pki, reply) as peer:
                         process, report = self.command(
                             self.connection(peer.port, version="3.0", api=api, mutations=True), [case]
                         )
                     self.assertIsNotNone(report, process.stderr)
-                    self.assertEqual("server_unsupported", report["cases"][0]["status"], (peer.operations, report))
+                    expected = "passed" if result_status == 0 else "server_unsupported"
+                    self.assertEqual(expected, report["cases"][0]["status"], (peer.operations, report))
                     index, = [idx for idx, op in enumerate(peer.operations) if op == target]
                     observations.append((peer.request_trees[index], peer.response_trees[index]))
                 self.assertEqual(*observations)
