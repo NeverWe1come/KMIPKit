@@ -345,6 +345,67 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void getAndDestroyOnlyUseTheOwnedKey(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] identifier = item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.US_ASCII));
+        byte[] objectType = item(0x420057, 5, intBytes(2));
+        byte[] create = legacyKeyResponse(minor, 1, objectType, identifier);
+        byte[] destroy = legacyKeyResponse(minor, 0x14, identifier);
+        byte[] key = structure(0x42008f, structure(0x420040,
+                item(0x420042, 5, intBytes(1)),
+                structure(0x420045, item(0x420043, 8, new byte[32])),
+                item(0x420028, 5, intBytes(3)), item(0x42002a, 2, intBytes(256))));
+        byte[] get = legacyKeyResponse(minor, 0x0a, objectType, identifier, key);
+        for (boolean readKey : List.of(true, false)) {
+            String id = readKey ? "test-op-get" : "test-op-destroy";
+            var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(id))
+                    .findFirst().orElseThrow();
+            byte[] serverPem = fixture("server-cert.pem");
+            byte[] clientPem = fixture("client-cert.pem");
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path connection = temporaryDirectory.resolve("owned-" + id + ".json");
+                Files.writeString(connection, config.put("protocol_version", version).toString());
+                var peer = new FutureTask<>(() -> {
+                    var requests = new ArrayList<byte[]>();
+                    for (byte[] response : readKey ? List.of(create, get, destroy) : List.of(create, destroy)) {
+                        requests.add(serveOneResponse(listener, response));
+                    }
+                    return requests;
+                });
+                Thread thread = new Thread(peer, "java-validator-owned-key");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals("passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(1))));
+                if (readKey) assertTrue(contains(requests.get(1), item(0x42005c, 5, intBytes(0x0a))));
+                assertTrue(contains(requests.get(requests.size() - 1), item(0x42005c, 5, intBytes(0x14))));
+                for (int index = 1; index < requests.size(); index++) {
+                    assertTrue(contains(requests.get(index), identifier));
+                }
+            }
+        }
+    }
+
+    private static byte[] legacyKeyResponse(int minor, int operation, byte[]... fields) throws Exception {
+        byte[] version = structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
+        byte[] header = structure(0x42007a, version, item(0x420092, 9, longBytes(1)),
+                item(0x42000d, 2, intBytes(1)));
+        byte[] batch = structure(0x42000f, item(0x42005c, 5, intBytes(operation)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), structure(0x42007c, fields));
+        return structure(0x42007b, header, batch);
+    }
+
+    @ParameterizedTest
     @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent",
             "3.0,typed-protocol", "3.0,fluent"})
     void hashAndLocateRunThroughBothApis(String version, String apiLevel) throws Exception {

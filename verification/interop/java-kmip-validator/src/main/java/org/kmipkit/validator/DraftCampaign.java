@@ -4,16 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
+import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -66,7 +70,7 @@ final class DraftCampaign {
         return exit;
     }
 
-    static int inspectTtlv(Path manifest) throws IOException {
+    static int inspectTtlv(Path manifest, boolean construct) throws IOException {
         var artifact = verifyLoadedArtifact(manifest);
         System.out.println(JSON.writeValueAsString(Map.of(
                 "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
@@ -75,15 +79,98 @@ final class DraftCampaign {
             while ((line = input.readLine()) != null) {
                 byte[] wire = HexFormat.of().parseHex(line);
                 ArrayNode nodes = JSON.createArrayNode();
-                try (var item = TtlvCodec.decode(wire); var view = item.view()) {
+                try (var item = construct ? buildFixture(wire) : TtlvCodec.decode(wire);
+                        var view = item.view()) {
                     appendItem(view, nodes);
-                } catch (org.kmipkit.KmipException rejected) {
+                } catch (org.kmipkit.KmipException | IllegalArgumentException rejected) {
                     nodes = null;
                 }
                 System.out.println(JSON.writeValueAsString(nodes));
             }
         }
         return System.out.checkError() ? 1 : 0;
+    }
+
+    private static TtlvItem buildFixture(byte[] wire) {
+        ByteBuffer input = ByteBuffer.wrap(wire);
+        TtlvItem item = buildItem(input, CodecLimits.defaults(), 0);
+        if (input.hasRemaining()) {
+            item.close();
+            throw new IllegalArgumentException("Trailing bytes in fixture");
+        }
+        return item;
+    }
+
+    private static TtlvItem buildItem(ByteBuffer input, CodecLimits limits, int depth) {
+        if (input.remaining() < 8 || depth >= 32) {
+            throw new IllegalArgumentException("Invalid fixture header");
+        }
+        int tagCode = (Byte.toUnsignedInt(input.get()) << 16)
+                | (Byte.toUnsignedInt(input.get()) << 8) | Byte.toUnsignedInt(input.get());
+        int type = Byte.toUnsignedInt(input.get());
+        int length = input.getInt();
+        int padding = -length & 7;
+        if (length < 0 || length > input.remaining() - padding) {
+            throw new IllegalArgumentException("Invalid fixture length");
+        }
+        ByteBuffer body = input.slice(input.position(), length);
+        input.position(input.position() + length);
+        for (int i = 0; i < padding; i++) {
+            if (input.get() != 0) throw new IllegalArgumentException("Invalid fixture padding");
+        }
+        try (var raw = RawTag.fromRaw(tagCode); var tag = raw.checked();
+                var value = buildValue(type, body, limits, depth)) {
+            return TtlvItem.create(tag, value, limits);
+        }
+    }
+
+    private static TtlvValue buildValue(int type, ByteBuffer body, CodecLimits limits, int depth) {
+        int length = body.remaining();
+        if (type == 1) {
+            TtlvStructure structure = TtlvStructure.create();
+            try {
+                while (body.hasRemaining()) {
+                    try (var child = buildItem(body, limits, depth + 1)) {
+                        structure = TtlvStructure.withItem(structure, child, limits);
+                    }
+                }
+                return TtlvValue.structure(structure, limits);
+            } finally {
+                structure.close();
+            }
+        }
+        if (type == 4 || type == 7 || type == 8) {
+            byte[] bytes = new byte[length];
+            body.get(bytes);
+            return switch (type) {
+                case 4 -> {
+                    if (length == 0 || length % 8 != 0) throw new IllegalArgumentException("Invalid Big Integer size");
+                    yield TtlvValue.BigInteger(bytes, limits);
+                }
+                case 7 -> TtlvValue.TextString(bytes, limits);
+                default -> TtlvValue.ByteString(bytes, limits);
+            };
+        }
+        int width = switch (type) {
+            case 2, 5, 10 -> 4;
+            case 3, 6, 9, 11 -> 8;
+            default -> 0;
+        };
+        if (width == 0 || length != width) throw new IllegalArgumentException("Invalid fixture scalar size");
+        return switch (type) {
+            case 2 -> TtlvValue.Integer(body.getInt());
+            case 3 -> TtlvValue.LongInteger(body.getLong());
+            case 5 -> TtlvValue.Enumeration(Integer.toUnsignedLong(body.getInt()));
+            case 6 -> {
+                long bit = body.getLong();
+                if (bit != 0 && bit != 1) throw new IllegalArgumentException("Invalid fixture Boolean");
+                yield TtlvValue.Boolean(bit == 1);
+            }
+            case 9 -> TtlvValue.DateTime(body.getLong());
+            case 10 -> TtlvValue.Interval(Integer.toUnsignedLong(body.getInt()));
+            case 11 -> TtlvValue.DateTimeExtended(body.getLong());
+            default -> throw new IllegalArgumentException("Invalid fixture scalar type");
+        };
     }
 
     private static void appendItem(TtlvItemView view, ArrayNode nodes) {
