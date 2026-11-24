@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -58,7 +60,7 @@ class MainContractTest {
         Path connection = connection("2.0", "typed-protocol");
         String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
                 "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 11"));
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 24"));
         assertFalse(plan.contains("KMIP 2.0 live routes are blocked"));
     }
 
@@ -96,7 +98,7 @@ class MainContractTest {
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         var selected = mapper.createArrayNode();
         for (String caseId : new String[] {
-                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints"}) {
+                "test-op-log", "test-op-add-attribute", "test-op-get-constraints"}) {
             catalog.path("test_cases").forEach(testCase -> {
                 if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
             });
@@ -117,10 +119,10 @@ class MainContractTest {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
-        JsonNode getAttributeList = catalog.path("test_cases").findParents("case_id").stream()
-                .filter(testCase -> "test-op-get-attribute-list".equals(testCase.path("case_id").asText()))
+        JsonNode addAttribute = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-add-attribute".equals(testCase.path("case_id").asText()))
                 .findFirst().orElseThrow();
-        catalog.set("test_cases", mapper.createArrayNode().add(getAttributeList.deepCopy()));
+        catalog.set("test_cases", mapper.createArrayNode().add(addAttribute.deepCopy()));
         ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
         Path catalogFile = temporaryDirectory.resolve("pending-mutating-case.json");
         mapper.writeValue(catalogFile.toFile(), catalog);
@@ -134,11 +136,12 @@ class MainContractTest {
         JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
         assertEquals("not_run", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
-        assertTrue(result.path("diagnostic").asText().contains("isolated object fixture"));
+        assertTrue(result.path("diagnostic").asText().contains("executable recipe"));
     }
 
-    @Test
-    void executableCreateIsWithheldWithoutBothMutationOptIns() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"typed-protocol", "fluent"})
+    void executableCreateIsWithheldWithoutBothMutationOptIns(String apiLevel) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
@@ -151,12 +154,14 @@ class MainContractTest {
         mapper.writeValue(catalogFile.toFile(), catalog);
         Path output = temporaryDirectory.resolve("create-mutation-report");
 
-        assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
+        assertCommand(0, "run", "--connection", connection("2.1", apiLevel).toString(),
                 "--catalog", catalogFile.toString(), "--artifact-manifest",
                 Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
                 "--output-dir", output.toString());
 
-        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(apiLevel, report.path("execution").path("api_level").asText());
+        JsonNode result = report.path("cases").get(0);
         assertEquals("policy_restricted", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
         assertTrue(result.path("diagnostic").asText().contains("--enable-mutations"));

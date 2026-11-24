@@ -1347,7 +1347,8 @@ bool read_optional_identifier(JNIEnv* env, jint raw_kind, jbyteArray raw_text,
     output->struct_size = static_cast<uint32_t>(sizeof(kmipkit_unique_identifier_v1_t));
     output->abi_version = 1;
     output->kind = static_cast<kmipkit_unique_identifier_kind_t>(raw_kind);
-    if (raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING) {
+    if (raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            raw_kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_IDENTIFIER) {
         bool text_present = false;
         if (raw_number != 0
                 || !read_optional_java_bytes(env, raw_text, text, &text_present)

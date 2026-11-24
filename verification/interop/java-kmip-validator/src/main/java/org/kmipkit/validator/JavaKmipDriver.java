@@ -3,7 +3,9 @@ package org.kmipkit.validator;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.SecretText;
-import org.kmipkit.extensions.Client;
+import org.kmipkit.client.KmipClient;
+import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
@@ -12,6 +14,8 @@ import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.RevocationReason;
+import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
@@ -23,18 +27,26 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
-    private final Client client;
+    private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] SHA256_EXPECTED = HexFormat.of().parseHex(
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    private final KmipClient client;
     private final ConnectionConfig connection;
 
-    private JavaKmipDriver(Client client, ConnectionConfig connection) {
+    private JavaKmipDriver(KmipClient client, ConnectionConfig connection) {
         this.client = client;
         this.connection = connection;
     }
@@ -50,17 +62,86 @@ public final class JavaKmipDriver implements AutoCloseable {
                 toProtocolVersion(connection.protocolVersion()));
         TransportConfiguration transport = buildTransport(connection);
         try (registry; baseConfiguration; encodingConfiguration; protocolConfiguration; transport) {
-            return new JavaKmipDriver(Client.create(protocolConfiguration, transport), connection);
+            return new JavaKmipDriver(KmipClient.create(protocolConfiguration, transport), connection);
         }
     }
 
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
-        if ("Create".equals(testCase.operation())) {
+        if ("Create".equals(testCase.operation()) || ownedObjectCase(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
-        ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
+        if (readOnlyProbe(testCase)) {
+            return executeReadOnlyProbe(testCase, start);
+        }
+        ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
+                ? withBatchId(client.request().ping().build())
+                : TypedRequestFactory.create(testCase.operation(), !isDraft());
+        return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
+    }
+
+    static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
+                .contains(testCase.caseId());
+    }
+
+    static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
+        return ownedObjectCase(testCase) || readOnlyProbe(testCase)
+                || Set.of("Create", "Ping").contains(testCase.operation());
+    }
+
+    private CaseOutcome executeReadOnlyProbe(CatalogLoader.CatalogCase testCase, long start) {
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        try {
+            if ("Hash".equals(testCase.operation())) {
+                return executeRequest(testCase, withBatchId(hashRequest(fluent)), result -> {
+                    var payload = result.hashResponse().orElse(null);
+                    if (payload == null) return false;
+                    try (var ttlv = payload.responseTtlv()) {
+                        return payload.correlationValue().isEmpty()
+                                && payload.data().map(bytes -> Arrays.equals(bytes, SHA256_EXPECTED)).orElse(false);
+                    }
+                }, start);
+            }
+
+            return executeRequest(testCase, withBatchId(locateRequest(fluent)), result ->
+                    result.locateResponse().map(payload -> payload.locatedItems().orElse(0) == 0
+                            && payload.uniqueIdentifiers().isEmpty()).orElse(false), start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private ClientBatchItem hashRequest(boolean fluent) {
+        try (var parameters = appendOwnedValue(TtlvStructure.create(), 0x0042_0038, TtlvValue.Enumeration(6))) {
+            if (fluent) {
+                try (var builder = client.request().hash()) {
+                    return builder.cryptographicParametersStructure(parameters).data(HASH_INPUT).build();
+                }
+            }
+            try (var data = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                return ClientBatchItem.hash(parameters, data, null, null, null);
+            }
+        }
+    }
+
+    private ClientBatchItem locateRequest(boolean fluent) {
+        // Description is a Text String in all three versions.
+        byte[] isolatedDescription = ("kmipkit-locate-" + UUID.randomUUID()).getBytes(StandardCharsets.US_ASCII);
+        try (var source = appendOwnedValue(TtlvStructure.create(), 0x0042_00fc,
+                TtlvValue.TextString(isolatedDescription, CODEC_LIMITS))) {
+            if (fluent) {
+                try (var attributes = AttributeSet.tryNew(source); var builder = client.request().locate(attributes)) {
+                    return builder.maximumItems(1).offsetItems(0).build();
+                }
+            }
+            return ClientBatchItem.locate(1, 0, null, null, source);
+        }
+    }
+
+    private CaseOutcome executeRequest(CatalogLoader.CatalogCase testCase, ClientBatchItem request,
+            Predicate<ClientBatchItemResult> verify, long start) {
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -82,7 +163,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     long statusCode = result.resultStatus();
                     long reasonCode = result.resultReason().orElse(-1);
                     if (statusCode == 0) {
-                        if (!verifyTypedResponse(testCase.operation(), result)) {
+                        if (!verify.test(result)) {
                             return CaseOutcome.failed("The typed response shape did not match the request.",
                                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
                         }
@@ -109,15 +190,19 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
+        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
+                "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
+    }
+
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
         String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
         UniqueIdentifier createdIdentifier = null;
         long createStatus = -1;
         long createReason = -1;
         long createObjectType = -1;
-        try (TtlvStructure attributes = createTestKeyAttributes(objectName);
-                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
-                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        try (TtlvStructure attributes = createTestKeyAttributes(objectName, isDraft());
+                ClientBatchItem request = withBatchId(buildCreate(attributes, !ownedObjectCase(testCase)));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
             batch.add(request);
@@ -137,6 +222,10 @@ public final class JavaKmipDriver implements AutoCloseable {
                     createStatus = result.resultStatus();
                     createReason = result.resultReason().orElse(-1);
                     if (createStatus != 0) {
+                        if (ownedObjectCase(testCase)) {
+                            return CaseOutcome.notRun("The server rejected the isolated key setup.",
+                                    elapsedMillis(start));
+                        }
                         return nonSuccessOutcome(testCase, createStatus, createReason, start);
                     }
                     var payload = result.createResponse();
@@ -158,8 +247,25 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
 
-        try (ClientBatchItem request = ClientBatchItem.destroy(createdIdentifier)
-                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        if ("test-op-destroy".equals(testCase.caseId()) && createObjectType == 2) {
+            return destroyTarget(testCase, createdIdentifier, start);
+        }
+
+        CaseOutcome target = null;
+        if (ownedObjectCase(testCase) && createObjectType == 2) {
+            try {
+                target = switch (testCase.caseId()) {
+                    case "test-op-get" -> getTarget(testCase, createdIdentifier, start);
+                    case "test-op-activate", "test-op-revoke" -> activateAndRevoke(testCase, createdIdentifier, start);
+                    case "test-op-archive", "test-op-recover" -> archiveAndRecover(testCase, createdIdentifier, start);
+                    default -> readAttributes(testCase, createdIdentifier, objectName, start);
+                };
+            } catch (RuntimeException exception) {
+                target = exchangeFailure(exception, start);
+            }
+        }
+
+        try (ClientBatchItem request = withBatchId(ClientBatchItem.destroy(createdIdentifier));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
             batch.add(request);
@@ -195,10 +301,187 @@ public final class JavaKmipDriver implements AutoCloseable {
             return CaseOutcome.failed("Create returned an object type different from Symmetric Key.",
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
-        return CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason));
+        return target == null ? CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason)) : target;
     }
 
-    private static TtlvStructure createTestKeyAttributes(String objectName) {
+    private CaseOutcome activateAndRevoke(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        boolean activateTarget = "test-op-activate".equals(testCase.caseId());
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        ClientBatchItem request = activateTarget && fluent
+                ? client.request().activate(id).build() : ClientBatchItem.activate(id);
+        var activated = executeRequest(testCase, withBatchId(request), result -> result.activateResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (activated.resultStatusCode() != null && activated.resultStatusCode() != 0) {
+            return activateTarget ? activated
+                    : CaseOutcome.notRun("The server rejected isolated Activate setup.", elapsedMillis(start));
+        }
+        var revoked = executeRequest(testCase, withBatchId(revokeRequest(id, fluent && !activateTarget)), result -> {
+            var response = result.revokeResponse().orElse(null);
+            if (response == null) return false;
+            try (response) {
+                return sameIdentifier(id, response.uniqueIdentifier());
+            }
+        }, start);
+        if (!"passed".equals(activated.status())) return activated;
+        if (!activateTarget) return revoked;
+        return "passed".equals(revoked.status()) ? activated
+                : CaseOutcome.failed("Cleanup Revoke failed for the activated key.", elapsedMillis(start));
+    }
+
+    private ClientBatchItem revokeRequest(UniqueIdentifier id, boolean fluent) {
+        long reasonCode = 6;
+        if (fluent) return client.request().revoke(reasonCode).uniqueIdentifier(id).build();
+        try (var reason = RevocationReason.create(reasonCode, null);
+                var request = RevokeRequest.create(id, reason, null)) {
+            return ClientBatchItem.revoke(request);
+        }
+    }
+
+    private CaseOutcome archiveAndRecover(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        boolean archiveTarget = "test-op-archive".equals(testCase.caseId());
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        ClientBatchItem archive = archiveTarget && fluent
+                ? client.request().archive(id).build() : ClientBatchItem.archive(id);
+        CaseOutcome archived = executeRequest(testCase, withBatchId(archive), result -> result.archiveResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (archived.resultStatusCode() == null || archived.resultStatusCode() != 0) {
+            return archiveTarget || "failed".equals(archived.status()) ? archived
+                    : CaseOutcome.notRun("The server rejected Archive during Recover setup.", elapsedMillis(start));
+        }
+        ClientBatchItem recover = !archiveTarget && fluent
+                ? client.request().recover(id).build() : ClientBatchItem.recover(id);
+        CaseOutcome recovered = executeRequest(testCase, withBatchId(recover), result -> result.recoverResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (!"passed".equals(archived.status())) return archived;
+        if (!archiveTarget) return recovered;
+        return "passed".equals(recovered.status()) ? archived
+                : CaseOutcome.failed("Recover did not confirm that the archived key was restored.", elapsedMillis(start));
+    }
+
+    private CaseOutcome getTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        ClientBatchItem request = "fluent".equals(connection.apiLevel())
+                ? client.request().get(id).build() : ClientBatchItem.get(id, null, null, null, null);
+        return executeRequest(testCase, withBatchId(request), result -> {
+            var payload = result.getResponse().orElse(null);
+            if (payload == null) return false;
+            try (payload) {
+                return payload.objectTypeRaw().orElse(-1) == 2 && payload.object().isPresent()
+                        && payload.uniqueIdentifier().filter(value -> sameIdentifier(value, id)).isPresent();
+            }
+        }, start);
+    }
+
+    private CaseOutcome destroyTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        try {
+            ClientBatchItem request = "fluent".equals(connection.apiLevel())
+                    ? client.request().destroy(id).build() : ClientBatchItem.destroy(id);
+            return executeRequest(testCase, withBatchId(request), result -> result.destroyResponse()
+                    .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private ClientBatchItem buildCreate(TtlvStructure source, boolean target) {
+        if (!target || !"fluent".equals(connection.apiLevel())) {
+            return ClientBatchItem.create(2, source, null);
+        }
+        try (var attributes = AttributeSet.tryNew(source); var builder = client.request().create()) {
+            return builder.objectType(2).attributes(attributes).build();
+        }
+    }
+
+    static boolean attributeRead(CatalogLoader.CatalogCase testCase) {
+        return switch (testCase.caseId()) {
+            case "test-op-get-attributes", "test-op-get-attribute-list", "test-attr-name",
+                    "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length" -> true;
+            default -> false;
+        };
+    }
+
+    private CaseOutcome readAttributes(CatalogLoader.CatalogCase testCase, UniqueIdentifier id,
+                                       String objectName, long start) {
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        if ("Get Attribute List".equals(testCase.operation())) {
+            var request = fluent ? client.request().getAttributeList(id).build() : ClientBatchItem.getAttributeList(id);
+            return executeRequest(testCase, request, result -> {
+                var payload = result.getAttributeListResponse().orElse(null);
+                if (payload == null) return false;
+                try (payload) {
+                    return sameIdentifier(id, payload.uniqueIdentifier())
+                            && payload.attributeReferences().contains(AttributeReference.tag(0x0042_0053));
+                }
+            }, start);
+        }
+
+        int rawTag = switch (testCase.caseId()) {
+            case "test-attr-cryptographic-algorithm" -> 0x0042_0028;
+            case "test-attr-cryptographic-length" -> 0x0042_002a;
+            default -> 0x0042_0053;
+        };
+        var references = List.of(AttributeReference.tag(rawTag));
+        var request = fluent ? client.request().getAttributes(id, references).build()
+                : ClientBatchItem.getAttributes(id, references);
+        return executeRequest(testCase, request, result -> {
+            var payload = result.getAttributesResponse().orElse(null);
+            if (payload == null) return false;
+            try (payload) {
+                return id.text().equals(payload.uniqueIdentifier()) && payload.attributes()
+                        .map(attributes -> containsAttribute(attributes, rawTag, objectName)).orElse(false);
+            }
+        }, start);
+    }
+
+    private static boolean containsAttribute(TtlvStructure attributes, int rawTag, String objectName) {
+        try (var view = attributes.view()) {
+            for (long index = 0; index < view.itemCount(); index++) {
+                try (var item = view.itemAt(index); var tag = item.tag()) {
+                    if (tag.raw() != rawTag) continue;
+                    try (var value = item.value()) {
+                        return switch (rawTag) {
+                            case 0x0042_0028 -> value.enumeration() == 3;
+                            case 0x0042_002a -> value.integer() == 256;
+                            default -> containsName(value, objectName);
+                        };
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsName(org.kmipkit.ttlv.TtlvValueView value, String objectName) {
+        if (value.itemType() != org.kmipkit.ttlv.TtlvItemType.Structure) return false;
+        try (var name = value.structure()) {
+            for (long index = 0; index < name.itemCount(); index++) {
+                try (var field = name.itemAt(index); var tag = field.tag()) {
+                    if (tag.raw() != 0x0042_0055) continue;
+                    try (var text = field.value()) {
+                        return java.util.Arrays.equals(text.bytes(),
+                                objectName.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isDraft() {
+        return "3.0".equals(connection.protocolVersion());
+    }
+
+    private ClientBatchItem withBatchId(ClientBatchItem request) {
+        return isDraft() ? request : request.withUniqueBatchItemId(
+                "item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+    }
+
+    private static TtlvStructure createTestKeyAttributes(String objectName, boolean draft) {
+        if (draft) {
+            var attributes = appendOwnedValue(TtlvStructure.create(), 0x0042_00fc,
+                    TtlvValue.TextString(objectName.getBytes(java.nio.charset.StandardCharsets.UTF_8), CODEC_LIMITS));
+            attributes = appendOwnedValue(attributes, 0x0042_0028, TtlvValue.Enumeration(3));
+            return appendOwnedValue(attributes, 0x0042_002a, TtlvValue.Integer(256));
+        }
         TtlvStructure name = TtlvStructure.create();
         TtlvStructure attributes = null;
         try {
@@ -231,7 +514,7 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private static boolean sameIdentifier(UniqueIdentifier left, UniqueIdentifier right) {
         if (left.kind() != right.kind()) return false;
-        return left.kind() == UniqueIdentifier.Kind.TEXT_STRING
+        return left.kind() == UniqueIdentifier.Kind.TEXT_STRING || left.kind() == UniqueIdentifier.Kind.IDENTIFIER
                 ? left.text().equals(right.text()) : left.number() == right.number();
     }
 
@@ -273,6 +556,8 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
+            case "Set Endpoint Role" -> result.setEndpointRoleResponse()
+                    .map(payload -> payload.endpointRole() == 1).orElse(false);
             case "Create" -> false;
             case "Get Constraints" -> {
                 var payload = result.getConstraintsResponse();
