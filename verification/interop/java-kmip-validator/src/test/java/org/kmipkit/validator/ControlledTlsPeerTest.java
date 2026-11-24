@@ -345,7 +345,8 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent",
+            "2.0,generic-ttlv", "2.1,generic-ttlv"})
     void operationsOnlyUseTheOwnedKey(String version, String apiLevel) throws Exception {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
         int minor = Integer.parseInt(version.substring(2));
@@ -360,18 +361,35 @@ class ControlledTlsPeerTest {
         byte[] get = legacyKeyResponse(minor, 0x0a, objectType, identifier, key);
         byte[] archive = legacyKeyResponse(minor, 0x15, identifier);
         byte[] recover = legacyKeyResponse(minor, 0x16, identifier);
-        for (String id : List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover")) {
+        var cases = new ArrayList<>(List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover"));
+        if ("generic-ttlv".equals(apiLevel)) {
+            cases.add("test-op-create");
+            cases.add("test-op-get-invalid");
+            cases.add("test-op-get-attributes");
+            cases.add("test-op-get-attributes-invalid");
+        }
+        byte[] invalidGet = legacyKeyResponse(minor, 0x0a, objectType,
+                item(0x420094, 7, "foreign-key".getBytes(StandardCharsets.US_ASCII)), key);
+        byte[] getAttrs = legacyKeyResponse(minor, 0x0b, identifier, structure(0x420125, item(0x42002a, 2, intBytes(256))));
+        byte[] invalidAttrs = legacyKeyResponse(minor, 0x0b, identifier, structure(0x420125, item(0x42002a, 2, intBytes(128))));
+        for (String id : cases) {
             List<byte[]> responses = switch (id) {
                 case "test-op-get" -> List.of(create, get, destroy);
-                case "test-op-destroy" -> List.of(create, destroy);
+                case "test-op-get-invalid" -> List.of(create, invalidGet, destroy);
+                case "test-op-get-attributes" -> List.of(create, getAttrs, destroy);
+                case "test-op-get-attributes-invalid" -> List.of(create, invalidAttrs, destroy);
+                case "test-op-destroy", "test-op-create" -> List.of(create, destroy);
                 default -> List.of(create, archive, recover, destroy);
             };
             List<Integer> operations = switch (id) {
-                case "test-op-get" -> List.of(1, 0x0a, 0x14);
-                case "test-op-destroy" -> List.of(1, 0x14);
+                case "test-op-get", "test-op-get-invalid" -> List.of(1, 0x0a, 0x14);
+                case "test-op-get-attributes", "test-op-get-attributes-invalid" -> List.of(1, 0x0b, 0x14);
+                case "test-op-destroy", "test-op-create" -> List.of(1, 0x14);
                 default -> List.of(1, 0x15, 0x16, 0x14);
             };
-            var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(id))
+            boolean invalid = id.endsWith("-invalid");
+            String caseId = invalid ? id.substring(0, id.length() - "-invalid".length()) : id;
+            var testCase = catalog.cases().stream().filter(value -> value.caseId().equals(caseId))
                     .findFirst().orElseThrow();
             byte[] serverPem = fixture("server-cert.pem");
             byte[] clientPem = fixture("client-cert.pem");
@@ -391,7 +409,26 @@ class ControlledTlsPeerTest {
                 Thread thread = new Thread(peer, "java-validator-owned-key");
                 thread.setDaemon(true);
                 thread.start();
-                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                if ("generic-ttlv".equals(apiLevel)) {
+                    var mapper = new ObjectMapper();
+                    var selection = (ObjectNode) mapper.readTree(
+                            Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+                    var chosen = selection.path("test_cases").findParents("case_id").stream()
+                            .filter(value -> caseId.equals(value.path("case_id").asText())).findFirst().orElseThrow();
+                    selection.putArray("test_cases").add(chosen);
+                    ((ObjectNode) selection.path("statistics")).put("total_cases", 1);
+                    Path selectedFile = temporaryDirectory.resolve("catalog-" + id + ".json");
+                    Path output = temporaryDirectory.resolve("report-" + id);
+                    mapper.writeValue(selectedFile.toFile(), selection);
+                    try (var diagnostics = new java.io.PrintStream(new java.io.ByteArrayOutputStream())) {
+                        assertEquals(invalid ? 1 : 0, Main.execute(new String[] {"run",
+                                "--connection", connection.toString(), "--catalog", selectedFile.toString(),
+                                "--artifact-manifest", System.getProperty("kmipkit.artifactManifest"),
+                                "--output-dir", output.toString(), "--enable-mutations"}, diagnostics, diagnostics));
+                    }
+                    var evidence = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+                    assertEquals(invalid ? "failed" : "passed", evidence.path("status").asText());
+                } else try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
                     var outcome = driver.execute(testCase);
                     assertEquals("passed", outcome.status(), outcome.toString());
                 }
@@ -399,6 +436,13 @@ class ControlledTlsPeerTest {
                 assertEquals(operations.size(), requests.size());
                 for (int index = 0; index < requests.size(); index++) {
                     assertTrue(contains(requests.get(index), item(0x42005c, 5, intBytes(operations.get(index)))));
+                }
+                if ("generic-ttlv".equals(apiLevel)) {
+                    assertTrue(contains(requests.get(0), item(0x420028, 5, intBytes(3))));
+                    assertTrue(contains(requests.get(0), item(0x42002a, 2, intBytes(256))));
+                }
+                if ("test-op-get-attributes".equals(caseId)) {
+                    assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
                 }
                 for (int index = 1; index < requests.size(); index++) {
                     assertTrue(contains(requests.get(index), identifier));
