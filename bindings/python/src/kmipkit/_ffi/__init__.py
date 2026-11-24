@@ -52,15 +52,12 @@ else:
         environ=os.environ,
     )
     _bundled_path = _native_library_path
-    try:
-        lib = load_cffi_library(
-            ffi=ffi,
-            bundled_path=_native_library_path,
-            expected_abi_version=1,
-            environ={},
-        )
-    except (ImportError, OSError):
-        raise
+    lib = load_cffi_library(
+        ffi=ffi,
+        bundled_path=_native_library_path,
+        expected_abi_version=1,
+        environ={},
+    )
 
 
 @lru_cache(maxsize=1)
