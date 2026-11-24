@@ -718,6 +718,88 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
     return 0
 
 
+def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: str) -> None:
+    minor = int(version[-1])
+    source = repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"
+    catalog = json.loads(source.read_text())
+    cases = {row["case_id"]: row for row in catalog["test_cases"]}
+    operations = {"create": (1, 20), "get": (1, 10, 20), "destroy": (1, 20), "get-attributes": (1, 11, 20),
+                  "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
+    with tempfile.TemporaryDirectory(prefix="kmip-c-owned-") as temporary:
+        directory = Path(temporary)
+        ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.load_cert_chain(server_cert, server_key)
+        context.load_verify_locations(ca)
+        context.verify_mode = ssl.CERT_REQUIRED
+        owned_id = tlv(0x420094, 7, b"owned-key")
+        object_type = enumeration(0x420057, 2)
+        symmetric_key = tlv(0x42008f, 1, tlv(0x420040, 1, enumeration(0x420042, 1)
+                            + tlv(0x420045, 1, tlv(0x420043, 8, bytes(32)))
+                            + enumeration(0x420028, 3) + integer(0x42002a, 256)))
+        header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
+                     + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
+        for target, exchanges in operations.items():
+            for valid in ((True, False) if target in ("get", "get-attributes") else (True,)):
+                with socket.socket() as listener:
+                    listener.bind(("127.0.0.1", 0))
+                    listener.listen()
+                    listener.settimeout(5)
+                    connection = {
+                        "server_id": "owned-key-peer", "server_configuration_fingerprint": "b" * 64,
+                        "server_product": "controlled peer", "server_version": "fixture",
+                        "protocol_version": version, "transport": "raw_tls", "encoding": "TTLV",
+                        "api_level": "generic-ttlv",
+                        "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": listener.getsockname()[1]}},
+                        "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
+                                "client_key_path": str(client_key), "server_name_override": "localhost"},
+                        "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
+                        "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                    }
+                    config = directory / "connection.json"
+                    selection = directory / "catalog.json"
+                    output = directory / f"{target}-{valid}.json"
+                    config.write_text(json.dumps(connection))
+                    selection.write_text(json.dumps({**catalog, "test_cases": [cases[f"test-op-{target}"]],
+                                                      "statistics": {**catalog["statistics"], "total_cases": 1}}))
+                    command = [str(binary), "run", "--connection", str(config), "--catalog", str(selection),
+                               "--output", str(output), "--allow-mutations"]
+                    with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.PIPE) as process:
+                        try:
+                            for operation in exchanges:
+                                raw, _ = listener.accept()
+                                with context.wrap_socket(raw, server_side=True) as stream:
+                                    stream.settimeout(5)
+                                    request = read_message(stream)
+                                    assert request and top_level_batch_operations(request) == (operation,)
+                                    fields = owned_id
+                                    if operation == 1:
+                                        assert enumeration(0x420028, 3) in request and integer(0x42002a, 256) in request
+                                        fields = object_type + owned_id
+                                    else:
+                                        assert owned_id in request
+                                        if operation != 11:
+                                            assert tlv(0x420079, 1, owned_id) in request
+                                    if operation == 10:
+                                        returned_id = owned_id if valid else tlv(0x420094, 7, b"foreign-key")
+                                        fields = object_type + returned_id + symmetric_key
+                                    if operation == 11:
+                                        assert tlv(0x420079, 1, owned_id + enumeration(0x42013b, 0x42002a)) in request
+                                        fields += tlv(0x420125, 1, integer(0x42002a, 256 if valid else 128))
+                                    batch = tlv(0x42000f, 1, enumeration(0x42005c, operation)
+                                                + enumeration(0x42007f, 0) + tlv(0x42007c, 1, fields))
+                                    stream.sendall(tlv(0x42007b, 1, header + batch))
+                            _, errors = process.communicate(timeout=5)
+                            assert process.returncode == (0 if valid else 3), errors
+                        finally:
+                            if process.poll() is None:
+                                process.kill()
+                    row, = json.loads(output.read_text())["cases"]
+                    assert row["status"] == ("passed" if valid else "failed"), row
+
+
 def main() -> int:
     binary, openssl, repository = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
     protocol_version = sys.argv[4] if len(sys.argv) > 4 else "2.1"
@@ -731,6 +813,7 @@ def main() -> int:
     versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
     versioned_operation(binary, openssl, repository, "test-op-create-key-pair", 0x02, protocol_version)
     if os.name == "posix":
+        versioned_owned_key(binary, openssl, repository, protocol_version)
         for invalid in (False, True):
             versioned_operation(binary, openssl, repository, "test-crypto-rng-retrieve-rng-32", 0x25,
                                 protocol_version, invalid_payload=invalid)
