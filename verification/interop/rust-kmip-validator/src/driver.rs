@@ -31,7 +31,7 @@ pub(crate) fn structure(_tag: u32, children: Vec<Item>) -> Result<Structure> {
     }
     Ok(result)
 }
-pub(crate) fn client(connection: &Connection) -> Result<Client> {
+pub(crate) fn transport_config(connection: &Connection) -> Result<TransportConfig> {
     connection.validate()?;
     if let Some(credentials) = connection
         .authentication
@@ -87,9 +87,13 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     if let Some(name) = &tls.server_name_override {
         builder = builder.tls_server_name(name);
     }
-    let transport = builder
+    builder
         .build()
-        .map_err(|_| "invalid TLS or endpoint configuration")?;
+        .map_err(|_| "invalid TLS or endpoint configuration")
+}
+
+pub(crate) fn client(connection: &Connection) -> Result<Client> {
+    let transport = transport_config(connection)?;
     let registry = client_extension_registry(Vec::new(), kmipkit::protocol::extension::defaults())
         .map_err(|_| "library registry failure")?;
     let version = match connection.protocol_version.as_str() {
