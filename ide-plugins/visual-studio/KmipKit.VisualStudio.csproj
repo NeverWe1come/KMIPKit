@@ -6,6 +6,7 @@
     <AssemblyName>KmipKit.VisualStudio</AssemblyName>
     <RootNamespace>KmipKit.VisualStudio</RootNamespace>
     <Version>0.1.0</Version>
+    <NoWarn>$(NoWarn);VSEXTPREVIEW_LSP</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

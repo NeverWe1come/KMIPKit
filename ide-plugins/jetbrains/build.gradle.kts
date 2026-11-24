@@ -26,7 +26,6 @@ dependencies {
             providers.gradleProperty("platformType"),
             providers.gradleProperty("platformVersion")
         )
-        instrumentationTools()
         pluginVerifier()
         testFramework(TestFrameworkType.Platform)
     }
@@ -47,7 +46,10 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            create(
+                providers.gradleProperty("platformType").get(),
+                providers.gradleProperty("platformVersion").get()
+            )
         }
     }
 }

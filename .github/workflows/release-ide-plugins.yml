@@ -42,6 +42,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+      - name: Set up static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
       - name: Install cross-linker for linux-arm64
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu

@@ -19,7 +19,7 @@ internal class KmipLanguageServerProvider : LanguageServerProvider
             DocumentFilter.FromDocumentType("CSharp"),
         });
 
-    public override Task<IDuplexStream?> CreateServerConnectionAsync(CancellationToken cancellationToken)
+    public override Task<IDuplexPipe?> CreateServerConnectionAsync(CancellationToken cancellationToken)
     {
         var binaryPath = Environment.GetEnvironmentVariable("KMIP_LSP_PATH") ?? "kmip-lsp.exe";
         var startInfo = new ProcessStartInfo
@@ -35,10 +35,12 @@ internal class KmipLanguageServerProvider : LanguageServerProvider
         var process = Process.Start(startInfo);
         if (process == null)
         {
-            return Task.FromResult<IDuplexStream?>(null);
+            return Task.FromResult<IDuplexPipe?>(null);
         }
 
-        return Task.FromResult<IDuplexStream?>(
-            FullDuplexStream.Splice(process.StandardOutput.BaseStream, process.StandardInput.BaseStream));
+        var pipe = new DuplexPipe(
+            PipeReader.Create(process.StandardOutput.BaseStream),
+            PipeWriter.Create(process.StandardInput.BaseStream));
+        return Task.FromResult<IDuplexPipe?>(pipe);
     }
 }

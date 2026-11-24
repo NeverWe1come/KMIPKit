@@ -25,8 +25,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - name: Build OpenSSL 3.5.9
-        run: python3 verification/security/openssl/build.py
+      - name: Set up static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
       - name: Validate JSON Schemas
         run: |
           python3 -c '
@@ -36,11 +36,7 @@ jobs:
               print("OK:", p)
           '
       - name: Test and Clippy kmip-lsp
-        env:
-          OPENSSL_DIR: ${{ github.workspace }}/../.cache/kmipkit/openssl/3.5.9
-          OPENSSL_STATIC: "1"
         run: |
-          export OPENSSL_DIR="$HOME/.cache/kmipkit/openssl/3.5.9"
           cargo test --manifest-path ide-plugins/core/Cargo.toml
           cargo clippy --manifest-path ide-plugins/core/Cargo.toml --all-targets -- -D warnings
 
