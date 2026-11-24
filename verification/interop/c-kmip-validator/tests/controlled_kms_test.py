@@ -603,7 +603,7 @@ def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, 
 
 
 def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: str,
-                        operation: int, protocol_version: str = "3.0", *, bad_hash: bool = False) -> int:
+                        operation: int, protocol_version: str = "3.0", *, invalid_payload: bool = False, generic_locate: bool = False) -> int:
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-draft-") as raw_directory:
         directory = Path(raw_directory)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -631,10 +631,15 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             0x02: b"",
             0x08: integer(0x4200d5, 0),
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
-            0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if bad_hash else b"abc").digest()),
+            0x25: tlv(0x4200c2, 8, bytes(31 if invalid_payload else 32)),
+            0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if invalid_payload else b"abc").digest()),
             0x3b: b"",
         }[operation]
-        if major < 3 and operation in (0x18, 0x1e, 0x27, 0x3b):
+        if generic_locate:
+            payload = integer(0x4200d5, 2) + tlv(0x420094, 7, b"known-id")
+            if invalid_payload:
+                payload += tlv(0x420094, 7, b"second-id")
+        if generic_locate or (major < 3 and operation in (0x18, 0x1e, 0x25, 0x27, 0x3b)):
             apis = ("generic-ttlv",)
         else:
             apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
@@ -670,12 +675,17 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                         assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
                         if major == 3:
                             assert bytes.fromhex("42000d02") not in request
+                        if operation == 0x25:
+                            assert tlv(0x420079, 1, integer(0x4200c4, 32)) in request
                         if operation == 0x27:
                             assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
                         if operation == 0x08:
-                            assert integer(0x42004f, 1 if major == 3 else 3) in request
+                            assert integer(0x42004f, 1 if major == 3 or generic_locate else 3) in request
                             if major == 3:
                                 assert enumeration(0x420028, 3) in request
+                            if generic_locate:
+                                assert tlv(0x420079, 1, integer(0x42004f, 1) +
+                                           integer(0x4200d4, 0)) in request
                         if operation == 0x18:
                             assert tlv(0x420079, 1, enumeration(0x420074, 1)) in request
                         if operation == 0x1e:
@@ -700,9 +710,9 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                                                 + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
                             client.sendall(tlv(0x42007b, 1, header + response_item))
                     _, errors = process.communicate(timeout=10)
-                    assert process.returncode == (3 if bad_hash else 0), errors
+                    assert process.returncode == (3 if invalid_payload else 0), errors
                 row, = json.loads(result.read_text())["cases"]
-                assert row["status"] == ("failed" if bad_hash else "passed"), row
+                assert row["status"] == ("failed" if invalid_payload else "passed"), row
         if len(request_wires) > 1:
             assert request_wires[0] == request_wires[1]
     return 0
@@ -721,10 +731,15 @@ def main() -> int:
     versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
     versioned_operation(binary, openssl, repository, "test-op-create-key-pair", 0x02, protocol_version)
     if os.name == "posix":
+        for invalid in (False, True):
+            versioned_operation(binary, openssl, repository, "test-crypto-rng-retrieve-rng-32", 0x25,
+                                protocol_version, invalid_payload=invalid)
+            versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version,
+                                generic_locate=True, invalid_payload=invalid)
         versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
         versioned_operation(binary, openssl, repository, "test-op-discover-versions", 0x1e, protocol_version)
         versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27, protocol_version)
-        versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27, protocol_version, bad_hash=True)
+        versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27, protocol_version, invalid_payload=True)
         if protocol_version == "2.1":
             versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b, protocol_version)
     protocol_minor = int(protocol_version.split(".")[1])

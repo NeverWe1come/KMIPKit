@@ -47,6 +47,8 @@ CMake with the installation directory for that commit.
 On Unix, the build links OpenSSL 3 for the live generic tag probes. Set
 `OPENSSL_DIR` to the OpenSSL installation used to build the KMIPKit artifact.
 With `api_level: generic-ttlv` and mutual TLS over raw TTLV, the validator
-runs Query, Discover Versions and single-part SHA-256 Hash on KMIP 2.0 and 2.1, and Ping on 2.1.
+runs Locate, Query, Discover Versions, RNG Retrieve, and single-part SHA-256
+Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. RNG Retrieve follows the catalog's
+mutation opt-in.
 Use CA, client certificate and unencrypted PEM key files. The supported
 probe recipes use certificate authentication.
