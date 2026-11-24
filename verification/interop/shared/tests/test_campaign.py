@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -6,6 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from verification.interop.shared.tools import campaign
+from verification.interop.shared.tools.catalog_reports import load_catalog_reports
 
 
 class CampaignTests(unittest.TestCase):
@@ -33,6 +35,46 @@ class CampaignTests(unittest.TestCase):
         self.assertNotEqual(self.digest, modified_digest)
         with self.assertRaisesRegex(ValueError, "duplicate"):
             campaign.plan([self.row, self.row])
+
+    def test_strict_coverage_rejects_unmapped_inventory_or_absent_language(self):
+        digest, matrix = campaign.plan([self.row, {
+            "kind": "inventory", "protocol_version": "2.1", "case_id": "unmapped",
+        }])
+        result = campaign.report(matrix, digest, [self.run | {"matrix_sha256": digest}], ("rust",))
+        self.assertFalse(campaign.coverage_complete(result, ("2.1",)))
+        result = campaign.report(self.matrix, self.digest, [self.run], ("rust", "java"))
+        self.assertFalse(campaign.coverage_complete(result, ("2.1",)))
+        result = campaign.report(self.matrix, self.digest, [self.run], ("rust",))
+        self.assertTrue(campaign.coverage_complete(result, ("2.1",)))
+
+    def test_imported_catalog_report_retains_execution_without_claiming_matrix_pass(self):
+        catalog = campaign.SHARED / "catalog/kmipkit-1.0-test-catalog.json"
+        run = {
+            "schema_version": "2.0", "run_id": "catalog", "tested_at": "2026-01-01T00:00:00Z",
+            "language": "rust", "protocol_version": "2.1",
+            "server": {"id": "fixture", "product": "Loopback", "version": "1", "configuration_fingerprint": "c" * 64},
+            "catalog_sha256": hashlib.sha256(catalog.read_bytes()).hexdigest(),
+            "execution": {"library_commit": "a" * 40, "artifact_sha256": "b" * 64,
+                          "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
+            "summary": {"total": 1, "passed": 1, "failed": 0, "unsupported": 0, "policy_restricted": 0, "not_run": 0},
+            "cases": [{"case_id": "test-op-query", "status": "passed", "library_correctness": "passed",
+                       "server_compatibility": "supported", "parity": "not_compared", "diagnostic": "redacted"}],
+        }
+        result = campaign.report(self.matrix, self.digest, [], ("rust",))
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "catalog.json"
+            path.write_text(json.dumps(run), encoding="utf-8")
+            catalog_runs = load_catalog_reports([("controlled", path)], (catalog,), ("rust",), ("2.1",), campaign.read_validated)
+            campaign.write_report(path.parent, result, catalog_runs)
+            summary = json.loads((path.parent / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual(summary["summary"]["rust"], {"pending": 1})
+            self.assertEqual(summary["catalog_runs"][0]["summary"], {"passed": 1})
+            check = json.loads((path.parent / "catalog-checks.jsonl").read_text(encoding="utf-8"))
+            self.assertEqual(check["case_id"], "test-op-query")
+            self.assertNotIn("server_compatibility", check)
+            self.assertNotIn("diagnostic", check)
+            with self.assertRaisesRegex(ValueError, "outside the campaign"):
+                load_catalog_reports([("live", path)], (catalog,), ("rust",), ("2.0",), campaign.read_validated)
 
     def test_controlled_and_live_evidence_remain_independent(self):
         profile = {"server": {"id": "kms"}, "operations": {"query": {"supported": True}}}

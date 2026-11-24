@@ -105,10 +105,34 @@ python3 verification/interop/shared/tools/campaign.py \
 
 The outputs include a summary in the terminal, `summary.json`,
 `summary.md`, the complete `checks.jsonl` and a paginated HTML table.
-`--require-complete` fails if an applicable obligation lacks successful
-local or controlled evidence. Live observations remain visible alongside
-that coverage. Expected rejections and policy restrictions can be recorded
-independently of the assertion outcome.
+`--require-complete` fails if a selected version and language lack coverage,
+an applicable obligation lacks successful local or controlled evidence, or
+normative inventory remains unmapped. Live observations remain visible
+alongside that coverage. Expected rejections and policy restrictions can be
+recorded independently of the assertion outcome.
+
+### Runs from the installed validators
+
+Build and install the four language consumers first, following their own
+README files. Then run their execution catalogs against one configured test KMS.
+
+```sh
+python3 verification/interop/shared/tools/run_all.py \
+  --connection /path/to/connection.json --profile /path/to/profile.json \
+  --output-dir verification/interop/results/kms-2.1 --campaign
+```
+
+Supply `--project LANGUAGE PATH` for consumers built in separate worktrees
+and `--python PATH` for the interpreter with the installed KMIPKit wheel.
+The output directory has one fresh report per language, consolidated
+catalog reports, and `campaign/index.html`. Repeat the run with a fresh output
+directory for each protocol, transport, encoding, and API selection. Pass
+`--enable-mutations` when the connection opts into mutations.
+
+Import previous `results.json` reports by repeating `--controlled-report`
+or `--live-report` on `campaign.py`. The report displays these results by
+catalog case, language and execution settings. An individual planned obligation
+receives a result when the consumer supplies evidence for its obligation ID.
 
 To launch a campaign-capable consumer, supply `--runner LANGUAGE EXECUTABLE`
 once per language and specify the scope. The runner is invoked directly
