@@ -108,7 +108,10 @@ def verify_repo_version(repo_root: Path, expected_version: str | None = None) ->
     return version
 
 
-def write_github_outputs(output_path: Path, version: str) -> None:
+def write_github_outputs(version: str) -> None:
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if not github_output:
+        raise ValueError("GITHUB_OUTPUT environment variable is not set")
     major, minor, patch = parse_semver(version)
     lines = [
         f"version={version}",
@@ -117,8 +120,7 @@ def write_github_outputs(output_path: Path, version: str) -> None:
         f"minor={minor}",
         f"patch={patch}",
     ]
-    resolved_output = Path(os.path.realpath(output_path))
-    with resolved_output.open("a", encoding="utf-8") as handle:
+    with open(github_output, "a", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
 
 
@@ -126,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--expected-version", default=None)
-    parser.add_argument("--github-output", type=Path, default=None)
+    parser.add_argument("--write-github-output", action="store_true")
     args = parser.parse_args(argv)
 
     try:
@@ -135,8 +137,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
-    if args.github_output is not None:
-        write_github_outputs(args.github_output, version)
+    if args.write_github_output:
+        write_github_outputs(version)
 
     print(f"Verified unified KMIPKit SemVer: {version}")
     return 0

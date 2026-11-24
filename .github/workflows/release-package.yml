@@ -45,7 +45,7 @@ jobs:
 
       - name: Verify unified SemVer X.Y.Z across manifests
         id: semver
-        run: python3 -B verification/release/verify_version.py --repo . --github-output "$GITHUB_OUTPUT"
+        run: python3 -B verification/release/verify_version.py --repo . --write-github-output
 
       - name: Determine workflow mode
         id: mode
@@ -289,7 +289,7 @@ jobs:
       - name: Build Python sdist with maturin
         working-directory: bindings/python
         run: |
-          uv pip install --only-binary :all: --requirement requirements-coverage.txt
+          uv pip install --require-hashes --only-binary :all: --requirement ../../verification/release/requirements-python-build.txt
           maturin sdist --out ../../dist/python-sdist
 
       - name: Upload Python sdist
@@ -346,7 +346,7 @@ jobs:
       - name: Build release wheel and run import smoke test
         shell: pwsh
         run: |
-          uv pip install --only-binary :all: --requirement bindings/python/requirements-coverage.txt
+          uv pip install --require-hashes --only-binary :all: --requirement verification/release/requirements-python-build.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Push-Location bindings/python
           try {

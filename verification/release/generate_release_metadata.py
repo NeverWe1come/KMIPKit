@@ -15,6 +15,14 @@ from pathlib import Path
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
+def _ensure_within(base_dir: Path, candidate: Path) -> Path:
+    base_real = Path(os.path.realpath(base_dir))
+    cand_real = Path(os.path.realpath(candidate))
+    if not cand_real.is_relative_to(base_real):
+        raise ValueError(f"Path {cand_real} escapes base directory {base_real}")
+    return cand_real
+
+
 def compute_sha256(file_path: Path) -> str:
     digest = hashlib.sha256()
     with file_path.open("rb") as handle:
@@ -24,24 +32,31 @@ def compute_sha256(file_path: Path) -> str:
 
 
 def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str, str]]:
+    base_real = Path(os.path.realpath(artifacts_dir))
     entries: list[tuple[str, str]] = []
-    for path in sorted(artifacts_dir.rglob("*")):
-        if not path.is_file():
+    for path in sorted(base_real.rglob("*")):
+        real_path = _ensure_within(base_real, path)
+        if not real_path.is_file():
             continue
-        if path.name in {"SHA256SUMS.txt", "RELEASE_NOTES.md"}:
+        if real_path.name in {"SHA256SUMS.txt", "RELEASE_NOTES.md"}:
             continue
-        rel = path.relative_to(artifacts_dir).as_posix()
-        entries.append((compute_sha256(path), rel))
+        rel = real_path.relative_to(base_real).as_posix()
+        entries.append((compute_sha256(real_path), rel))
 
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(
+    out_dir = Path(os.path.realpath(output_file.parent))
+    safe_out = _ensure_within(out_dir, output_file)
+    safe_out.parent.mkdir(parents=True, exist_ok=True)
+    safe_out.write_text(
         "".join(f"{digest}  {rel}\n" for digest, rel in entries),
         encoding="utf-8",
     )
     return entries
 
 
-def parse_lockfile_packages(lockfile_path: Path) -> list[dict[str, str]]:
+def parse_lockfile_packages(repo_root: Path, lock_rel: str) -> list[dict[str, str]]:
+    if lock_rel not in {"Cargo.lock", "kmip-proxy/Cargo.lock"}:
+        raise ValueError(f"Unsupported lockfile path: {lock_rel!r}")
+    lockfile_path = _ensure_within(repo_root, repo_root / lock_rel)
     if not lockfile_path.is_file():
         return []
     data = tomllib.loads(lockfile_path.read_text(encoding="utf-8"))
@@ -59,11 +74,13 @@ def generate_cyclonedx_sbom(
     version: str,
     output_file: Path,
 ) -> dict[str, object]:
+    if not SEMVER_RE.fullmatch(version):
+        raise ValueError(f"Invalid SemVer version: {version!r}")
     seen: set[tuple[str, str]] = set()
     components: list[dict[str, object]] = []
 
     for lock_rel in ("Cargo.lock", "kmip-proxy/Cargo.lock"):
-        for pkg in parse_lockfile_packages(repo_root / lock_rel):
+        for pkg in parse_lockfile_packages(repo_root, lock_rel):
             key = (pkg["name"], pkg["version"])
             if key in seen:
                 continue
@@ -97,8 +114,10 @@ def generate_cyclonedx_sbom(
         "components": components,
     }
 
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
+    out_dir = Path(os.path.realpath(output_file.parent))
+    safe_out = _ensure_within(out_dir, output_file)
+    safe_out.parent.mkdir(parents=True, exist_ok=True)
+    safe_out.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
     return sbom
 
 
@@ -107,6 +126,8 @@ def generate_release_notes(
     entries: list[tuple[str, str]],
     output_file: Path,
 ) -> None:
+    if not SEMVER_RE.fullmatch(version):
+        raise ValueError(f"Invalid SemVer version: {version!r}")
     artifact_lines = "\n".join(f"- `{rel}` (`{digest[:12]}...`)" for digest, rel in entries)
     content = f"""# KMIPKit v{version}
 
@@ -130,8 +151,10 @@ sha256sum -c SHA256SUMS.txt
 ## Packaged Files ({len(entries)} total)
 {artifact_lines}
 """
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(content, encoding="utf-8")
+    out_dir = Path(os.path.realpath(output_file.parent))
+    safe_out = _ensure_within(out_dir, output_file)
+    safe_out.parent.mkdir(parents=True, exist_ok=True)
+    safe_out.write_text(content, encoding="utf-8")
 
 
 def main(argv: list[str] | None = None) -> int:
