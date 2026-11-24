@@ -255,27 +255,34 @@ class ControlledExchangeTests(unittest.TestCase):
         from kmipkit_validator.cli import _plan, _run
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
-        selected = {"test-op-query", "test-op-discover-versions"}
+        selected = {"test-op-query", "test-op-discover-versions", "test-op-ping"}
         catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
         for version in ("2.0", "2.1"):
             minor = int(version[-1])
             for case in catalog["test_cases"]:
+                if version not in case["execution"]["protocol_versions"]:
+                    continue
                 case_id = case["case_id"]
                 for expected in ("passed", "server_unsupported", "failed"):
                     with self.subTest(version=version, case=case_id, expected=expected):
                         query = case_id == "test-op-query"
-                        operation = 0x18 if query else 0x1E
+                        ping = case_id == "test-op-ping"
+                        operation = 0x3B if ping else 0x18 if query else 0x1E
 
                         def reply(request):
                             tree = parse_children(request[8:])
                             payload = parse_children(find_value(tree, 0x420079))
-                            if query:
+                            if ping:
+                                self.assertEqual([], payload)
+                            elif query:
                                 self.assertEqual(find_value(payload, 0x420074), struct.pack(">I", 1))
                             else:
                                 self.assertEqual(find_value(payload, 0x42006B), struct.pack(">i", minor))
                             if expected == "server_unsupported":
                                 return ping_response(request, 1, 5, protocol_minor=minor)
                             reply_minor = 1 - minor if expected == "failed" else minor
+                            if ping:
+                                return ping_response(request, 0, None, protocol_minor=reply_minor)
                             if not query:
                                 return discover_versions_response(request, 0, None, reply_minor, ((2, minor),))
                             protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
