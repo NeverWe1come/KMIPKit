@@ -67,7 +67,7 @@ and 2.1, plus Ping in 2.1. These probes use a CA, a client certificate chain,
 and an unencrypted PKCS#8 PEM client key. RNG Retrieve follows the catalog's
 mutation opt-in.
 
-With mutation opt-in, the direct tag route also runs Create, Get, Get
+With mutation opt-in, the direct tag route also runs Create, Check, Get, Get
 Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
 Each case uses the Text String identifier returned when it creates an isolated
 AES-256 key. The lifecycle checks validate the response identifier and confirm
