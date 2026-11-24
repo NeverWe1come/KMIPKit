@@ -98,7 +98,87 @@ static int hex_digit(char character) {
     return -1;
 }
 
-static bool inspect_line(char *line, uint8_t *wire) {
+static uint64_t read_unsigned(const uint8_t *input, size_t count) {
+    uint64_t value = 0;
+    for (size_t index = 0; index < count; ++index) value = (value << 8) | input[index];
+    return value;
+}
+
+static int64_t read_signed(const uint8_t *input, size_t count) {
+    uint64_t value = read_unsigned(input, count);
+    if ((input[0] & 0x80U) == 0) return (int64_t)value;
+    uint64_t mask = count == 4 ? UINT32_MAX : UINT64_MAX;
+    return -1 - (int64_t)(mask - value);
+}
+
+static int32_t construct_scalar(uint8_t type, const uint8_t *data, size_t length,
+                                kmipkit_codec_limits_t *limits, kmipkit_ttlv_value_t **out) {
+    switch (type) {
+        case 2: if (length == 4) return kmipkit_ttlv_value_integer((int32_t)read_signed(data, length), out); break;
+        case 3: if (length == 8) return kmipkit_ttlv_value_long_integer(read_signed(data, length), out); break;
+        case 4: if (length && length % 8 == 0) return kmipkit_ttlv_value_big_integer(limits, data, length, out); break;
+        case 5: if (length == 4) return kmipkit_ttlv_value_enumeration((uint32_t)read_unsigned(data, length), out); break;
+        case 6:
+            if (length == 8 && read_unsigned(data, length) < 2)
+                return kmipkit_ttlv_value_boolean(data[7], out);
+            break;
+        case 7: return kmipkit_ttlv_value_text_string(limits, data, length, out);
+        case 8: return kmipkit_ttlv_value_byte_string(limits, data, length, out);
+        case 9: if (length == 8) return kmipkit_ttlv_value_date_time(read_signed(data, length), out); break;
+        case 10: if (length == 4) return kmipkit_ttlv_value_interval((uint32_t)read_unsigned(data, length), out); break;
+        case 11: if (length == 8) return kmipkit_ttlv_value_date_time_extended(read_signed(data, length), out); break;
+        default: break;
+    }
+    return KMIPKIT_ERROR_INVALID_INPUT;
+}
+
+static int32_t construct_item(const uint8_t *wire, size_t available, unsigned depth,
+                              kmipkit_codec_limits_t *limits, size_t *consumed,
+                              kmipkit_ttlv_item_t **item) {
+    if (available < 8 || depth >= 32) return KMIPKIT_ERROR_INVALID_INPUT;
+    size_t length = (size_t)read_unsigned(wire + 4, 4);
+    size_t padding = (8 - length % 8) % 8;
+    if (length > available - 8 || padding > available - 8 - length)
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    const uint8_t *data = wire + 8;
+    for (size_t index = 0; index < padding; ++index)
+        if (data[length + index] != 0) return KMIPKIT_ERROR_INVALID_INPUT;
+
+    kmipkit_raw_tag_t *raw = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    int32_t status = kmipkit_ttlv_raw_tag_create((uint32_t)read_unsigned(wire, 3), &raw);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw, &tag);
+    if (status == 0 && wire[3] == 1) {
+        kmipkit_ttlv_structure_t *fields = NULL;
+        status = kmipkit_ttlv_structure_create(&fields);
+        for (size_t offset = 0; status == 0 && offset < length;) {
+            kmipkit_ttlv_item_t *field = NULL;
+            size_t count = 0;
+            status = construct_item(data + offset, length - offset, depth + 1, limits, &count, &field);
+            if (status == 0) {
+                kmipkit_ttlv_structure_t *updated = NULL;
+                status = kmipkit_ttlv_structure_with_item(fields, field, limits, &updated);
+                fields = updated;
+                offset += count;
+            }
+        }
+        if (status == 0) {
+            status = kmipkit_ttlv_value_structure(fields, limits, &value);
+        } else {
+            kmipkit_ttlv_structure_release(fields);
+        }
+    } else if (status == 0) {
+        status = construct_scalar(wire[3], data, length, limits, &value);
+    }
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, limits, item);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    if (status == 0) *consumed = 8 + length + padding;
+    return status;
+}
+
+static bool inspect_line(char *line, uint8_t *wire, kmipkit_codec_limits_t *limits, bool construct) {
     size_t length = strcspn(line, "\n");
     if (line[length] != '\n' || length % 2 != 0) return false;
     for (size_t index = 0; index < length; index += 2) {
@@ -111,7 +191,12 @@ static bool inspect_line(char *line, uint8_t *wire) {
     kmipkit_ttlv_decode_error_v1_t error = {
         .struct_size = (uint32_t)sizeof(error), .abi_version = 1,
     };
-    if (kmipkit_ttlv_decode(wire, length / 2, &error, &item) != 0) {
+    size_t consumed = 0;
+    int32_t status = construct
+        ? construct_item(wire, length / 2, 0, limits, &consumed, &item)
+        : kmipkit_ttlv_decode(wire, length / 2, &error, &item);
+    if (status != 0 || (construct && consumed != length / 2)) {
+        kmipkit_ttlv_item_release(item);
         puts("null");
         return true;
     }
@@ -124,18 +209,20 @@ static bool inspect_line(char *line, uint8_t *wire) {
     return ok;
 }
 
-static int inspect_ttlv(void) {
+static int inspect_ttlv(bool construct) {
     enum { MAX_HEX_LINE = 2 * 1024 * 1024 + 2 };
     char *line = malloc(MAX_HEX_LINE);
     uint8_t *wire = malloc(MAX_HEX_LINE / 2);
-    bool ok = line != NULL && wire != NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    bool ok = line != NULL && wire != NULL && kmipkit_codec_limits_defaults(&limits) == 0;
     if (ok) {
         printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
                KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
     }
     while (ok && fgets(line, MAX_HEX_LINE, stdin)) {
-        ok = inspect_line(line, wire);
+        ok = inspect_line(line, wire, limits, construct);
     }
+    kmipkit_codec_limits_release(limits);
     free(wire);
     free(line);
     return ok && !ferror(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -144,7 +231,10 @@ static int inspect_ttlv(void) {
 int main(int argc, char **argv) {
     int passed = 1;
     if (argc == 2 && strcmp(argv[1], "--inspect-oasis-ttlv") == 0) {
-        return inspect_ttlv();
+        return inspect_ttlv(false);
+    }
+    if (argc == 2 && strcmp(argv[1], "--construct-oasis-ttlv") == 0) {
+        return inspect_ttlv(true);
     }
     puts(KMIPKIT_LIBRARY_COMMIT);
     puts(KMIPKIT_C_ARTIFACT_SHA256);

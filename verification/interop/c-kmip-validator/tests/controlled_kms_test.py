@@ -602,7 +602,8 @@ def certificate_files(openssl: str, directory: Path) -> tuple[Path, Path, Path, 
             directory / "client-cert.pem", directory / "client-key.pem")
 
 
-def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, operation: int) -> int:
+def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: str,
+                        operation: int, protocol_version: str = "3.0") -> int:
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-draft-") as raw_directory:
         directory = Path(raw_directory)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -613,10 +614,12 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
         context.verify_mode = ssl.CERT_REQUIRED
         catalog = json.loads((repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
         case = next(case for case in catalog["test_cases"] if case["case_id"] == case_id)
-        case["execution"]["protocol_versions"] = ["3.0"]
-        case["normative_refs"] = [{"document": "OASIS KMIP 3.0 Working Draft", "section": "6.1"}]
+        case["execution"]["protocol_versions"] = [protocol_version]
+        major, minor = map(int, protocol_version.split("."))
+        if major == 3:
+            case["normative_refs"] = [{"document": "OASIS KMIP 3.0 Working Draft", "section": "6.1"}]
         catalog["test_cases"] = [case]
-        catalog["target_versions"] = ["3.0"]
+        catalog["target_versions"] = [protocol_version]
         catalog["statistics"]["total_cases"] = 1
         catalog_path = directory / "catalog.json"
         catalog_path.write_text(json.dumps(catalog))
@@ -637,7 +640,7 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
                 connection = {
                     "server_id": "draft-c-peer", "server_product": "controlled peer",
                     "server_version": "fixture", "server_configuration_fingerprint": "b" * 64,
-                    "protocol_version": "3.0", "transport": "raw_tls", "encoding": "TTLV", "api_level": api,
+                    "protocol_version": protocol_version, "transport": "raw_tls", "encoding": "TTLV", "api_level": api,
                     "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": server.getsockname()[1]}},
                     "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
                             "client_key_path": str(client_key), "server_name_override": "localhost"},
@@ -658,16 +661,22 @@ def draft_operation(binary: Path, openssl: str, repository: Path, case_id: str, 
                         client.settimeout(5)
                         request = read_message(client)
                         assert request and enumeration(0x42005c, operation) in request
-                        assert integer(0x42006a, 3) in request and bytes.fromhex("42000d02") not in request
+                        assert integer(0x42006a, major) in request and integer(0x42006b, minor) in request
+                        if major == 3:
+                            assert bytes.fromhex("42000d02") not in request
                         if operation == 0x27:
                             assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
                         if operation == 0x08:
-                            assert enumeration(0x420028, 3) in request and integer(0x42004f, 1) in request
+                            assert integer(0x42004f, 1 if major == 3 else 3) in request
+                            if major == 3:
+                                assert enumeration(0x420028, 3) in request
                         if operation == 0x18:
                             assert enumeration(0x420074, 1) in request
                         request_wires.append(request)
-                        version = tlv(0x420069, 1, integer(0x42006a, 3) + integer(0x42006b, 0))
-                        header = tlv(0x42007a, 1, version + tlv(0x420092, 9, (1).to_bytes(8, "big")))
+                        version = tlv(0x420069, 1, integer(0x42006a, major) + integer(0x42006b, minor))
+                        timestamp = tlv(0x420092, 9, (1).to_bytes(8, "big"))
+                        batch_count = integer(0x42000d, 1) if major < 3 else b""
+                        header = tlv(0x42007a, 1, version + timestamp + batch_count)
                         response_item = tlv(0x42000f, 1, enumeration(0x42005c, operation)
                                             + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
                         client.sendall(tlv(0x42007b, 1, header + response_item))
@@ -684,12 +693,13 @@ def main() -> int:
     binary, openssl, repository = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
     protocol_version = sys.argv[4] if len(sys.argv) > 4 else "2.1"
     if protocol_version == "3.0":
-        draft_operation(binary, openssl, repository, "test-op-ping", 0x3b)
-        draft_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27)
-        draft_operation(binary, openssl, repository, "test-op-locate", 0x08)
-        return draft_operation(binary, openssl, repository, "test-op-query", 0x18)
+        versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b)
+        versioned_operation(binary, openssl, repository, "test-crypto-hash-sha_256-0", 0x27)
+        versioned_operation(binary, openssl, repository, "test-op-locate", 0x08)
+        return versioned_operation(binary, openssl, repository, "test-op-query", 0x18)
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
+    versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
     protocol_minor = int(protocol_version.split(".")[1])
     registered_key_batch = (3, 18, 31, 32, 19, 20)
     stop_on_first_failure_batch = (10, 10)

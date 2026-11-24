@@ -9125,25 +9125,32 @@ static bool hash_response_matches_fixture(kmipkit_client_batch_item_response_t *
     return valid;
 }
 
+static int32_t build_fluent_locate(kmipkit_ttlv_structure_t *attributes,
+                                    int32_t maximum, bool explicit_offset,
+                                    kmipkit_client_batch_item_t **out) {
+    kmipkit_locate_builder_t *builder = NULL;
+    int32_t status = kmipkit_locate_builder_create(attributes, &builder);
+    if (status == 0) status = kmipkit_locate_builder_set_maximum_items(builder, maximum);
+    if (status == 0 && explicit_offset) status = kmipkit_locate_builder_set_offset_items(builder, 0);
+    if (status == 0) status = kmipkit_locate_builder_build_batch_item(builder, out);
+    if (builder) kmipkit_locate_builder_release(builder);
+    return status;
+}
+
 static int32_t build_bounded_locate(kmip_live_client_t *client, bool fluent,
                                     kmipkit_client_batch_item_t **out) {
     kmipkit_ttlv_structure_t *attributes = NULL;
     kmipkit_ttlv_value_t *algorithm = NULL;
-    kmipkit_locate_builder_t *builder = NULL;
     int32_t status = kmipkit_ttlv_structure_create(&attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, &algorithm);
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x420028), &algorithm))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0 && fluent) {
-        status = kmipkit_locate_builder_create(attributes, &builder);
-        if (status == 0) status = kmipkit_locate_builder_set_maximum_items(builder, 1);
-        if (status == 0) status = kmipkit_locate_builder_set_offset_items(builder, 0);
-        if (status == 0) status = kmipkit_locate_builder_build_batch_item(builder, out);
+        status = build_fluent_locate(attributes, 1, true, out);
     } else if (status == 0) {
         status = kmipkit_client_batch_item_locate(1, 1, 1, 0, 0, 0, 0, 0, attributes, out);
     }
-    if (builder) kmipkit_locate_builder_release(builder);
     if (algorithm) kmipkit_ttlv_value_release(algorithm);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     return status;
@@ -9275,10 +9282,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool fluent_route = strcmp(client->api_level, "fluent") == 0;
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
-    bool draft_locate = client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-locate") == 0;
+    bool locate_workflow = strcmp(test_case->case_id, "test-op-locate") == 0;
+    bool draft_locate = client->protocol_major == 3 && locate_workflow;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        !hash_workflow && !draft_locate && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
+        !hash_workflow && !locate_workflow && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
         strcmp(test_case->case_id, "test-op-set-attribute") != 0 &&
@@ -9832,8 +9840,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else if (strcmp(test_case->operation, "Locate") == 0) {
         status = kmipkit_ttlv_structure_create(&request_attributes);
         if (status == 0) {
-            status = kmipkit_client_batch_item_locate(1, 3, 0, 0, 0, 0, 0, 0,
-                                                      request_attributes, &item);
+            status = fluent_route ? build_fluent_locate(request_attributes, 3, false, &item)
+                : kmipkit_client_batch_item_locate(1, 3, 0, 0, 0, 0, 0, 0, request_attributes, &item);
         }
     } else if (strcmp(test_case->operation, "Query") == 0) {
         const uint32_t query_function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
