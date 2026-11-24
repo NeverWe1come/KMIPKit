@@ -370,23 +370,26 @@ class LiveContract(unittest.TestCase):
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_generic_tags_reach_the_peer_in_both_kmip_2_versions(self):
-        for version, operation, result in product(("2.0", "2.1"), (0x18, 0x1e), ("passed", "server_unsupported", "failed")):
+        probes = [("2.0", 0x18), ("2.0", 0x1e), ("2.1", 0x18), ("2.1", 0x1e), ("2.1", 0x3b)]
+        for (version, operation), result in product(probes, ("passed", "server_unsupported", "failed")):
             with self.subTest(version=version, operation=operation, result=result):
                 minor = int(version[-1])
-                name = "query" if operation == 0x18 else "discover-versions"
+                name = {0x18: "query", 0x1e: "discover-versions", 0x3b: "ping"}[operation]
                 protocol = ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)])
                 query_function = ttlv(0x420074, 5, 1)
 
                 def reply(tree):
-                    expected = protocol if operation == 0x1e else query_function
+                    expected = {0x18: query_function, 0x1e: protocol, 0x3b: b""}[operation]
                     self.assertEqual(find(tree, 0x420079), parse(expected))
                     if result == "server_unsupported":
                         return response(operation, minor)
                     if result == "failed":
                         return response(operation, 1 - minor)
-                    payload = [protocol] if operation == 0x1e else [
-                        ttlv(0x42005c, 5, operation), ttlv(0x42015f, 1, []),
-                    ]
+                    payload = {
+                        0x18: [ttlv(0x42005c, 5, operation), ttlv(0x42015f, 1, [])],
+                        0x1e: [protocol],
+                        0x3b: [],
+                    }[operation]
                     return response(operation, minor, 0, None, payload)
 
                 with ControlledPeer(self.pki, reply) as peer:

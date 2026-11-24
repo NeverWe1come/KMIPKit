@@ -86,6 +86,8 @@ mod extension_execution_tests;
 
 mod execute;
 
+pub use execute::{GenericTtlvEncodingError, with_encoded_generic_ttlv};
+
 /// Internal verification hooks enabled only for repository test consumers.
 #[cfg(feature = "test-support")]
 #[doc(hidden)]
