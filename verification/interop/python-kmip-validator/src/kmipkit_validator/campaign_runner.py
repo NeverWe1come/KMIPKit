@@ -145,6 +145,8 @@ def query_evidence(lines, connection):
 
 
 def main():
+    if sys.argv[1:] == ["--inspect-oasis-ttlv"]:
+        return inspect_ttlv()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--matrix-sha256", required=True)
@@ -211,5 +213,39 @@ def main():
         return 2
 
 
+def inspect_ttlv():
+    from kmipkit import errors, ttlv
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+    for line in sys.stdin:
+        wire = bytes.fromhex(line.strip())
+        try:
+            with ttlv.ttlv_decode(wire) as item, ttlv.ttlv_item_view_from_item(item) as view:
+                nodes = []
+                append_ttlv_node(view, nodes)
+        except errors.TtlvDecodeError:
+            nodes = None
+        print(json.dumps(nodes, separators=(",", ":")))
+    return 0
+
+
+def append_ttlv_node(view, nodes):
+    from kmipkit import ttlv
+
+    with ttlv.ttlv_item_view_tag(view) as tag:
+        raw = ttlv.tag_value(tag)
+    kind = ttlv.ttlv_item_view_type(view)
+    if kind != ttlv.ItemType.Structure:
+        nodes.append((raw, kind, 0))
+        return
+    with ttlv.ttlv_item_view_value(view) as value, ttlv.ttlv_value_view_structure(value) as structure:
+        count = ttlv.ttlv_structure_view_item_count(structure)
+        nodes.append((raw, kind, count))
+        for index in range(count):
+            with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                append_ttlv_node(child, nodes)
 if __name__ == "__main__":
     raise SystemExit(main())
