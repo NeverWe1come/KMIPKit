@@ -189,7 +189,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
-        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy").contains(testCase.caseId());
+        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover").contains(testCase.caseId());
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
@@ -251,9 +251,11 @@ public final class JavaKmipDriver implements AutoCloseable {
         CaseOutcome target = null;
         if (ownedObjectCase(testCase) && createObjectType == 2) {
             try {
-                target = "test-op-get".equals(testCase.caseId())
-                        ? getTarget(testCase, createdIdentifier, start)
-                        : readAttributes(testCase, createdIdentifier, objectName, start);
+                target = switch (testCase.caseId()) {
+                    case "test-op-get" -> getTarget(testCase, createdIdentifier, start);
+                    case "test-op-archive", "test-op-recover" -> archiveAndRecover(testCase, createdIdentifier, start);
+                    default -> readAttributes(testCase, createdIdentifier, objectName, start);
+                };
             } catch (RuntimeException exception) {
                 target = exchangeFailure(exception, start);
             }
@@ -296,6 +298,27 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
         return target == null ? CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason)) : target;
+    }
+
+    private CaseOutcome archiveAndRecover(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        boolean archiveTarget = "test-op-archive".equals(testCase.caseId());
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        ClientBatchItem archive = archiveTarget && fluent
+                ? client.request().archive(id).build() : ClientBatchItem.archive(id);
+        CaseOutcome archived = executeRequest(testCase, withBatchId(archive), result -> result.archiveResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (archived.resultStatusCode() == null || archived.resultStatusCode() != 0) {
+            return archiveTarget || "failed".equals(archived.status()) ? archived
+                    : CaseOutcome.notRun("The server rejected Archive during Recover setup.", elapsedMillis(start));
+        }
+        ClientBatchItem recover = !archiveTarget && fluent
+                ? client.request().recover(id).build() : ClientBatchItem.recover(id);
+        CaseOutcome recovered = executeRequest(testCase, withBatchId(recover), result -> result.recoverResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (!"passed".equals(archived.status())) return archived;
+        if (!archiveTarget) return recovered;
+        return "passed".equals(recovered.status()) ? archived
+                : CaseOutcome.failed("Recover did not confirm that the archived key was restored.", elapsedMillis(start));
     }
 
     private CaseOutcome getTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {

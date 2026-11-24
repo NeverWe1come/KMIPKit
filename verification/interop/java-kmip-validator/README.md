@@ -60,10 +60,12 @@ Other public typed request constructors are reported as pending until their
 case has a complete fixture, request recipe, response assertion, and cleanup.
 Asynchronous request types that only build payloads and operations with no
 public client request route carry separate API limitation reasons. The
-validator also constructs and decodes generic TTLV values locally. It does not
-send arbitrary generic TTLV requests, and the Java package has no distinct
-high-level API route. The KMIP 2.0 live route remains disabled while
-protocol-version preservation is outside the installed validator routes.
+validator also constructs and decodes generic TTLV values. Use
+`api_level: generic-ttlv` with `raw_tls` and `TTLV` to run Query and
+Discover Versions in KMIP 2.0 and 2.1, and Ping in 2.1. These probes use a
+CA, a client certificate chain, and an unencrypted PKCS#8 PEM client key.
+Archive and Recover use the isolated key lifecycle through the typed and
+Fluent routes.
 
 CI builds the JNI JAR from the revision under test and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
