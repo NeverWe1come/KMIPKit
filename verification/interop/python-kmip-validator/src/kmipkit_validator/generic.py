@@ -14,14 +14,14 @@ def _operation(case, version):
         return None
     if case["case_id"] == "test-op-ping":
         return 0x3B if version == "2.1" else None
-    return {"test-op-query": 0x18, "test-op-discover-versions": 0x1E,
-            "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27}.get(case["case_id"])
+    return {"test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+            "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27}.get(case["case_id"])
 
 
 def supports(case, connection):
     return (
         _operation(case, connection["protocol_version"]) is not None
-        and case["execution"]["mutation"] == "read_only"
+        and (case["execution"]["mutation"] == "read_only" or case["case_id"] == "test-crypto-rng-retrieve-rng-32")
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
         and not connection.get("authentication")
@@ -97,10 +97,14 @@ def run(driver, case):
     def protocol():
         return node(0x420069, [item(0x42006A, "integer", 2), item(0x42006B, "integer", minor)])
 
-    if operation == 0x18:
+    if operation == 0x08:
+        payload_fields = [item(0x42004F, "integer", 1), item(0x4200D4, "integer", 0)]
+    elif operation == 0x18:
         payload_fields = [item(0x420074, "enumeration", 1)]
     elif operation == 0x1E:
         payload_fields = [protocol()]
+    elif operation == 0x25:
+        payload_fields = [item(0x4200C4, "integer", 32)]
     elif operation == 0x27:
         payload_fields = [node(0x42002B, [item(0x420038, "enumeration", 6)]),
                           item(0x4200C2, "bytes", HASH_INPUT)]
@@ -148,9 +152,29 @@ def run(driver, case):
             "diagnostic": "generic TTLV request and response validated"}
 
 
+def _matches_locate(payload):
+    from kmipkit import ttlv
+
+    total = None
+    identifiers = 0
+    for field in _fields(payload):
+        with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:
+            kind = ttlv.ttlv_item_view_type(field)
+            if ttlv.tag_value(tag) == 0x4200D5 and kind == ttlv.ItemType.Integer and total is None:
+                total = ttlv.ttlv_value_view_integer(value)
+            elif ttlv.tag_value(tag) == 0x420094 and kind in (
+                    ttlv.ItemType.TextString, ttlv.ItemType.Integer, ttlv.ItemType.Enumeration):
+                identifiers += 1
+            else:
+                return False
+    return identifiers <= 1 and (total is None or total >= identifiers)
+
+
 def _matches(payload, operation, protocol):
     from kmipkit import ttlv
 
+    if operation == 0x08:
+        return _matches_locate(payload)
     if operation == 0x3B:
         return ttlv.ttlv_structure_view_item_count(payload) == 0
     if operation == 0x18:
@@ -163,12 +187,13 @@ def _matches(payload, operation, protocol):
         return False
     if ttlv.ttlv_structure_view_item_count(payload) != 1:
         return False
-    if operation == 0x27:
+    if operation in (0x25, 0x27):
         with ttlv.ttlv_structure_view_item_at(payload, 0) as field:
             with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:
                 return (ttlv.tag_value(tag) == 0x4200C2
                         and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.ByteString
-                        and ttlv.ttlv_value_view_bytes(value) == hashlib.sha256(HASH_INPUT).digest())
+                        and (ttlv.ttlv_value_view_byte_length(value) == 32 if operation == 0x25
+                             else ttlv.ttlv_value_view_bytes(value) == hashlib.sha256(HASH_INPUT).digest()))
     with protocol() as expected, ttlv.ttlv_item_view_from_item(expected) as expected_view:
         with ttlv.ttlv_structure_view_item_at(payload, 0) as actual:
             return _encode(actual) == _encode(expected_view)
