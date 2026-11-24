@@ -1,5 +1,5 @@
 //! Fluent Create Split Key tests derived from KMIP v2.1 §6.1.10,
-//! Tables 193–195, and KMIPKIT-0099-FR-001 through FR-007.
+//! Tables 193–195, verifying builder construction and response mapping.
 
 use std::cell::RefCell;
 use std::rc::Rc;

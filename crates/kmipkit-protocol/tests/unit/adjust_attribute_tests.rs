@@ -1,8 +1,11 @@
 #![cfg(test)]
 
 //! Derived Adjust Attribute vectors for OASIS KMIP v2.1 §6.1.3, Tables
-//! 170–172, and §11.1, Tables 428–429. Traceability:
-//! KMIPKIT-0016-FR-004/FR-010/FR-011 and SC-002/SC-003/SC-005.
+//! 170–172, and §11.1, Tables 428–429.
+//!
+//! Validates assigned and extension Adjustment Type validation, default adjustment
+//! parameters, preservation of server-authoritative attribute state, round-tripping
+//! of allocated and extension tags, and retention of operation-specific result codes.
 //! These are derived structural tests; they do not claim an official OASIS
 //! conformance case passed.
 

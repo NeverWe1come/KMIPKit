@@ -2,8 +2,8 @@
 
 //! Fake-transport Check contracts from OASIS KMIP v2.1 §6.1.7,
 //! Tables 183–185, and the value encodings in §§4.17, 4.30, and 4.59.
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.7-001`,
-//! `-002-001`, `-002-002`, `-003`, `-004-001`, `-004-002`, and `-005`.
+//! Validates client execution of Check operations across cryptographic parameters
+//! and usage limits according to OASIS KMIP v2.1 §6.1.7.
 //! Shared Pending and delivery behavior follows KMIP v2.1 §§8.6, 9.1, and
 //! 9.2. These are derived tests, not official OASIS Test Case executions.
 

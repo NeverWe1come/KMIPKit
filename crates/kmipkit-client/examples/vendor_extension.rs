@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Vendor payloads may contain secrets. Do not log or debug-format them.
     // KMIPKit-owned TTLV values zeroize on drop; copies made before transfer or
     // copied from borrowed views remain the caller's responsibility. In the
-    // client receive path, KMIPKIT-0007 rejects unrecognized critical response
+    // client receive path, the client rejects unrecognized critical response
     // extensions and preserves unrecognized non-critical ones generically;
     // this example inspects local TTLV and does not exercise that transport path.
     let recognized = client_extension::inspect(

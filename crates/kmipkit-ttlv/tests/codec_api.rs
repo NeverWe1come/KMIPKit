@@ -2,7 +2,7 @@ use kmipkit_ttlv::codec::decode;
 use kmipkit_ttlv::{ItemType, ValueView};
 
 // OASIS KMIP Specification v2.1, §§10.1.1–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-001, KMIPKIT-0005-NR-002, and KMIPKIT-0005-NR-004.
+// Verifies TTLV header structure, value encoding, and exact byte length.
 #[test]
 fn external_callers_can_decode_a_complete_public_item() {
     let wire = [

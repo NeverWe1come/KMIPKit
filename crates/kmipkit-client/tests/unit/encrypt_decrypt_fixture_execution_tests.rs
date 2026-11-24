@@ -1,10 +1,12 @@
 //! Fixture-derived client execution contracts from OASIS KMIP Specification
 //! v2.1 §6.1.11 Tables 196–197 (Decrypt) and §6.1.17 Tables 214–215
-//! (Encrypt), plus OASIS Test Cases v2.1 CN01 §§2.99–2.101. Traceability:
-//! KMIPKIT-0019-FR-001,
-//! KMIPKIT-0019-FR-008, KMIPKIT-0019-FR-012,
-//! KMIPKIT-REQ-SPEC-6.1-001-001, KMIPKIT-REQ-SPEC-6.1-001-002, and
-//! KMIPKIT-TEST-CN01-2-99 / -2-100 / -2-101. These are fixture-derived
+//! (Encrypt), plus OASIS Test Cases v2.1 CN01 §§2.99–2.101.
+//!
+//! Validates typed client execution of Encrypt and Decrypt operations, ensuring
+//! single request exchanges without automatic retries, correct outcome handling
+//! (success, failure, and pending states), and deterministic execution of in-scope
+//! operation pairs from official test fixtures TC-STREAM-ENC-1-21,
+//! TC-STREAM-ENC-2-21, and TC-STREAM-ENCDEC-1-21. These are fixture-derived
 //! operation-item checks, not complete official Test Case executions.
 
 use std::cell::RefCell;

@@ -1,4 +1,4 @@
-//! Semantic C builders for the seven approved KMIP 3.0 operations (KMIPKIT-0116).
+//! Semantic C builders for the seven approved KMIP 3.0 operations .
 //!
 //! KMIP 3.0 WD 2026-07-13 §§6.1.9/10/13/14/15/22/41. Every constructor copies
 //! borrowed inputs. Builders and credential objects own their native copies and

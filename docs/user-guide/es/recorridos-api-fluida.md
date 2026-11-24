@@ -28,28 +28,28 @@ Desde la raíz del repositorio, ejecuta todos los consumidores en Linux o macOS
 con:
 
 ```sh
-sh tests/consumers/0093-journeys/verify.sh
+bash verification/consumers/0053-parity/verify.sh
 ```
 
-En Windows, ejecuta `tests/consumers/0093-journeys/verify.ps1`. El script
+En Windows, ejecuta `pwsh -File verification/consumers/0053-parity/verify.ps1`. El script
 compila cada consumidor contra los paquetes del checkout y exige que terminen
-las 52 conexiones TLS ordenadas. El fixture valida los campos de las peticiones
+todas las conexiones TLS ordenadas. El fixture valida los campos de las peticiones
 decodificadas y devuelve respuestas KMIP codificadas. Esto verifica el flujo
 del cliente y el intercambio controlado; no demuestra interoperabilidad con un
 KMS externo.
 
 Implementaciones de los consumidores:
 
-- Rust: `tests/consumers/0093-journeys/rust/src/main.rs`
-- C: `tests/consumers/0093-journeys/c/main.c`
-- Java: `tests/consumers/0093-journeys/java/src/main/java/Consumer.java`
-- Python: `tests/consumers/0093-journeys/python/main.py`
-- Fixture TLS 1.3/mTLS: `tests/consumers/0093-journeys/local_journey_responder.py`
+- Rust: `verification/consumers/0053-parity/rust/src/main.rs`
+- C: `verification/consumers/0053-parity/c/main.c`
+- Java: `verification/consumers/0053-parity/java/src/main/java/Consumer.java`
+- Python: `verification/consumers/0053-parity/python/main.py`
+- Fixture TLS 1.3/mTLS: `verification/consumers/0053-parity/local_journey_responder.py`
 
 ## Operaciones del borrador KMIP 3.0
 
 El cliente fluido también ofrece builders tipados para las siete operaciones
-del borrador KMIP 3.0 asignadas por KMIPKIT-0116: Create Credential, Create
+catalogadas del borrador KMIP 3.0: Create Credential, Create
 Group, Create User, Deactivate, Decapsulate, Encapsulate y Obliterate. Selecciona
 explícitamente la versión 3.0 en el cliente o en las opciones de la petición
 antes de ejecutarla; 2.1 continúa siendo la versión predeterminada. Esta

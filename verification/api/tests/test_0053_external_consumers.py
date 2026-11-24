@@ -5,7 +5,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CONSUMERS = ROOT / "tests" / "consumers" / "0053-parity"
+CONSUMERS = ROOT / "verification" / "consumers" / "0053-parity"
 
 
 class ExternalConsumerProjectTests(unittest.TestCase):

@@ -1,8 +1,8 @@
 //! Source-derived Hash client contracts from OASIS KMIP v2.1 §6.1.24,
 //! Tables 235–237. These are not complete official Test Case executions.
 //!
-//! Traceability: FR-001–FR-003, FR-009–FR-012, and
-//! `KMIPKIT-ELEM-OP-C2S-HASH`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for client Hash operation execution.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

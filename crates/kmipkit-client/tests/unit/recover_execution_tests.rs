@@ -5,13 +5,10 @@
 //! Identifier encodings; §11.56 Table 487 assigns tag 0x420094 to Unique Identifier;
 //! shared response and
 //! asynchronous rules follow §§8.6, 9.1, and 9.2, Tables 399–401,
-//! and the KMIPKIT-0007/0009 client contracts. Traceability:
-//! `KMIPKIT-ELEM-OP-C2S-RECOVER`, KMIPKIT-0018 FR-001, FR-002, FR-005,
-//! FR-006, FR-007, FR-008, FR-009, FR-010, SC-001, and SC-003.
-//! Caller-selected Recover-before-Encrypt ordering is required by the archived
-//! Managed Object paragraph in KMIP v2.1 §6.1 (`KMIPKIT-REQ-SPEC-6.1-005`;
-//! KMIPKIT-0019 FR-010). These derived tests do not observe remote archive state.
-//! These are derived structural/execution tests, not official OASIS Test Cases.
+//! Validates client execution of Recover operations, verifying Unique Identifier
+//! encoding, single-exchange synchronous delivery, and handling of success,
+//! failure, and pending response states. These are derived structural tests,
+//! not official OASIS Test Cases.
 
 use kmipkit_protocol::{
     EncryptRequest, OperationData, PollRequest, RecoverRequest, SecretBytes, UniqueIdentifier,

@@ -13,7 +13,7 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
-/** Consumer parity checks for KMIPKIT-0044 Register context selection. */
+/** Consumer parity checks for register opaque context Register context selection. */
 final class RegisterOpaqueContextParityTest {
     private static final int OPAQUE_OBJECT_TYPE = 8;
     private static final int OPAQUE_OBJECT_TAG = 0x42005B;

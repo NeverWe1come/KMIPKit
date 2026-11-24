@@ -27,22 +27,22 @@ The examples and fixture are executable from the repository root on Linux or
 macOS with:
 
 ```sh
-sh tests/consumers/0093-journeys/verify.sh
+bash verification/consumers/0053-parity/verify.sh
 ```
 
-On Windows, run `tests/consumers/0093-journeys/verify.ps1`. The runner builds
-each consumer from the checked-out package sources and requires all 52 ordered
+On Windows, run `pwsh -File verification/consumers/0053-parity/verify.ps1`. The runner builds
+each consumer from the checked-out package sources and requires all ordered
 TLS connections to finish. The fixture validates decoded request fields and
 returns encoded KMIP responses. This verifies the client path and controlled
 exchange; it is not interoperability evidence for an external KMS.
 
 Consumer implementations:
 
-- Rust: `tests/consumers/0093-journeys/rust/src/main.rs`
-- C: `tests/consumers/0093-journeys/c/main.c`
-- Java: `tests/consumers/0093-journeys/java/src/main/java/Consumer.java`
-- Python: `tests/consumers/0093-journeys/python/main.py`
-- TLS 1.3/mTLS fixture: `tests/consumers/0093-journeys/local_journey_responder.py`
+- Rust: `verification/consumers/0053-parity/rust/src/main.rs`
+- C: `verification/consumers/0053-parity/c/main.c`
+- Java: `verification/consumers/0053-parity/java/src/main/java/Consumer.java`
+- Python: `verification/consumers/0053-parity/python/main.py`
+- TLS 1.3/mTLS fixture: `verification/consumers/0053-parity/local_journey_responder.py`
 
 ## Read the result of a single Create
 
@@ -66,8 +66,8 @@ try-with-resources in Java or a context manager in Python.
 
 ## KMIP 3.0 Working Draft operations
 
-The fluent client also provides typed builders for the seven KMIP 3.0
-Working Draft operations assigned by KMIPKIT-0116: Create Credential, Create
+The fluent client also provides typed builders for the seven catalogued KMIP 3.0
+Working Draft operations: Create Credential, Create
 Group, Create User, Deactivate, Decapsulate, Encapsulate, and Obliterate.
 Select protocol version 3.0 explicitly on the client or in request options
 before execution; 2.1 remains the default. This bounded surface does not claim

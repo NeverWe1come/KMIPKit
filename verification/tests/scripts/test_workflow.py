@@ -345,7 +345,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn(
             "unittest verification.api.tests.test_t102_transport_response_trait_exclusions -v",
             python_contracts,
-            "Every supported platform must verify the exact ADR-0014 TransportResponse trait exclusions.",
+            "Every supported platform must verify the exact the transport architecture decision TransportResponse trait exclusions.",
         )
 
     def test_script_contract_job_runs_t102_runtime_version_component_contract(self) -> None:

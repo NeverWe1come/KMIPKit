@@ -15,7 +15,7 @@ values remain intact. Success has an empty operation payload. The restriction
 against production-server availability applies to the server. Implementing
 the client operation does not establish an interoperability result.
 
-The approved KMIPKIT-0042 mapping is also available through the C, Java and
+The approved diagnostic interoperability mapping mapping is also available through the C, Java and
 Python client facades. C creates the batch item with
 `kmipkit_client_batch_item_interop` and reads the complete valid response with
 `kmipkit_client_batch_item_response_interop_ttlv`; release the returned
@@ -100,7 +100,7 @@ The examples are tested by `diagnostics_guide_examples.rs` and can be compiled
 directly with `python verification/examples/test_user_guide_examples.py --guide
 docs/user-guide/en/diagnostics-and-interop.md`. The Rust and binding suites
 are linked in feature traceability
-and the KMIPKIT-0043 evidence record. The Interop mapping is implemented in
+and the public API parity manifest evidence record. The Interop mapping is implemented in
 all four languages; final PR and CI gates remain pending. No direct
 official OASIS fixture, profile support, certification or two-server
 interoperability claim follows from these examples.

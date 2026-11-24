@@ -79,7 +79,7 @@ impl ValidateKmipRequest for LogRequest {
             .any(|extension| extension.tag().raw() == LOG_MESSAGE)
         {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Log Message",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

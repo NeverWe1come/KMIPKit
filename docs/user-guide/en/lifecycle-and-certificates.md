@@ -378,8 +378,8 @@ preflight with delivery state `NotSent`, before the transport writes bytes.
 The server remains authoritative for accepting the object and its attributes;
 selecting this context does not authorize later cryptographic operations.
 These rules trace to OASIS KMIP 2.1 §2.3/Table 4, §6.1.43/Tables 291 and 293,
-and §11.34/Table 468 (`KMIPKIT-REQ-SPEC-2.3-002` and
-`KMIPKIT-REQ-SPEC-2.3-003`).
+and §11.34/Table 468 (`KMIP-REQ-SPEC-2.3-002` and
+`KMIP-REQ-SPEC-2.3-003`).
 
 ### Register response mapping
 

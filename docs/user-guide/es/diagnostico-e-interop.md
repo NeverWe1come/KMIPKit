@@ -15,7 +15,7 @@ se mantienen. La respuesta de éxito está vacía. La prohibición de ofrecer
 Interop en producción corresponde al servidor. Implementar la operación del
 cliente no demuestra interoperabilidad.
 
-El mapeo aprobado en KMIPKIT-0042 también está disponible en las fachadas de
+El mapeo aprobado en diagnostic interoperability mapping también está disponible en las fachadas de
 cliente C, Java y Python. C crea el elemento de batch con
 `kmipkit_client_batch_item_interop` y obtiene la respuesta válida completa con
 `kmipkit_client_batch_item_response_interop_ttlv`; libere la estructura
@@ -104,7 +104,7 @@ Los ejemplos se ejecutan en `diagnostics_guide_examples.rs` y se compilan
 directamente con `python verification/examples/test_user_guide_examples.py --guide
 docs/user-guide/es/diagnostico-e-interop.md`. La
 trazabilidad y las
-evidencias de KMIPKIT-0043 enlazan las pruebas derivadas del estándar y las
+evidencias de public API parity manifest enlazan las pruebas derivadas del estándar y las
 fachadas. El mapeo Interop está implementado en los cuatro lenguajes; quedan
 pendientes los controles finales de la PR y CI. Estos ejemplos no demuestran
 perfiles, certificación, fixtures oficiales de OASIS ni interoperabilidad

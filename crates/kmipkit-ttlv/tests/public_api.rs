@@ -1,5 +1,5 @@
-//! Requirement traceability: KMIPKIT-0004-FR-010, FR-012, and SC-006.
-//! Authority: approved KMIPKIT-0004 specification and Rust value-model contract.
+//! Verifies public API ownership, redaction, and borrowing invariants.
+//! Enforces memory safety and zeroization guarantees in the Rust TTLV value model.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 

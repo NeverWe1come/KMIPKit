@@ -1,7 +1,6 @@
 //! Project-derived fake-transport checks for OASIS KMIP Specification v2.1
 //! §6.1.22, Tables 229–231, and Constraints §7.7.
-//! Traceability: KMIPKIT-025-T229-REQUEST, T230-RESPONSE, T231-ERROR,
-//! KMIPKIT-025-COMMON-RESULT, and KMIPKIT-025-COMMON-DELIVERY.
+//! Verifies Get Constraints request/response execution.
 //! These are not official OASIS Test Cases.
 
 use kmipkit_protocol::{GetConstraintsResponse, ResultReason};

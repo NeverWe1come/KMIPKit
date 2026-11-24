@@ -1,5 +1,5 @@
-// Requirement traceability: KMIPKIT-0004-FR-012, SC-006.
-// Authority: approved KMIPKIT-0004 Rust value-model contract.
+// Verifies public API ownership, redaction, and borrowing invariants.
+// Enforces non-Copy semantics for Value to protect resource ownership.
 use kmipkit_ttlv::{Item, Structure, StructureView, Value, ValueView};
 
 fn requires_copy<T: Copy>() {}

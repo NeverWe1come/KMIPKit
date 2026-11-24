@@ -32,7 +32,7 @@ def test_explicit_create_schema_reports_redacted_stable_metadata():
             assert not report.is_valid
             assert len(report.issues) == 2
             issue = report.issues[0]
-            assert issue.code == "KMIPKIT-0051-R019"
+            assert issue.code == "PAYLOAD-RULE-R019"
             assert issue.path == "Request Payload.Object Type"
             assert issue.severity == "ERROR"
             assert issue.source_identifier == "KMIP v2.1"
@@ -177,7 +177,7 @@ def test_invalid_typed_request_is_redacted_and_never_connects():
         ):
             assert not report.is_valid
             issue = report.issues[0]
-            assert issue.code == "KMIPKIT-0051-R190"
+            assert issue.code == "PAYLOAD-RULE-R190"
             assert issue.path == "Request Payload.Attributes"
             assert issue.source_reference == "§4, Table 46"
             assert canary not in repr(issue)

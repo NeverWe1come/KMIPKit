@@ -1,6 +1,6 @@
 //! Client-boundary redaction characterization for KMIP v2.1 §6.1.11
 //! Tables 196–197 (Decrypt), §6.1.17 Tables 214–215 (Encrypt), and §§7.3,
-//! 7.4, 7.8, and 7.9. Traceability: KMIPKIT-0019-FR-009 and SC-004.
+//! 7.4, 7.8, and 7.9. Verifies protocol model, request/response validation, and security invariants.
 
 use std::cell::Cell;
 use std::error::Error;
@@ -63,7 +63,7 @@ impl CryptoOperation {
     }
 
     fn request(self) -> (ClientRequest, String) {
-        let identifier = Some(UniqueIdentifier::TextString("t036-client-key".to_owned()));
+        let identifier = Some(UniqueIdentifier::TextString("test-client-key".to_owned()));
         match self {
             Self::Encrypt => {
                 let request = EncryptRequest::new(
@@ -99,7 +99,7 @@ impl CryptoOperation {
     }
 
     fn initial_aead_request(self) -> (ClientRequest, String) {
-        let identifier = Some(UniqueIdentifier::TextString("t036-client-key".to_owned()));
+        let identifier = Some(UniqueIdentifier::TextString("test-client-key".to_owned()));
         match self {
             Self::Encrypt => {
                 let request = EncryptRequest::new(
@@ -240,7 +240,7 @@ fn response_bytes(operation: CryptoOperation, response_payload: Option<Structure
 fn successful_payload(operation: CryptoOperation) -> Structure {
     let unique_identifier = test_item(
         UNIQUE_IDENTIFIER,
-        Value::text_string("t036-client-output".to_owned()),
+        Value::text_string("test-client-output".to_owned()),
     );
     match operation {
         CryptoOperation::Encrypt => payload([

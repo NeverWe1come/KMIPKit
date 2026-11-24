@@ -7,9 +7,7 @@
 //! 6, 7, and 8. They are operation-item evidence, not a complete official-case
 //! pass.
 //!
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.11-001-001`,
-//! `KMIPKIT-REQ-SPEC-6.1.11-001-002`, `KMIPKIT-REQ-SPEC-6.1.11-005`,
-//! `KMIPKIT-REQ-SPEC-6.1.11-006`, and `KMIPKIT-ELEM-OP-C2S-DECRYPT`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::operation_test_support::item;
 use crate::{

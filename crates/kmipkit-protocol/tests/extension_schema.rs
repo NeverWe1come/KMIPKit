@@ -1,6 +1,6 @@
 //! Complete vendor-schema validation tests.
 //!
-//! Traceability: KMIPKIT-0012-FR-005 through FR-007 and FR-012. The schema
+//! Verifies protocol model, request/response validation, and security invariants.
 //! grammar and its resource limits are `KMIPKit` commitments. OASIS KMIP v2.1
 //! §9.13, Table 418 defines the enclosing Message Extension and
 //! Vendor Extension Structure; it does not define vendor-specific child

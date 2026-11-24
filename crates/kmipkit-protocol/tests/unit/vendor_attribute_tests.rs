@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 //! Source-derived Vendor Attribute vector from OASIS KMIP v2.1 §4.60,
-//! Table 150. The linked official case `KMIPKIT-TEST-CN01-2-42`
+//! Table 150. The linked official test case `TC-I18N-3-21`
 //! (`TC-I18N-3-21`) is unavailable in the pinned test-case source; this
 //! independent vector does not claim that official case passed.
 

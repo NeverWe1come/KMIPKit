@@ -4,7 +4,7 @@
  * Message Extension Criticality Indicator explicitly and attach both to a
  * typed Discover Versions batch item in caller order.
  *
- * The receive path leaves unknown criticality actions to KMIPKIT-0007:
+ * The receive path follows standard protocol rules:
  * unrecognized critical response extensions are rejected and unrecognized
  * non-critical extensions remain generic TTLV. This sample inspects local
  * values and does not exercise transport response handling.

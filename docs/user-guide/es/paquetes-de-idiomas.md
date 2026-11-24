@@ -198,15 +198,15 @@ tabla.
 | `generic_ttlv_model` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ttlv_wire_codec` | declared | Hay un mapeo para cuatro lenguajes; falta verificar toda la paridad. |
 | `ffi_runtime_metadata` | declared | Los metadatos de versión y consulta de capacidades están mapeados en Rust, C, Java y Python. |
-| `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según ADR-0014 aceptada; no es una operación de cliente para otros lenguajes. |
-| `public_binding_surface` | verified | T108/T109 y T011 confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado y los 56 mapeos de API de operaciones cliente están verificados. El inventario verificado no afirma conformidad KMIP, interoperabilidad ni preparación para publicar la versión. |
+| `rust_transport_exchange` | declared | Intercambio de transporte exclusivo de Rust según el contrato de transporte de bajo nivel exclusivo de Rust; no es una operación de cliente para otros lenguajes. |
+| `public_binding_surface` | verified | Las auditorías automatizadas de símbolos exportados confirman que cada declaración observada tiene un registro en el manifiesto o una exclusión aprobada exacta. El inventario está reconciliado y los 56 mapeos de API de operaciones cliente están verificados. El inventario verificado no afirma conformidad KMIP, interoperabilidad ni preparación para publicar la versión. |
 | `vendor_extension_registry` | declared | Los mapeos exactos incluyen Rust drop, C release, Java close y Python close para los handles nativos; falta verificar la paridad. |
 | `discover_versions_request_item` | declared | Hay mapeos de los constructores del elemento de solicitud en los cuatro lenguajes; la conformidad completa de Discover Versions sigue pendiente. |
 | `client_batch_model` | declared | El modelo de lotes tipados y ordenados está mapeado en cuatro lenguajes; aún no cubre todas las operaciones. |
 | `client_execution` | declared | Los mapeos de solicitud y respuesta de Discover Versions están presentes en Rust, C, Java y Python; falta completar la conformidad de operaciones 1.0. |
 | `wire_encoding_selection` | declared | Los valores predeterminados y la selección por intercambio de TTLV, JSON y XML están mapeados en Rust, C, Java y Python. |
 | `client_asynchronous_operations` | declared | Cancel, Poll, Process y Query Asynchronous Requests usan llamadas explícitas de un intercambio en cuatro lenguajes; conservan los bytes exactos de correlación y la respuesta TTLV genérica de Query, sin sondeo automático. |
-| `crypto_response_ttlv` | declared | El acceso separado a TTLV de errores de FR-015 sigue limitado a sus cuatro accesores aprobados; el TTLV de respuestas correctas tipadas se registra en las cinco filas de operaciones. |
+| `crypto_response_ttlv` | declared | El acceso separado a TTLV de respuestas de error sigue limitado a sus cuatro accesores aprobados; el TTLV de respuestas correctas tipadas se registra en las cinco filas de operaciones. |
 | `production_transport` | declared | Rust y los tres adaptadores exponen la configuración aprobada de transporte cliente TLS 1.3; falta evidencia de interoperabilidad. |
 | `api_level_discovery` | declared | Rust, C, Java y Python exponen la taxonomía local de niveles de API sin acceso a la red. |
 | `opaque_register_context` | declared | El contexto explícito de Opaque Object y la validación de la forma de solicitud Register están mapeados en cuatro lenguajes; esta capacidad distinta sigue en estado `declared`. La fila de la operación Register está `verified`. |
@@ -248,7 +248,7 @@ MAC Verify, Poll, Process, Query Asynchronous Requests, Sign y Signature
 Verify. Estos estados verificados describen solo los mapeos de API de los
 cuatro lenguajes; no acreditan la paridad completa de operaciones, la
 conformidad KMIP ni la interoperabilidad con servidores.
-Las API asíncronas siguen el alcance aprobado de KMIPKIT-0009; el trabajo
+Las API asíncronas siguen el alcance aprobado de asynchronous client operations; el trabajo
 separado sobre el catálogo y la revisión de Process Table 278 continúa
 registrado independientemente. No se debe inferir que una operación está
 disponible solo porque haya tipos o código en otra parte del repositorio.
@@ -262,7 +262,7 @@ con payload vacío, y no implica que el servidor esté sano en general. Query
 conserva el orden de las funciones y los Object Groups, ofrece lectores tipados
 de los campos estándar en los cuatro lenguajes y mantiene los campos
 desconocidos o de fabricante accesibles mediante TTLV genérico; acepta ambas
-formas descritas en §6.1.40 mientras `KMIPKIT-DISC-047` siga sin resolver.
+formas descritas en §6.1.40 mientras la discrepancia de formato de respuesta de §6.1.40 siga sin resolver.
 Son mapeos de API, no afirmaciones de conformidad del servidor. El
 mapeo de Get Constraints envía la petición
 vacía de §6.1.22 y expone la estructura Constraints obligatoria y ordenada,
@@ -368,7 +368,7 @@ llamador que debe liberarse con `kmipkit_ttlv_structure_release`; Java
 `TtlvStructure` o `ttlv.Structure`, que el llamador cierra al terminar. Estas
 copias conservan los campos desconocidos y su orden. Un resultado no correcto
 u otra operación no ofrece un accessor de TTLV de respuesta correcta. Esto no
-amplía el acceso separado de errores de FR-015.
+amplía el acceso separado a TTLV de respuestas de error.
 
 Encrypt y Decrypt también están mapeados en los cuatro lenguajes. En Java se
 crean elementos con `ClientBatchItem.encrypt(...)` y

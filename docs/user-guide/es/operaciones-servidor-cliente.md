@@ -1,7 +1,7 @@
 # Operaciones servidor-cliente y cambios de rol
 
 KMIPKit 1.0 incluye las operaciones KMIP 2.1 iniciadas por el servidor y la
-gestión del rol de endpoint definidas por KMIPKIT-0066 y ADR-0021. Esto permite
+gestión del rol de endpoint definidas por la arquitectura de operaciones servidor-a-cliente e inversión de roles. Esto permite
 que una aplicación acepte una conexión autenticada del servidor KMIP y
 responda a solicitudes originadas por él. Es una función distinta de las
 llamadas iniciadas por el cliente mediante `Client`.
@@ -59,5 +59,5 @@ las evidencias de release. La matriz de servidores mantiene los resultados
 externos por separado: la existencia de la API de escucha no demuestra que se
 haya probado cada operación, codificación o cambio de rol con un servidor
 concreto. Consulta la
-especificación KMIPKIT-0066
+especificación de diseño
 y sus referencias normativas antes de implementar un handler.

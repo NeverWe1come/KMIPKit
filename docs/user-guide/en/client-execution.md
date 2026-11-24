@@ -1,10 +1,10 @@
 # Typed client execution
 
-This guide began with the Rust execution slice introduced by KMIPKIT-0007.
+This guide began with the Rust execution slice introduced by the client execution model.
 Its operation list and examples are historical entry points, not the current
 complete API inventory. The release branch now includes 56 client-initiated
 operation mappings, the separate Set Endpoint Role route, and the approved
-server-to-client listener and dispatch APIs under KMIPKIT-0066. See the
+server-to-client listener and dispatch APIs under server-to-client operations. See the
 [project status](../../project-status.md), [language package and manifest
 status](language-packages.md), and [server interoperability
 matrix](../../development/kmip-interoperability.md) for implementation and
@@ -33,7 +33,7 @@ Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query, and Pin
 requests.
 With default configuration, Discover Versions advertises KMIP 2.1. The
 multi-version API can advertise an explicitly configured set of supported
-versions; see KMIPKIT-0069 and ADR-0022. Each response is still subject to the
+versions; see the multi-version architecture specifications. Each response is still subject to the
 effective-version checks and server behavior.
 Get Attributes and Get Attribute List use their typed request and response
 models from §§6.1.20–6.1.21.
@@ -64,16 +64,15 @@ implementation and does not provide interoperability evidence.
 
 KMIP 2.1 remains the default. KMIP 2.0 and the catalogued KMIP 3.0
 draft/standard surface are selected explicitly and checked before transport
-writes under KMIPKIT-0069–0071 and ADR-0022. KMIP 1.x is not supported by the
+writes under the multi-version KMIP 2.0, 2.1, and 3.0 architecture. KMIP 1.x is not supported by the
 client library. The 3.0 APIs are limited to their approved version-specific
 models and routes; their presence does not claim blanket 3.0 conformance,
 profile support, or certification. The initial 2.1-only execution specification
-and ADR-0002 have been superseded in scope by later approved specifications and
-ADRs.
+and the initial KMIP 2.1 scope have been superseded by the full multi-version specification.
 
 ## Fluent key lifecycle
 
-KMIPKIT-0091 adds a task-oriented path for the common symmetric-key lifecycle.
+fluent API foundation adds a task-oriented path for the common symmetric-key lifecycle.
 It builds existing typed requests and keeps algorithm, key size, and usage
 policy explicit. The AES presets set only the algorithm and bit length; select
 the allowed operations yourself. Creation returns the server's typed Unique
@@ -178,7 +177,7 @@ remains an explicit outcome; the client does not poll or retry automatically.
 
 ## Fluent Create Key Pair in Rust
 
-KMIPKIT-0097 adds `client.request().create_key_pair()` over the existing typed
+fluent create key pair builder adds `client.request().create_key_pair()` over the existing typed
 Create Key Pair request. Select the algorithm and length explicitly, then
 choose independent private/public usage masks and names:
 
@@ -338,7 +337,7 @@ typed TTLV item, and vendor attributes use dedicated KMIP constructors.
 
 ## Fluent Create Split Key in Rust
 
-KMIPKIT-0099 adds `client.request().create_split_key()` over the existing typed
+fluent create split key builder adds `client.request().create_split_key()` over the existing typed
 Create Split Key operation. The caller explicitly selects the object type,
 split method, number of parts, and threshold:
 
@@ -486,7 +485,7 @@ fn main() {
 
 Supply the object type, part count, threshold, split method, and required
 Attributes Structure. The optional input Unique Identifier is sent only when
-provided. For Polynomial Sharing Prime Field, KMIPKit's FR-015 policy requires
+provided. For Polynomial Sharing Prime Field, KMIPKit's validation policy requires
 the caller to provide Prime Field Size explicitly.
 
 ```rust,kmipkit-test
@@ -635,7 +634,7 @@ timeouts, and connection behavior.
 
 ## Credentials and attestation capability
 
-KMIPKIT-0008 provides typed, raw-preserving Credential and Authentication
+the credentials and attestation model provides typed, raw-preserving Credential and Authentication
 values in `kmipkit-protocol`. Authentication values contain one or more
 Credentials in caller-supplied order. These are in-memory models in this
 increment; the request payload does not include Authentication or Credential
@@ -647,7 +646,7 @@ SHA-256 (raw Enumeration value `6`) while leaving the field absent in the
 retained TTLV tree. KMIPKit does not calculate the hash.
 KMIP Specification v2.1 §9.11 requires this Timestamp to increase
 monotonically. The current model preserves the supplied value but does not
-retain prior timestamps or enforce that sequence. KMIPKIT-0008 OD-003 leaves
+retain prior timestamps or enforce that sequence. The open catalog disposition leaves
 the enforcement owner, comparison scope, and clock behavior unresolved, so
 KMIPKit does not claim this requirement is satisfied.
 
@@ -706,8 +705,8 @@ errors. A non-empty partial response is accepted only when effective Batch
 Error Continuation is Stop and a returned item has `Operation Failed`; the
 client returns only outcomes present in the response. Empty or no-failure
 partial responses and partial responses under Continue fail closed. Partial
-Undo responses follow KMIPKIT-0120.
-This KMIPKit policy supports the KMIPKIT-0092 Stop-on-first-failure scenario;
+Undo responses follow partial batch response handling.
+This KMIPKit policy supports the fluent object creation Stop-on-first-failure scenario;
 OASIS §11.5 does not explicitly require omission of unprocessed response
 items. Batch Order Option controls server execution order; it does not select
 the response matching rule.
@@ -749,12 +748,11 @@ true, its default. KMIPKit does not claim to control those server-side effects.
 
 `execute_query_async_requests` supports the optional correlation-value and
 operation filters from OASIS KMIP v2.1 §6.1.41, Table 285. Its response payload
-is exposed as generic TTLV by this feature. `KMIPKIT-DEC-015` records the
-accepted interpretation of Table 286 for the separate typed mapping work in
-KMIPKIT-0043 T035; the printed caption and pinned OASIS source remain
+is exposed as generic TTLV by this feature. The normative catalog records the
+accepted interpretation of Table 286 for the typed response mapping in the
+public API parity manifest; the printed caption and pinned OASIS source remain
 unchanged. This interpretation is not a formal conformance claim. The catalog
-gap for the required Process request field in Table 278 remains open under
-`OD-002`.
+gap for the required Process request field in Table 278 remains open.
 
 Java and Python expose the correlation through an explicit callback as a
 read-only view backed by temporary KMIPKit-managed storage. The temporary
@@ -866,12 +864,12 @@ owner remains alive through the synchronous exchange and zeroizes its
 initialized bytes after it is dropped. This guarantee does not cover spare or
 uninitialized capacity, copies made by the caller, earlier allocations not
 cleared before reallocation, or copies owned by TLS, the operating system, or
-third-party libraries. The approved policy and its precise limits are in
-ADR-0012.
+third-party libraries. The approved policy and its precise limits are defined by
+the outbound wire-encoding and buffer-zeroization policy.
 
 ## Fluent object lookup and lifecycle
 
-KMIPKIT-0101 adds Rust builders for Locate, Activate, Archive, Recover, Revoke,
+fluent lifecycle and lookup operations adds Rust builders for Locate, Activate, Archive, Recover, Revoke,
 Re-key, Re-key Key Pair, and Re-certify. Each builder takes semantic values
 and produces the existing typed request; Locate and Re-key preserve their
 existing typed attribute and filter models. A builder can validate locally,
@@ -918,7 +916,7 @@ the Request Header Asynchronous Indicator.
 
 ## Fluent attribute reads in Rust
 
-KMIPKIT-0108 adds `get_attributes()` and `get_attribute_list()` builders. They
+fluent attribute read builders adds `get_attributes()` and `get_attribute_list()` builders. They
 preserve the existing typed request and response contracts, including ordered
 Attribute References, duplicate-reference rejection, missing versus present
 empty Attributes, and Pending/Failure results.
@@ -960,7 +958,7 @@ missing attributes or retry.
 
 ### Attribute reads in C, Java, and Python
 
-KMIPKIT-0109 adds task-oriented entry points in the three bindings. They use
+fluent attribute read bindings adds task-oriented entry points in the three bindings. They use
 the typed Get Attributes and Get Attribute List requests, preserve ordered
 references, and execute one exchange. Standalone calls require a text object
 identifier. Builders can omit it when producing a batch item that follows an
@@ -1014,7 +1012,7 @@ an identifier because a standalone exchange cannot resolve an ID Placeholder.
 
 ## Fluent cryptographic requests in Rust
 
-KMIPKIT-0102 adds Rust builders for Encrypt, Decrypt, Sign, Signature Verify,
+fluent cryptographic operations adds Rust builders for Encrypt, Decrypt, Sign, Signature Verify,
 MAC, MAC Verify, and Hash. The builders create the existing typed requests,
 validate their locally knowable fields, and can build a batch item or execute
 one exchange. Each byte input moves into KMIPKit's zeroizing request owner.
@@ -1079,8 +1077,8 @@ Sign, Signature Verify, MAC, and MAC Verify use the corresponding
 Their builders expose their typed request fields, including precomputed
 digested data, signature or MAC data, and multipart framing when applicable.
 An asynchronous `Pending` result and its correlation value remain visible;
-the client does not poll or retry automatically. KMIPKIT-0102 through
-KMIPKIT-0105 add the Rust, C, Java, and Python builder surfaces in dependent
+the client does not poll or retry automatically. fluent cryptographic operations through
+fluent Python cryptographic operations add the Rust, C, Java, and Python builder surfaces in dependent
 deliveries. Each binding uses its language's ownership and result conventions
 while calling the same typed Rust operations.
 
@@ -1205,10 +1203,10 @@ KMIP §9.13 requires rejection of an unrecognized critical Message
 Extension. An unknown
 non-critical response extension is preserved as opaque TTLV for explicit
 inspection; preservation does not interpret or validate vendor semantics.
-This slice does not register or send vendor extensions. KMIPKIT-0012 owns the
+This slice does not register or send vendor extensions. The extension registry module owns the
 immutable client extension registry and validated typed vendor-extension
 adapters before the 1.0 API is frozen, as recorded in
-ADR-0013.
+the immutable client extension registry ownership policy.
 
 ## Low-level transport contract
 
@@ -1233,7 +1231,7 @@ zeroize earlier allocations before release on success and error paths. These
 guarantees do not cover
 spare capacity, prior allocations unless cleared before reallocation, caller
 copies, or external TLS/operating-system/library copies. See
-ADR-0014 for the exact
+the low-level transport exchange specification for the exact
 contract.
 
 The production TLS and HTTPS adapters use the validated transport
@@ -1248,7 +1246,7 @@ records their security policy and connection lifecycle.
 - [Production TLS and HTTPS transports](production-transports.md)
 - [Public API architecture](../../architecture/public-api.md)
 - KMIP 2.1 asynchronous operations review quickstart
-- ADR-0002: KMIP 2.1 release scope
-- ADR-0012: caller-requested wire encoding
-- ADR-0013: client extension registry ownership
-- ADR-0014: public low-level transport contract
+- Initial KMIP 2.1 release scope expanded to multi-version support (KMIP 2.0, 2.1, and 3.0)
+- Outbound wire-encoding and buffer-zeroization policy: caller-requested wire encoding
+- Immutable client extension registry ownership
+- Low-level transport contract: public low-level transport contract exclusive to Rust

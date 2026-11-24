@@ -3,7 +3,7 @@
 //! These are derived diagnostic-redaction tests. Sentinel values are test
 //! fixtures only and do not represent real credentials or Nonces.
 //!
-//! Traceability: KMIPKIT-0008-FR-010; SC-005.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::fmt::{Debug, Display};
 

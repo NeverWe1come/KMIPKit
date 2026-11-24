@@ -15,7 +15,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         row = next(
             line
             for line in matrix.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| `KMIPKIT-0051-R127` |")
+            if line.startswith("| `PAYLOAD-RULE-R127` |")
         )
 
         descriptor = field_descriptor(split_row(row))
@@ -31,7 +31,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         row = next(
             line
             for line in matrix.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| `KMIPKIT-0051-R130` |")
+            if line.startswith("| `PAYLOAD-RULE-R130` |")
         )
 
         descriptor = field_descriptor(split_row(row))
@@ -47,7 +47,7 @@ class NestedSchemaNameTests(unittest.TestCase):
         row = next(
             line
             for line in matrix.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| `KMIPKIT-0051-R140` |")
+            if line.startswith("| `PAYLOAD-RULE-R140` |")
         )
 
         descriptor = field_descriptor(split_row(row))

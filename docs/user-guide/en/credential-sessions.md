@@ -120,7 +120,7 @@ Never log a Ticket, its generic TTLV, or any Ticket Value copy.
 
 The code examples compile against the Rust client/protocol APIs. Cross-language
 Delegated Login mappings and parity evidence are recorded in the approved
-KMIPKIT-0043 manifest and its traceability record. Project tests cover the
+public API parity manifest manifest and its traceability record. Project tests cover the
 pinned Login CN01 §2.48 fixture; source-derived tests for the other listed
 cases are not official fixture passes. This guide makes no claim of server
 interoperability or formal certification.

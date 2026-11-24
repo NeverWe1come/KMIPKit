@@ -123,7 +123,7 @@ class TimeoutKind(IntEnum):
 
 
 class BatchOutcome(IntEnum):
-    """Common outcome shape exposed by T076; unknown values remain numeric."""
+    """Common outcome shape exposed by client ABI; unknown values remain numeric."""
 
     COMPLETED = 1
     PENDING = 2
@@ -1238,7 +1238,7 @@ def _validated_transport_config(value: TransportConfig) -> TransportConfig:
 
 
 class _ClientHandle(NativeHandle):
-    """Native handle released through the private T076 CFFI library."""
+    """Native handle released through the private client ABI CFFI library."""
 
     def close(self) -> None:
         with _NATIVE_CALL_LOCK:

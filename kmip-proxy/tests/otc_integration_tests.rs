@@ -1,4 +1,4 @@
-//! Integration tests for Open Telekom Cloud KMS, TMS, and CSMS provider bridge (KMIPKIT-0082).
+//! Integration tests for Open Telekom Cloud KMS, TMS, and CSMS provider bridge (specification requirement).
 #![forbid(unsafe_code)]
 #![allow(
     clippy::missing_errors_doc,

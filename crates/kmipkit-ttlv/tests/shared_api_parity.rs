@@ -38,7 +38,7 @@ fn limit_field(value: &JsonValue, field: &str) -> usize {
 #[test]
 fn generic_ttlv_shared_fixture_preserves_open_values_and_child_order() {
     // KMIPKit generic model requirements are traced in the shared fixture:
-    // KMIPKIT-0043-FR-011, KMIPKIT-0004-FR-004, and KMIPKIT-0004-FR-006.
+    // parser validation, parser validation, and parser validation.
     let case = shared_case("ttlv.open-values-and-child-order.v1");
     let source_children = case["input"]["structure"]["children"]
         .as_array()
@@ -119,7 +119,7 @@ fn generic_ttlv_shared_fixture_preserves_open_values_and_child_order() {
 
 #[test]
 fn codec_limits_shared_fixture_covers_defaults_ranges_and_rejection() {
-    // KMIPKit resource limits are traced in the fixture to KMIPKIT-0005-FR-007.
+    // KMIPKit resource limits are traced in the fixture to parser validation.
     let case = shared_case("codec-limits.defaults-and-ranges.v1");
     assert!(
         case["input"]["defaults"]
@@ -189,7 +189,7 @@ fn codec_limits_shared_fixture_covers_defaults_ranges_and_rejection() {
 
 #[test]
 fn generic_ttlv_decoder_matches_shared_fixture_and_limits() {
-    // KMIPKIT-0005-FR-004/005/007/009 and KMIPKIT-0043-FR-005/010/017.
+    // parser validation/005/007/009 and parser validation/010/017.
     let case = shared_case("ttlv.decoder-root-structure.v1");
     let wire = hex_bytes(
         case["input"]["wireHex"]

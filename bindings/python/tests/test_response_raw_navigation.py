@@ -135,7 +135,7 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
         raw_get = batch_result.items[1].raw()
         assert raw_query is not None and raw_get is not None
         assert "opaque-key-material" not in repr(batch_result.items[1])
-        # KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6: all views retain header and batch order.
+        # response views..005; KMIP 2.1 §§8.4–8.6: all views retain header and batch order.
         item = batch_result.items[1]
         rendered = [item.ttlv_hex(limits), item.json(limits), item.xml(limits)]
         expected = _response_message()

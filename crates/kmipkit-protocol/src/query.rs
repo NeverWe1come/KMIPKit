@@ -408,7 +408,7 @@ impl QueryResponse {
     /// Converts one validated Query response batch item.
     ///
     /// The empty successful payload and structured Table 283 form are both
-    /// accepted, retaining the source discrepancy `KMIPKIT-DISC-047` without
+    /// accepted, retaining the query item discrepancy without
     /// making a server-conformance determination.
     ///
     /// # Errors
@@ -478,7 +478,7 @@ impl QueryResponse {
     ///
     /// Unknown fields and nested structures remain structurally lossless. An
     /// empty payload remains empty, including the tolerated empty form recorded
-    /// by `KMIPKIT-DISC-047`.
+    /// by the query response discrepancy.
     ///
     /// # Errors
     ///

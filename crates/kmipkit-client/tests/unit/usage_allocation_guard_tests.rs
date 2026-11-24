@@ -1,5 +1,5 @@
 //! Project-derived checks for the explicit local guard in OASIS KMIP
-//! Specification v2.1 §6.1.23 and approved interpretation KMIPKIT-025-FR-009.
+//! Specification v2.1 §6.1.23.
 //! These are not official OASIS test cases.
 
 use kmipkit_protocol::{
@@ -280,7 +280,7 @@ fn successful_allocation_binds_returned_identifier_and_open_caller_unit() {
 // Requires repository assets absent from this review branch.
 #[cfg(any())]
 fn fixture_usage_allocation_guard_matches_shared_accounting_contract() {
-    // KMIP 2.1 §6.1.23 is the normative protocol source. The local reservation
+    // KMIP 2.1 §6.1.23 defines the protocol operation. The local reservation
     // behavior and accounting scope are project policy traced by this fixture.
     let fixture: JsonValue = serde_json::from_str(include_str!(
         "../../../../bindings/shared/fixtures/api/shared-capability-parity.json"
