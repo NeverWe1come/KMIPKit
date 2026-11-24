@@ -39,8 +39,10 @@ import java.util.HexFormat;
 
 final class GenericExchange {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
+    private static final int LOCATE = 0x08;
     private static final int QUERY = 0x18;
     private static final int DISCOVER_VERSIONS = 0x1e;
+    private static final int RNG_RETRIEVE = 0x25;
     private static final int HASH = 0x27;
     private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] HASH_DIGEST = HexFormat.of().parseHex(
@@ -51,7 +53,7 @@ final class GenericExchange {
 
     static boolean supports(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         return "server_exchange".equals(testCase.execution().mode())
-                && "read_only".equals(testCase.execution().mutation())
+                && ("read_only".equals(testCase.execution().mutation()) || operation(testCase, connection) == RNG_RETRIEVE)
                 && operation(testCase, connection) != 0
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
                 && connection.usernamePassword() == null;
@@ -61,8 +63,10 @@ final class GenericExchange {
         String version = connection.protocolVersion();
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
         return switch (testCase.caseId()) {
+            case "test-op-locate" -> LOCATE;
             case "test-op-query" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
+            case "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-hash", "test-crypto-hash-sha_256-0" -> HASH;
             case "test-op-ping" -> "2.1".equals(version) ? PING : 0;
             default -> 0;
@@ -87,8 +91,11 @@ final class GenericExchange {
                 var header = structureItem(0x420077, version, count);
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var payload = switch (operation) {
+                    case LOCATE -> structureItem(0x420079, item(0x42004f, TtlvValue.Integer(1)),
+                            item(0x4200d4, TtlvValue.Integer(0)));
                     case QUERY -> structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)));
                     case DISCOVER_VERSIONS -> structureItem(0x420079, version(minor));
+                    case RNG_RETRIEVE -> structureItem(0x420079, item(0x4200c4, TtlvValue.Integer(32)));
                     case HASH -> hashPayload();
                     case PING -> structureItem(0x420079);
                     default -> throw new IllegalArgumentException("Unsupported generic operation");
@@ -285,12 +292,14 @@ final class GenericExchange {
     }
 
     private static boolean matches(TtlvStructureView payload, int operation, int minor) {
+        if (operation == LOCATE) return matchesLocate(payload);
         if (operation == PING) return payload.itemCount() == 0;
-        if (operation == HASH) {
+        if (operation == HASH || operation == RNG_RETRIEVE) {
             if (payload.itemCount() != 1) return false;
             try (var field = payload.itemAt(0); var tag = field.tag(); var value = field.value()) {
                 return tag.raw() == 0x4200c2 && field.itemType() == TtlvItemType.ByteString
-                        && Arrays.equals(value.bytes(), HASH_DIGEST);
+                        && (operation == RNG_RETRIEVE ? value.byteLength() == 32
+                                : Arrays.equals(value.bytes(), HASH_DIGEST));
             }
         }
         if (operation == DISCOVER_VERSIONS) {
@@ -306,6 +315,25 @@ final class GenericExchange {
             }
         }
         return false;
+    }
+
+    private static boolean matchesLocate(TtlvStructureView payload) {
+        Integer total = null;
+        int identifiers = 0;
+        for (long index = 0; index < payload.itemCount(); index++) {
+            try (var field = payload.itemAt(index); var tag = field.tag(); var value = field.value()) {
+                var type = field.itemType();
+                if (tag.raw() == 0x4200d5 && type == TtlvItemType.Integer && total == null) {
+                    total = value.integer();
+                } else if (tag.raw() == 0x420094 && (type == TtlvItemType.TextString
+                        || type == TtlvItemType.Integer || type == TtlvItemType.Enumeration)) {
+                    identifiers++;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return identifiers <= 1 && (total == null || total >= identifiers);
     }
 
     private static double elapsed(long start) {

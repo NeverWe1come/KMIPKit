@@ -61,9 +61,11 @@ case has a complete fixture, request recipe, response assertion, and cleanup.
 Asynchronous request types that only build payloads and operations with no
 public client request route carry separate API limitation reasons. The
 validator also constructs and decodes generic TTLV values. Use
-`api_level: generic-ttlv` with `raw_tls` and `TTLV` to run Query and
-Discover Versions and single-part SHA-256 Hash in KMIP 2.0 and 2.1, and Ping in 2.1. These probes use a
-CA, a client certificate chain, and an unencrypted PKCS#8 PEM client key.
+`api_level: generic-ttlv` with `raw_tls` and `TTLV` to run Locate, Query,
+Discover Versions, RNG Retrieve, and single-part SHA-256 Hash in KMIP 2.0
+and 2.1, plus Ping in 2.1. These probes use a CA, a client certificate chain,
+and an unencrypted PKCS#8 PEM client key. RNG Retrieve follows the catalog's
+mutation opt-in.
 Archive and Recover use the isolated key lifecycle through the typed and
 Fluent routes.
 
