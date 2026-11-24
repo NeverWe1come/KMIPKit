@@ -14,6 +14,9 @@ const HASH_INPUT: &[u8] = b"abc";
 const CREATE: u32 = 1;
 const GET: u32 = 10;
 const GET_ATTRIBUTES: u32 = 11;
+const GET_ATTRIBUTE_LIST: u32 = 12;
+const ACTIVATE: u32 = 18;
+const REVOKE: u32 = 19;
 const DESTROY: u32 = 20;
 const ARCHIVE: u32 = 21;
 const RECOVER: u32 = 22;
@@ -21,7 +24,15 @@ const RECOVER: u32 = 22;
 fn uses_owned_key(operation: u32) -> bool {
     matches!(
         operation,
-        CREATE | GET | GET_ATTRIBUTES | DESTROY | ARCHIVE | RECOVER
+        CREATE
+            | GET
+            | GET_ATTRIBUTES
+            | GET_ATTRIBUTE_LIST
+            | ACTIVATE
+            | REVOKE
+            | DESTROY
+            | ARCHIVE
+            | RECOVER
     )
 }
 
@@ -43,6 +54,9 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-create", "2.0" | "2.1") => Some(CREATE),
         ("test-op-get", "2.0" | "2.1") => Some(GET),
         ("test-op-get-attributes", "2.0" | "2.1") => Some(GET_ATTRIBUTES),
+        ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
+        ("test-op-activate", "2.0" | "2.1") => Some(ACTIVATE),
+        ("test-op-revoke", "2.0" | "2.1") => Some(REVOKE),
         ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
         ("test-op-archive", "2.0" | "2.1") => Some(ARCHIVE),
         ("test-op-recover", "2.0" | "2.1") => Some(RECOVER),
@@ -120,6 +134,14 @@ fn run_owned_key(
     if create == Ok((0, None)) && operation == DESTROY {
         return outcome(case, send(DESTROY));
     }
+    if create == Ok((0, None)) && matches!(operation, ACTIVATE | REVOKE) {
+        let target = activate_and_revoke(case, operation, connection, version, &id);
+        return if send(DESTROY) == Ok((0, None)) {
+            target
+        } else {
+            outcome(case, Err("cleanup Destroy failed for the isolated key"))
+        };
+    }
     let mut result = outcome(case, create);
     if create == Ok((0, None)) {
         if operation == GET {
@@ -150,29 +172,26 @@ fn run_owned_key(
                 }),
             );
         }
+        if operation == GET_ATTRIBUTE_LIST {
+            result = outcome(
+                case,
+                exchange(connection, version, operation, Some(&id), |batch| {
+                    Ok(same_id(batch)?
+                        && batch
+                            .with_response_payload(|payload| {
+                                payload.children().iter().any(|item| {
+                                    item.tag().raw() == 0x0042_013b
+                                        && item.with_value(|v| {
+                                            matches!(v, ValueView::Enumeration(0x0042_002a))
+                                        })
+                                })
+                            })
+                            .unwrap_or(false))
+                }),
+            );
+        }
         if matches!(operation, ARCHIVE | RECOVER) {
-            let mut archived = false;
-            let archive = exchange(connection, version, ARCHIVE, Some(&id), |batch| {
-                archived = true;
-                same_id(batch)
-            });
-            result = outcome(case, archive);
-            if archived {
-                let recover = send(RECOVER);
-                if archive == Ok((0, None)) {
-                    if operation == RECOVER {
-                        result = outcome(case, recover);
-                    } else if recover != Ok((0, None)) {
-                        result = outcome(case, Err("cleanup Recover failed"));
-                    }
-                }
-            } else if operation == RECOVER && matches!(archive, Ok((1, _))) {
-                result = CaseResult::non_run(
-                    case,
-                    "not_run",
-                    "server rejected Archive setup".to_owned(),
-                );
-            }
+            result = archive_and_recover(case, operation, connection, version, &id);
         }
     }
     if send(DESTROY) == Ok((0, None)) {
@@ -180,6 +199,67 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn archive_and_recover(
+    case: &Case,
+    operation: u32,
+    connection: &Connection,
+    version: ProtocolVersion,
+    id: &str,
+) -> CaseResult {
+    let same_id =
+        |batch: ResponseBatchItemView<'_>| Ok(text_identifier(batch).as_deref() == Some(id));
+    let mut archived = false;
+    let archive = exchange(connection, version, ARCHIVE, Some(id), |batch| {
+        archived = true;
+        same_id(batch)
+    });
+    if archived {
+        let recover = exchange(connection, version, RECOVER, Some(id), same_id);
+        if archive == Ok((0, None)) {
+            if operation == RECOVER {
+                return outcome(case, recover);
+            }
+            if recover != Ok((0, None)) {
+                return outcome(case, Err("cleanup Recover failed"));
+            }
+        }
+    } else if operation == RECOVER && matches!(archive, Ok((1, _))) {
+        return CaseResult::non_run(case, "not_run", "server rejected Archive setup".to_owned());
+    }
+    outcome(case, archive)
+}
+
+fn activate_and_revoke(
+    case: &Case,
+    operation: u32,
+    connection: &Connection,
+    version: ProtocolVersion,
+    id: &str,
+) -> CaseResult {
+    let same_id =
+        |batch: ResponseBatchItemView<'_>| Ok(text_identifier(batch).as_deref() == Some(id));
+    let activation = exchange(connection, version, ACTIVATE, Some(id), same_id);
+    if matches!(activation, Ok((1, _))) && operation == REVOKE {
+        return CaseResult::non_run(
+            case,
+            "not_run",
+            "server rejected isolated Activate setup".to_owned(),
+        );
+    }
+    if activation == Ok((0, None)) || activation.is_err() {
+        let revocation = exchange(connection, version, REVOKE, Some(id), same_id);
+        if activation == Ok((0, None)) {
+            if operation == REVOKE {
+                return outcome(case, revocation);
+            }
+            if revocation != Ok((0, None)) {
+                return outcome(case, Err("cleanup Revoke failed for the activated key"));
+            }
+        }
+    }
+    outcome(case, activation)
 }
 
 fn text_identifier(batch: ResponseBatchItemView<'_>) -> Option<String> {
@@ -255,7 +335,14 @@ fn exchange(
             )?,
             item(0x0042_013b, Value::enumeration(0x0042_002a))?,
         ],
-        GET | DESTROY | ARCHIVE | RECOVER => vec![item(
+        REVOKE => vec![
+            item(
+                0x0042_0094,
+                Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
+            )?,
+            node(0x0042_0081, vec![item(0x0042_0082, Value::enumeration(6))?])?,
+        ],
+        GET | GET_ATTRIBUTE_LIST | ACTIVATE | DESTROY | ARCHIVE | RECOVER => vec![item(
             0x0042_0094,
             Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
         )?],
