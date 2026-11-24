@@ -44,6 +44,11 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
                     "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
         }
+        if ("Set Endpoint Role".equals(testCase.operation())
+                && "mutating".equals(testCase.execution().mutation())) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The typed outbound role request requires explicit mutation opt-in.");
+        }
         if (JavaKmipDriver.attributeRead(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The operation reads attributes from a newly created and isolated key.");
@@ -109,7 +114,14 @@ public final class JavaRouteInventory {
         typed(routes, "Set Attribute", "setAttribute");
         typed(routes, "Set Constraints", "setConstraints");
         typed(routes, "Set Defaults", "setDefaults");
-        noPublicRoute(routes, "Set Endpoint Role", "The pinned Java package exposes no public Set Endpoint Role request constructor.");
+        typed(routes, "Set Endpoint Role", "setEndpointRole");
+        typed(routes, "Create Group", "createGroupFromAttributes");
+        typed(routes, "Create User", "createUserFromAttributes");
+        typed(routes, "Create Credential", "createCredentialFromFields");
+        typed(routes, "Deactivate", "deactivateFromFields");
+        typed(routes, "Obliterate", "obliterateFromIdentifier");
+        typed(routes, "Encapsulate", "encapsulateFromFields");
+        typed(routes, "Decapsulate", "decapsulateFromFields");
         typed(routes, "Sign", "sign");
         typed(routes, "Signature Verify", "signatureVerify");
         typed(routes, "Validate", "validate");

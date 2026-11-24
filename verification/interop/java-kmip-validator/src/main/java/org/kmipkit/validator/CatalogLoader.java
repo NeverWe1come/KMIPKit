@@ -13,9 +13,9 @@ import java.util.Set;
 
 /** Loads and validates the shared, versioned interoperability catalog. */
 public final class CatalogLoader {
-    private static final Set<String> PROTOCOL_VERSIONS = Set.of("2.0", "2.1");
+    private static final Set<String> PROTOCOL_VERSIONS = Set.of("2.0", "2.1", "3.0");
     private static final Set<String> NORMATIVE_DOCUMENTS = Set.of(
-            "OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification");
+            "OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification", "OASIS KMIP 3.0 Working Draft");
     private static final ObjectMapper JSON = new ObjectMapper(
             com.fasterxml.jackson.core.JsonFactory.builder()
                     .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
@@ -34,7 +34,7 @@ public final class CatalogLoader {
         require(new HashSet<>(targetVersions).size() == targetVersions.size(),
                 "Catalog target_versions must be unique");
         require(PROTOCOL_VERSIONS.containsAll(targetVersions),
-                "Catalog contains a protocol version outside KMIP 2.0 and 2.1");
+                "Catalog contains a protocol version outside KMIP 2.0, 2.1 and 3.0");
         require("probe_all_applicable".equals(requiredText(root, "capability_policy", "catalog")),
                 "Catalog capability_policy must be probe_all_applicable");
 

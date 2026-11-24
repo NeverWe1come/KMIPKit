@@ -29,7 +29,7 @@ public record ConnectionConfig(
         boolean probeUnsupported,
         boolean cleanupOnFailure) {
 
-    private static final Set<String> VERSIONS = Set.of("2.0", "2.1");
+    private static final Set<String> VERSIONS = Set.of("2.0", "2.1", "3.0");
     private static final Set<String> TRANSPORTS = Set.of("raw_tls", "https");
     private static final Set<String> ENCODINGS = Set.of("TTLV", "JSON", "XML");
     private static final Set<String> API_LEVELS = Set.of("high-level", "typed-protocol", "fluent", "generic-ttlv");
@@ -51,7 +51,7 @@ public record ConnectionConfig(
         String serverVersion = optionalText(root, "server_version");
         if (serverVersion.isBlank()) serverVersion = "not-recorded";
         String version = text(root, "protocol_version", "config");
-        require(VERSIONS.contains(version), "Only KMIP 2.0 and 2.1 are supported");
+        require(VERSIONS.contains(version), "Only KMIP 2.0, 2.1 and 3.0 are supported");
         String transport = text(root, "transport", "config");
         require(TRANSPORTS.contains(transport), "transport must be raw_tls or https");
         String encoding = text(root, "encoding", "config");
