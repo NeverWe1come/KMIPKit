@@ -196,6 +196,10 @@ pub(crate) struct CaseResult {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub result_status: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub result_status_code: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub result_reason_code: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub result_reason: Option<String>,
     pub diagnostic: String,
 }
@@ -213,7 +217,9 @@ impl CaseResult {
             parity: "not_compared",
             duration_ms: 0.0,
             result_status: None,
+            result_status_code: None,
             result_reason: None,
+            result_reason_code: None,
             diagnostic,
         }
     }

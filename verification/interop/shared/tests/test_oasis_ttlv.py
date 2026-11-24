@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from verification.interop.shared.tools import campaign, oasis_ttlv
 
@@ -23,6 +24,24 @@ class OasisTtlvTests(unittest.TestCase):
             cases.add(row["fixture"])
         self.assertEqual(messages, {"2.0": 1156, "2.1": 1156, "3.0": 1234})
         self.assertEqual(len(cases), 288)
+
+    def test_wrong_scalar_fails_even_when_structure_matches(self):
+        items = [[0x420078, 1, 2], [0x42002A, 2, 0, 256], [0x4200DD, 6, 0, True]]
+        for corrupted in (
+            [[0x420078, 1, 2], [0x42002A, 2, 0, 128], [0x4200DD, 6, 0, True]],
+            [[0x420078, 1, 2], [0x42002A, 2, 0, 256], [0x4200DD, 6, 0, 1]],
+            [[0x420078, 1, 2], [0x42002A, 2, 0], [0x4200DD, 6, 0]],
+        ):
+            for construct in (False, True):
+                rows = [{"status": "ready", "ttlv": "00", "items": items}]
+                artifact = {"library_commit": "a" * 40, "artifact_sha256": "b" * 64}
+                with self.subTest(corrupted=corrupted, construct=construct), patch.object(
+                    oasis_ttlv.subprocess, "run"
+                ) as run:
+                    run.return_value.returncode = 0
+                    run.return_value.stdout = json.dumps(artifact) + "\n" + json.dumps(corrupted)
+                    oasis_ttlv.inspect_vectors(rows, {"rust": Path(__file__)}, construct=construct)
+                self.assertEqual({"rust": "failed"}, rows[0]["checks"])
 
     def test_codec_pass_retains_pending_scenario_exchange(self):
         row = {

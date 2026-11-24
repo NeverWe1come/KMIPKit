@@ -12,7 +12,7 @@ from pathlib import Path
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
 from verification.interop.shared.tools.operation_variants import plan as plan_operation_variants
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, select_cases
-from verification.interop.shared.tools.run_all import incomplete_case_ids
+from verification.interop.shared.tools.run_all import incomplete_case_ids, validate_completion_report
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -378,9 +378,32 @@ class VersionedContractTests(unittest.TestCase):
             {"case_id": incoming, "status": "not_run", "library_correctness": "not_checked"},
             {"case_id": ping, "status": "server_unsupported", "library_correctness": "passed"},
         ]}
-        self.assertEqual([ping, incoming], incomplete_case_ids(catalog, results))
+        self.assertEqual([ping, outgoing, incoming], incomplete_case_ids(catalog, results))
+        results["cases"][0]["result_status_code"] = 0
         results["cases"][2]["result_status_code"] = 1
         self.assertEqual([incoming], incomplete_case_ids(catalog, results))
+        results["cases"][1].update(status="passed", library_correctness="passed",
+                                   server_compatibility="supported")
+        self.assertEqual([], incomplete_case_ids(catalog, results))
+        results["cases"].append(results["cases"][0])
+        with self.assertRaisesRegex(ValueError, "duplicate case"):
+            incomplete_case_ids(catalog, results)
+
+    def test_completion_report_cannot_supply_typed_evidence_for_fluent(self) -> None:
+        connection = {
+            "server_id": "fixture", "protocol_version": "2.1",
+            "transport": "raw_tls", "encoding": "TTLV", "api_level": "fluent",
+        }
+        evidence = {
+            "language": "rust", "protocol_version": "2.1", "catalog_sha256": "a" * 64,
+            "server": {"id": "fixture"},
+            "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "fluent"},
+        }
+        validate_completion_report(evidence, "rust", connection, "a" * 64)
+        with self.assertRaisesRegex(ValueError, "execution route"):
+            validate_completion_report(evidence, "rust", {**connection, "api_level": "generic-ttlv"}, "a" * 64)
+        with self.assertRaisesRegex(ValueError, "requested catalog"):
+            validate_completion_report(evidence, "rust", connection, "b" * 64)
 
     def test_catalog_filters_keep_exact_version_direction_and_case(self) -> None:
         catalog = build_catalog(ROOT, "2.0", include_variants=True)
@@ -446,6 +469,29 @@ class VersionedContractTests(unittest.TestCase):
             fluent["execution"]["artifact_sha256"] = "e" * 64
             write_result(root, "fluent", fluent)
             self.assertEqual([], aggregate_results(paths)["matrices"][0]["api_outcome_comparisons"])
+
+    def test_direct_tags_and_fluent_outcomes_are_compared_independently_of_typed(self) -> None:
+        runs = []
+        levels = ("generic-ttlv", "typed-protocol", "fluent")
+        for index, level in enumerate(levels):
+            run = result_payload(run_id=level, language="c", protocol_version="2.0",
+                                 transport="raw_tls", encoding="TTLV", api_level=level, status="passed")
+            run["cases"][0]["result_status_code"] = int(index == 1)
+            runs.append(run)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = [write_result(root, run["run_id"], run) for run in runs]
+            result = aggregate_results(paths)
+
+        comparisons = {tuple(row["api_levels"]): row["cases"]
+                       for row in result["matrices"][0]["api_outcome_comparisons"]}
+        self.assertEqual({
+            ("generic-ttlv", "fluent"): {"test-get": "MATCHED_PASS"},
+            ("typed-protocol", "fluent"): {"test-get": "MISMATCH"},
+        }, comparisons)
+        self.assertIn("Direct tags / Fluent", generate_markdown(result))
+        self.assertIn("Direct tags / Fluent", generate_html(result))
 
     def test_aggregator_requires_matching_base_evidence_but_ignores_route_differences(self) -> None:
         baseline = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")

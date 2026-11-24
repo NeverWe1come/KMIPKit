@@ -720,7 +720,9 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                             client.sendall(tlv(0x42007b, 1, header + response_item))
                     _, errors = process.communicate(timeout=10)
                     assert process.returncode == (3 if invalid_payload else 0), errors
-                row, = json.loads(result.read_text())["cases"]
+                report = json.loads(result.read_text())
+                assert report["catalog_sha256"] == hashlib.sha256(catalog_path.read_bytes()).hexdigest()
+                row, = report["cases"]
                 assert row["status"] == ("failed" if invalid_payload else "passed"), row
         if len(request_wires) > 1:
             assert request_wires[0] == request_wires[1]

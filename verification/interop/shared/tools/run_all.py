@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import datetime
+import hashlib
 import json
 import os
 import shutil
@@ -234,18 +235,54 @@ def write_master_reports(output_dir, paths):
 
 
 def incomplete_case_ids(catalog, results):
-    """Identify applicable cases without a successful assertion or observed server rejection."""
+    """Return case IDs without the type of evidence required by their recipe."""
+    expected = {case["case_id"]: case for case in catalog["test_cases"]}
+    observed = {}
+    for case in results["cases"]:
+        case_id = case["case_id"]
+        if case_id not in expected or case_id in observed:
+            raise ValueError("result contains an unexpected or duplicate case ID")
+        observed[case_id] = case
+
+    return sorted(
+        case_id for case_id, recipe in expected.items()
+        if recipe["execution"]["status"] != "not_applicable"
+        and not complete_observation(recipe, observed.get(case_id, {}))
+    )
+
+
+def complete_observation(recipe, observation):
+    if observation.get("library_correctness") != "passed":
+        return False
+    status = observation.get("status")
+    result_code = observation.get("result_status_code")
+    requires = recipe["requires"]
+    if recipe["execution"]["mode"] == "local_model" or requires.get("expected_status") == "NotSent":
+        return status == "passed" and result_code is None
+    if requires.get("expected_status") == "OperationFailed":
+        reasons = requires.get("expected_result_reasons", [])
+        return (status == "passed" and result_code == 1
+                and (not reasons or observation.get("result_reason_code") in reasons))
+    if status == "server_unsupported":
+        return result_code == 1
+    if status != "passed":
+        return False
+    if result_code is not None:
+        return result_code == 0
+    return (requires.get("workflow_type") == "server_to_client"
+            and observation.get("server_compatibility") == "supported")
+
+
+def validate_completion_report(evidence, language, connection, catalog_sha256):
     expected = {
-        case["case_id"] for case in catalog["test_cases"]
-        if case["execution"]["status"] != "not_applicable"
+        "language": language, "protocol_version": connection["protocol_version"],
+        "catalog_sha256": catalog_sha256,
     }
-    complete = {
-        case["case_id"] for case in results["cases"]
-        if case["library_correctness"] == "passed"
-        and (case["status"] == "passed"
-             or (case["status"] == "server_unsupported" and case.get("result_status_code") is not None))
-    }
-    return sorted(expected - complete)
+    if (any(evidence[key] != value for key, value in expected.items())
+            or evidence["server"]["id"] != connection["server_id"]
+            or any(evidence["execution"][axis] != connection[axis]
+                   for axis in ("transport", "encoding", "api_level"))):
+        raise ValueError("result identity does not match the requested catalog, server, or execution route")
 
 
 def main() -> None:
@@ -303,6 +340,7 @@ def main() -> None:
     versions = []
     operation_catalogs = {}
     gaps = False
+    completion = []
     try:
         if args.connection and (not args.dry_run or args.all_operations):
             versions = list(dict.fromkeys(
@@ -325,7 +363,8 @@ def main() -> None:
         for index, connection in enumerate(connections, 1):
             catalog_path = args.catalog
             if args.all_operations:
-                version = read_validated(connection, "server-connection.schema.json")["protocol_version"]
+                configuration = read_validated(connection, "server-connection.schema.json")
+                version = configuration["protocol_version"]
                 catalog_path = operation_catalogs[version]
             destination = out_dir if len(connections) == 1 else out_dir / f"connection-{index}"
             result = orchestrate_interop_run(
@@ -345,17 +384,37 @@ def main() -> None:
             )
             results.extend(result["runs"])
             if args.require_complete:
+                catalog_digest = hashlib.sha256(catalog_path.read_bytes()).hexdigest()
                 for run in result["runs"]:
+                    entry = {
+                        "language": run["language"],
+                        "protocol_version": version,
+                        "api_level": configuration["api_level"],
+                        "connection_index": index,
+                        "status": "completed",
+                    }
+                    completion.append(entry)
                     evidence_path = Path(run["output_file"])
                     if not evidence_path.is_file() or run["status"] == "ERROR":
+                        entry["status"] = "missing_report"
                         gaps = True
                         continue
-                    evidence = read_validated(evidence_path, "validation-results.schema.json")
-                    missing = incomplete_case_ids(selections[version], evidence)
-                    if missing:
+                    try:
+                        evidence = read_validated(evidence_path, "validation-results.schema.json")
+                        validate_completion_report(evidence, run["language"], configuration, catalog_digest)
+                        missing = incomplete_case_ids(selections[version], evidence)
+                    except ValueError:
+                        entry["status"] = "invalid_report"
                         gaps = True
-                        print(f"[{run['language'].upper()}] KMIP {version} {evidence['execution']['api_level']}: "
+                        continue
+                    entry["missing_case_ids"] = missing
+                    if missing:
+                        entry["status"] = "incomplete"
+                        gaps = True
+                        print(f"[{run['language'].upper()}] KMIP {version} {configuration['api_level']}: "
                               f"{len(missing)} applicable cases without complete evidence", file=sys.stderr)
+        if args.require_complete:
+            (out_dir / "completion.json").write_text(json.dumps(completion, indent=2) + "\n", encoding="utf-8")
 
         paths = [] if args.dry_run else report_files(results)
         if len(connections) > 1:

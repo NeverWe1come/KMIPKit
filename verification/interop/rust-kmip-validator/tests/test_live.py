@@ -169,10 +169,11 @@ class TagFixtureContract(unittest.TestCase):
     def test_constructs_all_kmip2_scalar_types_without_the_decoder(self):
         tag = 0x420094
         values = [
-            (2, b"\xff" * 4), (3, b"\xff" * 8), (4, b"\x01" * 8),
-            (5, b"\x00\x00\x00\x05"), (6, b"\x00" * 7 + b"\x01"),
-            (7, "á".encode()), (8, b"abc"), (9, b"\x00" * 8),
-            (10, b"\x00\x00\x00\x01"), (11, b"\x00" * 8),
+            (2, struct.pack(">i", -(2**31))), (3, struct.pack(">q", 2**63 - 1)),
+            (4, b"\xff" * 8), (5, struct.pack(">I", 2**32 - 1)),
+            (6, b"\x00" * 7 + b"\x01"), (7, "á".encode()), (8, b"abc"),
+            (9, struct.pack(">q", -123)), (10, struct.pack(">I", 2**32 - 1)),
+            (11, struct.pack(">q", 1234567890123)),
         ]
         fields = [
             tag.to_bytes(3, "big") + bytes([kind]) + struct.pack(">I", len(value))
@@ -183,7 +184,12 @@ class TagFixtureContract(unittest.TestCase):
         malformed = root[:-1]
         invalid_boolean = ttlv(tag, 8, b"\x00" * 7 + b"\x02")
         invalid_boolean = invalid_boolean[:3] + b"\x06" + invalid_boolean[4:]
-        expected = [[0x420078, 1, len(fields)], *[[tag, kind, 0] for kind, _ in values]]
+        expected_scalars = [-(2**31), 2**63 - 1, "ff" * 8, 2**32 - 1, True,
+                            "c3a1", "616263", -123, 2**32 - 1, 1234567890123]
+        expected = [[0x420078, 1, len(fields)], *[
+            [tag, kind, 0, expected_value]
+            for (kind, _), expected_value in zip(values, expected_scalars, strict=True)
+        ]]
         runner = VALIDATOR.with_name("kmip30-campaign")
         for command in ("--construct-oasis-ttlv", "--inspect-oasis-ttlv"):
             process = subprocess.run([str(runner), command], check=True, capture_output=True, text=True,
@@ -308,6 +314,7 @@ class LiveContract(unittest.TestCase):
                 self.assertEqual(case["status"], status)
                 self.assertEqual(case["server_compatibility"], compatibility)
                 self.assertEqual(case["library_correctness"], "passed")
+                self.assertEqual((case["result_status_code"], case["result_reason_code"]), (1, reason))
                 self.assertEqual(peer.operations, [0x18])
                 self.assertNotIn("secret-response-sentinel", json.dumps(report))
 

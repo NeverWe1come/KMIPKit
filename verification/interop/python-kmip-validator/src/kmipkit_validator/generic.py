@@ -58,8 +58,20 @@ def _encode(view):
             body = struct.pack(">i", ttlv.ttlv_value_view_integer(value))
         elif kind == ttlv.ItemType.Enumeration:
             body = struct.pack(">I", ttlv.ttlv_value_view_enumeration(value))
-        elif kind in (ttlv.ItemType.ByteString, ttlv.ItemType.TextString):
+        elif kind == ttlv.ItemType.LongInteger:
+            body = struct.pack(">q", ttlv.ttlv_value_view_long_integer(value))
+        elif kind == ttlv.ItemType.Boolean:
+            body = struct.pack(">Q", ttlv.ttlv_value_view_boolean(value))
+        elif kind == ttlv.ItemType.DateTime:
+            body = struct.pack(">q", ttlv.ttlv_value_view_date_time(value))
+        elif kind == ttlv.ItemType.Interval:
+            body = struct.pack(">I", ttlv.ttlv_value_view_interval(value))
+        elif kind == ttlv.ItemType.DateTimeExtended:
+            body = struct.pack(">q", ttlv.ttlv_value_view_date_time_extended(value))
+        elif kind in (ttlv.ItemType.BigInteger, ttlv.ItemType.ByteString, ttlv.ItemType.TextString):
             body = ttlv.ttlv_value_view_bytes(value)
+            if kind == ttlv.ItemType.BigInteger and (not body or len(body) % 8):
+                raise ValueError("invalid Big Integer size")
         else:
             raise ValueError("unsupported generic probe field type")
     return code.to_bytes(3, "big") + bytes([kind]) + struct.pack(">I", len(body)) + body + bytes(-len(body) % 8)

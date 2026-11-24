@@ -150,7 +150,7 @@ def scalar(tag: str, kind: str, value: str, names: WireValues) -> bytes:
     raise ValueError(f"unsupported fixture type {kind}")
 
 
-def encode(node: ET.Element, names: WireValues) -> tuple[bytes, list[list[int]]]:
+def encode(node: ET.Element, names: WireValues) -> tuple[bytes, list[list]]:
     tag = names.tags[normalize(node.tag)]
     kind = node.get("type", "Structure")
     type_code = TYPES.index(kind) + 1
@@ -166,6 +166,15 @@ def encode(node: ET.Element, names: WireValues) -> tuple[bytes, list[list[int]]]
         if len(node):
             raise ValueError(f"non-structure fixture field has children: {node.tag}")
         value = scalar(node.tag, kind, node.attrib["value"], names)
+        if kind in {"Integer", "LongInteger", "DateTime", "DateTimeExtended"}:
+            expected_value = int.from_bytes(value, "big", signed=True)
+        elif kind in {"Enumeration", "Interval"}:
+            expected_value = int.from_bytes(value, "big")
+        elif kind == "Boolean":
+            expected_value = value[-1] == 1
+        else:
+            expected_value = value.hex()
+        flat[0].append(expected_value)
     header = tag.to_bytes(3, "big") + bytes([type_code]) + struct.pack(">I", len(value))
     return header + value + bytes(-len(value) % 8), flat
 
@@ -216,7 +225,11 @@ def inspect_vectors(rows, runners, *, construct=False):
         for index, line in zip(positions, output[1:], strict=True):
             observed = json.loads(line)
             row = rows[index]
-            outcome = "rejected" if observed is None else ("passed" if observed == row["items"] else "failed")
+            if observed is None:
+                outcome = "rejected"
+            else:
+                # JSON equality distinguishes Boolean from Integer even when values compare equal in Python.
+                outcome = "passed" if json.dumps(observed) == json.dumps(row["items"]) else "failed"
             row.setdefault("checks", {})[language] = outcome
     return artifacts
 

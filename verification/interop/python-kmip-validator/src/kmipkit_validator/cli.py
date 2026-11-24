@@ -301,6 +301,7 @@ def main(argv: list[str] | None = None) -> int:
     common(preflight)
     run = commands.add_parser("run", help="Run enabled requests against the configured KMIP server")
     common(run)
+    run.add_argument("--case", action="append", help="Run one catalog case for the configured protocol version")
     run.add_argument("--output-dir", type=Path, default=Path("results"))
     run.add_argument("--enable-mutations", action="store_true")
     run.add_argument("--artifact-manifest", type=Path, default=ARTIFACT_MANIFEST)
@@ -331,6 +332,18 @@ def main(argv: list[str] | None = None) -> int:
             }
             print(json.dumps(report, indent=2, sort_keys=True))
             return 0 if ready else 1
+
+        if args.case:
+            if len(args.case) != 1:
+                parser.error("--case accepts one case ID")
+            matches = [
+                case for case in applicable_cases(catalog, connection["protocol_version"])
+                if case["case_id"] == args.case[0]
+            ]
+            if len(matches) != 1:
+                print("no unique case for the selected protocol version", file=sys.stderr)
+                return 2
+            catalog = {**catalog, "test_cases": matches}
 
         try:
             artifact = validate_artifact(args.artifact_manifest)

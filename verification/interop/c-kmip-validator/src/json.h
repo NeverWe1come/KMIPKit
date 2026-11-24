@@ -21,6 +21,7 @@ typedef struct {
 
 typedef struct {
     char *source;
+    size_t source_length;
     json_token_t *tokens;
     size_t token_count;
     size_t token_capacity;

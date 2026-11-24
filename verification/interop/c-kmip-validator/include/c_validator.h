@@ -154,6 +154,8 @@ typedef struct {
 bool kmip_load_capabilities(const char *json_path, kmip_server_capabilities_t *out_caps);
 bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_connection);
 bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_t *out_count);
+bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_cases,
+                                  size_t *out_count, char digest[65]);
 bool kmip_is_case_supported(const kmip_server_capabilities_t *caps, const kmip_test_case_t *test_case, char out_reasons[KMIP_MAX_REASONS][KMIP_MAX_NAME_LEN], size_t *out_reasons_count);
 void kmip_init_attempt_context(kmip_attempt_context_t *ctx, const char *run_id, const char *lang, const char *enc, const char *level, const char *prefix);
 

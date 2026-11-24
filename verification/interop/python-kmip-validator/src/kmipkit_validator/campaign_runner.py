@@ -215,6 +215,7 @@ def main():
 
 def inspect_ttlv(*, construct=False):
     from kmipkit import errors, ttlv
+    from .generic import _encode
 
     if not _is_installed_package():
         raise ValueError("An installed KMIPKit wheel is required")
@@ -226,6 +227,8 @@ def inspect_ttlv(*, construct=False):
             with ttlv.codec_limits_defaults() as limits:
                 item = build_ttlv_item(wire, limits) if construct else ttlv.ttlv_decode(wire)
                 with item, ttlv.ttlv_item_view_from_item(item) as view:
+                    if construct and _encode(view) != wire:
+                        raise ValueError("constructed fixture changed on re-encoding")
                     nodes = []
                     append_ttlv_node(view, nodes)
         except (errors.KmipKitError, ValueError):
@@ -293,14 +296,28 @@ def append_ttlv_node(view, nodes):
     with ttlv.ttlv_item_view_tag(view) as tag:
         raw = ttlv.tag_value(tag)
     kind = ttlv.ttlv_item_view_type(view)
-    if kind != ttlv.ItemType.Structure:
-        nodes.append((raw, kind, 0))
-        return
-    with ttlv.ttlv_item_view_value(view) as value, ttlv.ttlv_value_view_structure(value) as structure:
-        count = ttlv.ttlv_structure_view_item_count(structure)
-        nodes.append((raw, kind, count))
-        for index in range(count):
-            with ttlv.ttlv_structure_view_item_at(structure, index) as child:
-                append_ttlv_node(child, nodes)
+    with ttlv.ttlv_item_view_value(view) as value:
+        if kind != ttlv.ItemType.Structure:
+            scalar_readers = {
+                ttlv.ItemType.Integer: ttlv.ttlv_value_view_integer,
+                ttlv.ItemType.LongInteger: ttlv.ttlv_value_view_long_integer,
+                ttlv.ItemType.Enumeration: ttlv.ttlv_value_view_enumeration,
+                ttlv.ItemType.Boolean: ttlv.ttlv_value_view_boolean,
+                ttlv.ItemType.DateTime: ttlv.ttlv_value_view_date_time,
+                ttlv.ItemType.Interval: ttlv.ttlv_value_view_interval,
+                ttlv.ItemType.DateTimeExtended: ttlv.ttlv_value_view_date_time_extended,
+            }
+            reader = scalar_readers.get(kind)
+            scalar = reader(value) if reader else ttlv.ttlv_value_view_bytes(value).hex()
+            nodes.append((raw, kind, 0, scalar))
+            return
+        with ttlv.ttlv_value_view_structure(value) as structure:
+            count = ttlv.ttlv_structure_view_item_count(structure)
+            nodes.append((raw, kind, count))
+            for index in range(count):
+                with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                    append_ttlv_node(child, nodes)
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

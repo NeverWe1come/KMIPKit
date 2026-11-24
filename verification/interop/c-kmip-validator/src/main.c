@@ -19,9 +19,6 @@
 #ifndef KMIPKIT_C_ARTIFACT_SHA256
 #define KMIPKIT_C_ARTIFACT_SHA256 ""
 #endif
-#ifndef KMIPKIT_C_CATALOG_SHA256
-#define KMIPKIT_C_CATALOG_SHA256 ""
-#endif
 
 static void print_usage(const char *program) {
     fprintf(stderr,
@@ -73,7 +70,7 @@ static bool installed_artifact_is_current(void) {
 }
 
 static void set_report_identity(kmip_validation_summary_t *summary,
-                                const kmip_connection_config_t *connection) {
+                                const kmip_connection_config_t *connection, const char *catalog_digest) {
     struct timespec now = {0};
     if (timespec_get(&now, TIME_UTC) != TIME_UTC) now.tv_sec = time(NULL);
     struct tm utc = {0};
@@ -116,7 +113,7 @@ static void set_report_identity(kmip_validation_summary_t *summary,
     snprintf(summary->artifact_sha256, sizeof(summary->artifact_sha256), "%s",
              KMIPKIT_C_ARTIFACT_SHA256);
     snprintf(summary->catalog_sha256, sizeof(summary->catalog_sha256), "%s",
-             KMIPKIT_C_CATALOG_SHA256);
+             catalog_digest);
 }
 
 int main(int argc, char **argv) {
@@ -179,7 +176,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Error: invalid connection configuration.\n");
         return 1;
     }
-    if (!kmip_load_catalog(catalog_path, cases, &case_count)) {
+    char catalog_digest[65];
+    if (!kmip_load_catalog_with_digest(catalog_path, cases, &case_count, catalog_digest)) {
         fprintf(stderr, "Error: invalid or unsupported test catalog.\n");
         return 1;
     }
@@ -302,7 +300,7 @@ int main(int argc, char **argv) {
         kmip_validation_summary_t summary;
         kmip_run_suite(&capabilities, applicable, applicable_count, &driver,
                        connection.probe_unsupported, &summary);
-        set_report_identity(&summary, &connection);
+        set_report_identity(&summary, &connection, catalog_digest);
         kmip_render_ansi(&summary);
         bool reports_written = kmip_render_json(&summary, json_output_path);
         if (markdown_output_path)
