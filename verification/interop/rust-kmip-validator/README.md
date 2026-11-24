@@ -156,6 +156,10 @@ their operation codes, field values, ordering and repeated tags. It records the 
 XML scenarios, fluent routes, response checks and live KMIP 3.0 exchanges
 remain pending in the campaign report.
 
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
 The shared live campaign can run the typed KMIP 2.x Query Operations case
 against a configured endpoint. Select `--scope live --connection PATH` and
 use `tools/run_live_campaign.sh` as the Rust runner after building the main

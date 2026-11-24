@@ -1,10 +1,11 @@
-//! Collect local evidence from the installed KMIP 3.0 draft public API.
+//! Collect local draft and generic TTLV evidence from the installed public API.
 #![forbid(unsafe_code)]
 
 use clap::{Parser, ValueEnum};
-use kmipkit::ttlv::{Item, RawTag, Structure, Value as TtlvValue, ValueView};
+use kmipkit::ttlv::{Item, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
 use kmipkit::{ClientBatchItem, ClientRequest};
 use serde_json::{Value, json};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::PathBuf;
@@ -62,14 +63,54 @@ fn check(symbol: &str) -> Option<bool> {
     Some(item.operation() == expected && preserved)
 }
 
+fn check_tag(
+    row: &Value,
+    symbol: &str,
+    tags: &HashMap<&str, bool>,
+) -> Option<(&'static str, bool)> {
+    if row["mode"] != "local" || row["case_id"] != "test-enum-tag" {
+        return None;
+    }
+    let target = row["target_id"].as_str()?;
+    let assigned = *tags.get(target)?;
+    let code = u32::from_str_radix(target.strip_prefix("KMIPKIT-ELEM-TAG-")?, 16).ok()?;
+    match symbol {
+        "kmipkit_ttlv::RawTag::new" => Some((
+            "generic_ttlv_raw_tag_value",
+            RawTag::new(code).is_ok_and(|tag| tag.raw() == code),
+        )),
+        "kmipkit_ttlv::RawTag::try_checked" => Some((
+            "generic_ttlv_checked_tag_value",
+            RawTag::new(code).is_ok_and(|raw| match raw.try_checked() {
+                Ok(tag) => assigned && tag.raw() == code,
+                Err(error) => !assigned && error == ModelError::TagNotAllocated,
+            }),
+        )),
+        _ => None,
+    }
+}
+
 fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
+    let catalog: Value = serde_json::from_str(include_str!(
+        "../../../shared/catalog/kmipkit-2x-matrix-catalog.json"
+    ))?;
+    let tags = catalog["normative_targets"]
+        .as_array()
+        .ok_or("normative targets are missing")?
+        .iter()
+        .filter(|target| target["kind"] == "tag")
+        .filter_map(|target| {
+            Some((
+                target["target_id"].as_str()?,
+                target["allocation"] == "assigned",
+            ))
+        })
+        .collect();
     let mut events = Vec::new();
     let mut all_passed = true;
     for line in BufReader::new(File::open(args.plan)?).lines() {
         let row: Value = serde_json::from_str(&line?)?;
         if row["language"] != "rust"
-            || row["protocol_version"] != "3.0"
-            || row["kind"] != "public_route"
             || row["action"] != "construct"
             || row["execution_status"] != "required"
         {
@@ -78,7 +119,14 @@ fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
         let symbol = row["public_api_symbol"]
             .as_str()
             .ok_or("missing API symbol")?;
-        let Some(passed) = check(symbol) else {
+        let outcome = match row["protocol_version"].as_str() {
+            Some("3.0") if row["kind"] == "public_route" => {
+                check(symbol).map(|passed| ("draft_operation_and_ordered_payload", passed))
+            }
+            Some("2.0" | "2.1") => check_tag(&row, symbol, &tags),
+            _ => None,
+        };
+        let Some((assertion, passed)) = outcome else {
             continue;
         };
         let obligation = row["obligation_id"]
@@ -89,12 +137,12 @@ fn run(args: Args) -> Result<bool, Box<dyn std::error::Error>> {
             "obligation_id": obligation,
             "public_api_symbol": symbol,
             "status": if passed { "passed" } else { "failed" },
-            "assertion": "draft_operation_and_ordered_payload",
+            "assertion": assertion,
         }));
     }
 
     if events.is_empty() {
-        return Err("no supported Rust draft constructor obligations in the plan".into());
+        return Err("no supported Rust local obligations in the plan".into());
     }
     let mut output = BufWriter::new(File::create(args.evidence)?);
     serde_json::to_writer(
