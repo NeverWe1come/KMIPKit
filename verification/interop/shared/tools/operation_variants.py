@@ -23,6 +23,10 @@ from verification.interop.shared.tools.matrix.payload_contract import payload_pr
 
 VERSIONS = ("2.0", "2.1", "3.0")
 ROUTES = ("typed-protocol", "fluent")
+
+
+def routes_for_version(version: str) -> tuple[str, ...]:
+    return (*ROUTES, "generic-ttlv") if version in ("2.0", "2.1") else ROUTES
 ATTRIBUTE_HEADING = re.compile(r"(4\.\d+) (.+)")
 
 
@@ -43,7 +47,7 @@ def make_variants(version: str, target: dict, branches: list[str]) -> Iterator[d
         row = {"protocol_version": version, **target, "variant": branch}
         canonical = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
         variant_id = hashlib.sha256(canonical.encode("ascii")).hexdigest()
-        yield {"variant_id": variant_id, **row, "status": "pending"}
+        yield {"variant_id": variant_id, **row, "api_levels": list(routes_for_version(version)), "status": "pending"}
 
 
 def attribute_variants(root: Path, version: str) -> Iterator[dict]:
@@ -83,6 +87,9 @@ def attribute_variants(root: Path, version: str) -> Iterator[dict]:
 def plan(root: Path, versions: tuple[str, ...] = VERSIONS) -> Iterator[dict]:
     specification = inventory(root)["versions"]
     for version in versions:
+        if version not in VERSIONS:
+            raise ValueError(f"unsupported KMIP version: {version}")
+    for version in versions:
         for operation in specification[version]["operations"]:
             for role, payload in operation["payloads"].items():
                 for field in payload["fields"]:
@@ -105,7 +112,9 @@ def main() -> None:
     else:
         for row in rows:
             counts[f'{row["protocol_version"]} {row["kind"]}'] += 1
-    print(json.dumps({"variants": counts, "languages": LANGUAGES, "routes": ROUTES}, indent=2))
+    print(json.dumps({"variants": counts, "languages": LANGUAGES,
+                      "routes_by_version": {version: routes_for_version(version)
+                                            for version in args.version or VERSIONS}}, indent=2))
 
 
 if __name__ == "__main__":

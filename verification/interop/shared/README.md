@@ -237,3 +237,16 @@ attribute, object, cryptography, batch and boundary cases alongside the
 operation cases. This selection retains the variants explicitly assigned
 to each version. KMIP 3.0 receives its operation cases and any variants
 explicitly assigned to 3.0 in the shared catalog.
+
+Select an exact operation name with `--operation` or an exact catalog ID
+with `--case`. Both options are repeatable and take the union of matches.
+Operation selection retains every matching direction. Both
+`operation_catalog.py` and `run_all.py --all-operations` accept these
+selectors. The generated catalog can also be passed to a standalone
+validator through its `--catalog` option.
+
+Add `--require-complete` to a live `run_all.py --all-operations` run to
+require evidence for every applicable selected case in each run. An
+observed KMIP rejection for an unsupported operation accounts for the
+execution while retaining its server compatibility status. A missing
+case, a blocked case, or a failed local assertion fails the check.

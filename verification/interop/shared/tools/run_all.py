@@ -30,11 +30,11 @@ if str(_current_dir) not in sys.path:
 try:
     from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
     from verification.interop.shared.tools.campaign import read_validated
-    from verification.interop.shared.tools.operation_catalog import build_catalog
+    from verification.interop.shared.tools.operation_catalog import build_catalog, select_cases
 except ImportError:
     from aggregate_matrix import aggregate_results, generate_html, generate_markdown  # type: ignore
     from campaign import read_validated  # type: ignore
-    from operation_catalog import build_catalog  # type: ignore
+    from operation_catalog import build_catalog, select_cases  # type: ignore
 
 SUPPORTED_LANGUAGES = ["rust", "c", "java", "python"]
 
@@ -233,6 +233,21 @@ def write_master_reports(output_dir, paths):
     return report
 
 
+def incomplete_case_ids(catalog, results):
+    """Identify applicable cases without a successful assertion or observed server rejection."""
+    expected = {
+        case["case_id"] for case in catalog["test_cases"]
+        if case["execution"]["status"] != "not_applicable"
+    }
+    complete = {
+        case["case_id"] for case in results["cases"]
+        if case["library_correctness"] == "passed"
+        and (case["status"] == "passed"
+             or (case["status"] == "server_unsupported" and case.get("result_status_code") is not None))
+    }
+    return sorted(expected - complete)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="KMIPKit Cross-Language Orchestrator")
     parser.add_argument("--languages", type=str, default="rust,c,java,python", help="Comma-separated languages (default: rust,c,java,python)")
@@ -241,8 +256,12 @@ def main() -> None:
                         help="Connection configuration JSON. Repeat for other versions or execution settings.")
     parser.add_argument("--all-operations", action="store_true",
                         help="Generate the complete operation catalog for each connection version")
+    parser.add_argument("--require-complete", action="store_true",
+                        help="Fail if any applicable selected case has missing or incomplete evidence")
     parser.add_argument("--with-variants", action="store_true",
                         help="With --all-operations, also run existing version-specific conformance cases")
+    parser.add_argument("--operation", action="append", default=[], help="With --all-operations, select an exact operation name")
+    parser.add_argument("--case", action="append", default=[], help="With --all-operations, select an exact case ID")
     parser.add_argument("--catalog", type=Path, default=Path("verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"),
                         help="Test catalog for Rust, Java and Python. C uses its build-time catalog unless --all-operations is set.")
     parser.add_argument("--vectors", type=Path, default=Path("verification/interop/shared/vectors/canonical-vectors.json"), help="Test vectors JSON")
@@ -266,8 +285,10 @@ def main() -> None:
         parser.error("give one project path per selected language")
     if args.all_operations and not args.connection:
         parser.error("--all-operations requires a connection configuration")
-    if args.with_variants and not args.all_operations:
-        parser.error("--with-variants requires --all-operations")
+    if (args.with_variants or args.operation or args.case) and not args.all_operations:
+        parser.error("--with-variants, --operation and --case require --all-operations")
+    if args.require_complete and (args.dry_run or not args.all_operations):
+        parser.error("--require-complete requires a live --all-operations selection")
     if args.campaign and args.dry_run:
         parser.error("--campaign requires executing the validators")
 
@@ -281,6 +302,7 @@ def main() -> None:
     results = []
     versions = []
     operation_catalogs = {}
+    gaps = False
     try:
         if args.connection and (not args.dry_run or args.all_operations):
             versions = list(dict.fromkeys(
@@ -289,12 +311,16 @@ def main() -> None:
             ))
         if args.all_operations:
             catalog_dir = out_dir / "catalogs"
+            selections = {
+                version: select_cases(build_catalog(base_dir, version, include_variants=args.with_variants),
+                                      operations=args.operation, case_ids=args.case)
+                for version in versions
+            }
             catalog_dir.mkdir(parents=True, exist_ok=True)
             for version in versions:
                 catalog = catalog_dir / f"kmip-{version}-operations.json"
                 with catalog.open("x", encoding="utf-8") as stream:
-                    catalog_data = build_catalog(base_dir, version, include_variants=args.with_variants)
-                    json.dump(catalog_data, stream, indent=2, ensure_ascii=False)
+                    json.dump(selections[version], stream, indent=2, ensure_ascii=False)
                 operation_catalogs[version] = catalog
         for index, connection in enumerate(connections, 1):
             catalog_path = args.catalog
@@ -318,6 +344,19 @@ def main() -> None:
                 c_catalog_override=args.all_operations,
             )
             results.extend(result["runs"])
+            if args.require_complete:
+                for run in result["runs"]:
+                    evidence_path = Path(run["output_file"])
+                    if not evidence_path.is_file() or run["status"] == "ERROR":
+                        gaps = True
+                        continue
+                    evidence = read_validated(evidence_path, "validation-results.schema.json")
+                    missing = incomplete_case_ids(selections[version], evidence)
+                    if missing:
+                        gaps = True
+                        print(f"[{run['language'].upper()}] KMIP {version} {evidence['execution']['api_level']}: "
+                              f"{len(missing)} applicable cases without complete evidence", file=sys.stderr)
+
         paths = [] if args.dry_run else report_files(results)
         if len(connections) > 1:
             write_master_reports(out_dir, paths)
@@ -343,7 +382,7 @@ def main() -> None:
         campaign_status = subprocess.run(command, check=False).returncode
     if not args.dry_run and (len(paths) != len(results) or any(run["exit_code"] for run in results)):
         sys.exit(1)
-    sys.exit(campaign_status)
+    sys.exit(1 if gaps else campaign_status)
 
 
 if __name__ == "__main__":

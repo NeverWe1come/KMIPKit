@@ -71,7 +71,6 @@ def build_catalog(root: Path, version: str, *, include_variants: bool = False) -
     original = json.loads((root / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
     templates = candidate_recipes(original["test_cases"], "2.1" if version == "3.0" else version)
     cases = []
-    counts = Counter()
     for operation in source["operations"]:
         name, flow, section = (operation[key] for key in ("name", "direction", "section"))
         template = templates.get((name, flow)) or new_recipe(name, flow)
@@ -83,7 +82,6 @@ def build_catalog(root: Path, version: str, *, include_variants: bool = False) -
             **template, "oasis_section": section, "execution": execution,
             "normative_refs": [{"document": DOCUMENTS[version], "section": section}],
         })
-        counts[flow] += 1
     if include_variants:
         operation_keys = {(case["operation"], direction(case)) for case in cases}
         existing_ids = {case["case_id"] for case in cases}
@@ -98,15 +96,44 @@ def build_catalog(root: Path, version: str, *, include_variants: bool = False) -
             cases.append({**case, "execution": {**execution, "protocol_versions": [version]}})
     if len({case["case_id"] for case in cases}) != len(cases):
         raise ValueError("operation catalog has duplicate case identifiers")
+    return with_cases({**original, "catalog_source": str(source["source"]), "target_versions": [version]}, cases)
+
+
+def select_cases(catalog: dict, *, operations: list[str], case_ids: list[str]) -> dict:
+    """Select exact operations and case IDs without changing their protocol or recipes."""
+    cases = catalog["test_cases"]
+    operation_names = {case["operation"].casefold() for case in cases}
+    requested_operations = {name.casefold() for name in operations}
+    requested_cases = set(case_ids)
+    unknown = (requested_operations - operation_names) | (
+        requested_cases - {case["case_id"] for case in cases}
+    )
+    if unknown:
+        raise ValueError("unknown operation or case in the selected version: " + ", ".join(sorted(unknown)))
+    if not requested_operations and not requested_cases:
+        return catalog
+    selected = [
+        case for case in cases
+        if case["operation"].casefold() in requested_operations or case["case_id"] in requested_cases
+    ]
+    return with_cases(catalog, selected)
+
+
+def with_cases(catalog: dict, cases: list[dict]) -> dict:
+    operations = {
+        (case["operation"], direction(case))
+        for case in cases
+        if case["execution"]["mode"] == "server_exchange"
+        and case["execution"]["status"] != "not_applicable"
+        and case["category"] != "version_boundaries"
+    }
     categories = Counter(case["category"] for case in cases)
     return {
-        **original,
-        "catalog_source": str(source["source"]),
-        "target_versions": [version],
+        **catalog,
         "test_cases": cases,
         "statistics": {
-            "operations_covered": counts["client_to_server"],
-            "server_to_client_operations_covered": counts["server_to_client"],
+            "operations_covered": sum(flow == "client_to_server" for _, flow in operations),
+            "server_to_client_operations_covered": sum(flow == "server_to_client" for _, flow in operations),
             "managed_objects_covered": categories["managed_objects"],
             "attributes_covered": categories["attributes"],
             "enumerations_covered": sum(case["case_id"].startswith("test-enum-") for case in cases),
@@ -121,9 +148,15 @@ def main():
     parser.add_argument("--version", choices=VERSIONS, required=True)
     parser.add_argument("--with-variants", action="store_true",
                         help="Include version-specific attribute, object, and workflow cases")
+    parser.add_argument("--operation", action="append", default=[], help="Select an operation by exact name")
+    parser.add_argument("--case", action="append", default=[], help="Select a case by exact ID")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     catalog = build_catalog(ROOT, args.version, include_variants=args.with_variants)
+    try:
+        catalog = select_cases(catalog, operations=args.operation, case_ids=args.case)
+    except ValueError as error:
+        parser.error(str(error))
     result = json.dumps(catalog, indent=2, ensure_ascii=False) + "\n"
     if args.output is None:
         print(result, end="")
