@@ -137,7 +137,7 @@ class PythonKmipDriver:
         "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
-        "Create", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
+        "Create", "Create Key Pair", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
         "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
@@ -274,7 +274,7 @@ class PythonKmipDriver:
             return (
                 workflow != "async_poll" and case["operation"] in cls._FLUENT_OPERATIONS
                 and (case["operation"] != "Create" or case.get("requires", {}).get("object_type")
-                     in (None, "Symmetric Key"))
+                     in (None, "Symmetric Key", "Private Key", "Public Key"))
             )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
@@ -366,6 +366,22 @@ class PythonKmipDriver:
         return (request.decapsulate(identifier, ciphertext).build() if fluent
                 else extension.client_batch_item_decapsulate_from_fields(identifier, ciphertext))
 
+    def _build_key_pair(self, case: dict[str, Any], *, fluent: bool) -> Any:
+        from kmipkit.fluent import Request
+
+        requires = case.get("requires", {})
+        is_ec = requires.get("algorithm") == "ECDSA"
+        algorithm = 6 if is_ec else 4
+        length = int(requires.get("key_length", 256 if is_ec else 2048))
+        if fluent:
+            with Request(self._client).create_key_pair() as builder:
+                return builder.algorithm(algorithm).length(length).build()
+        with self._structure([
+            self._item(0x0042_0028, "enumeration", algorithm),
+            self._item(0x0042_002A, "integer", length),
+        ]) as common:
+            return self._extensions.client_batch_item_create_key_pair(common_attributes=common)
+
     def _build_fluent_item(
         self, case: dict[str, Any], identifier: Any, *, name: str,
         data: bytes = b"A" * 16, auxiliary: bytes | None = None,
@@ -379,6 +395,10 @@ class PythonKmipDriver:
             return self._build_draft_item(operation, identifier, name, fluent=True, ciphertext=auxiliary)
         if operation == "Ping":
             return request.ping().build()
+        if operation == "Create Key Pair" or (
+            operation == "Create" and case.get("requires", {}).get("object_type") in {"Private Key", "Public Key"}
+        ):
+            return self._build_key_pair(case, fluent=True)
         if operation == "Get Attributes":
             return request.get_attributes(identifier, self._attribute_references(case)).build()
         if operation == "Get Attribute List":
@@ -1201,13 +1221,13 @@ class PythonKmipDriver:
                 return extension.client_batch_item_interop(1, name)
             object_type = case.get("requires", {}).get("object_type")
             if operation == "Create" and object_type in {"Private Key", "Public Key"}:
-                return extension.client_batch_item_create_key_pair(common_attributes=attrs)
+                return self._build_key_pair(case, fluent=False)
             if operation == "Create" and object_type == "Split Key":
                 return extension.client_batch_item_create_split_key(2, 2, 2, 1, attrs)
             if operation == "Create":
                 return extension.client_batch_item_create(2, attrs)
             if operation == "Create Key Pair":
-                return extension.client_batch_item_create_key_pair(common_attributes=attrs)
+                return self._build_key_pair(case, fluent=False)
             if operation == "Create Split Key":
                 return extension.client_batch_item_create_split_key(2, 2, 2, 1, attrs)
             if operation == "Register":

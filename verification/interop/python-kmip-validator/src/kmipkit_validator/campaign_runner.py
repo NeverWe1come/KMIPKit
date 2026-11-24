@@ -145,8 +145,8 @@ def query_evidence(lines, connection):
 
 
 def main():
-    if sys.argv[1:] == ["--inspect-oasis-ttlv"]:
-        return inspect_ttlv()
+    if sys.argv[1:] in (["--inspect-oasis-ttlv"], ["--construct-oasis-ttlv"]):
+        return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--matrix-sha256", required=True)
@@ -213,7 +213,7 @@ def main():
         return 2
 
 
-def inspect_ttlv():
+def inspect_ttlv(*, construct=False):
     from kmipkit import errors, ttlv
 
     if not _is_installed_package():
@@ -223,13 +223,68 @@ def inspect_ttlv():
     for line in sys.stdin:
         wire = bytes.fromhex(line.strip())
         try:
-            with ttlv.ttlv_decode(wire) as item, ttlv.ttlv_item_view_from_item(item) as view:
-                nodes = []
-                append_ttlv_node(view, nodes)
-        except errors.TtlvDecodeError:
+            with ttlv.codec_limits_defaults() as limits:
+                item = build_ttlv_item(wire, limits) if construct else ttlv.ttlv_decode(wire)
+                with item, ttlv.ttlv_item_view_from_item(item) as view:
+                    nodes = []
+                    append_ttlv_node(view, nodes)
+        except (errors.KmipKitError, ValueError):
             nodes = None
         print(json.dumps(nodes, separators=(",", ":")))
     return 0
+
+
+def build_ttlv_item(wire, limits, depth=0):
+    from kmipkit import ttlv
+
+    if len(wire) < 8 or depth >= 32:
+        raise ValueError("invalid fixture header")
+    size = int.from_bytes(wire[4:8], "big")
+    end = 8 + size
+    if end + (-size % 8) != len(wire) or any(wire[end:]):
+        raise ValueError("invalid fixture length or padding")
+    code, kind, body = int.from_bytes(wire[:3], "big"), wire[3], wire[8:end]
+    scalars = {
+        2: (4, True, ttlv.ttlv_value_integer),
+        3: (8, True, ttlv.ttlv_value_long_integer),
+        5: (4, False, ttlv.ttlv_value_enumeration),
+        9: (8, True, ttlv.ttlv_value_date_time),
+        10: (4, False, ttlv.ttlv_value_interval),
+        11: (8, True, ttlv.ttlv_value_date_time_extended),
+    }
+    with ttlv.raw_tag_from_raw(code) as raw, ttlv.raw_tag_try_checked(raw) as tag:
+        if kind == 1:
+            structure = ttlv.ttlv_structure_create()
+            try:
+                offset = 0
+                while offset < len(body):
+                    if len(body) - offset < 8:
+                        raise ValueError("truncated structure child")
+                    length = int.from_bytes(body[offset + 4:offset + 8], "big")
+                    next_offset = offset + 8 + length + (-length % 8)
+                    with build_ttlv_item(body[offset:next_offset], limits, depth + 1) as child:
+                        structure = ttlv.ttlv_structure_with_item(structure, child, limits)
+                    offset = next_offset
+                value = ttlv.ttlv_value_structure(structure, limits)
+            finally:
+                structure.close()
+        elif kind in scalars:
+            width, signed, constructor = scalars[kind]
+            if len(body) != width:
+                raise ValueError("invalid scalar length")
+            value = constructor(int.from_bytes(body, "big", signed=signed))
+        elif kind == 6 and len(body) == 8 and int.from_bytes(body, "big") in (0, 1):
+            value = ttlv.ttlv_value_boolean(bool(body[-1]))
+        elif kind == 4 and body and len(body) % 8 == 0:
+            value = ttlv.ttlv_value_big_integer(body, limits)
+        elif kind == 7:
+            value = ttlv.ttlv_value_text_string(body, limits)
+        elif kind == 8:
+            value = ttlv.ttlv_value_byte_string(body, limits)
+        else:
+            raise ValueError("invalid fixture type")
+        with value:
+            return ttlv.ttlv_item_create(tag, value, limits)
 
 
 def append_ttlv_node(view, nodes):
