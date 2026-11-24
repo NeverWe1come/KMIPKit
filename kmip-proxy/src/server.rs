@@ -1,10 +1,14 @@
-//! TCP and TLS 1.3 listener for KMIPKit Proxy.
+//! TCP and TLS 1.2/1.3 listener for KMIPKit Proxy.
 //!
 //! Provides protocol sniffing (Raw TTLV, HTTPS with TTLV, JSON, XML),
-//! TLS 1.3 termination, and connection dispatching to [`RequestDispatcher`].
+//! TLS 1.3 (and optional TLS 1.2 for legacy KMIP 1.X clients) termination,
+//! and connection dispatching to either [`RequestDispatcher`] (Cloud KMS bridge)
+//! or [`Kmip1xBridge`] (KMIP 1.X -> 2.0/2.1/3.0 protocol translation bridge).
+#![forbid(unsafe_code)]
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use kmipkit_ttlv::Item;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -14,8 +18,27 @@ use tokio_rustls::TlsAcceptor;
 use crate::codec::Format;
 use crate::config::ProxyConfig;
 use crate::dispatcher::RequestDispatcher;
+#[cfg(feature = "kmip1x-bridge")]
+use crate::kmip1x::Kmip1xBridge;
 use crate::pki::AutoPki;
 use crate::providers::CloudKmsProvider;
+
+/// Internal dispatch target shared across connections.
+enum ServerDispatchTarget {
+    Cloud(Arc<RequestDispatcher>),
+    #[cfg(feature = "kmip1x-bridge")]
+    Kmip1xBridge(Arc<Kmip1xBridge>),
+}
+
+impl ServerDispatchTarget {
+    async fn dispatch(&self, request: &Item) -> Result<Item, String> {
+        match self {
+            Self::Cloud(d) => d.dispatch(request).await,
+            #[cfg(feature = "kmip1x-bridge")]
+            Self::Kmip1xBridge(b) => b.dispatch(request).await,
+        }
+    }
+}
 
 /// Running proxy server handle.
 pub struct ProxyServerHandle {
@@ -53,7 +76,7 @@ impl ProxyServerHandle {
 pub struct ProxyServer;
 
 impl ProxyServer {
-    /// Starts the proxy server with an optional ephemeral PKI.
+    /// Starts the Cloud KMS proxy server with an optional ephemeral PKI.
     pub async fn start(
         config: ProxyConfig,
         provider: Arc<dyn CloudKmsProvider>,
@@ -66,7 +89,7 @@ impl ProxyServer {
         Self::start_with_optional_pki(config, provider, pki).await
     }
 
-    /// Starts the proxy server with a pre-existing PKI.
+    /// Starts the Cloud KMS proxy server with a pre-existing PKI.
     pub async fn start_with_pki(
         config: ProxyConfig,
         provider: Arc<dyn CloudKmsProvider>,
@@ -75,17 +98,54 @@ impl ProxyServer {
         Self::start_with_optional_pki(config, provider, Some(pki)).await
     }
 
+    /// Starts the KMIP 1.X -> KMIP 2.0/2.1/3.0 translation proxy server with optional ephemeral PKI.
+    #[cfg(feature = "kmip1x-bridge")]
+    pub async fn start_kmip1x_bridge(
+        config: ProxyConfig,
+        bridge: Arc<Kmip1xBridge>,
+    ) -> Result<ProxyServerHandle, String> {
+        let pki = if config.listener.tls_enabled && config.listener.tls_cert_path.is_none() {
+            Some(AutoPki::generate().map_err(|e| format!("PKI generation error: {e}"))?)
+        } else {
+            None
+        };
+        Self::start_target(config, Arc::new(ServerDispatchTarget::Kmip1xBridge(bridge)), pki).await
+    }
+
+    /// Starts the KMIP 1.X -> KMIP 2.0/2.1/3.0 translation proxy server with a pre-existing PKI.
+    #[cfg(feature = "kmip1x-bridge")]
+    pub async fn start_kmip1x_bridge_with_pki(
+        config: ProxyConfig,
+        bridge: Arc<Kmip1xBridge>,
+        pki: AutoPki,
+    ) -> Result<ProxyServerHandle, String> {
+        Self::start_target(
+            config,
+            Arc::new(ServerDispatchTarget::Kmip1xBridge(bridge)),
+            Some(pki),
+        )
+        .await
+    }
+
     async fn start_with_optional_pki(
         config: ProxyConfig,
         provider: Arc<dyn CloudKmsProvider>,
         pki: Option<AutoPki>,
     ) -> Result<ProxyServerHandle, String> {
-        crate::crypto::install_rustls_openssl_provider()
-            .map_err(|error| format!("failed to install rustls crypto provider: {error}"))?;
         let dispatcher = Arc::new(RequestDispatcher::new(
             provider,
             config.proxy_behavior.clone(),
         ));
+        Self::start_target(config, Arc::new(ServerDispatchTarget::Cloud(dispatcher)), pki).await
+    }
+
+    async fn start_target(
+        config: ProxyConfig,
+        target: Arc<ServerDispatchTarget>,
+        pki: Option<AutoPki>,
+    ) -> Result<ProxyServerHandle, String> {
+        crate::crypto::install_rustls_openssl_provider()
+            .map_err(|error| format!("failed to install rustls crypto provider: {error}"))?;
 
         let listener = TcpListener::bind(config.listener.bind_addr)
             .await
@@ -105,7 +165,7 @@ impl ProxyServer {
         };
 
         let task_handle = tokio::spawn(async move {
-            run_server_loop(listener, tls_acceptor, dispatcher, shutdown_rx).await
+            run_server_loop(listener, tls_acceptor, target, shutdown_rx).await
         });
 
         Ok(ProxyServerHandle {
@@ -143,21 +203,27 @@ impl ProxyServer {
             let key_bytes = std::fs::read(key_path)
                 .map_err(|e| format!("failed reading key file {}: {e}", key_path.display()))?;
 
-            let ca_bytes =
-                if let Some(ca_path) = &config.listener.tls_client_ca_path {
-                    Some(std::fs::read(ca_path).map_err(|e| {
-                        format!("failed reading CA file {}: {e}", ca_path.display())
-                    })?)
-                } else {
-                    None
-                };
+            let ca_bytes = if let Some(ca_path) = &config.listener.tls_client_ca_path {
+                Some(std::fs::read(ca_path).map_err(|e| {
+                    format!("failed reading CA file {}: {e}", ca_path.display())
+                })?)
+            } else {
+                None
+            };
             (cert_bytes, key_bytes, ca_bytes)
         };
 
         let crypto_provider = Arc::new(rustls_openssl::default_provider());
+        let protocol_versions: &[&rustls::SupportedProtocolVersion] = if config.listener.allow_tls12
+        {
+            &[&rustls::version::TLS13, &rustls::version::TLS12]
+        } else {
+            &[&rustls::version::TLS13]
+        };
+
         let builder = rustls::ServerConfig::builder_with_provider(crypto_provider)
-            .with_protocol_versions(&[&rustls::version::TLS13])
-            .map_err(|e| format!("TLS 1.3 config error: {e}"))?;
+            .with_protocol_versions(protocol_versions)
+            .map_err(|e| format!("TLS protocol version config error: {e}"))?;
 
         let cert_chain = vec![rustls::pki_types::CertificateDer::from(cert_der)];
         let private_key = rustls::pki_types::PrivateKeyDer::Pkcs8(
@@ -191,7 +257,7 @@ impl ProxyServer {
 async fn run_server_loop(
     listener: TcpListener,
     tls_acceptor: Option<TlsAcceptor>,
-    dispatcher: Arc<RequestDispatcher>,
+    target: Arc<ServerDispatchTarget>,
     mut shutdown_rx: watch::Receiver<bool>,
 ) -> Result<(), String> {
     loop {
@@ -199,20 +265,15 @@ async fn run_server_loop(
             accept_res = listener.accept() => {
                 let (stream, _peer_addr) = accept_res.map_err(|e| format!("accept error: {e}"))?;
                 let acceptor = tls_acceptor.clone();
-                let dispatcher = Arc::clone(&dispatcher);
+                let target = Arc::clone(&target);
 
                 tokio::spawn(async move {
                     if let Some(acceptor) = acceptor {
-                        match acceptor.accept(stream).await {
-                            Ok(tls_stream) => {
-                                let _ = handle_connection(tls_stream, dispatcher).await;
-                            }
-                            Err(_err) => {
-                                // TLS handshake failed
-                            }
+                        if let Ok(tls_stream) = acceptor.accept(stream).await {
+                            let _ = handle_connection_target(tls_stream, target).await;
                         }
                     } else {
-                        let _ = handle_connection(stream, dispatcher).await;
+                        let _ = handle_connection_target(stream, target).await;
                     }
                 });
             }
@@ -227,10 +288,20 @@ async fn run_server_loop(
     Ok(())
 }
 
-/// Handles incoming stream (sniffs raw TTLV vs HTTP/1.1 POST).
+/// Handles incoming stream for a Cloud KMS `RequestDispatcher`.
 pub async fn handle_connection<S>(
-    mut stream: S,
+    stream: S,
     dispatcher: Arc<RequestDispatcher>,
+) -> Result<(), String>
+where
+    S: AsyncRead + AsyncWrite + Unpin,
+{
+    handle_connection_target(stream, Arc::new(ServerDispatchTarget::Cloud(dispatcher))).await
+}
+
+async fn handle_connection_target<S>(
+    mut stream: S,
+    target: Arc<ServerDispatchTarget>,
 ) -> Result<(), String>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -246,9 +317,9 @@ where
         }
 
         if first_byte[0] == 0x42 {
-            handle_raw_ttlv(&mut stream, first_byte[0], &dispatcher).await?;
+            handle_raw_ttlv(&mut stream, first_byte[0], &target).await?;
         } else if first_byte[0] == b'P' || first_byte[0] == b'p' {
-            let keep_alive = handle_http(&mut stream, first_byte[0], &dispatcher).await?;
+            let keep_alive = handle_http(&mut stream, first_byte[0], &target).await?;
             if !keep_alive {
                 break;
             }
@@ -266,7 +337,7 @@ where
 async fn handle_raw_ttlv<S>(
     stream: &mut S,
     first_byte: u8,
-    dispatcher: &RequestDispatcher,
+    target: &ServerDispatchTarget,
 ) -> Result<(), String>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -304,7 +375,7 @@ where
         .decode(&full_request)
         .map_err(|e| format!("TTLV decode error: {e}"))?;
 
-    let response_item = dispatcher.dispatch(&request_item).await?;
+    let response_item = target.dispatch(&request_item).await?;
     let response_bytes = Format::Ttlv
         .encode(&response_item)
         .map_err(|e| format!("TTLV encode error: {e}"))?;
@@ -324,7 +395,7 @@ where
 async fn handle_http<S>(
     stream: &mut S,
     first_byte: u8,
-    dispatcher: &RequestDispatcher,
+    target: &ServerDispatchTarget,
 ) -> Result<bool, String>
 where
     S: AsyncRead + AsyncWrite + Unpin,
@@ -379,7 +450,7 @@ where
 
     let format = Format::detect(content_type.as_deref(), &body);
     let request_item = format.decode(&body)?;
-    let response_item = dispatcher.dispatch(&request_item).await?;
+    let response_item = target.dispatch(&request_item).await?;
     let response_bytes = format.encode(&response_item)?;
 
     let status_line = "HTTP/1.1 200 OK\r\n";

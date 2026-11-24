@@ -1,4 +1,4 @@
-//! KMIPKit Cloud Proxy: Stateless Zero-DB KMIP bridge for Cloud KMS.
+//! KMIPKit Proxy: Stateless Zero-DB KMIP bridge for Cloud KMS and KMIP 1.X -> 2.0/2.1/3.0 translation.
 #![forbid(unsafe_code)]
 #![allow(
     unknown_lints,
@@ -35,6 +35,8 @@ pub(crate) mod crypto;
 pub mod dispatcher;
 pub mod envelope;
 pub mod error;
+#[cfg(feature = "kmip1x-bridge")]
+pub mod kmip1x;
 pub mod pki;
 pub mod providers;
 pub mod server;
@@ -44,10 +46,20 @@ pub mod tag_codec;
 mod aws_http;
 
 pub use cache::MetadataCache;
-pub use config::{KeyCustodyMode, ListenerConfig, ProxyBehaviorConfig, ProxyConfig};
+pub use config::{
+    KeyCustodyMode, KmipUpstreamConfig, ListenerConfig, OperationPolicyMode, ProxyBehaviorConfig,
+    ProxyConfig,
+};
 pub use dispatcher::RequestDispatcher;
 pub use envelope::AutoEnvelope;
 pub use error::ProxyError;
+#[cfg(feature = "kmip1x-bridge")]
+pub use kmip1x::{
+    Kmip1xBridge, UpstreamKmipTransport,
+    mapping::{OperationPolicyHandling, UpstreamKmipVersion},
+    translator::TranslatorConfig,
+    upstream::{KmipKitUpstreamTransport, LocalDispatcherUpstream},
+};
 pub use pki::AutoPki;
 pub use providers::{CloudKmsProvider, InMemoryMockProvider};
 pub use server::{ProxyServer, ProxyServerHandle};
