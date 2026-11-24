@@ -5,11 +5,18 @@ import ssl
 import struct
 
 
+def _operation(case, version):
+    if version not in {"2.0", "2.1"}:
+        return None
+    if case["case_id"] == "test-op-ping":
+        return 0x3B if version == "2.1" else None
+    return {"test-op-query": 0x18, "test-op-discover-versions": 0x1E}.get(case["case_id"])
+
+
 def supports(case, connection):
     return (
-        case["case_id"] in {"test-op-query", "test-op-discover-versions"}
+        _operation(case, connection["protocol_version"]) is not None
         and case["execution"]["mutation"] == "read_only"
-        and connection["protocol_version"] in {"2.0", "2.1"}
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
         and not connection.get("authentication")
@@ -75,18 +82,26 @@ def run(driver, case):
 
     connection = driver._connection
     minor = int(connection["protocol_version"][-1])
-    query = case["case_id"] == "test-op-query"
-    operation = 0x18 if query else 0x1E
+    operation = _operation(case, connection["protocol_version"])
+    if operation is None:
+        raise ValueError("no generic exchange recipe")
     item, node = driver._item, driver._structure_item
 
     def protocol():
         return node(0x420069, [item(0x42006A, "integer", 2), item(0x42006B, "integer", minor)])
 
+    if operation == 0x18:
+        payload_fields = [item(0x420074, "enumeration", 1)]
+    elif operation == 0x1E:
+        payload_fields = [protocol()]
+    else:
+        payload_fields = []
+
     with node(0x420078, [
         node(0x420077, [protocol(), item(0x42000D, "integer", 1)]),
         node(0x42000F, [
             item(0x42005C, "enumeration", operation),
-            node(0x420079, [item(0x420074, "enumeration", 1) if query else protocol()]),
+            node(0x420079, payload_fields),
         ]),
     ]) as request, ttlv.ttlv_item_view_from_item(request) as request_view, ttlv.codec_limits_defaults() as limits:
         wire = _exchange(connection, _encode(request_view), ttlv.codec_limits_max_message_bytes(limits))
@@ -109,7 +124,7 @@ def run(driver, case):
                     if payload is None:
                         raise ValueError("missing generic success payload")
                     with payload:
-                        if not _matches(payload, query, protocol):
+                        if not _matches(payload, operation, protocol):
                             raise ValueError("generic response did not confirm the requested capability")
     outcome, compatibility = {
         (0, None): ("passed", "supported"),
@@ -123,10 +138,12 @@ def run(driver, case):
             "diagnostic": "generic TTLV request and response validated"}
 
 
-def _matches(payload, query, protocol):
+def _matches(payload, operation, protocol):
     from kmipkit import ttlv
 
-    if query:
+    if operation == 0x3B:
+        return ttlv.ttlv_structure_view_item_count(payload) == 0
+    if operation == 0x18:
         for field in _fields(payload):
             with ttlv.ttlv_item_view_tag(field) as tag:
                 if ttlv.tag_value(tag) == 0x42005C:
