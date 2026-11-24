@@ -1,0 +1,196 @@
+{
+  "name": "kmipkit-vscode",
+  "displayName": "KMIPKit — OASIS KMIP & TTLV Inspector",
+  "description": "Official OASIS KMIP 1.0–3.0 Language Server, TTLV Inspector with synchronized hex view, schema validation, and multi-language SDK snippets for KMIPKit.",
+  "version": "0.1.0",
+  "publisher": "kmipkit",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeverWe1come/KMIPKit"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Debuggers",
+    "Linters",
+    "Visualization"
+  ],
+  "activationEvents": [
+    "onLanguage:kmip-json",
+    "onLanguage:kmip-ttlv",
+    "onCommand:kmip.decodeTtlvSelection",
+    "onCommand:kmip.openInspector",
+    "onCommand:kmip.openPlayground",
+    "workspaceContains:**/*.kmip.json",
+    "workspaceContains:**/*.kmip-config.json"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "kmip-json",
+        "aliases": [
+          "KMIP JSON",
+          "kmip-json"
+        ],
+        "extensions": [
+          ".kmip.json",
+          ".kmip-config.json",
+          ".kmip-policy.json"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "kmip-ttlv",
+        "aliases": [
+          "KMIP TTLV Hex",
+          "kmip-ttlv"
+        ],
+        "extensions": [
+          ".ttlv"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kmip-ttlv",
+        "scopeName": "source.kmip.ttlv",
+        "path": "./syntaxes/ttlv.tmLanguage.json"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "*.kmip-config.json"
+        ],
+        "url": "../schemas/kmip-config.schema.json"
+      },
+      {
+        "fileMatch": [
+          "*.kmip.json"
+        ],
+        "url": "../schemas/kmip-message.schema.json"
+      },
+      {
+        "fileMatch": [
+          "*.kmip-policy.json"
+        ],
+        "url": "../schemas/kmip-policy.schema.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "kmip.decodeTtlvSelection",
+        "title": "KMIP: Decode TTLV Selection",
+        "icon": "$(search)"
+      },
+      {
+        "command": "kmip.openInspector",
+        "title": "KMIP: Open TTLV Inspector",
+        "icon": "$(inspect)"
+      },
+      {
+        "command": "kmip.openPlayground",
+        "title": "KMIP: Open Playground",
+        "icon": "$(play)"
+      },
+      {
+        "command": "kmip.restartServer",
+        "title": "KMIP: Restart Language Server"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "kmip.decodeTtlvSelection",
+          "when": "editorHasSelection",
+          "group": "navigation@100"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kmipkit",
+          "title": "KMIPKit",
+          "icon": "media/kmip-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "kmipkit": [
+        {
+          "id": "kmipkit.explorer",
+          "name": "KMIP Explorer"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "rust",
+        "path": "./snippets/rust.json"
+      },
+      {
+        "language": "c",
+        "path": "./snippets/c.json"
+      },
+      {
+        "language": "java",
+        "path": "./snippets/java.json"
+      },
+      {
+        "language": "python",
+        "path": "./snippets/python.json"
+      }
+    ],
+    "configuration": {
+      "title": "KMIPKit",
+      "properties": {
+        "kmip.core.binaryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a local kmip-lsp binary (for air-gapped environments or core development)."
+        },
+        "kmip.core.pinnedSha256": {
+          "type": "object",
+          "default": {},
+          "description": "Pinned SHA-256 checksums per platform target (<os>-<arch>) for verified auto-download."
+        },
+        "kmip.spec.defaultVersion": {
+          "type": "string",
+          "enum": [
+            "1.4",
+            "2.0",
+            "2.1",
+            "3.0"
+          ],
+          "default": "2.1",
+          "description": "Default OASIS KMIP specification version."
+        },
+        "kmip.security.redactSensitiveByDefault": {
+          "type": "boolean",
+          "default": true,
+          "description": "Always redact sensitive key material and credentials in the TTLV Inspector."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc --noEmit && node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

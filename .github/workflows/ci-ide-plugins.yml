@@ -1,0 +1,112 @@
+name: CI IDE Plugins
+
+on:
+  pull_request:
+    paths:
+      - "ide-plugins/**"
+      - ".github/workflows/ci-ide-plugins.yml"
+      - ".github/workflows/release-ide-plugins.yml"
+  push:
+    branches:
+      - main
+      - "feature/**"
+    paths:
+      - "ide-plugins/**"
+      - ".github/workflows/ci-ide-plugins.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  core-and-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Build OpenSSL 3.5.9
+        run: python3 verification/security/openssl/build.py
+      - name: Validate JSON Schemas
+        run: |
+          python3 -c '
+          import json, glob
+          for p in sorted(glob.glob("ide-plugins/schemas/*.json")):
+              with open(p) as f: json.load(f)
+              print("OK:", p)
+          '
+      - name: Test and Clippy kmip-lsp
+        env:
+          OPENSSL_DIR: ${{ github.workspace }}/../.cache/kmipkit/openssl/3.5.9
+          OPENSSL_STATIC: "1"
+        run: |
+          export OPENSSL_DIR="$HOME/.cache/kmipkit/openssl/3.5.9"
+          cargo test --manifest-path ide-plugins/core/Cargo.toml
+          cargo clippy --manifest-path ide-plugins/core/Cargo.toml --all-targets -- -D warnings
+
+  webview-and-vscode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test and build webview-ui
+        run: |
+          cd ide-plugins/webview-ui
+          npm ci
+          npm test
+          npm run build
+      - name: Sync webview bundle
+        run: ./ide-plugins/scripts/build-webview.sh
+      - name: Compile and test VS Code extension
+        run: |
+          cd ide-plugins/vscode
+          npm ci
+          npm run compile
+          npm test
+
+  jetbrains:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build webview-ui and sync to JetBrains
+        run: |
+          cd ide-plugins/webview-ui && npm ci && cd ../..
+          ./ide-plugins/scripts/build-webview.sh
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test, build, and verify JetBrains plugin
+        run: |
+          cd ide-plugins/jetbrains
+          gradle test buildPlugin verifyPlugin
+
+  zed-and-neovim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      - name: Check Zed WASM extension
+        run: cargo check --manifest-path ide-plugins/zed/Cargo.toml --target wasm32-wasip1
+      - name: Check Neovim Lua syntax
+        run: |
+          sudo apt-get update && sudo apt-get install -y lua5.1
+          find ide-plugins/neovim -name "*.lua" -exec luac5.1 -p {} +
+
+  visual-studio:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build Visual Studio extension
+        run: dotnet build ide-plugins/visual-studio/KmipKit.VisualStudio.csproj -c Release

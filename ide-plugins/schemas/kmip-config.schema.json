@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/NeverWe1come/KMIPKit/main/ide-plugins/schemas/kmip-config.schema.json",
+  "title": "KMIPKit IDE & Client Connection Profile Configuration",
+  "description": "Configuration schema for KMIPKit connection profiles. Passwords and private key passphrases MUST NOT be stored here; use the IDE's native secret store (SecretStorage / PasswordSafe).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profiles"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "defaultProfile": {
+      "type": "string",
+      "description": "Name of the default connection profile."
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/ConnectionProfile"
+      }
+    }
+  },
+  "definitions": {
+    "ConnectionProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "host", "port", "environment"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9._-]+$"
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["DEV", "STAGING", "PROD"],
+          "description": "PROD profiles enforce read-only / double-confirmation guardrails for mutating operations."
+        },
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 5696
+        },
+        "kmipVersion": {
+          "type": "string",
+          "enum": ["1.0", "1.1", "1.2", "1.3", "1.4", "2.0", "2.1", "3.0"],
+          "default": "2.1"
+        },
+        "wireEncoding": {
+          "type": "string",
+          "enum": ["ttlv", "json", "xml"],
+          "default": "ttlv"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "tls": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "caCertPath": { "type": "string" },
+            "clientCertPath": { "type": "string" },
+            "clientKeyPath": { "type": "string" },
+            "serverName": { "type": "string" },
+            "minTlsVersion": {
+              "type": "string",
+              "enum": ["1.2", "1.3"],
+              "default": "1.2"
+            }
+          }
+        }
+      }
+    }
+  }
+}
