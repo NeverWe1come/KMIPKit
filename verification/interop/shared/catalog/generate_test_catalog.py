@@ -138,6 +138,11 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         steps = ["prepare_isolated_fixture", "execute_operation", "verify_response"]
         assertions = ["result_status_matches_expected", "delivery_state_recorded"]
         mutation = "mutating"
+    elif test_case["case_id"] == "test-crypto-hash-sha_256-0":
+        mode = "server_exchange"
+        steps = ["execute_operation", "verify_response"]
+        assertions = ["sha256_digest_matches_known_answer"]
+        mutation = "read_only"
     elif category in {"attributes", "managed_objects", "object_lifecycle", "cryptography_and_rng", "multipart_crypto", "batch_workflows", "asynchronous_workflows"}:
         mode = "server_exchange"
         steps = ["prepare_isolated_fixture", "execute_operation", "verify_response", "cleanup_fixture"]
