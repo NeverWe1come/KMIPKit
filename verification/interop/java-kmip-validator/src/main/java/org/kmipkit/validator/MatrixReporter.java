@@ -101,7 +101,7 @@ public final class MatrixReporter {
         require(report.execution() != null, "Report execution is required");
         require(Set.of("raw_tls", "https").contains(report.execution().transport()), "Report transport is invalid");
         require(Set.of("TTLV", "JSON", "XML").contains(report.execution().encoding()), "Report encoding is invalid");
-        require(Set.of("high-level", "typed-protocol", "generic-ttlv").contains(report.execution().apiLevel()),
+        require(Set.of("high-level", "typed-protocol", "fluent", "generic-ttlv").contains(report.execution().apiLevel()),
                 "Report api_level is invalid");
         require(report.execution().libraryCommit() != null
                 && report.execution().libraryCommit().matches("[0-9a-f]{7,40}"),
