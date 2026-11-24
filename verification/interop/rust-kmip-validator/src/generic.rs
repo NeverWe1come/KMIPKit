@@ -3,8 +3,8 @@ use crate::driver::{item, structure, transport_config};
 use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
-    DiscoverVersionsResponse, HashResponse, PingResponse, ProtocolVersion, QueryResponse,
-    ResponseMessage,
+    DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse, ProtocolVersion,
+    QueryResponse, ResponseMessage, RngRetrieveResponse,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
@@ -17,13 +17,15 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
         && connection.transport == "raw_tls"
         && connection.encoding == "TTLV"
         && connection.authentication.is_none()
-        && case.execution.mutation == "read_only"
+        && (case.execution.mutation == "read_only" || operation(case, connection) == Some(0x25))
 }
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
+        ("test-op-locate", "2.0" | "2.1") => Some(0x08),
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
+        ("test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
         ("test-op-hash" | "test-crypto-hash-sha_256-0", "2.0" | "2.1") => Some(0x27),
         ("test-op-ping", "2.1") => Some(0x3b),
         _ => None,
@@ -58,8 +60,13 @@ fn exchange(case: &Case, connection: &Connection) -> Result<(u32, Option<u32>)> 
         )
     };
     let payload_fields = match operation {
+        0x08 => vec![
+            item(0x0042_004f, Value::integer(1))?,
+            item(0x0042_00d4, Value::integer(0))?,
+        ],
         0x18 => vec![item(0x0042_0074, Value::enumeration(1))?],
         0x1e => vec![version_item()?],
+        0x25 => vec![item(0x0042_00c4, Value::integer(32))?],
         0x27 => vec![
             node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
             item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
@@ -125,7 +132,15 @@ fn check_response(
         .ok_or("response status missing")?
         .raw();
     if status == 0 {
-        let matches = if operation == 0x18 {
+        let matches = if operation == 0x08 {
+            let locate = LocateResponse::try_from_response_item(batch)
+                .map_err(|_| "invalid Locate response")?;
+            let returned = locate.unique_identifiers().len();
+            returned <= 1
+                && locate
+                    .located_items()
+                    .is_none_or(|total| usize::try_from(total).is_ok_and(|total| total >= returned))
+        } else if operation == 0x18 {
             let query = QueryResponse::try_from_response_item(batch)
                 .map_err(|_| "invalid Query response")?;
             query.operations().next().is_some()
@@ -134,6 +149,11 @@ fn check_response(
                 DiscoverVersionsResponse::try_from_response_item_for_offer(batch, &[version])
                     .map_err(|_| "invalid Discover Versions response")?;
             discover.supported_versions() == Some(&[version])
+        } else if operation == 0x25 {
+            RngRetrieveResponse::try_from_response_item(batch)
+                .map_err(|_| "invalid RNG Retrieve response")?
+                .data()
+                .is_some_and(|data| data.with_bytes(|bytes| bytes.len() == 32))
         } else if operation == 0x27 {
             let hash =
                 HashResponse::try_from_response_item(batch).map_err(|_| "invalid Hash response")?;
