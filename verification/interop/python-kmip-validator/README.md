@@ -74,7 +74,7 @@ the campaign to select a specific common source revision. In a source revision
 with the Query decoder correction, the 3.0 scenario checks the decoded
 operation list for equality, including order.
 
-The `generic-ttlv` route constructs and sends the read-only Query and
-Discover Versions and single-part SHA-256 Hash probes in KMIP 2.0 and 2.1, plus Ping in 2.1. It uses the installed
-KMIPKit tag and response models and Python's certificate-authenticated
-raw TLS transport. This route requires the TTLV encoding.
+The `generic-ttlv` route sends Locate, Query, Discover Versions, RNG Retrieve,
+and single-part SHA-256 Hash on KMIP 2.0 and 2.1, plus Ping on 2.1. It uses
+the installed KMIPKit tag and response models and Python's certificate-authenticated
+raw TLS transport. RNG Retrieve follows the catalog's mutation opt-in.
