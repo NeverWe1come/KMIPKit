@@ -86,7 +86,7 @@ def _catalog_model_data() -> tuple[
 
     root = Path(__file__).resolve().parents[5]
     shared = json.loads(
-        (root / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text(encoding="utf-8")
+        (root / "verification/interop/shared/catalog/kmipkit-2x-matrix-catalog.json").read_text(encoding="utf-8")
     )
     source = json.loads((root / "verification/conformance/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
     target_by_id = {target["target_id"]: target for target in shared["normative_targets"]}
@@ -614,7 +614,7 @@ class PythonKmipDriver:
         PythonKmipDriver._round_trip_ttlv(tag, raw, enumeration=False)
 
     @staticmethod
-    def _execute_catalog_tag(test_case: dict[str, Any]) -> None:
+    def _execute_catalog_tag(test_case: dict[str, Any], *, check_allocation: bool = True) -> None:
         from kmipkit import ttlv
 
         wire_value = test_case["requires"]["wire_value"]
@@ -632,6 +632,8 @@ class PythonKmipDriver:
             with ttlv.raw_tag_from_raw(raw) as raw_tag:
                 if ttlv.raw_tag_value(raw_tag) != raw:
                     raise ValueError("raw TTLV tag did not preserve its value")
+                if not check_allocation:
+                    continue
                 if test_case["requires"].get("allocation") in {"assigned", "extension"}:
                     with ttlv.raw_tag_try_checked(raw_tag) as tag:
                         if ttlv.tag_value(tag) != raw:
@@ -684,7 +686,7 @@ class PythonKmipDriver:
         return found
 
     @staticmethod
-    def _execute_data_type_case(type_name: str) -> None:
+    def _execute_data_type_case(type_name: str, *, bounded: bool = True) -> None:
         import json
 
         from kmipkit import ttlv
@@ -700,14 +702,17 @@ class PythonKmipDriver:
         for sample in vector["samples"]:
             wire = bytes.fromhex(sample["hex"])
             with ttlv.codec_limits_defaults() as limits:
+                def decode():
+                    return ttlv.ttlv_decode_with_limits(wire, limits) if bounded else ttlv.ttlv_decode(wire)
+
                 if not sample["valid"]:
                     try:
-                        invalid_item = ttlv.ttlv_decode_with_limits(wire, limits)
+                        invalid_item = decode()
                     except ttlv.errors.TtlvDecodeError:
                         continue
                     invalid_item.close()
                     raise ValueError("malformed TTLV boundary vector was accepted")
-                with ttlv.ttlv_decode_with_limits(wire, limits) as item:
+                with decode() as item:
                     with ttlv.ttlv_item_view_from_item(item) as view:
                         actual_type = ttlv.ttlv_item_view_type(view).name
                         if actual_type != expected_type:

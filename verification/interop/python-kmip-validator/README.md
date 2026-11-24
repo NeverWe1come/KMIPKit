@@ -48,6 +48,10 @@ The runner checks the operation code from each of the seven catalogued
 generic-payload constructors and records that local evidence. XML replay and
 live KMIP 3.0 exchanges remain pending in the campaign report.
 
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
 To run the typed `Query` campaign against a server, pass the same runner
 with `--scope live --connection /path/to/connection.json`. The connection
 selects KMIP 2.0 or 2.1 with `api_level` set to `typed-protocol`. The probe
@@ -55,17 +59,17 @@ requests operations and object types once, checks the response through the
 installed package and records the wire result codes. The broader standalone
 `run` command retains its own reports.
 
-Use `--scope controlled --version 3.0` to execute the pinned OASIS
-`QS-M-1-30` Query scenario against the built-in loopback TLS peer.
-The peer checks the request's correlation value and query functions and
-returns the ordered operation list from the XML. The current wheel rejects
-this structured response because its Query decoder requires Protection
-Storage Masks. The 3.0 draft makes that field conditional on the requested
-Query Function. The scenario records the rejection as failed and retains the
-fixture as published. The wheel pin includes the Python binding correction
-required to set the correlation value and reach this response check.
+Use `--scope controlled --version VERSION` to execute the pinned OASIS
+Query Operations scenario for KMIP 2.0, 2.1 or 3.0 against a loopback TLS
+peer. The peer verifies the version, batch count, correlation value and
+query functions, then returns the ordered operation list from the XML.
+KMIP 2.0 and 2.1 require Protection Storage Masks in the structured
+response, but their published fixtures omit that field. The validator
+preserves the fixtures and records the decoder rejection as a failed
+scenario. The 3.0 draft makes the field conditional on the requested
+Query Function, and the wheel pin includes the corresponding decoder fix.
 
 Export `KMIPKIT_INTEROP_LIBRARY_COMMIT` before building the wheel and invoking
 the campaign to select a specific common source revision. In a source revision
-with the Query decoder correction, the OASIS scenario checks the decoded
+with the Query decoder correction, the 3.0 scenario checks the decoded
 operation list for equality, including order.
