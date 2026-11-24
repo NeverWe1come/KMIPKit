@@ -25,15 +25,22 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
+    private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] SHA256_EXPECTED = HexFormat.of().parseHex(
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
     private final KmipClient client;
     private final ConnectionConfig connection;
 
@@ -63,10 +70,72 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("Create".equals(testCase.operation()) || attributeRead(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
+        if (readOnlyProbe(testCase)) {
+            return executeReadOnlyProbe(testCase, start);
+        }
         ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
                 ? withBatchId(client.request().ping().build())
                 : TypedRequestFactory.create(testCase.operation(), !isDraft());
         return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
+    }
+
+    static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
+                .contains(testCase.caseId());
+    }
+
+    static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
+        return attributeRead(testCase) || readOnlyProbe(testCase)
+                || Set.of("Create", "Ping").contains(testCase.operation());
+    }
+
+    private CaseOutcome executeReadOnlyProbe(CatalogLoader.CatalogCase testCase, long start) {
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        try {
+            if ("Hash".equals(testCase.operation())) {
+                return executeRequest(testCase, withBatchId(hashRequest(fluent)), result -> {
+                    var payload = result.hashResponse().orElse(null);
+                    if (payload == null) return false;
+                    try (var ttlv = payload.responseTtlv()) {
+                        return payload.correlationValue().isEmpty()
+                                && payload.data().map(bytes -> Arrays.equals(bytes, SHA256_EXPECTED)).orElse(false);
+                    }
+                }, start);
+            }
+
+            return executeRequest(testCase, withBatchId(locateRequest(fluent)), result ->
+                    result.locateResponse().map(payload -> payload.locatedItems().orElse(0) == 0
+                            && payload.uniqueIdentifiers().isEmpty()).orElse(false), start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private ClientBatchItem hashRequest(boolean fluent) {
+        try (var parameters = appendOwnedValue(TtlvStructure.create(), 0x0042_0038, TtlvValue.Enumeration(6))) {
+            if (fluent) {
+                try (var builder = client.request().hash()) {
+                    return builder.cryptographicParametersStructure(parameters).data(HASH_INPUT).build();
+                }
+            }
+            try (var data = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                return ClientBatchItem.hash(parameters, data, null, null, null);
+            }
+        }
+    }
+
+    private ClientBatchItem locateRequest(boolean fluent) {
+        // Description is a Text String in all three versions.
+        byte[] isolatedDescription = ("kmipkit-locate-" + UUID.randomUUID()).getBytes(StandardCharsets.US_ASCII);
+        try (var source = appendOwnedValue(TtlvStructure.create(), 0x0042_00fc,
+                TtlvValue.TextString(isolatedDescription, CODEC_LIMITS))) {
+            if (fluent) {
+                try (var attributes = AttributeSet.tryNew(source); var builder = client.request().locate(attributes)) {
+                    return builder.maximumItems(1).offsetItems(0).build();
+                }
+            }
+            return ClientBatchItem.locate(1, 0, null, null, source);
+        }
     }
 
     private CaseOutcome executeRequest(CatalogLoader.CatalogCase testCase, ClientBatchItem request,

@@ -53,6 +53,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The operation reads attributes from a newly created and isolated key.");
         }
+        if (JavaKmipDriver.readOnlyProbe(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver verifies the response to a bounded Locate or known-answer SHA-256 request.");
+        }
         return routeFor(testCase.operation());
     }
 
