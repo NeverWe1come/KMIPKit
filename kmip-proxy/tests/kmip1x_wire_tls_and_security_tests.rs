@@ -130,14 +130,21 @@ async fn send_raw_ttlv_over_stream<S: AsyncReadExt + AsyncWriteExt + Unpin>(
         .await
         .map_err(|e| format!("read hdr error: {e}"))?;
     let payload_len = u32::from_be_bytes([hdr[4], hdr[5], hdr[6], hdr[7]]) as usize;
+    const MAX_TEST_FRAME_BYTES: usize = 16 * 1024 * 1024;
+    if payload_len > MAX_TEST_FRAME_BYTES {
+        return Err(format!(
+            "test TTLV frame too large: {payload_len} > {MAX_TEST_FRAME_BYTES}"
+        ));
+    }
     let padding = (8 - payload_len % 8) % 8;
-    let mut body = vec![0u8; payload_len + padding];
+    let body_len = payload_len + padding;
+    let mut body = vec![0u8; body_len];
     stream
         .read_exact(&mut body)
         .await
         .map_err(|e| format!("read body error: {e}"))?;
 
-    let mut full = Vec::with_capacity(8 + body.len());
+    let mut full = Vec::with_capacity(8 + body_len);
     full.extend_from_slice(&hdr);
     full.extend_from_slice(&body);
     Format::Ttlv.decode(&full)
