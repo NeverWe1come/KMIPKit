@@ -30,6 +30,11 @@ static void print_usage(const char *program) {
             program, program, program);
 }
 
+static unsigned int protocol_mask(const char *version) {
+    if (strcmp(version, "3.0") == 0) return KMIP_VERSION_MASK_3_0;
+    return strcmp(version, "2.0") == 0 ? KMIP_VERSION_MASK_2_0 : KMIP_VERSION_MASK_2_1;
+}
+
 static bool file_is_readable(const char *path) {
     if (!path || path[0] == '\0') return false;
     FILE *file = fopen(path, "rb");
@@ -184,8 +189,7 @@ int main(int argc, char **argv) {
         size_t server_exchange = 0;
         size_t mutations = 0;
         size_t incoming = 0;
-        unsigned int selected_version = strcmp(connection.protocol_version, "2.0") == 0
-            ? KMIP_VERSION_MASK_2_0 : KMIP_VERSION_MASK_2_1;
+        unsigned int selected_version = protocol_mask(connection.protocol_version);
         for (size_t index = 0; index < case_count; ++index) {
             const kmip_test_case_t *test_case = &cases[index];
             if ((test_case->protocol_version_mask & selected_version) == 0) continue;
@@ -245,8 +249,7 @@ int main(int argc, char **argv) {
             free(applicable);
             return 2;
         }
-        unsigned int selected_version = strcmp(connection.protocol_version, "2.0") == 0
-            ? KMIP_VERSION_MASK_2_0 : KMIP_VERSION_MASK_2_1;
+        unsigned int selected_version = protocol_mask(connection.protocol_version);
         size_t applicable_count = 0;
         for (size_t index = 0; index < case_count; ++index) {
             if ((cases[index].protocol_version_mask & selected_version) == 0) continue;

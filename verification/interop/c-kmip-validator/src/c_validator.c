@@ -130,7 +130,8 @@ bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_c
         out_connection->dedicated_test_environment_confirmed &&
         is_fingerprint(out_connection->server_configuration_fingerprint) &&
         (strcmp(out_connection->protocol_version, "2.0") == 0 ||
-         strcmp(out_connection->protocol_version, "2.1") == 0) &&
+         strcmp(out_connection->protocol_version, "2.1") == 0 ||
+         strcmp(out_connection->protocol_version, "3.0") == 0) &&
         (strcmp(out_connection->transport, "raw_tls") == 0 ||
          strcmp(out_connection->transport, "https") == 0) &&
         (strcmp(out_connection->encoding, "TTLV") == 0 ||
@@ -269,6 +270,7 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             }
             if (strcmp(version, "2.0") == 0) test_case->protocol_version_mask |= KMIP_VERSION_MASK_2_0;
             else if (strcmp(version, "2.1") == 0) test_case->protocol_version_mask |= KMIP_VERSION_MASK_2_1;
+            else if (strcmp(version, "3.0") == 0) test_case->protocol_version_mask |= KMIP_VERSION_MASK_3_0;
             else { valid = false; break; }
         }
         for (size_t j = 0; valid && j < json_array_length(&document, normative); ++j) {
@@ -281,7 +283,8 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
                 break;
             }
             size_t version_index = strcmp(name, "OASIS KMIP 2.0 Specification") == 0 ? 0 :
-                                  strcmp(name, "OASIS KMIP 2.1 Specification") == 0 ? 1 : KMIP_MAX_VERSIONS;
+                                  strcmp(name, "OASIS KMIP 2.1 Specification") == 0 ? 1 :
+                                  strcmp(name, "OASIS KMIP 3.0 Working Draft") == 0 ? 2 : KMIP_MAX_VERSIONS;
             if (version_index >= KMIP_MAX_VERSIONS) {
                 valid = false;
                 break;

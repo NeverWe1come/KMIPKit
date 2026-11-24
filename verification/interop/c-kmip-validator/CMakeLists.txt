@@ -114,6 +114,16 @@ if(Python3_Interpreter_FOUND AND OPENSSL_EXECUTABLE)
     )
     set_tests_properties(c_validator_controlled_tls_peer_kmip20 PROPERTIES TIMEOUT 60)
     add_test(
+        NAME c_validator_controlled_tls_peer_kmip30
+        COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/controlled_kms_test.py"
+            "$<TARGET_FILE:kmip_validator_c>"
+            "${OPENSSL_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../../.."
+            "3.0"
+    )
+    set_tests_properties(c_validator_controlled_tls_peer_kmip30 PROPERTIES TIMEOUT 30)
+    add_test(
         NAME c_validator_offline_generic_route
         COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/offline_generic_route_test.py"
