@@ -34,11 +34,11 @@ sequenceDiagram
 
 | KMIP 1.0–1.4 Concept | KMIP 2.0 / 2.1 / 3.0 Equivalent | Bridge Behavior (`src/kmip1x/`) |
 | :--- | :--- | :--- |
-| **`Attribute` (`0x420008`)** `{ Name, Index?, Value }` | **`Attributes` (`0x420125`)** with direct tags | Bidirectional conversion across **all 77 standard KMIP 1.0–1.4 attributes**. |
+| **`Attribute` (`0x420008`)** `{ Name, Index?, Value }` | **`Attributes` (`0x420125`)** with direct tags | Bidirectional conversion across **all 77 standard KMIP 1.0–1.4 attributes** (including recursive `Key Block` -> `Key Value` attributes). |
 | **`Template-Attribute`** (`Common`/`Private`/`Public`) | **`Attributes`** (`Common`/`Private`/`Public` `0x420125..=0x420128`) | Translated automatically; merges attributes from locally stored `Template` objects. |
-| **`Template` Object (`0x06`)** | *Removed in KMIP 2.0* | Emulated locally via thread-safe `TemplateStore` (`Register`, `Locate`, `Get`, `GetAttributes`, `GetAttributeList`, `Destroy`). |
+| **`Template` Object (`0x06`)** | *Removed in KMIP 2.0* | Emulated locally via thread-safe `TemplateStore` (in-memory or optional atomic JSON persistence via `template_store_path`): `Register`, `Locate`, `Get`, `GetAttributes`, `GetAttributeList`, `Destroy`. |
 | **`Add Attribute` (`0x0D`)** | `Set Attribute` (`0x31`) or `Add Attribute` (`0x0D`) | Routed by cardinality: `SingleInstance` -> `Set Attribute`; `MultiInstance` -> `Add Attribute`. Response always restored to `0x0D`. |
-| **`Modify Attribute` / `Delete Attribute` with `Attribute Index`** | `Current Attribute` (`0x42013C`) + `New Attribute` (`0x42013D`) | Automatic **Read-Modify-Write**: `Get Attributes` -> resolve exact index -> `Modify`/`Delete` by value; index preserved in 1.X response. |
+| **`Modify Attribute` / `Delete Attribute` with `Attribute Index`** | `Current Attribute` (`0x42013C`) + `New Attribute` (`0x42013D`) | Automatic **Read-Modify-Write**: `Get Attributes` -> resolve exact index (standard, vendor `(vendor, name)`, or KMIP 3.0 typed links) -> `Modify`/`Delete` by value; index preserved in 1.X response. |
 | **Custom `x-*` / `y-*` Attributes** | **Vendor Attribute** (`0x420008` + `Vendor Identification`) | Lossless bidirectional mapping (`x-dept` <-> `{ Vendor: "x", Name: "dept" }`). |
 | **KMIP 1.X `Link` (`0x42004A`)** | **KMIP 3.0 Typed Links (`0x420190..=0x42019D`)** | All 14 `Link Type` enums map bidirectionally when targeting KMIP 3.0. |
 | **Implicit `ID Placeholder`** (omitted UID in batch) | `Unique Identifier = Enumeration(1)` | Automatically injected into chained batch items when omitted in 1.X. |
@@ -84,7 +84,12 @@ allow_tls12 = false
 timeout_secs = 30
 # Policy for removed Operation Policy Name: "ignore" | "store_as_vendor_attribute" | "reject"
 operation_policy_mode = "ignore"
+max_connections = 8
+# Optional: persist KMIP 1.X Template objects atomically across restarts
+# template_store_path = "/var/lib/kmip-bridge/templates.json"
 ```
+
+Note: both listener and upstream certificates, keys, and CA chains auto-detect **PEM and DER** formats.
 
 ### Quick CLI Launch
 
@@ -134,3 +139,5 @@ For environments where a KMIP 2.0/2.1/3.0 server initiates `Notify`, `Put`, `Que
 * Intercepts S2C `Discover Versions` locally so the modern server negotiates its expected 2.0/2.1/3.0 version.
 * Translates incoming 2.0/2.1/3.0 `Notify` and `Put` `Attributes` structures into KMIP 1.X `Attribute` lists.
 * Translates the legacy client's KMIP 1.X `ResponseMessage` back to the server's KMIP 2.0/2.1/3.0 version.
+
+For full implementation details and troubleshooting, see [`kmip-proxy/docs/kmip1x-bridge-reference.md`](../../kmip-proxy/docs/kmip1x-bridge-reference.md) and [`kmip-proxy/docs/testing-and-troubleshooting.md`](../../kmip-proxy/docs/testing-and-troubleshooting.md).

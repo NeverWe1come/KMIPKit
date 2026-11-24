@@ -1,4 +1,53 @@
-//! KMIPKit Proxy: Stateless Zero-DB KMIP bridge for Cloud KMS and KMIP 1.X -> 2.0/2.1/3.0 translation.
+//! # `kmipkit-proxy` — Stateless Zero-DB Cloud KMS Proxy & KMIP 1.X Bridge
+//!
+//! **`kmipkit-proxy`** exposes a single TLS/TCP/HTTP listener ([`ProxyServer`]) backed by
+//! `#![forbid(unsafe_code)]` and two composable translation engines:
+//!
+//! 1. **Cloud & Enterprise KMS Proxy (`RequestDispatcher`)**: Maps OASIS KMIP `2.0`, `2.1`, and `3.0`
+//!    operations into native cloud KMS and Secret Store APIs across 10 providers
+//!    (`aws`, `azure`, `gcp`, `oci`, `vault`, `infisical`, `ibm`, `alibaba`, `scaleway`, `otc`, plus
+//!    [`InMemoryMockProvider`]) using:
+//!    - [`TagCodec`]: Deterministic RFC 4648 Base32Hex tag-stuffing (`<= 60` chars per tag).
+//!    - [`AutoEnvelope`]: Local AES-256-GCM DEK wrapping with `zeroize::Zeroizing` RAM hygiene.
+//!    - [`MetadataCache`]: Short-lived TTL cache reducing cloud control-plane calls.
+//! 2. **KMIP 1.X Legacy Protocol Bridge (`kmip1x`, default feature `kmip1x-bridge`)**:
+//!    Transparently translates bidirectional `KMIP 1.0..1.4 <-> 2.0/2.1/3.0` traffic via
+//!    [`Kmip1xBridge`] (Client-to-Server) and [`Kmip1xS2cBridge`] (Server-to-Client), either toward
+//!    an external KMIP server ([`KmipKitUpstreamTransport`]) or chained locally into any Cloud KMS
+//!    backend ([`LocalDispatcherUpstream`]).
+//!
+//! ## Wire Protocols & Security
+//!
+//! * **Protocol Sniffing**: Detects Raw TTLV (`0x42...`) and HTTP/1.1 `POST` (`TTLV`, `JSON`, `XML`)
+//!   on the same port with configurable TLS 1.3 (and optional TLS 1.2 for legacy clients).
+//! * **Certificate Formats**: Accepts both PEM and DER certificates, keys, and CA chains; generates
+//!   ephemeral [`AutoPki`] credentials automatically when `tls_cert_path` is omitted.
+//! * **Cargo Features**: `kmip1x-bridge` (default), `aws`, `azure`, `gcp`, `oci`, `vault`,
+//!   `infisical`, `ibm`, `alibaba`, `scaleway`, `otc`, and `all-clouds`.
+//!
+//! ## Quick Example: Chaining KMIP 1.X Clients to a Proxy Backend
+//!
+//! ```no_run
+//! # #[cfg(feature = "kmip1x-bridge")]
+//! # async fn example() -> Result<(), String> {
+//! use std::sync::Arc;
+//! use kmipkit_proxy::{
+//!     InMemoryMockProvider, Kmip1xBridge, LocalDispatcherUpstream, ProxyBehaviorConfig,
+//!     ProxyConfig, ProxyServer, RequestDispatcher, UpstreamKmipVersion,
+//! };
+//!
+//! let dispatcher = Arc::new(RequestDispatcher::new(
+//!     Arc::new(InMemoryMockProvider::default()),
+//!     ProxyBehaviorConfig::default(),
+//! ));
+//! let bridge = Arc::new(Kmip1xBridge::new(
+//!     Arc::new(LocalDispatcherUpstream::new(dispatcher)),
+//!     UpstreamKmipVersion::V2_1,
+//! ));
+//! let handle = ProxyServer::start_kmip1x_bridge(ProxyConfig::default(), bridge).await?;
+//! handle.shutdown().await
+//! # }
+//! ```
 #![forbid(unsafe_code)]
 #![allow(
     unknown_lints,

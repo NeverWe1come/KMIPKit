@@ -38,26 +38,40 @@ Serializa determinísticamente los atributos normativos de KMIP (`State`, `Crypt
 
 ## 2. Proveedores Soportados (10 Backends)
 
-| Proveedor | Feature Cargo | Servicio KMS Nativo | Secret Store (Auto-Envelope) |
-| :--- | :--- | :--- | :--- |
-| **AWS** | `--features aws` | AWS KMS | AWS Secrets Manager |
-| **Azure** | `--features azure` | Azure Key Vault Keys / Managed HSM | Azure Key Vault Secrets |
-| **Google Cloud** | `--features gcp` | Cloud KMS | Cloud Secret Manager |
-| **Oracle OCI** | `--features oci` | OCI Vault (Management + Crypto) | OCI Vault Secrets |
-| **HashiCorp Vault / OpenBao** | `--features vault` | Transit Secrets Engine | KV v2 Secrets Engine |
-| **Infisical** | `--features infisical` | Infisical KMS | Infisical Secrets |
-| **IBM Cloud** | `--features ibm` | IBM Key Protect | IBM Key Protect Standard Keys |
-| **Alibaba Cloud** | `--features alibaba` | Alibaba Cloud KMS | Alibaba Secrets Manager |
-| **Scaleway** | `--features scaleway` | Scaleway Key Manager | Scaleway Secret Manager |
-| **Open Telekom Cloud** | `--features otc` | OTC KMS (DEW) | OTC CSMS |
+| Proveedor | Feature Cargo | Servicio KMS Nativo | Secret Store (`AutoEnvelope`) | Variables de Entorno Principales |
+| :--- | :--- | :--- | :--- | :--- |
+| **AWS** | `--features aws` | AWS KMS | AWS Secrets Manager | Cadena estándar del AWS SDK |
+| **Azure** | `--features azure` | Azure Key Vault Keys / Managed HSM | Azure Key Vault Secrets | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` |
+| **Google Cloud** | `--features gcp` | Cloud KMS | Cloud Secret Manager | `GOOGLE_OAUTH_ACCESS_TOKEN` |
+| **Oracle OCI** | `--features oci` | OCI Vault (Management + Crypto) | OCI Vault Secrets | `OCI_AUTH_TOKEN` |
+| **HashiCorp Vault / OpenBao** | `--features vault` | Transit Secrets Engine | KV v2 Secrets Engine | `VAULT_TOKEN` |
+| **Infisical** | `--features infisical` | Infisical KMS | Infisical Secrets | `INFISICAL_TOKEN` |
+| **IBM Cloud** | `--features ibm` | IBM Key Protect | IBM Key Protect Standard Keys | `IBMCLOUD_API_KEY`, `IBM_AUTH_TOKEN` |
+| **Alibaba Cloud** | `--features alibaba` | Alibaba Cloud KMS | Alibaba Secrets Manager | `ALIBABA_CLOUD_ACCESS_KEY_ID`, `ALIBABA_CLOUD_ACCESS_KEY_SECRET`, `ALIBABA_AUTH_TOKEN` |
+| **Scaleway** | `--features scaleway` | Scaleway Key Manager | Scaleway Secret Manager | `SCW_SECRET_KEY`, `SCW_DEFAULT_PROJECT_ID` |
+| **Open Telekom Cloud** | `--features otc` | OTC KMS (DEW) | OTC CSMS | `OTC_REGION`, `OTC_PROJECT_ID`, `OTC_AUTH_TOKEN` |
 
 ```bash
+python3 verification/security/openssl/build.py
+export OPENSSL_DIR="$HOME/.cache/kmipkit/openssl/3.5.9"
+export OPENSSL_STATIC=1
 cargo build --release --manifest-path kmip-proxy/Cargo.toml --features all-clouds
 ```
 
+> **Uso vía CLI vs librería Rust:** El binario CLI `kmipkit-proxy` (`kmip-proxy/src/main.rs`) instancia directamente `kmip-upstream`, `mock`, `aws`, `azure`, `gcp` y `oci`. Para utilizar `vault`, `infisical`, `ibm`, `alibaba`, `scaleway` u `otc`, instáncialos programáticamente con `kmipkit_proxy::providers::create_provider(&config.backend)`.
+
 ---
 
-## 3. Ejemplos de Configuración (`proxy.toml`)
+## 3. Detección de Protocolo en Red, TLS y Operaciones KMIP Soportadas
+
+* **Protocol Sniffing en puerto único:** Inspecciona el primer byte de cada conexión (`0x42` → Raw TTLV; `'P'`/`'p'` → HTTP/1.1 `POST` con enrutamiento por `Content-Type`: `application/octet-stream`, `application/json`, `text/xml`/`application/xml` y soporte *keep-alive*).
+* **Límites de seguridad y memoria:** Cabeceras HTTP acotadas a `16 KiB`, cuerpos/tramas TTLV y JSON a `16 MiB`, recursión JSON a profundidad `64`, y `#![forbid(unsafe_code)]` en todo el crate.
+* **Certificados PEM/DER y AutoPKI:** Acepta certificados, claves privadas (`PKCS#8`, RSA, EC) y CAs tanto en **PEM** como en **DER**. Si `tls_enabled = true` y se omite `tls_cert_path`, genera automáticamente una PKI efímera `AutoPki`.
+* **Operaciones KMIP soportadas (`RequestDispatcher`):** `Create`, `Create Key Pair`, `Register`, `Locate`, `Get`, `Activate`, `Revoke`, `Destroy`, `Deactivate`, CRUD de atributos (`Get Attributes`, `Get Attribute List`, `Add/Modify/Delete Attribute`), `Encrypt`, `Decrypt`, `Sign`, `Signature Verify`, `MAC`, `MAC Verify`, `RNG Retrieve`, `Query`, `Discover Versions` y `Ping`.
+
+---
+
+## 4. Ejemplos de Configuración y CLI (`proxy.toml`)
 
 ### Ejemplo A: AWS KMS + Secrets Manager
 
@@ -83,7 +97,7 @@ envelope_master_kek_id = "arn:aws:kms:eu-west-1:123456789012:key/mrk-1234abcd"
 secret_name_prefix = "kmipkit/"
 ```
 
-### Ejemplo B: HashiCorp Vault / OpenBao
+### Ejemplo B: HashiCorp Vault / OpenBao (vía `create_provider`)
 
 ```toml
 [listener]
@@ -106,6 +120,10 @@ role_id = "your-approle-id"
 role_cred = "your-approle-secret"
 ```
 
+### Ejecución y Flags CLI
+
 ```bash
 kmipkit-proxy --config /etc/kmip-proxy/proxy.toml
 ```
+
+Flags CLI principales: `-c/--config`, `-l/--listen`, `-p/--provider`, `--upstream-endpoint`, `--upstream-version`, `--allow-tls12`, `--master-kek-hex`, `--no-client-auth`, `--no-tls`. Consulta la referencia completa de los 10 backends en [`kmip-proxy/docs/configuration-and-providers.md`](../../kmip-proxy/docs/configuration-and-providers.md).

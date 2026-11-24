@@ -124,3 +124,5 @@ let handle = ProxyServer::start_kmip1x_bridge(proxy_config, bridge).await?;
 ## 5. Pont Server-to-Client (`Kmip1xS2cBridge`)
 
 Pour les serveurs KMIP 2.0/2.1/3.0 initiant `Notify`, `Put`, `Query` ou `Discover Versions` vers un client KMIP 1.X legacy, `kmipkit_proxy::Kmip1xS2cBridge` traduit les requêtes S2C vers 1.X et restaure les réponses 1.X vers la version du serveur.
+
+Référence technique détaillée et dépannage : [`kmip-proxy/docs/kmip1x-bridge-reference.md`](../../kmip-proxy/docs/kmip1x-bridge-reference.md) et [`kmip-proxy/docs/testing-and-troubleshooting.md`](../../kmip-proxy/docs/testing-and-troubleshooting.md).
