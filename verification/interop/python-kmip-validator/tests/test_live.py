@@ -3,7 +3,7 @@
 import json
 import os
 import unittest
-from unittest.mock import call, Mock, patch
+from unittest.mock import call, MagicMock, Mock, patch
 
 from kmipkit_validator.contract import DEFAULT_CATALOG
 from kmipkit_validator.driver import PythonKmipDriver
@@ -249,6 +249,28 @@ class ControlledExchangeTests(unittest.TestCase):
                     self.assertEqual("server_unsupported", result["status"])
                     observations.append((peer.requests[0], peer.responses[0]))
                 self.assertEqual(*observations)
+
+    def test_rejected_ml_kem_setup_is_not_reported_as_a_target_exchange(self):
+        for operation in ("Encapsulate", "Decapsulate"):
+            for api in ("typed-protocol", "fluent"):
+                with self.subTest(operation=operation, api=api):
+                    driver = PythonKmipDriver.__new__(PythonKmipDriver)
+                    driver._api_level = api
+                    driver._extensions = MagicMock()
+                    driver._fixture_attributes = MagicMock()
+                    driver._build_draft_item = Mock()
+                    driver._exchange = Mock(return_value={
+                        "status": "server_unsupported", "result_status_code": 1, "result_reason_code": 5,
+                    })
+                    case = {"case_id": f"test-op-{operation.lower()}", "operation": operation}
+                    outcome = driver.execute_case(case)
+                    self.assertEqual("not_run", outcome["status"])
+                    self.assertEqual("unknown", outcome["server_compatibility"])
+                    self.assertNotIn("result_reason_code", outcome)
+                    self.assertIn("ML-KEM fixture key pair", outcome["diagnostic"])
+                    driver._extensions.client_batch_item_create_key_pair.assert_called_once()
+                    driver._exchange.assert_called_once()
+                    driver._build_draft_item.assert_not_called()
 
     def test_locate_cleanup_destroys_only_the_owned_fixture(self):
         from kmipkit import extensions
