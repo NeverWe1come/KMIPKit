@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Package the publishable KMIPKit Rust SDK crates into a self-contained tarball."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import shutil
+import subprocess
+import tarfile
+import tempfile
+from pathlib import Path
+
+PUBLISHABLE_CRATES = (
+    "kmipkit-ttlv",
+    "kmipkit-protocol",
+    "kmipkit-transport",
+    "kmipkit-client",
+    "kmipkit",
+)
+
+
+def rewrite_workspace_toml(cargo_toml_text: str) -> str:
+    members_block = (
+        "members = [\n"
+        + "".join(f'    "crates/{c}",\n' for c in PUBLISHABLE_CRATES)
+        + "]"
+    )
+    updated = re.sub(
+        r"members\s*=\s*\[[^\]]*\]",
+        members_block,
+        cargo_toml_text,
+        count=1,
+        flags=re.DOTALL,
+    )
+    # Remove non-packaged workspace dependency entries so Cargo workspace loads cleanly.
+    for excluded in ("kmipkit-ffi", "kmipkit-test-support", "kmipkit-test-server"):
+        updated = re.sub(rf"(?m)^{re.escape(excluded)}\s*=.*\n", "", updated)
+    return updated
+
+
+def package_rust_sdk(
+    repo_root: Path,
+    output_dir: Path,
+    version: str,
+    smoke_test: bool = False,
+) -> Path:
+    stem = f"kmipkit-rust-sdk-{version}"
+    archive_path = output_dir / f"{stem}.tar.gz"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        stage = Path(tmp) / stem
+        stage.mkdir(parents=True)
+
+        root_toml = (repo_root / "Cargo.toml").read_text(encoding="utf-8")
+        (stage / "Cargo.toml").write_text(
+            rewrite_workspace_toml(root_toml), encoding="utf-8"
+        )
+        shutil.copy2(repo_root / "Cargo.lock", stage / "Cargo.lock")
+
+        for doc in ("LICENSE", "NOTICE", "README.md"):
+            src = repo_root / doc
+            if src.is_file():
+                shutil.copy2(src, stage / doc)
+
+        crates_dst = stage / "crates"
+        crates_dst.mkdir()
+        for crate in PUBLISHABLE_CRATES:
+            shutil.copytree(
+                repo_root / "crates" / crate,
+                crates_dst / crate,
+                ignore=shutil.ignore_patterns("target", "*.swp"),
+            )
+
+        with tarfile.open(archive_path, "w:gz") as tar:
+            tar.add(stage, arcname=stem)
+
+        if smoke_test:
+            subprocess.run(
+                ["cargo", "check", "--locked", "-p", "kmipkit"],
+                cwd=stage,
+                check=True,
+            )
+
+    return archive_path
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo", type=Path, default=Path("."))
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--version", required=True)
+    parser.add_argument("--smoke-test", action="store_true")
+    args = parser.parse_args(argv)
+
+    archive = package_rust_sdk(
+        repo_root=args.repo.resolve(),
+        output_dir=args.output_dir.resolve(),
+        version=args.version,
+        smoke_test=args.smoke_test,
+    )
+    print(f"Packaged Rust SDK: {archive}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

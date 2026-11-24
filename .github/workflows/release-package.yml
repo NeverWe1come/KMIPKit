@@ -71,6 +71,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       RUSTUP_TOOLCHAIN: '1.94'
+      RELEASE_VERSION: ${{ needs.verify-version.outputs.version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
@@ -83,20 +84,22 @@ jobs:
       - name: Install Rust 1.94
         run: rustup toolchain install 1.94 --profile minimal
 
-      - name: Package publishable workspace crates
+      - name: Package publishable Rust SDK & standalone kmipkit-ttlv crate
         run: |
           mkdir -p dist/rust
           cargo package --locked -p kmipkit-ttlv
-          for crate in kmipkit-protocol kmipkit-transport kmipkit-client kmipkit; do
-            cargo package --locked --no-verify -p "$crate"
-          done
           cp target/package/*.crate dist/rust/
+          python3 -B verification/release/package_rust_sdk.py \
+            --repo . \
+            --output-dir dist/rust \
+            --version "$RELEASE_VERSION" \
+            --smoke-test
 
       - name: Upload Rust crate artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: dist-rust
-          path: dist/rust/*.crate
+          path: dist/rust/*
           if-no-files-found: error
 
   package-c:
@@ -285,9 +288,10 @@ jobs:
           no-project: true
 
       - name: Build Python sdist with maturin
+        working-directory: bindings/python
         run: |
-          uv pip install --requirement bindings/python/requirements-coverage.txt
-          maturin sdist --manifest-path crates/kmipkit-ffi/Cargo.toml --out dist/python-sdist
+          uv pip install --requirement requirements-coverage.txt
+          maturin sdist --out ../../dist/python-sdist
 
       - name: Upload Python sdist
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
@@ -344,13 +348,18 @@ jobs:
         run: |
           uv pip install --requirement bindings/python/requirements-coverage.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -m pip wheel --no-build-isolation --no-deps bindings/python --wheel-dir dist/python
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location bindings/python
+          try {
+            maturin build --release --locked --out ../../dist/python
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } finally {
+            Pop-Location
+          }
           $wheel = Get-ChildItem -LiteralPath dist/python -Filter '*.whl' | Select-Object -First 1
           if (-not $wheel) { throw 'No Python wheel produced.' }
           uv pip install --force-reinstall $wheel.FullName
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -c "import kmipkit; info = kmipkit.version(); assert info.abi_version == 1; print('Python wheel smoke OK:', info)"
+          python -c "import kmipkit; info = kmipkit.metadata.get_version(); assert info.abi_version == 1; print('Python wheel smoke OK:', info)"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload Python wheel
