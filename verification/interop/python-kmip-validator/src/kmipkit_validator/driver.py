@@ -127,18 +127,23 @@ def _catalog_model_data() -> tuple[
 class PythonKmipDriver:
     """Execute explicit typed recipes through the independently installed package."""
 
+    _DRAFT_CREATE = {"Create Group", "Create User", "Create Credential"}
+    _DRAFT_KEM = {"Encapsulate", "Decapsulate"}
+    _DRAFT = _DRAFT_CREATE | _DRAFT_KEM | {"Deactivate", "Obliterate"}
+
     _HIGH_LEVEL_OPERATIONS = {
         "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes",
         "Get Attribute List", "Modify Attribute", "Set Attribute",
         "Query Asynchronous Requests",
     }
-    _FLUENT_OPERATIONS = {
+    _FLUENT_OPERATIONS = _DRAFT | {
         "Create", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
         "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
     }
-    _OPERATIONS = {
+    _OPERATIONS = _DRAFT | {
+        "Set Endpoint Role",
         "Discover Versions", "Ping", "Query", "Login", "Logout", "Delegated Login",
         "Log", "Interop", "Create", "Create Key Pair", "Create Split Key", "Register",
         "Import", "Certify", "Re-certify", "Re-Provision", "Validate", "PKCS#11",
@@ -150,11 +155,12 @@ class PythonKmipDriver:
         "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify",
         "Poll", "Process", "Cancel", "Query Asynchronous Requests",
     }
-    _CREATES_OBJECTS = {
+    _CREATES_OBJECTS = _DRAFT_CREATE | {
         "Create", "Create Key Pair", "Create Split Key", "Register", "Import", "Certify",
         "Re-certify", "Re-Provision", "Re-key", "Re-key Key Pair", "Derive Key", "Join Split Key",
     }
-    _NO_OBJECT = {
+    _NO_OBJECT = _DRAFT_CREATE | _DRAFT_KEM | {
+        "Set Endpoint Role",
         "Discover Versions", "Ping", "Query", "Login", "Logout", "Delegated Login", "Log",
         "Interop", "Create", "Create Key Pair", "Create Split Key", "Register", "Import",
         "Certify", "Re-Provision", "Validate", "PKCS#11", "Get Constraints", "Set Constraints",
@@ -315,6 +321,51 @@ class PythonKmipDriver:
             raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
         return [reference.tag(tag)]
 
+    def _build_draft_item(
+        self, operation: str, identifier: Any | None, name: str,
+        *, fluent: bool, ciphertext: bytes | None = None,
+    ) -> Any:
+        from kmipkit import attribute_operations
+        from kmipkit.credentials import CredentialType, SecretText
+        from kmipkit.fluent import CreateCredentialObject, Request
+
+        extension = self._extensions
+        request = Request(self._client)
+        if operation in self._DRAFT_CREATE:
+            with (
+                self._structure([self._item(0x0042_00FC, "text", name)]) as fields,
+                attribute_operations.AttributeSet.try_new(fields) as attrs,
+            ):
+                if operation == "Create Group":
+                    return (request.create_group(attrs).build() if fluent
+                            else extension.client_batch_item_create_group_from_attributes(attrs))
+                if operation == "Create User":
+                    return (request.create_user(attrs).build() if fluent
+                            else extension.client_batch_item_create_user_from_attributes(attrs))
+                password = str(uuid.uuid4())
+                if fluent:
+                    with SecretText.from_text(password) as secret, CreateCredentialObject.password(password=secret) as credential:
+                        return request.create_credential(attrs, credential).build()
+                with self._structure_item(0x0042_01A1, [self._item(0x0042_00A1, "text", password)]) as credential:
+                    return extension.client_batch_item_create_credential_from_fields(
+                        CredentialType(7), 0x0D, attrs, credential
+                    )
+        if identifier is None:
+            raise LocalRecipeUnavailable("draft operation requires an owned fixture identifier")
+        if operation == "Deactivate":
+            return (request.deactivate(identifier).build() if fluent
+                    else extension.client_batch_item_deactivate_from_fields(identifier))
+        if operation == "Obliterate":
+            return (request.obliterate(identifier).build() if fluent
+                    else extension.client_batch_item_obliterate_from_identifier(identifier))
+        if operation == "Encapsulate":
+            return (request.encapsulate(identifier).build() if fluent
+                    else extension.client_batch_item_encapsulate_from_fields(identifier))
+        if ciphertext is None:
+            raise LocalRecipeUnavailable("Decapsulate requires ciphertext from the owned fixture")
+        return (request.decapsulate(identifier, ciphertext).build() if fluent
+                else extension.client_batch_item_decapsulate_from_fields(identifier, ciphertext))
+
     def _build_fluent_item(
         self, case: dict[str, Any], identifier: Any, *, name: str,
         data: bytes = b"A" * 16, auxiliary: bytes | None = None,
@@ -324,6 +375,8 @@ class PythonKmipDriver:
 
         request = Request(self._client)
         operation = case["operation"]
+        if operation in self._DRAFT:
+            return self._build_draft_item(operation, identifier, name, fluent=True, ciphertext=auxiliary)
         if operation == "Ping":
             return request.ping().build()
         if operation == "Get Attributes":
@@ -351,7 +404,7 @@ class PythonKmipDriver:
                     builder.signature_data(auxiliary or bytes(256))
                 return builder.build()
         if operation in {"Create", "Locate"}:
-            with self._attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
+            with self._fixture_attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
                 if operation == "Create":
                     with request.create() as builder:
                         return builder.object_type(2).attributes(attrs).build()
@@ -1038,11 +1091,16 @@ class PythonKmipDriver:
         value_item = cls._item(0x0042_000B, kind, value)
         return cls._structure_item(0x0042_0008, [name_item, value_item])
 
+    def _fixture_attributes(self, name: str, algorithm: int = 3, bits: int = 256, **options: Any) -> Any:
+        return self._attributes(name, algorithm, bits, protocol_version=self._connection["protocol_version"], **options)
+
     @classmethod
     def _attributes(
-        cls, name: str, algorithm: int = 3, bits: int = 256, *, include_comment: bool = False
+        cls, name: str, algorithm: int = 3, bits: int = 256, *, include_comment: bool = False,
+        protocol_version: str = "2.1"
     ) -> Any:
-        name_value = cls._structure_item(
+        # The pinned AttributeSet accepts Structure for Name. Use a disposable Description for 3.0.
+        name_value = cls._item(0x0042_00FC, "text", name) if protocol_version == "3.0" else cls._structure_item(
             0x0042_0053,
             [cls._item(0x0042_0055, "text", name), cls._item(0x0042_0054, "enumeration", 1)],
         )
@@ -1108,12 +1166,16 @@ class PythonKmipDriver:
 
         operation = case["operation"]
         extension = self._extensions
+        if operation in self._DRAFT:
+            return self._build_draft_item(operation, identifier, name, fluent=False, ciphertext=auxiliary)
+        if operation == "Set Endpoint Role":
+            return extension.client_batch_item_set_endpoint_role(1)
         params = (
             self._cryptographic_parameters(case, operation)
             if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify", "Hash"}
             else self._structure([])
         )
-        attrs = self._attributes(name)
+        attrs = self._fixture_attributes(name)
         try:
             if operation == "Discover Versions":
                 return extension.client_batch_item_discover_versions()
@@ -1170,7 +1232,7 @@ class PythonKmipDriver:
                 elif object_type == "Certificate Request":
                     cert = (fixture_root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes()
                     attrs.close()
-                    attrs = self._attributes(name, 6, 256)
+                    attrs = self._fixture_attributes(name, 6, 256)
                     object_item = self._structure_item(
                         0x0042_0018,
                         [self._item(0x0042_0019, "enumeration", 1), self._item(0x0042_0140, "bytes", cert)],
@@ -1470,6 +1532,13 @@ class PythonKmipDriver:
                         observed.private_key_unique_identifier,
                         observed.public_key_unique_identifier,
                         *(observed.split_key_unique_identifiers or ()),
+                        *(payload.unique_identifier for payload in (
+                            getattr(observed, "create_group_response", None),
+                            getattr(observed, "create_user_response", None),
+                            getattr(observed, "create_credential_response", None),
+                            getattr(observed, "encapsulate_response", None),
+                            getattr(observed, "decapsulate_response", None),
+                        ) if payload is not None),
                     ) if value is not None],
                     "_bytes": self._response_bytes(observed),
                     "_ticket_ttlv": (
@@ -1511,6 +1580,9 @@ class PythonKmipDriver:
 
     @staticmethod
     def _response_bytes(observed: Any) -> bytes | None:
+        ciphertext = getattr(observed, "encapsulate_data", None)
+        if isinstance(ciphertext, bytes):
+            return ciphertext
         for name, member in (
             ("encrypt_response", "data"),
             ("decrypt_response", "data"),
@@ -1587,7 +1659,7 @@ class PythonKmipDriver:
             limits.close()
 
     def _start_async_create(self, name: str) -> dict[str, Any]:
-        attributes = self._attributes(name, 3, 128)
+        attributes = self._fixture_attributes(name, 3, 128)
         try:
             item = self._extensions.client_batch_item_create(2, attributes)
         finally:
@@ -1734,7 +1806,7 @@ class PythonKmipDriver:
         outcome: dict[str, Any] | None = None
         try:
             if setup_required:
-                attributes = self._attributes(
+                attributes = self._fixture_attributes(
                     unique_name,
                     algorithm,
                     bits,
@@ -1768,6 +1840,53 @@ class PythonKmipDriver:
                             return activated
                 if operation == "Signature Verify" and len(created_ids) > 1:
                     target_identifier = created_ids[1]
+            if operation in {"Deactivate", "Obliterate"}:
+                activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated["status"] != "passed":
+                    raise LocalRecipeUnavailable("server rejected activation of the owned fixture")
+                if operation == "Obliterate":
+                    with self._build_item(test_case | {"operation": "Revoke"}, target_identifier, name=unique_name) as revoke:
+                        revoked = self._exchange(revoke)
+                    if revoked["status"] != "passed":
+                        raise LocalRecipeUnavailable("server rejected revocation of the owned fixture")
+                    with self._extensions.client_batch_item_destroy(target_identifier) as destroy:
+                        destroyed = self._exchange(destroy)
+                    if destroyed["status"] != "passed":
+                        raise LocalRecipeUnavailable("server rejected destruction of the owned fixture")
+            if operation in self._DRAFT_KEM:
+                with (
+                    self._fixture_attributes(unique_name, 0x3A, 768) as attributes,
+                    self._extensions.client_batch_item_create_key_pair(common_attributes=attributes) as create,
+                ):
+                    pair = self._exchange(create)
+                if pair["status"] != "passed":
+                    raise LocalRecipeUnavailable("server rejected the ML-KEM fixture key pair")
+                identifiers.extend(pair.get("_identifiers", []))
+                if len(identifiers) != 2:
+                    raise LocalRecipeUnavailable("server did not return two owned ML-KEM identifiers")
+                private, public = identifiers
+                for identifier in (private, public):
+                    with self._extensions.client_batch_item_activate(identifier) as activate:
+                        active = self._exchange(activate)
+                    if active["status"] != "passed":
+                        raise LocalRecipeUnavailable("server rejected activation of an owned ML-KEM key")
+                ciphertext = None
+                if operation == "Decapsulate":
+                    with self._build_draft_item("Encapsulate", public, unique_name, fluent=False) as encapsulate:
+                        output = self._exchange(encapsulate)
+                    if output["status"] == "passed":
+                        self._own_kem_fixture(identifiers, output)
+                    ciphertext = output.get("_bytes")
+                    if output["status"] != "passed" or not ciphertext:
+                        raise LocalRecipeUnavailable("Encapsulate setup returned no ciphertext")
+                with self._build_draft_item(
+                    operation, public if operation == "Encapsulate" else private, unique_name,
+                    fluent=self._api_level == "fluent", ciphertext=ciphertext,
+                ) as request:
+                    outcome = self._exchange(request)
+                if outcome["status"] == "passed":
+                    self._own_kem_fixture(identifiers, outcome)
+                return outcome
             if operation == "Logout":
                 login = self._exchange(self._extensions.client_batch_item_login(request_count=2))
                 if login["status"] != "passed":
@@ -1832,7 +1951,7 @@ class PythonKmipDriver:
             if operation == "Decrypt" and result["status"] == "passed" and result.get("_bytes") != b"A" * 16:
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown")
             outcome = result
-            if operation == "Destroy" and result["status"] == "passed" and target_identifier in identifiers:
+            if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)
         finally:
             for identifier in reversed(identifiers):
@@ -1857,6 +1976,13 @@ class PythonKmipDriver:
             "status": "failed", "library_correctness": "not_checked",
             "server_compatibility": "unknown", "parity": "not_compared",
         }
+
+    @staticmethod
+    def _own_kem_fixture(identifiers: list[Any], result: dict[str, Any]) -> None:
+        created = tuple(dict.fromkeys(result.get("_identifiers", ())))
+        if len(created) != 1 or created[0] in identifiers:
+            raise LocalRecipeUnavailable("successful KEM result requires a new secret fixture identifier")
+        identifiers.append(created[0])
 
     def close(self) -> None:
         self._client.close()

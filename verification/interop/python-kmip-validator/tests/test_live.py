@@ -9,7 +9,7 @@ from kmipkit_validator.contract import DEFAULT_CATALOG
 from kmipkit_validator.driver import PythonKmipDriver
 from kmipkit_validator.controlled_peer import (
     ControlledTlsPeer, PKI, find_value, normalized_operation_name,
-    parse_children, text_response,
+    parse_children, ping_response, text_response,
 )
 
 
@@ -135,6 +135,7 @@ class ControlledExchangeTests(unittest.TestCase):
         transport: str,
         protocol_version: str = "2.1",
         fluent: bool = False,
+        draft_operation: str | None = None,
     ) -> dict:
         from kmipkit import extensions
 
@@ -158,12 +159,17 @@ class ControlledExchangeTests(unittest.TestCase):
             },
         }
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
-        case = next(entry for entry in catalog["test_cases"] if entry["case_id"] == case_id)
+        case = (next(entry for entry in catalog["test_cases"] if entry["case_id"] == case_id)
+                if draft_operation is None else {"case_id": case_id, "operation": draft_operation})
         driver = PythonKmipDriver(connection)
-        identifier = extensions.UniqueIdentifier.text_string("same-request-fixture")
+        identifier = (extensions.UniqueIdentifier.identifier("same-request-fixture")
+                      if draft_operation is not None else extensions.UniqueIdentifier.text_string("same-request-fixture"))
         item = None
         try:
-            if fluent:
+            if draft_operation is not None:
+                item = driver._build_draft_item(draft_operation, identifier, "same-request", fluent=fluent,
+                                                ciphertext=b"draft-fixture-ciphertext")
+            elif fluent:
                 item = driver._build_fluent_item(case, identifier, name="same-request")
             elif high_level:
                 item = driver._build_high_level_item(case, identifier, name="same-request")
@@ -223,6 +229,27 @@ class ControlledExchangeTests(unittest.TestCase):
                         [result["status"] for result in outcomes],
                     )
 
+    def test_all_draft_operations_reach_a_kmip30_peer_by_both_builders(self):
+        for operation in (
+            "Create Group", "Create User", "Create Credential", "Deactivate",
+            "Obliterate", "Encapsulate", "Decapsulate",
+        ):
+            with self.subTest(operation=operation):
+                observations = []
+                for fluent in (False, True):
+                    peer = ControlledTlsPeer(response_factory=lambda request: ping_response(
+                        request, status=1, reason=5, protocol_minor=0, protocol_major=3,
+                    ))
+                    with patch("kmipkit_validator.driver.uuid.uuid4", return_value="disposable-fixture"):
+                        result = self._execute_attribute_route(
+                            peer, high_level=False, case_id="draft-operation-probe", fluent=fluent,
+                            encoding="TTLV", transport="raw_tls", protocol_version="3.0",
+                            draft_operation=operation,
+                        )
+                    self.assertEqual("server_unsupported", result["status"])
+                    observations.append((peer.requests[0], peer.responses[0]))
+                self.assertEqual(*observations)
+
     def test_locate_cleanup_destroys_only_the_owned_fixture(self):
         from kmipkit import extensions
 
@@ -235,7 +262,7 @@ class ControlledExchangeTests(unittest.TestCase):
                 driver = PythonKmipDriver.__new__(PythonKmipDriver)
                 driver._api_level = api
                 driver._extensions = Mock()
-                driver._attributes = Mock()
+                driver._fixture_attributes = Mock()
                 driver._build_item = Mock()
                 driver._build_fluent_item = Mock()
                 driver._exchange = Mock(side_effect=[

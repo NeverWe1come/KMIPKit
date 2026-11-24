@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kmipkit.org/schemas/test-catalog.schema.json",
-  "title": "Versioned KMIP 2.0 and 2.1 Executable Test Catalog",
+  "title": "Versioned KMIP Executable Test Catalog",
   "type": "object",
   "required": ["version", "target_versions", "capability_policy", "execution_policy", "statistics", "test_cases"],
   "properties": {
@@ -55,7 +55,7 @@
               "type": "object",
               "required": ["document", "section"],
               "properties": {
-                "document": { "enum": ["OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification"] },
+                "document": { "enum": ["OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification", "OASIS KMIP 3.0 Working Draft"] },
                 "section": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" }
               },
               "additionalProperties": false
