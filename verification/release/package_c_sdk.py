@@ -224,11 +224,15 @@ def run_smoke_test(archive_path: Path, package_dir_name: str, fmt: str) -> None:
         consumer_src.mkdir()
         (consumer_src / "main.c").write_text(
             "#include <kmipkit.h>\n"
+            "#include <stdint.h>\n"
             "#include <stdio.h>\n"
             "int main(void) {\n"
-            "    kmipkit_version_info_t info = kmipkit_version_get();\n"
-            '    printf("kmipkit ABI %u\\n", info.abi_version);\n'
-            "    return info.abi_version == 1 ? 0 : 1;\n"
+            "    uint32_t major = 0, minor = 0, patch = 0, abi = 0;\n"
+            "    if (kmipkit_version_get(&major, &minor, &patch, &abi) != 0) {\n"
+            "        return 1;\n"
+            "    }\n"
+            '    printf("kmipkit %u.%u.%u (ABI %u)\\n", major, minor, patch, abi);\n'
+            "    return abi == 1 ? 0 : 1;\n"
             "}\n",
             encoding="utf-8",
         )

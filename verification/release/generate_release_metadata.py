@@ -8,11 +8,23 @@ import hashlib
 import json
 import os
 import re
+import tempfile
 import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+
+
+def _sanitize_dir(path: Path) -> Path:
+    real = Path(os.path.realpath(path))
+    allowed_roots = (
+        Path(os.path.realpath(Path.cwd())),
+        Path(os.path.realpath(tempfile.gettempdir())),
+    )
+    if not any(real.is_relative_to(root) for root in allowed_roots):
+        raise ValueError(f"Directory {real} must be inside workspace or temp directory")
+    return real
 
 
 def _ensure_within(base_dir: Path, candidate: Path) -> Path:
@@ -32,7 +44,7 @@ def compute_sha256(file_path: Path) -> str:
 
 
 def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str, str]]:
-    base_real = Path(os.path.realpath(artifacts_dir))
+    base_real = _sanitize_dir(artifacts_dir)
     entries: list[tuple[str, str]] = []
     for path in sorted(base_real.rglob("*")):
         real_path = _ensure_within(base_real, path)
@@ -43,7 +55,7 @@ def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str,
         rel = real_path.relative_to(base_real).as_posix()
         entries.append((compute_sha256(real_path), rel))
 
-    out_dir = Path(os.path.realpath(output_file.parent))
+    out_dir = _sanitize_dir(output_file.parent)
     safe_out = _ensure_within(out_dir, output_file)
     safe_out.parent.mkdir(parents=True, exist_ok=True)
     safe_out.write_text(
@@ -56,7 +68,8 @@ def write_sha256_sums(artifacts_dir: Path, output_file: Path) -> list[tuple[str,
 def parse_lockfile_packages(repo_root: Path, lock_rel: str) -> list[dict[str, str]]:
     if lock_rel not in {"Cargo.lock", "kmip-proxy/Cargo.lock"}:
         raise ValueError(f"Unsupported lockfile path: {lock_rel!r}")
-    lockfile_path = _ensure_within(repo_root, repo_root / lock_rel)
+    safe_repo = _sanitize_dir(repo_root)
+    lockfile_path = _ensure_within(safe_repo, safe_repo / lock_rel)
     if not lockfile_path.is_file():
         return []
     data = tomllib.loads(lockfile_path.read_text(encoding="utf-8"))
@@ -114,7 +127,7 @@ def generate_cyclonedx_sbom(
         "components": components,
     }
 
-    out_dir = Path(os.path.realpath(output_file.parent))
+    out_dir = _sanitize_dir(output_file.parent)
     safe_out = _ensure_within(out_dir, output_file)
     safe_out.parent.mkdir(parents=True, exist_ok=True)
     safe_out.write_text(json.dumps(sbom, indent=2) + "\n", encoding="utf-8")
@@ -151,7 +164,7 @@ sha256sum -c SHA256SUMS.txt
 ## Packaged Files ({len(entries)} total)
 {artifact_lines}
 """
-    out_dir = Path(os.path.realpath(output_file.parent))
+    out_dir = _sanitize_dir(output_file.parent)
     safe_out = _ensure_within(out_dir, output_file)
     safe_out.parent.mkdir(parents=True, exist_ok=True)
     safe_out.write_text(content, encoding="utf-8")

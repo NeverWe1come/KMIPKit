@@ -21,6 +21,7 @@ PUBLISHABLE_CRATES = (
     "kmipkit-client",
     "kmipkit",
 )
+WORKSPACE_SUPPORT_CRATES = ("kmipkit-test-support",)
 
 
 def rewrite_workspace_toml(cargo_toml_text: str) -> str:
@@ -37,7 +38,7 @@ def rewrite_workspace_toml(cargo_toml_text: str) -> str:
         flags=re.DOTALL,
     )
     # Remove non-packaged workspace dependency entries so Cargo workspace loads cleanly.
-    for excluded in ("kmipkit-ffi", "kmipkit-test-support", "kmipkit-test-server"):
+    for excluded in ("kmipkit-ffi", "kmipkit-test-server"):
         updated = re.sub(rf"(?m)^{re.escape(excluded)}\s*=.*\n", "", updated)
     return updated
 
@@ -73,7 +74,7 @@ def package_rust_sdk(
 
         crates_dst = stage / "crates"
         crates_dst.mkdir()
-        for crate in PUBLISHABLE_CRATES:
+        for crate in (*PUBLISHABLE_CRATES, *WORKSPACE_SUPPORT_CRATES):
             shutil.copytree(
                 safe_repo / "crates" / crate,
                 crates_dst / crate,
