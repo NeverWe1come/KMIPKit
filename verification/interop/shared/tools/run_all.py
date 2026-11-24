@@ -200,22 +200,7 @@ def orchestrate_interop_run(
     else:
         runs = [run(lang) for lang in languages]
 
-    # If dry-run, we generate sample aggregated output or skip
-    aggregated = None
-    if not dry_run:
-        valid_files = [Path(run["output_file"]) for run in runs
-                       if run["status"] != "ERROR" and Path(run["output_file"]).is_file()]
-        if valid_files:
-            aggregated = aggregate_results(valid_files)
-            # Write master-matrix.json
-            with open(output_dir / "master-matrix.json", "w", encoding="utf-8") as f:  # NOSONAR
-                json.dump(aggregated, f, indent=2)
-            # Write master-report.md
-            with open(output_dir / "master-report.md", "w", encoding="utf-8") as f:  # NOSONAR
-                f.write(generate_markdown(aggregated))
-            # Write master-report.html
-            with open(output_dir / "master-report.html", "w", encoding="utf-8") as f:  # NOSONAR
-                f.write(generate_html(aggregated))
+    aggregated = None if dry_run else write_master_reports(output_dir, report_files(runs))
 
     return {
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -228,11 +213,27 @@ def orchestrate_interop_run(
     }
 
 
+def report_files(runs):
+    return [Path(run["output_file"]) for run in runs
+            if run["status"] != "ERROR" and Path(run["output_file"]).is_file()]
+
+
+def write_master_reports(output_dir, paths):
+    if not paths:
+        return None
+    report = aggregate_results(paths)
+    (output_dir / "master-matrix.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (output_dir / "master-report.md").write_text(generate_markdown(report), encoding="utf-8")
+    (output_dir / "master-report.html").write_text(generate_html(report), encoding="utf-8")
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="KMIPKit Cross-Language Orchestrator")
     parser.add_argument("--languages", type=str, default="rust,c,java,python", help="Comma-separated languages (default: rust,c,java,python)")
     parser.add_argument("--profile", type=Path, default=Path("verification/interop/shared/profiles/generic-kmip-2.1.json"), help="KMS profile JSON")
-    parser.add_argument("--connection", type=Path, help="Connection configuration JSON")
+    parser.add_argument("--connection", type=Path, action="append", default=[],
+                        help="Connection configuration JSON. Repeat for other versions or execution settings.")
     parser.add_argument("--catalog", type=Path, default=Path("verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"),
                         help="Test catalog for Rust, Java and Python. C uses its build-time catalog.")
     parser.add_argument("--vectors", type=Path, default=Path("verification/interop/shared/vectors/canonical-vectors.json"), help="Test vectors JSON")
@@ -263,54 +264,54 @@ def main() -> None:
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         out_dir = base_dir / f"verification/interop/results/{ts}"
 
+    connections = args.connection or [None]
+    results = []
+    versions = []
     try:
-        summary = orchestrate_interop_run(
-            languages=langs,
-            base_dir=base_dir,
-            profile_path=args.profile,
-            catalog_path=args.catalog,
-            vectors_path=args.vectors,
-            output_dir=out_dir,
-            connection_path=args.connection,
-            parallel=args.parallel,
-            dry_run=args.dry_run,
-            projects=projects,
-            python=args.python.absolute() if args.python else None,
-            enable_mutations=args.enable_mutations,
-        )
-    except (OSError, ValueError) as error:
+        if not args.dry_run and args.connection:
+            versions = list(dict.fromkeys(
+                read_validated(path, "server-connection.schema.json")["protocol_version"]
+                for path in args.connection
+            ))
+        for index, connection in enumerate(connections, 1):
+            destination = out_dir if len(connections) == 1 else out_dir / f"connection-{index}"
+            result = orchestrate_interop_run(
+                languages=langs,
+                base_dir=base_dir,
+                profile_path=args.profile,
+                catalog_path=args.catalog,
+                vectors_path=args.vectors,
+                output_dir=destination,
+                connection_path=connection,
+                parallel=args.parallel,
+                dry_run=args.dry_run,
+                projects=projects,
+                python=args.python.absolute() if args.python else None,
+                enable_mutations=args.enable_mutations,
+            )
+            results.extend(result["runs"])
+        paths = [] if args.dry_run else report_files(results)
+        if len(connections) > 1:
+            write_master_reports(out_dir, paths)
+    except (OSError, ValueError, KeyError) as error:
         parser.error(str(error))
 
-    print("\n=======================================================")
-    print("KMIPKit Cross-Language Orchestrator Summary")
-    print("=======================================================")
-    print(f"Dry Run:    {summary['dry_run']}")
-    print(f"Output Dir: {summary['output_dir']}")
-    print("Languages planned/executed:")
-    for r in summary["runs"]:
-        print(f" - [{r['language'].upper()}] {r['status']} -> {r.get('output_file')}")
-
-    if summary.get("aggregated"):
-        print("\nAggregated Master Reports generated:")
-        print(f" - Markdown: {out_dir / 'master-report.md'}")
-        print(f" - HTML:     {out_dir / 'master-report.html'}")
-        print(f" - JSON:     {out_dir / 'master-matrix.json'}")
-    print("=======================================================\n")
+    for run in results:
+        print(f"[{run['language'].upper()}] {run['status']}  {run['output_file']}")
+    if paths:
+        print(f"Combined report  {out_dir / 'master-report.html'}")
     campaign_status = 0
-    if args.campaign and summary["aggregated"]:
-        connection = read_validated(args.connection, "server-connection.schema.json")
+    if args.campaign and paths:
         command = [sys.executable, str(_current_dir / "campaign.py"),
-                   "--version", connection["protocol_version"], "--output-dir", str(out_dir / "campaign"),
-                   "--profile", str(args.profile.resolve())]
+                   "--output-dir", str(out_dir / "campaign"), "--profile", str(args.profile.resolve())]
+        for version in versions:
+            command.extend(("--version", version))
         for lang in langs:
             command.extend(("--language", lang))
-        for run in summary["runs"]:
-            if run["status"] != "ERROR" and Path(run["output_file"]).is_file():
-                command.extend(("--live-report", run["output_file"]))
+        for path in paths:
+            command.extend(("--live-report", str(path)))
         campaign_status = subprocess.run(command, check=False).returncode
-    if not args.dry_run and any(
-        run["exit_code"] or not Path(run["output_file"]).is_file() for run in summary["runs"]
-    ):
+    if not args.dry_run and (len(paths) != len(results) or any(run["exit_code"] for run in results)):
         sys.exit(1)
     sys.exit(campaign_status)
 
