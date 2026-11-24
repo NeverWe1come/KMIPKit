@@ -357,6 +357,16 @@ class VersionedContractTests(unittest.TestCase):
                 self.assertEqual(version != "3.0", "test-attr-name" in cases)
                 self.assertEqual(version == "2.0", "test-v20-reject-ping" in cases)
 
+    def test_single_part_hash_runs_without_mutation_opt_in(self) -> None:
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version, include_variants=True)
+                cases = {case["case_id"]: case for case in catalog["test_cases"]}
+                operation = cases["test-crypto-hash-sha_256-0"]["execution"]
+                self.assertEqual("read_only", operation["mutation"])
+                self.assertEqual(["sha256_digest_matches_known_answer"], operation["assertions"])
+                self.assertEqual("mutating", cases["test-multipart-hash-sha256"]["execution"]["mutation"])
+
     def test_catalog_completion_requires_evidence_for_each_selected_case(self) -> None:
         catalog = build_catalog(ROOT, "2.1")
         catalog = select_cases(catalog, operations=["Query", "Ping"], case_ids=[])
