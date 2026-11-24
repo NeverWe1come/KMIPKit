@@ -625,13 +625,19 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
         catalog_path.write_text(json.dumps(catalog))
         request_wires = []
         allow_mutations = case["execution"]["mutation"] == "mutating"
+        offered = tlv(0x420069, 1, integer(0x42006a, major) + integer(0x42006b, minor))
         payload = {
+            0x1e: offered,
+            0x02: b"",
             0x08: integer(0x4200d5, 0),
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
             0x27: tlv(0x4200c2, 8, hashlib.sha256(b"abc").digest()),
             0x3b: b"",
         }[operation]
-        apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
+        if major < 3 and operation in (0x18, 0x1e, 0x3b):
+            apis = ("generic-ttlv",)
+        else:
+            apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
         for api in apis:
             with socket.socket() as server:
                 server.bind(("127.0.0.1", 0))
@@ -671,20 +677,33 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                             if major == 3:
                                 assert enumeration(0x420028, 3) in request
                         if operation == 0x18:
-                            assert enumeration(0x420074, 1) in request
-                        request_wires.append(request)
-                        version = tlv(0x420069, 1, integer(0x42006a, major) + integer(0x42006b, minor))
-                        timestamp = tlv(0x420092, 9, (1).to_bytes(8, "big"))
-                        batch_count = integer(0x42000d, 1) if major < 3 else b""
-                        header = tlv(0x42007a, 1, version + timestamp + batch_count)
-                        response_item = tlv(0x42000f, 1, enumeration(0x42005c, operation)
-                                            + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
-                        client.sendall(tlv(0x42007b, 1, header + response_item))
+                            assert tlv(0x420079, 1, enumeration(0x420074, 1)) in request
+                        if operation == 0x1e:
+                            assert tlv(0x420079, 1, offered) in request
+                        if operation == 0x3b:
+                            assert tlv(0x420079, 1, b"") in request
+                        if operation == 0x02:
+                            assert top_level_batch_operations(request) == (2, 20, 20)
+                            assert enumeration(0x420028, 4) in request
+                            assert integer(0x42002A, 2048) in request
+                            assert integer(0x42002C, 1) in request and integer(0x42002C, 2) in request
+                            client.sendall(response((2, 20, 20), minor, unique_batch_item_ids=(
+                                b"create-pair", b"destroy-private", b"destroy-public",
+                            )))
+                        else:
+                            request_wires.append(request)
+                            version = tlv(0x420069, 1, integer(0x42006a, major) + integer(0x42006b, minor))
+                            timestamp = tlv(0x420092, 9, (1).to_bytes(8, "big"))
+                            batch_count = integer(0x42000d, 1) if major < 3 else b""
+                            header = tlv(0x42007a, 1, version + timestamp + batch_count)
+                            response_item = tlv(0x42000f, 1, enumeration(0x42005c, operation)
+                                                + enumeration(0x42007f, 0) + tlv(0x42007c, 1, payload))
+                            client.sendall(tlv(0x42007b, 1, header + response_item))
                     _, errors = process.communicate(timeout=10)
                     assert process.returncode == 0, errors
                 row, = json.loads(result.read_text())["cases"]
                 assert row["status"] == "passed", row
-        if len(apis) > 1:
+        if len(request_wires) > 1:
             assert request_wires[0] == request_wires[1]
     return 0
 
@@ -700,6 +719,11 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version)
+    versioned_operation(binary, openssl, repository, "test-op-create-key-pair", 0x02, protocol_version)
+    versioned_operation(binary, openssl, repository, "test-op-query", 0x18, protocol_version)
+    versioned_operation(binary, openssl, repository, "test-op-discover-versions", 0x1e, protocol_version)
+    if protocol_version == "2.1":
+        versioned_operation(binary, openssl, repository, "test-op-ping", 0x3b, protocol_version)
     protocol_minor = int(protocol_version.split(".")[1])
     registered_key_batch = (3, 18, 31, 32, 19, 20)
     stop_on_first_failure_batch = (10, 10)

@@ -6,6 +6,7 @@
 
 typedef struct {
     kmipkit_client_t *client;
+    const kmip_connection_config_t *configuration;
     kmipkit_codec_limits_t *limits;
     int32_t protocol_major;
     int32_t protocol_minor;

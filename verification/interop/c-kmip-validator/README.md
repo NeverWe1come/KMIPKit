@@ -43,3 +43,10 @@ The native response assertions and numeric result codes feed the shared report.
 Export `KMIPKIT_INTEROP_LIBRARY_COMMIT` before building the installed artifact
 and invoking the campaign to select the common source revision. Configure
 CMake with the installation directory for that commit.
+
+On Unix, the build links OpenSSL 3 for the live generic tag probes. Set
+`OPENSSL_DIR` to the OpenSSL installation used to build the KMIPKit artifact.
+With `api_level: generic-ttlv` and mutual TLS over raw TTLV, the validator
+runs Query and Discover Versions on KMIP 2.0 and 2.1, and Ping on 2.1.
+Use CA, client certificate and unencrypted PEM key files. The supported
+probe recipes use certificate authentication.
