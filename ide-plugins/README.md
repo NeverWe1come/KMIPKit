@@ -9,6 +9,12 @@ Official IDE plugins and shared protocol tooling for **KMIPKit**, built on a **C
 * `webview-ui/` — Shared static web UI (`IdeBridge`, interactive TTLV Inspector with synchronized hex view, Playground skeleton).
 * `vscode/` — Official extension for VS Code, Cursor, Windsurf, and VSCodium.
 * `jetbrains/` — Unified plugin (`org.kmipkit.ide`) for IntelliJ IDEA, CLion, PyCharm, RustRover, GoLand, Rider, WebStorm, and Android Studio.
+* `neovim/` — Lightweight Lua plugin for Neovim 0.11+.
+* `zed/` — Rust → WebAssembly (`wasm32-wasip1`) extension for Zed.
+* `visual-studio/` — Out-of-proc `VisualStudio.Extensibility` extension for Visual Studio 2022+.
+* `helix/` — Native `languages.toml` configuration for Helix.
+* `sublime/` — `LSP-kmip` package for Sublime Text 4.
+* `eclipse/` — OSGi + Eclipse LSP4E plugin (`Maven Tycho`).
 * `scripts/` — Build, version-sync, and SHA-256 verification scripts.
 
 ## Quick Build & Test

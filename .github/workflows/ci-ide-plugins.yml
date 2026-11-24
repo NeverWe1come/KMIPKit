@@ -110,3 +110,24 @@ jobs:
           dotnet-version: "8.0.x"
       - name: Build Visual Studio extension
         run: dotnet build ide-plugins/visual-studio/KmipKit.VisualStudio.csproj -c Release
+
+  helix-and-sublime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Helix languages.toml
+        run: |
+          python3 -c 'import tomllib; tomllib.load(open("ide-plugins/helix/languages.toml", "rb")); print("Helix TOML OK")'
+      - name: Test Sublime Text LSP-kmip plugin
+        run: python3 -m unittest discover -s ide-plugins/sublime/tests
+
+  eclipse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Build Eclipse LSP4E plugin
+        run: mvn -B -f ide-plugins/eclipse/pom.xml verify
