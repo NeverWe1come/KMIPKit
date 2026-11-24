@@ -132,12 +132,14 @@ impl Attempt<'_> {
             } else {
                 ClientRequest::encapsulate(EncapsulateRequest::new(public.clone()))
             };
-            return self.exchange(request);
+            let result = self.exchange(request)?;
+            return self.own_kem_result(result);
         }
+        let encapsulated = self.setup(ClientRequest::encapsulate(EncapsulateRequest::new(
+            public.clone(),
+        )))?;
         let ciphertext = self
-            .setup(ClientRequest::encapsulate(EncapsulateRequest::new(
-                public.clone(),
-            )))?
+            .own_kem_result(encapsulated)?
             .bytes
             .ok_or(Failure::Prerequisite(
                 "Encapsulate setup returned no ciphertext",
@@ -152,6 +154,19 @@ impl Attempt<'_> {
                 ClientRequest::decapsulate(DecapsulateRequest::new(private.clone(), value.to_vec()))
             }
         });
-        self.exchange(request)
+        let result = self.exchange(request)?;
+        self.own_kem_result(result)
+    }
+
+    fn own_kem_result(&mut self, result: Observed) -> Result<Observed, Failure> {
+        if result.status == 0 {
+            if result.identifiers.len() != 1 || self.owned.contains(&result.identifiers[0]) {
+                return Err(Failure::Assertion(
+                    "KEM result did not identify a new secret fixture",
+                ));
+            }
+            self.own(&result);
+        }
+        Ok(result)
     }
 }
