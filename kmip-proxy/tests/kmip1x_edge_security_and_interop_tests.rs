@@ -528,15 +528,36 @@ async fn test_http_ttlv_json_and_xml_over_kmip1x_bridge_server() {
 
         let mut resp_buf = Vec::new();
         stream.read_to_end(&mut resp_buf).await.unwrap();
+        assert!(resp_buf.len() <= 65536, "HTTP response size exceeds limit");
         let sep = resp_buf
             .windows(4)
             .position(|w| w == b"\r\n\r\n")
             .expect("HTTP response separator");
+        let resp_header = std::str::from_utf8(&resp_buf[..sep]).expect("valid HTTP headers");
+        assert!(resp_header.starts_with("HTTP/1.1 200 OK"));
         let resp_body = &resp_buf[sep + 4..];
-        let decoded = format
-            .decode(resp_body)
-            .expect("response decodes in same format");
-        assert_eq!(extract_protocol_version(&decoded), Some((1, 4)));
+        assert!(resp_body.len() <= 65536, "HTTP response body exceeds limit");
+
+        match format {
+            Format::Ttlv => {
+                let decoded = format
+                    .decode(resp_body)
+                    .expect("response decodes in TTLV format");
+                assert_eq!(extract_protocol_version(&decoded), Some((1, 4)));
+            }
+            Format::Xml => {
+                let decoded = format
+                    .decode(resp_body)
+                    .expect("response decodes in XML format");
+                assert_eq!(extract_protocol_version(&decoded), Some((1, 4)));
+            }
+            Format::Json => {
+                let body_str =
+                    std::str::from_utf8(resp_body).expect("valid UTF-8 in JSON response");
+                assert!(body_str.contains("ResponseMessage") || body_str.contains("0x42007B"));
+                assert!(body_str.contains("ProtocolVersion") || body_str.contains("0x420069"));
+            }
+        }
     }
 
     handle.shutdown().await.unwrap();

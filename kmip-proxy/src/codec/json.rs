@@ -12,8 +12,9 @@ pub fn decode_json(bytes: &[u8]) -> Result<Item, String> {
     if bytes.len() > MAX_JSON_PAYLOAD_BYTES {
         return Err("JSON payload exceeds maximum allowed size".to_string());
     }
+    let text = std::str::from_utf8(bytes).map_err(|e| format!("invalid UTF-8 in JSON: {e}"))?;
     let json_val: JsonVal =
-        serde_json::from_slice(bytes).map_err(|e| format!("invalid JSON: {e}"))?;
+        serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
     decode_json_element(&json_val)
 }
 
@@ -262,5 +263,26 @@ fn parse_tag(tag_str: &str) -> Result<u32, String> {
         Ok(val)
     } else {
         Err(format!("unknown tag name: {tag_str}"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_json_basic_and_errors() {
+        let sample = br#"{"tag": "ResponseMessage", "type": "Structure", "value": []}"#;
+        let item = decode_json(sample).expect("valid JSON structure");
+        assert_eq!(item.tag().raw(), 0x42007B);
+
+        let invalid_utf8 = [0xff, 0xff, 0xff];
+        assert!(decode_json(&invalid_utf8).is_err());
+
+        let invalid_json = b"not a json";
+        assert!(decode_json(invalid_json).is_err());
+
+        let oversized = vec![b' '; MAX_JSON_PAYLOAD_BYTES + 1];
+        assert!(decode_json(&oversized).is_err());
     }
 }
