@@ -241,8 +241,10 @@ def main() -> None:
                         help="Connection configuration JSON. Repeat for other versions or execution settings.")
     parser.add_argument("--all-operations", action="store_true",
                         help="Generate the complete operation catalog for each connection version")
+    parser.add_argument("--with-variants", action="store_true",
+                        help="With --all-operations, also run existing version-specific conformance cases")
     parser.add_argument("--catalog", type=Path, default=Path("verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json"),
-                        help="Test catalog for Rust, Java and Python. C uses its build-time catalog.")
+                        help="Test catalog for Rust, Java and Python. C uses its build-time catalog unless --all-operations is set.")
     parser.add_argument("--vectors", type=Path, default=Path("verification/interop/shared/vectors/canonical-vectors.json"), help="Test vectors JSON")
     parser.add_argument("--output-dir", type=Path, help="Directory to store outputs (default: verification/interop/results/<timestamp>)")
     parser.add_argument("--parallel", action="store_true", help="Execute validators concurrently")
@@ -264,6 +266,8 @@ def main() -> None:
         parser.error("give one project path per selected language")
     if args.all_operations and not args.connection:
         parser.error("--all-operations requires a connection configuration")
+    if args.with_variants and not args.all_operations:
+        parser.error("--with-variants requires --all-operations")
     if args.campaign and args.dry_run:
         parser.error("--campaign requires executing the validators")
 
@@ -289,7 +293,8 @@ def main() -> None:
             for version in versions:
                 catalog = catalog_dir / f"kmip-{version}-operations.json"
                 with catalog.open("x", encoding="utf-8") as stream:
-                    json.dump(build_catalog(base_dir, version), stream, indent=2, ensure_ascii=False)
+                    catalog_data = build_catalog(base_dir, version, include_variants=args.with_variants)
+                    json.dump(catalog_data, stream, indent=2, ensure_ascii=False)
                 operation_catalogs[version] = catalog
         for index, connection in enumerate(connections, 1):
             catalog_path = args.catalog

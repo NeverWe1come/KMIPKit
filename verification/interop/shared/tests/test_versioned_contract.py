@@ -334,6 +334,28 @@ class VersionedContractTests(unittest.TestCase):
                 self.assertEqual(draft if version == "3.0" else set(),
                                  draft & {case["operation"] for case in cases})
 
+    def test_extended_operation_catalog_retains_versioned_variants_and_negative_probes(self) -> None:
+        import jsonschema
+
+        schema = json.loads((ROOT / "verification/interop/shared/schemas/test-catalog.schema.json").read_text())
+        original = json.loads(
+            (ROOT / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text()
+        )["test_cases"]
+        for version in ("2.0", "2.1", "3.0"):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version, include_variants=True)
+                jsonschema.validate(catalog, schema)
+                cases = {case["case_id"]: case for case in catalog["test_cases"]}
+                self.assertEqual(catalog["statistics"]["total_cases"], len(cases))
+                self.assertTrue(all(case["execution"]["protocol_versions"] == [version] for case in cases.values()))
+                expected_variants = {
+                    case["case_id"] for case in original
+                    if version in case["execution"]["protocol_versions"]
+                }
+                self.assertLessEqual(expected_variants, cases.keys())
+                self.assertEqual(version != "3.0", "test-attr-name" in cases)
+                self.assertEqual(version == "2.0", "test-v20-reject-ping" in cases)
+
     def test_operation_variants_preserve_versions_and_stable_identifiers(self) -> None:
         rows = list(plan_operation_variants(ROOT))
         self.assertEqual(len(rows), len({row["variant_id"] for row in rows}))
