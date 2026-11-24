@@ -155,7 +155,7 @@ impl std::error::Error for GenericTtlvEncodingError {}
 
 /// Encodes a generic TTLV item within the supplied size, depth, and count limits.
 ///
-/// The callback borrows the encoded bytes until it returns. KMIPKit zeroizes
+/// The callback borrows the encoded bytes until it returns. `KMIPKit` zeroizes
 /// its output buffer on drop. This codec validates TTLV framing; callers
 /// provide any KMIP operation, message, and transport validation.
 ///
