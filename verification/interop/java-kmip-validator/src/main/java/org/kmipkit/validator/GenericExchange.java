@@ -44,6 +44,9 @@ final class GenericExchange {
     private static final int CREATE = 0x01;
     private static final int GET = 0x0a;
     private static final int GET_ATTRIBUTES = 0x0b;
+    private static final int GET_ATTRIBUTE_LIST = 0x0c;
+    private static final int ACTIVATE = 0x12;
+    private static final int REVOKE = 0x13;
     private static final int DESTROY = 0x14;
     private static final int ARCHIVE = 0x15;
     private static final int RECOVER = 0x16;
@@ -75,6 +78,9 @@ final class GenericExchange {
             case "test-op-create" -> CREATE;
             case "test-op-get" -> GET;
             case "test-op-get-attributes" -> GET_ATTRIBUTES;
+            case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
+            case "test-op-activate" -> ACTIVATE;
+            case "test-op-revoke" -> REVOKE;
             case "test-op-destroy" -> DESTROY;
             case "test-op-archive" -> ARCHIVE;
             case "test-op-recover" -> RECOVER;
@@ -97,8 +103,10 @@ final class GenericExchange {
     }
 
     private static boolean usesOwnedKey(int operation) {
-        return operation == CREATE || operation == GET || operation == GET_ATTRIBUTES || operation == DESTROY
-                || operation == ARCHIVE || operation == RECOVER;
+        return switch (operation) {
+            case CREATE, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
+            default -> false;
+        };
     }
 
     private static JavaKmipDriver.CaseOutcome runOwnedKey(ConnectionConfig connection, int operation,
@@ -128,6 +136,25 @@ final class GenericExchange {
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTES) {
             target = execute(connection, GET_ATTRIBUTES, minor, id,
                     payload -> sameId.test(payload) && hasLengthAttribute(payload), start);
+        }
+        if ("passed".equals(create.status()) && operation == GET_ATTRIBUTE_LIST) {
+            target = execute(connection, GET_ATTRIBUTE_LIST, minor, id,
+                    payload -> sameId.test(payload) && hasLengthReference(payload), start);
+        }
+        if ("passed".equals(create.status()) && (operation == ACTIVATE || operation == REVOKE)) {
+            var activate = execute(connection, ACTIVATE, minor, id, sameId, start);
+            target = activate;
+            if (activate.resultStatusCode() == null || activate.resultStatusCode() == 0) {
+                var revoke = execute(connection, REVOKE, minor, id, sameId, start);
+                if ("passed".equals(activate.status())) {
+                    if (operation == REVOKE) target = revoke;
+                    else if (!"passed".equals(revoke.status())) {
+                        target = JavaKmipDriver.CaseOutcome.failed("Cleanup Revoke failed for the activated key.", elapsed(start));
+                    }
+                }
+            } else if (operation == REVOKE) {
+                target = JavaKmipDriver.CaseOutcome.notRun("Server rejected isolated Activate setup.", elapsed(start));
+            }
         }
         if ("passed".equals(create.status()) && (operation == ARCHIVE || operation == RECOVER)) {
             var archive = execute(connection, ARCHIVE, minor, id, sameId, start);
@@ -175,7 +202,8 @@ final class GenericExchange {
                     case GET_ATTRIBUTES -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42013b, TtlvValue.Enumeration(0x42002a)));
-                    case GET, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
+                    case REVOKE -> revokePayload(objectId);
+                    case GET, GET_ATTRIBUTE_LIST, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)));
                     case LOCATE -> structureItem(0x420079, item(0x42004f, TtlvValue.Integer(1)),
                             item(0x4200d4, TtlvValue.Integer(0)));
@@ -188,6 +216,14 @@ final class GenericExchange {
                 };
                 var batch = structureItem(0x42000f, identifier, payload)) {
             return structureItem(0x420078, header, batch);
+        }
+    }
+
+    private static TtlvItem revokePayload(byte[] objectId) {
+        try (var code = item(0x420082, TtlvValue.Enumeration(6));
+                var reason = structureItem(0x420081, code);
+                var identifier = item(0x420094, TtlvValue.TextString(objectId, LIMITS))) {
+            return structureItem(0x420079, identifier, reason);
         }
     }
 
@@ -443,6 +479,16 @@ final class GenericExchange {
             }
         }
         return found;
+    }
+
+    private static boolean hasLengthReference(TtlvStructureView payload) {
+        for (long index = 0; index < payload.itemCount(); index++) {
+            try (var field = payload.itemAt(index); var tag = field.tag(); var value = field.value()) {
+                if (tag.raw() == 0x42013b && field.itemType() == TtlvItemType.Enumeration
+                        && value.enumeration() == 0x42002a) return true;
+            }
+        }
+        return false;
     }
 
     private static boolean hasLengthAttribute(TtlvStructureView payload) {

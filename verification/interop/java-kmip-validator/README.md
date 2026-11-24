@@ -67,13 +67,14 @@ and 2.1, plus Ping in 2.1. These probes use a CA, a client certificate chain,
 and an unencrypted PKCS#8 PEM client key. RNG Retrieve follows the catalog's
 mutation opt-in.
 
-With mutation opt-in, the direct tag route also runs Create, Get, Get Attributes, Destroy,
-Archive and Recover. Each case creates an isolated AES-256 key and uses the
-server-returned Text String identifier for all follow-up exchanges. The
-validator checks the response identifier and performs cleanup with Destroy.
+With mutation opt-in, the direct tag route also runs Create, Get, Get
+Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
+Each case uses the Text String identifier returned when it creates an isolated
+AES-256 key. The lifecycle checks validate the response identifier and confirm
+cleanup with Destroy. An activated key is revoked before Destroy.
 
-Archive and Recover use the isolated key lifecycle through the typed and
-Fluent routes.
+Activate, Revoke, Archive and Recover also use the isolated key lifecycle
+through the typed and Fluent routes.
 
 CI builds the JNI JAR from the revision under test and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package

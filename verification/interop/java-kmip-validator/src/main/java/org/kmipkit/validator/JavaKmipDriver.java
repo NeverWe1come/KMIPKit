@@ -14,6 +14,8 @@ import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.RevocationReason;
+import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
@@ -189,7 +191,8 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
-        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover").contains(testCase.caseId());
+        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
+                "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
@@ -253,6 +256,7 @@ public final class JavaKmipDriver implements AutoCloseable {
             try {
                 target = switch (testCase.caseId()) {
                     case "test-op-get" -> getTarget(testCase, createdIdentifier, start);
+                    case "test-op-activate", "test-op-revoke" -> activateAndRevoke(testCase, createdIdentifier, start);
                     case "test-op-archive", "test-op-recover" -> archiveAndRecover(testCase, createdIdentifier, start);
                     default -> readAttributes(testCase, createdIdentifier, objectName, start);
                 };
@@ -298,6 +302,39 @@ public final class JavaKmipDriver implements AutoCloseable {
                     elapsedMillis(start), createStatus, optionalCode(createReason));
         }
         return target == null ? CaseOutcome.passed(elapsedMillis(start), createStatus, optionalCode(createReason)) : target;
+    }
+
+    private CaseOutcome activateAndRevoke(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        boolean activateTarget = "test-op-activate".equals(testCase.caseId());
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        ClientBatchItem request = activateTarget && fluent
+                ? client.request().activate(id).build() : ClientBatchItem.activate(id);
+        var activated = executeRequest(testCase, withBatchId(request), result -> result.activateResponse()
+                .map(payload -> sameIdentifier(id, payload.uniqueIdentifier())).orElse(false), start);
+        if (activated.resultStatusCode() != null && activated.resultStatusCode() != 0) {
+            return activateTarget ? activated
+                    : CaseOutcome.notRun("The server rejected isolated Activate setup.", elapsedMillis(start));
+        }
+        var revoked = executeRequest(testCase, withBatchId(revokeRequest(id, fluent && !activateTarget)), result -> {
+            var response = result.revokeResponse().orElse(null);
+            if (response == null) return false;
+            try (response) {
+                return sameIdentifier(id, response.uniqueIdentifier());
+            }
+        }, start);
+        if (!"passed".equals(activated.status())) return activated;
+        if (!activateTarget) return revoked;
+        return "passed".equals(revoked.status()) ? activated
+                : CaseOutcome.failed("Cleanup Revoke failed for the activated key.", elapsedMillis(start));
+    }
+
+    private ClientBatchItem revokeRequest(UniqueIdentifier id, boolean fluent) {
+        long reasonCode = 6;
+        if (fluent) return client.request().revoke(reasonCode).uniqueIdentifier(id).build();
+        try (var reason = RevocationReason.create(reasonCode, null);
+                var request = RevokeRequest.create(id, reason, null)) {
+            return ClientBatchItem.revoke(request);
+        }
     }
 
     private CaseOutcome archiveAndRecover(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {

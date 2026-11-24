@@ -361,20 +361,33 @@ class ControlledTlsPeerTest {
         byte[] get = legacyKeyResponse(minor, 0x0a, objectType, identifier, key);
         byte[] archive = legacyKeyResponse(minor, 0x15, identifier);
         byte[] recover = legacyKeyResponse(minor, 0x16, identifier);
-        var cases = new ArrayList<>(List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover"));
+        var cases = new ArrayList<>(List.of("test-op-get", "test-op-destroy", "test-op-archive", "test-op-recover",
+                "test-op-activate", "test-op-revoke"));
         if ("generic-ttlv".equals(apiLevel)) {
             cases.add("test-op-create");
             cases.add("test-op-get-invalid");
             cases.add("test-op-get-attributes");
             cases.add("test-op-get-attributes-invalid");
+            cases.addAll(List.of("test-op-activate-invalid", "test-op-revoke-invalid", "test-op-get-attribute-list", "test-op-get-attribute-list-invalid"));
         }
         byte[] invalidGet = legacyKeyResponse(minor, 0x0a, objectType,
                 item(0x420094, 7, "foreign-key".getBytes(StandardCharsets.US_ASCII)), key);
         byte[] getAttrs = legacyKeyResponse(minor, 0x0b, identifier, structure(0x420125, item(0x42002a, 2, intBytes(256))));
         byte[] invalidAttrs = legacyKeyResponse(minor, 0x0b, identifier, structure(0x420125, item(0x42002a, 2, intBytes(128))));
+        byte[] foreignId = item(0x420094, 7, "foreign-key".getBytes(StandardCharsets.US_ASCII));
+        byte[] activate = legacyKeyResponse(minor, 18, identifier);
+        byte[] revoke = legacyKeyResponse(minor, 19, identifier);
+        byte[] list = legacyKeyResponse(minor, 12, identifier, item(0x42013b, 5, intBytes(0x420028)),
+                item(0x42013b, 5, intBytes(0x42002a)));
         for (String id : cases) {
             List<byte[]> responses = switch (id) {
                 case "test-op-get" -> List.of(create, get, destroy);
+                case "test-op-activate", "test-op-revoke" -> List.of(create, activate, revoke, destroy);
+                case "test-op-activate-invalid" -> List.of(create, legacyKeyResponse(minor, 18, foreignId), revoke, destroy);
+                case "test-op-revoke-invalid" -> List.of(create, activate, legacyKeyResponse(minor, 19, foreignId), destroy);
+                case "test-op-get-attribute-list" -> List.of(create, list, destroy);
+                case "test-op-get-attribute-list-invalid" ->
+                        List.of(create, legacyKeyResponse(minor, 12, identifier, item(0x42013b, 5, intBytes(0x420028))), destroy);
                 case "test-op-get-invalid" -> List.of(create, invalidGet, destroy);
                 case "test-op-get-attributes" -> List.of(create, getAttrs, destroy);
                 case "test-op-get-attributes-invalid" -> List.of(create, invalidAttrs, destroy);
@@ -383,6 +396,9 @@ class ControlledTlsPeerTest {
             };
             List<Integer> operations = switch (id) {
                 case "test-op-get", "test-op-get-invalid" -> List.of(1, 0x0a, 0x14);
+                case "test-op-activate", "test-op-revoke", "test-op-activate-invalid",
+                        "test-op-revoke-invalid" -> List.of(1, 18, 19, 20);
+                case "test-op-get-attribute-list", "test-op-get-attribute-list-invalid" -> List.of(1, 12, 20);
                 case "test-op-get-attributes", "test-op-get-attributes-invalid" -> List.of(1, 0x0b, 0x14);
                 case "test-op-destroy", "test-op-create" -> List.of(1, 0x14);
                 default -> List.of(1, 0x15, 0x16, 0x14);
@@ -443,6 +459,9 @@ class ControlledTlsPeerTest {
                 }
                 if ("test-op-get-attributes".equals(caseId)) {
                     assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
+                }
+                if (operations.contains(19)) {
+                    assertTrue(contains(requests.get(2), structure(0x420081, item(0x420082, 5, intBytes(6)))));
                 }
                 for (int index = 1; index < requests.size(); index++) {
                     assertTrue(contains(requests.get(index), identifier));
