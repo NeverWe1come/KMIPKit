@@ -133,15 +133,17 @@ class ControlledExchangeTests(unittest.TestCase):
         case_id: str,
         encoding: str,
         transport: str,
+        protocol_version: str = "2.1",
+        fluent: bool = False,
     ) -> dict:
         from kmipkit import extensions
 
         connection = {
             "server_id": "loopback",
-            "protocol_version": "2.1",
+            "protocol_version": protocol_version,
             "transport": transport,
             "encoding": encoding,
-            "api_level": "typed-protocol",
+            "api_level": "fluent" if fluent else "typed-protocol",
             "endpoints": {
                 "raw_tls": {"host": "127.0.0.1", "port": peer.port},
                 "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
@@ -161,11 +163,12 @@ class ControlledExchangeTests(unittest.TestCase):
         identifier = extensions.UniqueIdentifier.text_string("same-request-fixture")
         item = None
         try:
-            item = (
-                driver._build_high_level_item(case, identifier, name="same-request")
-                if high_level
-                else driver._build_item(case, identifier, name="same-request")
-            )
+            if fluent:
+                item = driver._build_fluent_item(case, identifier, name="same-request")
+            elif high_level:
+                item = driver._build_high_level_item(case, identifier, name="same-request")
+            else:
+                item = driver._build_item(case, identifier, name="same-request")
             return driver._exchange(item)
         finally:
             if item is not None:
@@ -219,6 +222,39 @@ class ControlledExchangeTests(unittest.TestCase):
                         ["server_unsupported", "server_unsupported"],
                         [result["status"] for result in outcomes],
                     )
+
+    def test_fluent_and_typed_requests_match_for_catalogued_attributes(self):
+        from kmipkit import protocol_values
+
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        for version in ("2.0", "2.1"):
+            cases = [
+                case["case_id"] for case in catalog["test_cases"]
+                if version in case["execution"]["protocol_versions"]
+                and PythonKmipDriver.supports(case, "fluent")
+                and case["requires"].get("expected_status") != "NotSent"
+                and (
+                    case["requires"].get("attribute") in (None, "Certificate Attributes", "Vendor Attribute")
+                    or PythonKmipDriver._attribute_tag(case["requires"]["attribute"]) is not None
+                )
+            ]
+            self.assertGreater(len(cases), 20)
+            for case_id in cases:
+                with self.subTest(case_id=case_id, version=version):
+                    observations = []
+                    for fluent in (False, True):
+                        peer = ControlledTlsPeer(
+                            status=protocol_values.ResultStatus.OPERATION_FAILED,
+                            reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                            protocol_version=version,
+                        )
+                        result = self._execute_attribute_route(
+                            peer, high_level=False, fluent=fluent, case_id=case_id,
+                            protocol_version=version, encoding="TTLV", transport="raw_tls",
+                        )
+                        observations.append((peer.requests[0], peer.responses[0], result["status"]))
+                    self.assertEqual(observations[0], observations[1])
+                    self.assertEqual(observations[0][2], "server_unsupported")
 
     def _execute_ping(
         self,

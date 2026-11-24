@@ -132,6 +132,11 @@ class PythonKmipDriver:
         "Get Attribute List", "Modify Attribute", "Set Attribute",
         "Query Asynchronous Requests",
     }
+    _FLUENT_OPERATIONS = {
+        "Create", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
+        "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
+        "Add Attribute", "Set Attribute", "Delete Attribute",
+    }
     _OPERATIONS = {
         "Discover Versions", "Ping", "Query", "Login", "Logout", "Delegated Login",
         "Log", "Interop", "Create", "Create Key Pair", "Create Split Key", "Register",
@@ -254,6 +259,12 @@ class PythonKmipDriver:
         workflow = case.get("requires", {}).get("workflow_type")
         if workflow in {"server_to_client", "multipart_streaming", "batch_id_placeholder"}:
             return False
+        if api_level == "fluent":
+            return (
+                workflow != "async_poll" and case["operation"] in cls._FLUENT_OPERATIONS
+                and (case["operation"] != "Create" or case.get("requires", {}).get("object_type")
+                     in (None, "Symmetric Key"))
+            )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
         return (
@@ -265,6 +276,8 @@ class PythonKmipDriver:
     @classmethod
     def route_limitation(cls, case: dict[str, Any], api_level: str) -> str:
         workflow = case.get("requires", {}).get("workflow_type")
+        if api_level == "fluent":
+            return "the installed Python Fluent API has no equivalent recipe for this catalog case"
         if api_level == "high-level":
             if case.get("operation") in cls._HIGH_LEVEL_OPERATIONS:
                 return "the high-level request model is available only for the selected attribute or asynchronous operation"
@@ -280,6 +293,66 @@ class PythonKmipDriver:
         if case.get("operation") not in cls._OPERATIONS:
             return f"the pinned Python package has no typed client constructor for {case.get('operation', 'this operation')}"
         return "no executable Python request recipe is registered for this catalog case"
+
+    def _attribute_references(self, case: dict[str, Any]) -> list[Any]:
+        reference = self._extensions.AttributeReference
+        name = case.get("requires", {}).get("attribute")
+        if not name:
+            return [reference.tag(0x0042_0053)]
+        if name == "Certificate Attributes":
+            return [reference.tag(0x0042_001D), reference.tag(0x0042_00AD)]
+        if name == "Vendor Attribute":
+            return [reference.name("KMIPKit.Interop", "probe")]
+        tag = self._attribute_tag(name)
+        if tag is None:
+            raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
+        return [reference.tag(tag)]
+
+    def _build_fluent_item(self, case: dict[str, Any], identifier: Any, *, name: str) -> Any:
+        from kmipkit import attribute_operations
+        from kmipkit.fluent import Request
+
+        request = Request(self._client)
+        operation = case["operation"]
+        if operation == "Ping":
+            return request.ping().build()
+        if operation == "Get Attributes":
+            return request.get_attributes(identifier, self._attribute_references(case)).build()
+        if operation == "Get Attribute List":
+            return request.get_attribute_list(identifier).build()
+        if operation in {"Create", "Locate"}:
+            with self._attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
+                if operation == "Create":
+                    with request.create() as builder:
+                        return builder.object_type(2).attributes(attrs).build()
+                with request.locate(attrs) as builder:
+                    return builder.maximum_items(1).build()
+        if operation in {"Add Attribute", "Set Attribute", "Delete Attribute"}:
+            if identifier is None or identifier.kind != self._extensions.UniqueIdentifierKind.TEXT_STRING:
+                raise LocalRecipeUnavailable("Python Fluent attribute builder requires a text identifier")
+            if operation == "Delete Attribute":
+                with request.delete_attribute() as builder, self._legacy_attribute_item("KMIPKit interop test") as current:
+                    return builder.unique_identifier(identifier.text).current_attribute_item(current).attribute_reference(
+                        self._extensions.AttributeReference.tag(0x0042_00FD)
+                    ).build()
+            build = request.add_attribute if operation == "Add Attribute" else request.set_attribute
+            with build() as builder, self._item(0x0042_00FD, "text", "KMIPKit interop test") as attribute:
+                return builder.unique_identifier(identifier.text).attribute_item(attribute).build()
+        if operation == "Get":
+            return request.get(identifier).build()
+        if operation == "Destroy":
+            return request.destroy(identifier).build()
+        if operation == "Revoke":
+            return request.revoke(identifier, 1).build()
+        builders = {
+            "Activate": request.activate, "Archive": request.archive, "Recover": request.recover,
+            "Re-key": request.rekey, "Re-key Key Pair": request.rekey_key_pair,
+        }
+        build = builders.get(operation)
+        if build is None:
+            raise LocalRecipeUnavailable("no equivalent Python Fluent request recipe")
+        with build(identifier) as builder:
+            return builder.build()
 
     def _build_high_level_item(self, case: dict[str, Any], identifier: Any | None, *, name: str) -> Any:
         from kmipkit import attribute_operations, extensions, ttlv
@@ -333,21 +406,7 @@ class PythonKmipDriver:
             finally:
                 value.close()
         if operation == "Get Attributes":
-            attribute_name = case.get("requires", {}).get("attribute")
-            if not attribute_name:
-                references = [extensions.AttributeReference.tag(0x0042_0053)]
-            elif attribute_name == "Certificate Attributes":
-                references = [
-                    extensions.AttributeReference.tag(0x0042_001D),
-                    extensions.AttributeReference.tag(0x0042_00AD),
-                ]
-            elif attribute_name == "Vendor Attribute":
-                references = [extensions.AttributeReference.name("KMIPKit.Interop", "probe")]
-            else:
-                raw_tag = self._attribute_tag(attribute_name)
-                if raw_tag is None:
-                    raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
-                references = [extensions.AttributeReference.tag(raw_tag)]
+            references = self._attribute_references(case)
             with attribute_operations.GetAttributesRequest.create(identifier, references) as request:
                 return request.to_batch_item()
         if operation == "Get Attribute List":
@@ -1153,21 +1212,7 @@ class PythonKmipDriver:
                 finally:
                     any_object.close()
             if operation == "Get Attributes":
-                attribute_name = case.get("requires", {}).get("attribute")
-                if not attribute_name:
-                    references = [extensions.AttributeReference.tag(0x0042_0053)]
-                elif attribute_name == "Certificate Attributes":
-                    references = [
-                        extensions.AttributeReference.tag(0x0042_001D),
-                        extensions.AttributeReference.tag(0x0042_00AD),
-                    ]
-                elif attribute_name == "Vendor Attribute":
-                    references = [extensions.AttributeReference.name("KMIPKit.Interop", "probe")]
-                else:
-                    raw_tag = self._attribute_tag(attribute_name)
-                    if raw_tag is None:
-                        raise LocalRecipeUnavailable("standard Attribute Reference tag is unavailable")
-                    references = [extensions.AttributeReference.tag(raw_tag)]
+                references = self._attribute_references(case)
                 return extension.client_batch_item_get_attributes(
                     identifier, references
                 )
@@ -1727,11 +1772,12 @@ class PythonKmipDriver:
                     return signature
                 target = self._build_item(test_case, target_identifier, name=unique_name, auxiliary=signature["_bytes"], related_identifiers=identifiers)
             else:
-                target = (
-                    self._build_high_level_item(test_case, target_identifier, name=unique_name)
-                    if self._api_level == "high-level"
-                    else self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
-                )
+                if self._api_level == "fluent":
+                    target = self._build_fluent_item(test_case, target_identifier, name=unique_name)
+                elif self._api_level == "high-level":
+                    target = self._build_high_level_item(test_case, target_identifier, name=unique_name)
+                else:
+                    target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
             result = self._exchange(target)
             identifiers.extend(result.get("_identifiers", []))
             if operation == "Decrypt" and result["status"] == "passed" and result.get("_bytes") != b"A" * 16:

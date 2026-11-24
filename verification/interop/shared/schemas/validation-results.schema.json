@@ -29,7 +29,7 @@
       "properties": {
         "transport": { "enum": ["raw_tls", "https"] },
         "encoding": { "enum": ["TTLV", "JSON", "XML"] },
-        "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },
+        "api_level": { "enum": ["high-level", "typed-protocol", "fluent", "generic-ttlv"] },
         "library_commit": { "type": "string", "minLength": 7 },
         "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       },
