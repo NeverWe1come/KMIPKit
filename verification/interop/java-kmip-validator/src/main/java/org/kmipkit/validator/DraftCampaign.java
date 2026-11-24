@@ -5,12 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.TtlvCodec;
+import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -46,10 +53,7 @@ final class DraftCampaign {
 
     static int run(String[] args, Path manifest) throws IOException {
         Map<String, String> options = parseOptions(args);
-        var artifact = ArtifactProvenance.loadForCheckout(manifest);
-        if (!artifact.artifactSha256().equals(ArtifactProvenance.sha256(loadedJar()))) {
-            throw new IllegalArgumentException("The loaded KMIPKit JAR differs from the verified artifact");
-        }
+        var artifact = verifyLoadedArtifact(manifest);
         String scope = options.get("--scope");
         var result = JSON.createObjectNode().put("schema_version", "1.0").put("scope", scope)
                 .put("language", "java").put("run_id", UUID.randomUUID().toString())
@@ -60,6 +64,56 @@ final class DraftCampaign {
             JSON.writeValue(writer, result);
         }
         return exit;
+    }
+
+    static int inspectTtlv(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                byte[] wire = HexFormat.of().parseHex(line);
+                ArrayNode nodes = JSON.createArrayNode();
+                try (var item = TtlvCodec.decode(wire); var view = item.view()) {
+                    appendItem(view, nodes);
+                } catch (org.kmipkit.KmipException rejected) {
+                    nodes = null;
+                }
+                System.out.println(JSON.writeValueAsString(nodes));
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    private static void appendItem(TtlvItemView view, ArrayNode nodes) {
+        int raw;
+        try (var tag = view.tag()) {
+            raw = tag.raw();
+        }
+        var kind = view.itemType();
+        var row = nodes.addArray().add(raw).add(kind.code());
+        if (kind != TtlvItemType.Structure) {
+            row.add(0);
+            return;
+        }
+        try (var value = view.value(); var structure = value.structure()) {
+            long count = structure.itemCount();
+            row.add(count);
+            for (long index = 0; index < count; index++) {
+                try (var child = structure.itemAt(index)) {
+                    appendItem(child, nodes);
+                }
+            }
+        }
+    }
+
+    private static ArtifactProvenance verifyLoadedArtifact(Path manifest) throws IOException {
+        var artifact = ArtifactProvenance.loadForCheckout(manifest);
+        if (!artifact.artifactSha256().equals(ArtifactProvenance.sha256(loadedJar()))) {
+            throw new IllegalArgumentException("The loaded KMIPKit JAR differs from the verified artifact");
+        }
+        return artifact;
     }
 
     private static int local(Map<String, String> options, com.fasterxml.jackson.databind.node.ObjectNode result)
