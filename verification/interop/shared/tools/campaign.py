@@ -249,6 +249,9 @@ def write_report(destination, result, catalog_runs=()):
         lines.append(f"- Live {status.replace('_', ' ')}: {count}")
     for language, counts in overview.get("oasis_ttlv", {}).get("message_checks", {}).items():
         lines.append(f"- {language} OASIS TTLV messages: " + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    for language, counts in overview.get("oasis_ttlv_construction", {}).get("message_checks", {}).items():
+        lines.append(f"- {language} constructed OASIS TTLV messages: "
+                     + ", ".join(f"{count} {status}" for status, count in counts.items()))
     if catalog_runs:
         lines.extend(("", "## Installed-validator execution catalog", "",
                       "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
@@ -351,6 +354,8 @@ def main():
                         help="Import an installed validator's live execution-catalog report")
     parser.add_argument("--oasis-ttlv-report", type=Path,
                         help="Import decoder evidence for OASIS request and response shapes")
+    parser.add_argument("--oasis-construction-report", type=Path,
+                        help="Import local generic tag construction evidence for KMIP 2.x")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -382,6 +387,8 @@ def main():
         result = report(matrix, digest, runs, languages, profile, operations)
         if args.oasis_ttlv_report:
             attach_decoder_evidence(args.oasis_ttlv_report, result, args.library_commit)
+        if args.oasis_construction_report:
+            attach_decoder_evidence(args.oasis_construction_report, result, args.library_commit, construct=True)
         result["runner_failures"] = failures
         catalog_runs = load_catalog_reports(
             [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],

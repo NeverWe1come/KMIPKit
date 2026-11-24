@@ -157,6 +157,13 @@ python3 verification/interop/shared/tools/campaign.py \
   --oasis-ttlv-report /tmp/oasis-ttlv.jsonl --output-dir /tmp/kmip-campaign
 ```
 
+Use `--construct --version 2.0 --version 2.1` with the same installed runners
+to build each complete fixture from its raw tag numbers and scalar values
+through the language's public generic item constructors. The runner walks
+the constructed model and the tool checks its ordered tag, type and child
+counts. Import this output into the campaign using
+`--oasis-construction-report`. These checks exercise construction locally.
+
 Each XML scenario step shows its request and response codec outcomes.
 Scenario execution remains pending until it has controlled or live
 exchange evidence.
