@@ -369,8 +369,14 @@ where
         full_header[6],
         full_header[7],
     ]) as usize;
+    if payload_len > 16 * 1024 * 1024 {
+        return Err("TTLV payload exceeds maximum allowed size".to_string());
+    }
     let padding = (8 - payload_len % 8) % 8;
     let total_to_read = payload_len + padding;
+    if total_to_read > 16 * 1024 * 1024 {
+        return Err("TTLV frame exceeds maximum allowed size".to_string());
+    }
 
     let mut payload = vec![0u8; total_to_read];
     stream
@@ -451,6 +457,9 @@ where
         }
     }
 
+    if content_length > 16 * 1024 * 1024 {
+        return Err("HTTP body exceeds maximum allowed size".to_string());
+    }
     let mut body = vec![0u8; content_length];
     if content_length > 0 {
         stream

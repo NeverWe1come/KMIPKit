@@ -1592,11 +1592,14 @@ async fn test_e2e_tcp_kmip_14_client_through_proxy_server_to_kmip_30_upstream() 
     let mut hdr = [0u8; 8];
     stream.read_exact(&mut hdr).await.unwrap();
     let payload_len = u32::from_be_bytes([hdr[4], hdr[5], hdr[6], hdr[7]]) as usize;
+    assert!(payload_len <= 65536, "test payload length exceeds limit");
     let pad = (8 - payload_len % 8) % 8;
-    let mut body = vec![0u8; payload_len + pad];
+    let total = payload_len + pad;
+    assert!(total <= 65536, "test total frame exceeds limit");
+    let mut body = vec![0u8; total];
     stream.read_exact(&mut body).await.unwrap();
 
-    let mut full = Vec::with_capacity(8 + body.len());
+    let mut full = Vec::new();
     full.extend_from_slice(&hdr);
     full.extend_from_slice(&body);
 

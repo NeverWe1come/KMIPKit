@@ -161,3 +161,36 @@ fn unused_values_are_rejected_while_remaining_raw_and_failed_checks_borrow() {
     assert!(RawTag::try_checked(&reserved).is_err());
     assert_eq!(reserved.raw(), 0x0042_0009);
 }
+
+#[test]
+fn raw_tag_try_checked_allow_reserved_covers_all_allocation_kinds() {
+    // Assigned tag:
+    let assigned = raw_tag(0x0042_0001);
+    assert_eq!(
+        assigned.try_checked_allow_reserved().unwrap().raw(),
+        0x0042_0001
+    );
+
+    // Extension tag:
+    let extension = raw_tag(0x0054_0001);
+    assert_eq!(
+        extension.try_checked_allow_reserved().unwrap().raw(),
+        0x0054_0001
+    );
+
+    // Reserved tag (e.g. 0x0042_0091 Template-Attribute, which try_checked rejects):
+    let reserved = raw_tag(0x0042_0091);
+    assert!(reserved.try_checked().is_err());
+    assert_eq!(
+        reserved.try_checked_allow_reserved().unwrap().raw(),
+        0x0042_0091
+    );
+
+    // Unused tag in catalog:
+    let unused = raw_tag(0x0042_0000);
+    assert!(unused.try_checked_allow_reserved().is_err());
+
+    // Tag out of catalog / None:
+    let unallocated = raw_tag(0x0000_0001);
+    assert!(unallocated.try_checked_allow_reserved().is_err());
+}

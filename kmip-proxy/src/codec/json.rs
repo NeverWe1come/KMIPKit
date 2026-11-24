@@ -5,7 +5,13 @@ use super::names::{NameKind, family, named_value, normalize, tag_name, tag_value
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 use serde_json::{Value as JsonVal, json};
 
+/// Maximum allowed JSON request payload size (16 MiB).
+const MAX_JSON_PAYLOAD_BYTES: usize = 16 * 1024 * 1024;
+
 pub fn decode_json(bytes: &[u8]) -> Result<Item, String> {
+    if bytes.len() > MAX_JSON_PAYLOAD_BYTES {
+        return Err("JSON payload exceeds maximum allowed size".to_string());
+    }
     let json_val: JsonVal =
         serde_json::from_slice(bytes).map_err(|e| format!("invalid JSON: {e}"))?;
     decode_json_element(&json_val)

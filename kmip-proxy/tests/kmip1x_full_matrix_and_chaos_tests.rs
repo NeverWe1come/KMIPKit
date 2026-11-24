@@ -759,11 +759,14 @@ async fn test_network_chaos_truncated_frames_garbage_bytes_and_upstream_failure_
             let mut hdr = [0u8; 8];
             s.read_exact(&mut hdr).await.unwrap();
             let len = u32::from_be_bytes([hdr[4], hdr[5], hdr[6], hdr[7]]) as usize;
+            assert!(len <= 65536, "test payload length exceeds limit");
             let pad = (8 - len % 8) % 8;
-            let mut body = vec![0u8; len + pad];
+            let total = len + pad;
+            assert!(total <= 65536, "test total frame exceeds limit");
+            let mut body = vec![0u8; total];
             s.read_exact(&mut body).await.unwrap();
 
-            let mut full = Vec::with_capacity(8 + body.len());
+            let mut full = Vec::new();
             full.extend_from_slice(&hdr);
             full.extend_from_slice(&body);
             let resp = Format::Ttlv.decode(&full).unwrap();
