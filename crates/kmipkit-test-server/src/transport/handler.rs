@@ -60,6 +60,16 @@ where
         (WireEncoding::Xml, Format::Xml)
     };
     let max_message = kmipkit_ttlv::codec::CodecLimits::defaults().max_message_bytes();
+    let request = read_raw_text(stream, first_byte, encoding, max_message).await?;
+    respond_raw(stream, &request, format, dispatcher).await
+}
+
+async fn read_raw_text(
+    stream: &mut (impl AsyncRead + Unpin),
+    first_byte: u8,
+    encoding: WireEncoding,
+    max_message: usize,
+) -> Result<Vec<u8>, String> {
     let mut framer = TextDocumentFramer::new(encoding).map_err(|error| error.to_string())?;
     let mut request = vec![first_byte];
     framer.feed(first_byte).map_err(|error| error.to_string())?;
@@ -71,7 +81,7 @@ where
         framer.feed(byte).map_err(|error| error.to_string())?;
         request.push(byte);
     }
-    respond_raw(stream, &request, format, dispatcher).await
+    Ok(request)
 }
 
 async fn handle_raw_ttlv<S>(
@@ -229,3 +239,7 @@ where
 
     Ok(!connection_close)
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/handler_text_tests.rs"]
+mod handler_text_tests;
