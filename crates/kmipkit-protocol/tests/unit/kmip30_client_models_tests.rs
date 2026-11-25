@@ -338,3 +338,41 @@ fn decapsulate_response_rejects_data_and_retains_unknown_extensions() {
         .unwrap_or(false);
     assert!(extension_is_retained);
 }
+
+#[test]
+fn kmip30_response_parsers_preserve_identifier_item_types() {
+    let group = successful_response(
+        0x3C,
+        structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::identifier("created-group".to_owned()),
+        )]),
+    );
+    let response = CreateGroupResponse::try_from_response_item(group.batch_items().next().unwrap())
+        .expect("Create Group accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("created-group".to_owned()))
+    );
+
+    let encapsulate = successful_response(
+        0x41,
+        structure([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::identifier("encapsulation-key".to_owned()),
+            ),
+            item(DATA, Value::byte_string(vec![0xAA, 0xBB])),
+        ]),
+    );
+    let response = crate::EncapsulateResponse::try_from_response_item(
+        encapsulate.batch_items().next().unwrap(),
+    )
+    .expect("Encapsulate accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier(
+            "encapsulation-key".to_owned()
+        ))
+    );
+}
