@@ -17,6 +17,7 @@ import os
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -31,13 +32,22 @@ if str(_current_dir) not in sys.path:
 try:
     from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
     from verification.interop.shared.tools.campaign import read_validated
-    from verification.interop.shared.tools.operation_catalog import build_catalog, select_cases
+    from verification.interop.shared.tools.cosmian_minimum import build_selection as build_cosmian_selection
+    from verification.interop.shared.tools.operation_catalog import build_catalog, build_normative_catalog, select_cases
 except ImportError:
     from aggregate_matrix import aggregate_results, generate_html, generate_markdown  # type: ignore
     from campaign import read_validated  # type: ignore
-    from operation_catalog import build_catalog, select_cases  # type: ignore
+    from cosmian_minimum import build_selection as build_cosmian_selection
+    from operation_catalog import build_catalog, build_normative_catalog, select_cases  # type: ignore
 
 SUPPORTED_LANGUAGES = ["rust", "c", "java", "python"]
+
+
+@dataclass(frozen=True)
+class Listener:
+    address: str
+    certificate: Path
+    key: Path
 
 
 def check_toolchain_prerequisites() -> dict[str, bool]:
@@ -63,12 +73,17 @@ def build_command_for_language(
     python: Path | None = None,
     enable_mutations: bool = False,
     c_catalog_override: bool = False,
+    listener: Listener | None = None,
 ) -> list[str]:
     """Use the installed consumer's run command and actual report location."""
     del vectors_path  # The installed consumers load their own canonical vectors.
     project = (project_dir or base_dir / f"verification/interop/{language}-kmip-validator").resolve()
     out_file = output_path.resolve()
     command = ["run"]
+    if listener is not None:
+        command.extend(("--listen", listener.address, "--listener-cert", str(listener.certificate.resolve()),
+                        "--listener-key", str(listener.key.resolve()),
+                        "--listener-ready-file", str(out_file.parent / "listener-address.txt")))
     if connection_path is not None:
         command.extend(("--connection", str(connection_path.resolve())))
     if language != "c" or c_catalog_override:
@@ -118,7 +133,8 @@ def run_validator(
         env = None
         if language == "python" and project_dir is not None:
             env = dict(os.environ, PYTHONPATH=str(project_dir / "src"))
-        proc = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, env=env)
+        cwd = output_path.parent if language == "python" else None
+        proc = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, env=env, cwd=cwd)
         duration = (datetime.datetime.now(datetime.timezone.utc) - start_time).total_seconds()
         status = "FAILED"
         if output_path.is_file():
@@ -161,6 +177,7 @@ def orchestrate_interop_run(
     python: Path | None = None,
     enable_mutations: bool = False,
     c_catalog_override: bool = False,
+    listener: Listener | None = None,
 ) -> dict[str, Any]:
     """Launch one installed consumer per language and collect fresh reports."""
     if not dry_run and (connection_path is None or not connection_path.is_file()):
@@ -188,7 +205,7 @@ def orchestrate_interop_run(
         commands[lang] = build_command_for_language(
             lang, base_dir, profile_path, connection_path, catalog_path, vectors_path, out_file,
             project_dir=project_dirs[lang], python=python, enable_mutations=enable_mutations,
-            c_catalog_override=c_catalog_override,
+            c_catalog_override=c_catalog_override, listener=listener,
         )
     if not dry_run:
         # Reserve isolated, fresh paths before sending any requests.
@@ -295,7 +312,12 @@ def main() -> None:
                         help="Generate the complete operation catalog for each connection version")
     parser.add_argument("--require-complete", action="store_true",
                         help="Fail if any applicable selected case has missing or incomplete evidence")
-    parser.add_argument("--with-variants", action="store_true",
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument("--normative", action="store_true",
+                       help="With --all-operations, select all KMIP 2.x normative cases and existing variants")
+    scope.add_argument("--cosmian-minimum", action="store_true",
+                        help="With --all-operations, select the published Cosmian/Eviden KMIP 2.x minimum")
+    scope.add_argument("--with-variants", action="store_true",
                         help="With --all-operations, also run existing version-specific conformance cases")
     parser.add_argument("--operation", action="append", default=[], help="With --all-operations, select an exact operation name")
     parser.add_argument("--case", action="append", default=[], help="With --all-operations, select an exact case ID")
@@ -309,6 +331,9 @@ def main() -> None:
                         help="Use an installed consumer from a separate checkout")
     parser.add_argument("--python", type=Path, help="Python interpreter with the installed KMIPKit wheel")
     parser.add_argument("--enable-mutations", action="store_true", help="Opt in to mutating recipes explicitly")
+    parser.add_argument("--listen", help="Address and port for server-initiated operations")
+    parser.add_argument("--listener-cert", type=Path, help="PEM certificate for incoming mutual TLS")
+    parser.add_argument("--listener-key", type=Path, help="PEM private key for incoming mutual TLS")
     parser.add_argument("--campaign", action="store_true", help="Include the planned obligations and catalog evidence in a campaign report")
 
     args = parser.parse_args()
@@ -322,12 +347,20 @@ def main() -> None:
         parser.error("give one project path per selected language")
     if args.all_operations and not args.connection:
         parser.error("--all-operations requires a connection configuration")
-    if (args.with_variants or args.operation or args.case) and not args.all_operations:
-        parser.error("--with-variants, --operation and --case require --all-operations")
+    if (args.with_variants or args.cosmian_minimum or args.normative or args.operation or args.case) and not args.all_operations:
+        parser.error("--with-variants, --cosmian-minimum, --normative, --operation and --case require --all-operations")
     if args.require_complete and (args.dry_run or not args.all_operations):
         parser.error("--require-complete requires a live --all-operations selection")
     if args.campaign and args.dry_run:
         parser.error("--campaign requires executing the validators")
+
+    listener = None
+    if args.listen or args.listener_cert or args.listener_key:
+        if not (args.listen and args.listener_cert and args.listener_key and args.connection):
+            parser.error("--listen requires --listener-cert, --listener-key and --connection")
+        if args.parallel:
+            parser.error("use a sequential run when sharing one incoming listener address")
+        listener = Listener(args.listen, args.listener_cert, args.listener_key)
 
     if args.output_dir:
         out_dir = args.output_dir.resolve()
@@ -349,23 +382,41 @@ def main() -> None:
             ))
         if args.all_operations:
             catalog_dir = out_dir / "catalogs"
-            selections = {
-                version: select_cases(build_catalog(base_dir, version, include_variants=args.with_variants),
-                                      operations=args.operation, case_ids=args.case)
-                for version in versions
-            }
+            selections = {}
             catalog_dir.mkdir(parents=True, exist_ok=True)
             for version in versions:
+                if args.cosmian_minimum:
+                    catalog, scope = build_cosmian_selection(base_dir, version)
+                    with (catalog_dir / f"kmip-{version}-cosmian-scope.json").open("x", encoding="utf-8") as stream:
+                        json.dump(scope, stream, indent=2, ensure_ascii=False)
+                    if args.require_complete and not (args.operation or args.case):
+                        unmapped = [row for row in scope["rows"] if row["disposition"] not in {
+                            "out_of_scope", "server_cases_selected",
+                        }]
+                        if unmapped:
+                            gaps = True
+                            print(f"KMIP {version}: {len(unmapped)} Cosmian rows have no mapped server case",
+                                  file=sys.stderr)
+                elif args.normative:
+                    catalog, _ = build_normative_catalog(base_dir, version)
+                else:
+                    catalog = build_catalog(base_dir, version, include_variants=args.with_variants)
+                selections[version] = select_cases(catalog, operations=args.operation, case_ids=args.case)
                 catalog = catalog_dir / f"kmip-{version}-operations.json"
                 with catalog.open("x", encoding="utf-8") as stream:
                     json.dump(selections[version], stream, indent=2, ensure_ascii=False)
                 operation_catalogs[version] = catalog
         for index, connection in enumerate(connections, 1):
             catalog_path = args.catalog
-            if args.all_operations:
+            active_listener = None
+            if args.all_operations or listener:
                 configuration = read_validated(connection, "server-connection.schema.json")
                 version = configuration["protocol_version"]
-                catalog_path = operation_catalogs[version]
+                if args.all_operations:
+                    catalog_path = operation_catalogs[version]
+                if (listener and version in {"2.0", "2.1"} and configuration["api_level"] == "generic-ttlv"
+                        and configuration["transport"] == "raw_tls" and configuration["encoding"] == "TTLV"):
+                    active_listener = listener
             destination = out_dir if len(connections) == 1 else out_dir / f"connection-{index}"
             result = orchestrate_interop_run(
                 languages=langs,
@@ -380,7 +431,7 @@ def main() -> None:
                 projects=projects,
                 python=args.python.absolute() if args.python else None,
                 enable_mutations=args.enable_mutations,
-                c_catalog_override=args.all_operations,
+                c_catalog_override=args.all_operations, listener=active_listener,
             )
             results.extend(result["runs"])
             if args.require_complete:

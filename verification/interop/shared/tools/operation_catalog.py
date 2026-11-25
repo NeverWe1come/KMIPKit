@@ -143,6 +143,42 @@ def with_cases(catalog: dict, cases: list[dict]) -> dict:
     }
 
 
+def build_normative_catalog(root: Path, version: str) -> tuple[dict, list[dict]]:
+    """Combine the existing executable recipes and version-specific normative obligations."""
+    if version not in ("2.0", "2.1"):
+        raise ValueError(f"normative KMIP 2.x catalog does not include {version}")
+    path = root / "verification/interop/shared/catalog/kmipkit-2x-matrix-catalog.json"
+    normative = json.loads(path.read_text(encoding="utf-8"))
+    targets = [target for target in normative["normative_targets"]
+               if version in target.get("protocol_versions", ("2.0", "2.1"))]
+    catalog = build_catalog(root, version, include_variants=True)
+    cases = {case["case_id"]: case for case in catalog["test_cases"]}
+    obligations = []
+    for case in normative["test_cases"]:
+        execution = case["execution"]
+        if version not in execution["protocol_versions"]:
+            continue
+        case_id = case["case_id"]
+        requires = case["requires"]
+        if case_id in cases:
+            # A baseline exchange cannot supply evidence for the broader specification assertions.
+            if execution["assertions"] == cases[case_id]["execution"]["assertions"]:
+                obligations.append(case)
+                continue
+            requires = {**requires, "baseline_case_id": case_id}
+            case_id = f"{case_id}-normative"
+            if case_id in cases:
+                raise ValueError(f"duplicate normative case identifier: {case_id}")
+        if "protocol_scenario" in requires:
+            scenario = {**requires["protocol_scenario"], "protocol_versions": [version]}
+            requires = {**requires, "protocol_scenario": scenario}
+        obligation = {**case, "case_id": case_id, "execution": {**execution, "protocol_versions": [version]},
+                      "requires": requires}
+        cases[case_id] = obligation
+        obligations.append(obligation)
+    return with_cases({**catalog, "normative_targets": targets}, list(cases.values())), obligations
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", choices=VERSIONS, required=True)

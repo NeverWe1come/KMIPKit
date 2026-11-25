@@ -56,7 +56,8 @@
               "required": ["document", "section"],
               "properties": {
                 "document": { "enum": ["OASIS KMIP 2.0 Specification", "OASIS KMIP 2.1 Specification", "OASIS KMIP 3.0 Working Draft"] },
-                "section": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" }
+                "section": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
+                "table": { "type": "string", "minLength": 1 }
               },
               "additionalProperties": false
             }
