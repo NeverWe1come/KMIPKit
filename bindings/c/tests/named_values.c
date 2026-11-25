@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-/* OASIS KMIP Specification v2.1 §§11.12 and 12.1; KMIPKIT-0047-FR-001–004. */
+/* OASIS KMIP Specification v2.1 §§11.12 and 12.1. */
 int main(void) {
     assert(KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES == 3u);
     assert(strcmp(KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_name(
@@ -36,7 +36,7 @@ int main(void) {
     assert(strcmp(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(0x0D)), "Password Credential") == 0);
     assert(KMIPKIT_V3_0_OBJECT_TYPE_name(UINT32_C(6)) == 0);
 
-    /* KMIPKIT-0093-FR-001–002: assigned tag names remain version scoped. */
+    /* Assigned tag names remain version scoped. */
     assert(KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS == UINT32_C(0x420166));
     assert(strcmp(KMIPKIT_ENUMERATION_TAG_name(KMIPKIT_ENUMERATION_TAG_OBJECT_GROUPS),
                   "Object Groups") == 0);

@@ -96,7 +96,7 @@ disabled for the core client.
 Provides synchronous typed request execution, batch processing, protocol
 asynchronous outcomes, explicit encoding and version selection, pre-send
 validation, typed response access, extension handling, and server-to-client
-dispatch/listener integration under KMIPKIT-0066. Calls are serialized through
+dispatch/listener integration under server-to-client operations. Calls are serialized through
 the configured worker. The caller decides whether to issue a later request;
 automatic KMIP retries, failover, and background polling are not performed.
 

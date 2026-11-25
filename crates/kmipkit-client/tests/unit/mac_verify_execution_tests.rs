@@ -2,8 +2,8 @@
 //! §6.1.33, Tables 262–264. These are fake-transport tests, not official
 //! Test Case executions.
 //!
-//! Traceability: FR-001, FR-005–FR-011, FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for client MAC Verify operation execution.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

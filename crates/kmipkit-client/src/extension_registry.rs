@@ -458,7 +458,7 @@ pub fn definition_at(
 
 /// Finds a definition by its exact local identity.
 #[must_use]
-#[allow(clippy::needless_pass_by_value)] // T010's owned identity API avoids borrowing temporary lookup keys.
+#[allow(clippy::needless_pass_by_value)] // the owned identity API avoids borrowing temporary lookup keys.
 pub fn definition_for_identity(
     registry: &ClientExtensionRegistry,
     identity: ExtensionIdentity,
@@ -505,11 +505,11 @@ pub fn validate_extension_value(
 
 /// Returns the candidate definition indexes for one discriminator fingerprint.
 ///
-/// A fingerprint only selects a candidate bucket. T035 must call
+/// A fingerprint only selects a candidate bucket. the implementation must call
 /// [`candidate_matches_discriminator`] for every returned index before
 /// accepting a match; a fingerprint collision alone never establishes an
 /// exact vendor, path, item-type, and scalar-value match.
-#[allow(dead_code)] // The staged inbound recognition consumer is T035.
+#[allow(dead_code)] // The staged inbound recognition consumer is the implementation.
 pub(crate) fn discriminator_candidates<'a>(
     registry: &'a ClientExtensionRegistry,
     vendor_identifier: &str,
@@ -527,9 +527,9 @@ pub(crate) fn discriminator_candidates<'a>(
 /// Verifies a fingerprint-bucket candidate against the complete discriminator
 /// key. An index outside this registry returns `false`.
 ///
-/// T035 must use this predicate for each candidate from
+/// the implementation must use this predicate for each candidate from
 /// [`discriminator_candidates`] before treating an input path as recognized.
-#[allow(dead_code)] // The staged inbound recognition consumer is T035.
+#[allow(dead_code)] // The staged inbound recognition consumer is the implementation.
 pub(crate) fn candidate_matches_discriminator(
     registry: &ClientExtensionRegistry,
     candidate_index: usize,

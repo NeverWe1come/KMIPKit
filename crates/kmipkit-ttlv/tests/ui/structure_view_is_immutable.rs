@@ -1,4 +1,4 @@
-// Requirement traceability: KMIPKIT-0006-FR-017, SC-006.
+// Verifies public API ownership, redaction, and borrowing invariants.
 use kmipkit_ttlv::{Item, Structure};
 
 fn main() {

@@ -1,8 +1,9 @@
 #![cfg(test)]
 
 //! Fake-transport Revoke checks from OASIS KMIP v2.1 §6.1.44, Tables 295–297,
-//! and §11.48, Table 481. Traceability: `KMIPKIT-REQ-SPEC-6.1.44-001`,
-//! `-003-001`, and `-003-002`. These are derived tests, not official fixture passes.
+//! and §11.48, Table 481. Validates client execution of Revoke requests,
+//! revocation reason codes, and response processing. These are derived tests,
+//! not official fixture passes.
 
 use kmipkit_protocol::{
     AttributeSet, ObjectType, ProtocolCauseCategory, RegisterRequest, RevocationReason,

@@ -17,6 +17,7 @@ edition = "2024"
 rust-version = "1.94"
 license = "Apache-2.0"
 repository = "https://github.com/NeverWe1come/KMIPKit"
+homepage = "https://github.com/NeverWe1come/KMIPKit"
 
 [workspace.dependencies]
 openssl = "=0.10.82"

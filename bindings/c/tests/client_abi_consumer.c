@@ -11526,7 +11526,7 @@ cleanup:
     return result == 1 ? 1 : -failure_stage;
 }
 
-/* KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 full response inspection. */
+/* KMIP 2.1 §§8.4–8.6 full response inspection. */
 struct response_view_probe { uint64_t length; int root_present; };
 static void inspect_response_view(const uint8_t *data, uint64_t length, void *context) {
     struct response_view_probe *probe = context;

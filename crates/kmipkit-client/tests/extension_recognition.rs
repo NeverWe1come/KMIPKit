@@ -1,7 +1,9 @@
 //! Registered extension recognition and inspection behavior.
 //!
-//! Traceability: KMIPKIT-0012-FR-006, KMIPKIT-0012-FR-007,
-//! KMIPKIT-0012-FR-012, and KMIP 2.1 §9.13, Table 418.
+//! Validates inbound extension recognition using registered vendor identity,
+//! declared discriminators, and complete schema validation, while preserving
+//! the generic subtree, unknown tags, and child order under KMIP 2.1 §9.13,
+//! Table 418, within configured resource limits.
 
 use kmipkit_client::extension_registry::{self, ClientExtensionRegistry, ExtensionRecognition};
 use kmipkit_client::{ClientError, ClientErrorCategory};

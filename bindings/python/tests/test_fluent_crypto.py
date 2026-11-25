@@ -209,7 +209,7 @@ def test_crypto_builder_accepts_typed_parameters_and_explicit_ttlv_data() -> Non
 def test_crypto_builder_wipes_staging_when_span_allocation_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """KMIPKIT-0105-FR-004: cleanup covers failures before the native setter."""
+    """fluent crypto: cleanup covers failures before the native setter."""
     original_ffi = fluent.ffi
     stages: list[bytearray] = []
     allocation_error = MemoryError("span allocation failed")
@@ -256,7 +256,7 @@ def test_crypto_builder_wipes_staging_when_span_allocation_fails(
 def test_crypto_builder_rejects_wrong_setter_types_locally(
     setter: str, invalid: object,
 ) -> None:
-    """KMIPKIT-0105-FR-002/003/005: invalid Python inputs fail before execution."""
+    """Invalid Python inputs fail locally before execution."""
     with fluent.EncryptBuilder() as builder:
         with pytest.raises(errors.InvalidInputError):
             getattr(builder, setter)(invalid)
@@ -287,7 +287,7 @@ def test_crypto_builder_rejects_oversized_data_before_copying() -> None:
 
 
 def test_crypto_builder_validation_preserves_reusable_builder() -> None:
-    """KMIPKIT-0105-FR-005: local validation does not consume the request."""
+    """fluent crypto: local validation does not consume the request."""
     with fluent.HashBuilder() as builder, _hash_parameters() as parameters:
         builder.cryptographic_parameters(parameters).data(b"hash input")
 

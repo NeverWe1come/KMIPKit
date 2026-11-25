@@ -192,7 +192,7 @@ impl RecertifyRequest {
         });
         if !has_request_value && !has_explicit_identifier {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Unique Identifier",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

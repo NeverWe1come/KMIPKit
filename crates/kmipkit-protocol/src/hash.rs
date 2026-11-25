@@ -127,7 +127,7 @@ impl ValidateKmipRequest for HashRequest {
         let mut report = ValidationReport::default();
         if self.validate_multipart_shape().is_err() {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Data",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -141,7 +141,7 @@ impl ValidateKmipRequest for HashRequest {
         });
         if !has_hashing_algorithm {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Cryptographic Parameters",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

@@ -3,8 +3,8 @@
 //! encodings, and §11.56 Table 487 assigns tag 0x420094 to Unique Identifier.
 //! These are source-derived tests, not official OASIS Test Cases.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-ARCHIVE`; KMIPKit-0018 FR-001, FR-002,
-//! FR-004, FR-006, FR-009, FR-010; SC-001 and SC-002.
+//! Validates request payload encoding and response decoding for Archive operations
+//! across supported KMIP protocol profiles.
 
 use crate::async_operation_fixtures::response_message;
 use crate::lifecycle_fixtures::{

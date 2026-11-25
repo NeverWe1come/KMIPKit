@@ -239,7 +239,7 @@ impl RawTlsTransport {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The source-including T025 target is the only caller.
+#[allow(dead_code)] // The source-including the implementation target is the only caller.
 pub(crate) fn new_for_test(
     configuration: TransportConfig,
     observer: Option<SecretBufferObserver>,
@@ -251,7 +251,7 @@ pub(crate) fn new_for_test(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // T031 injects deterministic DNS and worker-readiness gates.
+#[allow(dead_code)] // the implementation injects deterministic DNS and worker-readiness gates.
 pub(crate) fn new_for_test_with_resolver(
     configuration: TransportConfig,
     observer: Option<SecretBufferObserver>,
@@ -263,7 +263,7 @@ pub(crate) fn new_for_test_with_resolver(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // T031 injects deterministic DNS and worker-readiness gates.
+#[allow(dead_code)] // the implementation injects deterministic DNS and worker-readiness gates.
 pub(crate) fn new_for_test_with_lifecycle_controls(
     configuration: TransportConfig,
     observer: Option<SecretBufferObserver>,
@@ -276,7 +276,7 @@ pub(crate) fn new_for_test_with_lifecycle_controls(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T031 raw TLS target observes candidate-to-dispatch ordering.
+#[allow(dead_code)] // The implementation raw TLS target observes candidate-to-dispatch ordering.
 pub(crate) fn new_for_test_with_candidate_observer(
     configuration: TransportConfig,
     resolver: Resolver,
@@ -288,7 +288,7 @@ pub(crate) fn new_for_test_with_candidate_observer(
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T028 integration target is the only caller.
+#[allow(dead_code)] // The implementation integration target is the only caller.
 pub(crate) fn new_for_test_with_response_allocation_observer(
     configuration: TransportConfig,
     observer: ResponseAllocationObserver,
@@ -780,7 +780,7 @@ impl ResponseBuffer {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum CandidateEvent {
     HandshakeFailed(SocketAddr),
@@ -789,7 +789,7 @@ pub(crate) enum CandidateEvent {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Default)]
 struct CandidateEventState {
     events: Vec<CandidateEvent>,
@@ -797,14 +797,14 @@ struct CandidateEventState {
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 #[derive(Clone, Default)]
 pub(crate) struct CandidateEventObserver {
     state: Arc<Mutex<CandidateEventState>>,
 }
 
 #[cfg(test)]
-#[allow(dead_code)] // The T031 source-including raw TLS target consumes these events.
+#[allow(dead_code)] // The implementation source-including raw TLS target consumes these events.
 impl CandidateEventObserver {
     pub(crate) fn new() -> Self {
         Self::default()

@@ -1,7 +1,7 @@
 //! Source-derived fixtures for OASIS KMIP v2.1 attribute structures.
 //!
 //! The Vendor Attribute fixture follows §4.60, Table 150. Its linked official
-//! case `KMIPKIT-TEST-CN01-2-42` (`TC-I18N-3-21`) is unavailable in the pinned
+//! official test case `TC-I18N-3-21` is unavailable in the pinned
 //! test-case source; this fixture is independent and does not claim that case
 //! passed.
 

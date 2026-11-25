@@ -1,0 +1,22 @@
+<templateSet group="KMIPKit">
+    <template name="kmip-discover-rust"
+              value="let req = kmipkit_client::ClientRequest::discover_versions();&#10;let outcome = client.execute_batch(kmipkit_client::ClientBatch::new(kmipkit_client::ClientBatchItem::new(req)))?;"
+              description="KMIPKit Rust DiscoverVersions"
+              toReformat="true"
+              toShortenFQNames="false">
+        <context>
+            <option name="OTHER" value="true"/>
+        </context>
+    </template>
+    <template name="kmip-java-client"
+              value="var registry = ClientExtensionRegistry.defaults();&#10;var config = ClientConfiguration.builder(registry).build();&#10;try (var client = KmipClient.connect(config, &quot;$HOST$&quot;, $PORT$)) {&#10;    var versions = client.discoverVersions();&#10;}"
+              description="KMIPKit Java Client Connection"
+              toReformat="true"
+              toShortenFQNames="true">
+        <variable name="HOST" expression="&quot;kms.example.com&quot;" defaultValue="" alwaysStopAt="true"/>
+        <variable name="PORT" expression="&quot;5696&quot;" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="OTHER" value="true"/>
+        </context>
+    </template>
+</templateSet>

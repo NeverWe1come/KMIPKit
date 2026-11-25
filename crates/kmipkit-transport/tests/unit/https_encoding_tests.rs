@@ -1,4 +1,4 @@
-//! OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2, interpreted by ADR-0018.
+//! OASIS KMIP Profiles v2.1 §§5.3.1–5.3.2, interpreted by multi-encoding support.
 //! Transport fixtures use empty KMIP containers to distinguish wire formats;
 //! typed message validity and codec decoding are tested by the client.
 

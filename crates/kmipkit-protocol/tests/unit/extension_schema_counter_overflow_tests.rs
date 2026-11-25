@@ -2,7 +2,7 @@ use super::{checked_u64_counter_add, checked_usize_counter_add};
 
 // These direct additions exercise the checked arithmetic planned for the
 // recursive schema-node and per-schema constraint counters (usize), plus
-// registry aggregate node and constraint counters (u64) in T014.
+// registry aggregate node and constraint counters (u64) in the implementation.
 #[test]
 fn usize_checked_counter_accepts_maximum_then_rejects_one_more() {
     assert_eq!(

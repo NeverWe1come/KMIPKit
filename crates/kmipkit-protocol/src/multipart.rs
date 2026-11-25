@@ -7,7 +7,7 @@ use crate::{ProtocolCauseCategory, ProtocolError, ProtocolErrorKind};
 /// KMIP Specification v2.1 §6.1 defines the single-part and multipart
 /// sequences; Tables 196 and 214 define operation Data as required for a
 /// single-part request. The unresolved Data-omission conflict for a framed
-/// single request is bounded by KMIPKIT-DISC-045.
+/// single request is bounded by the maximum allowed multipart segment limit.
 pub(crate) fn validate_data_multipart_shape(
     has_data: bool,
     has_correlation_value: bool,

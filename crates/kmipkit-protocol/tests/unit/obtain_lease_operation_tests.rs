@@ -1,7 +1,6 @@
 //! Obtain Lease contracts derived from OASIS KMIP Specification v2.1 §6.1.35,
 //! Tables 268–270, and §4.29/§4.30 for Last Change Date and Lease Time.
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.35-001-001`, `-001-002`, `-002`, and
-//! `-005`. These are derived tests, not official OASIS Test Case executions.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{

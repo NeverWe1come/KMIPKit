@@ -2,7 +2,7 @@
 //!
 //! The request advertises client-supported protocol versions. By default, it
 //! advertises KMIP 2.1 preserving 1.0 zero-breakage behavior. Response conversion
-//! borrows the validated KMIPKIT-0006 message model, leaving its ordered generic
+//! borrows the validated standard message model, leaving its ordered generic
 //! TTLV tree available to the caller.
 
 use std::error::Error;
@@ -114,7 +114,7 @@ pub struct DiscoverVersionsResponse {
 }
 
 impl DiscoverVersionsResponse {
-    /// Converts one already validated KMIPKIT-0006 response batch item against the default offer (KMIP 2.1).
+    /// Converts one already validated response batch item against the default offer (KMIP 2.1).
     ///
     /// # Errors
     ///

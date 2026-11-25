@@ -68,7 +68,7 @@
 
 ## Documentation and comments
 
-Rustdoc, Javadoc, docstrings, examples, ADRs, and specifications are English.
+Rustdoc, Javadoc, docstrings, examples, and specifications are English.
 Comments explain why, invariants, safety, and non-obvious constraints. They do
 not restate readable code.
 

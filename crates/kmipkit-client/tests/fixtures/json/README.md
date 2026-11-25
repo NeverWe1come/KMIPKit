@@ -6,19 +6,19 @@
 SHA-256: `681e7ccd518fc4d25b66077567868ab63652418a81e44625e4bfdc8c5ab70cfe`.
 The directory's `.gitattributes` prevents line-ending conversion of this copy.
 
-Profiles §5.5.4.1 defines two Query exchanges. The test description is XML,
+Profiles Â§5.5.4.1 defines two Query exchanges. The test description is XML,
 not four literal JSON bodies. The codec test converts each described semantic
 message to JSON and binds `$NOW` to 1700000000. It replays all four messages,
 including the first ResponseTooLarge failure and subsequent successful Query
 response. This is codec fixture evidence; live client/server sequencing,
 Baseline Client, HTTPS, and complete JSON profile conformance remain separate
-gates owned by KMIPKIT-0057 and the integration programme.
+governance gates and integration testing.
 
 
 `request-time-0.json`, `response-time-0.json`, and `request-time-1.json`
 contain the deterministic normative JSON wire examples from the pinned
-Profiles HTML �5.5.4.1 table immediately following �The normative corresponding
-wire encoding in JSON�. The offline `extract_profiles_json.py` utility strips
+Profiles HTML §5.5.4.1 table immediately following The normative corresponding
+wire encoding in JSON. The offline `extract_profiles_json.py` utility strips
 HTML markup/entities and converts indentation nonbreaking spaces to ordinary
 spaces and removes trailing indentation whitespace; all JSON tokens, versions,
 values and timestamps are retained exactly.

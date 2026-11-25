@@ -413,7 +413,7 @@ async fn hyper_sender_readiness_timeout_is_not_sent_before_dispatch_commit() {
         assert!(target_control.begin());
         let target_deadline = Instant::now() + total_timeout;
         let mut pending_request = Some(request(EmptyBody));
-        // T010's helper holds this second request at readiness, then commits
+        // the helper holds this second request at readiness, then commits
         // the target control before calling Hyper's send_request.
         let first_attempt = timeout::send_request_when_ready(
             &mut sender,
@@ -694,7 +694,7 @@ async fn a_positive_wrapped_read_wins_before_timeout_finalization() {
     let (cleanup_started_tx, cleanup_started_rx) = tokio::sync::oneshot::channel();
     let (release_cleanup_tx, release_cleanup_rx) = tokio::sync::oneshot::channel();
     // The response headers already passed through DeadlineIo as a positive
-    // read. T010's finalizer must preserve that winner and wait for real
+    // read. the finalizer must preserve that winner and wait for real
     // request/driver cleanup before returning its delivery snapshot.
     let finalizer = tokio::spawn(async move {
         timeout::finalize_timeout(&finalizing_control, async move {

@@ -1,6 +1,6 @@
 //! Project-derived checks for OASIS KMIP Specification v2.1 §6.1.22,
 //! Tables 229–231, and the Constraints Structure in §7.7.
-//! Traceability: KMIPKIT-025-T229-REQUEST, T230-RESPONSE, T231-ERROR.
+//! Verifies protocol model, request/response validation, and security invariants.
 //! These are not official OASIS Test Cases.
 
 use crate::async_operation_fixtures::{item, response_message, structure};

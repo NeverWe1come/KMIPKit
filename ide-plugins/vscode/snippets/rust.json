@@ -1,0 +1,31 @@
+{
+  "KMIPKit DiscoverVersions": {
+    "prefix": "kmip-discover",
+    "body": [
+      "let request = kmipkit_client::ClientRequest::discover_versions();",
+      "let outcome = client.execute_batch(kmipkit_client::ClientBatch::new(",
+      "    kmipkit_client::ClientBatchItem::new(request),",
+      "))?;"
+    ],
+    "description": "Execute a KMIP DiscoverVersions request using KMIPKit"
+  },
+  "KMIPKit Create AES-256 Key": {
+    "prefix": "kmip-create-aes",
+    "body": [
+      "let req = kmipkit_client::CreateSymmetricKeyBuilder::new()",
+      "    .algorithm(kmipkit_protocol::CryptographicAlgorithm::Aes)",
+      "    .length(256)",
+      "    .usage_mask(kmipkit_client::CryptographicUsageMask::ENCRYPT | kmipkit_client::CryptographicUsageMask::DECRYPT)",
+      "    .build()?;"
+    ],
+    "description": "Build a KMIP Create Symmetric Key (AES-256) request"
+  },
+  "KMIPKit Locate & Get": {
+    "prefix": "kmip-locate-get",
+    "body": [
+      "let locate_req = kmipkit_client::LocateBuilder::new().build()?;",
+      "let get_req = kmipkit_client::GetBuilder::new(\"${1:unique-id}\").build()?;"
+    ],
+    "description": "Build Locate and Get requests in KMIPKit"
+  }
+}

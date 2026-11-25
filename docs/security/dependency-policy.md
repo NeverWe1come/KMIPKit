@@ -89,7 +89,7 @@ reviewed disposition for an exact remaining finding, not a general approval
 for a dependency. Add an entry only after a reviewer has accepted the
 specific risk and recorded durable approval evidence. Each entry must identify:
 
-- A unique `KMIPKIT-0011-EX-NNN` ID and one supported rule kind: `advisory`,
+- A unique `DEP-EX-NNN` ID and one supported rule kind: `advisory`,
   `yanked`, `license`, `source`, or `duplicate`.
 - The exact crate name and resolved version, plus the exact advisory ID,
   yanked package/version, source, or license evidence required by that rule.
@@ -99,7 +99,7 @@ specific risk and recorded durable approval evidence. Each entry must identify:
 - A specific rationale, mitigation/remediation path, accountable owner, and
   a reviewer different from that owner.
 - An ISO review date, an expiry no more than 90 days later, and an approval
-  reference to a durable review record such as an ADR or merged PR.
+  reference to a durable review record such as a dependency review document or merged PR.
 
 For a license clarification, the record must include human-reviewed evidence
 for that package and its license disposition. A missing automated license

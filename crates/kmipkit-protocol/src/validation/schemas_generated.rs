@@ -33,7 +33,7 @@ macro_rules! field_nested {
 macro_rules! field {
     ($rule:ident $name:literal $tag:tt $types:literal $min:literal $max:tt $nested:tt) => {
         FieldDescriptor {
-            rule_id: concat!("KMIPKIT-0051-", stringify!($rule)),
+            rule_id: concat!("PAYLOAD-RULE-", stringify!($rule)),
             name: $name,
             tag: field_tag!($tag),
             types: $types,

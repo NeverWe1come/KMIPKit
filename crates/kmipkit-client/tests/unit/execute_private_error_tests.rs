@@ -1,11 +1,10 @@
-//! Derived private-boundary tests for the KMIPKIT-0007 result path. These are
+//! Derived private-boundary tests for client error and outcome handling paths. These are
 //! not official OASIS test vectors. The represented Protocol Version and
 //! response mapping checks are grounded in OASIS KMIP v2.1 §9.16, Table 421,
 //! and §§8.3 and 9.21, Tables 396 and 426. Generic value copying preserves the
 //! KMIP 2.1 TTLV model defined by §6.1.1.
 //!
-//! Traceability: `KMIPKIT-0007-FR-004`, `-FR-006`, `-FR-008`, `-FR-013`,
-//! `-FR-016`; `KMIPKIT-0007-SC-002`, `-SC-005`, `-SC-009`.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::error::Error;
 

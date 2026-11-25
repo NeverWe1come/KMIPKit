@@ -50,7 +50,7 @@ final class ValidationParityTest {
             assertFalse(report.isValid());
             assertEquals(2, report.issues().size());
             ValidationIssue issue = report.issues().get(0);
-            assertEquals("KMIPKIT-0051-R019", issue.code());
+            assertEquals("PAYLOAD-RULE-R019", issue.code());
             assertEquals("Request Payload.Object Type", issue.path());
             assertEquals("ERROR", issue.severity());
             assertEquals("KMIP v2.1", issue.sourceIdentifier());
@@ -105,7 +105,7 @@ final class ValidationParityTest {
                     ClientBatch batch = ClientBatch.create().add(item)) {
                 assertFalse(report.isValid());
                 ValidationIssue issue = report.issues().get(0);
-                assertEquals("KMIPKIT-0051-R190", issue.code());
+                assertEquals("PAYLOAD-RULE-R190", issue.code());
                 assertEquals("Request Payload.Attributes", issue.path());
                 assertEquals("§4, Table 46", issue.sourceReference());
                 assertFalse(issue.toString().contains(canary));

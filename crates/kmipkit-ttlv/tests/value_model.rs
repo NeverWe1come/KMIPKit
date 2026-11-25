@@ -4,9 +4,8 @@
 //! These tests cover the in-memory semantic model only, not TTLV wire encoding
 //! or schema validity.
 //!
-//! Traceability: KMIPKIT-0004-FR-001–FR-008, KMIPKIT-0004-FR-010, and
-//! KMIPKIT-0004-FR-014, and KMIPKIT-0004-NR-001–NR-007. Structure depth is
-//! capped at 64 by `KMIPKit` policy, not by an OASIS protocol constraint.
+//! Verifies TTLV semantic value model representation across all supported Item Types.
+//! Structure depth is capped at 64 by `KMIPKit` policy, not by an OASIS protocol constraint.
 
 use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Tag, Value, ValueView};
 use std::fmt::{Debug, Display};

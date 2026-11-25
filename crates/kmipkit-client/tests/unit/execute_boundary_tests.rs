@@ -1,9 +1,9 @@
 //! Red-only tests for the private execute-boundary source checker.
 //!
 //! Fixture files are inert Rust source snippets loaded as text. They are not
-//! compiled, executed, or read from OASIS sources. T011 replaces these
+//! compiled, executed, or read from OASIS sources. the implementation replaces these
 //! deliberately incomplete test-only checker candidates with the approved
-//! pinned Rust-AST audit; T017 wires that production audit into CI.
+//! pinned Rust-AST audit; the implementation wires that production audit into CI.
 //! The low-level caller-owned transport exception belongs to
 //! `kmipkit-transport`; client source may call `exchange` only from
 //! `Client::exchange_operation`, reached only from closed typed request entry points.
@@ -13,9 +13,8 @@
 //! standard-library whitelist. It does not expand macros or resolve types; the
 //! whitelist's token trees are checked for protected boundary identifiers.
 //!
-//! Traceability: `KMIPKIT-0007-FR-001`, `-FR-003`, `-FR-011`, `-FR-012`,
-//! `-FR-015`, `-FR-017`; `KMIPKIT-0007-SC-004`, `-SC-007`, `-SC-008`;
-//! ADR-0012, ADR-0014, OD-005.
+//! Verifies private execute boundary AST checks, ensuring single exchange
+//! invocation and zeroization of secret payloads.
 
 use std::collections::HashSet;
 use std::fs;

@@ -1,4 +1,4 @@
-//! Compiling KMIPKIT-0049 Rust usage examples.
+//! Compiling managed object Rust usage examples.
 
 use kmipkit_protocol::{
     AttributeSet, EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial,

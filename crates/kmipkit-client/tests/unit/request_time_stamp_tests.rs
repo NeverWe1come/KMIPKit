@@ -4,9 +4,8 @@
 //! include the optional Time Stamp as a Date-Time. These tests use a caller
 //! supplied raw Date-Time and do not test countdown-derived values.
 //!
-//! Traceability: `KMIPKIT-0007-FR-015`, `KMIPKIT-0007-SC-007`,
-//! `KMIPKIT-REQ-SPEC-9.20-001-001`, and
-//! `KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP`.
+//! Validates client emission of optional request Time Stamp values and checks
+//! monotonicity and date-time format compliance under OASIS KMIP §9.20.
 
 use std::error::Error;
 
@@ -109,8 +108,8 @@ fn request_error_debug_display_and_every_source_redact_the_time_stamp() {
     );
 }
 
-// T008 owns the static production-logger AST audit. These test-only source
-// fixtures and its deliberately incomplete seam let T008 replace this test
+// the implementation owns the static production-logger AST audit. These test-only source
+// fixtures and its deliberately incomplete seam let the implementation replace this test
 // without introducing a second scanner or early CI enforcement.
 mod logger_audit_fixture {
     pub(super) const FORMATTED_TIME_STAMP_CALLSITE: &str = r#"
@@ -126,7 +125,7 @@ tracing::debug!(batch_count = request.header().batch_count(), "sending request")
 "#;
 }
 
-/// Incomplete T008 candidate seam. Static analysis is intentionally absent.
+/// Incomplete the implementation candidate seam. Static analysis is intentionally absent.
 fn candidate_logger_audit_detects_time_stamp(callsite: &str) -> bool {
     crate::execute_boundary_tests::audit_callsite_for_test(callsite)
 }

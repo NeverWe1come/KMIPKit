@@ -289,7 +289,7 @@ const MAX_CHILD_RULES: u64 = 4_096;
 const MAX_ORDER_CONSTRAINTS: u64 = 4_096;
 const MAX_TRANSPORT_CONFIG_ITEMS: u64 = 4_096;
 const MAX_TRANSPORT_TEXT_BYTES: u64 = 4_096;
-// Facade-local allocation guard; KMIPKIT-0013 does not set a material size cap.
+// Facade-local allocation guard ensuring safe bounds for dynamic extension registration.
 const MAX_FFI_INPUT_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_DERIVE_KEY_SOURCE_IDENTIFIERS: u64 = 100_000;
 const MAX_VALIDATE_INPUT_ITEMS: u64 = 100_000;

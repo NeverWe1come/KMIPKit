@@ -313,7 +313,7 @@ pub(crate) fn certificate_request_preflight_report(
         .is_err()
         {
             return Some(request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -325,7 +325,7 @@ pub(crate) fn certificate_request_preflight_report(
 
     if has_request_value && !has_request_type {
         return Some(request_issue_report(
-            "KMIPKIT-0051-P005",
+            "PAYLOAD-POLICY-P005",
             "Certificate Request Type",
             ValidationSourceRef::Oasis {
                 document: "KMIP v2.1",

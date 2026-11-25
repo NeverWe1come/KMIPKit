@@ -1,4 +1,4 @@
-/* Public-header consumer coverage for KMIPKIT-0044 Register context APIs. */
+/* Public-header consumer coverage for Register opaque context APIs. */
 
 #include "kmipkit.h"
 

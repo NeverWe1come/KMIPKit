@@ -84,7 +84,7 @@ registered schema. Registration order does not affect the result.
 
 Recognized values expose a typed view and retain their original generic TTLV
 subtree. Unrecognized non-critical extensions remain available as generic
-TTLV. Unknown critical extensions follow KMIPKIT-0007 and are rejected;
+TTLV. Unknown critical extensions follow the client execution model and are rejected;
 registry support does not weaken that rule. Generic values preserve unknown
 tags, enumeration values, bitmask bits, repeated fields, and child order that
 the KMIPKit TTLV allocation policy accepts.
