@@ -36,7 +36,7 @@ KINDS = {
     "attribute": {"attribute"},
 }
 # These workflow recipes assert or supply the listed base field within a real exchange.
-BASE_OBJECT_EXCHANGES = {
+FIELD_EXCHANGES = {
     "Data": ("test-op-hash", "test-multipart-hash-sha256"),
     "Data Length": ("test-crypto-rng-retrieve-rng-32",),
     "Signature Data": ("test-crypto-sign-rsa-2048-pkcs1_v1_5",
@@ -45,6 +45,8 @@ BASE_OBJECT_EXCHANGES = {
     "Correlation Value": ("test-multipart-hash-sha256",),
     "Init Indicator": ("test-multipart-hash-sha256",),
     "Final Indicator": ("test-multipart-hash-sha256",),
+    "Lease Time": ("test-op-obtain-lease",),
+    "Last Change Date": ("test-op-obtain-lease",),
 }
 
 CONSTRUCTION_APIS = ("typed-protocol", "fluent", "generic-ttlv")
@@ -134,8 +136,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
         if kind in {"managed_object", "attribute"}:
             key = "object_type" if kind == "managed_object" else "attribute"
             ids.update(case["case_id"] for case in catalog["test_cases"] if normal(case["requires"].get(key, "")) in names)
-        if kind == "base_object":
-            ids.update(case_id for case_id in BASE_OBJECT_EXCHANGES.get(name, ()) if case_id in candidates)
+        if kind in {"base_object", "attribute"}:
+            ids.update(case_id for case_id in FIELD_EXCHANGES.get(name, ()) if case_id in candidates)
         if kind == "message":
             ids.update(case["case_id"] for case in catalog["test_cases"]
                        if case["case_id"] == "test-op-query")
