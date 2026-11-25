@@ -293,6 +293,31 @@ static int inspect_ttlv(bool construct) {
     return ok && !ferror(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+static int inspect_version(void) {
+    char line[32];
+    printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
+           KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
+    while (fgets(line, sizeof line, stdin)) {
+        uint32_t code;
+        char kind[12], suffix;
+        if (sscanf(line, "%11s %" SCNu32 "%c", kind, &code, &suffix) != 3 || suffix != '\n')
+            return EXIT_FAILURE;
+        for (int32_t minor = 0; minor <= 1; ++minor) {
+            bool assigned;
+            if (strcmp(kind, "tag") == 0)
+                assigned = kmipkit_version_gate_validate_tag(2, minor, code) == 0;
+            else if (strcmp(kind, "key-format") == 0)
+                assigned = KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_name(code) != NULL;
+            else if (strcmp(kind, "object-type") == 0)
+                assigned = KMIPKIT_ENUMERATION_OBJECT_TYPE_name(code) != NULL;
+            else
+                return EXIT_FAILURE;
+            puts(assigned ? "true" : "false");
+        }
+    }
+    return !ferror(stdin) && !ferror(stdout) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 int main(int argc, char **argv) {
     int passed = 1;
     if (argc == 2 && strcmp(argv[1], "--inspect-oasis-ttlv") == 0) {
@@ -300,6 +325,9 @@ int main(int argc, char **argv) {
     }
     if (argc == 2 && strcmp(argv[1], "--construct-oasis-ttlv") == 0) {
         return inspect_ttlv(true);
+    }
+    if (argc == 2 && strcmp(argv[1], "--inspect-table-version") == 0) {
+        return inspect_version();
     }
     puts(KMIPKIT_LIBRARY_COMMIT);
     puts(KMIPKIT_C_ARTIFACT_SHA256);

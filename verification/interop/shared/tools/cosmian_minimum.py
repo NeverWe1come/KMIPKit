@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[4]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
+from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction, with_cases
 from verification.interop.shared.tools.matrix.generator import LANGUAGES
 
@@ -181,8 +182,10 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
 def with_execution_evidence(inventory, catalog, catalog_runs):
     """Attach compatible case results without claiming full coverage of a row."""
     report = deepcopy(inventory)
-    expected = {case["case_id"]: case["execution"]["assertions"] for case in catalog["test_cases"]}
+    expected = {case["case_id"]: (case["execution"]["assertions"], recipe_digest(case))
+                for case in catalog["test_cases"]}
     by_route = defaultdict(lambda: defaultdict(list))
+    unassigned_local = defaultdict(list)
     for run in catalog_runs:
         if run["protocol_version"] != report["protocol_version"]:
             continue
@@ -190,21 +193,56 @@ def with_execution_evidence(inventory, catalog, catalog_runs):
         route = by_route[run["language"], execution["api_level"]]
         for case in run["cases"]:
             case_id = case["case_id"]
-            if case_id not in expected or case["assertions"] != expected[case_id]:
+            if (case["assertions"], case.get("recipe_sha256")) != expected.get(case_id):
                 continue
-            route[case_id].append({
+            result = {
                 **case, "run_id": run["run_id"], "scope": run["scope"],
                 "catalog_sha256": run["catalog_sha256"],
                 "library_commit": execution["library_commit"],
                 "artifact_sha256": execution["artifact_sha256"],
-            })
+            }
+            if case.get("mode") == "local_model":
+                # The catalog's local checks can run independently of the chosen connection API.
+                unassigned_local[case_id].append({**result, "language": run["language"], "scope": "local"})
+            else:
+                route[case_id].append(result)
 
     for row in report["rows"]:
-        case_ids = sorted(set(row["server_cases"]) | set(row["local_cases"]))
+        row["local_catalog_results"] = [result for case_id in row["local_cases"]
+                                        for result in unassigned_local.get(case_id, [])]
         for obligation in row["obligations"]:
             route = by_route[obligation["language"], obligation["api_level"]]
-            obligation["case_results"] = [result for case_id in case_ids for result in route.get(case_id, [])]
+            obligation["case_results"] = [result for case_id in row["server_cases"] for result in route.get(case_id, [])]
     return report
+
+
+def attach_oasis_operation_evidence(inventory, campaign):
+    """Link executed generic codec checks to the specific OASIS batch item."""
+    version = inventory["protocol_version"]
+    rows_by_operation = defaultdict(list)
+    for row in inventory["rows"]:
+        if row["kind"] == "operation" and operation_direction(row["name"]) == "client_to_server":
+            names = ALIASES.get(("operation", row["name"]), (row["name"],))
+            for name in names:
+                rows_by_operation[normal(name)].append(row)
+
+    for scenario in campaign["rows"]:
+        if scenario.get("kind") != "scenario_item" or scenario["protocol_version"] != version:
+            continue
+        rows = rows_by_operation[normal(scenario["operation"])]
+        for field, source in (("fixture_construction", "oasis_ttlv_construction"), ("fixture_codec", "oasis_ttlv")):
+            for language, artifact in campaign.get(source, {}).get("artifacts", {}).items():
+                observed = scenario["checks"].get(language, {}).get(field)
+                if not observed:
+                    continue
+                for row in rows:
+                    obligation = next(item for item in row["obligations"]
+                                      if (item["language"], item["api_level"]) == (language, "generic-ttlv"))
+                    obligation.setdefault("oasis_fixture_results", []).append({
+                        **artifact, "scope": "local", "fixture": scenario["fixture"],
+                        "operation": scenario["operation"], "step": scenario["step_index"],
+                        "batch_item": scenario["item_index"], "checks": observed,
+                    })
 
 
 def write_json(path: Path, value: dict) -> None:

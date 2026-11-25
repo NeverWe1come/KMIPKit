@@ -42,6 +42,7 @@ CONSTRUCTORS = {
     "python": "kmipkit.ttlv.ttlv_item_create",
 }
 ENUM_FAMILY = {
+    "extensiontype": "itemtype",
     "maskgeneratorhashingalgorithm": "hashingalgorithm",
 }
 VALUE_ALIASES = {
@@ -240,6 +241,7 @@ def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | Non
     summary_key = "oasis_ttlv_construction" if construct else "oasis_ttlv"
     check_key = "fixture_construction" if construct else "fixture_codec"
     rows = report["rows"]
+    summary = report.setdefault(summary_key, {"artifacts": {}, "message_checks": {}})
     known = {
         (row["protocol_version"], row["fixture"]["path"], row["step_index"]): row["fixture"]["sha256"]
         for row in rows if row.get("kind") == "scenario_item"
@@ -257,6 +259,8 @@ def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | Non
                 raise ValueError("fixture report identifies an unexpected public API")
             if expected_commit is not None and artifact["library_commit"] != expected_commit:
                 raise ValueError("codec evidence does not match the requested library commit")
+            if language in summary["artifacts"]:
+                raise ValueError(f"multiple {language} fixture reports for the same mode")
         seen = set()
         roles = {"RequestMessage": "request", "ResponseMessage": "response"}
         for line in source:
@@ -281,7 +285,8 @@ def attach_decoder_evidence(path: Path, report: dict, expected_commit: str | Non
         key = (row["protocol_version"], row["fixture"]["path"], row["step_index"])
         for language, observation in observations.get(key, {}).items():
             row["checks"][language][check_key] = observation
-    report[summary_key] = {"artifacts": artifacts, "message_checks": counts}
+    summary["artifacts"].update(artifacts)
+    summary["message_checks"].update(counts)
 
 
 def main() -> int:

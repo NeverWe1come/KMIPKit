@@ -354,10 +354,12 @@ def main():
                         help="Additional case catalog for matching installed-validator reports")
     parser.add_argument("--live-report", type=Path, action="append", default=[],
                         help="Import an installed validator's live execution-catalog report")
-    parser.add_argument("--oasis-ttlv-report", type=Path,
+    parser.add_argument("--oasis-ttlv-report", type=Path, action="append", default=[],
                         help="Import decoder evidence for OASIS request and response shapes")
-    parser.add_argument("--oasis-construction-report", type=Path,
+    parser.add_argument("--oasis-construction-report", type=Path, action="append", default=[],
                         help="Import local generic tag construction evidence for KMIP 2.x")
+    parser.add_argument("--table-ttlv-report", type=Path, action="append", default=[],
+                        help="Import local table fixture results with --cosmian-minimum")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -365,6 +367,8 @@ def main():
     try:
         if len(runners) != len(args.runner) or not set(runners).issubset(languages) or not set(languages).issubset(LANGUAGES):
             raise ValueError("give one runner per selected, supported language")
+        if args.table_ttlv_report and not args.cosmian_minimum:
+            raise ValueError("--table-ttlv-report requires --cosmian-minimum")
         if args.connection and not runners:
             raise ValueError("--connection requires a runner")
         if args.version is not None:
@@ -387,10 +391,10 @@ def main():
         catalog = json.loads((SHARED / "catalog/kmipkit-2x-matrix-catalog.json").read_text(encoding="utf-8"))
         operations = {case["case_id"]: case.get("requires", {}).get("operation") for case in catalog["test_cases"]}
         result = report(matrix, digest, runs, languages, profile, operations)
-        if args.oasis_ttlv_report:
-            attach_decoder_evidence(args.oasis_ttlv_report, result, args.library_commit)
-        if args.oasis_construction_report:
-            attach_decoder_evidence(args.oasis_construction_report, result, args.library_commit, construct=True)
+        for fixture_report in args.oasis_ttlv_report:
+            attach_decoder_evidence(fixture_report, result, args.library_commit)
+        for fixture_report in args.oasis_construction_report:
+            attach_decoder_evidence(fixture_report, result, args.library_commit, construct=True)
         result["runner_failures"] = failures
         catalog_runs = load_catalog_reports(
             [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],
@@ -402,13 +406,19 @@ def main():
             raise ValueError("catalog evidence does not match the requested library commit")
         if args.cosmian_minimum:
             from verification.interop.shared.tools.cosmian_minimum import (
-                ALLOWED_VERSIONS, build_selection, with_execution_evidence,
+                ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
             )
+
+            from verification.interop.shared.tools.table_ttlv import attach_fixture_evidence
 
             for version in ALLOWED_VERSIONS:
                 if version in (args.version or VERSIONS):
                     selection, inventory = build_selection(ROOT, version)
                     inventory = with_execution_evidence(inventory, selection, catalog_runs)
+                    if args.oasis_ttlv_report or args.oasis_construction_report:
+                        attach_oasis_operation_evidence(inventory, result)
+                    if args.table_ttlv_report:
+                        attach_fixture_evidence(ROOT, inventory, args.table_ttlv_report, languages, args.library_commit)
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )

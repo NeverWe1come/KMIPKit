@@ -44,6 +44,16 @@ def load_catalog_reports(
     return normalized
 
 
+def recipe_digest(case):
+    """Bind an observation to its inputs and assertions across catalog selections."""
+    execution = {key: case["execution"][key] for key in ("mode", "steps", "assertions", "mutation")}
+    relevant = {
+        "operation": case["operation"], "requires": case["requires"],
+        "isolation_recipe": case["isolation_recipe"], "execution": execution,
+    }
+    return hashlib.sha256(json.dumps(relevant, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def materialize_cases(cases, catalog, scope, path):
     seen = set()
     rows = []
@@ -61,6 +71,7 @@ def materialize_cases(cases, catalog, scope, path):
         row["operation"] = metadata["operation"]
         row["mode"] = metadata["execution"]["mode"]
         row["assertions"] = metadata["execution"]["assertions"]
+        row["recipe_sha256"] = recipe_digest(metadata)
         if scope == "live":
             row["server_compatibility"] = case["server_compatibility"]
         rows.append(row)

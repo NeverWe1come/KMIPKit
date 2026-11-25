@@ -147,6 +147,8 @@ def query_evidence(lines, connection):
 def main():
     if sys.argv[1:] in (["--inspect-oasis-ttlv"], ["--construct-oasis-ttlv"]):
         return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
+    if sys.argv[1:] == ["--inspect-table-version"]:
+        return inspect_version()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--matrix-sha256", required=True)
@@ -211,6 +213,24 @@ def main():
     except (OSError, ValueError, KeyError, ImportError):
         print("Python campaign failed. Check the plan, connection and installed artifact.", file=sys.stderr)
         return 2
+
+
+def inspect_version():
+    from kmipkit.protocol import VersionGate
+    from kmipkit.protocol_values import KeyFormatType, ObjectType
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+    lookup = {"key-format": KeyFormatType.name, "object-type": ObjectType.name}
+    for line in sys.stdin:
+        kind, raw = line.split()
+        code = int(raw)
+        for minor in (0, 1):
+            assigned = VersionGate.validate_tag(2, minor, code) if kind == "tag" else lookup[kind](code) is not None
+            print(json.dumps(assigned))
+    return 0
 
 
 def inspect_ttlv(*, construct=False):

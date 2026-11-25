@@ -5,7 +5,10 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from verification.interop.shared.tools.cosmian_minimum import ROOT, build_selection, with_execution_evidence
+from verification.interop.shared.tools.catalog_reports import recipe_digest
+from verification.interop.shared.tools.cosmian_minimum import (
+    ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
+)
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
 from verification.interop.shared.tools.run_all import Listener, build_command_for_language
 
@@ -65,11 +68,15 @@ class CosmianMinimumTests(unittest.TestCase):
                           "artifact_sha256": "c" * 64},
             "cases": [{"case_id": "test-op-archive", "status": "server_unsupported",
                        "result_status_code": 1, "result_reason_code": 5,
-                       "assertions": recipe["execution"]["assertions"]}],
+                       "assertions": recipe["execution"]["assertions"], "recipe_sha256": recipe_digest(recipe)}],
         }
         mismatched = {**run, "run_id": "different-assertions",
                       "cases": [{**run["cases"][0], "assertions": ["model_only"]}]}
-        report = with_execution_evidence(inventory, catalog, [run, {**run, "protocol_version": "2.0"}, mismatched])
+        different_fixture = {**run, "run_id": "different-fixture",
+                             "cases": [{**run["cases"][0], "recipe_sha256": "0" * 64}]}
+        report = with_execution_evidence(
+            inventory, catalog, [run, {**run, "protocol_version": "2.0"}, mismatched, different_fixture],
+        )
         archive = next(row for row in report["rows"] if row["kind"] == "operation" and row["name"] == "Archive")
         matched = [item for item in archive["obligations"] if item["case_results"]]
         evidence, = matched
@@ -78,6 +85,28 @@ class CosmianMinimumTests(unittest.TestCase):
         result, = evidence["case_results"]
         self.assertEqual(result["result_reason_code"], 5)
         self.assertEqual(result["scope"], "controlled")
+
+    def test_oasis_fixture_evidence_preserves_operation_variants_and_scope(self):
+        _, report = build_selection(ROOT, "2.1")
+        artifact = {"public_api_symbol": "kmipkit::ttlv::Item::new"}
+        scenario = {
+            "kind": "scenario_item", "protocol_version": "2.1", "operation": "ModifyAttribute",
+            "fixture": {"path": "fixture.xml", "sha256": "a" * 64}, "step_index": 2, "item_index": 1,
+            "checks": {"rust": {"fixture_construction": {"request": "passed", "response": "passed"}}},
+        }
+        campaign = {
+            "rows": [{}, scenario, {**scenario, "protocol_version": "2.0"}, {**scenario, "operation": "Notify"}],
+            "oasis_ttlv_construction": {"artifacts": {"rust": artifact}},
+        }
+        attach_oasis_operation_evidence(report, campaign)
+        matches = [(row, obligation) for row in report["rows"] for obligation in row["obligations"]
+                   if obligation.get("oasis_fixture_results")]
+        (row, obligation), = matches
+        self.assertEqual(row["name"], "Set Attribute (Modify)")
+        self.assertEqual((obligation["language"], obligation["api_level"]), ("rust", "generic-ttlv"))
+        result, = obligation["oasis_fixture_results"]
+        self.assertEqual((result["scope"], result["operation"], result["batch_item"]),
+                         ("local", "ModifyAttribute", 1))
 
     def test_full_catalog_retains_distinct_attribute_policy_obligations(self):
         for version, attributes in (("2.0", 56), ("2.1", 63)):

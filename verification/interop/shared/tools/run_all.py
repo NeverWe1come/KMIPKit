@@ -32,6 +32,7 @@ if str(_current_dir) not in sys.path:
 try:
     from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
     from verification.interop.shared.tools.campaign import read_validated
+    from verification.interop.shared.tools.cosmian_minimum import ALLOWED_VERSIONS, CONSTRUCTION_APIS
     from verification.interop.shared.tools.cosmian_minimum import build_selection as build_cosmian_selection
     from verification.interop.shared.tools.operation_catalog import build_catalog, build_normative_catalog, select_cases
 except ImportError:
@@ -281,7 +282,7 @@ def complete_observation(recipe, observation):
         return (status == "passed" and result_code == 1
                 and (not reasons or observation.get("result_reason_code") in reasons))
     if status == "server_unsupported":
-        return result_code == 1
+        return result_code == 1 and observation.get("result_reason_code") in {5, 8}
     if status != "passed":
         return False
     if result_code is not None:
@@ -297,6 +298,7 @@ def validate_completion_report(evidence, language, connection, catalog_sha256):
     }
     if (any(evidence[key] != value for key, value in expected.items())
             or evidence["server"]["id"] != connection["server_id"]
+            or evidence["server"]["configuration_fingerprint"] != connection["server_configuration_fingerprint"]
             or any(evidence["execution"][axis] != connection[axis]
                    for axis in ("transport", "encoding", "api_level"))):
         raise ValueError("result identity does not match the requested catalog, server, or execution route")
@@ -375,14 +377,23 @@ def main() -> None:
     gaps = False
     completion = []
     try:
-        if args.connection and (not args.dry_run or args.all_operations):
-            versions = list(dict.fromkeys(
-                read_validated(path, "server-connection.schema.json")["protocol_version"]
-                for path in args.connection
-            ))
+        if args.connection and (not args.dry_run or args.all_operations or listener):
+            configurations = {
+                path: read_validated(path, "server-connection.schema.json") for path in args.connection
+            }
+            versions = list(dict.fromkeys(config["protocol_version"] for config in configurations.values()))
+        if args.cosmian_minimum and args.require_complete and not (args.operation or args.case):
+            pairs = {(config["protocol_version"], config["api_level"]) for config in configurations.values()}
+            for version in ALLOWED_VERSIONS:
+                for api in CONSTRUCTION_APIS:
+                    if (version, api) not in pairs:
+                        gaps = True
+                        completion.extend({"language": lang, "protocol_version": version, "api_level": api,
+                                           "status": "missing_connection"} for lang in langs)
         if args.all_operations:
             catalog_dir = out_dir / "catalogs"
             selections = {}
+            catalog_digests = {}
             catalog_dir.mkdir(parents=True, exist_ok=True)
             for version in versions:
                 if args.cosmian_minimum:
@@ -390,12 +401,15 @@ def main() -> None:
                     with (catalog_dir / f"kmip-{version}-cosmian-scope.json").open("x", encoding="utf-8") as stream:
                         json.dump(scope, stream, indent=2, ensure_ascii=False)
                     if args.require_complete and not (args.operation or args.case):
-                        unmapped = [row for row in scope["rows"] if row["disposition"] not in {
-                            "out_of_scope", "server_cases_selected",
-                        }]
+                        unmapped = [
+                            {"kind": row["kind"], "name": row["name"], "reason": row["disposition"]}
+                            for row in scope["rows"] if not row["server_cases"]
+                        ]
                         if unmapped:
                             gaps = True
-                            print(f"KMIP {version}: {len(unmapped)} Cosmian rows have no mapped server case",
+                            completion.append({"protocol_version": version, "status": "missing_table_recipe",
+                                               "rows": unmapped})
+                            print(f"KMIP {version}: {len(unmapped)} table rows need a version or exchange fixture",
                                   file=sys.stderr)
                 elif args.normative:
                     catalog, _ = build_normative_catalog(base_dir, version)
@@ -403,14 +417,16 @@ def main() -> None:
                     catalog = build_catalog(base_dir, version, include_variants=args.with_variants)
                 selections[version] = select_cases(catalog, operations=args.operation, case_ids=args.case)
                 catalog = catalog_dir / f"kmip-{version}-operations.json"
-                with catalog.open("x", encoding="utf-8") as stream:
-                    json.dump(selections[version], stream, indent=2, ensure_ascii=False)
+                payload = json.dumps(selections[version], indent=2, ensure_ascii=False).encode("utf-8")
+                with catalog.open("xb") as stream:
+                    stream.write(payload)
+                catalog_digests[version] = hashlib.sha256(payload).hexdigest()
                 operation_catalogs[version] = catalog
         for index, connection in enumerate(connections, 1):
             catalog_path = args.catalog
             active_listener = None
             if args.all_operations or listener:
-                configuration = read_validated(connection, "server-connection.schema.json")
+                configuration = configurations[connection]
                 version = configuration["protocol_version"]
                 if args.all_operations:
                     catalog_path = operation_catalogs[version]
@@ -435,7 +451,7 @@ def main() -> None:
             )
             results.extend(result["runs"])
             if args.require_complete:
-                catalog_digest = hashlib.sha256(catalog_path.read_bytes()).hexdigest()
+                catalog_digest = catalog_digests[version]
                 for run in result["runs"]:
                     entry = {
                         "language": run["language"],
@@ -481,6 +497,8 @@ def main() -> None:
     if args.campaign and paths:
         command = [sys.executable, str(_current_dir / "campaign.py"),
                    "--output-dir", str(out_dir / "campaign"), "--profile", str(args.profile.resolve())]
+        if args.cosmian_minimum:
+            command.append("--cosmian-minimum")
         for version in versions:
             command.extend(("--version", version))
         for lang in langs:

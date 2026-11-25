@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.InvalidExtensionSchemaException;
+import org.kmipkit.protocol.KmipValues;
+import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
@@ -89,6 +91,29 @@ final class DraftCampaign {
                     nodes = null;
                 }
                 System.out.println(JSON.writeValueAsString(nodes));
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    static int inspectVersion(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ", 2);
+                long code = Integer.toUnsignedLong(Integer.parseUnsignedInt(parts[1]));
+                for (int minor = 0; minor <= 1; minor++) {
+                    boolean assigned = switch (parts[0]) {
+                        case "tag" -> VersionGate.validateTag(2, minor, code);
+                        case "key-format" -> KmipValues.KeyFormatType.name(code) != null;
+                        case "object-type" -> KmipValues.ObjectType.name(code) != null;
+                        default -> throw new IllegalArgumentException("Unsupported table version input");
+                    };
+                    System.out.println(assigned);
+                }
             }
         }
         return System.out.checkError() ? 1 : 0;

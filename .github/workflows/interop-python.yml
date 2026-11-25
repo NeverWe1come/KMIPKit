@@ -58,12 +58,26 @@ jobs:
         working-directory: .
         env:
           KMIPKIT_REQUIRED_INTEROP_VALIDATOR: python
+          KMIPKIT_TABLE_EVIDENCE_DIR: ${{ runner.temp }}/kmip2x-table-evidence
         run: |
           python3 -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
-          report_dir="$(mktemp -d)"
+          mkdir -p "$KMIPKIT_TABLE_EVIDENCE_DIR"
           python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
             --construct --require-complete --runner python verification/interop/python-kmip-validator/tools/run_campaign.sh \
-            --output "$report_dir/oasis-construction.jsonl"
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-construction.jsonl"
+          python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --require-complete --runner python verification/interop/python-kmip-validator/tools/run_campaign.sh \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-decode.jsonl"
+          python3 verification/interop/shared/tools/table_ttlv.py \
+            --runner python verification/interop/python-kmip-validator/tools/run_campaign.sh \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-ttlv.json"
+
+      - name: Upload KMIP 2.x table evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: python-kmip2x-table-evidence
+          path: ${{ runner.temp }}/kmip2x-table-evidence
 
       - name: Verify shared draft campaign evidence
         working-directory: .

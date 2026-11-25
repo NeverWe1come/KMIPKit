@@ -81,6 +81,21 @@ case results by language and construction API. A row can have several case
 results with distinct assertions. Cases requiring a provider fixture or a
 runtime version boundary remain visible in the inventory.
 
+The four installed-package CI jobs run `table_ttlv.py` and upload the local
+fixture reports. Each report records construction, decoding, and the public
+version gate with the package digest. The fixtures exercise the eight
+applicable managed objects, nine transparent key formats, 22 applicable
+base objects, and 56 standard attributes at 2.0 or 63 at 2.1. Additional
+messages cover the operation variants absent from the OASIS profile
+scenarios. The version gate checks the seven Rotate tags in both versions.
+The legacy fixtures check the reserved Template tags and the former Object
+Type and Key Format Type values. Import each language's report with a separate
+`--table-ttlv-report` argument alongside `--cosmian-minimum`. The table
+report keeps local fixture checks and deployed KMS observations in distinct
+fields. When importing `--oasis-construction-report` or `--oasis-ttlv-report`,
+each applicable operation row includes the matching OASIS case, step and
+batch item. Repeat the argument to import reports from separate languages.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated

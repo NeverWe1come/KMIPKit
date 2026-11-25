@@ -86,12 +86,26 @@ jobs:
       - name: Verify KMIP 2.x tag construction and controlled exchanges
         env:
           KMIPKIT_REQUIRED_INTEROP_VALIDATOR: rust
+          KMIPKIT_TABLE_EVIDENCE_DIR: ${{ runner.temp }}/kmip2x-table-evidence
         run: |
           verification/interop/.local/rust-ci-venv/bin/python -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
-          report_dir="$(mktemp -d)"
+          mkdir -p "$KMIPKIT_TABLE_EVIDENCE_DIR"
           verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
             --construct --require-complete --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
-            --output "$report_dir/oasis-construction.jsonl"
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-construction.jsonl"
+          verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --require-complete --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/oasis-decode.jsonl"
+          verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/table_ttlv.py \
+            --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-ttlv.json"
+
+      - name: Upload KMIP 2.x table evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: rust-kmip2x-table-evidence
+          path: ${{ runner.temp }}/kmip2x-table-evidence
 
       - name: Install pinned Rust coverage tool
         run: cargo +1.94 install cargo-llvm-cov --version 0.9.1 --locked

@@ -5,8 +5,11 @@
 mod generic_wire;
 
 use clap::{Parser, ValueEnum};
+use kmipkit::protocol::named_values_generated::values::enumeration::{
+    key_format_type, object_type,
+};
 use kmipkit::ttlv::{Item, ItemType, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
-use kmipkit::{ClientBatchItem, ClientRequest};
+use kmipkit::{ClientBatchItem, ClientRequest, ProtocolVersion, VersionGate};
 use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::fs::File;
@@ -195,6 +198,13 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         };
     }
+    if mode.as_deref() == Some("--inspect-table-version") {
+        return if inspect_version().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
     match run(Args::parse()) {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
@@ -203,6 +213,34 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+fn inspect_version() -> Result<(), Box<dyn std::error::Error>> {
+    let mut output = BufWriter::new(std::io::stdout().lock());
+    writeln!(
+        output,
+        "{}",
+        json!({
+            "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),
+            "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
+        })
+    )?;
+    for line in std::io::stdin().lock().lines() {
+        let input = line?;
+        let (kind, raw) = input.split_once(' ').ok_or("missing table version input")?;
+        let code = raw.parse()?;
+        for version in [ProtocolVersion::V2_0, ProtocolVersion::V2_1] {
+            let assigned = match kind {
+                "tag" => VersionGate::validate_tag(version, code).is_ok(),
+                "key-format" => key_format_type::name(code).is_some(),
+                "object-type" => object_type::name(code).is_some(),
+                _ => return Err("unsupported table version input".into()),
+            };
+            writeln!(output, "{assigned}")?;
+        }
+    }
+    output.flush()?;
+    Ok(())
 }
 
 fn inspect_ttlv(construct: bool) -> Result<(), Box<dyn std::error::Error>> {
