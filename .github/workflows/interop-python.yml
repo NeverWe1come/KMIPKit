@@ -23,6 +23,8 @@ jobs:
   validate-python:
     name: Build & Validate Python Project
     runs-on: ubuntu-latest
+    env:
+      KMIPKIT_INTEROP_LIBRARY_COMMIT: ${{ github.sha }}
     defaults:
       run:
         working-directory: verification/interop/python-kmip-validator
