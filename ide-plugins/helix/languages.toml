@@ -1,0 +1,27 @@
+# KMIPKit configuration for Helix Editor (`~/.config/helix/languages.toml`)
+
+[language-server.kmip-lsp]
+command = "kmip-lsp"
+args = ["--stdio"]
+
+[[language]]
+name = "kmip-json"
+scope = "source.kmip.json"
+file-types = [{ glob = "*.kmip.json" }, { glob = "*.kmip-config.json" }, { glob = "*.kmip-policy.json" }]
+language-servers = ["kmip-lsp", "vscode-json-language-server"]
+
+[[language]]
+name = "rust"
+language-servers = ["rust-analyzer", "kmip-lsp"]
+
+[[language]]
+name = "c"
+language-servers = ["clangd", "kmip-lsp"]
+
+[[language]]
+name = "java"
+language-servers = ["jdtls", "kmip-lsp"]
+
+[[language]]
+name = "python"
+language-servers = ["pyright", "kmip-lsp"]

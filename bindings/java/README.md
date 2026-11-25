@@ -1,28 +1,33 @@
-# KMIPKit Java binding
+# KMIPKit Java Bindings (JNI)
 
-Java API and JNI bridge to the Rust KMIPKit implementation.
+Idiomatic Java 17+ API backed by `libkmipkit_ffi` via a thin C++ JNI bridge (`kmipkit_jni`). All native resources implement `AutoCloseable` for deterministic zeroization via `try-with-resources`.
 
-## Documentation
+* **[Installation (Gradle / Maven)](docs/installation.md)**
+* **[Native Library Loading & Ownership](docs/native-library.md)**
+* **[Testing & Parity Verification](docs/testing.md)**
 
-- [Installation and build](docs/installation.md)
-- [Native library](docs/native-library.md)
-- [Testing](docs/testing.md)
-- [Examples](examples/README.md)
+## Quick Example
 
-## First local example
+```java
+import org.kmipkit.extensions.*;
+import org.kmipkit.protocol.*;
+import java.nio.file.Path;
+import java.time.Duration;
 
-After following the installation guide, run from the repository root:
+try (TransportConfiguration transport = TransportConfiguration.rawTls("kms.internal.example.com", 5696)
+        .clientIdentityPemFiles(Path.of("/etc/kmip/client.crt"), Path.of("/etc/kmip/client.key"))
+        .trustCaPemFile(Path.of("/etc/kmip/ca.crt"))
+        .totalTimeout(Duration.ofSeconds(15))
+        .build();
+     ClientConfiguration config = ClientConfiguration.defaults().withWireEncoding(WireEncoding.TTLV);
+     Client client = Client.create(config, transport)) {
 
-```sh
-mvn --batch-mode --file bindings/java/pom.xml test
+    var created = client.createSymmetricKey()
+        .algorithm(KmipValues.CryptographicAlgorithm.AES)
+        .length(256)
+        .usageMask(KeyUsage.ENCRYPT | KeyUsage.DECRYPT)
+        .name("java-app-dek")
+        .execute();
+    client.activate(created.uniqueIdentifier().orElseThrow()).execute();
+}
 ```
-
-See the example guide for platform requirements and what this command exercises.
-
-## Shared behavior
-
-The [user guides](../../docs/README.md) describe KMIP operations and transports.
-The [binding architecture](../../docs/architecture/ffi-and-bindings.md) explains
-shared ownership and API boundaries. The [bindings index](../README.md) links
-the other languages. Local example success does not establish full language
-parity or KMIP conformance.

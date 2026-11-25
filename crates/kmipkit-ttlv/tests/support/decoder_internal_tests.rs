@@ -35,6 +35,7 @@ fn state(limits: &CodecLimits) -> DecodeState<'_> {
     DecodeState {
         elements: 0,
         limits,
+        allow_reserved: false,
         observer: None,
     }
 }
@@ -141,11 +142,11 @@ fn item_decoder_rejects_parent_inconsistency_and_limit_before_value_access() {
 #[test]
 fn item_header_rejects_unavailable_and_parent_crossing_headers() {
     assert_eq!(
-        error_kind(&parse_item_header(&[], 0, 8, 0)),
+        error_kind(&parse_item_header(&[], 0, 8, 0, false)),
         Some(DecodeErrorKind::TruncatedHeader)
     );
     assert_eq!(
-        error_kind(&parse_item_header(&[], 0, 0, 1)),
+        error_kind(&parse_item_header(&[], 0, 0, 1, false)),
         Some(DecodeErrorKind::StructureBoundary)
     );
 }
