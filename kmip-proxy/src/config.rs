@@ -18,11 +18,23 @@ pub enum KeyCustodyMode {
     AutoEnvelope,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum OperationPolicyMode {
+    #[default]
+    Ignore,
+    StoreAsVendorAttribute,
+    Reject,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListenerConfig {
     pub bind_addr: SocketAddr,
     #[serde(default = "default_tls_enabled")]
     pub tls_enabled: bool,
+    /// Allow TLS 1.2 in addition to TLS 1.3 for legacy KMIP 1.X clients.
+    #[serde(default)]
+    pub allow_tls12: bool,
     pub tls_cert_path: Option<PathBuf>,
     pub tls_key_path: Option<PathBuf>,
     pub tls_client_ca_path: Option<PathBuf>,
@@ -38,6 +50,7 @@ impl Default for ListenerConfig {
         Self {
             bind_addr: listen_addr_default(),
             tls_enabled: true,
+            allow_tls12: false,
             tls_cert_path: None,
             tls_key_path: None,
             tls_client_ca_path: None,
@@ -67,6 +80,58 @@ impl Default for ProxyBehaviorConfig {
         Self {
             key_custody_mode: KeyCustodyMode::default(),
             metadata_cache_ttl_secs: default_cache_ttl(),
+        }
+    }
+}
+
+/// Configuration for bridging legacy KMIP 1.X clients to an upstream KMIP 2.0 / 2.1 / 3.0 server.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KmipUpstreamConfig {
+    /// Upstream KMIP server endpoint (`host:port` for raw TLS, or `https://host:port/kmip`).
+    pub endpoint: String,
+    /// Target upstream KMIP version (`"2.0"`, `"2.1"`, or `"3.0"`).
+    #[serde(default = "default_upstream_version")]
+    pub target_version: String,
+    /// Wire encoding toward upstream (`"ttlv"`, `"json"`, or `"xml"`).
+    pub wire_encoding: Option<String>,
+    /// Client certificate (PEM or DER) used for mTLS with the upstream KMIP server.
+    pub client_cert_path: Option<PathBuf>,
+    /// Client private key (PEM or DER) used for mTLS with the upstream KMIP server.
+    pub client_key_path: Option<PathBuf>,
+    /// CA bundle (PEM or DER) for verifying the upstream KMIP server certificate.
+    pub ca_cert_path: Option<PathBuf>,
+    /// Allow TLS 1.2 + TLS 1.3 compatibility toward the upstream KMIP server.
+    #[serde(default)]
+    pub allow_tls12: bool,
+    /// Upstream request timeout in seconds.
+    pub timeout_secs: Option<u64>,
+    /// Policy for handling KMIP 1.X `Operation Policy Name`.
+    #[serde(default)]
+    pub operation_policy_mode: OperationPolicyMode,
+    /// Maximum concurrent upstream connections in the pool (default: 8).
+    pub max_connections: Option<usize>,
+    /// Optional path to persist KMIP 1.X Template objects across restarts (in-memory only if unset).
+    pub template_store_path: Option<PathBuf>,
+}
+
+fn default_upstream_version() -> String {
+    "2.1".to_string()
+}
+
+impl Default for KmipUpstreamConfig {
+    fn default() -> Self {
+        Self {
+            endpoint: "127.0.0.1:5697".to_string(),
+            target_version: default_upstream_version(),
+            wire_encoding: Some("ttlv".to_string()),
+            client_cert_path: None,
+            client_key_path: None,
+            ca_cert_path: None,
+            allow_tls12: false,
+            timeout_secs: Some(30),
+            operation_policy_mode: OperationPolicyMode::Ignore,
+            max_connections: Some(8),
+            template_store_path: None,
         }
     }
 }
@@ -207,6 +272,8 @@ pub struct BackendConfig {
     pub provider: String,
     pub master_kek_hex: Option<String>,
     #[serde(default)]
+    pub kmip_upstream: KmipUpstreamConfig,
+    #[serde(default)]
     pub aws: AwsConfig,
     #[serde(default)]
     pub azure: AzureConfig,
@@ -237,6 +304,7 @@ impl Default for BackendConfig {
         Self {
             provider: default_provider(),
             master_kek_hex: None,
+            kmip_upstream: KmipUpstreamConfig::default(),
             aws: AwsConfig::default(),
             azure: AzureConfig::default(),
             gcp: GcpConfig::default(),
@@ -274,7 +342,7 @@ impl ProxyConfig {
 #[derive(Parser, Debug)]
 #[command(name = "kmipkit-proxy")]
 #[command(
-    about = "Zero-DB Stateless KMIP Proxy Bridge for AWS, Azure, Google Cloud, and Oracle OCI"
+    about = "Zero-DB Stateless KMIP Proxy Bridge for Cloud KMS and KMIP 1.X -> 2.0/2.1/3.0 translation"
 )]
 pub struct CliArgs {
     /// Path to TOML configuration file
@@ -285,9 +353,21 @@ pub struct CliArgs {
     #[arg(short, long)]
     pub listen: Option<SocketAddr>,
 
-    /// Backend cloud provider (aws, azure, gcp, oci, mock)
+    /// Backend provider (kmip-upstream, aws, azure, gcp, oci, mock)
     #[arg(short, long)]
     pub provider: Option<String>,
+
+    /// Upstream KMIP 2.0/2.1/3.0 server endpoint (host:port or https://...)
+    #[arg(long)]
+    pub upstream_endpoint: Option<String>,
+
+    /// Upstream KMIP target version (2.0, 2.1, or 3.0)
+    #[arg(long)]
+    pub upstream_version: Option<String>,
+
+    /// Allow TLS 1.2 + TLS 1.3 on the proxy listener (for legacy KMIP 1.X apps)
+    #[arg(long)]
+    pub allow_tls12: bool,
 
     /// Hex-encoded 256-bit Master KEK for auto-envelope wrapping
     #[arg(long)]
@@ -310,6 +390,15 @@ impl CliArgs {
         }
         if let Some(provider) = self.provider {
             config.backend.provider = provider;
+        }
+        if let Some(ep) = self.upstream_endpoint {
+            config.backend.kmip_upstream.endpoint = ep;
+        }
+        if let Some(ver) = self.upstream_version {
+            config.backend.kmip_upstream.target_version = ver;
+        }
+        if self.allow_tls12 {
+            config.listener.allow_tls12 = true;
         }
         if let Some(kek) = self.master_kek_hex {
             config.backend.master_kek_hex = Some(kek);

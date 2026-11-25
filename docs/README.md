@@ -1,51 +1,42 @@
-# KMIPKit documentation
+# KMIPKit Documentation
 
-This directory contains technical documentation, user guides, and engineering references for the code in this repository. The review branch keeps documentation that helps readers use, build, inspect, and verify KMIPKit.
+> **Version:** 1.0.0 | **Protocol Support:** OASIS KMIP 2.0, 2.1 (default), 3.0 + Legacy KMIP 1.0–1.4 Bridge  
+> **Languages:** Rust · C (C11 ABI) · Java (JNI) · Python (CFFI)
 
-Internal development planning notes and operational scratch records are excluded from this release distribution.
+## Multilingual Documentation Portal (100% Parity)
 
-## Architecture
+Start here for complete user guides, architecture diagrams, multi-language quickstarts, Cloud KMS Proxy setup, KMIP 1.X Legacy Bridge guides, and enterprise deployment playbooks:
 
-- [System overview](architecture/overview.md)
-- [Public API](architecture/public-api.md)
-- [C ABI and language bindings](architecture/ffi-and-bindings.md)
-- [Transport security](architecture/transport-security.md)
-- [Vendor extensions](architecture/extensions.md)
+| Language | Portal Entrypoint | Scope |
+| :--- | :--- | :--- |
+| **English** | **[docs/en/00-index.md](en/00-index.md)** | 8 complete guides (Quickstart, Architecture, Protocol, Bindings, Cloud Proxy, KMIP 1.X Bridge, Enterprise Ops) |
+| **Español** | **[docs/es/00-index.md](es/00-index.md)** | 8 guías completas (paridad 1:1 con inglés) |
+| **Français** | **[docs/fr/00-index.md](fr/00-index.md)** | 8 guides complets (parité 1:1 avec l'anglais) |
+| **Deutsch** | **[docs/de/00-index.md](de/00-index.md)** | 8 vollständige Leitfäden (1:1-Parität mit Englisch) |
 
-## User guides
+---
 
-The [English guides](user-guide/en/) and [Spanish guides](user-guide/es/) explain client execution, protocol messages, operations, transports, bindings, and diagnostics.
+## Core Engineering & Reference Documentation
 
-## Language bindings
+### Architecture
+- [System Overview](architecture/overview.md)
+- [Public API Design](architecture/public-api.md)
+- [C ABI & Language Bindings](architecture/ffi-and-bindings.md)
+- [Transport & Security Architecture](architecture/transport-security.md)
+- [Vendor Extensions](architecture/extensions.md)
 
-The [bindings index](../bindings/README.md) links the common documentation layout
-for [C](../bindings/c/README.md), [Java](../bindings/java/README.md), and
-[Python](../bindings/python/README.md). Each includes installation, native library
-handling, testing, and examples adapted to that language.
+### Language Bindings
+- [Bindings Index](../bindings/README.md) · [C (C11 ABI)](../bindings/c/README.md) · [Java (JNI)](../bindings/java/README.md) · [Python (CFFI)](../bindings/python/README.md)
 
-## Development
+### Development & Verification
+- [Rust Workspace](development/rust-workspace.md) · [Testing Strategy](development/testing.md) · [Coding Standards](development/coding-standards.md)
+- [Git & Releases](development/git-and-releases.md) · [API Manifest](development/api-manifest.md) · [KMIP 3.0 API Migration](development/kmip-3.0-api-migration.md)
+- [Interoperability Evidence](development/kmip-interoperability.md) · [Transport Performance](development/transport-performance.md)
 
-- [Rust workspace](development/rust-workspace.md)
-- [Testing](development/testing.md)
-- [Coding standards](development/coding-standards.md)
-- [Git and releases](development/git-and-releases.md)
-- [API manifest](development/api-manifest.md)
-- [KMIP 3.0 API migration](development/kmip-3.0-api-migration.md)
-- [Interoperability evidence](development/kmip-interoperability.md)
-- [Transport performance](development/transport-performance.md)
-- [Dependency review](development/transport-dependency-review.md)
+### Compliance, Interoperability & Security
+- [Conformance Ledger](compliance/conformance.md)
+- [Cosmian KMS Notes](interop/cosmian-kms.md) · [Thales CipherTrust Notes](interop/thales-ciphertrust.md) · [Utimaco ESKM Notes](interop/utimaco-eskm.md)
+- [Threat Model](security/threat-model.md) · [Dependency Policy](security/dependency-policy.md) · [Pre-Release Hardening Evidence](security/pre-release-hardening-evidence.md)
 
-## Verification and security
-
-- [Conformance](compliance/conformance.md)
-- [Cosmian KMS notes](interop/cosmian-kms.md)
-- [Thales CipherTrust notes](interop/thales-ciphertrust.md)
-- [Utimaco ESKM notes](interop/utimaco-eskm.md)
-- [Threat model](security/threat-model.md)
-- [Dependency policy](security/dependency-policy.md)
-- [Hardening evidence](security/pre-release-hardening-evidence.md)
-
-## Project snapshots
-
-- [Project status](project-status.md)
-- [Roadmap](roadmap.md)
+### Project Snapshots
+- [Project Status](project-status.md) · [Roadmap](roadmap.md)

@@ -5,7 +5,17 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/kmipkit-client"
+readme = "../../README.md"
+keywords = ["kmip", "kms", "hsm", "cryptography", "oasis"]
+categories = ["cryptography", "api-bindings", "network-programming"]
 description = "KMIP client orchestration for KMIPKit"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu"]
 
 [features]
 test-support = ["kmipkit-transport/test-support"]

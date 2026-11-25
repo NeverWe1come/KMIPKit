@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "command": ["kmip-lsp", "--stdio"],
+  "selector": "source.json, source.rust, source.c, source.java, source.python",
+  "schemes": ["file"]
+}

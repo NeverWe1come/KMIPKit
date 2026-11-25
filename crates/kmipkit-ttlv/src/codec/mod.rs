@@ -20,7 +20,9 @@ mod decoder;
 #[path = "../../tests/support/codec_limits_tests.rs"]
 mod limits_tests;
 
-pub use decoder::{decode, decode_with_limits};
+pub use decoder::{
+    decode, decode_allow_reserved, decode_with_limits, decode_with_limits_allow_reserved,
+};
 
 /// Immutable per-call resource limits for TTLV decoding and internal encoding.
 ///

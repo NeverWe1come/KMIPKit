@@ -1,0 +1,76 @@
+name: Build & Verify Official API Docs (Rustdoc · Javadoc · Sphinx · Doxygen)
+
+on:
+  push:
+    branches: [master, "release/*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rustdoc:
+    name: Rustdoc (docs.rs check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-static-openssl
+      - name: Build Rustdoc with -D warnings
+        env:
+          RUSTDOCFLAGS: "--cfg docsrs -D warnings"
+        run: |
+          cargo doc --workspace --no-deps --all-features
+          cargo doc --manifest-path kmip-proxy/Cargo.toml --no-deps
+
+  javadoc:
+    name: Javadoc (Maven Central check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # actions/setup-java v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Build Javadoc JAR
+        working-directory: bindings/java
+        run: ./gradlew javadoc javadocJar
+
+  sphinx:
+    name: Sphinx (PyPI / Read the Docs check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # actions/setup-python v5.0.0
+        with:
+          python-version: "3.12"
+      - name: Install Sphinx & build strict HTML
+        run: |
+          pip install --only-binary ":all:" sphinx==8.1.3 furo==2024.8.6 myst-parser==4.0.0 sphinx-autodoc-typehints==2.5.0
+          sphinx-build -W -b html bindings/python/docs bindings/python/docs/_build/html
+
+  doxygen:
+    name: Doxygen (C11 ABI check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+      - name: Generate C API Reference
+        working-directory: bindings/c
+        run: |
+          mkdir -p build/doxygen
+          doxygen Doxyfile
