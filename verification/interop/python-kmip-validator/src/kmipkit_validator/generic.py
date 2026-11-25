@@ -117,14 +117,8 @@ def _failure(diagnostic, status="failed"):
 
 
 def _run_owned_key(driver, operation):
-    identifier = None
-
-    def check_create(payload):
-        nonlocal identifier
-        identifier = _text_identifier(payload)
-        return identifier is not None and _has_field(payload, 0x420057, "Enumeration", 2)
-
-    created = _checked_exchange(driver, CREATE, expected=check_create)
+    created = _checked_exchange(driver, CREATE)
+    identifier = created.pop("created_identifier", None)
     if identifier is None:
         if operation == CREATE or created["status"] == "failed":
             return created
@@ -231,6 +225,7 @@ def _execute(driver, operation, identifier=None, expected=None):
     ]) as request, ttlv.ttlv_item_view_from_item(request) as request_view, ttlv.codec_limits_defaults() as limits:
         wire = _exchange(connection, _encode(request_view), ttlv.codec_limits_max_message_bytes(limits))
     payload_matches = True
+    created_identifier = None
     with ttlv.ttlv_decode(wire) as root, ttlv.ttlv_item_view_from_item(root) as view:
         with ttlv.ttlv_item_view_tag(view) as tag, ttlv.ttlv_item_view_value(view) as value:
             if ttlv.tag_value(tag) != 0x42007B:
@@ -250,11 +245,19 @@ def _execute(driver, operation, identifier=None, expected=None):
                     payload_matches = payload is not None
                     if payload is not None:
                         with payload:
-                            payload_matches = (expected(payload) if expected is not None
-                                               else _matches(payload, operation, protocol))
+                            if operation == CREATE:
+                                created_identifier = _text_identifier(payload)
+                                payload_matches = created_identifier is not None and _has_field(
+                                    payload, 0x420057, "Enumeration", 2,
+                                )
+                            else:
+                                payload_matches = (expected(payload) if expected is not None
+                                                   else _matches(payload, operation, protocol))
+    details = {"result_status_code": status, "result_reason_code": reason}
+    if created_identifier is not None:
+        details["created_identifier"] = created_identifier
     if not payload_matches:
-        return {**_failure("Generic success payload did not satisfy the case."),
-                "result_status_code": status, "result_reason_code": reason}
+        return {**_failure("Generic success payload did not satisfy the case."), **details}
     outcome, compatibility = {
         (0, None): ("passed", "supported"),
         (1, 5): ("server_unsupported", "unsupported"),
@@ -263,8 +266,7 @@ def _execute(driver, operation, identifier=None, expected=None):
     }.get((status, reason), ("failed", "unknown"))
     return {"status": outcome, "server_compatibility": compatibility,
             "library_correctness": "passed", "parity": "not_compared",
-            "result_status_code": status, "result_reason_code": reason,
-            "diagnostic": "generic TTLV request and response validated"}
+            "diagnostic": "generic TTLV request and response validated", **details}
 
 
 def _text_identifier(payload):
