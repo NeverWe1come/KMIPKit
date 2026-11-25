@@ -40,7 +40,7 @@ _RUNTIME_METADATA_NAMESPACE_BLOCKS = frozenset(
 )
 RUST_ONLY_CAPABILITY = "rust_transport_exchange"
 # Accepted KMIPKIT-0013 FR-016 exposes the bounded concrete adapters to direct
-# Rust users; their raw exchange APIs stay inside ADR-0014's Rust-only boundary.
+# Rust users; their raw exchange APIs stay inside the transport architecture decision's Rust-only boundary.
 RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -484,17 +484,17 @@ def build_inventory(
                     raise InventoryError(
                         f"Rust declaration references absent approval-source requirements: {sorted(route_owner_requirements - declared_source_requirements)}"
                     )
-        elif owner_adr_id == "ADR-0014":
+        elif owner_adr_id == "the transport architecture decision":
             owner_requirements = []
             if not {"KMIPKIT-0043-FR-020", "KMIPKIT-0043-FR-021"} <= set(requirement_ids):
-                raise InventoryError(f"ADR-owned Rust declaration lacks 0043 traceability: {declaration['exportName']}")
+                raise InventoryError(f"Architecture decision-owned Rust declaration lacks 0043 traceability: {declaration['exportName']}")
             if declaration.get("approvalSource") != capability.get("acceptedEvidence"):
                 raise InventoryError(f"Rust declaration acceptance evidence differs from its capability: {declaration['exportName']}")
             if declaration.get("parityScope") != "rust-only-adr" or declaration.get("capabilityId") != RUST_ONLY_CAPABILITY:
-                raise InventoryError("only ADR-0014 transport declarations may use Rust-only parity")
+                raise InventoryError("only the transport architecture decision transport declarations may use Rust-only parity")
             rust_only.append(declaration)
         else:
-            raise InventoryError(f"ready Rust declaration has no approved feature/ADR owner: {declaration['exportName']}")
+            raise InventoryError(f"ready Rust declaration has no approved feature or architecture decision owner: {declaration['exportName']}")
 
         if declaration.get("parityScope") != "rust-only-adr":
             mappings = declaration.get("languageMappings", {})
@@ -521,7 +521,7 @@ def build_inventory(
 
     rust_only_names = {declaration["exportName"] for declaration in rust_only}
     if rust_only_names != RUST_ONLY_DECLARATIONS:
-        raise InventoryError("Rust-only inventory differs from the sole accepted ADR-0014 transport exception")
+        raise InventoryError("Rust-only inventory differs from the sole accepted the transport architecture decision transport exception")
 
     draft_gates = _verify_draft_gates(manifest)
     blocked_rows = _blocked_unreconciled_rows(manifest)
@@ -558,8 +558,8 @@ def build_inventory(
             {
                 "declarationId": declaration["declarationId"],
                 "exportName": declaration["exportName"],
-                "ownerAdrId": "ADR-0014",
-                "approvalPath": "docs/adr/0014-public-transport-exchange-contract.md",
+                "ownerAdrId": "the transport architecture decision",
+                "approvalPath": "docs/architecture/transport-security.md",
                 "requirementIds": sorted(declaration["requirementIds"]),
             }
             for declaration in sorted(rust_only, key=lambda row: row["exportName"])

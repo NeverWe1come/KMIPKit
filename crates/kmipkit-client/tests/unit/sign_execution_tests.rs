@@ -1,7 +1,7 @@
 //! Source-derived Sign client contracts from OASIS KMIP v2.1 §6.1.55,
 //! Tables 334–336. These tests are not official Test Case executions.
-//! Traceability: FR-001, FR-003–FR-005, FR-009–FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-SIGN`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for client Sign operation execution.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

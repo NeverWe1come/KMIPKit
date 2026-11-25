@@ -1,6 +1,6 @@
 //! Outbound Message Extension and secret-buffer lifecycle contracts.
 //!
-//! Traceability: KMIPKIT-0012-FR-005, FR-011, KMIPKIT-0007-OD-006, and
+//! Verifies protocol model, request/response validation, and security invariants.
 //! KMIP 2.1 §8.3 Table 396 / §9.13 Table 418.
 
 use std::cell::{Cell, RefCell};

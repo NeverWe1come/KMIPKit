@@ -128,7 +128,7 @@ EXPECTED_REQUIREMENT_TESTS = {
 
 @unittest.skipUnless(
     SPECIFICATION.is_file(),
-    "SDD specifications are omitted from the code-only review branch",
+    "External design specifications are not bundled with this source distribution",
 )
 class RequirementTraceabilityTests(unittest.TestCase):
     def test_one_requirement_reference_can_cover_multiple_executable_tests(self) -> None:

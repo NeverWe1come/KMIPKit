@@ -1,0 +1,10 @@
+[
+  {
+    "caption": "KMIP: Decode TTLV Selection",
+    "command": "kmip_decode_ttlv_selection"
+  },
+  {
+    "caption": "KMIP: Lookup OASIS Specification",
+    "command": "kmip_lookup_spec"
+  }
+]

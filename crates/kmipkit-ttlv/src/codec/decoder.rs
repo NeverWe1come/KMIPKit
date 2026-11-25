@@ -53,12 +53,9 @@ pub fn decode(bytes: &[u8]) -> Result<Item, DecodeError> {
 /// use kmipkit_ttlv::{ItemType, ValueView};
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// // OASIS KMIP Specification v2.1 §§10.1.1–10.1.3, 10.1.5, 11.23, and 11.56;
-/// // KMIPKIT-0005-NR-001, NR-002, NR-004, NR-005,
-/// // KMIPKIT-REQ-SPEC-10.1.5-001-002, and KMIPKIT-REQ-SPEC-11.56-001.
-/// // Generic order, repeated Tags, and unknown mask/Enumeration values are
-/// // KMIPKit project behavior under KMIPKIT-0005-FR-005. Checking padding
-/// // extents without constraining pad-byte values follows FR-006.
+/// // OASIS KMIP Specification v2.1 §§10.1.1–10.1.3, 10.1.5, 11.23, and 11.56 TTLV encoding rules.
+/// // Generic order, repeated Tags, and unknown mask/Enumeration values are preserved.
+/// // Checking padding extents without constraining pad-byte values follows the TTLV decoding policy.
 /// let wire = [
 ///     // Generic Structure Tag 0x420173; 3 child Items, 16 bytes each.
 ///     0x42, 0x01, 0x73, 0x01, 0x00, 0x00, 0x00, 0x30,
@@ -137,6 +134,38 @@ pub fn decode_with_limits(bytes: &[u8], limits: &CodecLimits) -> Result<Item, De
     decode_inner(
         bytes,
         limits,
+        false,
+        #[cfg(test)]
+        None,
+    )
+}
+
+/// Decodes exactly one complete TTLV item using the default resource limits,
+/// allowing legacy KMIP 1.X tags that are marked reserved in KMIP 2.0+.
+///
+/// # Errors
+///
+/// Returns a payload-free [`DecodeError`] for malformed input, unallocated Tags,
+/// extra trailing bytes, or an exceeded default limit.
+pub fn decode_allow_reserved(bytes: &[u8]) -> Result<Item, DecodeError> {
+    decode_with_limits_allow_reserved(bytes, &CodecLimits::defaults())
+}
+
+/// Decodes exactly one complete TTLV item using the supplied immutable limits,
+/// allowing legacy KMIP 1.X tags that are marked reserved in KMIP 2.0+.
+///
+/// # Errors
+///
+/// Returns a payload-free [`DecodeError`] for malformed input, unallocated Tags,
+/// extra trailing bytes, or an exceeded per-call limit.
+pub fn decode_with_limits_allow_reserved(
+    bytes: &[u8],
+    limits: &CodecLimits,
+) -> Result<Item, DecodeError> {
+    decode_inner(
+        bytes,
+        limits,
+        true,
         #[cfg(test)]
         None,
     )
@@ -145,6 +174,7 @@ pub fn decode_with_limits(bytes: &[u8], limits: &CodecLimits) -> Result<Item, De
 fn decode_inner(
     bytes: &[u8],
     limits: &CodecLimits,
+    allow_reserved: bool,
     #[cfg(test)] observer: Option<&super::limits_tests::DecodeObserver>,
 ) -> Result<Item, DecodeError> {
     preflight_message_length(bytes.len(), limits)?;
@@ -152,6 +182,7 @@ fn decode_inner(
     let mut state = DecodeState {
         elements: 0,
         limits,
+        allow_reserved,
         #[cfg(test)]
         observer,
     };
@@ -168,7 +199,7 @@ pub(super) fn decode_with_observer<'a>(
     limits: &'a CodecLimits,
     observer: &'a super::limits_tests::DecodeObserver,
 ) -> Result<Item, DecodeError> {
-    decode_inner(bytes, limits, Some(observer))
+    decode_inner(bytes, limits, false, Some(observer))
 }
 
 fn preflight_message_length(
@@ -192,6 +223,7 @@ pub(super) fn test_preflight_message_length(
 struct DecodeState<'a> {
     elements: usize,
     limits: &'a CodecLimits,
+    allow_reserved: bool,
     #[cfg(test)]
     observer: Option<&'a super::limits_tests::DecodeObserver>,
 }
@@ -240,7 +272,13 @@ fn decode_item(
     // and parent boundary before exposing any value bytes to the decoder.
     state.consume_element(start)?;
 
-    let header = parse_item_header(bytes, start, parent_end, parent_structure_depth)?;
+    let header = parse_item_header(
+        bytes,
+        start,
+        parent_end,
+        parent_structure_depth,
+        state.allow_reserved,
+    )?;
     let structure_depth = structure_depth_for(
         header.item_kind,
         parent_structure_depth,
@@ -283,6 +321,7 @@ fn parse_item_header(
     start: usize,
     parent_end: usize,
     parent_structure_depth: usize,
+    allow_reserved: bool,
 ) -> Result<ItemHeader, DecodeError> {
     let header_end = checked_end_offset(
         start,
@@ -310,7 +349,7 @@ fn parse_item_header(
     let item_length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]);
     let item_length = usize::try_from(item_length)
         .map_err(|_| DecodeError::new(DecodeErrorKind::TruncatedValue, length_offset))?;
-    let tag = checked_tag(tag_value, start)?;
+    let tag = checked_tag(tag_value, start, allow_reserved)?;
     let item_kind = ItemKind::from_wire(item_type)
         .ok_or_else(|| DecodeError::new(DecodeErrorKind::UnsupportedItemType, item_type_offset))?;
     validate_item_length(item_kind, item_length, length_offset)?;
@@ -324,10 +363,15 @@ fn parse_item_header(
     })
 }
 
-fn checked_tag(tag_value: u32, offset: usize) -> Result<Tag, DecodeError> {
+fn checked_tag(tag_value: u32, offset: usize, allow_reserved: bool) -> Result<Tag, DecodeError> {
     let raw_tag = RawTag::new(tag_value)
         .map_err(|_| DecodeError::new(DecodeErrorKind::UnallocatedTag, offset))?;
-    raw_tag.try_checked().map_err(|error| {
+    let checked = if allow_reserved {
+        raw_tag.try_checked_allow_reserved()
+    } else {
+        raw_tag.try_checked()
+    };
+    checked.map_err(|error| {
         let kind = match error {
             ModelError::TagNotAllocated if raw_tag.is_reserved() => DecodeErrorKind::ReservedTag,
             ModelError::TagNotAllocated | ModelError::RawTagOutOfRange => {

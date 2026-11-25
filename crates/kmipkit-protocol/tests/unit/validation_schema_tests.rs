@@ -299,7 +299,7 @@ fn key_wrapping_specification_requires_key_information_but_allows_both_forms() {
         )),
     );
     assert!(missing_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R236"
+        issue.code().as_str() == "PAYLOAD-RULE-R236"
             && issue.path().to_string() == "Encryption Key Information"
     }));
 
@@ -364,9 +364,9 @@ fn key_information_requires_text_string_unique_identifier() {
 #[test]
 fn managed_object_schemas_are_public_and_validate_required_fields() {
     for (schema, rule) in [
-        (NestedStructureSchema::PgpKey, "KMIPKIT-0051-R285"),
-        (NestedStructureSchema::SecretData, "KMIPKIT-0051-R286"),
-        (NestedStructureSchema::SplitKey, "KMIPKIT-0051-R287"),
+        (NestedStructureSchema::PgpKey, "PAYLOAD-RULE-R285"),
+        (NestedStructureSchema::SecretData, "PAYLOAD-RULE-R286"),
+        (NestedStructureSchema::SplitKey, "PAYLOAD-RULE-R287"),
     ] {
         let report = validate_structure(
             &Structure::new().view(),
@@ -402,7 +402,7 @@ fn public_split_key_schema_checks_conditional_prime_field_size() {
         report
             .issues()
             .iter()
-            .any(|issue| issue.code().as_str() == "KMIPKIT-0051-R292"),
+            .any(|issue| issue.code().as_str() == "PAYLOAD-RULE-R292"),
         "Split Key public schema should enforce Prime Field Size for Polynomial Sharing Prime Field; got {report:?}"
     );
 }
@@ -502,7 +502,7 @@ fn attribute_wrappers_require_exactly_one_attribute_item() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R247"
+        issue.code().as_str() == "PAYLOAD-RULE-R247"
             && issue.path().to_string() == "Request Payload.New Attribute.Attribute"
             && issue.source().to_string() == "KMIP v2.1 §5.7, Table 163"
     }));
@@ -523,7 +523,7 @@ fn current_attribute_wrapper_rejects_multiple_attribute_items() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R248"
+        issue.code().as_str() == "PAYLOAD-RULE-R248"
             && issue.path().to_string() == "Request Payload.Current Attribute.Attribute"
             && issue.source().to_string() == "KMIP v2.1 §5.6, Table 162"
     }));
@@ -544,7 +544,7 @@ fn validate_request_recursively_checks_certificate_structure_without_parsing_der
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R249"
+        issue.code().as_str() == "PAYLOAD-RULE-R249"
             && issue.path().to_string() == "Request Payload.Certificate[0].Certificate Type"
             && issue.source().to_string() == "KMIP v2.1 §2.1, Table 2"
     }));
@@ -568,7 +568,7 @@ fn reprovision_request_checks_certificate_request_members() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R251"
+        issue.code().as_str() == "PAYLOAD-RULE-R251"
             && issue.path().to_string()
                 == "Request Payload.Certificate Request.Certificate Request Type"
             && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
@@ -587,7 +587,7 @@ fn discover_versions_recursively_checks_protocol_version_members() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R256"
+        issue.code().as_str() == "PAYLOAD-RULE-R256"
             && issue.path().to_string()
                 == "Request Payload.Protocol Version[0].Protocol Version Minor"
             && issue.source().to_string() == "KMIP v2.1 §9.16, Table 421"
@@ -621,7 +621,7 @@ fn logout_recursively_checks_ticket_value() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R254"
+        issue.code().as_str() == "PAYLOAD-RULE-R254"
             && issue.path().to_string() == "Request Payload.Ticket.Ticket Value"
             && issue.source().to_string() == "KMIP v2.1 §7.39, Table 391"
     }));
@@ -654,7 +654,7 @@ fn query_async_requests_recursively_checks_correlation_value_type() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R259"
+        issue.code().as_str() == "PAYLOAD-RULE-R259"
             && issue.path().to_string()
                 == "Request Payload.Asynchronous Correlation Values.Asynchronous Correlation Value[0]"
             && issue.source().to_string() == "KMIP v2.1 §7.1, Table 352"
@@ -676,7 +676,7 @@ fn revoke_recursively_checks_revocation_reason_code_type() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R257"
+        issue.code().as_str() == "PAYLOAD-RULE-R257"
             && issue.path().to_string()
                 == "Request Payload.Revocation Reason.Revocation Reason Code"
             && issue.source().to_string() == "KMIP v2.1 §4.47, Table 123"
@@ -698,7 +698,7 @@ fn query_request_recursively_checks_object_group_value_type() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R196"
+        issue.code().as_str() == "PAYLOAD-RULE-R196"
             && issue.path().to_string() == "Request Payload.Object Groups.Object Group[0]"
             && issue.source().to_string() == "KMIP v2.1 §7.23, Table 375"
     }));
@@ -716,7 +716,7 @@ fn query_async_requests_recursively_checks_operation_value_type() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R246"
+        issue.code().as_str() == "PAYLOAD-RULE-R246"
             && issue.path().to_string() == "Request Payload.Operations.Operation[0]"
             && issue.source().to_string() == "KMIP v2.1 §7.25, Table 377"
     }));
@@ -743,7 +743,7 @@ fn pkcs11_request_schema_recursively_checks_interface_structure() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R260"
+        issue.code().as_str() == "PAYLOAD-RULE-R260"
             && issue.path().to_string() == "Request Payload.PKCS#11 Interface.PKCS#11 Interface"
             && issue.source().to_string() == "KMIP v2.1 §7.28, Table 380"
     }));
@@ -773,7 +773,7 @@ fn pkcs11_request_schema_recursively_checks_input_parameter_structure() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R261"
+        issue.code().as_str() == "PAYLOAD-RULE-R261"
             && issue.path().to_string()
                 == "Request Payload.PKCS#11 Input Parameters.PKCS#11 Input Parameters"
             && issue.source().to_string() == "KMIP v2.1 §7.27, Table 379"
@@ -801,7 +801,7 @@ fn register_schema_recursively_checks_key_block_fields() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R262"
+        issue.code().as_str() == "PAYLOAD-RULE-R262"
             && issue.path().to_string()
                 == "Request Payload.Any Object (Section 2).Key Block.Key Format Type"
             && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
@@ -826,7 +826,7 @@ fn register_schema_checks_both_required_opaque_object_fields() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R270"
+        issue.code().as_str() == "PAYLOAD-RULE-R270"
             && issue.path().to_string()
                 == "Request Payload.Any Object (Section 2).Opaque Data Value"
             && issue.source().to_string() == "KMIP v2.1 §2.3, Table 4"
@@ -846,7 +846,7 @@ fn key_block_requires_length_when_algorithm_is_present() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R266"
+        issue.code().as_str() == "PAYLOAD-RULE-R266"
             && issue.path().to_string() == "Cryptographic Length"
             && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
     }));
@@ -883,7 +883,7 @@ fn key_block_recursively_checks_key_wrapping_data_members() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R271"
+        issue.code().as_str() == "PAYLOAD-RULE-R271"
             && issue.path().to_string() == "Key Wrapping Data.Wrapping Method"
             && issue.source().to_string() == "KMIP v2.1 §3.3, Table 14"
     }));
@@ -904,7 +904,7 @@ fn key_value_structure_requires_key_material() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R278"
+        issue.code().as_str() == "PAYLOAD-RULE-R278"
             && issue.path().to_string() == "Key Value.Key Material"
             && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13"
     }));
@@ -927,7 +927,7 @@ fn key_format_type_selects_known_key_material_ttlv_type() {
     );
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R280"
+        issue.code().as_str() == "PAYLOAD-RULE-R280"
             && issue.path().to_string() == "Key Value.Key Material"
             && issue.source().to_string() == "KMIP v2.1 §3.2, Table 13; §11.25, Table 461"
     }));
@@ -975,7 +975,7 @@ fn create_payload_reports_missing_required_fields_with_stable_source_ids() {
         .iter()
         .map(|issue| issue.code().as_str())
         .collect::<Vec<_>>();
-    assert_eq!(codes, ["KMIPKIT-0051-R019", "KMIPKIT-0051-R020"]);
+    assert_eq!(codes, ["PAYLOAD-RULE-R019", "PAYLOAD-RULE-R020"]);
     assert_eq!(
         report.issues()[0].path().to_string(),
         "Request Payload.Object Type"
@@ -1003,7 +1003,7 @@ fn create_payload_checks_type_and_oasis_field_order_without_sorting_tags() {
         report
             .issues()
             .iter()
-            .any(|issue| issue.code().as_str() == "KMIPKIT-0051-R019")
+            .any(|issue| issue.code().as_str() == "PAYLOAD-RULE-R019")
     );
     assert!(
         report
@@ -1029,7 +1029,7 @@ fn create_payload_rejects_wrong_ttlv_type_without_reporting_the_value() {
         .first()
         .expect("the Object Type item has the wrong TTLV type");
 
-    assert_eq!(issue.code().as_str(), "KMIPKIT-0051-R019");
+    assert_eq!(issue.code().as_str(), "PAYLOAD-RULE-R019");
     assert_eq!(issue.path().to_string(), "Request Payload.Object Type");
     assert_eq!(issue.source().to_string(), "KMIP v2.1 §6.1.8, Table 186");
     assert!(!format!("{report:?}").contains("raw-ttlv"));
@@ -1051,7 +1051,7 @@ fn create_payload_rejects_duplicate_singleton_fields() {
 
     assert!(!report.is_valid());
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R019"
+        issue.code().as_str() == "PAYLOAD-RULE-R019"
             && issue.path().to_string() == "Request Payload.Object Type[1]"
     }));
 }
@@ -1127,7 +1127,7 @@ fn every_supported_request_payload_has_an_explicit_schema_identity() {
             report
                 .issues()
                 .iter()
-                .all(|issue| issue.code().as_str() != "KMIPKIT-0051-P002"),
+                .all(|issue| issue.code().as_str() != "PAYLOAD-POLICY-P002"),
             "the supported schema descriptor exists for {schema:?}"
         );
     }
@@ -1161,7 +1161,7 @@ fn unsupported_schema_identity_is_reported_without_echoing_identity_data() {
 
     assert!(!report.is_valid());
     assert_eq!(report.issues().len(), 1);
-    assert_eq!(report.issues()[0].code().as_str(), "KMIPKIT-0051-P002");
+    assert_eq!(report.issues()[0].code().as_str(), "PAYLOAD-POLICY-P002");
     assert!(!format!("{report:?}").contains("raw-ttlv"));
 }
 
@@ -1354,5 +1354,5 @@ fn client_initiated_set_endpoint_role_is_explicit_but_deferred() {
 
     assert!(!report.is_valid());
     assert_eq!(report.issues().len(), 1);
-    assert_eq!(report.issues()[0].code().as_str(), "KMIPKIT-0051-P002");
+    assert_eq!(report.issues()[0].code().as_str(), "PAYLOAD-POLICY-P002");
 }

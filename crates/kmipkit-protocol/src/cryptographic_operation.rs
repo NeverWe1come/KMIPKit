@@ -79,7 +79,7 @@ pub enum CryptographicOperationResponseContext {
     MultipartNonFinal,
     /// A response to a multipart request marked final. Hash, MAC, and Sign
     /// outputs remain absent; Verify Validity Indicator presence remains
-    /// tolerant while KMIPKIT-DISC-048 is unresolved.
+    /// tolerant of multipart final-part variations.
     MultipartFinal,
 }
 
@@ -425,7 +425,7 @@ pub(crate) fn parse_validity_indicator(
 }
 
 /// Validates the indicator presence rule for the request-derived multipart
-/// context while preserving KMIPKIT-DISC-048's final-part ambiguity.
+/// context while supporting both final-part multipart representations.
 pub(crate) fn validate_validity_indicator_shape(
     indicator: Option<ValidityIndicator>,
     context: CryptographicOperationResponseContext,

@@ -3,7 +3,7 @@
 This example inspects shared TTLV fixtures and constructs a local batch item.
 It does not open a transport or send a request.
 
-Unknown response Message Extensions follow KMIPKIT-0007: an unknown critical
+Unknown response Message Extensions follow standard protocol requirements: an unknown critical
 extension is rejected, while an unknown non-critical extension remains
 available as generic TTLV. Python-managed string and byte copies cannot be
 reliably zeroized by KMIPKit; this example uses only non-secret fixture values.

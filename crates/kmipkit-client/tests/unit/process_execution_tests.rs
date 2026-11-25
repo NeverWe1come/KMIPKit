@@ -1,8 +1,8 @@
 //! Client Process behavior derived from OASIS KMIP v2.1 §§6.1.39, 8.6, 9.2,
 //! and 11.3, Tables 278–280, 399, 401, and 432; these are not official vectors.
 //!
-//! Traceability: KMIPKIT-0009-FR-005, FR-008, FR-009, FR-010. The missing
-//! catalog requirement ID for Table 278 remains open under OD-002.
+//! Verifies client execution of Process requests and responses, including
+//! synchronous delivery and asynchronous correlation value handling.
 
 use crate::ClientErrorCategory;
 use crate::asynchronous_execution_test_support::{client_for, request_contains};

@@ -1,4 +1,4 @@
-//! Red-phase contract tests for KMIPKIT-0013 FR-004/FR-005 and SC-006.
+//! Verifies diagnostic redaction of secret material and session state across transport errors.
 //!
 //! File-source behavior and the crate-internal test-only secret-owner observer
 //! are covered alongside current public-surface checks in

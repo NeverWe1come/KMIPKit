@@ -2,7 +2,7 @@
 
 //! Derived attribute preservation vectors for OASIS KMIP v2.1 §§4, 5.1,
 //! 5.5–5.7, §6.1.2 Tables 167–169, §6.1.20 Table 224, §11.1 Table 429, and
-//! §11.56. Traceability: KMIPKIT-0016-FR-011 and SC-005. These tests are
+//! §11.56. Verifies protocol model, request/response validation, and security invariants.
 //! derived structural checks and do not claim official OASIS conformance.
 
 use crate::{
@@ -141,7 +141,7 @@ fn add_attribute_preserves_assigned_and_extension_tagged_new_values() {
     // OASIS KMIP v2.1 §5.7, Table 163 defines New Attribute as one direct
     // generic Item. §6.1.2, Table 167 carries it in Add Attribute. Assigned
     // tags and §11.56 Table 487 extension Tags keep their complete tag and value under
-    // the accepted KMIPKIT-0004/ADR-0010 allocation policy.
+    // accepted tag allocation precedence rules.
     let cases = [
         (
             COMMENT,
@@ -264,7 +264,7 @@ fn get_attributes_response_preserves_repeated_instances_in_wire_order() {
 fn generic_attribute_ttlv_retains_unknown_enumeration_values() {
     // OASIS KMIP v2.1 §4.13 Table 53 declares Cryptographic Algorithm as an
     // Enumeration attribute; §11.1 Table 429 describes assigned and
-    // extension codes. FR-011 keeps all generic Enumeration values lossless,
+    // extension codes. Generic attribute handling keeps all generic Enumeration values lossless,
     // including codes a typed outbound Adjustment Type must reject.
     let unknown_value = 0x7FFF_FFFF;
     let attributes = AttributeSet::try_new([item(
@@ -314,8 +314,8 @@ fn adjust_attribute_preserves_valid_extension_enumeration_values() {
 #[test]
 fn adjust_attribute_rejects_reserved_attribute_reference_tags() {
     // OASIS KMIP v2.1 §11.56 Table 487 classifies the KMIP Tag values. The outbound
-    // rejection of Reserved or unallocated raw tags follows KMIPKIT-0004 and
-    // accepted ADR-0010 allocation policy; this is not an OASIS conformance
+    // rejection of Reserved or unallocated raw tags follows KMIPKit tag allocation policy;
+    // this is not an OASIS conformance
     // assertion about a receiver's behavior.
     let request = AdjustAttributeRequest::new(
         None,
@@ -333,7 +333,7 @@ fn adjust_attribute_rejects_reserved_attribute_reference_tags() {
 #[test]
 fn adjust_attribute_rejects_reserved_adjustment_enumerations() {
     // OASIS KMIP v2.1 §11.1, Table 429 leaves unlisted values outside its
-    // extension range Reserved for future versions. FR-011 preserves such
+    // extension range Reserved for future versions. Generic attribute decoding preserves such
     // codes generically but prohibits emitting them as typed Adjustment Type.
     for reserved_value in [0x0000_0000, 0x0000_0004, 0x7FFF_FFFF, 0x9000_0000] {
         let request = AdjustAttributeRequest::new(

@@ -165,7 +165,7 @@ impl RegisterRequest {
         ) || !matches!(self.object.item_type(), kmipkit_ttlv::ItemType::Structure)
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-R140",
+                "PAYLOAD-RULE-R140",
                 "Any Object",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -175,7 +175,7 @@ impl RegisterRequest {
         }
         if self.validate_local_shape().is_err() {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Any Object",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

@@ -1,0 +1,12 @@
+{
+  "KMIPKit Python Client": {
+    "prefix": "kmip-py-client",
+    "body": [
+      "from kmipkit import KmipClient, TlsConfig",
+      "",
+      "with KmipClient(host=\"${1:kms.example.com}\", port=${2:5696}, tls=TlsConfig(...)) as client:",
+      "    versions = client.discover_versions()"
+    ],
+    "description": "Connect to a KMIP server using KMIPKit Python bindings"
+  }
+}

@@ -289,7 +289,7 @@ MAC Verify and Signature Verify expose the raw Validity Indicator value.
 are not converted into local cryptographic decisions. Signature Verify may
 also expose recovered Data through a borrowed callback on `SecretBytes`.
 
-`KMIPKIT-DISC-048` remains open: Tables 263 and 338 omit Validity Indicator on
+An OASIS specification discrepancy exists regarding multipart verification: Tables 263 and 338 omit Validity Indicator on
 all multipart responses, while §§6.1.33 and 6.1.56 require it for the final
 multipart response. The typed API requires it for single-part, rejects it for
 non-final multipart, and accepts either form for final multipart without

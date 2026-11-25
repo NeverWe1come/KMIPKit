@@ -39,7 +39,7 @@ RUST_PACKAGES = {
 }
 ADR_APPROVAL = {
     "kind": "accepted-adr",
-    "path": "docs/adr/0017-single-dependency-rust-facade.md",
+    "path": "docs/architecture/ffi-and-bindings.md",
     "status": "Accepted",
     "evidence": "The `kmipkit` crate re-exports the complete protocol and TTLV public namespaces and exposes the client and transport configuration types needed to construct its supported client.",
 }

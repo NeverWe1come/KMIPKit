@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension point="org.eclipse.core.contenttype.contentTypes">
+    <content-type
+        id="org.kmipkit.ide.eclipse.kmipJson"
+        name="KMIP JSON"
+        base-type="org.eclipse.core.runtime.text"
+        file-extensions="ttlv"
+        file-names="*.kmip.json,*.kmip-config.json,*.kmip-policy.json"/>
+  </extension>
+
+  <extension point="org.eclipse.lsp4e.languageServer">
+    <server
+        id="org.kmipkit.ide.eclipse.kmipLsp"
+        name="KMIPKit Language Server"
+        class="org.kmipkit.ide.eclipse.KmipLanguageServerConnectionProvider"/>
+    <contentTypeMapping
+        id="org.kmipkit.ide.eclipse.kmipLsp"
+        contentType="org.kmipkit.ide.eclipse.kmipJson"/>
+    <contentTypeMapping
+        id="org.kmipkit.ide.eclipse.kmipLsp"
+        contentType="org.eclipse.jdt.core.javaSource"/>
+    <contentTypeMapping
+        id="org.kmipkit.ide.eclipse.kmipLsp"
+        contentType="org.eclipse.cdt.core.cSource"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.commands">
+    <command
+        id="org.kmipkit.ide.eclipse.decodeTtlv"
+        name="KMIP: Decode TTLV Selection"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.handlers">
+    <handler
+        commandId="org.kmipkit.ide.eclipse.decodeTtlv"
+        class="org.kmipkit.ide.eclipse.DecodeTtlvHandler"/>
+  </extension>
+
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution locationURI="popup:#TextEditorContext?after=additions">
+      <command
+          commandId="org.kmipkit.ide.eclipse.decodeTtlv"
+          label="KMIP: Decode TTLV Selection"
+          style="push"/>
+    </menuContribution>
+  </extension>
+</plugin>

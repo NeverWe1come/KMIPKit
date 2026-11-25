@@ -3519,7 +3519,7 @@ fn profile_maps_required_channel_confidentiality_integrity_and_authenticity() {
 #[test]
 fn profile_maps_standard_and_extension_tag_prefixes_for_outbound_requests() {
     // KMIP Specification v2.1 §11.56: defined tags start with 0x42 and
-    // extension tags start with 0x54. Applicability is mapped by DEC-018.
+    // extension tags start with 0x54. Applicability is mapped by profile rules.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-11.56-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-11.56-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -3723,7 +3723,7 @@ fn result_message_client_access_has_an_optional_typed_rule() {
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.17-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.17-001";
 
-    // OASIS KMIP Specification v2.1 §9.17; KMIPKIT-DEC-016.
+    // OASIS KMIP Specification v2.1 §9.17 Result Message optional capability rule.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == REQUIREMENT_ID)
@@ -7277,7 +7277,7 @@ fn profile_rejects_malformed_attestation_credential_envelopes() {
 #[test]
 fn profile_requires_a_device_identifier_field_in_device_credentials() {
     // KMIP Specification v2.1 §9.11/Table 412 and §10.1.2; the typed Device
-    // policy follows KMIPKIT-0008 OD-002 and keeps field presence separate from text.
+    // policy follows OASIS KMIP 2.1 rules and keeps field presence separate from text.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.11-004-001";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.11-004";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
@@ -7334,9 +7334,9 @@ fn profile_requires_a_device_identifier_field_in_device_credentials() {
             Value::text_string("caller-value".to_owned()),
         )]);
         assert!(!evaluate(Some(&request), None));
-        let error = result
-            .validate_request(&request)
-            .expect_err("Password and Device Identifier alone do not satisfy OD-002");
+        let error = result.validate_request(&request).expect_err(
+            "Password and Device Identifier alone do not satisfy the device-identifier rule",
+        );
         assert_eq!(
             error.code(),
             ProfileValidationErrorCode::RequestRuleRejected
@@ -12220,7 +12220,7 @@ fn profile_maps_default_batch_error_continuation_to_stop() {
 #[test]
 fn profile_maps_assigned_batch_error_continuation_values() {
     // KMIP Specification v2.1 §9.6 and §11.5 Table 435 assign Continue=1,
-    // Stop=2, and Undo=3. DEC-002 preserves extension values in generic models
+    // Stop=2, and Undo=3. Extension values are preserved in generic models
     // while restricting this outbound profile rule to the assigned values.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-9.6-001-002";
     const SOURCE_CLAUSE_ID: &str = "KMIPKIT-CLAUSE-SPEC-9.6-001";
@@ -14537,7 +14537,7 @@ fn profile_maps_client_type_applicable_dsa_q_length_domain_parameter() {
 
 #[test]
 fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
-    // KMIP Specification v2.1 §4.14, Table 55; KMIPKIT-REQ-SPEC-4.14-001-001.
+    // KMIP Specification v2.1 §4.14, Table 55 domain parameter rules.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-4.14-001-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const CREATE_KEY_PAIR_OPERATION: u32 = 0x0000_0002;
@@ -14580,7 +14580,7 @@ fn profile_rejects_non_integer_q_length_in_client_supplied_domain_parameters() {
 
 #[test]
 fn public_profile_result_entrypoints_validate_transport_and_responses() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-6.1.16-001-001";
     const PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     let result = ProfileValidationResult {
@@ -14633,7 +14633,7 @@ fn public_profile_result_entrypoints_validate_transport_and_responses() {
 
 #[test]
 fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     let result = ProfileValidationResult {
         profile_ids: vec!["TEST-PROFILE".to_owned()],
         requirement_ids: vec!["TEST-REQ".to_owned()],
@@ -14679,7 +14679,7 @@ fn runtime_rule_evaluation_rejects_missing_and_incomplete_mappings() {
 
 #[test]
 fn selection_rejects_a_requirement_without_a_typed_rule_mapping() {
-    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1; KMIPKIT-0010 FR-014.
+    // KMIP Specification v2.1 §14.1 and KMIP Profiles v2.1 §6.1 conformance profile validation.
     let profiles = [profile("TEST-PROFILE", &["TEST-REQ"], &[])];
     let requirements = [requirement(
         "TEST-REQ",
@@ -17108,7 +17108,7 @@ fn profile_maps_caller_owned_wrapping_iv_and_ttlv_encoding_obligations() {
 
 #[test]
 fn wrapped_secret_data_rule_fails_closed_for_malformed_payload_shapes() {
-    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3; KMIPKIT-REQ-SPEC-2.7-001.
+    // KMIP Specification v2.1 §§2.7, 3.1, and 3.3 wrapped secret data rules.
     const REQUIREMENT_ID: &str = "KMIPKIT-REQ-SPEC-2.7-001";
     const BASELINE_PROFILE_ID: &str = "KMIPKIT-PROFILE-BASELINE-CLIENT";
     const IMPORT_OPERATION: u32 = 0x0000_002A;
@@ -22535,7 +22535,7 @@ fn profile_maps_recertify_single_certificate_per_batch_item_as_required_behavior
 fn profile_maps_recertify_identifier_when_request_value_is_omitted_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.45 paragraph 2 requires a Unique Identifier
     // when Certificate Request Value is omitted; Table 300's optional field
-    // and ID Placeholder note are adjudicated separately by KMIPKIT-DEC-019.
+    // and ID Placeholder note are reconciled by requiring an explicit Unique Identifier.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| {
@@ -23047,8 +23047,8 @@ fn profile_maps_omitted_certify_certificate_request_object_as_optional_capabilit
 #[test]
 fn profile_maps_omitted_certify_request_identifier_as_required_behavior() {
     // KMIP Specification v2.1 §6.1.6 paragraph 2 requires an explicit Unique
-    // Identifier when Certificate Request Value is omitted; KMIPKIT-DEC-013
-    // resolves the conflicting Table 179 ID Placeholder sentence.
+    // Identifier when Certificate Request Value is omitted, reconciling
+    // the conflicting Table 179 ID Placeholder sentence.
     let mapping = TYPED_RULE_MAPPINGS
         .iter()
         .find(|mapping| mapping.requirement_id == CERTIFY_OMITTED_VALUE_IDENTIFIER_REQUIREMENT_ID)
@@ -23104,7 +23104,7 @@ fn profile_accepts_omitted_certify_request_value_with_explicit_unique_identifier
 #[test]
 fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
     // A raw Request Message cannot substitute a preceding batch item's
-    // ID Placeholder for the public key identifier required by DEC-013.
+    // ID Placeholder for the public key identifier required by OASIS KMIP specifications.
     let request = request_message_with_operation_payload(CERTIFY_OPERATION, Structure::new());
     let error = certify_omitted_value_identifier_profile_result()
         .validate_request(&request)
@@ -23126,7 +23126,7 @@ fn profile_rejects_omitted_certify_request_value_without_unique_identifier() {
 
 #[test]
 fn profile_rejects_id_placeholder_for_omitted_certify_request_value() {
-    // DEC-013 requires an explicit public-key identifier when request material
+    // OASIS KMIP requires an explicit public-key identifier when request material
     // is omitted; Enumeration(1) names the batch ID Placeholder, not the key.
     let request = request_message_with_operation_payload(
         CERTIFY_OPERATION,
@@ -25599,7 +25599,7 @@ fn t052_transparent_rsa_private_key_request(
     if operation == IMPORT_OPERATION {
         payload.push(tagged(
             UNIQUE_IDENTIFIER,
-            Value::text_string("t052-rsa-private-key".to_owned()),
+            Value::text_string("test-rsa-private-key".to_owned()),
         ));
     }
     let mut key_block = vec![
@@ -25650,7 +25650,7 @@ fn t052_rsa_private_key_value(alternative: Option<&str>) -> Value {
         Some("only_prime_exponent_p") => {
             material.push(tagged(PRIME_EXPONENT_P, Value::big_integer(vec![0x0B])));
         }
-        Some(_) => unreachable!("T052 test uses a known RSA private-key alternative"),
+        Some(_) => unreachable!("test uses a known RSA private-key alternative"),
     }
     Value::structure(structure([tagged(
         KEY_MATERIAL,
@@ -26218,7 +26218,7 @@ fn profile_maps_compromised_object_processing_as_caller_owned_recommendation() {
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 Table 148 and Table 149.
 fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-002",
@@ -26229,7 +26229,7 @@ fn profile_maps_usage_limits_total_after_protection_as_caller_owned_prohibition(
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 and Table 149; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 and Table 149.
 fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_general_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-002",
@@ -26240,7 +26240,7 @@ fn profile_maps_usage_limits_total_after_allocation_without_count_change_as_gene
 }
 
 #[test]
-// OASIS KMIP Specification v2.1 §4.59 paragraph 3; KMIPKIT-DEC-024.
+// OASIS KMIP Specification v2.1 §4.59 paragraph 3.
 fn profile_maps_usage_limits_total_after_allocation_as_caller_owned_prohibition() {
     assert_caller_owned_contextual_prohibition_has_behavior_evidence(
         "KMIPKIT-REQ-SPEC-4.59-003-001",

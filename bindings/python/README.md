@@ -1,28 +1,32 @@
-# KMIPKit Python binding
+# KMIPKit Python Bindings (CFFI)
 
-Python 3.12 API and CFFI bridge to the Rust KMIPKit implementation.
+Typed Python 3.12 API backed by `libkmipkit_ffi` via CFFI. Supports context managers (`with ... as ...`) for deterministic native handle release and secret zeroization.
 
-## Documentation
+* **[Installation](docs/installation.md)**
+* **[Native Library Handling](docs/native-library.md)**
+* **[Testing](docs/testing.md)**
 
-- [Installation and build](docs/installation.md)
-- [Native library](docs/native-library.md)
-- [Testing](docs/testing.md)
-- [Examples](examples/README.md)
+## Quick Example
 
-## First local example
+```python
+from kmipkit import Client, ClientConfiguration, TransportConfiguration, WireEncoding
+from kmipkit.protocol import CryptographicAlgorithm, KeyUsage
 
-After following the installation guide, run from the repository root:
+transport = (
+    TransportConfiguration.raw_tls("kms.internal.example.com", 5696)
+    .with_client_identity_pem_files("/etc/kmip/client.crt", "/etc/kmip/client.key")
+    .with_trust_ca_pem_file("/etc/kmip/ca.crt")
+    .build()
+)
 
-```sh
-python bindings/python/examples/vendor_extension_registry.py
+with Client(ClientConfiguration.defaults().with_wire_encoding(WireEncoding.TTLV), transport) as client:
+    created = (
+        client.create_symmetric_key()
+        .algorithm(CryptographicAlgorithm.AES)
+        .length(256)
+        .usage_mask(KeyUsage.ENCRYPT | KeyUsage.DECRYPT)
+        .name("python-service-dek")
+        .execute()
+    )
+    client.activate(created.unique_identifier).execute()
 ```
-
-See the example guide for platform requirements and what this command exercises.
-
-## Shared behavior
-
-The [user guides](../../docs/README.md) describe KMIP operations and transports.
-The [binding architecture](../../docs/architecture/ffi-and-bindings.md) explains
-shared ownership and API boundaries. The [bindings index](../README.md) links
-the other languages. Local example success does not establish full language
-parity or KMIP conformance.

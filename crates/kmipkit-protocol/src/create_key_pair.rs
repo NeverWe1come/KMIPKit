@@ -208,7 +208,7 @@ impl CreateKeyPairRequest {
     fn validation_report(&self) -> ValidationReport {
         if self.validate_single_instance_attributes().is_err() {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -224,7 +224,7 @@ impl CreateKeyPairRequest {
         .is_err()
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Attributes",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

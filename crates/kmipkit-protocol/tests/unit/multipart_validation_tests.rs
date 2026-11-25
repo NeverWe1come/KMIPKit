@@ -10,7 +10,7 @@ use crate::{
 };
 use kmipkit_ttlv::Structure;
 
-const SENSITIVE_SENTINEL: &[u8] = b"T026-sensitive-sentinel";
+const SENSITIVE_SENTINEL: &[u8] = b"test-sensitive-sentinel";
 
 #[derive(Clone, Copy, Debug)]
 struct RequestShape {

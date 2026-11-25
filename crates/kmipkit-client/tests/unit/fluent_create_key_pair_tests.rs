@@ -1,5 +1,5 @@
 //! Fluent Create Key Pair tests derived from KMIP v2.1 §6.1.9,
-//! Tables 189–191, and KMIPKIT-0097-FR-001 through FR-007.
+//! Tables 189–191, verifying builder construction and response mapping.
 
 use std::cell::RefCell;
 use std::rc::Rc;

@@ -6,9 +6,7 @@
 //! valid for Encrypt and Decrypt even though Tables 198 and 216 do not list it.
 //! Result Message is defined by §9.17.
 //!
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1-001-002`,
-//! `KMIPKIT-ELEM-OP-C2S-ENCRYPT`, `KMIPKIT-ELEM-OP-C2S-DECRYPT`, and
-//! `KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-GENERAL-FAILURE-00000100`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{item, structure};
 use crate::{

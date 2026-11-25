@@ -1,7 +1,7 @@
 //! Client Poll behavior derived from OASIS KMIP v2.1 §§6.1.38, 8.6, 9.13, and
 //! 9.16, Tables 276, 399, and 421; these are not official conformance vectors.
 //!
-//! Traceability: KMIPKIT-0009-FR-002, FR-003, FR-008, FR-009, FR-010.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_protocol::PollRequest;
 use kmipkit_test_support::{ExchangeScript, ResponseDropObserver};

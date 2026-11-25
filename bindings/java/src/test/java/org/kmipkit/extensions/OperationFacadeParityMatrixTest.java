@@ -27,7 +27,7 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
-/** KMIP 2.1 §6.1 request-route smoke matrix for all client operations in KMIPKIT-0053. */
+/** KMIP 2.1 §6.1 request-route smoke matrix for all client operations in operation facade parity. */
 final class OperationFacadeParityMatrixTest {
     private static final int CORRELATION_VALUE_TAG = 0x0042_0006;
     private static final int CORRELATION_VALUES_TAG = 0x0042_0176;

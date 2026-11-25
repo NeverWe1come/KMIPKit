@@ -14,38 +14,38 @@
     }
   ],
   "authorization": {
-    "ownerSpec": "specs/026-pkcs11/spec.md",
+    "ownerSpec": "docs/user-guide/en/cryptographic-operations.md",
     "ownerStatus": "Approved for implementation — 2026-10-11",
     "implementationAuthorization": {
       "kind": "direct-human-instruction",
       "date": "2026-10-20",
-      "scope": "Implementation of the approved-for-implementation KMIPKIT-0040 contract; this authorization is not formal specification acceptance."
+      "scope": "Implementation of the approved-for-implementation PKCS11-PARITY contract; this authorization is not formal specification acceptance."
     },
     "formalAcceptance": false,
     "manifestApiState": "verified"
   },
   "requirementIds": [
-    "KMIPKIT-0040-FR-001",
-    "KMIPKIT-0040-FR-002",
-    "KMIPKIT-0040-FR-003",
-    "KMIPKIT-0040-FR-004",
-    "KMIPKIT-0040-FR-005",
-    "KMIPKIT-0040-FR-006",
-    "KMIPKIT-0040-FR-007",
-    "KMIPKIT-0040-FR-008",
-    "KMIPKIT-0043-FR-004",
-    "KMIPKIT-0043-FR-005",
-    "KMIPKIT-0043-FR-007",
-    "KMIPKIT-0043-FR-008",
-    "KMIPKIT-0043-FR-009",
-    "KMIPKIT-0043-FR-010",
-    "KMIPKIT-0043-FR-011",
-    "KMIPKIT-0043-FR-012",
-    "KMIPKIT-0043-FR-013",
-    "KMIPKIT-0043-FR-017",
-    "KMIPKIT-0043-FR-018",
-    "KMIPKIT-0043-FR-021",
-    "KMIPKIT-0043-FR-022"
+    "PKCS11-PARITY-REQ-001",
+    "PKCS11-PARITY-REQ-002",
+    "PKCS11-PARITY-REQ-003",
+    "PKCS11-PARITY-REQ-004",
+    "PKCS11-PARITY-REQ-005",
+    "PKCS11-PARITY-REQ-006",
+    "PKCS11-PARITY-REQ-007",
+    "PKCS11-PARITY-REQ-008",
+    "PUBLIC-API-BINDINGS-REQ-004",
+    "PUBLIC-API-BINDINGS-REQ-005",
+    "PUBLIC-API-BINDINGS-REQ-007",
+    "PUBLIC-API-BINDINGS-REQ-008",
+    "PUBLIC-API-BINDINGS-REQ-009",
+    "PUBLIC-API-BINDINGS-REQ-010",
+    "PUBLIC-API-BINDINGS-REQ-011",
+    "PUBLIC-API-BINDINGS-REQ-012",
+    "PUBLIC-API-BINDINGS-REQ-013",
+    "PUBLIC-API-BINDINGS-REQ-017",
+    "PUBLIC-API-BINDINGS-REQ-018",
+    "PUBLIC-API-BINDINGS-REQ-021",
+    "PUBLIC-API-BINDINGS-REQ-022"
   ],
   "oasisElementIds": [
     "KMIPKIT-ELEM-OP-C2S-PKCS-11",
@@ -177,8 +177,13 @@
       }
     },
     "correlationValuePresenceCases": {
-      "absent": {"present": false},
-      "presentEmpty": {"present": true, "hex": ""}
+      "absent": {
+        "present": false
+      },
+      "presentEmpty": {
+        "present": true,
+        "hex": ""
+      }
     },
     "vendorExtension": {
       "tag": "0x00541234",

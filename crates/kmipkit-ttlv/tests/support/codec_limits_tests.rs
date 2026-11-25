@@ -86,7 +86,7 @@ fn byte_string_item(value: &[u8]) -> Vec<u8> {
 
 #[test]
 fn limits_getters_match_defaults_and_explicit_values() {
-    // KMIPKit default and immutable per-call configuration: FR-007.
+    // KMIPKit default and immutable per-call configuration: the resource limit policy.
     let defaults = CodecLimits::defaults();
     assert_eq!(
         defaults.max_message_bytes(),
@@ -106,7 +106,7 @@ fn limits_getters_match_defaults_and_explicit_values() {
 
 #[test]
 fn production_message_preflight_accepts_exact_and_rejects_one_over_synthetically() {
-    // Project resource policy only: KMIPKit FR-007; no 16 MiB fixture allocation.
+    // Project resource policy only: KMIPKit the resource limit policy; no 16 MiB fixture allocation.
     let limits = CodecLimits::defaults();
     assert_eq!(
         super::decoder::test_preflight_message_length(
@@ -126,7 +126,7 @@ fn production_message_preflight_accepts_exact_and_rejects_one_over_synthetically
 
 #[test]
 fn production_depth_preflight_accepts_exact_and_rejects_one_over_synthetically() {
-    // Project resource policy only: KMIPKit FR-007; no depth-65 tree is built.
+    // Project resource policy only: KMIPKit the resource limit policy; no depth-65 tree is built.
     let limits = CodecLimits::defaults();
     assert_eq!(
         super::decoder::test_structure_depth(CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH - 1, &limits,),
@@ -143,7 +143,7 @@ fn production_depth_preflight_accepts_exact_and_rejects_one_over_synthetically()
 
 #[test]
 fn production_item_preflight_accepts_exact_and_rejects_one_over_synthetically() {
-    // Project resource policy only: KMIPKit FR-007; no 100,001-item tree is built.
+    // Project resource policy only: KMIPKit the resource limit policy; no 100,001-item tree is built.
     let limits = CodecLimits::defaults();
     assert_eq!(
         super::decoder::test_next_element_count(CodecLimits::DEFAULT_MAX_ELEMENTS - 1, &limits),
@@ -171,7 +171,7 @@ fn element_counter_rejects_arithmetic_overflow() {
 
 #[test]
 fn configured_byte_limit_accepts_exact_and_rejects_one_over() {
-    // Project resource policy only: KMIPKit FR-007. Fixtures are 8 and 16 bytes.
+    // Project resource policy only: KMIPKit the resource limit policy. Fixtures are 8 and 16 bytes.
     let limits = limits(
         8,
         CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
@@ -189,7 +189,7 @@ fn configured_byte_limit_accepts_exact_and_rejects_one_over() {
 
 #[test]
 fn configured_structure_depth_accepts_exact_and_rejects_one_over() {
-    // Project resource policy only: KMIPKit FR-007. The nested fixture has depth two.
+    // Project resource policy only: KMIPKit the resource limit policy. The nested fixture has depth two.
     let limits = limits(
         CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
         1,
@@ -207,7 +207,7 @@ fn configured_structure_depth_accepts_exact_and_rejects_one_over() {
 
 #[test]
 fn configured_item_count_accepts_exact_and_rejects_one_over() {
-    // Project resource policy only: KMIPKit FR-007. The one-over tree has two Items.
+    // Project resource policy only: KMIPKit the resource limit policy. The one-over tree has two Items.
     let limits = limits(
         CodecLimits::DEFAULT_MAX_MESSAGE_BYTES,
         CodecLimits::DEFAULT_MAX_STRUCTURE_DEPTH,
@@ -225,8 +225,8 @@ fn configured_item_count_accepts_exact_and_rejects_one_over() {
 
 #[test]
 fn synthetic_u32_item_length_header_is_big_endian_and_truncation_is_bounded() {
-    // OASIS KMIP Specification v2.1 §10.1.3, KMIPKIT-0005-NR-004; KMIPKit
-    // FR-008 requires checking available input before declared-length allocation.
+    // OASIS KMIP Specification v2.1 §10.1.3 TTLV length encoding rules; KMIPKit
+    // resource limits require checking available input before declared-length allocation.
     let header = wire_header(0x08, u32::MAX);
     assert_eq!(header.len(), 8);
     assert_eq!(
@@ -241,7 +241,7 @@ fn synthetic_u32_item_length_header_is_big_endian_and_truncation_is_bounded() {
 
 #[test]
 fn production_checked_end_rejects_arithmetic_overflow() {
-    // Project parser-safety requirement only: KMIPKit FR-008; no input buffer is made.
+    // Project parser-safety requirement only: KMIPKit the resource limit policy; no input buffer is made.
     assert_eq!(
         error_kind(&super::decoder::test_checked_end(usize::MAX - 3, 8)),
         Some(DecodeErrorKind::TruncatedValue)
@@ -250,7 +250,7 @@ fn production_checked_end_rejects_arithmetic_overflow() {
 
 #[test]
 fn truncated_u32_length_is_rejected_before_size_driven_allocation_or_copy() {
-    // KMIPKit FR-008 requires length and available-input preflight before allocation.
+    // KMIPKit the resource limit policy requires length and available-input preflight before allocation.
     let header = wire_header(0x08, u32::MAX);
     let limits = CodecLimits::defaults();
     let observer = DecodeObserver::default();
@@ -264,7 +264,7 @@ fn truncated_u32_length_is_rejected_before_size_driven_allocation_or_copy() {
 
 #[test]
 fn configured_limit_rejects_before_size_driven_allocation_or_copy() {
-    // KMIPKit FR-007 applies the message limit; FR-008 requires rejection before
+    // KMIPKit the resource limit policy applies the message limit; the resource limit policy requires rejection before
     // size-driven allocation. The 16-byte fixture stays below the default cap.
     let bytes = byte_string_item(&[0x5a]);
     let limits = limits(

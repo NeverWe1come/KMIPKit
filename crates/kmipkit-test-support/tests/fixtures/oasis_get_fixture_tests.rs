@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
 use std::fs;
 use std::path::PathBuf;
@@ -17,19 +17,19 @@ const TC_PKCS12_2_21: &str =
 
 const MISPAIRED_RESPONSE_CORRELATION_XML: &str = r#"
 <KMIP>
-  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
-  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
-  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
-  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-CORRELATION step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="TEST-GET-CORRELATION step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="TEST-GET-CORRELATION step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="TEST-GET-CORRELATION step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="TEST-GET-CORRELATION step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
 </KMIP>
 "#;
 
 const NON_ADJACENT_REQUEST_RESPONSE_XML: &str = r#"
 <KMIP>
-  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
-  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
-  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
-  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="T037-ADJACENCY step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="TEST-GET-ADJACENCY step=0"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <RequestMessage><RequestHeader><ClientCorrelationValue type="TextString" value="TEST-GET-ADJACENCY step=1"/></RequestHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></RequestMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="TEST-GET-ADJACENCY step=0"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
+  <ResponseMessage><ResponseHeader><ClientCorrelationValue type="TextString" value="TEST-GET-ADJACENCY step=1"/></ResponseHeader><BatchItem><Operation type="Enumeration" value="Get"/></BatchItem></ResponseMessage>
 </KMIP>
 "#;
 
@@ -100,7 +100,7 @@ fn selected_get_items_rejects_reordered_response_correlations() {
     let result = std::panic::catch_unwind(|| {
         selected_get_items(
             MISPAIRED_RESPONSE_CORRELATION_XML,
-            "T037-CORRELATION",
+            "TEST-GET-CORRELATION",
             &[0, 1],
         )
     });
@@ -114,7 +114,11 @@ fn selected_get_items_rejects_reordered_response_correlations() {
 #[test]
 fn selected_get_items_rejects_non_adjacent_request_response_messages() {
     let result = std::panic::catch_unwind(|| {
-        selected_get_items(NON_ADJACENT_REQUEST_RESPONSE_XML, "T037-ADJACENCY", &[0, 1])
+        selected_get_items(
+            NON_ADJACENT_REQUEST_RESPONSE_XML,
+            "TEST-GET-ADJACENCY",
+            &[0, 1],
+        )
     });
 
     assert!(

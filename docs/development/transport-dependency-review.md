@@ -1,12 +1,12 @@
-# KMIPKIT-0013 dependency review
+# Transport dependency review
 
 The initial dependency assessments below are historical and include Hickory.
-See [T003a current-graph re-review](#t003a-current-graph-re-review-2026-10-08)
+See [Current-graph re-review](#current-graph-re-review-2026-10-08)
 for the resolver dependency removal, updated exception register, and latest
 policy evidence.
 
 **Review date:** 2026-10-07
-**Status:** T003 completed on 2026-10-07 for the original production graph, then reopened and re-completed for T004's test-only PKI dependency graph. The closure records below distinguish the original review from the T004 extension.
+**Status:** Completed on 2026-10-07 for the original production graph, then reopened and re-completed for the test-only PKI dependency graph. The closure records below distinguish the original review from the test-fixture dependency extension.
 
 ## Scope and current graph
 
@@ -15,7 +15,7 @@ tokio-rustls, Hickory system DNS, native certificate loading, and bytes. Direct
 dependencies are exact-pinned, and the root lockfile is committed with the
 dependency update. No Git dependency or alternate TLS provider is introduced.
 
-The T004 extension adds exact-pinned `rcgen` 0.14.10 to
+The test-fixture extension adds exact-pinned `rcgen` 0.14.10 to
 `kmipkit-test-support` with default features disabled and `aws_lc_rs` selected.
 It adds exact-pinned `aws-lc-rs` 1.18.1 with default features disabled and only
 `prebuilt-nasm` enabled so standalone Windows fixture builds use the already
@@ -99,17 +99,17 @@ The dependency set compiled successfully on two hosts:
 | Host | Command | Result |
 |---|---|---|
 | Windows `x86_64-pc-windows-msvc` | `cargo check --manifest-path Cargo.toml --locked -p kmipkit-transport` | Pass; AWS-LC native build and the selected transport dependency graph compiled. |
-| Ubuntu 26.04 WSL, Rust 1.94.0 `x86_64-unknown-linux-gnu` | `cargo check --manifest-path /mnt/c/Users/ramp1953/.codex/worktrees/kmipkit-0013-transport/KMIPKit/Cargo.toml --locked -p kmipkit-transport` | Pass; AWS-LC native build and the selected transport dependency graph compiled. |
+| Ubuntu 26.04 WSL, Rust 1.94.0 `x86_64-unknown-linux-gnu` | `cargo check --manifest-path Cargo.toml --locked -p kmipkit-transport` | Pass; AWS-LC native build and the selected transport dependency graph compiled. |
 
 The macOS target has not yet been compiled locally. Its Apple-target dependency
 graph was checked with `cargo tree --target all`; the macOS CI job remains the
 verification point for the `system-configuration` and Security Framework
 native build path.
 
-## T004 test-fixture dependency review
+## Test-fixture dependency review
 
-The exact T004 graph was re-reviewed after adding the test-only PKI generator.
-The original T003 findings, maintainer-approved policy exceptions, and PR #50
+The exact dependency graph was re-reviewed after adding the test-only PKI generator.
+The original review findings, maintainer-approved policy exceptions, and PR #50
 evidence apply to the earlier graph; they do not substitute for these checks.
 
 - `pwsh -File verification/dependencies/Test-DependencyPolicy.ps1` passed on 2026-10-07 with host
@@ -131,8 +131,8 @@ evidence apply to the earlier graph; they do not substitute for these checks.
   The test-support dependency now enables `prebuilt-nasm` with AWS-LC's
   defaults still disabled. The full platform build matrix remains a CI gate.
 
-This review covers the T004 dependency addition and closes the reopened T003
-gate. CI must still compile the test-support fixture and its AWS-LC build path
+This review covers the test-fixture dependency addition and closes the reopened
+dependency review gate. CI must still compile the test-support fixture and its AWS-LC build path
 on the supported Linux, Windows, and macOS targets.
 
 ## Disposition still required
@@ -141,7 +141,7 @@ No advisory waiver is warranted after the rustls update. The direct baseline
 scan has zero advisory errors in both workspaces.
 
 The duplicate-version rule is intentionally strict and includes development
-dependencies. Before T003 can pass, each duplicate set must either be removed
+dependencies. Before the dependency gate can pass, each duplicate set must either be removed
 without changing the accepted DNS and platform-trust design, or receive an
 exact, expiring exception in both the machine-readable register and
 `.cargo/deny.toml`. Broad `skip-tree`, global advisory ignores, and architecture
@@ -154,7 +154,7 @@ completed license disposition. The exact license texts and obligations must
 be retained in any distributed third-party notices.
 
 Until these dispositions are recorded and the official script passes for both
-workspaces, T003 remains unchecked and implementation tasks T004 onward must
+workspaces, the dependency gate remains open and dependent transport implementation work must
 not start.
 
 The standing authorization to continue the roadmap does not claim that the
@@ -173,7 +173,7 @@ manifest labels its workspace `0.27.0-alpha.1` and has updated
 0.10. This appears to address the Hickory side of the Core Foundation
 duplicate once a reviewed, published release is available, but
 `cargo info hickory-resolver@0.27.0-alpha.1` cannot resolve that version from
-crates.io today. A git dependency is prohibited by KMIPKIT-0011. The upstream
+crates.io today. A git dependency is prohibited by the project dependency policy. The upstream
 references checked were [Hickory releases](https://github.com/hickory-dns/hickory-dns/releases),
 the [Hickory 0.26.3 manifest](https://github.com/hickory-dns/hickory-dns/blob/v0.26.3/Cargo.toml),
 the [current Hickory manifest](https://github.com/hickory-dns/hickory-dns/blob/main/Cargo.toml),
@@ -193,7 +193,7 @@ lockfile or feature-only cleanup: it would need a reviewed design update and
 tests for system DNS, hosts, search domains, split DNS/VPN behavior, request
 limits, and deadlines on Linux, Windows, and macOS. Replacing Hickory with a
 blocking system lookup would not implement the bounded asynchronous resolver
-contract in `spec.md` and `research.md`.
+contract.
 
 An isolated Apple-target graph was also checked with
 `rustls-native-certs` 0.7.3, the latest 0.7 release, alongside Hickory 0.26.3.
@@ -203,9 +203,9 @@ that dependency pair. It does not remove the workspace's `syn` 2/3 duplicate,
 which remains reachable through Hickory's macro and ICU/IDNA dependency graph.
 The candidate also changes the security-framework major version from 3 to 2
 and downgrades the explicitly selected native-certificate loader. The accepted
-KMIPKIT-0013 platform-trust table selects `rustls-native-certs` 0.8.4, and
-research decision D5 records the same version; this alternative therefore
-requires a specification review before replacing the approved selection. The
+transport platform-trust design selects `rustls-native-certs` 0.8.4;
+this alternative therefore
+requires a design review before replacing the approved selection. The
 probe ran in a temporary project; it did not modify the repository manifests
 or lockfile.
 
@@ -243,13 +243,13 @@ core-foundation@0.9.4` / `core-foundation@0.10.1`, `cargo tree --locked
 `syn` paths were checked with `cargo tree --locked --workspace -i
 syn@2.0.119` and `cargo tree --locked --workspace -i syn@3.0.6`. The version
 and graph findings supplement, but do not replace, the required human review.
-T003 remains unchecked.
+The initial dependency review gate remained open at that stage.
 
 ## Dependency disposition and license policy approval
 
 The maintainer requested a concrete way to clear the remaining dependency
 gate. The approved license allowlist and exact duplicate dispositions are
-recorded below. The current specification pins Hickory 0.26.3 and
+recorded below. The initial transport design pinned Hickory 0.26.3 and
 `rustls-native-certs` 0.8.4;
 their Apple-target transitive constraints require `core-foundation` 0.9.4 and
 0.10.1 respectively. The two `syn` major versions are also reachable through
@@ -268,17 +268,17 @@ removal or renewal before expiry.
 
 | Exception | Exact scope | Current dependency path |
 |---|---|---|
-| `KMIPKIT-0011-EX-001` | `core-foundation@0.9.4` | Hickory 0.26.3 → `system-configuration` 0.7.0 |
-| `KMIPKIT-0011-EX-002` | `core-foundation@0.10.1` | `rustls-native-certs` 0.8.4 → `security-framework` 3.7.0 |
-| `KMIPKIT-0011-EX-003` | `syn@2.0.119` | JNI macros, `serde_derive`, and test dependencies |
-| `KMIPKIT-0011-EX-004` | `syn@3.0.6` | Hickory/ICU derive chain, including patched `zerovec-derive` 0.11.6 |
+| `DEP-EX-001` | `core-foundation@0.9.4` | Hickory 0.26.3 → `system-configuration` 0.7.0 |
+| `DEP-EX-002` | `core-foundation@0.10.1` | `rustls-native-certs` 0.8.4 → `security-framework` 3.7.0 |
+| `DEP-EX-003` | `syn@2.0.119` | JNI macros, `serde_derive`, and test dependencies |
+| `DEP-EX-004` | `syn@3.0.6` | Hickory/ICU derive chain, including patched `zerovec-derive` 0.11.6 |
 
 No global duplicate allowance or `skip-tree` entry was added. Reassess these
 exact scopes when the dependency graph changes and remove them when upstream
 constraints converge. Preserve `zerovec` 0.11.8 and `zerovec-derive` 0.11.6
 or later patched releases; do not align the `syn` versions by downgrading to
 the vulnerable releases described above. Changing the accepted resolver or
-platform-trust dependency design still requires review of KMIPKIT-0013.
+platform-trust dependency design still requires review of the transport subsystem.
 
 **Approved license decision (2026-10-07):** The KMIPKit maintainer
 (@NeverWe1come) reviewed the locked package license evidence and the standard
@@ -289,7 +289,7 @@ This approval covers dependencies in both root and fuzz graphs whose declared
 SPDX expressions use these identifiers. The allowlist is synchronized in
 `.cargo/deny.toml` and `.cargo/deny-baseline.toml`; the package license files
 and third-party notices remain the distribution evidence. The approval was
-given directly by the maintainer in the Codex task on 2026-10-07 and is
+given directly by the maintainer on 2026-10-07 and is
 recorded here in the reviewed PR commit.
 
 A temporary cargo-deny 0.20.2 config, differing from the previous
@@ -315,7 +315,7 @@ the native library and others that are not compiled:
 
 The license allowlist decision and the four exact duplicate exceptions above
 are approved and synchronized with the machine-readable register and
-`.cargo/deny.toml`. T003 remains incomplete until its full dependency,
+`.cargo/deny.toml`. The dependency gate remains incomplete until its full dependency,
 native-build, MSRV, and supported-target review is complete.
 
 **Policy verification (2026-10-07):** `./verification/dependencies/Test-DependencyPolicy.ps1`
@@ -325,10 +325,10 @@ workspace checks refreshed RustSec to commit
 exception IDs and confirmed that `Cargo.lock` and `verification/security/fuzz/Cargo.lock` were
 unchanged.
 
-## Original T003 closure evidence
+## Original dependency review closure evidence
 
 The following final evidence supersedes the earlier historical statements in
-this note that T003 remained open:
+this note that the initial dependency review gate remained open:
 
 - The maintainer-reviewed exact duplicate exceptions and finite ISC/BSD-3-Clause
   license allowlist are recorded above and were merged in [PR #50](https://github.com/NeverWe1come/KMIPKit/pull/50).
@@ -347,29 +347,29 @@ this note that T003 remained open:
   supported-target dependency paths are documented in this review. No
   unresolved dependency-policy finding remains for the accepted design.
 
-The original T003 review passed before adding the T004 certificate fixture
+The original review passed before adding the certificate fixture
 dependency. It no longer closes the reopened dependency gate. The client-
-execution task gaps identified by the independent audit must be reconciled
-before starting T046 through T051. Historical audit notes remain here so
+execution audit items identified by the independent review must be reconciled
+before starting subsequent transport integration steps. Historical audit notes remain here so
 future dependency reviews can reuse their evidence.
 
-## T003a current-graph re-review (2026-10-08)
+## Current-graph re-review (2026-10-08)
 
 The corrected resolver design removes Hickory from the root and transport
 manifests. The root `Cargo.lock` was regenerated by Cargo; the transport's
 locked library check passes. Hickory and its now-unused transitive packages
 are absent from the active graph. Tokio still enables `net`, `rt`, `sync`,
-and `time` for the planned `ToSocketAddrs`/`spawn_blocking` implementation.
+and `time` for the `ToSocketAddrs`/`spawn_blocking` implementation.
 
 The Hickory removal eliminated the two duplicated `core-foundation` versions
-that had motivated exception IDs `KMIPKIT-0011-EX-001` and `EX-002`. Both
+that had motivated exception IDs `DEP-EX-001` and `DEP-EX-002`. Both
 records were removed from the canonical exception register and `.cargo/deny.toml`
 because cargo-deny no longer reports either finding. No new exception was
 added. The current graph still requires the exact `syn` 2 and 3 versions;
 `cargo tree --workspace -i syn@2.0.119 --locked --offline` reaches syn 2
 through `serde_derive` and a test-only dependency, while
 `cargo tree --workspace -i syn@3.0.6 --locked --offline` reaches syn 3 through
-`tokio-macros`. The active EX-003 and EX-004 records now describe those paths.
+`tokio-macros`. The active `DEP-EX-003` and `DEP-EX-004` records now describe those paths.
 Their original approval remains the PR #50 decision; the two resolved
 exceptions are no longer active.
 
@@ -384,7 +384,7 @@ Verification after the manifest and lockfile change:
   `x86_64-pc-windows-msvc` with cargo-deny 0.20.2. Root and fuzz scans both
   refreshed the RustSec database to
   `b8a1a33e246a0a9a3b5f377248c41a503defec74` (2026-10-07T16:40:27+02:00),
-  validated only `KMIPKIT-0011-EX-003` and `EX-004`, and confirmed both
+  validated only `DEP-EX-003` and `DEP-EX-004`, and confirmed both
   lockfiles were unchanged during the policy run.
 - `cargo check -p kmipkit-transport --lib --locked --offline` passed on
   Windows using rustc 1.99.0 and the AWS-LC native build path.
@@ -399,6 +399,6 @@ Verification after the manifest and lockfile change:
   feature. These target trees are metadata checks; macOS was not compiled
   locally and remains covered by the required CI matrix.
 
-T003a closes the dependency re-review gate for T013 Green. The active 0013
-feature tests and implementation remain subject to the Linux, Windows, and
-macOS CI checks later in this specification.
+This re-review closes the dependency gate for the transport subsystem. The active
+transport tests and implementation remain subject to the Linux, Windows, and
+macOS CI checks.

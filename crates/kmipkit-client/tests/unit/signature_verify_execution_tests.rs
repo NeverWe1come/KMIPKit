@@ -2,8 +2,8 @@
 //! §6.1.56, Tables 337–339. These are fake-transport tests, not official
 //! Test Case executions.
 //!
-//! Traceability: FR-001, FR-005–FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for client Signature Verify operation execution.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;

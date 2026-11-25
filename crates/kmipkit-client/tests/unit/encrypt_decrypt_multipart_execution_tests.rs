@@ -1,14 +1,10 @@
 #![cfg(test)]
 
-//! T027 client-contract tests derived from the OASIS KMIP Specification v2.1 §§6.1,
+//! the implementation client-contract tests derived from the OASIS KMIP Specification v2.1 §§6.1,
 //! 6.1.11 Table 196, 6.1.17 Table 214, and §§7.3, 7.4, 7.8, 7.14, and 7.17.
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-ENCRYPT`,
-//! `KMIPKIT-ELEM-OP-C2S-DECRYPT`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE`. Requirement IDs:
-//! `KMIPKIT-REQ-SPEC-6.1-001-001`, `KMIPKIT-REQ-SPEC-6.1.11-006`,
-//! `KMIPKIT-REQ-SPEC-6.1.17-006`, and `KMIPKIT-REQ-SPEC-7.8-001`. These tests
+//! Validates client execution of multipart streaming encryption and decryption,
+//! verifying segment ordering, stateful context maintenance, and final tag
+//! verification. These tests
 //! keep each part caller-driven: one typed execute call means one exchange.
 
 use std::cell::RefCell;

@@ -1,0 +1,146 @@
+name: CI IDE Plugins
+
+on:
+  pull_request:
+    paths:
+      - "ide-plugins/**"
+      - ".github/workflows/ci-ide-plugins.yml"
+      - ".github/workflows/release-ide-plugins.yml"
+  push:
+    branches:
+      - main
+      - "feature/**"
+    paths:
+      - "ide-plugins/**"
+      - ".github/workflows/ci-ide-plugins.yml"
+
+permissions: {}
+
+jobs:
+  core-and-schemas:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          components: clippy
+      - name: Set up static OpenSSL
+        uses: ./.github/actions/setup-static-openssl
+      - name: Validate JSON Schemas
+        run: |
+          python3 -c '
+          import json, glob
+          for p in sorted(glob.glob("ide-plugins/schemas/*.json")):
+              with open(p) as f: json.load(f)
+              print("OK:", p)
+          '
+      - name: Test and Clippy kmip-lsp
+        run: |
+          cargo test --manifest-path ide-plugins/core/Cargo.toml
+          cargo clippy --manifest-path ide-plugins/core/Cargo.toml --all-targets -- -D warnings
+
+  webview-and-vscode:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - name: Test and build webview-ui
+        run: |
+          cd ide-plugins/webview-ui
+          npm ci --ignore-scripts
+          npm test
+          npm run build
+      - name: Sync webview bundle
+        run: ./ide-plugins/scripts/build-webview.sh
+      - name: Compile and test VS Code extension
+        run: |
+          cd ide-plugins/vscode
+          npm ci --ignore-scripts
+          npm run compile
+          npm test
+
+  jetbrains:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - name: Build webview-ui and sync to JetBrains
+        run: |
+          cd ide-plugins/webview-ui && npm ci --ignore-scripts && cd ../..
+          ./ide-plugins/scripts/build-webview.sh
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          cache-disabled: true
+      - name: Test, build, and verify JetBrains plugin
+        run: |
+          cd ide-plugins/jetbrains
+          gradle test buildPlugin verifyPlugin
+
+  zed-and-neovim:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          targets: wasm32-wasip1
+      - name: Check Zed WASM extension
+        run: cargo check --manifest-path ide-plugins/zed/Cargo.toml --target wasm32-wasip1
+      - name: Check Neovim Lua syntax
+        run: |
+          sudo apt-get update && sudo apt-get install -y lua5.1
+          find ide-plugins/neovim -name "*.lua" -exec luac5.1 -p {} +
+
+  visual-studio:
+    permissions:
+      contents: read
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build Visual Studio extension
+        run: dotnet build ide-plugins/visual-studio/KmipKit.VisualStudio.csproj -c Release
+
+  helix-and-sublime:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate Helix languages.toml
+        run: |
+          python3 -c 'import tomllib; tomllib.load(open("ide-plugins/helix/languages.toml", "rb")); print("Helix TOML OK")'
+      - name: Test Sublime Text LSP-kmip plugin
+        run: python3 -m unittest discover -s ide-plugins/sublime/tests
+
+  eclipse:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Build Eclipse LSP4E plugin
+        run: mvn -B -f ide-plugins/eclipse/pom.xml verify

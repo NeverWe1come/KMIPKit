@@ -84,8 +84,7 @@ interpreta ni reescribe la respuesta.
 La sección 6.1.40 describe un payload de respuesta vacío cuando no hay valores
 que devolver. La Tabla 283 también marca Protection Storage Masks como
 obligatorio en una respuesta estructurada, aunque permite que su lista esté
-vacía. KMIPKit acepta ambas formas y conserva cuál llegó. La discrepancia
-sigue abierta como `KMIPKIT-DISC-047`; aceptarlas no determina la conformidad
+vacía. KMIPKit acepta ambas formas y conserva cuál llegó. El conflicto de especificación entre el §6.1.40 y la Tabla 283 se gestiona aceptando ambas formas; aceptarlas no determina la conformidad
 del servidor.
 
 ## Ping

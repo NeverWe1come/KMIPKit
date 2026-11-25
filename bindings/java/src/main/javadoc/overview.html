@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KMIPKit Java API Overview</title>
+</head>
+<body>
+<h1>KMIPKit Java API</h1>
+<p><strong>KMIPKit</strong> is a memory-safe, specification-driven <strong>OASIS KMIP 2.0, 2.1, and 3.0</strong>
+client library for Java 17+, backed by the authoritative KMIPKit Rust core via a thin JNI bridge.</p>
+
+<h2>Package Summary</h2>
+<ul>
+    <li>{@link org.kmipkit.fluent} — Task-oriented Fluent Builders for symmetric/asymmetric keys, crypto operations, and lifecycle management.</li>
+    <li>{@link org.kmipkit.extensions} — Typed {@code Client}, {@code ClientBatch}, {@code TransportConfiguration}, Server-to-Client listeners, and Vendor Extension registries.</li>
+    <li>{@link org.kmipkit.credentials} — Zeroizing {@code Authentication}, {@code SecretBytes}, {@code SecretText}, and credential models.</li>
+    <li>{@link org.kmipkit.protocol} — Normative KMIP 2.0/2.1/3.0 enumerations, bitmasks, and cryptographic parameter builders.</li>
+    <li>{@link org.kmipkit.ttlv} — Generic ordered TTLV item tree and bounded codecs.</li>
+</ul>
+
+<h2>Resource Management</h2>
+<p>All native-backed classes implement {@link java.lang.AutoCloseable}. Always manage them inside
+{@code try-with-resources} blocks to guarantee deterministic memory release and secret zeroization.</p>
+</body>
+</html>

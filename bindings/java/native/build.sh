@@ -58,13 +58,33 @@ response_bridge_test="$native_output/response_bridge_test"
     "$script_dir/tests/response_bridge_test.cpp" -o "$response_bridge_test"
 "$response_bridge_test"
 
-cargo build --locked -p kmipkit-ffi \
+rust_profile="${KMIPKIT_RUST_PROFILE:-debug}"
+case "$rust_profile" in
+    debug)
+        cargo_profile_flag=""
+        cxx_opt_flag=""
+        ;;
+    release)
+        cargo_profile_flag="--release"
+        cxx_opt_flag="-O2"
+        ;;
+    *)
+        echo "Unsupported KMIPKIT_RUST_PROFILE: $rust_profile (expected debug or release)" >&2
+        exit 2
+        ;;
+esac
+
+# shellcheck disable=SC2086
+cargo build --locked $cargo_profile_flag -p kmipkit-ffi \
     --manifest-path "$repository_root/Cargo.toml"
 
 case "$(uname -s)" in
     Linux*)
-        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
+        rust_library="$cargo_target_directory/$rust_profile/libkmipkit_ffi.a"
         set -- -std=c++17 -fPIC -shared
+        if [ -n "$cxx_opt_flag" ]; then
+            set -- "$@" "$cxx_opt_flag"
+        fi
         if [ "${KMIPKIT_JNI_COVERAGE:-}" = "llvm" ]; then
             set -- "$@" -fprofile-instr-generate -fcoverage-mapping
         fi
@@ -76,8 +96,12 @@ case "$(uname -s)" in
             -ldl -lpthread -lm -o "$native_output/libkmipkit_jni.so"
         ;;
     Darwin*)
-        rust_library="$cargo_target_directory/debug/libkmipkit_ffi.a"
-        "${CXX:-c++}" -std=c++17 -dynamiclib \
+        rust_library="$cargo_target_directory/$rust_profile/libkmipkit_ffi.a"
+        set -- -std=c++17 -dynamiclib
+        if [ -n "$cxx_opt_flag" ]; then
+            set -- "$@" "$cxx_opt_flag"
+        fi
+        "${CXX:-c++}" "$@" \
             -I"$java_home/include" -I"$java_home/include/darwin" \
             -I"$repository_root/bindings/c/include" \
             -I"$repository_root/bindings/shared/fixtures/api/generated" \

@@ -207,7 +207,7 @@ impl ValidateKmipRequest for CreateRequest {
         let mut report = ValidationReport::default();
         if self.validate_attribute_cardinality().is_err() {
             report.push(ValidationIssue::new(
-                ValidationCode::new("KMIPKIT-0051-R190"),
+                ValidationCode::new("PAYLOAD-RULE-R190"),
                 ValidationPath::root()
                     .field("Request Payload")
                     .field("Attributes"),

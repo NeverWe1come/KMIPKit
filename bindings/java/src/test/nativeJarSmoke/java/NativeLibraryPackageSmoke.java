@@ -65,7 +65,7 @@ public final class NativeLibraryPackageSmoke {
     }
 
     private static void verifyUnsupportedArchitecture(Path packagedJar, Path classes) throws Exception {
-        ProcessResult result = runProbe(packagedJar, classes, "failure", "kmipkit-t028-unsupported");
+        ProcessResult result = runProbe(packagedJar, classes, "failure", "kmipkit-unsupported-arch");
         checkNetworkWasBlocked(result);
         requireRedactedActionableFailure(result, "architecture", "-Dkmipkit.nativeLibrary");
     }

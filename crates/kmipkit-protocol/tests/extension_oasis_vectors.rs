@@ -1,10 +1,8 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 #![cfg(any())]
 //! Project-authored conformance vectors from OASIS KMIP Specification v2.1.
 //!
-//! Traceability: §7.13 Table 365; §8.3 Table 396; §9.13 Table 418;
-//! §11.44 Table 476; §11.56 tag allocations; KMIPKIT-0012-FR-009 and
-//! KMIPKIT-0012-FR-012.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 #[path = "../../../bindings/shared/fixtures/extensions/oasis/mod.rs"]
 mod oasis;

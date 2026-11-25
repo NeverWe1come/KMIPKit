@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest verification.api.tests.test_binding_exports -v
-python -B verification/api/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
+python -B verification/api/audit_binding_exports.py --repo-root . --report verification/api/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -76,7 +76,7 @@ record, kind mismatch, duplicate, unsupported export, or traversal issue.
 ## Historical snapshot
 
 The earlier Windows x86-64 snapshot is checked in at
-`specs/043-public-api-bindings/reports/binding-export-report-2026-10-12.json`.
+`verification/api/reports/binding-export-report-2026-10-12.json`.
 The prior C/Java/Python audit command produced exit code 0 at that checkpoint:
 
 | Package | Scanner complete | Observed | Manifest | Exact matches | Missing | Stale | Kind mismatches | Issues |
@@ -111,7 +111,7 @@ evidence of an open gate and does not close T011.
 ## Current reconciliation status (2026-11-09)
 
 The current report at
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json`
+`verification/api/reports/binding-export-report-2026-11-07.json`
 was refreshed by the pinned audit tool on Linux on 2026-11-11 during
 KMIPKIT-0097 documentation and audit reconciliation. The Rust-only builder
 declarations stay blocked and do not add foreign-language exports.
@@ -174,7 +174,7 @@ reconciliation batch.
 
 The 0049 binding report remains a historical predecessor snapshot. The new
 combined 0050 report is
-`specs/050-parameters-auth-client/reports/binding-export-report-post-sync-2026-11-07.json`.
+`verification/api/reports/binding-export-report-post-sync-2026-11-07.json`.
 Its official `--check` run completed with 1,708 exact C manifest matches,
 1,881 Java matches, and 2,000 Python matches. All three packages are complete
 and match the manifest, with no missing or unobserved routes, kind mismatches,
@@ -185,7 +185,7 @@ parameters and Authentication execution parity remain assigned to KMIPKIT-0053.
 ## Versioned catalog binding delivery snapshot (2026-11-15)
 
 The current audit report is
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-versioned-catalogs.json`.
+`verification/api/reports/binding-export-report-2026-11-15-versioned-catalogs.json`.
 It was generated from the built C DSO and complete Java/Python inventories
 after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 
@@ -198,7 +198,7 @@ after KMIPKIT-0122. Earlier dated reports remain historical snapshots.
 ## Historical KMIP 3.0 and asynchronous binding delivery snapshot (2026-11-15)
 
 This historical report is
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json`.
+`verification/api/reports/binding-export-report-2026-11-15-kmip30-async-bindings.json`.
 It includes the KMIPKIT-0122 versioned catalog base and the KMIPKIT-0124
 KMIP 3.0 operation and asynchronous batch binding declarations.
 
@@ -211,7 +211,7 @@ KMIP 3.0 operation and asynchronous batch binding declarations.
 ## Fluent tag API binding delivery snapshot (2026-11-16)
 
 The current report is
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json`.
+`verification/api/reports/binding-export-report-2026-11-16-kmipkit-0093-tag-values.json`.
 It includes the prior KMIP 3.0 and asynchronous bindings plus the 2,077
 catalog-backed fluent tag declarations delivered by KMIPKIT-0093.
 

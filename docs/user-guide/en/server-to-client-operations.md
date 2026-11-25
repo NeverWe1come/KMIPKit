@@ -1,7 +1,7 @@
 # Server-to-client operations and role changes
 
 KMIPKit 1.0 includes the KMIP 2.1 server-to-client operations and endpoint role
-handling defined by KMIPKIT-0066 and ADR-0021. This capability lets an
+handling defined by the server-to-client operations and role inversion architecture. This capability lets an
 application accept an authenticated KMIP server connection and respond to
 server-originated requests. It is separate from ordinary client-initiated
 calls through `Client`.
@@ -54,5 +54,5 @@ The implementation and release evidence are summarized in the
 [project status](../../project-status.md). The server matrix records external
 results separately: support for a listener API does not prove that a particular
 KMIP server has exercised every operation, encoding, or role transition. See
-the KMIPKIT-0066 specification
+the design specification
 and the normative references it cites before implementing a handler.

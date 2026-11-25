@@ -1,7 +1,7 @@
 //! Create Split Key payload tests derived from KMIP Specification v2.1
 //! §6.1.10, Tables 193–195, and the Table 9 Split Key object definition.
-//! Prime Field Size enforcement for method 3 is the accepted `KMIPKit` FR-015
-//! caller-input policy; Table 193 itself marks the request field optional.
+//! Prime Field Size enforcement for method 3 is an accepted `KMIPKit`
+//! caller-input validation policy; Table 193 itself marks the request field optional.
 
 use crate::{
     AttributeSet, CreateSplitKeyError, CreateSplitKeyRequest, CreateSplitKeyResponse, ObjectType,
@@ -365,7 +365,7 @@ fn request_rejects_attribute_trees_that_exceed_the_ttlv_depth_limit() {
 fn polynomial_prime_field_request_requires_the_explicit_client_input() {
     let error = request(3)
         .into_ttlv_payload()
-        .expect_err("KMIPKit FR-015 requires a caller value for this method");
+        .expect_err("KMIPKit requires a caller value for this method");
 
     assert!(!error.to_string().contains("Prime Field Size"));
     assert!(!format!("{error:?}").contains("Prime Field Size"));
@@ -378,7 +378,7 @@ fn polynomial_prime_field_size_is_preserved_as_big_integer() {
     assert_eq!(request.prime_field_size(), Some(size.as_slice()));
     let payload = request
         .into_ttlv_payload()
-        .expect("explicit Prime Field Size satisfies FR-015");
+        .expect("explicit Prime Field Size satisfies the validation policy");
     let payload_view = payload.view();
     let fields = payload_view.children();
     let prime_field_size = fields
@@ -398,7 +398,7 @@ fn table_193_prime_field_size_remains_optional_for_other_methods_and_future_valu
     for method in [1, 2, 0x8000_0000] {
         let payload = request(method)
             .into_ttlv_payload()
-            .expect("only method 3 has the accepted FR-015 caller-input policy");
+            .expect("only method 3 has the caller-input validation policy");
         let payload_view = payload.view();
         let fields = payload_view.children();
         assert!(

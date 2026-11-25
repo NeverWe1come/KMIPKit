@@ -1,14 +1,14 @@
-//! Red-phase behavior contract for KMIPKIT-0013 raw TTLV over TLS.
+//! Verifies synchronous raw TTLV transport over TLS 1.3 with mutual authentication.
 //!
 //! The source-included private adapter seam is intentionally test-only; this
 //! target does not prescribe a public adapter type name. The accepted
 //! low-level contract is caller-byte exchange over TLS 1.3/mTLS, with one
-//! response frame per connection and zeroization of KMIPKit-owned staged
+//! response frame per connection and zeroization of internally owned staged
 //! request bytes before release.
 //!
 //! Text document syntax follows OASIS KMIP Profiles v2.1 §§5.4 (XML) and 5.5
 //! (JSON). One-document-per-connection completion and closure are the `KMIPKit`
-//! interpretation recorded in ADR-0018, not an OASIS raw-TLS framing claim.
+//! interpretation recorded in multi-encoding support, not an OASIS raw-TLS framing claim.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};

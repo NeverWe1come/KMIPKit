@@ -1,0 +1,7 @@
+node_modules/
+**/node_modules/
+**/dist/
+vscode/media/webview/
+jetbrains/src/main/resources/webview/
+*.vsix
+*.zip

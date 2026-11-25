@@ -1,11 +1,11 @@
 # Ejecución tipada del cliente
 
 Esta guía comenzó describiendo la primera etapa de ejecución Rust introducida
-por KMIPKIT-0007. Su lista de operaciones y ejemplos son puntos de entrada
+por el modelo de ejecución del cliente. Su lista de operaciones y ejemplos son puntos de entrada
 históricos; no son el inventario completo de la API actual. La rama de release
 incluye ahora 56 mapeos de operaciones iniciadas por el cliente, la ruta
 independiente Set Endpoint Role y las APIs aprobadas de escucha y despacho
-servidor-cliente de KMIPKIT-0066. Consulta el [estado del
+servidor-cliente de las operaciones servidor-a-cliente. Consulta el [estado del
 proyecto](../../project-status.md), el [estado de paquetes y manifiesto
 ](paquetes-de-idiomas.md) y la [matriz de interoperabilidad con
 servidores](../../development/kmip-interoperability.md) para distinguir la
@@ -36,7 +36,7 @@ Delete Attribute, Get Attributes, Get Attribute List, Modify Attribute, Set
 Attribute, Activate, Archive, Destroy, Recover, Encrypt, Decrypt, Query y Ping.
 Con la configuración predeterminada, Discover Versions anuncia KMIP 2.1.
 La API multiversión puede anunciar un conjunto configurado explícitamente;
-consulta KMIPKIT-0069 y ADR-0022. Cada respuesta sigue sujeta a las
+consulta las especificaciones de arquitectura multi-versión. Cada respuesta sigue sujeta a las
 comprobaciones de versión efectiva y al comportamiento del servidor. Get Attributes y Get
 Attribute List usan sus modelos tipados de petición y respuesta de
 §§6.1.20–6.1.21. La API no admite valores TTLV genéricos `Item` o `Structure`,
@@ -68,16 +68,15 @@ aporta evidencia de interoperabilidad.
 
 KMIP 2.1 sigue siendo la versión predeterminada. KMIP 2.0 y la superficie
 catalogada del borrador/estándar KMIP 3.0 se seleccionan explícitamente y se
-validan antes del envío según KMIPKIT-0069–0071 y ADR-0022. La biblioteca
+validan antes del envío según la arquitectura multi-versión KMIP 2.0, 2.1 y 3.0. La biblioteca
 cliente no admite KMIP 1.x. Las APIs de KMIP 3.0 se limitan a los modelos y
 rutas aprobados por versión; su presencia no afirma conformidad general con
-3.0, compatibilidad con perfiles ni certificación. Las especificaciones y el
-ADR-0002 iniciales, limitados a KMIP 2.1, han sido sustituidos en alcance por
+3.0, compatibilidad con perfiles ni certificación. Las especificaciones de alcance inicial limitadas a KMIP 2.1 han sido sustituidas en alcance por
 decisiones aprobadas posteriores.
 
 ## Ciclo fluido de una clave
 
-KMIPKIT-0091 añade un recorrido orientado a tareas para el ciclo habitual de
+La API fluida añade un recorrido orientado a tareas para el ciclo habitual de
 una clave simétrica. Construye peticiones tipadas existentes y mantiene
 explícitos el algoritmo, el tamaño de clave y la política de uso. Los presets
 AES solo fijan el algoritmo y la longitud en bits; el llamador elige las
@@ -190,7 +189,7 @@ explícito; el cliente no ejecuta Poll ni reintenta automáticamente.
 
 ## Create Key Pair fluido en Rust
 
-KMIPKIT-0097 añade `client.request().create_key_pair()` sobre la petición tipada
+fluent create key pair builder añade `client.request().create_key_pair()` sobre la petición tipada
 Create Key Pair existente. Selecciona explícitamente algoritmo y longitud y
 elige por separado las máscaras de uso y los nombres de las claves privada y
 pública:
@@ -355,7 +354,7 @@ KMIP específicos.
 
 ## Create Split Key fluido en Rust
 
-KMIPKIT-0099 añade `client.request().create_split_key()` sobre la operación
+fluent create split key builder añade `client.request().create_split_key()` sobre la operación
 tipada Create Split Key existente. El programador selecciona explícitamente el
 tipo de objeto, el método de división, el número de partes y el umbral:
 
@@ -523,7 +522,7 @@ fn main() {
 
 Indica el tipo de objeto, el número de partes, el umbral, el método de
 separación y la estructura Attributes obligatoria. El Unique Identifier de la
-clave de entrada solo se envía si se proporciona. Según la política FR-015 de
+clave de entrada solo se envía si se proporciona. Según la política de validación de
 KMIPKit, para Polynomial Sharing Prime Field el llamador debe proporcionar
 Prime Field Size explícitamente.
 
@@ -677,7 +676,7 @@ formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 
 ## Credenciales y capacidad de atestación
 
-KMIPKIT-0008 proporciona valores tipados de Credential y Authentication que
+El modelo de credenciales y autenticación proporciona valores tipados de Credential y Authentication que
 conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
 contiene una o más Credential en el orden indicado por el llamador. El cliente
 puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
@@ -691,7 +690,7 @@ omite, el modelo informa SHA-256 como algoritmo efectivo (valor bruto `6`) y
 conserva el campo como ausente en el árbol TTLV. KMIPKit no calcula el hash.
 KMIP Specification v2.1 §9.11 exige que esta marca de tiempo aumente de forma
 monótona. El modelo actual conserva el valor proporcionado, pero no guarda
-marcas anteriores ni impone esa secuencia. KMIPKIT-0008 OD-003 deja sin resolver
+marcas anteriores ni impone esa secuencia. La disposición abierta del catálogo deja sin resolver
 quién debe aplicar la regla, su ámbito de comparación y el comportamiento del
 reloj; KMIPKit no afirma que este requisito esté satisfecho.
 
@@ -753,8 +752,8 @@ protocolo redactado. Se acepta una respuesta parcial no vacía solo si Batch
 Error Continuation efectivo es Stop y algún elemento devuelto tiene
 `Operation Failed`; el cliente devuelve únicamente los resultados presentes.
 Se rechazan las respuestas parciales vacías, sin fallo o bajo Continue. Las
-respuestas parciales bajo Undo siguen KMIPKIT-0120.
-Esta política de KMIPKit admite el caso Stop-on-first-failure de KMIPKIT-0092;
+respuestas parciales bajo Undo siguen partial batch response handling.
+Esta política de KMIPKit admite el caso Stop-on-first-failure de fluent object creation;
 §11.5 de OASIS no exige explícitamente omitir las respuestas no procesadas.
 Batch Order Option controla el orden de ejecución del servidor, no la regla de
 asociación.
@@ -800,10 +799,10 @@ KMIPKit no afirma controlar esos efectos del servidor.
 `execute_query_async_requests` admite los filtros opcionales de valor de
 correlación y operación de OASIS KMIP v2.1 §6.1.41, Tabla 285. Esta
 especificación expone el payload de respuesta como TTLV genérico.
-`KMIPKIT-DEC-015` registra la interpretación aceptada de la Tabla 286 para el
-trabajo de tipado separado en KMIPKIT-0043 T035; el pie impreso y la fuente
+El catálogo normativo registra la interpretación aceptada de la Tabla 286 para el
+mapeo tipado en el manifiesto de paridad de la API pública; el pie impreso y la fuente
 OASIS fijada permanecen intactos. Esta interpretación no constituye una
-afirmación formal de conformidad. Sigue abierto bajo `OD-002` el hueco del
+afirmación formal de conformidad. Sigue abierto el hueco del
 catálogo para el campo obligatorio de la petición Process de la Tabla 278.
 
 Java y Python exponen la correlación mediante un callback que recibe una vista
@@ -977,11 +976,11 @@ destruirse. Esta garantía no cubre capacidad libre o no inicializada, copias
 del llamador, asignaciones anteriores que no se limpiaran antes de crecer el
 buffer ni copias de TLS, del sistema operativo o de bibliotecas externas. La
 política aprobada y sus límites exactos están en
-ADR-0012.
+la política de codificación y limpieza de búferes.
 
 ## Búsqueda y ciclo de vida con builders
 
-KMIPKIT-0101 añade builders Rust para Locate, Activate, Archive, Recover,
+Las operaciones fluidas de búsqueda y ciclo de vida añaden builders en Rust para Locate, Activate, Archive, Recover,
 Revoke, Re-key, Re-key Key Pair y Re-certify. Cada builder recibe valores
 semánticos y produce la request tipada existente; Locate y Re-key conservan
 los modelos tipados de filtros y atributos. El builder permite validar en
@@ -1028,7 +1027,7 @@ separado del Asynchronous Indicator de la cabecera.
 
 ## Lectura fluida de atributos en Rust
 
-KMIPKIT-0108 añade los builders `get_attributes()` y
+fluent attribute read builders añade los builders `get_attributes()` y
 `get_attribute_list()`. Conservan los contratos de las requests y responses
 tipadas existentes, incluido el orden de Attribute References, el rechazo de
 referencias duplicadas, la diferencia entre Attributes ausente y presente pero
@@ -1071,7 +1070,7 @@ ausentes ni reintenta.
 
 ### Lectura de atributos en C, Java y Python
 
-KMIPKIT-0109 añade entradas orientadas a tareas en estos tres bindings. Usan
+fluent attribute read bindings añade entradas orientadas a tareas en estos tres bindings. Usan
 las requests tipadas Get Attributes y Get Attribute List, conservan el orden
 de las referencias y ejecutan un solo intercambio. Las llamadas independientes
 requieren un identificador de objeto de tipo texto. Los builders pueden
@@ -1129,7 +1128,7 @@ resolver un ID Placeholder.
 
 ## Peticiones criptográficas fluidas en Rust
 
-KMIPKIT-0102 añade builders de Rust para Encrypt, Decrypt, Sign, Signature
+Las operaciones criptográficas fluidas añaden builders de Rust para Encrypt, Decrypt, Sign, Signature
 Verify, MAC, MAC Verify y Hash. Construyen las peticiones tipadas existentes,
 validan los campos comprobables localmente y pueden crear un elemento de batch
 o ejecutar un intercambio. Cada entrada de bytes pasa al propietario de
@@ -1194,8 +1193,8 @@ Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
 los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
 o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
 `Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
-Poll ni reintentos automáticos. KMIPKIT-0102 a KMIPKIT-0105 añaden las APIs de
-builders para Rust, C, Java y Python en entregas dependientes. Cada binding
+Poll ni reintentos automáticos. Las operaciones criptográficas fluidas añaden las APIs de
+builders para Rust, C, Java y Python. Cada binding
 respeta las reglas de propiedad y resultados de su lenguaje y usa las mismas
 operaciones tipadas de Rust.
 
@@ -1322,9 +1321,9 @@ reconozca. Una
 extensión de respuesta no crítica y desconocida se conserva como TTLV opaco
 para inspección explícita; conservarla no interpreta ni valida la semántica
 del fabricante. Esta parte no registra ni envía extensiones de fabricantes.
-KMIPKIT-0012 es responsable del registro inmutable por cliente y de los
+El registro de extensiones es responsable del registro inmutable por cliente y de los
 adaptadores tipados validados para extensiones de fabricantes antes de
-congelar la API 1.0, según ADR-0013.
+congelar la API 1.0, según la política de propiedad inmutable del registro de extensiones.
 
 ## Contrato de transporte de bajo nivel
 
@@ -1349,7 +1348,7 @@ conservar los bytes de petición después del intercambio, reintentar ni dejar
 sin limpiar los bytes temporales de petición o respuesta parcial propiedad de
 KMIPKit antes de liberarlos. Un adaptador concreto debe impedir que el buffer
 de respuesta se reasigne tras almacenar bytes o limpiar las asignaciones
-anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta ADR-0014
+anteriores antes de liberarlas, tanto en éxito como en error. Estas garantías no cubren capacidad libre ni asignaciones anteriores salvo que se limpien antes de crecer. Tampoco cubren copias del llamador ni copias externas de TLS, del sistema operativo o de bibliotecas. Consulta la especificación de intercambio de transporte de bajo nivel
 para conocer el contrato exacto.
 
 Los adaptadores de producción TLS y HTTPS usan la configuración de transporte
@@ -1364,7 +1363,7 @@ registra su política de seguridad y el ciclo de vida de las conexiones.
 - [Transportes de producción TLS y HTTPS](transportes-produccion.md)
 - [Arquitectura de la API pública](../../architecture/public-api.md)
 - Guía rápida de revisión para operaciones asíncronas KMIP 2.1
-- ADR-0002: alcance KMIP 2.1
-- ADR-0012: codificación de bytes solicitada por el llamador
-- ADR-0013: propiedad del registro de extensiones del cliente
-- ADR-0014: contrato público de transporte de bajo nivel
+- Alcance KMIP 2.1 inicial ampliado a soporte multi-versión (KMIP 2.0, 2.1 y 3.0)
+- Codificación de bytes solicitada por el llamador y política de zeroización
+- Registro de extensiones de fabricante inmutable asociado al cliente
+- Contrato público de intercambio de transporte de bajo nivel exclusivo de Rust

@@ -1,4 +1,4 @@
-//! KMIP 3.0 Deactivate and KEM operation payload models (KMIPKIT-0050).
+//! KMIP 3.0 Deactivate and KEM operation payload models (KMIP 3.0 Deactivate and KEM operation payload models).
 
 use std::fmt;
 

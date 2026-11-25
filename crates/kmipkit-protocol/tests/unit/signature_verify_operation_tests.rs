@@ -2,8 +2,8 @@
 //! Tables 337–339; Validity Indicator values follow §11.61. These tests are
 //! not official Test Case executions.
 //!
-//! Traceability: FR-001, FR-005–FR-013, FR-015, and
-//! `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY`.
+//! Verifies protocol model, request/response validation, and security invariants
+//! for Signature Verify operations and Validity Indicator responses.
 
 use crate::async_operation_fixtures::response_message;
 use crate::cryptographic_operation_test_support::{
@@ -319,7 +319,7 @@ fn final_multipart_response_accepts_both_discrepant_validity_indicator_forms() {
             response_item(&message),
             VerificationResponseContext::MultipartFinal,
         )
-        .expect("KMIPKIT-DISC-048 leaves both final multipart forms accepted");
+        .expect("both final multipart forms are accepted");
         assert_eq!(
             response.validity_indicator().map(ValidityIndicator::raw),
             indicator

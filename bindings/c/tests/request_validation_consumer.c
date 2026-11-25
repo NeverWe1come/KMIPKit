@@ -6,7 +6,7 @@
 
 int32_t kmipkit_request_validation_c_consumer(void) {
     static const uint8_t create_schema[] = "RequestPayload/Create";
-    static const char expected_code[] = "KMIPKIT-0051-R019";
+    static const char expected_code[] = "PAYLOAD-RULE-R019";
     static const char expected_path[] = "Request Payload.Object Type";
     static const char expected_document[] = "KMIP v2.1";
     static const uint8_t expected_reference[] = {

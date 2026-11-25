@@ -303,7 +303,7 @@ final class FluentFacadeShapeTest {
 
     @Test
     void expertPositionValidationIsTypedAndNotSentBeforeAnyConnection() throws Exception {
-        // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5 and ADR-0012.
+        // fluent facade; KMIP v2.1 sections 4-5 and pre-send validation architecture.
         try (ServerSocket listener = new ServerSocket(0);
                 ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());

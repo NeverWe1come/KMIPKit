@@ -3,8 +3,7 @@
 //! by §7.9, Tables 360–361. These are source-derived tests, not claims that an
 //! official OASIS Test Case passed.
 //!
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.17-001-001`,
-//! `KMIPKIT-REQ-SPEC-6.1.17-001-002`, and `KMIPKIT-ELEM-OP-C2S-ENCRYPT`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::operation_test_support::item;
 use crate::{

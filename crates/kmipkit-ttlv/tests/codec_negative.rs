@@ -18,7 +18,7 @@ fn assert_kind(wire: &[u8], expected: DecodeErrorKind) {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.1–10.1.3; traceability
-// KMIPKIT-0005-NR-001 and KMIPKIT-0005-NR-004.
+// Verifies TTLV header structure, value encoding, and exact byte length.
 #[test]
 fn public_decoder_rejects_incomplete_headers_and_values() {
     let complete_header = item(ASSIGNED_TAG, 0x01, 0, &[]);
@@ -30,7 +30,7 @@ fn public_decoder_rejects_incomplete_headers_and_values() {
     assert_kind(&truncated, DecodeErrorKind::TruncatedValue);
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-004 requires exactly one complete item.
+// Rejects trailing bytes after a complete TTLV item.
 #[test]
 fn public_decoder_rejects_trailing_bytes() {
     let mut wire = item(ASSIGNED_TAG, 0x01, 0, &[]);
@@ -40,7 +40,7 @@ fn public_decoder_rejects_trailing_bytes() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3 and §11.23; traceability
-// KMIPKIT-0005-NR-002 and KMIPKIT-0005-NR-004.
+// Verifies TTLV header structure, value encoding, and exact byte length.
 #[test]
 fn public_decoder_rejects_invalid_fixed_width_lengths_and_boolean_values() {
     assert_kind(
@@ -53,8 +53,8 @@ fn public_decoder_rejects_invalid_fixed_width_lengths_and_boolean_values() {
     );
 }
 
-// OASIS KMIP Specification v2.1, §10.1.2; traceability KMIPKIT-0005-NR-003.
-// Rejecting the empty value is the explicit KMIPKit rule in FR-006.
+// OASIS KMIP Specification v2.1, §10.1.2.
+// Rejects empty BigInteger values to prevent ambiguous zero representations.
 #[test]
 fn public_decoder_rejects_empty_and_misaligned_big_integer_values() {
     assert_kind(
@@ -68,7 +68,7 @@ fn public_decoder_rejects_empty_and_misaligned_big_integer_values() {
 }
 
 // OASIS KMIP Specification v2.1, §10.1.2; Text String UTF-8 requirement,
-// traceability KMIPKIT-0005-NR-002.
+// validates normative type encoding.
 #[test]
 fn public_decoder_rejects_invalid_text_string_utf8() {
     assert_kind(
@@ -77,9 +77,9 @@ fn public_decoder_rejects_invalid_text_string_utf8() {
     );
 }
 
-// OASIS KMIP Specification v2.1 §11.23 lists assigned Item Types
-// (KMIPKIT-0005-NR-002); rejection of an unsupported value is KMIPKit project
-// requirement KMIPKIT-0005-FR-005, not an OASIS decoder requirement.
+// OASIS KMIP Specification v2.1 §11.23 lists assigned Item Types;
+// rejection of an unsupported value is a KMIPKit parser validation safeguard,
+// not an OASIS decoder requirement.
 #[test]
 fn public_decoder_rejects_item_types_outside_the_generic_model() {
     assert_kind(
@@ -88,8 +88,8 @@ fn public_decoder_rejects_item_types_outside_the_generic_model() {
     );
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-006 and OASIS KMIP Specification v2.1,
-// §10.1.5; traceability KMIPKIT-0005-NR-005.
+// KMIPKit requirement parser validation and OASIS KMIP Specification v2.1,
+// §10.1.5.
 #[test]
 fn public_decoder_checks_padding_extents_and_ignores_padding_octet_values() {
     assert_kind(
@@ -100,9 +100,9 @@ fn public_decoder_checks_padding_extents_and_ignores_padding_octet_values() {
     assert!(decode(&accepted).is_ok());
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-006 and OASIS KMIP Specification v2.1,
-// §§10.1.2, 10.1.3, and 10.1.5; traceability KMIPKIT-0005-NR-002,
-// KMIPKIT-0005-NR-004, and KMIPKIT-0005-NR-005.
+// KMIPKit requirement parser validation and OASIS KMIP Specification v2.1,
+// §§10.1.2, 10.1.3, and 10.1.5.
+// Verifies TTLV header structure, value encoding, and exact byte length.
 #[test]
 fn public_decoder_rejects_children_that_cross_structure_boundaries() {
     let child = item(ASSIGNED_TAG, 0x02, 4, &[0, 0, 0, 1, 0, 0, 0, 0]);
@@ -115,9 +115,9 @@ fn public_decoder_rejects_children_that_cross_structure_boundaries() {
     assert_kind(&wire, DecodeErrorKind::StructureBoundary);
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-010 and accepted ADR-0011 require
+// KMIPKit requirement parser validation and project architectural policy require
 // Reserved-tag rejection. OASIS KMIP Specification v2.1, Chapter 11 and
-// §11.56 classify the tag; traceability KMIPKIT-0005-NR-006.
+// §11.56 classify the tag.
 #[test]
 fn public_decoder_rejects_received_reserved_tags() {
     let wire = item(0x0042_0009, 0x05, 4, &[0, 0, 0, 9, 0, 0, 0, 0]);
@@ -125,9 +125,9 @@ fn public_decoder_rejects_received_reserved_tags() {
     assert_kind(&wire, DecodeErrorKind::ReservedTag);
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-010 also rejects Tags outside the
+// KMIPKit requirement parser validation also rejects Tags outside the
 // assigned and extension allocations. OASIS KMIP Specification v2.1, Chapter
-// 11 and §11.56 provide the allocation context; traceability KMIPKIT-0005-NR-006.
+// 11 and §11.56 provide the allocation context.
 #[test]
 fn public_decoder_rejects_unallocated_tags() {
     let wire = item(0x0000_0001, 0x05, 4, &[0, 0, 0, 9, 0, 0, 0, 0]);
@@ -136,8 +136,8 @@ fn public_decoder_rejects_unallocated_tags() {
 }
 
 // OASIS KMIP Specification v2.1, §§10.1.2–10.1.3, §11.23, Chapter 11, and
-// §11.56; traceability KMIPKIT-0005-NR-002, NR-003, NR-004, and NR-006. The
-// preservation expectation is KMIPKit project requirement KMIPKIT-0005-FR-005.
+// §11.56.
+// preservation expectation is KMIPKit parser validation.
 #[test]
 fn public_decoder_preserves_extension_tags_and_exact_big_integer_octets() {
     let value = [0xFF, 0, 1, 2, 3, 4, 5, 6];
@@ -152,7 +152,7 @@ fn public_decoder_preserves_extension_tags_and_exact_big_integer_octets() {
     );
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-009 requires payload-free diagnostics.
+// Ensures diagnostic representations never expose secret payload octets.
 #[test]
 fn public_decode_errors_do_not_retain_or_format_input_payloads() {
     let secret_marker = b"payload-secret-marker";
@@ -166,7 +166,7 @@ fn public_decode_errors_do_not_retain_or_format_input_payloads() {
     assert_eq!(error.offset(), 8);
 }
 
-// KMIPKit requirements KMIPKIT-0005-FR-007 and FR-008 bound input size before
+// Input size limits guard against unbounded allocation before
 // parsing or allocation; these are local resource policies, not OASIS clauses.
 #[test]
 #[cfg_attr(
@@ -179,7 +179,7 @@ fn public_decoder_rejects_input_over_the_default_message_limit_before_parsing() 
     assert_kind(&oversized, DecodeErrorKind::MessageTooLarge);
 }
 
-// KMIPKit requirement KMIPKIT-0005-FR-007 sets a 16 MiB default message cap.
+// Enforces the default 16 MiB message size limit.
 #[test]
 #[cfg_attr(
     miri,
@@ -199,7 +199,7 @@ fn public_decoder_accepts_an_item_at_the_default_message_limit() {
     assert!(decode(&wire).is_ok());
 }
 
-// KMIPKit requirements KMIPKIT-0005-FR-007 and FR-008 bound nested work.
+// Structure depth limits guard against excessive recursion.
 #[test]
 fn public_decoder_enforces_the_default_structure_depth_limit() {
     let mut nested = item(ASSIGNED_TAG, 0x08, 0, &[]);
@@ -216,7 +216,7 @@ fn public_decoder_enforces_the_default_structure_depth_limit() {
     assert_kind(&too_deep, DecodeErrorKind::StructureDepthExceeded);
 }
 
-// KMIPKit requirements KMIPKIT-0005-FR-007 and FR-008 count the root and every
+// Item count limits bound the root and every
 // descendant before accepting the complete tree.
 #[test]
 #[cfg_attr(
