@@ -240,7 +240,7 @@ fn response_decoder_requires_a_structure_root_and_valid_response_message() {
 }
 
 #[test]
-fn generic_extension_value_copy_preserves_all_wide_scalar_types() {
+fn generic_extension_value_copy_preserves_wide_and_reference_scalar_types() {
     let tag = RawTag::new(0x0042_0173)
         .expect("fixture tag fits the KMIP width")
         .try_checked()
@@ -250,6 +250,9 @@ fn generic_extension_value_copy_preserves_all_wide_scalar_types() {
         Value::big_integer(vec![0xA5; 8]),
         Value::interval(u32::MAX),
         Value::date_time_extended(i64::MIN),
+        Value::identifier("issued-id".to_owned()),
+        Value::reference("referenced-id".to_owned()),
+        Value::name_reference("named-id".to_owned()),
     ];
 
     for value in values {
