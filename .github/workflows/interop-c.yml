@@ -35,7 +35,7 @@ jobs:
         run: rustup toolchain install 1.94 --profile minimal
 
       - name: Build pinned static OpenSSL
-        uses: ./.github/actions/setup-static-openssl
+        uses: $/.github/actions/setup-static-openssl
 
       - name: Build and verify the installed C ABI
         run: python3 verification/interop/c-kmip-validator/tools/install_artifact.py
