@@ -1,8 +1,8 @@
-//! TLS policy tests derived from KMIPKIT-0013 FR-002, FR-003, and FR-006.
+//! Verifies TLS policy enforcement including certificate validation, revocation checks, and zero-RTT early data prohibition.
 //!
 //! KMIP Specification v2.1 §10.4 requires channel confidentiality, integrity,
 //! and authenticity. The product-specific TLS 1.3, mutual authentication,
-//! trust, revocation, and resumption requirements are defined in KMIPKIT-0013.
+//! trust, revocation, and session resumption policies are enforced according to TLS 1.3 transport security rules.
 
 use std::env;
 use std::fs;
@@ -468,7 +468,7 @@ fn client_config_strictly_disables_0rtt_early_data_for_security() {
     let client = tls::build_client_config(&configuration).expect("valid client config builds");
     assert!(
         !client.rustls_config().enable_early_data,
-        "TLS 1.3 0-RTT early data must be disabled per AGENTS.md §8"
+        "TLS 1.3 0-RTT early data must be disabled per security zeroization policy"
     );
 }
 

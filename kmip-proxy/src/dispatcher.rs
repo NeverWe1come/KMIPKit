@@ -919,7 +919,10 @@ fn build_response_message(major: u32, minor: u32, items: Vec<Item>) -> Result<It
 }
 
 fn ttlv_item(tag: u32, val: Value) -> Item {
-    let raw = RawTag::new(tag).unwrap().try_checked().unwrap();
+    let raw = RawTag::new(tag)
+        .unwrap()
+        .try_checked_allow_reserved()
+        .unwrap();
     Item::new(raw, val).unwrap()
 }
 

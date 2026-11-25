@@ -2355,7 +2355,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
 
-// KMIPKIT-0093-FR-004 through FR-007, FR-011; OASIS KMIP v2.1
+// OASIS KMIP v2.1
 // §6.1.8, Tables 186–187: retain actual Create fields and reuse typed execution.
 #[test]
 fn generic_create_builder_preserves_explicit_fields() {
@@ -2622,7 +2622,7 @@ fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
     assert!(captured.borrow().is_none());
 }
 
-// KMIPKIT-0116-FR-001/002; pinned OASIS KMIP 3.0 WD (13 July 2026)
+// KMIP 3.0 operation conversions: pinned OASIS KMIP 3.0 WD (13 July 2026)
 // §11.37 Table 584 and operation request Tables 277, 280, 290, 293, 296, 317, 374.
 #[test]
 fn kmip30_fluent_batch_conversion_preserves_all_seven_operation_codes_without_sending() {
@@ -2764,7 +2764,7 @@ fn assert_kmip30_ordered_attributes(attribute: &Item) {
     assert_eq!(read_enumeration(&fields[2]), Some(0xf000_0002));
 }
 
-// KMIPKIT-0116-FR-001/003; KMIP 3.0 WD §§2.1.3.1, 6.1.9/10/13 and 11.11,
+// KMIP 3.0 WD §§2.1.3.1, 6.1.9/10/13 and 11.11,
 // Tables 277/280/290/551.
 #[test]
 fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_value() {
@@ -2808,7 +2808,7 @@ fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_
         ValueView::TextString(value) if value == "CREDENTIAL_PRIVATE_SENTINEL")));
 }
 
-// KMIPKIT-0116-FR-003; KMIP 3.0 WD §6.1.14/15/22, Tables 293/296/317.
+// KMIP 3.0 WD §6.1.14/15/22, Tables 293/296/317.
 #[test]
 fn kmip30_fluent_optional_setters_preserve_values_and_protocol_field_order() {
     use kmipkit_protocol::{CryptographicParameters, UniqueIdentifier};
@@ -2920,7 +2920,7 @@ fn kmip30_response_bytes(
     )
 }
 
-// KMIPKIT-0116-FR-002/004; KMIP 3.0 WD §6.1.22, Tables 317–318.
+// KMIP 3.0 WD §6.1.22, Tables 317–318.
 #[test]
 fn kmip30_fluent_success_preserves_typed_encapsulate_fields_options_and_async_header() {
     use crate::asynchronous_execution_test_support::client_for_with_options_observer;
@@ -3128,7 +3128,7 @@ fn kmip30_fluent_transport_failure_preserves_delivery_state_and_redacts_error_so
     }
 }
 
-// KMIPKIT-0116-FR-003/004; KMIP 3.0 WD §6.1.15, Table 297 returns only UID.
+// KMIP 3.0 WD §6.1.15, Table 297 returns only UID.
 #[test]
 fn kmip30_fluent_decapsulate_success_returns_only_server_managed_secret_identifier() {
     use crate::execute::Kmip30OperationResponse;

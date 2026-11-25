@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "KMIP TTLV Hex",
+  "scopeName": "source.kmip.ttlv",
+  "patterns": [
+    {
+      "name": "comment.line.number-sign.ttlv",
+      "match": "#.*$"
+    },
+    {
+      "name": "constant.language.kmip.tag.ttlv",
+      "match": "\\b(0x)?42[0-9a-fA-F]{4}\\b"
+    },
+    {
+      "name": "constant.numeric.hex.ttlv",
+      "match": "\\b[0-9a-fA-F]{2}\\b"
+    }
+  ]
+}

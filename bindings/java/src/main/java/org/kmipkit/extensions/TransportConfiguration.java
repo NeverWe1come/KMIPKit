@@ -160,7 +160,7 @@ public final class TransportConfiguration implements AutoCloseable {
         handle.close();
     }
 
-    /** Builder for the accepted KMIPKIT-0013 endpoint, trust, identity, and timeout inputs. */
+    /** Builder for the accepted endpoint, trust, identity, and timeout inputs. */
     public static final class Builder implements AutoCloseable {
         private int endpointKind;
         private String endpoint;

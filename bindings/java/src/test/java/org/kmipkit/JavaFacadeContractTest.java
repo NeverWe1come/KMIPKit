@@ -77,7 +77,7 @@ final class JavaFacadeContractTest {
     void everyT021NativeResourceTypeIsAutoCloseable() {
         for (Class<?> type : T021_NATIVE_RESOURCE_TYPES) {
             assertTrue(AutoCloseable.class.isAssignableFrom(type),
-                    () -> type.getName() + " must expose T021 AutoCloseable ownership");
+                    () -> type.getName() + " must expose resource AutoCloseable ownership");
         }
     }
 

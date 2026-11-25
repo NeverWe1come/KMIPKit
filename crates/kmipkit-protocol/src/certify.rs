@@ -152,7 +152,7 @@ impl CertifyRequest {
             .is_some_and(|identifier| !matches!(identifier, UniqueIdentifier::Enumeration(1)));
         if !has_request_value && !has_explicit_public_key_identifier {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Unique Identifier",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -168,7 +168,7 @@ impl CertifyRequest {
                 .is_some_and(contains_certificate_type)
         {
             return crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Certificate Request Type",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

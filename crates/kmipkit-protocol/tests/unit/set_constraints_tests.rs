@@ -1,7 +1,6 @@
 //! Project-derived tests for OASIS KMIP Specification v2.1 §6.1.52,
 //! Tables 325–327 and §7.7 Constraints. These are not official test cases.
-//! Traceability: KMIPKIT-025-T325-REQUEST, T326-RESPONSE, T327-ERROR,
-//! KMIPKIT-025-COMMON-RESULT.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use crate::async_operation_fixtures::{item, response_message, structure};
 use crate::{

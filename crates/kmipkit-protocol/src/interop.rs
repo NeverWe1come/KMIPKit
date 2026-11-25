@@ -104,7 +104,7 @@ impl ValidateKmipRequest for InteropRequest {
             _ => "Request Payload",
         };
         crate::validation::request_issue_report(
-            "KMIPKIT-0051-P005",
+            "PAYLOAD-POLICY-P005",
             field,
             ValidationSourceRef::Oasis {
                 document: "KMIP v2.1",

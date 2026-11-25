@@ -3,7 +3,7 @@
 //! These derived cases cover the generic-tree boundary. They do not claim
 //! official OASIS vectors, credential verification, or wire encoding.
 //!
-//! Traceability: KMIPKIT-0008-FR-003, FR-004, FR-011; SC-002.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::fmt;
 

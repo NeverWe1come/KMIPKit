@@ -1,4 +1,4 @@
-/* KMIPKIT-0116 FR-001..005: KMIP 3.0 WD 2026-07-13 sections
+/* KMIP 3.0 fluent C ABI consumer: KMIP 3.0 WD 2026-07-13 sections
  * 6.1.9, 6.1.10, 6.1.13, 6.1.14, 6.1.15, 6.1.22, 6.1.41. */
 #include "kmip30_fluent_test_api.h"
 #include <stddef.h>

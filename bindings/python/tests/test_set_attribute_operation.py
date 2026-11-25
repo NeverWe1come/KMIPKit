@@ -1,6 +1,6 @@
 """Set Attribute mapping tests from OASIS KMIP 2.1 §6.1.51, Tables 322–324.
 
-These tests implement KMIPKIT-0016-FR-009.
+These tests implement set attribute operation.
 """
 
 from __future__ import annotations

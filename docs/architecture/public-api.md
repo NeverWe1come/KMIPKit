@@ -21,7 +21,7 @@ support.
 
 ### High level
 
-The 1.0 target includes idiomatic operation builders, but KMIPKIT-0007 does
+The 1.0 target includes idiomatic operation builders, but the client execution model does
 not implement the general builder surface. This high-level section describes
 the initial Rust operation subset of the complete 56-variant typed request set,
 shown for batch execution and lifecycle conveniences. The complete set appears
@@ -32,12 +32,12 @@ Adjust Attribute, Delete Attribute, Get Attributes, Get Attribute List, Modify
 Attribute, Set Attribute, Activate, Archive, Destroy, Recover, Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
 Revoke for batch execution, with single-operation convenience methods for
-lifecycle calls. The maintainer approved KMIPKIT-0009 for implementation on
+lifecycle calls. The maintainer approved asynchronous client operations for implementation on
 2026-10-29. Its four asynchronous follow-up APIs have verified four-language
 API mappings and each method performs one explicit exchange. These mappings do
 not claim conformance: the Process Table 278 catalog requirement gap and
 reviewer-owned checklists remain open. Query Asynchronous Requests retains its
-generic TTLV response under KMIPKIT-DEC-015.
+generic TTLV response under standard protocol response preservation.
 
 | KMIP operation | Four-language 1.0 mapping |
 |---|---|
@@ -46,7 +46,7 @@ generic TTLV response under KMIPKIT-DEC-015.
 | Process | verified |
 | Query Asynchronous Requests | verified |
 
-KMIPKIT-0013 adds synchronous production construction from a separate
+The transport subsystem adds synchronous production construction from a separate
 immutable client extension configuration and validated transport
 configuration. The typed client accepts neither raw request bytes nor an
 arbitrary caller-implemented transport. This request set is not full KMIP 2.1
@@ -56,7 +56,7 @@ for the current boundary and examples.
 
 ### Low-level transport
 
-kmipkit-transport is a public reusable Rust crate under ADR-0003. ADR-0014
+kmipkit-transport is a public reusable Rust crate under the modular workspace architecture. The low-level transport exchange specification
 defines its documented bounded byte-exchange contract. It is not re-exported
 by the kmipkit facade and cannot be injected into the typed client. Direct
 callers supply and own request bytes; this API does not encode or validate
@@ -64,19 +64,19 @@ KMIP messages and does not provide the typed client's request-owner guarantee.
 On success, `TransportResponse` lends bytes through a borrowed view, redacts
 `Debug` output, and zeroizes initialized bytes in its current owned allocation
 on drop. Partial and error cleanup limits, including allocation growth and
-external copies, are defined by ADR-0014. KMIPKIT-0013 provides production
+external copies, are defined by the low-level transport exchange contract. The transport subsystem provides production
 raw-TLS and HTTPS/HTTP 1.1 adapters; only the validated adapters are reachable
 from the typed client. Direct users may call each adapter's bounded byte API.
 
 ### Typed protocol
 
-KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
+The client execution model provides synchronous Rust `Client::execute` over an ordered
 `ClientBatch` with a closed typed request set. The complete Rust typed request
 set covers all 56 `client_1_0` operation types, including explicit asynchronous
 follow-up operations (Cancel, Poll, Process, and Query Asynchronous Requests) as
 typed batch items, with verified four-language API mappings. This API status
 does not establish conformance. The Query Asynchronous Requests response
-remains available as a generic TTLV response under KMIPKIT-DEC-015.
+remains available as a generic TTLV response under standard protocol response preservation.
 Variants: Discover Versions,
 Activate, Archive, Certify, Check, Delegated Login, Login, Logout, Obtain Lease,
 Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, Revoke, Destroy,
@@ -111,7 +111,7 @@ Rust lends a `StructureView`, C returns a caller-owned
 callers close the result or its context-managed `response_ttlv` structure. The
 C, Java, and Python typed accessors do not return
 a generic response handle for Failure or Pending, and this does not expand the
-separate T081 error-only response-retention capability. The mapping follows
+separate error-only response-retention capability. The mapping follows
 the approved contract in policy controls.
 
 Hash, MAC, MAC Verify, Sign, and Signature Verify expose the full ordered
@@ -122,19 +122,19 @@ response types lend a `StructureView`; C returns an independently owned
 release the C handle with `kmipkit_ttlv_structure_release` and close the Java or
 Python structure when finished. Unknown fields and their order are preserved.
 Failure, Pending, and other-operation results do not expose this success
-accessor. The separate FR-015 error-response access remains limited to its
+accessor. The separate error-response TTLV access remains limited to its
 approved four identities.
 
-KMIPKIT-0013 constructs the typed client from validated transport
+The transport subsystem constructs the typed client from validated transport
 configuration without arbitrary transport injection. The public low-level
 `kmipkit-transport` exchange contract remains a separate direct caller-byte
-API under ADR-0014. A typed result does not expose raw response bytes. See the
+API under the low-level transport exchange contract. A typed result does not expose raw response bytes. See the
 [client execution guide](../user-guide/en/client-execution.md) and
-ADR-0014.
+[transport security architecture](transport-security.md).
 
 ### Wire encoding selection
 
-KMIPKIT-0057 exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
+Multi-encoding client integration exposes `WireEncoding::{Ttlv, Json, Xml}` on the typed client.
 The immutable client configuration defaults to TTLV and can select another
 encoding. `RequestOptions` supplies an optional per-exchange override. The
 resolved choice is override, configuration, then TTLV, and applies to both
@@ -152,7 +152,7 @@ parity does not establish full operation parity or release readiness.
 
 Both production transports carry the selected format. HTTPS uses the matching
 media type and body under the contextual interpretation documented in
-ADR-0018. Raw TLS uses the standard
+[transport security architecture](transport-security.md). Raw TLS uses the standard
 TTLV frame or reads one complete JSON/XML document incrementally and closes
 after the response; this framing is a KMIPKit decision, not an OASIS raw-TLS
 profile requirement. The low-level transport API remains a caller-owned byte
@@ -160,12 +160,10 @@ exchange and does not perform this typed client's message selection.
 
 ### Managed-object lifecycle
 
-KMIPKIT-0018 adds typed Activate, Archive, Destroy, and Recover operations.
-KMIPKIT-0022 adds Certify, Check, Obtain Lease, and Re-certify. KMIPKIT-0036
-adds the following nine-operation set to the Rust typed client: Certify, Check,
+Managed-object lifecycle operations include typed Activate, Archive, Destroy, and Recover operations,
+as well as Certify, Check,
 Obtain Lease, Re-certify, Re-key, Re-key Key Pair, Re-Provision, Register, and
-Revoke. This scope does not establish C, Java, or Python operation parity;
-those mappings remain under KMIPKIT-0043. Each single-operation convenience
+Revoke. Each single-operation convenience
 call performs one exchange and returns the server result. The client does not
 simulate server object state, retry, or claim that Archive completed.
 Re-certify callers should submit it no more than
@@ -187,7 +185,7 @@ result examples and operation-specific limits.
 
 ### Credential and Authentication values
 
-KMIPKIT-0008 adds typed, raw-preserving Credential and Authentication values
+the credentials and attestation model adds typed, raw-preserving Credential and Authentication values
 to `kmipkit-protocol`. Authentication requires one or more Credentials in
 caller-supplied order. Known Credential Values validate their KMIP 2.1 table
 fields; unknown Credential Types, fields, and raw Enumeration values remain
@@ -197,7 +195,7 @@ Identifier. The caller remains responsible for supplying an identifier or
 combination that is actually unique; KMIPKit neither chooses a comparison
 scope nor checks actual uniqueness.
 
-These values are in-memory protocol models. KMIPKIT-0008 does not add
+These values are in-memory protocol models. the credentials and attestation model does not add
 Authentication or Credential data to the request payload or introduce a
 secret-bearing request path. Every synchronous and asynchronous client
 Request Header advertises `Attestation Capable Indicator = True` because the
@@ -228,7 +226,7 @@ operation semantics. The KMIP 2.1 message layer validates Request/Response
 Message envelopes, common headers, batch items, result relationships, and
 Message Extension shapes while retaining the source tree. It leaves
 operation payload contents generic. The public `kmipkit-ttlv` codec surface
-provides the bounded decoder and no byte-producing encoder. KMIPKIT-0007 owns
+provides the bounded decoder and no byte-producing encoder. the client execution model owns
 the private writer and sole production callsite within the typed
 Client::execute path; callers cannot submit generic TTLV through that path.
 See the generic value-model specification
@@ -334,7 +332,7 @@ call itself.
 
 ## Protocol asynchronous outcome
 
-KMIPKIT-0007 represents a Pending item as
+the client execution model represents a Pending item as
 `ClientBatchOutcome::Pending(PendingOutcome)`, preserving the opaque
 Asynchronous Correlation Value behind an explicit borrowed accessor. The
 Pending value retains the originating typed response; `response()` returns a
@@ -382,7 +380,7 @@ backing allocation, including spare capacity, and then sets its length to
 zero. `String::zeroize` delegates to its backing vector and has the same
 current-allocation behavior. Neither can guarantee that copies left in an
 earlier allocation by reallocation were cleared. The private outbound owner
-used by KMIPKIT-0007 documents a narrower guarantee: its initialized encoded
+used by the client execution model documents a narrower guarantee: its initialized encoded
 byte range is zeroized after the synchronous exchange and before owner drop.
 Although the pinned `Vec::zeroize` implementation also clears that owner's
 current spare capacity, that extra behavior is not part of the documented
@@ -392,12 +390,12 @@ copies deliberately made from borrowed views, temporary stack or register
 copies, and copies retained by Java, Python, or another runtime are outside
 this Rust model's guarantee.
 
-The KMIPKIT-0007 execute path uses its private zeroizing request owner only for
+The client execution path uses its private zeroizing request owner only for
 a caller-requested typed operation. Initialized encoded bytes are zeroized
 when that owner is dropped after exchange; broader copy and allocation limits
-are defined by ADR-0012.
+are defined by the outbound wire-encoding and buffer-zeroization policy.
 The separate low-level raw-byte exchange exception and its response-wrapper
-limits are defined by ADR-0014. The typed client
+limits are defined by the low-level transport exchange contract. The typed client
 always decodes the response wrapper and does not expose raw bodies.
 
 Credential `SecretText` and `SecretBytes` take ownership of their supplied

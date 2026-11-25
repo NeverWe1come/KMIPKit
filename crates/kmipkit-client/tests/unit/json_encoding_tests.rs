@@ -1,4 +1,4 @@
-//! KMIPKIT-0055: OASIS KMIP Profiles v2.1 §§5.5.1.1–5.5.1.6.13 and §5.5.4.1.
+//! XML encoding support: OASIS KMIP Profiles v2.1 §§5.5.1.1–5.5.1.6.13 and §5.5.4.1.
 use super::{decode, encode};
 use crate::wire_codec_common::WireCodecErrorKind;
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView, codec::CodecLimits};

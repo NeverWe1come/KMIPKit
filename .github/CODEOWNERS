@@ -1,9 +1,7 @@
 * @NeverWe1come
 
 # Explicitly list security and normative surfaces for review visibility.
-/AGENTS.md @NeverWe1come
 /.github/ @NeverWe1come
-/docs/adr/ @NeverWe1come
 /bindings/shared/ @NeverWe1come
 /verification/conformance/ @NeverWe1come
 /verification/api/catalog/ @NeverWe1come

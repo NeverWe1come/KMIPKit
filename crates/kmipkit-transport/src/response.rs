@@ -1,7 +1,6 @@
 //! Zeroizing owner for successful low-level transport response bytes.
 //!
-//! Derived project-policy tests cite KMIPKIT-0007-FR-005/-FR-009/-FR-013 and
-//! SC-003, ADR-0014, and OASIS KMIP Specification v2.1 §9.12, Table 417 for
+//! Transport responses follow the low-level transport contract and OASIS KMIP Specification v2.1 §9.12, Table 417 for
 //! the response-size bound. They are not official OASIS conformance tests.
 
 use std::fmt;

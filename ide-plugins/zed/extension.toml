@@ -1,0 +1,11 @@
+id = "kmipkit"
+name = "KMIPKit (OASIS KMIP)"
+description = "OASIS KMIP 1.0–3.0 Language Server, schema hints, and SDK diagnostics powered by kmip-lsp."
+version = "0.1.0"
+schema_version = 1
+authors = ["KMIPKit Authors"]
+repository = "https://github.com/NeverWe1come/KMIPKit"
+
+[language_servers.kmip-lsp]
+name = "KMIPKit Language Server"
+languages = ["JSON", "Rust", "Java", "Python", "C"]

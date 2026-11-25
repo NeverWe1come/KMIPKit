@@ -24,7 +24,7 @@ fn decode_xml_node(node: Node<'_, '_>) -> Result<Item, String> {
     let tag_raw = parse_tag(tag_name_str)?;
     let raw_tag = RawTag::new(tag_raw).map_err(|e| format!("invalid tag: {e}"))?;
     let tag = raw_tag
-        .try_checked()
+        .try_checked_allow_reserved()
         .map_err(|e| format!("unchecked tag: {e}"))?;
 
     let element_children: Vec<Node<'_, '_>> = node.children().filter(Node::is_element).collect();

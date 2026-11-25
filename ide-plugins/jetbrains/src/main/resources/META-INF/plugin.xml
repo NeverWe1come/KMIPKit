@@ -1,0 +1,46 @@
+<idea-plugin>
+    <id>org.kmipkit.ide</id>
+    <name>KMIPKit — OASIS KMIP &amp; TTLV Inspector</name>
+    <vendor email="support@kmipkit.org" url="https://github.com/NeverWe1come/KMIPKit">KMIPKit</vendor>
+    <description><![CDATA[
+        Official OASIS KMIP 1.0–3.0 tooling and TTLV Inspector for JetBrains IDEs.
+        Powered by the shared <code>kmip-lsp</code> core and <code>webview-ui</code> via JCEF.
+        <ul>
+            <li>Interactive TTLV tree decoder with synchronized hex view</li>
+            <li>Mandatory default redaction of sensitive cryptographic material</li>
+            <li>Multi-language Live Templates (Rust, Java, Python, C/C++)</li>
+        </ul>
+    ]]></description>
+
+    <!-- Universal platform dependency: works across IDEA, CLion, PyCharm, RustRover, GoLand, Rider, WebStorm, Android Studio -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+            id="KMIP"
+            anchor="right"
+            factoryClass="org.kmipkit.ide.ui.KmipToolWindowFactory"
+            secondary="false"/>
+
+        <applicationService
+            serviceImplementation="org.kmipkit.ide.settings.KmipSettingsState"/>
+
+        <applicationConfigurable
+            parentId="tools"
+            instance="org.kmipkit.ide.settings.KmipSettingsConfigurable"
+            id="org.kmipkit.ide.settings"
+            displayName="KMIPKit"/>
+
+        <defaultLiveTemplates file="/liveTemplates/KMIPKit.xml"/>
+    </extensions>
+
+    <actions>
+        <action
+            id="org.kmipkit.ide.actions.DecodeTtlvSelectionAction"
+            class="org.kmipkit.ide.actions.DecodeTtlvSelectionAction"
+            text="KMIP: Decode TTLV Selection"
+            description="Decode selected hex or Base64 TTLV payload in the KMIPKit TTLV Inspector">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+    </actions>
+</idea-plugin>

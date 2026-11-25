@@ -50,7 +50,7 @@ pub struct AsynchronousRequestEntry {
 /// A typed Query Asynchronous Requests payload with optional lossless filters.
 ///
 /// Correlation filter copies are zeroizing and are redacted from Debug output.
-/// The unresolved `KMIPKIT-DISC-039` response schema is deliberately not modeled.
+/// The Query Asynchronous Requests response payload is exposed generically as a TTLV structure.
 #[derive(Clone, Debug, Default)]
 pub struct QueryAsyncRequestsRequest {
     correlation_values: Option<Vec<SecretBytes>>,
@@ -125,7 +125,7 @@ impl QueryAsyncRequestsRequest {
 
 /// A typed Query Asynchronous Requests result with a generic, borrowed payload.
 ///
-/// The response mapping remains generic while `KMIPKIT-DISC-039` is open; this
+/// The response mapping remains generic as a generic structure; this
 /// type assigns no meaning to the Table 286 payload structure.
 pub struct QueryAsyncRequestsResponse<'a> {
     item: ResponseBatchItemView<'a>,

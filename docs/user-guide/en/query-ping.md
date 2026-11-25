@@ -81,8 +81,7 @@ does not interpret or rewrite the server's response.
 Section 6.1.40 describes an empty response payload when there are no values to
 return. Table 283 also marks Protection Storage Masks required for a structured
 response while allowing its list to be empty. KMIPKit accepts both the empty
-payload and structured forms and preserves which form arrived. The conflict
-remains open as `KMIPKIT-DISC-047`; accepting both forms is not a server
+payload and structured forms and preserves which form arrived. The specification conflict between §6.1.40 and Table 283 is handled by accepting both forms; accepting both forms is not a server
 conformance determination.
 
 ## Ping

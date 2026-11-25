@@ -2,15 +2,12 @@
 //!
 //! These are derived project-policy tests, not official OASIS vectors. The
 //! Pending Asynchronous Correlation Value is required immediately by OASIS
-//! KMIP v2.1 §8.6, Table 399, catalog element
-//! `KMIPKIT-ELEM-MESSAGE-FIELD-8-6-ASYNCHRONOUS-CORRELATION-VALUE`; §9.19 and
-//! `KMIPKIT-REQ-SPEC-9.19-002` concern its later use by Poll. Discover Versions
-//! has no secret payload and does not resolve ADR-0012 OD-006, which remains a
-//! gate for the first secret-bearing operation.
+//! KMIP v2.1 §8.6, Table 399; §9.19 concerns its later use by Poll operations.
+//! Discover Versions has no secret payload and does not require payload zeroization,
+//! which remains an active requirement for the first secret-bearing operation.
 //!
-//! Traceability: `KMIPKIT-0007-FR-005`, `-FR-008`, `-FR-011`, `-FR-012`,
-//! `-FR-013`, `-FR-017`; `KMIPKIT-0007-SC-002`, `-SC-004`, `-SC-005`,
-//! `-SC-008`; ADR-0012; `AGENTS.md` §8.
+//! Verifies client lifecycle behavior, request/response validation, transport errors,
+//! and payload zeroization security invariants.
 
 use std::cell::{Cell, RefCell};
 use std::error::Error;
@@ -168,7 +165,7 @@ fn public_batch_and_result_accessors_preserve_order_and_redact_identifiers() {
 
 #[test]
 fn single_item_request_may_include_or_omit_unique_batch_item_id() {
-    // OASIS KMIP Profiles v2.1 §4.1.2, locator 7; KMIPKIT-REQ-PROF-4.1.2-007.
+    // OASIS KMIP Profiles v2.1 §4.1.2 baseline profile item ID rules.
     let cases: [Option<&[u8]>; 2] = [None, Some(b"single-item-id")];
 
     for expected_id in cases {
@@ -335,7 +332,7 @@ fn typed_request_preflight_uses_borrowed_protocol_validation() {
 #[test]
 fn deferred_set_endpoint_role_preserves_open_values_in_validation_report() {
     // KMIP 2.1 §6.1.54, Table 331 defines Endpoint Role as a required
-    // Enumeration; KMIPKIT-0051 scopes pre-send rules to the 56 client_1_0
+    // Enumeration; pre-send validation covers client_1_0 operations
     // operations, while this operation is deferred to 1.1.
     let request = ClientRequest::SetEndpointRole(SetEndpointRoleRequest::new(
         EndpointRole::from_raw(0x8000_1234),

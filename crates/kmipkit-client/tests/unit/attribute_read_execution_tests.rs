@@ -2,8 +2,8 @@
 
 //! Fake-transport execution checks for OASIS KMIP v2.1 §6.1.20, Tables
 //! 223–225, and §6.1.21, Tables 226–228. Attribute Reference encoding follows
-//! §5.5, Table 161. Traceability: KMIPKIT-0016-FR-006/FR-007/FR-010/FR-012,
-//! and SC-007. These are derived structural tests, not official conformance
+//! §5.5, Table 161. Verifies Get Attributes and Get Attribute List operations
+//! under client execution rules. These are derived structural tests, not official conformance
 //! cases.
 
 use kmipkit_protocol::{

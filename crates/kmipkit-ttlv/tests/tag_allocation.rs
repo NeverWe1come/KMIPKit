@@ -1,7 +1,7 @@
 //! OASIS KMIP Specification v2.1, §10.1.1 (Tag), Chapter 11 introduction, and §11.56 (Tag
-//! Enumeration). Traceability: KMIPKIT-0004-FR-002, KMIPKIT-0004-FR-003,
-//! KMIPKIT-0004-NR-001, and KMIPKIT-0004-NR-005. Exact-over-range precedence
-//! is the accepted `KMIPKit` policy in ADR-0010, not an OASIS interpretation.
+//! Enumeration).
+//! Exact-over-range precedence is the accepted `KMIPKit` policy in tag allocation,
+//! not an OASIS interpretation.
 
 // Generated catalog literals use grouped hexadecimal digits; keep the lint
 // allowance scoped to this imported test module and do not edit generated data.
@@ -160,4 +160,37 @@ fn unused_values_are_rejected_while_remaining_raw_and_failed_checks_borrow() {
     let reserved = raw_tag(0x0042_0009);
     assert!(RawTag::try_checked(&reserved).is_err());
     assert_eq!(reserved.raw(), 0x0042_0009);
+}
+
+#[test]
+fn raw_tag_try_checked_allow_reserved_covers_all_allocation_kinds() {
+    // Assigned tag:
+    let assigned = raw_tag(0x0042_0001);
+    assert_eq!(
+        assigned.try_checked_allow_reserved().unwrap().raw(),
+        0x0042_0001
+    );
+
+    // Extension tag:
+    let extension = raw_tag(0x0054_0001);
+    assert_eq!(
+        extension.try_checked_allow_reserved().unwrap().raw(),
+        0x0054_0001
+    );
+
+    // Reserved tag (e.g. 0x0042_0091 Template-Attribute, which try_checked rejects):
+    let reserved = raw_tag(0x0042_0091);
+    assert!(reserved.try_checked().is_err());
+    assert_eq!(
+        reserved.try_checked_allow_reserved().unwrap().raw(),
+        0x0042_0091
+    );
+
+    // Unused tag in catalog:
+    let unused = raw_tag(0x0042_0000);
+    assert!(unused.try_checked_allow_reserved().is_err());
+
+    // Tag out of catalog / None:
+    let unallocated = raw_tag(0x0000_0001);
+    assert!(unallocated.try_checked_allow_reserved().is_err());
 }

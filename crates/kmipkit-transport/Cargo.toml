@@ -5,10 +5,20 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/kmipkit-transport"
+readme = "../../README.md"
+keywords = ["kmip", "kms", "hsm", "cryptography", "oasis"]
+categories = ["cryptography", "api-bindings", "network-programming"]
 description = "Secure KMIP transports for KMIPKit"
 # Compile worker lifecycle tests inside the private module so they can verify
 # its state machine without turning those tests into a public integration API.
 autotests = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu"]
 
 [features]
 test-support = []

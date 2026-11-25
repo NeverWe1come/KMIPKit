@@ -1,4 +1,4 @@
-// Requires repository assets intentionally absent from the code-only review branch.
+// Ignored: requires external OASIS KMIP test vector corpus not bundled in this checkout.
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};
 use std::net::TcpListener;
@@ -10296,7 +10296,7 @@ fn ffi_create_result_rejects_invalid_arguments_and_clears_the_output() {
 
 #[test]
 fn ffi_symmetric_builder_validation_delivery_preserves_internal_failure_metadata() {
-    // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; ADR-0012 pre-send validation.
+    // KMIP v2.1 sections 4-5 pre-send validation and zeroization.
     // Corrupt/empty owners must fail closed; internal lock failures retain their category.
     let poisoned = Mutex::new(Some(
         kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached(),
@@ -11787,7 +11787,7 @@ fn assert_response_view_encodings(item: *mut kmipkit_client_batch_item_response_
         unsafe { kmipkit_client_abi_c_consumer_response_views(item) },
         1
     );
-    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 and §9.13.
+    // KMIP 2.1 §§8.4–8.6 and §9.13 extension preservation.
     let limits = make_handle(
         Kind::CodecLimits,
         HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
@@ -11930,7 +11930,7 @@ fn successful_response_ttlv_absence_is_an_internal_error() {
 
 #[test]
 fn response_views_keep_independent_owners_and_reject_dead_handles() {
-    // KMIPKIT-0095-FR-003/005; KMIP 2.1 §§8.4–8.6 retained response ownership.
+    // KMIP 2.1 §§8.4–8.6 retained response ownership.
     let item = successful_pkcs11_response_item();
     let limits = make_handle(
         Kind::CodecLimits,

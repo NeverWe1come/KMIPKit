@@ -1,4 +1,4 @@
-"""KMIPKIT-0095: explicit response renderers return owned zeroizing bytes."""
+"""response views: explicit response renderers return owned zeroizing bytes."""
 from types import SimpleNamespace
 
 import pytest

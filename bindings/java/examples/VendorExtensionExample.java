@@ -29,7 +29,7 @@ import org.kmipkit.ttlv.TtlvValue;
 
 /** Local-only example of registering, inspecting, validating, and attaching an extension.
  *
- * <p>Per KMIPKIT-0007, unknown critical response extensions are rejected, while unknown
+ * <p>Per standard protocol requirements, unknown critical response extensions are rejected, while unknown
  * non-critical response extensions remain available as generic TTLV. Java-managed
  * {@code String} and {@code byte[]} copies cannot be reliably zeroized by KMIPKit. The
  * example values are non-secret placeholders.

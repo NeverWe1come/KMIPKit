@@ -1,0 +1,7 @@
+target/
+**/target/
+.git/
+bindings/
+docs/
+verification/tests/
+kmip-proxy/tests/

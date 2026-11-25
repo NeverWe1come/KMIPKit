@@ -48,7 +48,7 @@ FULL_PREFIXES = (
     "vendor/",
 )
 FULL_FILES = {
-    "AGENTS.md",
+    "project-guide",
     "Cargo.toml",
     "Cargo.lock",
     "rust-toolchain",

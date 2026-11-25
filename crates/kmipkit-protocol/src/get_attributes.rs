@@ -110,7 +110,7 @@ pub struct GetAttributesResponse {
 }
 
 impl GetAttributesResponse {
-    /// Converts one already validated KMIPKIT-0006 response item.
+    /// Converts one already validated response item.
     ///
     /// Successful payload parsing follows OASIS KMIP v2.1 §6.1.20 and Table 224,
     /// preserving direct attribute multiplicity and wire order while rejecting
@@ -123,7 +123,7 @@ impl GetAttributesResponse {
     ///
     /// Returns a payload-free [`GetAttributesError`] for another operation,
     /// invalid result metadata, a missing successful payload, or a payload
-    /// that violates Table 224 or the KMIPKIT-0014 `AttributeSet` contract.
+    /// that violates Table 224 or the `AttributeSet` validation contract.
     pub fn try_from_response_item(
         item: ResponseBatchItemView<'_>,
     ) -> Result<Self, GetAttributesError> {
@@ -212,7 +212,7 @@ pub enum GetAttributesError {
     MalformedSuccessPayload,
     /// A direct attribute value could not be copied into the owned `AttributeSet`.
     TtlvModel(ModelError),
-    /// A returned Vendor Attribute does not satisfy KMIPKIT-0014 validation.
+    /// A returned Vendor Attribute does not satisfy attribute set validation.
     InvalidAttributeSet(AttributeSetError),
 }
 

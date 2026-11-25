@@ -182,7 +182,7 @@ CI additionally audits the compiled C library on Windows, Linux, and macOS.
 ## PKCS#11 public mapping
 
 The KMIP 2.1 PKCS#11 request and response have public Rust, C, Java, and Python
-API mappings under OASIS KMIP v2.1 §6.1.37, Tables 273–275. The KMIPKIT-0040
+API mappings under OASIS KMIP v2.1 §6.1.37, Tables 273–275. The profile catalog language mappings
 specification remains **Approved for implementation**; the maintainer's direct
 instruction dated 2026-10-20 authorized implementation without changing its
 formal acceptance status (`formalAcceptance: false`). Manifest state

@@ -326,7 +326,7 @@ int kmipkit_public_crypto_builders_probe(void) {
     return 0;
 }
 
-/* KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; ADR-0012 pre-send validation. */
+/* KMIP v2.1 sections 4-5 pre-send validation. */
 static int validation_error_has_delivery(int32_t expected_status, uint32_t expected_delivery) {
     int32_t status = 0;
     uint32_t category = 0;

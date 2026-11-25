@@ -15,7 +15,7 @@ use super::{
 };
 
 const CONSTRAINTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R191",
+    rule_id: "PAYLOAD-RULE-R191",
     name: "Constraint",
     tag: FieldTag::Exact(0x0042_0169),
     types: TYPE_STRUCTURE,
@@ -26,7 +26,7 @@ const CONSTRAINTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const CONSTRAINT_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R192",
+        rule_id: "PAYLOAD-RULE-R192",
         name: "Object Types",
         tag: FieldTag::Exact(0x0042_0167),
         types: TYPE_STRUCTURE,
@@ -35,7 +35,7 @@ const CONSTRAINT_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::ObjectTypes),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R193",
+        rule_id: "PAYLOAD-RULE-R193",
         name: "Object Groups",
         tag: FieldTag::Exact(0x0042_0166),
         types: TYPE_STRUCTURE,
@@ -44,7 +44,7 @@ const CONSTRAINT_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::ObjectGroups),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R194",
+        rule_id: "PAYLOAD-RULE-R194",
         name: "Attributes",
         tag: FieldTag::Exact(0x0042_0125),
         types: TYPE_STRUCTURE,
@@ -55,7 +55,7 @@ const CONSTRAINT_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const OBJECT_TYPES_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R195",
+    rule_id: "PAYLOAD-RULE-R195",
     name: "Object Type",
     tag: FieldTag::Exact(0x0042_0057),
     types: TYPE_ENUMERATION,
@@ -65,7 +65,7 @@ const OBJECT_TYPES_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 }];
 
 const OBJECT_GROUPS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R196",
+    rule_id: "PAYLOAD-RULE-R196",
     name: "Object Group",
     tag: FieldTag::Exact(0x0042_0056),
     types: TYPE_TEXT_STRING,
@@ -75,7 +75,7 @@ const OBJECT_GROUPS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 }];
 
 const DEFAULTS_INFORMATION_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R197",
+    rule_id: "PAYLOAD-RULE-R197",
     name: "Object Defaults",
     tag: FieldTag::Exact(0x0042_0153),
     types: TYPE_STRUCTURE,
@@ -86,7 +86,7 @@ const DEFAULTS_INFORMATION_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R198",
+        rule_id: "PAYLOAD-RULE-R198",
         name: "Object Type",
         tag: FieldTag::Exact(0x0042_0057),
         types: TYPE_ENUMERATION,
@@ -95,7 +95,7 @@ const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R198",
+        rule_id: "PAYLOAD-RULE-R198",
         name: "Object Types",
         tag: FieldTag::Exact(0x0042_0167),
         types: TYPE_STRUCTURE,
@@ -104,7 +104,7 @@ const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::ObjectTypes),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R199",
+        rule_id: "PAYLOAD-RULE-R199",
         name: "Attributes",
         tag: FieldTag::Exact(0x0042_0125),
         types: TYPE_STRUCTURE,
@@ -113,7 +113,7 @@ const OBJECT_DEFAULTS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::Attributes),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R200",
+        rule_id: "PAYLOAD-RULE-R200",
         name: "Object Groups",
         tag: FieldTag::Exact(0x0042_0166),
         types: TYPE_STRUCTURE,
@@ -139,94 +139,94 @@ macro_rules! optional_singleton_field {
 
 const CRYPTOGRAPHIC_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
     optional_singleton_field!(
-        "KMIPKIT-0051-R201",
+        "PAYLOAD-RULE-R201",
         "Block Cipher Mode",
         0x0042_0011,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R202",
+        "PAYLOAD-RULE-R202",
         "Padding Method",
         0x0042_005F,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R203",
+        "PAYLOAD-RULE-R203",
         "Hashing Algorithm",
         0x0042_0038,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R204",
+        "PAYLOAD-RULE-R204",
         "Key Role Type",
         0x0042_0083,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R205",
+        "PAYLOAD-RULE-R205",
         "Digital Signature Algorithm",
         0x0042_00AE,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R206",
+        "PAYLOAD-RULE-R206",
         "Cryptographic Algorithm",
         0x0042_0028,
         TYPE_ENUMERATION
     ),
-    optional_singleton_field!("KMIPKIT-0051-R207", "Random IV", 0x0042_00C5, TYPE_BOOLEAN),
-    optional_singleton_field!("KMIPKIT-0051-R208", "IV Length", 0x0042_00CD, TYPE_INTEGER),
-    optional_singleton_field!("KMIPKIT-0051-R209", "Tag Length", 0x0042_00CE, TYPE_INTEGER),
+    optional_singleton_field!("PAYLOAD-RULE-R207", "Random IV", 0x0042_00C5, TYPE_BOOLEAN),
+    optional_singleton_field!("PAYLOAD-RULE-R208", "IV Length", 0x0042_00CD, TYPE_INTEGER),
+    optional_singleton_field!("PAYLOAD-RULE-R209", "Tag Length", 0x0042_00CE, TYPE_INTEGER),
     optional_singleton_field!(
-        "KMIPKIT-0051-R210",
+        "PAYLOAD-RULE-R210",
         "Fixed Field Length",
         0x0042_00CF,
         TYPE_INTEGER
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R211",
+        "PAYLOAD-RULE-R211",
         "Invocation Field Length",
         0x0042_00D2,
         TYPE_INTEGER
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R212",
+        "PAYLOAD-RULE-R212",
         "Counter Length",
         0x0042_00D0,
         TYPE_INTEGER
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R213",
+        "PAYLOAD-RULE-R213",
         "Initial Counter Value",
         0x0042_00D1,
         TYPE_INTEGER
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R214",
+        "PAYLOAD-RULE-R214",
         "Salt Length",
         0x0042_0100,
         TYPE_INTEGER
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R215",
+        "PAYLOAD-RULE-R215",
         "Mask Generator",
         0x0042_0101,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R216",
+        "PAYLOAD-RULE-R216",
         "Mask Generator Hashing Algorithm",
         0x0042_0102,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R217",
+        "PAYLOAD-RULE-R217",
         "P Source",
         0x0042_0103,
         TYPE_BYTE_STRING
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R218",
+        "PAYLOAD-RULE-R218",
         "Trailer Field",
         0x0042_0104,
         TYPE_INTEGER
@@ -235,7 +235,7 @@ const CRYPTOGRAPHIC_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
 
 const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R221",
+        rule_id: "PAYLOAD-RULE-R221",
         name: "Cryptographic Parameters",
         tag: FieldTag::Exact(0x0042_002B),
         types: TYPE_STRUCTURE,
@@ -244,7 +244,7 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::CryptographicParameters),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R222",
+        rule_id: "PAYLOAD-RULE-R222",
         name: "Initialization Vector",
         tag: FieldTag::Exact(0x0042_003A),
         types: TYPE_BYTE_STRING,
@@ -253,7 +253,7 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R223",
+        rule_id: "PAYLOAD-RULE-R223",
         name: "Derivation Data",
         tag: FieldTag::Exact(0x0042_0030),
         types: TYPE_BYTE_STRING,
@@ -262,7 +262,7 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R224",
+        rule_id: "PAYLOAD-RULE-R224",
         name: "Salt",
         tag: FieldTag::Exact(0x0042_0084),
         types: TYPE_BYTE_STRING,
@@ -271,7 +271,7 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R225",
+        rule_id: "PAYLOAD-RULE-R225",
         name: "Iteration Count",
         tag: FieldTag::Exact(0x0042_003C),
         types: TYPE_INTEGER,
@@ -283,7 +283,7 @@ const DERIVATION_PARAMETERS_FIELDS: &[FieldDescriptor] = &[
 
 const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R229",
+        rule_id: "PAYLOAD-RULE-R229",
         name: "Wrapping Method",
         tag: FieldTag::Exact(0x0042_009E),
         types: TYPE_ENUMERATION,
@@ -292,7 +292,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R230",
+        rule_id: "PAYLOAD-RULE-R230",
         name: "Encryption Key Information",
         tag: FieldTag::Exact(0x0042_0036),
         types: TYPE_STRUCTURE,
@@ -301,7 +301,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::EncryptionKeyInformation),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R231",
+        rule_id: "PAYLOAD-RULE-R231",
         name: "MAC/Signature Key Information",
         tag: FieldTag::Exact(0x0042_004E),
         types: TYPE_STRUCTURE,
@@ -310,7 +310,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::MacSignatureKeyInformation),
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R232",
+        rule_id: "PAYLOAD-RULE-R232",
         name: "Attribute Name",
         tag: FieldTag::Exact(0x0042_000A),
         types: TYPE_TEXT_STRING,
@@ -319,7 +319,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R233",
+        rule_id: "PAYLOAD-RULE-R233",
         name: "Encoding Option",
         tag: FieldTag::Exact(0x0042_00A3),
         types: TYPE_ENUMERATION,
@@ -331,7 +331,7 @@ const KEY_WRAPPING_SPECIFICATION_FIELDS: &[FieldDescriptor] = &[
 
 const KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R234",
+        rule_id: "PAYLOAD-RULE-R234",
         name: "Unique Identifier",
         tag: FieldTag::Exact(0x0042_0094),
         types: TYPE_TEXT_STRING,
@@ -340,7 +340,7 @@ const KEY_INFORMATION_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R235",
+        rule_id: "PAYLOAD-RULE-R235",
         name: "Cryptographic Parameters",
         tag: FieldTag::Exact(0x0042_002B),
         types: TYPE_STRUCTURE,
@@ -366,7 +366,7 @@ macro_rules! optional_nested_field {
 
 const KEY_VALUE_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R278",
+        rule_id: "PAYLOAD-RULE-R278",
         name: "Key Material",
         tag: FieldTag::Exact(0x0042_0043),
         types: TYPE_BYTE_STRING | TYPE_STRUCTURE,
@@ -375,7 +375,7 @@ const KEY_VALUE_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R279",
+        rule_id: "PAYLOAD-RULE-R279",
         name: "Attributes",
         tag: FieldTag::Exact(0x0042_0125),
         types: TYPE_STRUCTURE,
@@ -387,7 +387,7 @@ const KEY_VALUE_FIELDS: &[FieldDescriptor] = &[
 
 const KEY_WRAPPING_DATA_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R271",
+        rule_id: "PAYLOAD-RULE-R271",
         name: "Wrapping Method",
         tag: FieldTag::Exact(0x0042_009E),
         types: TYPE_ENUMERATION,
@@ -396,31 +396,31 @@ const KEY_WRAPPING_DATA_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     optional_nested_field!(
-        "KMIPKIT-0051-R272",
+        "PAYLOAD-RULE-R272",
         "Encryption Key Information",
         0x0042_0036,
         NestedStructureSchema::EncryptionKeyInformation
     ),
     optional_nested_field!(
-        "KMIPKIT-0051-R273",
+        "PAYLOAD-RULE-R273",
         "MAC/Signature Key Information",
         0x0042_004E,
         NestedStructureSchema::MacSignatureKeyInformation
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R274",
+        "PAYLOAD-RULE-R274",
         "MAC/Signature",
         0x0042_004D,
         TYPE_BYTE_STRING
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R275",
+        "PAYLOAD-RULE-R275",
         "IV/Counter/Nonce",
         0x0042_003D,
         TYPE_BYTE_STRING
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R276",
+        "PAYLOAD-RULE-R276",
         "Encoding Option",
         0x0042_00A3,
         TYPE_ENUMERATION
@@ -428,7 +428,7 @@ const KEY_WRAPPING_DATA_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const RIGHTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R237",
+    rule_id: "PAYLOAD-RULE-R237",
     name: "Right",
     tag: FieldTag::Exact(0x0042_0150),
     types: TYPE_STRUCTURE,
@@ -439,25 +439,25 @@ const RIGHTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const RIGHT_FIELDS: &[FieldDescriptor] = &[
     optional_nested_field!(
-        "KMIPKIT-0051-R238",
+        "PAYLOAD-RULE-R238",
         "Usage Limits",
         0x0042_0095,
         NestedStructureSchema::UsageLimits
     ),
     optional_nested_field!(
-        "KMIPKIT-0051-R239",
+        "PAYLOAD-RULE-R239",
         "Operations",
         0x0042_014F,
         NestedStructureSchema::Operations
     ),
     optional_nested_field!(
-        "KMIPKIT-0051-R240",
+        "PAYLOAD-RULE-R240",
         "Objects",
         0x0042_014E,
         NestedStructureSchema::Objects
     ),
     optional_nested_field!(
-        "KMIPKIT-0051-R241",
+        "PAYLOAD-RULE-R241",
         "Object Groups",
         0x0042_0166,
         NestedStructureSchema::ObjectGroups
@@ -466,7 +466,7 @@ const RIGHT_FIELDS: &[FieldDescriptor] = &[
 
 const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R242",
+        rule_id: "PAYLOAD-RULE-R242",
         name: "Usage Limits Total",
         tag: FieldTag::Exact(0x0042_0097),
         types: TYPE_LONG_INTEGER,
@@ -475,7 +475,7 @@ const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R243",
+        rule_id: "PAYLOAD-RULE-R243",
         name: "Usage Limits Count",
         tag: FieldTag::Exact(0x0042_0096),
         types: TYPE_LONG_INTEGER,
@@ -484,7 +484,7 @@ const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R244",
+        rule_id: "PAYLOAD-RULE-R244",
         name: "Usage Limits Unit",
         tag: FieldTag::Exact(0x0042_0098),
         types: TYPE_ENUMERATION,
@@ -495,7 +495,7 @@ const USAGE_LIMITS_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const OBJECTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R245",
+    rule_id: "PAYLOAD-RULE-R245",
     name: "Unique Identifier",
     tag: FieldTag::Exact(0x0042_0094),
     types: TYPE_INTEGER | TYPE_ENUMERATION | TYPE_TEXT_STRING,
@@ -505,7 +505,7 @@ const OBJECTS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 }];
 
 const OPERATIONS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R246",
+    rule_id: "PAYLOAD-RULE-R246",
     name: "Operation",
     tag: FieldTag::Exact(0x0042_005C),
     types: TYPE_ENUMERATION,
@@ -530,13 +530,13 @@ macro_rules! required_singleton_field {
 
 const CERTIFICATE_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R249",
+        "PAYLOAD-RULE-R249",
         "Certificate Type",
         0x0042_001D,
         TYPE_ENUMERATION
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R250",
+        "PAYLOAD-RULE-R250",
         "Certificate Value",
         0x0042_001E,
         TYPE_BYTE_STRING
@@ -545,13 +545,13 @@ const CERTIFICATE_FIELDS: &[FieldDescriptor] = &[
 
 const CERTIFICATE_REQUEST_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R251",
+        "PAYLOAD-RULE-R251",
         "Certificate Request Type",
         0x0042_0019,
         TYPE_ENUMERATION
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R252",
+        "PAYLOAD-RULE-R252",
         "Certificate Request Value",
         0x0042_0140,
         TYPE_BYTE_STRING
@@ -559,7 +559,7 @@ const CERTIFICATE_REQUEST_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const ASYNC_CORRELATION_VALUES_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R259",
+    rule_id: "PAYLOAD-RULE-R259",
     name: "Asynchronous Correlation Value",
     tag: FieldTag::Exact(0x0042_0006),
     types: TYPE_BYTE_STRING,
@@ -570,13 +570,13 @@ const ASYNC_CORRELATION_VALUES_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const TICKET_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R253",
+        "PAYLOAD-RULE-R253",
         "Ticket Type",
         0x0042_014A,
         TYPE_ENUMERATION
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R254",
+        "PAYLOAD-RULE-R254",
         "Ticket Value",
         0x0042_014B,
         TYPE_BYTE_STRING
@@ -585,13 +585,13 @@ const TICKET_FIELDS: &[FieldDescriptor] = &[
 
 const PROTOCOL_VERSION_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R255",
+        "PAYLOAD-RULE-R255",
         "Protocol Version Major",
         0x0042_006A,
         TYPE_INTEGER
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R256",
+        "PAYLOAD-RULE-R256",
         "Protocol Version Minor",
         0x0042_006B,
         TYPE_INTEGER
@@ -600,13 +600,13 @@ const PROTOCOL_VERSION_FIELDS: &[FieldDescriptor] = &[
 
 const REVOCATION_REASON_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R257",
+        "PAYLOAD-RULE-R257",
         "Revocation Reason Code",
         0x0042_0082,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R258",
+        "PAYLOAD-RULE-R258",
         "Revocation Message",
         0x0042_0080,
         TYPE_TEXT_STRING
@@ -614,7 +614,7 @@ const REVOCATION_REASON_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const PKCS11_INPUT_PARAMETERS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R261",
+    rule_id: "PAYLOAD-RULE-R261",
     name: "PKCS#11 Input Parameters",
     tag: FieldTag::Exact(0x0042_015B),
     types: TYPE_BYTE_STRING,
@@ -624,7 +624,7 @@ const PKCS11_INPUT_PARAMETERS_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 }];
 
 const PKCS11_INTERFACE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R260",
+    rule_id: "PAYLOAD-RULE-R260",
     name: "PKCS#11 Interface",
     tag: FieldTag::Exact(0x0042_0159),
     types: TYPE_TEXT_STRING,
@@ -635,7 +635,7 @@ const PKCS11_INTERFACE_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const KEY_BLOCK_FIELDS: &[FieldDescriptor] = &[
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R262",
+        rule_id: "PAYLOAD-RULE-R262",
         name: "Key Format Type",
         tag: FieldTag::Exact(0x0042_0042),
         types: TYPE_ENUMERATION,
@@ -644,13 +644,13 @@ const KEY_BLOCK_FIELDS: &[FieldDescriptor] = &[
         nested_schema: None,
     },
     optional_singleton_field!(
-        "KMIPKIT-0051-R263",
+        "PAYLOAD-RULE-R263",
         "Key Compression Type",
         0x0042_0041,
         TYPE_ENUMERATION
     ),
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R264",
+        rule_id: "PAYLOAD-RULE-R264",
         name: "Key Value",
         tag: FieldTag::Exact(0x0042_0045),
         types: TYPE_BYTE_STRING | TYPE_STRUCTURE,
@@ -659,19 +659,19 @@ const KEY_BLOCK_FIELDS: &[FieldDescriptor] = &[
         nested_schema: Some(NestedStructureSchema::KeyValue),
     },
     optional_singleton_field!(
-        "KMIPKIT-0051-R265",
+        "PAYLOAD-RULE-R265",
         "Cryptographic Algorithm",
         0x0042_0028,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R266",
+        "PAYLOAD-RULE-R266",
         "Cryptographic Length",
         0x0042_002A,
         TYPE_INTEGER
     ),
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R267",
+        rule_id: "PAYLOAD-RULE-R267",
         name: "Key Wrapping Data",
         tag: FieldTag::Exact(0x0042_0046),
         types: TYPE_STRUCTURE,
@@ -682,7 +682,7 @@ const KEY_BLOCK_FIELDS: &[FieldDescriptor] = &[
 ];
 
 const KEY_BEARING_OBJECT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
-    rule_id: "KMIPKIT-0051-R268",
+    rule_id: "PAYLOAD-RULE-R268",
     name: "Key Block",
     tag: FieldTag::Exact(0x0042_0040),
     types: TYPE_STRUCTURE,
@@ -693,13 +693,13 @@ const KEY_BEARING_OBJECT_FIELDS: &[FieldDescriptor] = &[FieldDescriptor {
 
 const PGP_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R285",
+        "PAYLOAD-RULE-R285",
         "PGP Key Version",
         0x0042_00BE,
         TYPE_INTEGER
     ),
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R268",
+        rule_id: "PAYLOAD-RULE-R268",
         name: "Key Block",
         tag: FieldTag::Exact(0x0042_0040),
         types: TYPE_STRUCTURE,
@@ -711,13 +711,13 @@ const PGP_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
 
 const SECRET_DATA_OBJECT_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R286",
+        "PAYLOAD-RULE-R286",
         "Secret Data Type",
         0x0042_0086,
         TYPE_ENUMERATION
     ),
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R268",
+        rule_id: "PAYLOAD-RULE-R268",
         name: "Key Block",
         tag: FieldTag::Exact(0x0042_0040),
         types: TYPE_STRUCTURE,
@@ -729,37 +729,37 @@ const SECRET_DATA_OBJECT_FIELDS: &[FieldDescriptor] = &[
 
 const SPLIT_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R287",
+        "PAYLOAD-RULE-R287",
         "Split Key Parts",
         0x0042_008B,
         TYPE_INTEGER
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R288",
+        "PAYLOAD-RULE-R288",
         "Key Part Identifier",
         0x0042_0044,
         TYPE_INTEGER
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R289",
+        "PAYLOAD-RULE-R289",
         "Split Key Threshold",
         0x0042_008C,
         TYPE_INTEGER
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R290",
+        "PAYLOAD-RULE-R290",
         "Split Key Method",
         0x0042_008A,
         TYPE_ENUMERATION
     ),
     optional_singleton_field!(
-        "KMIPKIT-0051-R291",
+        "PAYLOAD-RULE-R291",
         "Prime Field Size",
         0x0042_0062,
         TYPE_BIG_INTEGER
     ),
     FieldDescriptor {
-        rule_id: "KMIPKIT-0051-R268",
+        rule_id: "PAYLOAD-RULE-R268",
         name: "Key Block",
         tag: FieldTag::Exact(0x0042_0040),
         types: TYPE_STRUCTURE,
@@ -771,13 +771,13 @@ const SPLIT_KEY_OBJECT_FIELDS: &[FieldDescriptor] = &[
 
 const OPAQUE_OBJECT_FIELDS: &[FieldDescriptor] = &[
     required_singleton_field!(
-        "KMIPKIT-0051-R269",
+        "PAYLOAD-RULE-R269",
         "Opaque Data Type",
         0x0042_0059,
         TYPE_ENUMERATION
     ),
     required_singleton_field!(
-        "KMIPKIT-0051-R270",
+        "PAYLOAD-RULE-R270",
         "Opaque Data Value",
         0x0042_005A,
         TYPE_BYTE_STRING
@@ -832,7 +832,7 @@ pub(super) fn validate_nested_with_prefix(
             structure,
             prefix,
             &mut report,
-            "KMIPKIT-0051-R236",
+            "PAYLOAD-RULE-R236",
             "§7.18, Table 370",
         );
     }
@@ -841,7 +841,7 @@ pub(super) fn validate_nested_with_prefix(
             structure,
             prefix,
             &mut report,
-            "KMIPKIT-0051-R277",
+            "PAYLOAD-RULE-R277",
             "§3.3, Table 15",
         );
     }
@@ -861,8 +861,8 @@ fn validate_key_block_requirements(
     let mut report = ValidationReport::default();
 
     let (missing_field, rule_id) = match (has_algorithm, has_length) {
-        (true, false) => (Some("Cryptographic Length"), "KMIPKIT-0051-R266"),
-        (false, true) => (Some("Cryptographic Algorithm"), "KMIPKIT-0051-R265"),
+        (true, false) => (Some("Cryptographic Length"), "PAYLOAD-RULE-R266"),
+        (false, true) => (Some("Cryptographic Algorithm"), "PAYLOAD-RULE-R265"),
         _ => (None, ""),
     };
     if let Some(field) = missing_field {
@@ -929,7 +929,7 @@ fn validate_key_format_material_type(
 
     let mut report = ValidationReport::default();
     report.push(ValidationIssue::new(
-        ValidationCode::new("KMIPKIT-0051-R280"),
+        ValidationCode::new("PAYLOAD-RULE-R280"),
         prefix.clone().field("Key Value").field("Key Material"),
         ValidationSeverity::Error,
         ValidationSourceRef::Oasis {
@@ -1025,7 +1025,7 @@ fn validate_split_key_object(
     ) && (part_id < 1 || part_id > parts)
     {
         report.push(ValidationIssue::new(
-            ValidationCode::new("KMIPKIT-0051-R293"),
+            ValidationCode::new("PAYLOAD-RULE-R293"),
             prefix.clone().field("Key Part Identifier"),
             ValidationSeverity::Error,
             ValidationSourceRef::Oasis {
@@ -1052,7 +1052,7 @@ fn validate_split_key_object(
             .any(|item| item.tag().raw() == PRIME_FIELD_SIZE)
     {
         report.push(ValidationIssue::new(
-            ValidationCode::new("KMIPKIT-0051-R292"),
+            ValidationCode::new("PAYLOAD-RULE-R292"),
             prefix.clone().field("Prime Field Size"),
             ValidationSeverity::Error,
             ValidationSourceRef::Oasis {
@@ -1106,7 +1106,7 @@ pub(super) fn validate_derive_key_conditions(
         if method == Some(PBKDF2) {
             if !has_tag(&parameters, SALT) {
                 report.push(ValidationIssue::new(
-                    ValidationCode::new("KMIPKIT-0051-R226"),
+                    ValidationCode::new("PAYLOAD-RULE-R226"),
                     prefix.clone().field("Salt"),
                     ValidationSeverity::Error,
                     ValidationSourceRef::Oasis {
@@ -1117,7 +1117,7 @@ pub(super) fn validate_derive_key_conditions(
             }
             if !has_tag(&parameters, ITERATION_COUNT) {
                 report.push(ValidationIssue::new(
-                    ValidationCode::new("KMIPKIT-0051-R227"),
+                    ValidationCode::new("PAYLOAD-RULE-R227"),
                     prefix.clone().field("Iteration Count"),
                     ValidationSeverity::Error,
                     ValidationSourceRef::Oasis {
@@ -1143,7 +1143,7 @@ pub(super) fn validate_derive_key_conditions(
                 });
             if !has_hashing_algorithm {
                 report.push(ValidationIssue::new(
-                    ValidationCode::new("KMIPKIT-0051-R228"),
+                    ValidationCode::new("PAYLOAD-RULE-R228"),
                     prefix
                         .field("Cryptographic Parameters")
                         .field("Hashing Algorithm"),
@@ -1232,8 +1232,8 @@ fn validate_attribute_wrapper(
     report: &mut ValidationReport,
 ) {
     let (rule_id, source) = match schema {
-        NestedStructureSchema::CurrentAttribute => ("KMIPKIT-0051-R248", "§5.6, Table 162"),
-        NestedStructureSchema::NewAttribute => ("KMIPKIT-0051-R247", "§5.7, Table 163"),
+        NestedStructureSchema::CurrentAttribute => ("PAYLOAD-RULE-R248", "§5.6, Table 162"),
+        NestedStructureSchema::NewAttribute => ("PAYLOAD-RULE-R247", "§5.7, Table 163"),
         _ => return,
     };
     if structure.children().len() == 1 {
@@ -1312,7 +1312,7 @@ fn validate_cryptographic_parameter_requirements(
 
     if variable_iv_length_required && !has_iv_length {
         report.push(ValidationIssue::new(
-            ValidationCode::new("KMIPKIT-0051-R219"),
+            ValidationCode::new("PAYLOAD-RULE-R219"),
             prefix.clone().field("IV Length"),
             ValidationSeverity::Error,
             ValidationSourceRef::Oasis {
@@ -1323,7 +1323,7 @@ fn validate_cryptographic_parameter_requirements(
     }
     if tag_length_required && !has_tag_length {
         report.push(ValidationIssue::new(
-            ValidationCode::new("KMIPKIT-0051-R220"),
+            ValidationCode::new("PAYLOAD-RULE-R220"),
             prefix.clone().field("Tag Length"),
             ValidationSeverity::Error,
             ValidationSourceRef::Oasis {
@@ -1353,7 +1353,7 @@ fn validate_object_defaults_alternative(
     }
 
     report.push(ValidationIssue::new(
-        ValidationCode::new("KMIPKIT-0051-R198"),
+        ValidationCode::new("PAYLOAD-RULE-R198"),
         prefix.clone().field("Object Type"),
         ValidationSeverity::Error,
         ValidationSourceRef::Oasis {

@@ -11,7 +11,7 @@ use kmipkit_protocol::{
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 use kmipkit_ttlv::StructureView;
 
-/// An owned generic TTLV response retained for KMIPKIT-0021-FR-015 Unique Identifier shape errors.
+/// An owned generic TTLV response retained for Unique Identifier shape errors in signature and verification responses.
 ///
 /// The response is shared by cloned errors, zeroizes its payloads when the
 /// final owner is dropped, and is never included in formatted diagnostics.
@@ -208,7 +208,7 @@ impl ClientError {
 
     /// Returns the generic response retained for an approved malformed required
     /// Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature
-    /// Verify response (KMIPKIT-0021-FR-015).
+    /// Verify response for verification response parsing.
     ///
     /// This is `None` for failures that occur before a complete response is
     /// decoded and for validation or transport failures unrelated to response

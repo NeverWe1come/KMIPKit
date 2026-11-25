@@ -1,6 +1,5 @@
 //! Compile-check the Rust RNG Seed examples in the bilingual user guides.
-//! They trace to OASIS KMIP v2.1 §6.1.50, Tables 319–321, and
-//! KMIPKIT-0093-FR-004, FR-007, and FR-008; they are project examples, not
+//! They trace to OASIS KMIP v2.1 §6.1.50, Tables 319–321; they are project examples, not
 //! official conformance tests.
 
 use kmipkit_protocol::SecretBytes;

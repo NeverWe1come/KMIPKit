@@ -79,9 +79,9 @@ and non-deletable by the client, so Modify, Delete, and Set are rejected even
 when the caller reports it absent; after it is set, §4.38 also prohibits
 updates or deletion. For Usage Limits, §4.59 and Table 149 prohibit a Total
 change after protection use begins or after Get Usage Allocation under
-DEC-024. A Set that changes Total requires known-present Usage Limits and the
+standard protocol rules. A Set that changes Total requires known-present Usage Limits and the
 current Total and Count, preserves Count, and rejects a malformed structure
-that omits a required member from §7.40 Table 392. The separate KMIPKIT-0016
+that omits a required member from §7.40 Table 392. The separate attribute operations
 restriction on Add/Modify Usage Limits remains in force. These checks enforce
 the rule against caller-supplied facts; the application is responsible for
 providing trustworthy state.
@@ -97,7 +97,7 @@ specification's conformance requirement.
 
 The Baseline Client catalog state is `evidence_incomplete`. All 16 linked
 Baseline and Shared Knowledge Link mandatory official fixtures are pinned.
-T036 records 10 full deterministic `BL-M` replays, 3 full `SKLC-M` replays,
+The conformance replay suite records 10 full deterministic `BL-M` replays, 3 full `SKLC-M` replays,
 and 3 typed preflight blockers. Profiles v2.1 §6.1 item 4 requires support for
 one or more cases from §§5.1.3 and 5.6.3, not every linked case; the three
 blockers remain visible but do not alone invalidate that minimum. Separately,
@@ -144,7 +144,7 @@ caller-owned client recommendation; the application should choose and preserve
 the intended single usage. KMIPKit does not inspect remote object state or
 enforce the usage count. The mandatory Hashed Password Timestamp monotonicity
 requirement (§9.11) is mapped to a caller-owned sequence helper under the
-resolved KMIPKIT-0008 OD-003 decision. It requires strictly increasing
+credentials and attestation design. It requires strictly increasing
 caller-supplied timestamps per Username and logical credential producer; the
 application manages persistence across restarts. The helper does not compute
 hashes or send credentials, and the mapping does not establish wire ordering
@@ -169,7 +169,7 @@ pass, or profile conformance.
 
 KMIP Specification v2.1 §4.57 paragraph 2 prohibits using a Pre-Active object
 for any cryptographic purpose but does not identify an actor or message
-direction. KMIPKIT-DEC-020 interprets this as server-only for the KMIPKit 1.0
+direction. The implementation model interprets this as server-only for the KMIPKit 1.0
 client: §4.57 says State is known to and changed only by the server, and
 §6.1.17 defines Encrypt as a client request for the server to perform
 encryption. The source clause remains in client profile clause closures, but
@@ -213,7 +213,7 @@ claim; publication belongs to the separately reviewed release process.
 
 See the [conformance strategy](../../compliance/conformance.md), the
 [KMIP 2.1 inventory](../../../verification/conformance/catalog/README.md), and the
-KMIPKIT-0010 specification
+the profile conformance model specification
 for the evidence model and its scope.
 
 ## Local evidence and catalog snapshots

@@ -1,11 +1,10 @@
 #![cfg(test)]
 
 //! Fake-transport Certify execution contracts from OASIS KMIP v2.1 §6.1.6,
-//! Tables 179–181. Stable requirement coverage:
-//! `KMIPKIT-REQ-SPEC-6.1.6-001`, `-002-001`, `-002-002`, `-002-003`,
-//! `-003`, and `-007`. Shared Pending and delivery behavior follows KMIP
-//! v2.1 §§8.6, 9.1, and 9.2. These are derived tests, not official OASIS
-//! Test Case executions.
+//! Tables 179–181. Validates client execution of Certify requests, certificate
+//! template handling, and pending response states. Shared Pending and delivery
+//! behavior follows KMIP v2.1 §§8.6, 9.1, and 9.2. These are derived tests,
+//! not official OASIS Test Case executions.
 
 use kmipkit_protocol::{CertifyRequest, GetRequest, SecretBytes, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;

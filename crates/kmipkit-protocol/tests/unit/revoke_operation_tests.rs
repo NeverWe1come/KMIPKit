@@ -1,6 +1,5 @@
 //! Revoke contracts from OASIS KMIP v2.1 §6.1.44, Tables 295–297, and §11.48, Table 481.
-//! Traceability: `KMIPKIT-REQ-SPEC-6.1.44-001`, `-003-001`, and `-003-002`.
-//! These vectors are derived from the pinned tables, not official fixture runs.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::async_operation_fixtures::{response_message, structure};
 use crate::{

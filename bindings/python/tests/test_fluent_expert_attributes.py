@@ -1,4 +1,4 @@
-"""KMIPKIT-0096 FR-001–004; KMIP v2.1 §§4–5, §4.60 Table 150, §§7.1–8."""
+"""Fluent expert attributes: KMIP v2.1 §§4–5, §4.60 Table 150, §§7.1–8."""
 
 from contextlib import contextmanager
 import socket
@@ -194,7 +194,7 @@ def test_positioned_item_rejects_closed_builder_and_closed_item():
 
 
 def test_non_builder_native_argument_failure_keeps_generic_delivery_metadata():
-    # KMIPKIT-0096-FR-003: scoped builder metadata must not change other ABI calls.
+    # fluent expert attributes: scoped builder metadata must not change other ABI calls.
     with pytest.raises(errors.ClientExecutionError) as rejected:
         client._raise_client_status(client.lib.kmipkit_client_batch_create(client.ffi.NULL))
     assert rejected.value.delivery is errors.DeliveryState.NONE

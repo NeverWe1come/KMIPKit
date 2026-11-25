@@ -1,4 +1,4 @@
-"""Four-language typed managed-object and key-value behavior for KMIPKIT-0053."""
+"""Four-language typed managed-object and key-value behavior for operation facade parity."""
 
 from types import SimpleNamespace
 

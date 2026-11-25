@@ -1,4 +1,4 @@
-//! Fluent attribute-read contracts from KMIPKIT-0108 and KMIP v2.1
+//! Fluent attribute-read contracts from OASIS KMIP v2.1
 //! §§6.1.20–6.1.21.
 
 use kmipkit_protocol::AttributeReference;

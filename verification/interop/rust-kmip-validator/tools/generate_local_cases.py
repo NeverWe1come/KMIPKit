@@ -30,7 +30,7 @@ for case in catalog["test_cases"]:
 lines.extend(["        _ => false,", "    }", "}", "", "pub(crate) fn attribute_tag(name: &str) -> Option<u32> {", "    match name {"])
 for e in elements:
     if e["kind"] == "attribute":
-        tags = [p for p in e["parent_element_ids"] if p.startswith("KMIPKIT-ELEM-TAG-")]
+        tags = [p for p in e["parent_element_ids"] if p.startswith("KMIP-ELEM-TAG-") or p.startswith("KMIPKIT-ELEM-TAG-")]
         if tags:
             lines.append(f'        "{e["name"]}" => Some({_rust_u32_literal(int(tags[0].split("-")[-1], 16))}),')
 lines.extend(["        _ => None,", "    }", "}", ""])

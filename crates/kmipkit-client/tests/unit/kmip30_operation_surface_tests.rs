@@ -242,7 +242,7 @@ fn kmip30_requests() -> [ClientRequest; 7] {
 
 #[test]
 // KMIP 3.0 Working Draft §6.1 operation tables and Table 584 define this
-// request/response surface; the exact pinned source is recorded in T044.
+// request/response surface; the exact pinned source is recorded in the implementation.
 fn all_kmip30_requests_use_the_table_584_wire_code_and_preserve_typed_response() {
     for request in kmip30_requests() {
         let operation = request.operation();

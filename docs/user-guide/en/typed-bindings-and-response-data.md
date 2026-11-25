@@ -156,10 +156,10 @@ sources are [Rust](../../../verification/consumers/0053-parity/rust/src/main.rs)
 [C](../../../verification/consumers/0053-parity/c/main.c),
 [Java](../../../verification/consumers/0053-parity/java/src/main/java/Consumer.java),
 and [Python](../../../verification/consumers/0053-parity/python/main.py). These are the
-five progressive KMIPKIT-0093 journeys, exercised in all four languages. C,
+five progressive fluent complete API contract journeys, exercised in all four languages. C,
 Java, and Python also expose
 typed readers that check operation identity for Cancel, Poll, Process, and
-Query Async; their parity tests are recorded in task T078.
+Query Async; their parity tests are included in the cross-language test suite.
 
 ## Explicit full response representations
 

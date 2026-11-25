@@ -1,5 +1,5 @@
-// Requirement traceability: KMIPKIT-0004-FR-012, SC-006.
-// Authority: approved KMIPKIT-0004 Rust value-model contract.
+// Verifies public API ownership, redaction, and borrowing invariants.
+// Enforces that borrowed views cannot escape item closure lifetimes.
 use kmipkit_ttlv::{Item, ValueView};
 
 fn borrowed_text(item: &Item) -> Option<&str> {

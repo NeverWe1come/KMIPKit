@@ -89,7 +89,7 @@ impl ValidateKmipRequest for crate::AdjustAttributeRequest {
     fn validate(&self) -> ValidationReport {
         let mut report = validate_attribute_reference_name(
             self.attribute_reference(),
-            "KMIPKIT-0051-R005",
+            "PAYLOAD-RULE-R005",
             crate::ValidationPath::root()
                 .field("Request Payload")
                 .field("Attribute Reference"),
@@ -126,7 +126,7 @@ impl ValidateKmipRequest for crate::DeleteAttributeRequest {
         if let Some(reference) = self.attribute_reference() {
             report.append(validate_attribute_reference_name(
                 reference,
-                "KMIPKIT-0051-R051",
+                "PAYLOAD-RULE-R051",
                 crate::ValidationPath::root()
                     .field("Request Payload")
                     .field("Attribute Reference"),
@@ -294,7 +294,7 @@ fn validate_vendor_attribute_shape(
         return ValidationReport::default();
     }
     crate::validation::issue_report(
-        "KMIPKIT-0051-R283",
+        "PAYLOAD-RULE-R283",
         crate::ValidationPath::root()
             .field("Request Payload")
             .field(field)
@@ -319,7 +319,7 @@ fn validate_catalogued_attribute_type(
         return ValidationReport::default();
     };
     crate::validation::issue_report(
-        "KMIPKIT-0051-R284",
+        "PAYLOAD-RULE-R284",
         crate::ValidationPath::root()
             .field("Request Payload")
             .field(field)
@@ -376,7 +376,7 @@ fn attribute_mutation_issue(
     reference: &'static str,
 ) -> ValidationReport {
     crate::validation::issue_report(
-        "KMIPKIT-0051-R282",
+        "PAYLOAD-RULE-R282",
         crate::ValidationPath::root()
             .field("Request Payload")
             .field(field)
@@ -405,7 +405,7 @@ fn validate_usage_limits_count(
         });
     if has_count {
         crate::validation::request_issue_report(
-            "KMIPKIT-0051-R281",
+            "PAYLOAD-RULE-R281",
             field_path,
             crate::ValidationSourceRef::Oasis {
                 document: "KMIP v2.1",
@@ -440,7 +440,7 @@ impl ValidateKmipRequest for crate::GetAttributesRequest {
         for (index, reference) in self.attribute_references().iter().enumerate() {
             report.append(validate_attribute_reference_name(
                 reference,
-                "KMIPKIT-0051-R078",
+                "PAYLOAD-RULE-R078",
                 crate::ValidationPath::root()
                     .field("Request Payload")
                     .field("Attribute Reference")
@@ -497,7 +497,7 @@ impl ValidateKmipRequest for ImportRequest {
                 object.tag().raw(),
             ) {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-R092",
+                "PAYLOAD-RULE-R092",
                 "Any Object",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -534,7 +534,7 @@ macro_rules! impl_crypto_request_validation {
                 let mut report = ValidationReport::default();
                 if self.$check().is_err() {
                     report.append(crate::validation::request_issue_report(
-                        "KMIPKIT-0051-P005",
+                        "PAYLOAD-POLICY-P005",
                         $field,
                         crate::ValidationSourceRef::Oasis {
                             document: "KMIP v2.1",
@@ -562,7 +562,7 @@ impl ValidateKmipRequest for crate::EncryptRequest {
         let mut report = ValidationReport::default();
         if self.invalid_initial_only_aead_fields() {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-R066",
+                "PAYLOAD-RULE-R066",
                 "Authenticated Encryption Additional Data",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -572,7 +572,7 @@ impl ValidateKmipRequest for crate::EncryptRequest {
         }
         if self.validate_multipart_shape().is_err() && !self.invalid_initial_only_aead_fields() {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Data",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -599,7 +599,7 @@ impl ValidateKmipRequest for crate::DecryptRequest {
         let (additional_data, authentication_tag) = self.invalid_initial_only_aead_fields();
         if additional_data {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-R043",
+                "PAYLOAD-RULE-R043",
                 "Authenticated Encryption Additional Data",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -609,7 +609,7 @@ impl ValidateKmipRequest for crate::DecryptRequest {
         }
         if authentication_tag {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-R044",
+                "PAYLOAD-RULE-R044",
                 "Authenticated Encryption Tag",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -619,7 +619,7 @@ impl ValidateKmipRequest for crate::DecryptRequest {
         }
         if self.validate_multipart_shape().is_err() && !(additional_data || authentication_tag) {
             report.append(crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Data",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -667,7 +667,7 @@ impl ValidateKmipRequest for QueryRequest {
     fn validate(&self) -> ValidationReport {
         if !self.has_query_functions() {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Query Function",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -676,7 +676,7 @@ impl ValidateKmipRequest for QueryRequest {
             )
         } else if !self.has_valid_query_function_values() {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Query Function",
                 crate::ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
@@ -697,7 +697,7 @@ impl ValidateKmipRequest for JoinSplitKeyRequest {
             Ok(()) => ValidationReport::default(),
             Err(crate::join_split_key::JoinSplitKeyValidationFailure::Attributes) => {
                 crate::validation::request_issue_report(
-                    "KMIPKIT-0051-P005",
+                    "PAYLOAD-POLICY-P005",
                     "Attributes",
                     crate::ValidationSourceRef::Oasis {
                         document: "KMIP v2.1",
@@ -707,7 +707,7 @@ impl ValidateKmipRequest for JoinSplitKeyRequest {
             }
             Err(crate::join_split_key::JoinSplitKeyValidationFailure::References) => {
                 crate::validation::request_issue_report(
-                    "KMIPKIT-0051-P005",
+                    "PAYLOAD-POLICY-P005",
                     "Unique Identifier",
                     crate::ValidationSourceRef::Oasis {
                         document: "KMIP v2.1",
@@ -740,7 +740,7 @@ impl ValidateKmipRequest for Pkcs11Request {
             }
         };
         crate::validation::request_issue_report(
-            "KMIPKIT-0051-P005",
+            "PAYLOAD-POLICY-P005",
             field,
             crate::ValidationSourceRef::Oasis {
                 document: "KMIP v2.1",

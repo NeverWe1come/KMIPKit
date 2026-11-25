@@ -1,7 +1,7 @@
 //! Client-owned immutable extension registry tests.
 //!
-//! Traceability: KMIPKIT-0012-FR-001, KMIPKIT-0012-FR-009, and
-//! KMIPKIT-0012-SC-002.
+//! Validates client-owned extension registry immutability, schema registration,
+//! and isolation guarantees across client instances.
 
 use kmipkit_client::extension_registry;
 use kmipkit_client::{ClientError, ClientErrorCategory};
@@ -21,9 +21,9 @@ struct FixtureDefinition {
     discriminator_value: &'static str,
 }
 
-// T010 uses minimal typed Rust schemas with identity and discriminator values
+// the implementation uses minimal typed Rust schemas with identity and discriminator values
 // shared with bindings/shared/fixtures/extensions/cases.json. These are not the full
-// schemas in that corpus; T008 remains the full cross-adapter parity corpus.
+// schemas in that corpus; the implementation remains the full cross-adapter parity corpus.
 const FIXTURES: &[FixtureDefinition] = &[
     FixtureDefinition {
         name: "alpha",
@@ -215,7 +215,7 @@ fn ordered_identities(
 
 #[test]
 fn client_registries_keep_definition_snapshots_isolated() {
-    // KMIPKIT-0012-FR-001: a registry belongs to one client configuration.
+    // A registry belongs to one client configuration.
     let alpha = &FIXTURES[0];
     let beta = &FIXTURES[2];
     let alpha_registry = registry(&[alpha]);
@@ -272,7 +272,7 @@ fn registry_read_operations_leave_the_constructed_snapshot_unchanged() {
 
 #[test]
 fn definition_and_metadata_views_ignore_registration_order() {
-    // KMIPKIT-0012-FR-009 and KMIPKIT-0012-SC-002: registry-local definition
+    // Registry-local definition lookup.
     // and metadata views are deterministic regardless of registration order.
     let forward = registry(&[&FIXTURES[0], &FIXTURES[1], &FIXTURES[2]]);
     let reverse = registry(&[&FIXTURES[2], &FIXTURES[1], &FIXTURES[0]]);
@@ -294,7 +294,7 @@ fn definition_and_metadata_views_ignore_registration_order() {
         }
     }
 
-    // FR-009: these are deterministic metadata list/map views over the local
+    // Deterministic metadata list/map views over the local
     // registry. They do not indicate that a remote KMIP server supports them.
     let local_metadata_map = |registry: &extension_registry::ClientExtensionRegistry| {
         (0..definition_count_as_usize(registry))

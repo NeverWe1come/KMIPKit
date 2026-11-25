@@ -1,6 +1,6 @@
-//! Tape Library Alternative Name negative evidence (KMIPKIT-0125-FR-006).
+//! Tape Library Alternative Name negative validation tests.
 //!
-//! OASIS KMIP Profiles v2.1 §5.12.3 (`KMIPKIT-REQ-PROF-5.12.3-003`) forbids a
+//! OASIS KMIP Profiles v2.1 §5.12.3 forbids a
 //! Tape Library client from using the barcode in Alternative Name to locate an
 //! object for tape encryption or decryption, because the barcode is not
 //! guaranteed unique. `KMIPKit` is a generic client: it sends only the criteria

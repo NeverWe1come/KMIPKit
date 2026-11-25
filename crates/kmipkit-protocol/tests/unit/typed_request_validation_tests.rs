@@ -195,7 +195,7 @@ fn attribute_mutation_validation_rejects_usage_limits_count_for_add_and_modify()
 
     for report in [add.validate(), modify.validate()] {
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R281"
+            issue.code().as_str() == "PAYLOAD-RULE-R281"
                 && issue.path().to_string()
                     == "Request Payload.New Attribute.Usage Limits.Usage Limits Count"
                 && issue.source().to_string() == "KMIP v2.1 §4.59; §7.40, Table 392"
@@ -291,7 +291,7 @@ fn attribute_mutation_validation_rejects_source_prohibited_attributes() {
             report
                 .issues()
                 .iter()
-                .any(|issue| { issue.code().as_str() == "KMIPKIT-0051-R282" })
+                .any(|issue| { issue.code().as_str() == "PAYLOAD-RULE-R282" })
         );
     }
     assert!(add.validate().issues().iter().any(|issue| {
@@ -328,14 +328,14 @@ fn attribute_reference_mutation_validation_rejects_invalid_vendor_identification
 
     let adjust_report = adjust.validate();
     assert!(adjust_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R005"
+        issue.code().as_str() == "PAYLOAD-RULE-R005"
             && issue.path().to_string()
                 == "Request Payload.Attribute Reference.Vendor Identification"
             && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
     }));
     let delete_report = delete.validate();
     assert!(delete_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R051"
+        issue.code().as_str() == "PAYLOAD-RULE-R051"
             && issue.path().to_string()
                 == "Request Payload.Attribute Reference.Vendor Identification"
             && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
@@ -394,7 +394,7 @@ fn attribute_mutation_validation_rejects_malformed_vendor_attributes() {
     ];
     for (report, expected_path) in reports.iter().zip(expected_paths) {
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R283"
+            issue.code().as_str() == "PAYLOAD-RULE-R283"
                 && issue.path().to_string() == expected_path
                 && issue.source().to_string() == "KMIP v2.1 §4.60, Table 150"
         }));
@@ -437,19 +437,19 @@ fn attribute_mutation_validation_rejects_wrong_known_attribute_ttlv_types() {
     let add_report = add.validate();
     assert!(
         add_report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R284"
+            issue.code().as_str() == "PAYLOAD-RULE-R284"
                 && issue.path().to_string() == expected_path
                 && issue.source().to_string() == "KMIP v2.1 4.1"
         }),
         "unexpected Add Attribute report: {add_report:?}"
     );
     assert!(set.validate().issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R284"
+        issue.code().as_str() == "PAYLOAD-RULE-R284"
             && issue.path().to_string() == expected_path
             && issue.source().to_string() == "KMIP v2.1 4.1"
     }));
     assert!(delete.validate().issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R284"
+        issue.code().as_str() == "PAYLOAD-RULE-R284"
             && issue.path().to_string() == "Request Payload.Current Attribute.Activation Date"
             && issue.source().to_string() == "KMIP v2.1 4.1"
     }));
@@ -464,7 +464,7 @@ fn attribute_mutation_validation_rejects_wrong_known_attribute_ttlv_types() {
         ),
     ] {
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R284"
+            issue.code().as_str() == "PAYLOAD-RULE-R284"
                 && issue.path().to_string() == expected_path
                 && issue.source().to_string() == "KMIP v2.1 4.1"
         }));
@@ -616,7 +616,7 @@ fn encrypt_requires_authenticated_additional_data_on_initial_multipart_request()
     .with_authenticated_encryption_additional_data(SecretBytes::new(b"aad".to_vec()));
 
     let report = continuation.validate();
-    assert!(report_has_code(&report, "KMIPKIT-0051-R066"));
+    assert!(report_has_code(&report, "PAYLOAD-RULE-R066"));
     assert!(continuation.to_ttlv_payload().is_err());
 
     let initial = EncryptRequest::new(None, None)
@@ -653,8 +653,8 @@ fn decrypt_requires_authenticated_material_on_initial_multipart_request() {
 
     let aad_report = continuation_with_aad.validate();
     let tag_report = continuation_with_tag.validate();
-    assert!(report_has_code(&aad_report, "KMIPKIT-0051-R043"));
-    assert!(report_has_code(&tag_report, "KMIPKIT-0051-R044"));
+    assert!(report_has_code(&aad_report, "PAYLOAD-RULE-R043"));
+    assert!(report_has_code(&tag_report, "PAYLOAD-RULE-R044"));
     assert!(continuation_with_aad.to_ttlv_payload().is_err());
     assert!(continuation_with_tag.to_ttlv_payload().is_err());
 
@@ -763,7 +763,10 @@ fn revoke_validation_rejects_compromise_date_for_unrelated_reason() {
 fn validate_request_validation_rejects_an_empty_chain() {
     let report = ValidateRequest::new().validate();
     assert!(!report.is_valid());
-    assert_eq!(report.issues()[0].source().to_string(), "KMIPKIT-0051-P006");
+    assert_eq!(
+        report.issues()[0].source().to_string(),
+        "PAYLOAD-POLICY-P006"
+    );
 }
 
 #[test]
@@ -1050,7 +1053,7 @@ fn get_validation_checks_the_supplied_key_wrapping_specification() {
         .validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R229"
+        issue.code().as_str() == "PAYLOAD-RULE-R229"
             && issue.path().to_string()
                 == "Request Payload.Key Wrapping Specification.Wrapping Method"
             && issue.source().to_string() == "KMIP v2.1 §7.18, Table 370"
@@ -1072,7 +1075,7 @@ fn get_attributes_validation_rejects_invalid_vendor_identification() {
     let report = request.validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R078"
+        issue.code().as_str() == "PAYLOAD-RULE-R078"
             && issue.path().to_string()
                 == "Request Payload.Attribute Reference[0].Vendor Identification"
             && issue.source().to_string() == "KMIP v2.1 §5.5, Table 161"
@@ -1103,7 +1106,7 @@ fn export_validation_checks_the_supplied_key_wrapping_specification() {
         .validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R229"
+        issue.code().as_str() == "PAYLOAD-RULE-R229"
             && issue.path().to_string()
                 == "Request Payload.Key Wrapping Specification.Wrapping Method"
             && issue.source().to_string() == "KMIP v2.1 §7.18, Table 370"
@@ -1130,7 +1133,7 @@ fn login_validation_checks_optional_usage_limits_structure() {
         .validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R244"
+        issue.code().as_str() == "PAYLOAD-RULE-R244"
             && issue.path().to_string() == "Request Payload.Usage Limits.Usage Limits Unit"
             && issue.source().to_string() == "KMIP v2.1 §7.40, Table 392"
     }));
@@ -1148,7 +1151,7 @@ fn delegated_login_validation_checks_known_rights_members() {
     let request = DelegatedLoginRequest::new(rights);
 
     let report = request.validate();
-    assert!(report_has_code(&report, "KMIPKIT-0051-R246"));
+    assert!(report_has_code(&report, "PAYLOAD-RULE-R246"));
 }
 
 #[test]
@@ -1178,7 +1181,7 @@ fn import_validation_recurses_into_the_selected_managed_object() {
     .validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R262"
+        issue.code().as_str() == "PAYLOAD-RULE-R262"
             && issue.path().to_string() == "Request Payload.Any Object.Key Block.Key Format Type"
             && issue.source().to_string() == "KMIP v2.1 §3.1, Table 12"
     }));
@@ -1189,9 +1192,9 @@ fn import_validation_recurses_into_the_selected_managed_object() {
 fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
     const KEY_BLOCK: u32 = 0x0042_0040;
     for (object_tag, object_type, expected_rule) in [
-        (0x0042_00BD, 9, "KMIPKIT-0051-R285"),
-        (0x0042_0085, 7, "KMIPKIT-0051-R286"),
-        (0x0042_0089, 5, "KMIPKIT-0051-R287"),
+        (0x0042_00BD, 9, "PAYLOAD-RULE-R285"),
+        (0x0042_0085, 7, "PAYLOAD-RULE-R286"),
+        (0x0042_0089, 5, "PAYLOAD-RULE-R287"),
     ] {
         let object = schema_item(
             object_tag,
@@ -1217,9 +1220,9 @@ fn import_validation_checks_required_fields_for_pgp_secret_and_split_keys() {
         assert!(report_has_code(&report, expected_rule));
         if object_tag == 0x0042_0089 {
             for rule in [
-                "KMIPKIT-0051-R288",
-                "KMIPKIT-0051-R289",
-                "KMIPKIT-0051-R290",
+                "PAYLOAD-RULE-R288",
+                "PAYLOAD-RULE-R289",
+                "PAYLOAD-RULE-R290",
             ] {
                 assert!(report_has_code(&report, rule), "missing {rule}");
             }
@@ -1314,30 +1317,30 @@ fn managed_object_import_schemas_enforce_field_type_cardinality_and_order() {
 fn split_key_requires_prime_field_size_for_polynomial_prime_sharing() {
     let report = split_key_import_request(1, 3, None).validate();
 
-    assert!(report_has_code(&report, "KMIPKIT-0051-R292"));
+    assert!(report_has_code(&report, "PAYLOAD-RULE-R292"));
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R292"
+        issue.code().as_str() == "PAYLOAD-RULE-R292"
             && issue.source().to_string() == "KMIP v2.1 §2.8, Table 9"
     }));
 
     let report = split_key_import_request(1, 3, Some(vec![0x01, 0x01])).validate();
-    assert!(!report_has_code(&report, "KMIPKIT-0051-R292"));
+    assert!(!report_has_code(&report, "PAYLOAD-RULE-R292"));
 }
 
 #[test]
 fn split_key_part_identifier_must_be_within_the_declared_parts() {
     for part_identifier in [0, 3] {
         let report = split_key_import_request(part_identifier, 1, None).validate();
-        assert!(report_has_code(&report, "KMIPKIT-0051-R293"));
+        assert!(report_has_code(&report, "PAYLOAD-RULE-R293"));
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R293"
+            issue.code().as_str() == "PAYLOAD-RULE-R293"
                 && issue.source().to_string() == "KMIP v2.1 §2.8"
         }));
     }
 
     for part_identifier in [1, 2] {
         let report = split_key_import_request(part_identifier, 1, None).validate();
-        assert!(!report_has_code(&report, "KMIPKIT-0051-R293"));
+        assert!(!report_has_code(&report, "PAYLOAD-RULE-R293"));
     }
 }
 
@@ -1364,7 +1367,7 @@ fn import_and_register_validation_reject_known_object_type_mismatches() {
     )
     .validate();
     assert!(import_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R092"
+        issue.code().as_str() == "PAYLOAD-RULE-R092"
             && issue.path().to_string() == "Request Payload.Any Object"
             && issue.source().to_string() == "KMIP v2.1 §6.1.25, Table 238"
     }));
@@ -1376,7 +1379,7 @@ fn import_and_register_validation_reject_known_object_type_mismatches() {
     )
     .validate();
     assert!(register_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R140"
+        issue.code().as_str() == "PAYLOAD-RULE-R140"
             && issue.path().to_string() == "Request Payload.Any Object"
             && issue.source().to_string() == "KMIP v2.1 §6.1.43, Table 291"
     }));
@@ -1408,7 +1411,7 @@ fn cryptographic_requests_validate_supplied_parameter_structures() {
 
     for report in reports {
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R219"
+            issue.code().as_str() == "PAYLOAD-RULE-R219"
                 && issue
                     .path()
                     .to_string()
@@ -1416,7 +1419,7 @@ fn cryptographic_requests_validate_supplied_parameter_structures() {
                 && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
         }));
         assert!(report.issues().iter().any(|issue| {
-            issue.code().as_str() == "KMIPKIT-0051-R220"
+            issue.code().as_str() == "PAYLOAD-RULE-R220"
                 && issue
                     .path()
                     .to_string()
@@ -1440,7 +1443,7 @@ fn hash_validation_checks_cryptographic_parameter_requirements() {
     let report = request.validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R219"
+        issue.code().as_str() == "PAYLOAD-RULE-R219"
             && issue
                 .path()
                 .to_string()
@@ -1448,7 +1451,7 @@ fn hash_validation_checks_cryptographic_parameter_requirements() {
             && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
     }));
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R220"
+        issue.code().as_str() == "PAYLOAD-RULE-R220"
             && issue
                 .path()
                 .to_string()
@@ -1458,7 +1461,7 @@ fn hash_validation_checks_cryptographic_parameter_requirements() {
 
     let missing_algorithm = HashRequest::new(Structure::new()).validate();
     assert!(missing_algorithm.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-P005"
+        issue.code().as_str() == "PAYLOAD-POLICY-P005"
             && issue.path().to_string() == "Request Payload.Cryptographic Parameters"
             && issue.source().to_string() == "KMIP v2.1 §6.1.24, Table 235"
     }));
@@ -1473,7 +1476,7 @@ fn diagnostic_requests_preflight_reject_extensions_that_override_defined_fields(
         ))
         .validate();
     assert!(interop_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-P005"
+        issue.code().as_str() == "PAYLOAD-POLICY-P005"
             && issue.path().to_string() == "Request Payload.Interop Function"
             && issue.source().to_string() == "KMIP v2.1 §6.1.26, Table 241"
     }));
@@ -1485,7 +1488,7 @@ fn diagnostic_requests_preflight_reject_extensions_that_override_defined_fields(
         ))
         .validate();
     assert!(log_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-P005"
+        issue.code().as_str() == "PAYLOAD-POLICY-P005"
             && issue.path().to_string() == "Request Payload.Log Message"
             && issue.source().to_string() == "KMIP v2.1 §6.1.29, Table 250"
     }));
@@ -1511,13 +1514,13 @@ fn derive_key_validation_recurses_into_cryptographic_parameters() {
     let report = request.validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R219"
+        issue.code().as_str() == "PAYLOAD-RULE-R219"
             && issue.path().to_string()
                 == "Request Payload.Derivation Parameters.Cryptographic Parameters.IV Length"
             && issue.source().to_string() == "KMIP v2.1 §4.16, Table 59"
     }));
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R220"
+        issue.code().as_str() == "PAYLOAD-RULE-R220"
             && issue.path().to_string()
                 == "Request Payload.Derivation Parameters.Cryptographic Parameters.Tag Length"
     }));
@@ -1547,7 +1550,7 @@ fn derive_key_validation_checks_known_derivation_parameter_extensions() {
     let report = request.validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R225"
+        issue.code().as_str() == "PAYLOAD-RULE-R225"
             && issue.path().to_string() == "Request Payload.Derivation Parameters.Iteration Count"
             && issue.source().to_string() == "KMIP v2.1 §7.12, Table 364"
     }));
@@ -1562,7 +1565,7 @@ fn reprovision_validation_checks_supplied_certificate_shapes() {
     let report = request.validate();
 
     assert!(report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R252"
+        issue.code().as_str() == "PAYLOAD-RULE-R252"
             && issue.path().to_string()
                 == "Request Payload.Certificate Request.Certificate Request Value"
             && issue.source().to_string() == "KMIP v2.1 §2.2, Table 3"
@@ -1573,7 +1576,7 @@ fn reprovision_validation_checks_supplied_certificate_shapes() {
         .with_certificate(malformed_certificate)
         .validate();
     assert!(certificate_report.issues().iter().any(|issue| {
-        issue.code().as_str() == "KMIPKIT-0051-R250"
+        issue.code().as_str() == "PAYLOAD-RULE-R250"
             && issue.path().to_string() == "Request Payload.Certificate.Certificate Value"
             && issue.source().to_string() == "KMIP v2.1 §2.1, Table 2"
     }));

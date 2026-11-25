@@ -174,7 +174,7 @@ impl RevokeRequest {
             )
         {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Compromise Occurrence Date",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",
