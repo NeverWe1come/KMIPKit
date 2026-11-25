@@ -179,6 +179,41 @@ identity on the returned evidence. The optional profile is passed with
 should write its evidence before exiting with a failure. Run a single
 language with one executable or repeat the option for multiple languages.
 
+### Receiving server-initiated operations
+
+For KMIP 2.0 or 2.1 with `api_level: generic-ttlv`, `transport: raw_tls` and
+`encoding: TTLV`, the four standalone validators can receive Discover Versions,
+Notify, Put, Query and Set Endpoint Role over a mutually authenticated TLS
+connection. The C listener uses the Unix OpenSSL build.
+
+Provide the following options on the validator's `run` command:
+
+```sh
+--listen 127.0.0.1:0 --listener-cert /path/to/listener-cert.pem \
+  --listener-key /path/to/listener-key.pem --listener-ready-file /path/to/address.txt
+```
+
+Select the incoming case ID with `--case` for one external trigger. When running
+several incoming cases, configure the peer to initiate the operations in catalog
+order. The readiness file reports the bound address. The configured CA must
+trust the certificate presented by the connecting peer. Incoming cases retain
+their mutation policy, so Java and Python also use `--enable-mutations` and C
+uses `--allow-mutations` for the applicable cases.
+
+The controlled peer suite exercises the installed executors, including reply
+fields, correlation and a malformed Put. It also checks the exact reference
+and returned value for Cryptographic Algorithm, Cryptographic Length,
+Cryptographic Usage Mask, Object Type, State, Sensitive, Always Sensitive,
+Extractable and Never Extractable on isolated keys. The multipart SHA-256
+case checks Init, Update and Final, including the server-provided correlation
+value and final digest, through direct tags, Typed Protocol and Fluent.
+Run the suite with the installed Python wheel available and the Rust, C
+and Java validators built:
+
+```sh
+python -m unittest verification.interop.shared.tests.test_incoming_validators -v
+```
+
 ## Operation variants and API comparisons
 
 Export the request and response field obligations and the managed-object
@@ -257,3 +292,39 @@ execution while retaining its server compatibility status. A missing
 case, a blocked case, or a failed local assertion fails the check.
 The `completion.json` report lists the missing case IDs for each validator and
 records reports whose catalog, server or execution route differs from the selection.
+
+## Cosmian and Eviden KMS support scope
+
+Select the KMIP 2.x cases associated with the published support table. The
+inventory records the declared support, specification targets, local model
+cases and planned server exchanges for each published row.
+[Cosmian and Eviden KMS support table](https://docs.cosmian.com/key_management_system/kmip_support/support.html)
+
+```sh
+python3 verification/interop/shared/tools/run_all.py --all-operations --cosmian-minimum \
+  --dry-run --connection /path/to/2.0.json --connection /path/to/2.1.json \
+  --output-dir /tmp/kmip-cosmian-scope
+```
+
+Remove `--dry-run` to execute against a dedicated endpoint. Pass one
+connection per protocol version and API level you plan to exercise. Use
+`--profile` with a capability profile whose server ID matches the connection.
+Use `--case` or `--operation` to run a subset. Use `--require-complete` for
+a live run to require exchange evidence and, for the entire selection,
+report published rows that lack any mapped server case. Inspect
+`catalogs/kmip-*-cosmian-scope.json` for local-only rows and vendor
+extensions that still require fixtures. Runtime reports identify cases
+without an executable route in the chosen binding.
+
+Use `--normative` with `--all-operations` to select the full KMIP 2.0 and
+2.1 normative matrix and the existing executable variants. This includes
+the attribute policies, protocol fields, object structures, enumerations
+and bitmasks defined in the specification catalog. A broader normative
+obligation sharing an identifier with an existing baseline case receives a
+`-normative` suffix and keeps its own assertions.
+
+To include incoming operations in a coordinated run, pass
+`--listen`, `--listener-cert` and `--listener-key` to `run_all.py`.
+Each validator publishes its bound address in `listener-address.txt` in
+its result directory for the peer trigger on KMIP 2.x raw TLS connections
+using generic TTLV.
