@@ -1,5 +1,6 @@
 #include "c_validator.h"
 #include "json.h"
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -185,8 +186,14 @@ bool kmip_load_connection(const char *json_path, kmip_connection_config_t *out_c
         valid = https >= 0 && copy_member(&document, https, "url", out_connection->https_url,
                                           sizeof(out_connection->https_url), true);
     }
+    out_connection->read_timeout_seconds = 30;
     if (valid && tls >= 0) {
-        valid = copy_member(&document, tls, "ca_cert_path", out_connection->ca_cert_path,
+        int timeout_token = json_object_get(&document, tls, "read_timeout_seconds");
+        long timeout = 30;
+        valid = timeout_token < 0 || (json_integer(&document, timeout_token, &timeout) &&
+                                      timeout > 0 && timeout <= INT_MAX / 1000);
+        if (valid) out_connection->read_timeout_seconds = (uint32_t)timeout;
+        valid = valid && copy_member(&document, tls, "ca_cert_path", out_connection->ca_cert_path,
                             sizeof(out_connection->ca_cert_path), false) &&
             copy_member(&document, tls, "client_cert_path", out_connection->client_cert_path,
                         sizeof(out_connection->client_cert_path), false) &&

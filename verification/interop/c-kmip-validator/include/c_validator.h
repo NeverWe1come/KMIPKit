@@ -64,6 +64,7 @@ typedef struct {
     char client_cert_path[KMIP_MAX_NAME_LEN];
     char client_key_path[KMIP_MAX_NAME_LEN];
     char server_name_override[KMIP_MAX_NAME_LEN];
+    uint32_t read_timeout_seconds;
     char username_env[KMIP_MAX_NAME_LEN];
     char password_env[KMIP_MAX_NAME_LEN];
     bool dedicated_test_environment_confirmed;

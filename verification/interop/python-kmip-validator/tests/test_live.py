@@ -37,7 +37,7 @@ class ControlledExchangeTests(unittest.TestCase):
                 and case.get("requires", {}).get("workflow_type") != "server_to_client"
                 and PythonKmipDriver.supports(case, "typed-protocol")
             ]
-            self.assertEqual(len(cases), {"2.0": 127, "2.1": 134}[protocol_version])
+            self.assertEqual(len(cases), {"2.0": 128, "2.1": 135}[protocol_version])
             for case in cases:
                 for encoding, transport in network_combinations:
                     with self.subTest(
@@ -90,6 +90,8 @@ class ControlledExchangeTests(unittest.TestCase):
                                     else b"fixture-correlation"
                                 )
                                 observed = driver._async_exchange(case["operation"], correlation)
+                            elif case["case_id"] == "test-multipart-hash-sha256":
+                                observed = driver.execute_case(case)
                             elif case["operation"] == "Logout":
                                 ticket_type = driver._item(0x0042_014A, "enumeration", 1)
                                 ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")

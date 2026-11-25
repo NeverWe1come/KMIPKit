@@ -12,6 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JavaRouteInventoryTest {
     @Test
+    void acceptsNormativeLocalTargetsAlongsideServerOperations() throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-2x-matrix-catalog.json"));
+        var inventory = JavaRouteInventory.classify(catalog);
+        assertEquals(JavaRouteInventory.Status.UNCLASSIFIED, inventory.get("Adjustment Type").status());
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Query").status());
+    }
+
+    @Test
     void classifiesEveryCatalogOperationAndExplainsPendingRoutes() throws Exception {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
         var inventory = JavaRouteInventory.classify(catalog);

@@ -7,41 +7,44 @@ use kmipkit::{Client, ClientRequest};
 pub(crate) fn supports(case: &Case) -> bool {
     !matches!(
         case.requires["workflow_type"].as_str(),
-        Some("server_to_client" | "async_poll" | "batch_id_placeholder" | "multipart_streaming")
-    ) && matches!(
-        case.operation.as_str(),
-        "Create"
-            | "Create Group"
-            | "Create User"
-            | "Create Credential"
-            | "Deactivate"
-            | "Obliterate"
-            | "Encapsulate"
-            | "Decapsulate"
-            | "Query"
-            | "Discover Versions"
-            | "Add Attribute"
-            | "Set Attribute"
-            | "Modify Attribute"
-            | "Delete Attribute"
-            | "Get Usage Allocation"
-            | "RNG Retrieve"
-            | "Revoke"
-            | "Get"
-            | "Get Attributes"
-            | "Get Attribute List"
-            | "Locate"
-            | "Ping"
-            | "Get Constraints"
-            | "Activate"
-            | "Archive"
-            | "Recover"
-            | "Destroy"
-    ) && (case.operation != "Create"
-        || matches!(
-            case.requires["object_type"].as_str(),
-            None | Some("Symmetric Key")
-        ))
+        Some("server_to_client" | "async_poll" | "batch_id_placeholder")
+    ) && (case.requires["workflow_type"] != "multipart_streaming" || case.operation == "Hash")
+        && (crate::recipes::CRYPTO_OPERATIONS.contains(&case.operation.as_str())
+            || matches!(
+                case.operation.as_str(),
+                "Create"
+                    | "Create Group"
+                    | "Create User"
+                    | "Create Credential"
+                    | "Deactivate"
+                    | "Obliterate"
+                    | "Encapsulate"
+                    | "Decapsulate"
+                    | "Query"
+                    | "Discover Versions"
+                    | "Add Attribute"
+                    | "Set Attribute"
+                    | "Modify Attribute"
+                    | "Delete Attribute"
+                    | "Get Usage Allocation"
+                    | "RNG Retrieve"
+                    | "Revoke"
+                    | "Get"
+                    | "Get Attributes"
+                    | "Get Attribute List"
+                    | "Locate"
+                    | "Ping"
+                    | "Get Constraints"
+                    | "Activate"
+                    | "Archive"
+                    | "Recover"
+                    | "Destroy"
+            ))
+        && (case.operation != "Create"
+            || matches!(
+                case.requires["object_type"].as_str(),
+                None | Some("Symmetric Key")
+            ))
 }
 
 fn attributes(source: &AttributeSet) -> Result<AttributeSet, &'static str> {

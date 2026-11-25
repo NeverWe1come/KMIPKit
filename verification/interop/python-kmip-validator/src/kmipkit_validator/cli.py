@@ -22,7 +22,7 @@ from .contract import (
     validate_artifact,
     validate_local_inputs,
 )
-from . import generic
+from . import generic, incoming
 from .driver import LocalRecipeUnavailable, PythonKmipDriver
 from .reporter import write_interop_reports
 
@@ -137,6 +137,8 @@ def _make_report(
 
 
 def _supports_exchange(case, connection):
+    if incoming.is_incoming(case):
+        return incoming.supports(case, connection)
     if connection["api_level"] == "generic-ttlv":
         return generic.supports(case, connection)
     return PythonKmipDriver.supports(case, connection["api_level"])
@@ -181,13 +183,15 @@ def _run(
     artifact: dict[str, str],
     profile: dict[str, Any] | None,
     enable_mutations: bool,
+    incoming_listener=None,
 ) -> list[dict[str, Any]]:
     applicable = applicable_cases(catalog, connection["protocol_version"])
     policy = connection["execution_policy"]
     executable = [
         case
         for case in applicable
-        if case["execution"]["mode"] == "server_exchange" and _supports_exchange(case, connection)
+        if case["execution"]["mode"] == "server_exchange" and not incoming.is_incoming(case)
+        and _supports_exchange(case, connection)
         and not (
             PythonKmipDriver.requires_mutation(case)
             and not (policy.get("allow_mutations") is True and enable_mutations)
@@ -227,6 +231,16 @@ def _run(
                 results.append(
                     _case_record(case_id, "failed", "failed", "unknown", "local TTLV model assertion failed")
                 )
+            continue
+        if incoming.supports(case, connection):
+            if incoming_listener is None:
+                results.append(_case_record(case_id, "not_run", "not_checked", "unknown",
+                                            "incoming exchange requires --listen and a peer trigger"))
+            else:
+                status, code, reason, diagnostic = incoming.exchange(incoming_listener, case, connection)
+                passed = status == "passed"
+                results.append(_case_record(case_id, status, "passed" if passed else "not_checked",
+                                            "supported" if passed else "unknown", diagnostic, 0, code, reason))
             continue
         if not _supports_exchange(case, connection):
             reason = PythonKmipDriver.route_limitation(case, connection["api_level"])
@@ -305,6 +319,10 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--output-dir", type=Path, default=Path("results"))
     run.add_argument("--enable-mutations", action="store_true")
     run.add_argument("--artifact-manifest", type=Path, default=ARTIFACT_MANIFEST)
+    run.add_argument("--listen", type=incoming.listener_address, help="IP address and port for incoming KMIP")
+    run.add_argument("--listener-cert", type=Path)
+    run.add_argument("--listener-key", type=Path)
+    run.add_argument("--listener-ready-file", type=Path)
     args = parser.parse_args(argv)
 
     try:
@@ -356,15 +374,14 @@ def main(argv: list[str] | None = None) -> int:
         if local_issues:
             print("run blocked: local connection inputs are incomplete", file=sys.stderr)
             return 1
-        results = _run(
-            connection,
-            connection_bytes,
-            catalog,
-            catalog_bytes,
-            artifact,
-            profile,
-            args.enable_mutations,
-        )
+        if args.listen is None and (args.listener_cert or args.listener_key or args.listener_ready_file):
+            parser.error("listener certificate, key and readiness options require --listen")
+        with incoming.bind(connection, args.listen, args.listener_cert, args.listener_key,
+                           args.listener_ready_file) as listener:
+            results = _run(
+                connection, connection_bytes, catalog, catalog_bytes,
+                artifact, profile, args.enable_mutations, listener,
+            )
         report = _make_report(
             connection, connection_bytes, catalog, catalog_bytes, artifact, profile, results
         )

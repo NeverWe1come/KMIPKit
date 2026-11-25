@@ -1,5 +1,6 @@
 #ifdef KMIPKIT_C_GENERIC_TLS
 #include <signal.h>
+#include "generic_tls.h"
 #endif
 
 #include "c_validator.h"
@@ -27,7 +28,9 @@ static void print_usage(const char *program) {
             "  %s preflight --connection <path> [--catalog <path>]\n"
             "  %s run --connection <path> [--capabilities <path>] [--catalog <path>] "
             "[--output <json>] [--output-markdown <md>] [--output-html <html>] "
-            "[--allow-mutations] [--case <id>]\n",
+            "[--allow-mutations] [--case <id>]\n"
+            "  Generic incoming options: --listen ADDRESS:PORT --listener-cert FILE "
+            "--listener-key FILE --listener-ready-file FILE\n",
             program, program, program);
 }
 
@@ -134,6 +137,7 @@ int main(int argc, char **argv) {
     const char *html_output_path = NULL;
     bool allow_mutations = false;
     const char *case_filter = NULL;
+    const char *listen = NULL, *listener_cert = NULL, *listener_key = NULL, *listener_ready = NULL;
 
     for (int index = 2; index < argc; ++index) {
         if (strcmp(argv[index], "--connection") == 0 && index + 1 < argc) {
@@ -152,6 +156,18 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[index], "--case") == 0 && index + 1 < argc &&
                    strcmp(command, "run") == 0 && !case_filter) {
             case_filter = argv[++index];
+        } else if (strcmp(command, "run") == 0 && index + 1 < argc &&
+                   strcmp(argv[index], "--listen") == 0 && !listen) {
+            listen = argv[++index];
+        } else if (strcmp(command, "run") == 0 && index + 1 < argc &&
+                   strcmp(argv[index], "--listener-cert") == 0 && !listener_cert) {
+            listener_cert = argv[++index];
+        } else if (strcmp(command, "run") == 0 && index + 1 < argc &&
+                   strcmp(argv[index], "--listener-key") == 0 && !listener_key) {
+            listener_key = argv[++index];
+        } else if (strcmp(command, "run") == 0 && index + 1 < argc &&
+                   strcmp(argv[index], "--listener-ready-file") == 0 && !listener_ready) {
+            listener_ready = argv[++index];
         } else if (strcmp(argv[index], "--allow-mutations") == 0) {
             allow_mutations = true;
         } else {
@@ -165,6 +181,10 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    if (!listen && (listener_cert || listener_key || listener_ready)) {
+        fprintf(stderr, "Listener certificate, key and readiness options require --listen.\n");
+        return 2;
+    }
     kmip_connection_config_t connection;
     kmip_test_case_t *cases = calloc(KMIP_MAX_CASES, sizeof(*cases));
     size_t case_count = 0;
@@ -212,7 +232,7 @@ int main(int argc, char **argv) {
         printf("capability profiles are hypotheses and do not suppress probes\n");
         printf("public C routes: typed-protocol, Fluent and local generic TTLV\n");
 #ifdef KMIPKIT_C_GENERIC_TLS
-        printf("Generic TTLV live recipes: KMIP 2.x Query, Discover Versions and Hash, KMIP 2.1 Ping via mutual TLS\n");
+        printf("Generic TTLV exchanges use KMIP 2.x raw mutual TLS. Incoming cases require --listen and a test peer trigger.\n");
 #endif
         return 0;
     }
@@ -291,6 +311,23 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Run refused: %s.\n", error[0] ? error : "live C client setup failed");
             free(applicable);
             return 2;
+        }
+        if (listen) {
+#ifdef KMIPKIT_C_GENERIC_TLS
+            if (live_client.protocol_major == 2 && strcmp(connection.api_level, "generic-ttlv") == 0 &&
+                strcmp(connection.transport, "raw_tls") == 0 && strcmp(connection.encoding, "TTLV") == 0) {
+                live_client.incoming = kmip_generic_tls_listen(&connection, listen,
+                    listener_cert ? listener_cert : connection.client_cert_path,
+                    listener_key ? listener_key : connection.client_key_path, listener_ready);
+            }
+#endif
+            if (!live_client.incoming) {
+                fprintf(stderr, "Generic listener could not bind with the selected KMIP 2.x raw TLS settings.\n");
+                kmip_live_client_close(&live_client);
+                free(applicable);
+                free(cases);
+                return 2;
+            }
         }
         live_client.allow_mutations = allow_mutations && connection.allow_mutations;
         kmip_driver_vtable_t driver = {

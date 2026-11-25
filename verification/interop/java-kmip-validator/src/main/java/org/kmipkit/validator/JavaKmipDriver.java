@@ -35,6 +35,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
@@ -72,6 +73,9 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("Create".equals(testCase.operation()) || ownedObjectCase(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
+        if (multipartHash(testCase)) {
+            return executeMultipartHash(testCase, start);
+        }
         if (readOnlyProbe(testCase)) {
             return executeReadOnlyProbe(testCase, start);
         }
@@ -86,8 +90,12 @@ public final class JavaKmipDriver implements AutoCloseable {
                 .contains(testCase.caseId());
     }
 
+    static boolean multipartHash(CatalogLoader.CatalogCase testCase) {
+        return "test-multipart-hash-sha256".equals(testCase.caseId());
+    }
+
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
-        return ownedObjectCase(testCase) || readOnlyProbe(testCase)
+        return ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || Set.of("Create", "Ping").contains(testCase.operation());
     }
 
@@ -95,7 +103,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         boolean fluent = "fluent".equals(connection.apiLevel());
         try {
             if ("Hash".equals(testCase.operation())) {
-                return executeRequest(testCase, withBatchId(hashRequest(fluent)), result -> {
+                return executeRequest(testCase, withBatchId(hashRequest(fluent, HASH_INPUT, null, null, null)), result -> {
                     var payload = result.hashResponse().orElse(null);
                     if (payload == null) return false;
                     try (var ttlv = payload.responseTtlv()) {
@@ -113,15 +121,62 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
-    private ClientBatchItem hashRequest(boolean fluent) {
+    private CaseOutcome executeMultipartHash(CatalogLoader.CatalogCase testCase, long start) {
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        var returnedCorrelation = new AtomicReference<byte[]>();
+        byte[] expected = HexFormat.of().parseHex("484e69bd8ae45ed2440bf93f35e464f86ed9557258f0377c0c070a4f786b5b0a");
+        try {
+            byte[] first = "KMIP ".getBytes(StandardCharsets.US_ASCII);
+            CaseOutcome initial = executeRequest(testCase,
+                    withBatchId(hashRequest(fluent, first, null, true, null)), result -> {
+                        var payload = result.hashResponse().orElse(null);
+                        if (payload == null) return false;
+                        try (var ttlv = payload.responseTtlv()) {
+                            byte[] correlation = payload.correlationValue().orElse(null);
+                            returnedCorrelation.set(correlation);
+                            return payload.data().isEmpty() && correlation != null && correlation.length > 0;
+                        }
+                    }, start);
+            if (!"passed".equals(initial.status())) return initial;
+            byte[] correlation = returnedCorrelation.get();
+            byte[] update = "Hash".getBytes(StandardCharsets.US_ASCII);
+            CaseOutcome updated = executeRequest(testCase,
+                    withBatchId(hashRequest(fluent, update, correlation, null, null)),
+                    result -> checkHashOutput(result, null), start);
+            if (!"passed".equals(updated.status())) return updated;
+            byte[] last = "!".getBytes(StandardCharsets.US_ASCII);
+            return executeRequest(testCase, withBatchId(hashRequest(fluent, last, correlation, null, true)),
+                    result -> checkHashOutput(result, expected), start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        } finally {
+            byte[] correlation = returnedCorrelation.get();
+            if (correlation != null) Arrays.fill(correlation, (byte) 0);
+        }
+    }
+
+    private static boolean checkHashOutput(ClientBatchItemResult result, byte[] expected) {
+        var payload = result.hashResponse().orElse(null);
+        if (payload == null) return false;
+        try (var ttlv = payload.responseTtlv()) {
+            return payload.correlationValue().isEmpty() && Arrays.equals(payload.data().orElse(null), expected);
+        }
+    }
+
+    private ClientBatchItem hashRequest(boolean fluent, byte[] input, byte[] correlation,
+            Boolean init, Boolean end) {
         try (var parameters = appendOwnedValue(TtlvStructure.create(), 0x0042_0038, TtlvValue.Enumeration(6))) {
             if (fluent) {
                 try (var builder = client.request().hash()) {
-                    return builder.cryptographicParametersStructure(parameters).data(HASH_INPUT).build();
+                    builder.cryptographicParametersStructure(parameters).data(input);
+                    if (correlation != null) builder.correlationValue(correlation);
+                    if (init != null) builder.initIndicator(init);
+                    if (end != null) builder.finalIndicator(end);
+                    return builder.build();
                 }
             }
-            try (var data = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
-                return ClientBatchItem.hash(parameters, data, null, null, null);
+            try (var data = TtlvValue.ByteString(input, CODEC_LIMITS)) {
+                return ClientBatchItem.hash(parameters, data, correlation, init, end);
             }
         }
     }

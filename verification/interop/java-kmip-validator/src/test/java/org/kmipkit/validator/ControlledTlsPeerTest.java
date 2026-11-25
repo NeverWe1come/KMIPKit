@@ -583,6 +583,56 @@ class ControlledTlsPeerTest {
                 item(0x4200c2, 8, digest)).status());
     }
 
+    @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void multipartHashChecksEveryStage(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(c -> c.caseId().equals("test-multipart-hash-sha256"))
+                .findFirst().orElseThrow();
+        int minor = version.equals("2.1") ? 1 : 0;
+        byte[] prefix = "KMIP ".getBytes(StandardCharsets.US_ASCII);
+        byte[] update = "Hash".getBytes(StandardCharsets.US_ASCII);
+        byte[] suffix = "!".getBytes(StandardCharsets.US_ASCII);
+        byte[] correlation = item(0x4200d6, 8, "peer-correlation".getBytes(StandardCharsets.US_ASCII));
+        byte[] init = item(0x4200d7, 6, longBytes(1));
+        byte[] end = item(0x4200d8, 6, longBytes(1));
+        byte[] correctDigest = MessageDigest.getInstance("SHA-256").digest("KMIP Hash!".getBytes(StandardCharsets.US_ASCII));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        for (boolean badDigest : new boolean[]{false, true}) {
+            byte[] digest = correctDigest.clone();
+            if (badDigest) digest[0] ^= 1;
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path file = temporaryDirectory.resolve("multipart-hash.json");
+                Files.writeString(file, config.put("protocol_version", version).toString());
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27, correlation)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x27, item(0x4200c2, 8, digest)))));
+                Thread thread = new Thread(peer, "java-validator-multipart-hash");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(file))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(badDigest ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x4200c2, 8, prefix)));
+                assertTrue(contains(requests.get(0), init));
+                assertTrue(!contains(requests.get(0), correlation) && !contains(requests.get(0), end));
+                assertTrue(contains(requests.get(1), item(0x4200c2, 8, update)));
+                assertTrue(contains(requests.get(1), correlation));
+                assertTrue(!contains(requests.get(1), init) && !contains(requests.get(1), end));
+                assertTrue(contains(requests.get(2), item(0x4200c2, 8, suffix)));
+                assertTrue(contains(requests.get(2), correlation) && contains(requests.get(2), end));
+                assertTrue(!contains(requests.get(2), init));
+            }
+        }
+    }
+
     @Test
     void draftQueryAcceptsOperationsWithoutLegacyStorageMasks() throws Exception {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));

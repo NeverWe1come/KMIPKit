@@ -43,6 +43,15 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             "mutations require explicit opt-in".to_owned(),
         ));
     }
+    if case.requires["workflow_type"] == "server_to_client" {
+        return (!crate::incoming::route_available(connection)).then(|| {
+            CaseResult::non_run(
+                case,
+                "not_run",
+                "no Rust incoming recipe for the selected API, version or transport".to_owned(),
+            )
+        });
+    }
     if connection.api_level == "generic-ttlv"
         && case.execution.mode != "local_model"
         && !crate::generic::supports(case, connection)

@@ -67,6 +67,12 @@ public final class TtlvModelChecks {
         }
     }
 
+    static boolean supports(CatalogLoader.CatalogCase testCase) {
+        var requires = testCase.requires();
+        return (requires.hasNonNull("enum_type") || requires.hasNonNull("bitmask_type"))
+                && !requires.has("target_kind") && !requires.has("exhaustive_bitmask_combinations");
+    }
+
     /** Executes the generic value-preservation check associated with one local catalog case. */
     public static ModelCheck verifyLocalCase(CatalogLoader.CatalogCase testCase) {
         var requirements = testCase.requires();
