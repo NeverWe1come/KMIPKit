@@ -66,14 +66,25 @@ jobs:
           java-version: '17'
 
       - name: Build pinned static OpenSSL
-        uses: ./.github/actions/setup-static-openssl
+        uses: $/.github/actions/setup-static-openssl
 
       - name: Build and install JNI from this revision
+        shell: bash
         run: |
-          python3 tools/install_artifact.py \
-            --repository ../../.. \
-            --maven-repository build/maven-repository \
-            --manifest build/artifact-manifest.json
+          build_log=$(mktemp)
+          trap 'rm -f "$build_log"' EXIT
+          for attempt in 1 2 3; do
+            if python3 tools/install_artifact.py \
+                --repository ../../.. \
+                --maven-repository build/maven-repository \
+                --manifest build/artifact-manifest.json 2>&1 | tee "$build_log"; then
+              exit 0
+            fi
+            if [[ $attempt == 3 ]] || ! grep -qE 'status code 429|HTTP (Error )?429' "$build_log"; then
+              exit 1
+            fi
+            sleep "$((attempt * 15))"
+          done
 
       - name: Test Java artifact installer
         run: python3 -B -m unittest discover -s tests -p 'test_install_artifact.py' -v
