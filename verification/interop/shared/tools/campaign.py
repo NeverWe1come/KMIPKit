@@ -339,6 +339,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", choices=VERSIONS, action="append")
     parser.add_argument("--language", choices=LANGUAGES, action="append")
+    parser.add_argument("--cosmian-minimum", action="store_true",
+                        help="Export table obligations with matching installed-validator case results")
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--require-complete", action="store_true")
@@ -398,6 +400,18 @@ def main():
         )
         if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
             raise ValueError("catalog evidence does not match the requested library commit")
+        if args.cosmian_minimum:
+            from verification.interop.shared.tools.cosmian_minimum import (
+                ALLOWED_VERSIONS, build_selection, with_execution_evidence,
+            )
+
+            for version in ALLOWED_VERSIONS:
+                if version in (args.version or VERSIONS):
+                    selection, inventory = build_selection(ROOT, version)
+                    inventory = with_execution_evidence(inventory, selection, catalog_runs)
+                    (args.output_dir / f"cosmian-{version}.json").write_text(
+                        json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
+                    )
         write_report(args.output_dir, result, catalog_runs)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")

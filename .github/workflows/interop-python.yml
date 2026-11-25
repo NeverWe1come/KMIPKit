@@ -54,6 +54,17 @@ jobs:
       - name: Run installed-package tests and controlled TLS probes
         run: PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_*.py' -v
 
+      - name: Verify KMIP 2.x tag construction and controlled exchanges
+        working-directory: .
+        env:
+          KMIPKIT_REQUIRED_INTEROP_VALIDATOR: python
+        run: |
+          python3 -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
+          report_dir="$(mktemp -d)"
+          python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --construct --require-complete --runner python verification/interop/python-kmip-validator/tools/run_campaign.sh \
+            --output "$report_dir/oasis-construction.jsonl"
+
       - name: Verify shared draft campaign evidence
         working-directory: .
         run: |

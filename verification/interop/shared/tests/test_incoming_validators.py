@@ -23,7 +23,9 @@ PKI = ROOT / "bindings/python/tests/fixtures/login-mtls"
 JAR_CONSUMER = INTEROP / "java-kmip-validator"
 PYTHON_CONSUMER = INTEROP / "python-kmip-validator"
 PYTHON_MANIFEST = PYTHON_CONSUMER / "build/artifact-manifest.json"
-RUST = INTEROP / "rust-kmip-validator/target/debug/rust-kmip-validator"
+RUST = Path(os.environ.get(
+    "KMIPKIT_VALIDATOR_BIN", INTEROP / "rust-kmip-validator/target/debug/rust-kmip-validator",
+)).resolve()
 C = INTEROP / "c-kmip-validator/build/kmip_validator_c"
 JAVA = JAR_CONSUMER / "build/install/java-kmip-validator/bin/java-kmip-validator"
 OPERATIONS = {
@@ -105,10 +107,17 @@ def version_catalog(version):
 
 
 def installed_validators():
-    return (
+    validators = (
         ("rust", RUST.is_file()), ("c", C.is_file()), ("java", JAVA.is_file()),
         ("python", PYTHON_MANIFEST.is_file() and importlib.util.find_spec("kmipkit") is not None),
     )
+    required = os.environ.get("KMIPKIT_REQUIRED_INTEROP_VALIDATOR")
+    if not required:
+        return validators
+    if not dict(validators).get(required):
+        raise AssertionError(f"Required installed validator is unavailable: {required}")
+    return ((required, True),)
+
 
 
 def connection_config(minor, port, *, incoming):
@@ -133,6 +142,19 @@ def read_message(stream):
     return parse_items(frame)
 
 
+def save_evidence(report, catalog, label):
+    destination = os.environ.get("KMIPKIT_TABLE_EVIDENCE_DIR")
+    if not destination:
+        return
+    destination = Path(destination)
+    destination.mkdir(parents=True, exist_ok=True)
+    report_bytes = report.read_bytes()
+    catalog_bytes = catalog.read_bytes()
+    digest = hashlib.sha256(catalog_bytes).hexdigest()
+    (destination / f"catalog-{digest}.json").write_bytes(catalog_bytes)
+    (destination / f"results-{label}.json").write_bytes(report_bytes)
+
+
 class DirectTagValidatorTests(unittest.TestCase):
     def test_each_installed_validator_receives_direct_tags(self):
         for language, available in installed_validators():
@@ -153,6 +175,9 @@ class DirectTagValidatorTests(unittest.TestCase):
                     (0x42002C, 2, 4, "test-attr-cryptographic-usage-mask"),
                     (0x420057, 5, 2, "test-attr-object-type"),
                     (0x42008D, 5, 1, "test-attr-state"),
+                    (0x420022, 7, b"kmipkit-attribute-fixture", "test-attr-contact-information"),
+                    (0x4200FC, 7, b"kmipkit-attribute-fixture", "test-attr-description"),
+                    (0x4200FD, 7, b"kmipkit-attribute-fixture", "test-attr-comment"),
                     (0x420120, 6, 1, "test-attr-sensitive"),
                     (0x420121, 6, 1, "test-attr-always-sensitive"),
                     (0x420122, 6, 0, "test-attr-extractable"),
@@ -162,7 +187,27 @@ class DirectTagValidatorTests(unittest.TestCase):
                         with self.subTest(language=language, minor=minor, case=case_id, invalid=invalid):
                             if not available:
                                 self.skipTest(f"Installed {language} validator required")
-                            self.read_attribute(language, minor, tag, kind, value, case_id, invalid)
+                            self.owned_key_exchange(language, minor, case_id, 11,
+                                                    attribute=(tag, kind, value), invalid=invalid)
+
+    def test_archive_unsupported_response_preserves_cleanup(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                with self.subTest(language=language, minor=minor):
+                    if not available:
+                        self.skipTest(f"Installed {language} validator required")
+                    self.owned_key_exchange(language, minor, "test-op-archive", 21, unsupported=True)
+
+    def test_obtain_lease_validates_result_and_cleans_up(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for verdict in ("passed", "failed", "server_unsupported"):
+                    with self.subTest(language=language, minor=minor, verdict=verdict):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.owned_key_exchange(language, minor, "test-op-obtain-lease", 16,
+                                                invalid=verdict == "failed",
+                                                unsupported=verdict == "server_unsupported")
 
     def test_multipart_hash_across_api_levels(self):
         for language, available in installed_validators():
@@ -239,6 +284,7 @@ class DirectTagValidatorTests(unittest.TestCase):
             self.assertEqual(evidence["status"], "failed" if invalid else "passed")
             if not invalid:
                 self.assertEqual(evidence["result_status_code"], 0)
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-multipart-hash")
 
     def accept_request(self, listener, process, stage):
         try:
@@ -250,7 +296,8 @@ class DirectTagValidatorTests(unittest.TestCase):
                           f"{(stdout + stderr).decode(errors='replace')}")
             raise AssertionError(f"{stage} did not reach the peer") from error
 
-    def read_attribute(self, language, minor, tag, kind, value, case_id, invalid):
+    def owned_key_exchange(self, language, minor, case_id, target, *, attribute=None, invalid=False, unsupported=False):
+        tag, kind, value = attribute or (None, None, None)
         identifier = wire_item(0x420094, 7, b"owned-attribute-fixture")
         with tempfile.TemporaryDirectory(prefix="kmipkit-read-attributes-") as dirname:
             work = Path(dirname)
@@ -271,7 +318,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                 tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
                     try:
-                        for operation in (1, 11, 20):
+                        for operation in (1, target, 20):
                             raw, _ = self.accept_request(listener, process, f"operation {operation}")
                             raw.settimeout(5)
                             with raw, tls.wrap_socket(raw, server_side=True) as channel:
@@ -287,32 +334,53 @@ class DirectTagValidatorTests(unittest.TestCase):
                                     if kind == 6:
                                         self.assertEqual(only(attributes, 0x420120, 6), struct.pack(">Q", 1))
                                         self.assertEqual(only(attributes, 0x420122, 6), struct.pack(">Q", 0))
+                                    if kind == 7:
+                                        self.assertEqual(only(attributes, tag, kind), value)
                                     fields = [number(0x420057, 5, 2), identifier]
                                 else:
                                     self.assertEqual(only(payload, 0x420094, 7), b"owned-attribute-fixture")
                                     fields = [identifier]
                                     if operation == 11:
                                         self.assertEqual(only(payload, 0x42013B, 5), struct.pack(">I", tag))
-                                        attribute = (wire_item(tag, kind, struct.pack(">Q", value ^ int(invalid)))
-                                                     if kind == 6 else number(tag, kind, value + int(invalid)))
+                                        if kind == 7:
+                                            attribute = wire_item(tag, kind, b"wrong value" if invalid else value)
+                                        elif kind == 6:
+                                            attribute = wire_item(tag, kind, struct.pack(">Q", value ^ int(invalid)))
+                                        else:
+                                            attribute = number(tag, kind, value + int(invalid))
                                         fields.append(structure(0x420125, attribute))
+                                    if operation == 16:
+                                        fields.extend((number(0x420049, 2 if invalid else 10, 60),
+                                                       wire_item(0x420048, 9, struct.pack(">q", 1))))
+                                response = ([number(0x42007F, 5, 1), number(0x42007E, 5, 5)]
+                                            if operation == target and unsupported else
+                                            [number(0x42007F, 5, 0), structure(0x42007C, *fields)])
                                 channel.sendall(structure(
                                     0x42007B,
                                     structure(0x42007A, version(minor),
                                               wire_item(0x420092, 9, struct.pack(">Q", 1)),
                                               number(0x42000D, 2, 1)),
                                     structure(0x42000F, number(0x42005C, 5, operation),
-                                              number(0x42007F, 5, 0), structure(0x42007C, *fields)),
+                                              *response),
                                 ))
                         _, stderr = process.communicate(timeout=10)
-                        self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
+                        if not unsupported:
+                            self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
                             process.terminate()
                             process.communicate(timeout=5)
             evidence, = json.loads(report.read_text())["cases"]
             self.assertEqual(evidence["case_id"], case_id)
-            self.assertEqual(evidence["status"], "failed" if invalid else "passed")
+            if unsupported:
+                self.assertEqual(evidence["status"], "server_unsupported")
+                self.assertEqual(evidence["result_status_code"], 1)
+                self.assertEqual(evidence["result_reason_code"], 5)
+            else:
+                self.assertEqual(evidence["status"], "failed" if invalid else "passed")
+            if not invalid:
+                result = "unsupported" if unsupported else "success"
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{case_id}-{result}")
 
     def exchange(self, language, minor, invalid):
         protocol_version = f"2.{minor}"
@@ -358,6 +426,8 @@ class DirectTagValidatorTests(unittest.TestCase):
                 self.assertEqual(evidence["status"], "failed" if invalid else "passed")
                 self.assertEqual(evidence["result_status_code"], int(invalid))
                 self.assertEqual(evidence.get("result_reason_code"), 7 if invalid else None)
+            if not invalid:
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-incoming")
 
     def wait_for_listener(self, process, ready):
         deadline = time.monotonic() + 10

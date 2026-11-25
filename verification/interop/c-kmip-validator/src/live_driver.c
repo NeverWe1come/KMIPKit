@@ -9404,6 +9404,8 @@ typedef struct {
     uint64_t size;
 } generic_identifier_t;
 
+static const uint8_t generic_text_attribute_fixture[] = "kmipkit-attribute-fixture";
+
 static bool add_generic_create_fields(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload,
                                       uint32_t attribute_tag) {
     kmipkit_ttlv_structure_t *attrs = NULL;
@@ -9415,6 +9417,13 @@ static bool add_generic_create_fields(kmip_live_client_t *client, kmipkit_ttlv_s
     if (valid && attribute_tag >= 0x420120 && attribute_tag <= 0x420123)
         valid = add_generic_boolean(client, &attrs, 0x420120, true) &&
             add_generic_boolean(client, &attrs, 0x420122, false);
+    if (valid && (attribute_tag == 0x420022 || attribute_tag == 0x4200fc || attribute_tag == 0x4200fd)) {
+        kmipkit_ttlv_value_t *text = NULL;
+        valid = kmipkit_ttlv_value_text_string(client->limits, generic_text_attribute_fixture,
+            sizeof(generic_text_attribute_fixture) - 1, &text) == 0 &&
+            append_ttlv_value(client, &attrs, attribute_tag, &text);
+        if (text) kmipkit_ttlv_value_release(text);
+    }
     valid = valid && add_generic_structure(client, payload, 0x420125, &attrs);
     if (attrs) kmipkit_ttlv_structure_release(attrs);
     return valid;
@@ -9693,6 +9702,9 @@ static const struct {
     {"test-attr-cryptographic-usage-mask", 0x42002c, 4, KMIPKIT_TTLV_ITEM_TYPE_INTEGER},
     {"test-attr-object-type", 0x420057, 2, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION},
     {"test-attr-state", 0x42008d, 1, KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION},
+    {"test-attr-contact-information", 0x420022, 0, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING},
+    {"test-attr-description", 0x4200fc, 0, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING},
+    {"test-attr-comment", 0x4200fd, 0, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING},
     {"test-attr-sensitive", 0x420120, 1, KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN},
     {"test-attr-always-sensitive", 0x420121, 1, KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN},
     {"test-attr-extractable", 0x420122, 0, KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN},
@@ -9717,6 +9729,9 @@ static bool generic_key_attribute_matches(kmipkit_ttlv_structure_view_t *attribu
                 uint32_t actual;
                 return generic_enum_field(attributes, tag, &actual) && actual == (uint32_t)expected;
             }
+            case KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING:
+                return structure_view_has_text(attributes, tag, generic_text_attribute_fixture,
+                    sizeof(generic_text_attribute_fixture) - 1);
             case KMIPKIT_TTLV_ITEM_TYPE_BOOLEAN: {
                 kmipkit_ttlv_value_view_t *value = NULL;
                 uint8_t actual;
@@ -9748,6 +9763,13 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         }
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
             valid = generic_check_usage_matches(payload, fields);
+        if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE) {
+            kmipkit_ttlv_value_view_t *lease = NULL, *change_date = NULL;
+            valid = structure_view_find_value(payload, 0x420049, KMIPKIT_TTLV_ITEM_TYPE_INTERVAL, &lease) &&
+                structure_view_find_value(payload, 0x420048, KMIPKIT_TTLV_ITEM_TYPE_DATE_TIME, &change_date);
+            if (change_date) kmipkit_ttlv_value_view_release(change_date);
+            if (lease) kmipkit_ttlv_value_view_release(lease);
+        }
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST)
             valid = generic_has_length_reference(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
@@ -9921,7 +9943,8 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
     }
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_GET ||
                             operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES ||
-                            operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST))
+                            operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST ||
+                            operation == KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE))
         outcome = execute_generic_exchange_with_reference(client, operation, &id, NULL,
             attribute_tag);
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_ACTIVATE ||
@@ -10176,6 +10199,7 @@ static uint32_t generic_owned_operation(const char *id) {
     if (generic_key_attribute_reference(id))
         return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES;
     if (strcmp(id, "test-op-get-attribute-list") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST;
+    if (strcmp(id, "test-op-obtain-lease") == 0) return KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE;
     if (strcmp(id, "test-op-activate") == 0) return KMIPKIT_ENUMERATION_OPERATION_ACTIVATE;
     if (strcmp(id, "test-op-revoke") == 0) return KMIPKIT_ENUMERATION_OPERATION_REVOKE;
     if (strcmp(id, "test-op-destroy") == 0) return KMIPKIT_ENUMERATION_OPERATION_DESTROY;

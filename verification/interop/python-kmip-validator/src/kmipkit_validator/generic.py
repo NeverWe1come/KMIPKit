@@ -9,11 +9,16 @@ import struct
 HASH_INPUT = b"abc"
 CREATE, GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 1, 0x0A, 0x0B, 0x14, 0x15, 0x16
 CHECK = 0x09
+OBTAIN_LEASE = 0x10
 GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE = 0x0C, 0x12, 0x13
-OWNED_KEY_OPERATIONS = {CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
+OWNED_KEY_OPERATIONS = {CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
 
 
+TEXT_ATTRIBUTE_FIXTURE = b"kmipkit-attribute-fixture"
 KEY_ATTRIBUTES = {
+    "test-attr-contact-information": (0x420022, "TextString", TEXT_ATTRIBUTE_FIXTURE),
+    "test-attr-description": (0x4200FC, "TextString", TEXT_ATTRIBUTE_FIXTURE),
+    "test-attr-comment": (0x4200FD, "TextString", TEXT_ATTRIBUTE_FIXTURE),
     "test-attr-cryptographic-algorithm": (0x420028, "Enumeration", 3),
     "test-op-get-attributes": (0x42002A, "Integer", 256),
     "test-attr-cryptographic-length": (0x42002A, "Integer", 256),
@@ -36,7 +41,7 @@ def _operation(case, version):
         return GET_ATTRIBUTES
     return {"test-op-create": CREATE, "test-op-check": CHECK, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
             "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY,
-            "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+            "test-op-obtain-lease": OBTAIN_LEASE, "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
             "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
             "test-multipart-hash-sha256": 0x27}.get(case["case_id"])
 
@@ -196,6 +201,12 @@ def _run_owned_key(driver, operation, case_id):
             and _has_field(payload, 0x420057, "Enumeration", 2)
             and _has_field(payload, 0x42008F, "Structure"),
         )
+    if created["status"] == "passed" and operation == OBTAIN_LEASE:
+        target = _checked_exchange(
+            driver, OBTAIN_LEASE, identifier, lambda payload: same_id(payload)
+            and _has_field(payload, 0x420049, "Interval")
+            and _has_field(payload, 0x420048, "DateTime"),
+        )
     if created["status"] == "passed" and operation == GET_ATTRIBUTES:
         tag, kind, expected = KEY_ATTRIBUTES[case_id]
         target = _checked_exchange(
@@ -254,6 +265,8 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
                  item(0x42002C, "integer", 4)]
         if attribute_reference in range(0x420120, 0x420124):
             attrs.extend([item(0x420120, "boolean", True), item(0x420122, "boolean", False)])
+        if attribute_reference in (0x420022, 0x4200FC, 0x4200FD):
+            attrs.append(item(attribute_reference, "text", TEXT_ATTRIBUTE_FIXTURE.decode("ascii")))
         payload_fields = [item(0x420057, "enumeration", 2), node(0x420125, attrs)]
     elif operation in OWNED_KEY_OPERATIONS:
         payload_fields = [item(0x420094, "text", identifier)]
@@ -416,8 +429,11 @@ def _has_key_attribute(payload, tag_code, kind, expected):
                 if not _has_field(attrs, tag_code, kind):
                     return False
                 with ttlv.ttlv_structure_view_item_at(attrs, 0) as attr, ttlv.ttlv_item_view_value(attr) as value:
-                    read_value = (ttlv.ttlv_value_view_boolean if kind == "Boolean"
-                                  else ttlv.ttlv_value_view_integer)
+                    read_value = {
+                        "Boolean": ttlv.ttlv_value_view_boolean,
+                        "Integer": ttlv.ttlv_value_view_integer,
+                        "TextString": ttlv.ttlv_value_view_bytes,
+                    }[kind]
                     return read_value(value) == expected
     return False
 

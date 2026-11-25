@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from verification.interop.shared.tools.cosmian_minimum import ROOT, build_selection
+from verification.interop.shared.tools.cosmian_minimum import ROOT, build_selection, with_execution_evidence
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
 from verification.interop.shared.tools.run_all import Listener, build_command_for_language
 
@@ -30,16 +30,20 @@ class CosmianMinimumTests(unittest.TestCase):
                 [(row["kind"], row["name"], row["declared_support"]) for row in report["rows"]],
             )
             for row in report["rows"]:
+                routes = {(item["language"], item["api_level"]) for item in row["obligations"]}
+                self.assertEqual(routes, {(language, api) for language in ("rust", "c", "java", "python")
+                                          for api in ("typed-protocol", "fluent", "generic-ttlv")})
                 self.assertLessEqual(set(row["server_cases"]) | set(row["local_cases"]), cases.keys())
                 if row["declared_support"] == "not_applicable":
-                    self.assertEqual(row["disposition"], "out_of_scope")
+                    self.assertEqual(row["disposition"], "version_boundary_required")
+                    self.assertEqual({o["expectation"] for o in row["obligations"]}, {"verify_version_boundary"})
                     self.assertFalse(row["server_cases"])
                 if row["kind"] == "operation":
                     expected_direction = "server_to_client" if row["name"] in {"Notify", "Put"} else "client_to_server"
                     for case_id in row["server_cases"]:
                         self.assertEqual(direction(cases[case_id]), expected_direction)
             reports[version] = {(r["kind"], r["name"]): r for r in report["rows"]}
-        self.assertEqual(reports["2.0"]["attribute", "Rotate Date"]["disposition"], "out_of_scope")
+        self.assertEqual(reports["2.0"]["attribute", "Rotate Date"]["disposition"], "version_boundary_required")
         self.assertIn("test-attr-rotate-date", reports["2.1"]["attribute", "Rotate Date"]["server_cases"])
         self.assertIn("test-attr-rotate-date-normative", reports["2.1"]["attribute", "Rotate Date"]["server_cases"])
         for version in ("2.0", "2.1"):
@@ -48,6 +52,30 @@ class CosmianMinimumTests(unittest.TestCase):
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])
         self.assertTrue(reports["2.1"]["transparent_key", "RSA Private Key"]["normative_targets"])
         self.assertEqual(reports["2.1"]["attribute", "Attribute Index"]["disposition"], "vendor_fixture_required")
+
+    def test_row_evidence_matches_the_report_version_language_and_api(self):
+        catalog, inventory = build_selection(ROOT, "2.1")
+        recipe = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-archive")
+        run = {
+            "run_id": "controlled-archive", "protocol_version": "2.1", "language": "c",
+            "scope": "controlled", "catalog_sha256": "a" * 64,
+            "execution": {"api_level": "generic-ttlv", "library_commit": "b" * 40,
+                          "artifact_sha256": "c" * 64},
+            "cases": [{"case_id": "test-op-archive", "status": "server_unsupported",
+                       "result_status_code": 1, "result_reason_code": 5,
+                       "assertions": recipe["execution"]["assertions"]}],
+        }
+        mismatched = {**run, "run_id": "different-assertions",
+                      "cases": [{**run["cases"][0], "assertions": ["model_only"]}]}
+        report = with_execution_evidence(inventory, catalog, [run, {**run, "protocol_version": "2.0"}, mismatched])
+        archive = next(row for row in report["rows"] if row["kind"] == "operation" and row["name"] == "Archive")
+        matched = [item for item in archive["obligations"] if item["case_results"]]
+        evidence, = matched
+        self.assertEqual((evidence["language"], evidence["api_level"]), ("c", "generic-ttlv"))
+        self.assertEqual(evidence["expectation"], "verify_unsupported_response")
+        result, = evidence["case_results"]
+        self.assertEqual(result["result_reason_code"], 5)
+        self.assertEqual(result["scope"], "controlled")
 
     def test_full_catalog_retains_distinct_attribute_policy_obligations(self):
         for version, attributes in (("2.0", 56), ("2.1", 63)):

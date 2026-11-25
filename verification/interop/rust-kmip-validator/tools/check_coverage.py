@@ -21,11 +21,14 @@ for line in settings.splitlines():
 # Only this dedicated coverage directory is cleared; other builds stay intact.
 for profile in TARGET.glob("*.profraw"):
     profile.unlink()
+env["KMIPKIT_REQUIRED_INTEROP_VALIDATOR"] = "rust"
 env["KMIPKIT_VALIDATOR_BIN"] = str(TARGET / "debug/rust-kmip-validator")
 commands = [
     ["cargo", "+1.94", "build", "--locked", "--manifest-path", str(MANIFEST)],
     ["cargo", "+1.94", "test", "--locked", "--manifest-path", str(MANIFEST), "--all-features"],
     [sys.executable, "-m", "unittest", "discover", "-s", "verification/interop/rust-kmip-validator/tests", "-p", "test_live.py", "-v"],
+    [sys.executable, "-m", "unittest", "discover", "-s", "verification/interop/shared/tests",
+     "-p", "test_incoming_validators.py", "-v"],
     # This exhaustive generated lookup table is verified by all 67 model cases
     # and regeneration checks; it is excluded from handwritten-code coverage.
     ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", r"local_cases_generated\.rs", "--json", "--output-path", str(OUTPUT)],

@@ -47,6 +47,7 @@ final class GenericExchange {
     private static final int GET = 0x0a;
     private static final int GET_ATTRIBUTES = 0x0b;
     private static final int GET_ATTRIBUTE_LIST = 0x0c;
+    private static final int OBTAIN_LEASE = 0x10;
     private static final int ACTIVATE = 0x12;
     private static final int REVOKE = 0x13;
     private static final int DESTROY = 0x14;
@@ -57,6 +58,7 @@ final class GenericExchange {
     private static final int DISCOVER_VERSIONS = 0x1e;
     private static final int RNG_RETRIEVE = 0x25;
     private static final int HASH = 0x27;
+    private static final byte[] TEXT_ATTRIBUTE_FIXTURE = "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] HASH_DIGEST = HexFormat.of().parseHex(
             "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
@@ -83,6 +85,7 @@ final class GenericExchange {
             case "test-op-check" -> CHECK;
             case "test-op-get" -> GET;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
+            case "test-op-obtain-lease" -> OBTAIN_LEASE;
             case "test-op-activate" -> ACTIVATE;
             case "test-op-revoke" -> REVOKE;
             case "test-op-destroy" -> DESTROY;
@@ -115,6 +118,9 @@ final class GenericExchange {
             case "test-attr-cryptographic-usage-mask" -> 0x42002c;
             case "test-attr-object-type" -> 0x420057;
             case "test-attr-state" -> 0x42008d;
+            case "test-attr-contact-information" -> 0x420022;
+            case "test-attr-description" -> 0x4200fc;
+            case "test-attr-comment" -> 0x4200fd;
             case "test-attr-sensitive" -> 0x420120;
             case "test-attr-always-sensitive" -> 0x420121;
             case "test-attr-extractable" -> 0x420122;
@@ -125,7 +131,7 @@ final class GenericExchange {
 
     private static boolean usesOwnedKey(int operation) {
         return switch (operation) {
-            case CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
+            case CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
             default -> false;
         };
     }
@@ -153,6 +159,11 @@ final class GenericExchange {
             target = execute(connection, GET, minor, id, payload -> sameId.test(payload)
                     && hasField(payload, 0x420057, TtlvItemType.Enumeration, 2)
                     && hasField(payload, 0x42008f, TtlvItemType.Structure, 0), start);
+        }
+        if ("passed".equals(create.status()) && operation == OBTAIN_LEASE) {
+            target = execute(connection, OBTAIN_LEASE, minor, id, payload -> sameId.test(payload)
+                    && hasField(payload, 0x420049, TtlvItemType.Interval, 0)
+                    && hasField(payload, 0x420048, TtlvItemType.DateTime, 0), start);
         }
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTES) {
             target = execute(connection, GET_ATTRIBUTES, minor, id, attributeTag,
@@ -274,7 +285,7 @@ final class GenericExchange {
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42013b, TtlvValue.Enumeration(attributeTag)));
                     case REVOKE -> revokePayload(objectId);
-                    case GET, GET_ATTRIBUTE_LIST, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
+                    case GET, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)));
                     case LOCATE -> structureItem(0x420079, item(0x42004f, TtlvValue.Integer(1)),
                             item(0x4200d4, TtlvValue.Integer(0)));
@@ -304,9 +315,14 @@ final class GenericExchange {
                 var usage = item(0x42002c, TtlvValue.Integer(4));
                 var sensitive = item(0x420120, TtlvValue.Boolean(true));
                 var extractable = item(0x420122, TtlvValue.Boolean(false));
-                var attributes = attributeTag >= 0x420120 && attributeTag <= 0x420123
-                        ? structureItem(0x420125, algorithm, length, usage, sensitive, extractable)
-                        : structureItem(0x420125, algorithm, length, usage);
+                var attributes = switch (attributeTag) {
+                    case 0x420120, 0x420121, 0x420122, 0x420123 ->
+                            structureItem(0x420125, algorithm, length, usage, sensitive, extractable);
+                    case 0x420022, 0x4200fc, 0x4200fd ->
+                            structureItem(0x420125, algorithm, length, usage,
+                                    item(attributeTag, TtlvValue.TextString(TEXT_ATTRIBUTE_FIXTURE, LIMITS)));
+                    default -> structureItem(0x420125, algorithm, length, usage);
+                };
                 var objectType = item(0x420057, TtlvValue.Enumeration(2))) {
             return structureItem(0x420079, objectType, attributes);
         }
@@ -583,6 +599,7 @@ final class GenericExchange {
                     case Enumeration -> value.enumeration() == expected;
                     case Integer -> value.integer() == expected;
                     case Boolean -> value.booleanValue() == (expected != 0);
+                    case TextString -> Arrays.equals(value.bytes(), TEXT_ATTRIBUTE_FIXTURE);
                     default -> true;
                 };
                 if (!found) return false;
@@ -628,6 +645,7 @@ final class GenericExchange {
                         case 0x42008d -> hasField(attrs, attributeTag, TtlvItemType.Enumeration, 1);
                         case 0x420120, 0x420121, 0x420123 -> hasField(attrs, attributeTag, TtlvItemType.Boolean, 1);
                         case 0x420122 -> hasField(attrs, attributeTag, TtlvItemType.Boolean, 0);
+                        case 0x420022, 0x4200fc, 0x4200fd -> hasField(attrs, attributeTag, TtlvItemType.TextString, 0);
                         default -> false;
                     };
                 }

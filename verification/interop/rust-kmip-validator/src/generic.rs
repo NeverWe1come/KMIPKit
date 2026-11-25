@@ -11,12 +11,14 @@ use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
 use sha2::{Digest, Sha256};
 
+const TEXT_ATTRIBUTE_FIXTURE: &str = "kmipkit-attribute-fixture";
 const HASH_INPUT: &[u8] = b"abc";
 const CREATE: u32 = 1;
 const CHECK: u32 = 9;
 const GET: u32 = 10;
 const GET_ATTRIBUTES: u32 = 11;
 const GET_ATTRIBUTE_LIST: u32 = 12;
+const OBTAIN_LEASE: u32 = 16;
 const ACTIVATE: u32 = 18;
 const REVOKE: u32 = 19;
 const DESTROY: u32 = 20;
@@ -31,6 +33,7 @@ fn uses_owned_key(operation: u32) -> bool {
             | GET
             | GET_ATTRIBUTES
             | GET_ATTRIBUTE_LIST
+            | OBTAIN_LEASE
             | ACTIVATE
             | REVOKE
             | DESTROY
@@ -61,6 +64,7 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-get", "2.0" | "2.1") => Some(GET),
         (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
+        ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
         ("test-op-activate", "2.0" | "2.1") => Some(ACTIVATE),
         ("test-op-revoke", "2.0" | "2.1") => Some(REVOKE),
         ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
@@ -176,6 +180,20 @@ fn run_owned_key(
                 }),
             );
         }
+        if operation == OBTAIN_LEASE {
+            result = outcome(
+                case,
+                exchange(connection, version, operation, Some(&id), |batch| {
+                    Ok(same_id(batch)?
+                        && has_field(batch, 0x0042_0049, |value| {
+                            matches!(value, ValueView::Interval(_))
+                        })
+                        && has_field(batch, 0x0042_0048, |value| {
+                            matches!(value, ValueView::DateTime(_))
+                        }))
+                }),
+            );
+        }
         if operation == GET_ATTRIBUTES {
             result = outcome(case, get_attributes(case, connection, version, &id));
         }
@@ -215,6 +233,9 @@ fn key_attribute_reference(case_id: &str) -> Option<u32> {
         "test-attr-cryptographic-usage-mask" => Some(0x0042_002c),
         "test-attr-object-type" => Some(0x0042_0057),
         "test-attr-state" => Some(0x0042_008d),
+        "test-attr-contact-information" => Some(0x0042_0022),
+        "test-attr-description" => Some(0x0042_00fc),
+        "test-attr-comment" => Some(0x0042_00fd),
         "test-attr-sensitive" => Some(0x0042_0120),
         "test-attr-always-sensitive" => Some(0x0042_0121),
         "test-attr-extractable" => Some(0x0042_0122),
@@ -249,6 +270,9 @@ fn get_attributes(
                     };
                     attribute.tag().raw() == tag
                         && attribute.with_value(|value| {
+                            if matches!(tag, 0x0042_0022 | 0x0042_00fc | 0x0042_00fd) {
+                                return matches!(value, ValueView::TextString(text) if text == TEXT_ATTRIBUTE_FIXTURE);
+                            }
                             matches!(
                                 (tag, value),
                                 (0x0042_0028, ValueView::Enumeration(3))
@@ -468,6 +492,12 @@ fn exchange_with_reference(
                 attrs.push(item(0x0042_0120, Value::boolean(true))?);
                 attrs.push(item(0x0042_0122, Value::boolean(false))?);
             }
+            if matches!(attribute_reference, 0x0042_0022 | 0x0042_00fc | 0x0042_00fd) {
+                attrs.push(item(
+                    attribute_reference,
+                    Value::text_string(TEXT_ATTRIBUTE_FIXTURE.to_owned()),
+                )?);
+            }
             vec![
                 item(0x0042_0057, Value::enumeration(2))?,
                 node(0x0042_0125, attrs)?,
@@ -494,10 +524,12 @@ fn exchange_with_reference(
             )?,
             node(0x0042_0081, vec![item(0x0042_0082, Value::enumeration(6))?])?,
         ],
-        GET | GET_ATTRIBUTE_LIST | ACTIVATE | DESTROY | ARCHIVE | RECOVER => vec![item(
-            0x0042_0094,
-            Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
-        )?],
+        GET | GET_ATTRIBUTE_LIST | OBTAIN_LEASE | ACTIVATE | DESTROY | ARCHIVE | RECOVER => {
+            vec![item(
+                0x0042_0094,
+                Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
+            )?]
+        }
         0x08 => vec![
             item(0x0042_004f, Value::integer(1))?,
             item(0x0042_00d4, Value::integer(0))?,

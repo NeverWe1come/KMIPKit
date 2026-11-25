@@ -60,6 +60,7 @@ def materialize_cases(cases, catalog, scope, path):
         }
         row["operation"] = metadata["operation"]
         row["mode"] = metadata["execution"]["mode"]
+        row["assertions"] = metadata["execution"]["assertions"]
         if scope == "live":
             row["server_compatibility"] = case["server_compatibility"]
         rows.append(row)

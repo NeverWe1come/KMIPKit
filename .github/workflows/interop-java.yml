@@ -93,7 +93,18 @@ jobs:
         run: |
           bash ../../../bindings/java/gradlew \
             -PkmipkitMavenRepo="$GITHUB_WORKSPACE/verification/interop/java-kmip-validator/build/maven-repository" \
-            test
+            test installDist
+
+      - name: Verify KMIP 2.x tag construction and controlled exchanges
+        working-directory: .
+        env:
+          KMIPKIT_REQUIRED_INTEROP_VALIDATOR: java
+        run: |
+          python3 -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
+          report_dir="$(mktemp -d)"
+          python3 verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --construct --require-complete --runner java verification/interop/java-kmip-validator/tools/run_draft_campaign.sh \
+            --output "$report_dir/oasis-construction.jsonl"
 
       - name: Validate generated Java report against the shared schema
         run: |

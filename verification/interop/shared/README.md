@@ -63,6 +63,24 @@ The 3.0 XML corpus contains 617. In total, 288 XML cases contribute 1,773
 exchanges and 1,880 planned rows to the 320,446-row matrix. The 28 additional 3.0 normative rows are
 constructor routes for the seven draft operations mapped across the four languages.
 
+## Cosmian/Eviden KMIP 2.x table coverage
+
+Generate the version-specific catalog and table obligations before running the
+validators. Pass that same catalog to the campaign when importing its evidence.
+
+```sh
+python3 verification/interop/shared/tools/cosmian_minimum.py --version 2.1 \
+  --catalog-output /tmp/cosmian-2.1-catalog.json --inventory-output /tmp/cosmian-2.1-inventory.json
+python3 verification/interop/shared/tools/campaign.py --version 2.1 --cosmian-minimum \
+  --catalog-source /tmp/cosmian-2.1-catalog.json --controlled-report /tmp/kmip/results.json \
+  --output-dir /tmp/cosmian-campaign
+```
+
+The campaign writes `cosmian-2.1.json` with the table expectations and matching
+case results by language and construction API. A row can have several case
+results with distinct assertions. Cases requiring a provider fixture or a
+runtime version boundary remain visible in the inventory.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated

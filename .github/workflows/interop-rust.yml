@@ -83,6 +83,16 @@ jobs:
           KMIPKIT_EVIDENCE_DIR: verification/interop/rust-kmip-validator/results
         run: verification/interop/.local/rust-ci-venv/bin/python -m unittest discover -s verification/interop/rust-kmip-validator/tests -p test_live.py -v
 
+      - name: Verify KMIP 2.x tag construction and controlled exchanges
+        env:
+          KMIPKIT_REQUIRED_INTEROP_VALIDATOR: rust
+        run: |
+          verification/interop/.local/rust-ci-venv/bin/python -B -m unittest discover -s verification/interop/shared/tests -p test_incoming_validators.py -v
+          report_dir="$(mktemp -d)"
+          verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/oasis_ttlv.py --version 2.0 --version 2.1 \
+            --construct --require-complete --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+            --output "$report_dir/oasis-construction.jsonl"
+
       - name: Install pinned Rust coverage tool
         run: cargo +1.94 install cargo-llvm-cov --version 0.9.1 --locked
 
