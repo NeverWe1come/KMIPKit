@@ -669,6 +669,7 @@ class LiveContract(unittest.TestCase):
             "Modify Attribute", "Delete Attribute", "Get Usage Allocation", "RNG Retrieve",
             "Revoke", "Get", "Get Attributes", "Get Attribute List", "Locate", "Ping",
             "Get Constraints", "Activate", "Archive", "Recover", "Destroy",
+            "Hash", "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify",
         }
         for version in ("2.0", "2.1"):
             with self.subTest(version=version):
@@ -677,8 +678,10 @@ class LiveContract(unittest.TestCase):
                     if case["operation"] in operations
                     and version in case["execution"]["protocol_versions"]
                     and case["requires"].get("workflow_type") not in {
-                        "server_to_client", "async_poll", "batch_id_placeholder", "multipart_streaming",
+                        "server_to_client", "async_poll", "batch_id_placeholder",
                     }
+                    and (case["requires"].get("workflow_type") != "multipart_streaming"
+                         or case["operation"] == "Hash")
                     and (case["operation"] != "Create"
                          or case["requires"].get("object_type") in (None, "Symmetric Key"))
                 ]
@@ -726,12 +729,30 @@ class LiveContract(unittest.TestCase):
                     if name == "Encrypt" and uid not in active and find(tree, 0x42000d) == 1:
                         status, reason, payload = 1, 7, None
                     elif find(batch, 0x4200d6) is not None:
-                        status, reason, payload = 1, 5, None
+                        if name == "Hash":
+                            self.assertEqual(find(batch, 0x4200d6), b"controlled-multipart")
+                            self.assertIsNone(find(batch, 0x4200d7))
+                            if find(batch, 0x4200d8) == 1:
+                                self.assertEqual(find(batch, 0x4200c2), b"!")
+                                payload = [ttlv(0x4200c2, 8, hashlib.sha256(b"KMIP Hash!").digest())]
+                            else:
+                                self.assertEqual(find(batch, 0x4200c2), b"Hash")
+                                self.assertIsNone(find(batch, 0x4200d8))
+                                payload = []
+                        else:
+                            status, reason, payload = 1, 5, None
                     elif find(batch, 0x4200d7) == 1:
+                        if name == "Hash":
+                            self.assertEqual(find(batch, 0x4200c2), b"KMIP ")
+                            self.assertIsNone(find(batch, 0x4200d8))
                         payload = ([] if name == "Hash" else payload) + [ttlv(0x4200d6, 8, b"controlled-multipart")]
                     else:
                         value_tag = {"MAC": 0x4200c6, "Sign": 0x4200c3}.get(name, 0x4200c2)
-                        value = cipher if name == "Encrypt" else b"A" * 16
+                        value = {
+                            "Encrypt": cipher,
+                            "Hash": hashlib.sha256(find(batch, 0x4200c2) or b"").digest(),
+                            "MAC": b"M" * 32,
+                        }.get(name, b"A" * 16)
                         payload = ([] if name == "Hash" else payload) + [ttlv(value_tag, 8, value)]
                 elif name in ("MAC Verify", "Signature Verify"):
                     payload += [ttlv(0x42009b, 5, 1)]
@@ -788,15 +809,26 @@ class LiveContract(unittest.TestCase):
             with self.subTest(version=version):
                 self.incoming_scenario(version)
 
-    def incoming_scenario(self, version):
+    def test_incoming_kmip2_uses_generic_ttlv_and_echoes_correlation(self):
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                self.incoming_scenario(version, "generic-ttlv")
+
+    def test_incoming_generic_rejects_an_invalid_put_payload(self):
+        self.incoming_scenario("2.1", "generic-ttlv", invalid_put=True)
+
+    def incoming_scenario(self, version, api="typed-protocol", invalid_put=False):
         cases = [c for c in CATALOG["test_cases"] if c["requires"].get("workflow_type") == "server_to_client"]
         major, minor = map(int, version.split("."))
         if major == 3:
             cases = [{**case, "execution": {**case["execution"], "protocol_versions": [version]}}
                      for case in cases]
-        work = self.directory / f"incoming-ready-{version}"
+        work = self.directory / f"incoming-ready-{version}-{api}-{invalid_put}"
         payloads = [[], [ttlv(0x420094, 7, "owned-fixture")], [ttlv(0x420094, 12 if major == 3 else 7, "owned-fixture"), ttlv(0x420070, 5, 1), ttlv(0x42005b, 1, [ttlv(0x420059, 5, 1), ttlv(0x42005a, 8, b"fixture")])], [ttlv(0x420074, 5, 1)], [ttlv(0x420151, 5, 1)]]
         operations = [0x1e, 0x1b, 0x1c, 0x18, 0x32]
+        if invalid_put:
+            cases = [case for case in cases if case["operation"] == "Put"]
+            payloads, operations = [[ttlv(0x420094, 7, "missing-put-function")]], [0x1c]
         errors = []
         def send():
             try:
@@ -812,22 +844,45 @@ class LiveContract(unittest.TestCase):
                     with socket.create_connection((host, int(port)), timeout=5) as raw:
                         with context.wrap_socket(raw, server_hostname="localhost") as channel:
                             fields = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)])]
+                            if api == "generic-ttlv":
+                                fields.append(ttlv(0x420105, 7, "test-correlation"))
                             if major < 3:
                                 fields.append(ttlv(0x42000d, 2, 1))
+                            batch = [ttlv(0x42005c, 5, operation)]
+                            if api == "generic-ttlv":
+                                batch.append(ttlv(0x420093, 8, b"fixture-batch"))
+                            batch.append(ttlv(0x420079, 1, payload))
                             channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, fields),
-                                ttlv(0x42000f, 1, [ttlv(0x42005c, 5, operation), ttlv(0x420079, 1, payload)])]))
+                                ttlv(0x42000f, 1, batch)]))
                             reply = parse(receive(channel))
-                            if (find(reply, 0x42005c), find(reply, 0x42007f), find(reply, 0x42006a),
-                                    find(reply, 0x42006b)) != (operation, 0, major, minor):
-                                raise AssertionError(f"incoming response contract mismatch: expected operation={operation}, observed operation={find(reply, 0x42005c)}, status={find(reply, 0x42007f)}")
+                            self.assertEqual((find(reply, 0x42005c), find(reply, 0x42007f),
+                                              find(reply, 0x42006a), find(reply, 0x42006b)),
+                                             (operation, int(invalid_put), major, minor))
+                            if api == "generic-ttlv":
+                                self.assertEqual(find(reply, 0x420105), "test-correlation")
+                                self.assertEqual(find(reply, 0x420093), b"fixture-batch")
+                                self.assertEqual(find(reply, 0x42000d), 1)
+                            if invalid_put:
+                                self.assertEqual(find(reply, 0x42007e), 7)
+                                self.assertIsNone(find(reply, 0x42007c))
+                            elif operation == 0x18:
+                                response_payload = find(reply, 0x42007c)
+                                self.assertEqual([value for tag, _, value in response_payload if tag == 0x42005c],
+                                                 [0x1e, 0x1b, 0x1c, 0x18, 0x32])
+                            elif operation == 0x32:
+                                self.assertEqual(find(reply, 0x420151), 1)
             except Exception as error:
                 errors.append(str(error))
         thread = threading.Thread(target=send)
         thread.start()
-        _, report = self.command(self.connection(version=version), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
+        _, report = self.command(self.connection(version=version, api=api, mutations=True), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
         thread.join(timeout=10)
         self.assertFalse(errors, (errors, report))
-        self.assertEqual(report["summary"]["passed"], 5, report["cases"])
+        if invalid_put:
+            self.assertEqual(report["summary"]["failed"], 1, report["cases"])
+            self.assertEqual(report["cases"][0]["result_reason_code"], 7)
+        else:
+            self.assertEqual(report["summary"]["passed"], 5, report["cases"])
 
 
 if __name__ == "__main__":

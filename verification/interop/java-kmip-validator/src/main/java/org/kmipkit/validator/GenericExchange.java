@@ -36,6 +36,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
@@ -67,7 +68,8 @@ final class GenericExchange {
         int operation = operation(testCase, connection);
         return "server_exchange".equals(testCase.execution().mode()) && operation != 0
                 && (usesOwnedKey(operation) ? "mutating".equals(testCase.execution().mutation())
-                        : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE))
+                        : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE
+                            || JavaKmipDriver.multipartHash(testCase)))
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
                 && connection.usernamePassword() == null;
     }
@@ -75,11 +77,11 @@ final class GenericExchange {
     private static int operation(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String version = connection.protocolVersion();
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
+        if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
             case "test-op-check" -> CHECK;
             case "test-op-get" -> GET;
-            case "test-op-get-attributes" -> GET_ATTRIBUTES;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
             case "test-op-activate" -> ACTIVATE;
             case "test-op-revoke" -> REVOKE;
@@ -90,7 +92,7 @@ final class GenericExchange {
             case "test-op-query" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
             case "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
-            case "test-op-hash", "test-crypto-hash-sha_256-0" -> HASH;
+            case "test-op-hash", "test-crypto-hash-sha_256-0", "test-multipart-hash-sha256" -> HASH;
             case "test-op-ping" -> "2.1".equals(version) ? PING : 0;
             default -> 0;
         };
@@ -99,9 +101,26 @@ final class GenericExchange {
     static JavaKmipDriver.CaseOutcome run(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         long start = System.nanoTime();
         int minor = "2.1".equals(connection.protocolVersion()) ? 1 : 0;
+        if (JavaKmipDriver.multipartHash(testCase)) return multipartHash(connection, minor, start);
         int operation = operation(testCase, connection);
-        if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, start);
+        int attributeTag = keyAttributeReference(testCase.caseId());
+        if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
         return execute(connection, operation, minor, null, payload -> matches(payload, operation, minor), start);
+    }
+
+    private static int keyAttributeReference(String caseId) {
+        return switch (caseId) {
+            case "test-attr-cryptographic-algorithm" -> 0x420028;
+            case "test-op-get-attributes", "test-attr-cryptographic-length" -> 0x42002a;
+            case "test-attr-cryptographic-usage-mask" -> 0x42002c;
+            case "test-attr-object-type" -> 0x420057;
+            case "test-attr-state" -> 0x42008d;
+            case "test-attr-sensitive" -> 0x420120;
+            case "test-attr-always-sensitive" -> 0x420121;
+            case "test-attr-extractable" -> 0x420122;
+            case "test-attr-never-extractable" -> 0x420123;
+            default -> 0;
+        };
     }
 
     private static boolean usesOwnedKey(int operation) {
@@ -112,9 +131,9 @@ final class GenericExchange {
     }
 
     private static JavaKmipDriver.CaseOutcome runOwnedKey(ConnectionConfig connection, int operation,
-            int minor, long start) {
+            int minor, int attributeTag, long start) {
         var createdId = new AtomicReference<byte[]>();
-        var create = execute(connection, CREATE, minor, null, payload -> {
+        var create = execute(connection, CREATE, minor, null, attributeTag, payload -> {
             byte[] id = textIdentifier(payload);
             createdId.set(id);
             return id != null && hasField(payload, 0x420057, TtlvItemType.Enumeration, 2);
@@ -136,8 +155,8 @@ final class GenericExchange {
                     && hasField(payload, 0x42008f, TtlvItemType.Structure, 0), start);
         }
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTES) {
-            target = execute(connection, GET_ATTRIBUTES, minor, id,
-                    payload -> sameId.test(payload) && hasLengthAttribute(payload), start);
+            target = execute(connection, GET_ATTRIBUTES, minor, id, attributeTag,
+                    payload -> sameId.test(payload) && hasKeyAttribute(payload, attributeTag), start);
         }
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTE_LIST) {
             target = execute(connection, GET_ATTRIBUTE_LIST, minor, id,
@@ -183,9 +202,52 @@ final class GenericExchange {
                 : JavaKmipDriver.CaseOutcome.failed("Cleanup Destroy failed for the isolated key.", elapsed(start));
     }
 
+    private record HashFrame(int index, byte[] chunk, byte[] correlation) { }
+
+    private static JavaKmipDriver.CaseOutcome multipartHash(ConnectionConfig connection, int minor, long start) {
+        byte[] expected = HexFormat.of().parseHex("484e69bd8ae45ed2440bf93f35e464f86ed9557258f0377c0c070a4f786b5b0a");
+        var correlation = new AtomicReference<byte[]>();
+        var chunks = List.of("KMIP ", "Hash", "!");
+        try {
+            JavaKmipDriver.CaseOutcome outcome = null;
+            for (int index = 0; index < chunks.size(); index++) {
+                var frame = new HashFrame(index, chunks.get(index).getBytes(StandardCharsets.US_ASCII), correlation.get());
+                outcome = execute(connection, HASH, minor, null, 0, frame, payload -> {
+                    if (frame.index() == 1) return payload.itemCount() == 0;
+                    if (payload.itemCount() != 1) return false;
+                    try (var field = payload.itemAt(0); var tag = field.tag(); var value = field.value()) {
+                        if (field.itemType() != TtlvItemType.ByteString) return false;
+                        if (frame.index() == 0 && tag.raw() == 0x4200d6) {
+                            byte[] bytes = value.bytes();
+                            correlation.set(bytes);
+                            return bytes.length != 0;
+                        }
+                        return frame.index() == 2 && tag.raw() == 0x4200c2
+                                && Arrays.equals(value.bytes(), expected);
+                    }
+                }, start);
+                if (!"passed".equals(outcome.status())) return outcome;
+            }
+            return outcome;
+        } finally {
+            byte[] bytes = correlation.get();
+            if (bytes != null) Arrays.fill(bytes, (byte) 0);
+        }
+    }
+
     private static JavaKmipDriver.CaseOutcome execute(ConnectionConfig connection, int operation, int minor,
             byte[] identifier, Predicate<TtlvStructureView> expected, long start) {
-        try (var request = request(operation, minor, identifier); var view = request.view()) {
+        return execute(connection, operation, minor, identifier, 0, expected, start);
+    }
+
+    private static JavaKmipDriver.CaseOutcome execute(ConnectionConfig connection, int operation, int minor,
+            byte[] identifier, int attributeTag, Predicate<TtlvStructureView> expected, long start) {
+        return execute(connection, operation, minor, identifier, attributeTag, null, expected, start);
+    }
+
+    private static JavaKmipDriver.CaseOutcome execute(ConnectionConfig connection, int operation, int minor,
+            byte[] identifier, int attributeTag, HashFrame frame, Predicate<TtlvStructureView> expected, long start) {
+        try (var request = request(operation, minor, identifier, attributeTag, frame); var view = request.view()) {
             byte[] wire = exchange(connection, encode(view));
             try {
                 return check(wire, operation, minor, start, expected);
@@ -198,19 +260,19 @@ final class GenericExchange {
         }
     }
 
-    private static TtlvItem request(int operation, int minor, byte[] objectId) {
+    private static TtlvItem request(int operation, int minor, byte[] objectId, int attributeTag, HashFrame frame) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
                 var header = structureItem(0x420077, version, count);
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var payload = switch (operation) {
-                    case CREATE -> createPayload();
+                    case CREATE -> createPayload(attributeTag);
                     case CHECK -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42002c, TtlvValue.Integer(4)));
                     case GET_ATTRIBUTES -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
-                            item(0x42013b, TtlvValue.Enumeration(0x42002a)));
+                            item(0x42013b, TtlvValue.Enumeration(attributeTag)));
                     case REVOKE -> revokePayload(objectId);
                     case GET, GET_ATTRIBUTE_LIST, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)));
@@ -219,7 +281,7 @@ final class GenericExchange {
                     case QUERY -> structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)));
                     case DISCOVER_VERSIONS -> structureItem(0x420079, version(minor));
                     case RNG_RETRIEVE -> structureItem(0x420079, item(0x4200c4, TtlvValue.Integer(32)));
-                    case HASH -> hashPayload();
+                    case HASH -> hashPayload(frame);
                     case PING -> structureItem(0x420079);
                     default -> throw new IllegalArgumentException("Unsupported generic operation");
                 };
@@ -236,20 +298,35 @@ final class GenericExchange {
         }
     }
 
-    private static TtlvItem createPayload() {
+    private static TtlvItem createPayload(int attributeTag) {
         try (var algorithm = item(0x420028, TtlvValue.Enumeration(3));
                 var length = item(0x42002a, TtlvValue.Integer(256));
                 var usage = item(0x42002c, TtlvValue.Integer(4));
-                var attributes = structureItem(0x420125, algorithm, length, usage);
+                var sensitive = item(0x420120, TtlvValue.Boolean(true));
+                var extractable = item(0x420122, TtlvValue.Boolean(false));
+                var attributes = attributeTag >= 0x420120 && attributeTag <= 0x420123
+                        ? structureItem(0x420125, algorithm, length, usage, sensitive, extractable)
+                        : structureItem(0x420125, algorithm, length, usage);
                 var objectType = item(0x420057, TtlvValue.Enumeration(2))) {
             return structureItem(0x420079, objectType, attributes);
         }
     }
 
-    private static TtlvItem hashPayload() {
+    private static TtlvItem hashPayload(HashFrame frame) {
         try (var parameters = structureItem(0x42002b, item(0x420038, TtlvValue.Enumeration(6)));
-                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS))) {
-            return structureItem(0x420079, parameters, data);
+                var data = item(0x4200c2, TtlvValue.ByteString(frame == null ? HASH_INPUT : frame.chunk(), LIMITS))) {
+            if (frame == null) return structureItem(0x420079, parameters, data);
+            if (frame.index() == 0) {
+                try (var init = item(0x4200d7, TtlvValue.Boolean(true))) {
+                    return structureItem(0x420079, parameters, data, init);
+                }
+            }
+            try (var correlation = item(0x4200d6, TtlvValue.ByteString(frame.correlation(), LIMITS))) {
+                if (frame.index() == 1) return structureItem(0x420079, parameters, data, correlation);
+                try (var end = item(0x4200d8, TtlvValue.Boolean(true))) {
+                    return structureItem(0x420079, parameters, data, correlation, end);
+                }
+            }
         }
     }
 
@@ -260,14 +337,14 @@ final class GenericExchange {
         }
     }
 
-    private static TtlvItem item(int code, TtlvValue value) {
+    static TtlvItem item(int code, TtlvValue value) {
         try (value; var raw = RawTag.fromRaw(code); var tag = raw.checked()) {
             return TtlvItem.create(tag, value, LIMITS);
         }
     }
 
     // withItem consumes its arguments. Closing already consumed handles is harmless.
-    private static TtlvItem structureItem(int code, TtlvItem... items) {
+    static TtlvItem structureItem(int code, TtlvItem... items) {
         TtlvStructure structure = TtlvStructure.create();
         try {
             for (var child : items) {
@@ -332,28 +409,35 @@ final class GenericExchange {
                 socket.setSoTimeout(Math.multiplyExact(tls.readTimeoutSeconds(), 1000));
                 socket.startHandshake();
                 socket.getOutputStream().write(request);
-                var input = socket.getInputStream();
-                byte[] header = input.readNBytes(8);
-                if (header.length != 8) throw new EOFException();
-                long size = Integer.toUnsignedLong(ByteBuffer.wrap(header).getInt(4));
-                long padded = (size + 7) & ~7L;
-                if (8 + padded > LIMITS.maxMessageBytes()) throw new IOException("TTLV limit exceeded");
-                byte[] body = input.readNBytes((int) padded);
-                try {
-                    if (body.length != padded) throw new EOFException();
-                    return ByteBuffer.allocate(8 + body.length).put(header).put(body).array();
-                } finally {
-                    Arrays.fill(body, (byte) 0);
-                }
+                return readFrame(socket.getInputStream());
             }
         }
     }
 
+    static byte[] readFrame(java.io.InputStream input) throws IOException {
+        byte[] header = input.readNBytes(8);
+        if (header.length != 8) throw new EOFException();
+        long size = Integer.toUnsignedLong(ByteBuffer.wrap(header).getInt(4));
+        long padded = (size + 7) & ~7L;
+        if (8 + padded > LIMITS.maxMessageBytes()) throw new IOException("TTLV limit exceeded");
+        byte[] body = input.readNBytes((int) padded);
+        try {
+            if (body.length != padded) throw new EOFException();
+            return ByteBuffer.allocate(8 + body.length).put(header).put(body).array();
+        } finally {
+            Arrays.fill(body, (byte) 0);
+        }
+    }
+
     private static SSLContext context(ConnectionConfig.Tls tls) throws GeneralSecurityException, IOException {
+        return context(Path.of(tls.caCertificatePath()), Path.of(tls.clientCertificatePath()), Path.of(tls.clientKeyPath()));
+    }
+
+    static SSLContext context(Path ca, Path certificatePath, Path key) throws GeneralSecurityException, IOException {
         var certs = CertificateFactory.getInstance("X.509");
         var trust = KeyStore.getInstance("PKCS12");
         trust.load(null);
-        try (var input = Files.newInputStream(Path.of(tls.caCertificatePath()))) {
+        try (var input = Files.newInputStream(ca)) {
             int index = 0;
             for (var certificate : certs.generateCertificates(input)) {
                 trust.setCertificateEntry("ca-" + index++, certificate);
@@ -362,9 +446,9 @@ final class GenericExchange {
         var identity = KeyStore.getInstance("PKCS12");
         identity.load(null);
         char[] password = {};
-        try (var input = Files.newInputStream(Path.of(tls.clientCertificatePath()))) {
+        try (var input = Files.newInputStream(certificatePath)) {
             var chain = certs.generateCertificates(input).toArray(Certificate[]::new);
-            identity.setKeyEntry("client", readKey(Path.of(tls.clientKeyPath())), password, chain);
+            identity.setKeyEntry("client", readKey(key), password, chain);
         }
         var keys = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keys.init(identity, password);
@@ -397,7 +481,7 @@ final class GenericExchange {
         }
     }
 
-    private static TtlvStructure copyStructure(TtlvStructureView view) {
+    static TtlvStructure copyStructure(TtlvStructureView view) {
         TtlvStructure copy = TtlvStructure.create();
         try {
             for (long index = 0; index < view.itemCount(); index++) {
@@ -489,13 +573,18 @@ final class GenericExchange {
         return id;
     }
 
-    private static boolean hasField(TtlvStructureView payload, int wanted, TtlvItemType type, int enumeration) {
+    private static boolean hasField(TtlvStructureView payload, int wanted, TtlvItemType type, int expected) {
         boolean found = false;
         for (long index = 0; index < payload.itemCount(); index++) {
             try (var field = payload.itemAt(index); var tag = field.tag(); var value = field.value()) {
                 if (tag.raw() != wanted) continue;
                 if (found || field.itemType() != type) return false;
-                found = type != TtlvItemType.Enumeration || value.enumeration() == enumeration;
+                found = switch (type) {
+                    case Enumeration -> value.enumeration() == expected;
+                    case Integer -> value.integer() == expected;
+                    case Boolean -> value.booleanValue() == (expected != 0);
+                    default -> true;
+                };
                 if (!found) return false;
             }
         }
@@ -524,17 +613,23 @@ final class GenericExchange {
         return false;
     }
 
-    private static boolean hasLengthAttribute(TtlvStructureView payload) {
+    private static boolean hasKeyAttribute(TtlvStructureView payload, int attributeTag) {
         if (!hasField(payload, 0x420125, TtlvItemType.Structure, 0)) return false;
         for (long index = 0; index < payload.itemCount(); index++) {
             try (var field = payload.itemAt(index); var tag = field.tag()) {
                 if (tag.raw() != 0x420125) continue;
                 try (var value = field.value(); var attrs = value.structure()) {
                     if (attrs.itemCount() != 1) return false;
-                    try (var length = attrs.itemAt(0); var lengthTag = length.tag(); var size = length.value()) {
-                        return lengthTag.raw() == 0x42002a && length.itemType() == TtlvItemType.Integer
-                                && size.integer() == 256;
-                    }
+                    return switch (attributeTag) {
+                        case 0x420028 -> hasField(attrs, attributeTag, TtlvItemType.Enumeration, 3);
+                        case 0x42002a -> hasField(attrs, attributeTag, TtlvItemType.Integer, 256);
+                        case 0x42002c -> hasField(attrs, attributeTag, TtlvItemType.Integer, 4);
+                        case 0x420057 -> hasField(attrs, attributeTag, TtlvItemType.Enumeration, 2);
+                        case 0x42008d -> hasField(attrs, attributeTag, TtlvItemType.Enumeration, 1);
+                        case 0x420120, 0x420121, 0x420123 -> hasField(attrs, attributeTag, TtlvItemType.Boolean, 1);
+                        case 0x420122 -> hasField(attrs, attributeTag, TtlvItemType.Boolean, 0);
+                        default -> false;
+                    };
                 }
             }
         }

@@ -164,6 +164,7 @@ pub(crate) struct Observed {
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
+    pub validity: Option<u32>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
 }
 
@@ -174,6 +175,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     let mut identifier = None;
     let mut identifiers = Vec::new();
     let mut bytes = None;
+    let mut validity = None;
     let mut ticket = None;
     let mut correlation = None;
     let mut payload_tags = Vec::new();
@@ -188,6 +190,10 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     ValueView::Identifier(v) => Some(
                         kmipkit::protocol::UniqueIdentifier::Identifier(v.to_string()),
                     ),
+                    ValueView::Enumeration(v) => {
+                        Some(kmipkit::protocol::UniqueIdentifier::Enumeration(*v))
+                    }
+                    ValueView::Integer(v) => Some(kmipkit::protocol::UniqueIdentifier::Integer(*v)),
                     _ => None,
                 });
                 if let Some(id) = &identifier {
@@ -199,6 +205,12 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     ValueView::ByteString(v) => {
                         Some(kmipkit::protocol::SecretBytes::new(v.to_vec()))
                     }
+                    _ => None,
+                });
+            }
+            if value.tag().raw() == 0x0042_009b {
+                validity = value.with_value(|v| match v {
+                    ValueView::Enumeration(v) => Some(*v),
                     _ => None,
                 });
             }
@@ -231,6 +243,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         identifiers,
         correlation,
         bytes,
+        validity,
         ticket,
     }
 }
@@ -626,6 +639,7 @@ pub(crate) fn asynchronous(
         identifier: None,
         identifiers: Vec::new(),
         bytes: None,
+        validity: None,
         ticket: None,
         correlation: None,
     })

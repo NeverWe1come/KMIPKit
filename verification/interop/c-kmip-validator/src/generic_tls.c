@@ -5,6 +5,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <poll.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,4 +148,129 @@ cleanup:
     BIO_free(tcp);
     SSL_CTX_free(context);
     return valid;
+}
+
+struct kmip_generic_listener {
+    SSL_CTX *context;
+    int socket_fd;
+    uint32_t timeout_seconds;
+};
+
+static bool parse_listener_address(const char *address, char host[INET6_ADDRSTRLEN], const char **port) {
+    const char *separator = strrchr(address, ':');
+    if (!separator || separator == address || !separator[1]) return false;
+    *port = separator + 1;
+    char *end = NULL;
+    unsigned long value = strtoul(*port, &end, 10);
+    if (*end || strspn(*port, "0123456789") != strlen(*port) || value > UINT16_MAX) return false;
+    size_t length = (size_t)(separator - address);
+    if (address[0] == '[' && length > 2 && address[length - 1] == ']') {
+        ++address;
+        length -= 2;
+    }
+    if (length >= INET6_ADDRSTRLEN) return false;
+    memcpy(host, address, length);
+    host[length] = '\0';
+    return true;
+}
+
+static bool publish_listener(int fd, const char *path) {
+    struct sockaddr_storage address;
+    socklen_t length = sizeof(address);
+    char host[INET6_ADDRSTRLEN], port[6];
+    if (getsockname(fd, (struct sockaddr *)&address, &length) != 0 ||
+        getnameinfo((struct sockaddr *)&address, length, host, sizeof(host), port, sizeof(port),
+                    NI_NUMERICHOST | NI_NUMERICSERV) != 0) return false;
+    FILE *file = fopen(path, "wx");
+    if (!file) return false;
+    bool written = fprintf(file, address.ss_family == AF_INET6 ? "[%s]:%s" : "%s:%s", host, port) > 0;
+    return fclose(file) == 0 && written;
+}
+
+kmip_generic_listener_t *kmip_generic_tls_listen(
+    const kmip_connection_config_t *configuration, const char *address, const char *certificate,
+    const char *key, const char *ready_path) {
+    char host[INET6_ADDRSTRLEN];
+    const char *port = NULL;
+    if (!parse_listener_address(address, host, &port)) return NULL;
+    struct addrinfo hints = {.ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM,
+                            .ai_flags = AI_NUMERICHOST | AI_NUMERICSERV};
+    struct addrinfo *socket_address = NULL;
+    if (getaddrinfo(host, port, &hints, &socket_address) != 0) return NULL;
+    int fd = socket(socket_address->ai_family, SOCK_STREAM, 0);
+    bool listening = fd >= 0 && bind(fd, socket_address->ai_addr, socket_address->ai_addrlen) == 0 &&
+        listen(fd, 8) == 0 && fcntl(fd, F_SETFL, O_NONBLOCK) != -1;
+    freeaddrinfo(socket_address);
+
+    SSL_CTX *context = SSL_CTX_new(TLS_server_method());
+    if (context) SSL_CTX_set_default_passwd_cb(context, reject_encrypted_key);
+    if (listening && context && SSL_CTX_set_min_proto_version(context, TLS1_3_VERSION) == 1 &&
+        SSL_CTX_load_verify_locations(context, configuration->ca_cert_path, NULL) == 1 &&
+        SSL_CTX_use_certificate_chain_file(context, certificate) == 1 &&
+        SSL_CTX_use_PrivateKey_file(context, key, SSL_FILETYPE_PEM) == 1 &&
+        SSL_CTX_check_private_key(context) == 1) {
+        SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+        kmip_generic_listener_t *listener = malloc(sizeof(*listener));
+        if (listener && (!ready_path || publish_listener(fd, ready_path))) {
+            *listener = (kmip_generic_listener_t){
+                .context = context, .socket_fd = fd, .timeout_seconds = configuration->read_timeout_seconds};
+
+            return listener;
+        }
+        free(listener);
+    }
+    if (fd >= 0) close(fd);
+    SSL_CTX_free(context);
+    return NULL;
+}
+
+void kmip_generic_tls_listener_close(kmip_generic_listener_t *listener) {
+    if (!listener) return;
+    close(listener->socket_fd);
+    SSL_CTX_free(listener->context);
+    free(listener);
+}
+
+kmip_generic_reception_t kmip_generic_tls_receive(
+    kmip_generic_listener_t *listener, size_t limit, kmip_generic_reply_fn reply, void *context) {
+    int64_t start = monotonic_ms();
+    if (start < 0 || limit < 8) return KMIP_GENERIC_INCOMING_FAILED;
+    int64_t deadline = start + (int64_t)listener->timeout_seconds * 1000;
+    if (!wait_until(listener->socket_fd, POLLIN, deadline)) return KMIP_GENERIC_PEER_UNAVAILABLE;
+    int fd = accept(listener->socket_fd, NULL, NULL);
+    if (fd < 0) return KMIP_GENERIC_INCOMING_FAILED;
+    SSL *tls = SSL_new(listener->context);
+    uint8_t *request = NULL, *response = NULL;
+    size_t request_size = 0, response_size = 0;
+    bool valid = false;
+    if (!tls || fcntl(fd, F_SETFL, O_NONBLOCK) == -1 || SSL_set_fd(tls, fd) != 1) goto cleanup;
+    int result;
+    while ((result = SSL_accept(tls)) != 1) {
+        if (!wait_ssl(tls, result, deadline)) goto cleanup;
+    }
+    uint8_t header[8];
+    if (!read_exact(tls, header, sizeof(header), deadline)) goto cleanup;
+    uint64_t padded = ((uint64_t)header[4] << 24) | ((uint64_t)header[5] << 16) |
+                      ((uint64_t)header[6] << 8) | header[7];
+    padded = (padded + 7) & ~UINT64_C(7);
+    if (padded > limit - sizeof(header)) goto cleanup;
+    request_size = sizeof(header) + (size_t)padded;
+    request = malloc(request_size);
+    if (!request) goto cleanup;
+    memcpy(request, header, sizeof(header));
+    if (!read_exact(tls, request + sizeof(header), (size_t)padded, deadline) ||
+        !reply(request, request_size, &response, &response_size, context)) goto cleanup;
+    size_t sent = 0;
+    while ((result = SSL_write_ex(tls, response, response_size, &sent)) != 1) {
+        if (!wait_ssl(tls, result, deadline)) goto cleanup;
+    }
+    valid = sent == response_size;
+cleanup:
+    if (request) OPENSSL_cleanse(request, request_size);
+    if (response) OPENSSL_cleanse(response, response_size);
+    free(request);
+    free(response);
+    SSL_free(tls);
+    close(fd);
+    return valid ? KMIP_GENERIC_REPLIED : KMIP_GENERIC_INCOMING_FAILED;
 }

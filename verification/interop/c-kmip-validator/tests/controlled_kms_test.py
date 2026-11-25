@@ -130,6 +130,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              crypto_output: bytes | None = None,
              signature_data: bytes | None = None,
              multipart_hash: bool = False,
+             final_hash: bool = False,
              hash_correlation_value: bytes | None = None,
              unknown_key_format: bool = False) -> bytes:
     version = tlv(0x420069, 1,
@@ -275,7 +276,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + symmetric_key
             )
         elif operation == 39:
-            if multipart_hash:
+            if final_hash:
+                payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"KMIP Hash!").digest())
+            elif multipart_hash:
                 payload_value = (tlv(0x4200D6, 8, hash_correlation_value)
                                  if hash_correlation_value is not None else b"")
             else:
@@ -1911,6 +1914,7 @@ def main() -> int:
                                         if operations == (4, 19, 20, 19, 20) else None),
                                     crypto_output=crypto_output_for_request(operations, request),
                                     multipart_hash=multipart_hash,
+                                    final_hash=multipart_hash and tlv(0x4200D8, 6, b"\x00" * 7 + b"\x01") in request,
                                     hash_correlation_value=hash_correlation_value))
                                 if multipart_hash:
                                     multipart_hash_exchange_count += 1

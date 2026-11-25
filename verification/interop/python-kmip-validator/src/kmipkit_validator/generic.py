@@ -13,15 +13,32 @@ GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE = 0x0C, 0x12, 0x13
 OWNED_KEY_OPERATIONS = {CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
 
 
+KEY_ATTRIBUTES = {
+    "test-attr-cryptographic-algorithm": (0x420028, "Enumeration", 3),
+    "test-op-get-attributes": (0x42002A, "Integer", 256),
+    "test-attr-cryptographic-length": (0x42002A, "Integer", 256),
+    "test-attr-cryptographic-usage-mask": (0x42002C, "Integer", 4),
+    "test-attr-object-type": (0x420057, "Enumeration", 2),
+    "test-attr-state": (0x42008D, "Enumeration", 1),
+    "test-attr-sensitive": (0x420120, "Boolean", True),
+    "test-attr-always-sensitive": (0x420121, "Boolean", True),
+    "test-attr-extractable": (0x420122, "Boolean", False),
+    "test-attr-never-extractable": (0x420123, "Boolean", True),
+}
+
+
 def _operation(case, version):
     if version not in {"2.0", "2.1"}:
         return None
     if case["case_id"] == "test-op-ping":
         return 0x3B if version == "2.1" else None
+    if case["case_id"] in KEY_ATTRIBUTES:
+        return GET_ATTRIBUTES
     return {"test-op-create": CREATE, "test-op-check": CHECK, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
-            "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY, "test-op-get-attributes": GET_ATTRIBUTES,
+            "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY,
             "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
-            "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27}.get(case["case_id"])
+            "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
+            "test-multipart-hash-sha256": 0x27}.get(case["case_id"])
 
 
 def supports(case, connection):
@@ -30,7 +47,8 @@ def supports(case, connection):
     return (
         operation is not None
         and (mutation == "mutating" if operation in OWNED_KEY_OPERATIONS
-             else mutation == "read_only" or operation == 0x25)
+             else mutation == "read_only" or operation == 0x25
+             or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
         and not connection.get("authentication")
@@ -110,15 +128,43 @@ def run(driver, case):
     if operation is None:
         raise ValueError("no generic exchange recipe")
     if operation in OWNED_KEY_OPERATIONS:
-        return _run_owned_key(driver, operation)
+        return _run_owned_key(driver, operation, case["case_id"])
+    if case["case_id"] == "test-multipart-hash-sha256":
+        return _multipart_hash(driver)
     return _execute(driver, operation)
 
 
-def _checked_exchange(driver, operation, identifier=None, expected=None):
+def _multipart_hash(driver):
+    from kmipkit import ttlv
+
+    correlation = None
+    digest = hashlib.sha256(b"KMIP Hash!").digest()
+    for stage, chunk in enumerate((b"KMIP ", b"Hash", b"!")):
+        def check(payload):
+            nonlocal correlation
+            if stage == 1:
+                return ttlv.ttlv_structure_view_item_count(payload) == 0
+            wanted = 0x4200D6 if stage == 0 else 0x4200C2
+            if ttlv.ttlv_structure_view_item_count(payload) != 1 or not _has_field(payload, wanted, "ByteString"):
+                return False
+            with ttlv.ttlv_structure_view_item_at(payload, 0) as field, ttlv.ttlv_item_view_value(field) as value:
+                data = ttlv.ttlv_value_view_bytes(value)
+                if stage == 0:
+                    correlation = data
+                    return bool(data)
+                return data == digest
+
+        outcome = _execute(driver, 0x27, expected=check, hash_frame=(stage, chunk, correlation))
+        if outcome["status"] != "passed":
+            break
+    return outcome
+
+
+def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None):
     from kmipkit.errors import KmipKitError
 
     try:
-        return _execute(driver, operation, identifier, expected)
+        return _execute(driver, operation, identifier, expected, attribute_reference)
     except (OSError, ValueError, RuntimeError, KmipKitError):
         return _failure("The generic TLS exchange or response validation failed.")
 
@@ -128,7 +174,7 @@ def _failure(diagnostic, status="failed"):
             "server_compatibility": "unknown", "parity": "not_compared", "diagnostic": diagnostic}
 
 
-def _run_owned_key(driver, operation):
+def _run_owned_key(driver, operation, case_id):
     identifier = None
 
     def check_create(payload):
@@ -136,7 +182,8 @@ def _run_owned_key(driver, operation):
         identifier = _text_identifier(payload)
         return identifier is not None and _has_field(payload, 0x420057, "Enumeration", 2)
 
-    created = _checked_exchange(driver, CREATE, expected=check_create)
+    reference = KEY_ATTRIBUTES[case_id][0] if operation == GET_ATTRIBUTES else None
+    created = _checked_exchange(driver, CREATE, expected=check_create, attribute_reference=reference)
     if identifier is None:
         if operation == CREATE or created["status"] == "failed":
             return created
@@ -156,9 +203,11 @@ def _run_owned_key(driver, operation):
             and _has_field(payload, 0x42008F, "Structure"),
         )
     if created["status"] == "passed" and operation == GET_ATTRIBUTES:
+        tag, kind, expected = KEY_ATTRIBUTES[case_id]
         target = _checked_exchange(
             driver, GET_ATTRIBUTES, identifier,
-            lambda payload: same_id(payload) and _has_length_attribute(payload),
+            lambda payload: same_id(payload) and _has_key_attribute(payload, tag, kind, expected),
+            attribute_reference=tag,
         )
     if created["status"] == "passed" and operation == GET_ATTRIBUTE_LIST:
         target = _checked_exchange(
@@ -196,7 +245,7 @@ def _run_owned_key(driver, operation):
     return target if cleanup["status"] == "passed" else _failure("Cleanup Destroy failed for the isolated key.")
 
 
-def _execute(driver, operation, identifier=None, expected=None):
+def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None):
     from kmipkit import messages, ttlv
 
     connection = driver._connection
@@ -207,15 +256,15 @@ def _execute(driver, operation, identifier=None, expected=None):
         return node(0x420069, [item(0x42006A, "integer", 2), item(0x42006B, "integer", minor)])
 
     if operation == CREATE:
-        payload_fields = [
-            item(0x420057, "enumeration", 2),
-            node(0x420125, [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
-                            item(0x42002C, "integer", 4)]),
-        ]
+        attrs = [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
+                 item(0x42002C, "integer", 4)]
+        if attribute_reference in range(0x420120, 0x420124):
+            attrs.extend([item(0x420120, "boolean", True), item(0x420122, "boolean", False)])
+        payload_fields = [item(0x420057, "enumeration", 2), node(0x420125, attrs)]
     elif operation in OWNED_KEY_OPERATIONS:
         payload_fields = [item(0x420094, "text", identifier)]
         if operation == GET_ATTRIBUTES:
-            payload_fields.append(item(0x42013B, "enumeration", 0x42002A))
+            payload_fields.append(item(0x42013B, "enumeration", attribute_reference))
         if operation == CHECK:
             payload_fields.append(item(0x42002C, "integer", 4))
         if operation == REVOKE:
@@ -229,8 +278,13 @@ def _execute(driver, operation, identifier=None, expected=None):
     elif operation == 0x25:
         payload_fields = [item(0x4200C4, "integer", 32)]
     elif operation == 0x27:
+        stage, chunk, correlation = hash_frame if hash_frame is not None else (None, HASH_INPUT, None)
         payload_fields = [node(0x42002B, [item(0x420038, "enumeration", 6)]),
-                          item(0x4200C2, "bytes", HASH_INPUT)]
+                          item(0x4200C2, "bytes", chunk)]
+        if correlation is not None:
+            payload_fields.append(item(0x4200D6, "bytes", correlation))
+        if stage in (0, 2):
+            payload_fields.append(item(0x4200D7 if stage == 0 else 0x4200D8, "boolean", True))
     else:
         payload_fields = []
 
@@ -343,7 +397,7 @@ def _has_length_reference(payload):
     return False
 
 
-def _has_length_attribute(payload):
+def _has_key_attribute(payload, tag_code, kind, expected):
     from kmipkit import ttlv
 
     if not _has_field(payload, 0x420125, "Structure"):
@@ -353,10 +407,16 @@ def _has_length_attribute(payload):
             if ttlv.tag_value(tag) != 0x420125:
                 continue
             with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as attrs:
-                if ttlv.ttlv_structure_view_item_count(attrs) != 1 or not _has_field(attrs, 0x42002A, "Integer"):
+                if ttlv.ttlv_structure_view_item_count(attrs) != 1:
                     return False
-                with ttlv.ttlv_structure_view_item_at(attrs, 0) as length, ttlv.ttlv_item_view_value(length) as size:
-                    return ttlv.ttlv_value_view_integer(size) == 256
+                if kind == "Enumeration":
+                    return _has_field(attrs, tag_code, kind, expected)
+                if not _has_field(attrs, tag_code, kind):
+                    return False
+                with ttlv.ttlv_structure_view_item_at(attrs, 0) as attr, ttlv.ttlv_item_view_value(attr) as value:
+                    read_value = (ttlv.ttlv_value_view_boolean if kind == "Boolean"
+                                  else ttlv.ttlv_value_view_integer)
+                    return read_value(value) == expected
     return False
 
 

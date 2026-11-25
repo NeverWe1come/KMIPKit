@@ -47,7 +47,9 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
             if uses_owned_key(operation) {
                 case.execution.mutation == "mutating"
             } else {
-                case.execution.mutation == "read_only" || operation == 0x25
+                case.execution.mutation == "read_only"
+                    || operation == 0x25
+                    || case.case_id == "test-multipart-hash-sha256"
             }
         })
 }
@@ -57,7 +59,7 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-create", "2.0" | "2.1") => Some(CREATE),
         ("test-op-check", "2.0" | "2.1") => Some(CHECK),
         ("test-op-get", "2.0" | "2.1") => Some(GET),
-        ("test-op-get-attributes", "2.0" | "2.1") => Some(GET_ATTRIBUTES),
+        (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
         ("test-op-activate", "2.0" | "2.1") => Some(ACTIVATE),
         ("test-op-revoke", "2.0" | "2.1") => Some(REVOKE),
@@ -68,7 +70,10 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
         ("test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
-        ("test-op-hash" | "test-crypto-hash-sha_256-0", "2.0" | "2.1") => Some(0x27),
+        (
+            "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256",
+            "2.0" | "2.1",
+        ) => Some(0x27),
         ("test-op-ping", "2.1") => Some(0x3b),
         _ => None,
     }
@@ -80,6 +85,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     let mut result = match operation(case, connection) {
         Some(operation) if uses_owned_key(operation) => {
             run_owned_key(case, connection, version, operation)
+        }
+        Some(0x27) if case.case_id == "test-multipart-hash-sha256" => {
+            outcome(case, multipart_hash(connection, version))
         }
         Some(operation) => outcome(
             case,
@@ -113,13 +121,21 @@ fn run_owned_key(
     operation: u32,
 ) -> CaseResult {
     let mut identifier = None;
-    let create = exchange(connection, version, CREATE, None, |batch| {
-        identifier = text_identifier(batch);
-        Ok(identifier.is_some()
-            && has_field(batch, 0x0042_0057, |v| {
-                matches!(v, ValueView::Enumeration(2))
-            }))
-    });
+    let create_reference = key_attribute_reference(&case.case_id).unwrap_or_default();
+    let create = exchange_with_reference(
+        connection,
+        version,
+        CREATE,
+        None,
+        create_reference,
+        |batch| {
+            identifier = text_identifier(batch);
+            Ok(identifier.is_some()
+                && has_field(batch, 0x0042_0057, |v| {
+                    matches!(v, ValueView::Enumeration(2))
+                }))
+        },
+    );
     let Some(id) = identifier else {
         if operation != CREATE && matches!(create, Ok((1, _))) {
             return CaseResult::non_run(
@@ -161,20 +177,7 @@ fn run_owned_key(
             );
         }
         if operation == GET_ATTRIBUTES {
-            result = outcome(
-                case,
-                exchange(connection, version, GET_ATTRIBUTES, Some(&id), |batch| {
-                    Ok(same_id(batch)?
-                        && has_field(batch, 0x0042_0125, |value| match value {
-                            ValueView::Structure(attrs) => match attrs.children() {
-                                [length] if length.tag().raw() == 0x0042_002a => length
-                                    .with_value(|value| matches!(value, ValueView::Integer(256))),
-                                _ => false,
-                            },
-                            _ => false,
-                        }))
-                }),
-            );
+            result = outcome(case, get_attributes(case, connection, version, &id));
         }
         if operation == GET_ATTRIBUTE_LIST {
             result = outcome(
@@ -203,6 +206,66 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn key_attribute_reference(case_id: &str) -> Option<u32> {
+    match case_id {
+        "test-attr-cryptographic-algorithm" => Some(0x0042_0028),
+        "test-op-get-attributes" | "test-attr-cryptographic-length" => Some(0x0042_002a),
+        "test-attr-cryptographic-usage-mask" => Some(0x0042_002c),
+        "test-attr-object-type" => Some(0x0042_0057),
+        "test-attr-state" => Some(0x0042_008d),
+        "test-attr-sensitive" => Some(0x0042_0120),
+        "test-attr-always-sensitive" => Some(0x0042_0121),
+        "test-attr-extractable" => Some(0x0042_0122),
+        "test-attr-never-extractable" => Some(0x0042_0123),
+        _ => None,
+    }
+}
+
+fn get_attributes(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+    id: &str,
+) -> ExchangeResult {
+    let Some(tag) = key_attribute_reference(&case.case_id) else {
+        return Err("no direct-tag attribute recipe");
+    };
+    exchange_with_reference(
+        connection,
+        version,
+        GET_ATTRIBUTES,
+        Some(id),
+        tag,
+        |batch| {
+            Ok(text_identifier(batch).as_deref() == Some(id)
+                && has_field(batch, 0x0042_0125, |value| {
+                    let ValueView::Structure(attrs) = value else {
+                        return false;
+                    };
+                    let [attribute] = attrs.children() else {
+                        return false;
+                    };
+                    attribute.tag().raw() == tag
+                        && attribute.with_value(|value| {
+                            matches!(
+                                (tag, value),
+                                (0x0042_0028, ValueView::Enumeration(3))
+                                    | (0x0042_002a, ValueView::Integer(256))
+                                    | (0x0042_002c, ValueView::Integer(4))
+                                    | (0x0042_0057, ValueView::Enumeration(2))
+                                    | (0x0042_008d, ValueView::Enumeration(1))
+                                    | (
+                                        0x0042_0120 | 0x0042_0121 | 0x0042_0123,
+                                        ValueView::Boolean(true)
+                                    )
+                                    | (0x0042_0122, ValueView::Boolean(false))
+                            )
+                        })
+                }))
+        },
+    )
 }
 
 fn archive_and_recover(
@@ -315,11 +378,73 @@ fn has_field(
         .unwrap_or_default()
 }
 
+fn multipart_hash(connection: &Connection, version: ProtocolVersion) -> ExchangeResult {
+    let mut correlation = Vec::new();
+    let digest = Sha256::digest(b"KMIP Hash!");
+    for (stage, chunk) in [b"KMIP ".as_slice(), b"Hash", b"!"].into_iter().enumerate() {
+        let mut fields = hash_fields(chunk)?;
+        if stage == 0 {
+            fields.push(item(0x0042_00d7, Value::boolean(true))?);
+        } else {
+            fields.push(item(0x0042_00d6, Value::byte_string(correlation.clone()))?);
+        }
+        if stage == 2 {
+            fields.push(item(0x0042_00d8, Value::boolean(true))?);
+        }
+        let response = exchange_payload(connection, version, 0x27, fields, |batch| {
+            Ok(batch
+                .with_response_payload(|payload| {
+                    let children = payload.children();
+                    if stage == 1 {
+                        return children.is_empty();
+                    }
+                    let [field] = children else { return false };
+                    let expected_tag = if stage == 0 { 0x0042_00d6 } else { 0x0042_00c2 };
+                    field.tag().raw() == expected_tag
+                        && field.with_value(|value| {
+                            let ValueView::ByteString(bytes) = value else {
+                                return false;
+                            };
+                            if stage == 0 {
+                                correlation.extend_from_slice(bytes);
+                                !bytes.is_empty()
+                            } else {
+                                bytes == &digest[..]
+                            }
+                        })
+                })
+                .unwrap_or_default())
+        })?;
+        if response != (0, None) || stage == 2 {
+            return Ok(response);
+        }
+    }
+    unreachable!("Hash stages always include Final")
+}
+
+fn hash_fields(data: &[u8]) -> Result<Vec<Item>> {
+    Ok(vec![
+        node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
+        item(0x0042_00c2, Value::byte_string(data.to_vec()))?,
+    ])
+}
+
 fn exchange(
     connection: &Connection,
     version: ProtocolVersion,
     operation: u32,
     id: Option<&str>,
+    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+) -> ExchangeResult {
+    exchange_with_reference(connection, version, operation, id, 0, check)
+}
+
+fn exchange_with_reference(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    id: Option<&str>,
+    attribute_reference: u32,
     check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
 ) -> ExchangeResult {
     let minor = i32::from(connection.protocol_version == "2.1");
@@ -333,23 +458,27 @@ fn exchange(
         )
     };
     let payload_fields = match operation {
-        CREATE => vec![
-            item(0x0042_0057, Value::enumeration(2))?,
-            node(
-                0x0042_0125,
-                vec![
-                    item(0x0042_0028, Value::enumeration(3))?,
-                    item(0x0042_002a, Value::integer(256))?,
-                    item(0x0042_002c, Value::integer(4))?,
-                ],
-            )?,
-        ],
+        CREATE => {
+            let mut attrs = vec![
+                item(0x0042_0028, Value::enumeration(3))?,
+                item(0x0042_002a, Value::integer(256))?,
+                item(0x0042_002c, Value::integer(4))?,
+            ];
+            if (0x0042_0120..=0x0042_0123).contains(&attribute_reference) {
+                attrs.push(item(0x0042_0120, Value::boolean(true))?);
+                attrs.push(item(0x0042_0122, Value::boolean(false))?);
+            }
+            vec![
+                item(0x0042_0057, Value::enumeration(2))?,
+                node(0x0042_0125, attrs)?,
+            ]
+        }
         GET_ATTRIBUTES => vec![
             item(
                 0x0042_0094,
                 Value::text_string(id.ok_or("object identifier missing")?.to_owned()),
             )?,
-            item(0x0042_013b, Value::enumeration(0x0042_002a))?,
+            item(0x0042_013b, Value::enumeration(attribute_reference))?,
         ],
         CHECK => vec![
             item(
@@ -376,18 +505,35 @@ fn exchange(
         0x18 => vec![item(0x0042_0074, Value::enumeration(1))?],
         0x1e => vec![version_item()?],
         0x25 => vec![item(0x0042_00c4, Value::integer(32))?],
-        0x27 => vec![
-            node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
-            item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
-        ],
+        0x27 => hash_fields(HASH_INPUT)?,
         _ => Vec::new(),
     };
+    exchange_payload(connection, version, operation, payload_fields, check)
+}
+
+fn exchange_payload(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    payload_fields: Vec<Item>,
+    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+) -> ExchangeResult {
+    let protocol = node(
+        0x0042_0069,
+        vec![
+            item(0x0042_006a, Value::integer(2))?,
+            item(
+                0x0042_006b,
+                Value::integer(i32::from(connection.protocol_version == "2.1")),
+            )?,
+        ],
+    )?;
     let request = node(
         0x0042_0078,
         vec![
             node(
                 0x0042_0077,
-                vec![version_item()?, item(0x0042_000d, Value::integer(1))?],
+                vec![protocol, item(0x0042_000d, Value::integer(1))?],
             )?,
             node(
                 0x0042_000f,

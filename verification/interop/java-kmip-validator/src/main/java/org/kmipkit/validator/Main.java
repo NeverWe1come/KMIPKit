@@ -68,7 +68,8 @@ public final class Main {
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
         long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
-        long workflowUnavailable = countCases(applicable, JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE);
+        long workflowUnavailable = applicable.stream().filter(GenericIncoming::isIncoming)
+                .filter(testCase -> !GenericIncoming.supports(testCase, connection)).count();
         long mutation = applicable.stream().filter(testCase -> "mutating".equals(testCase.execution().mutation())).count();
         out.println("KMIPKit Java interoperability plan");
         out.println("Server ID: " + connection.serverId());
@@ -78,7 +79,7 @@ public final class Main {
         out.println("Server exchanges executable through selected Java API level: " + typed);
         out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
-        out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
+        out.println("Server-initiated workflows without a recipe for the selected API: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
@@ -124,9 +125,9 @@ public final class Main {
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute && !"generic-ttlv".equals(connection.apiLevel()) ? JavaKmipDriver.connect(connection) : null;
-        try {
+        try (var incoming = GenericIncoming.open(connection, options.values())) {
             for (CatalogLoader.CatalogCase testCase : applicable) {
-                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver);
+                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver, incoming);
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
@@ -153,13 +154,17 @@ public final class Main {
     }
 
     private static JavaKmipDriver.CaseOutcome executeCase(CatalogLoader.CatalogCase testCase,
-            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver) {
+            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver, GenericIncoming incoming) {
         long start = System.nanoTime();
         if ("not_applicable".equals(testCase.execution().status())) {
             return JavaKmipDriver.CaseOutcome.notRun("Catalog case is not applicable: "
                     + testCase.execution().notApplicableReason(), elapsedMillis(start));
         }
         if ("local_model".equals(testCase.execution().mode())) {
+            if (!TtlvModelChecks.supports(testCase)) {
+                return JavaKmipDriver.CaseOutcome.notRun(
+                        "No Java local model recipe implements the selected assertions.", elapsedMillis(start));
+            }
             TtlvModelChecks.ModelCheck model = TtlvModelChecks.verifyLocalCase(testCase);
             return model.passed()
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
@@ -181,6 +186,11 @@ public final class Main {
                         "not_compared", elapsedMillis(start), null, null,
                         "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
             }
+        }
+        if (GenericIncoming.supports(testCase, connection)) {
+            return incoming == null
+                    ? JavaKmipDriver.CaseOutcome.notRun("Incoming exchange requires --listen and a peer trigger.", elapsedMillis(start))
+                    : incoming.exchange(testCase);
         }
         if ("generic-ttlv".equals(connection.apiLevel())) {
             return GenericExchange.run(testCase, connection);
@@ -219,7 +229,9 @@ public final class Main {
 
     private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String apiLevel = connection.apiLevel();
-        if ("generic-ttlv".equals(apiLevel)) return GenericExchange.supports(testCase, connection);
+        if ("generic-ttlv".equals(apiLevel)) {
+            return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
+        }
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
                 || "fluent".equals(apiLevel) && JavaKmipDriver.supportsFluent(testCase));
     }
@@ -241,6 +253,7 @@ public final class Main {
         output.println("KMIPKit Java interoperability validator");
         output.println("Usage: <plan|preflight|run> --connection FILE [--catalog FILE]");
         output.println("Run also accepts --case ID --artifact-manifest FILE --output-dir DIR --enable-mutations.");
+        output.println("Generic incoming cases accept --listen ADDRESS:PORT --listener-cert FILE --listener-key FILE --listener-ready-file FILE.");
         output.println("plan and preflight do not resolve DNS or open sockets.");
     }
 
@@ -256,7 +269,8 @@ public final class Main {
                 } else if (Set.of("--connection", "--catalog", "--artifact-manifest", "--output-dir")
                         .contains(option) && index + 1 < args.length) {
                     values.put(option, args[++index]);
-                } else if ("run".equals(args[0]) && "--case".equals(option)
+                } else if ("run".equals(args[0]) && Set.of("--case", "--listen", "--listener-cert",
+                        "--listener-key", "--listener-ready-file").contains(option)
                         && !values.containsKey(option) && index + 1 < args.length) {
                     values.put(option, args[++index]);
                 } else {

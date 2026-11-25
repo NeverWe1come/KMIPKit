@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 import uuid
 from dataclasses import dataclass
@@ -268,7 +269,9 @@ class PythonKmipDriver:
         if case["execution"]["mode"] != "server_exchange":
             return False
         workflow = case.get("requires", {}).get("workflow_type")
-        if workflow in {"server_to_client", "multipart_streaming", "batch_id_placeholder"}:
+        if workflow == "multipart_streaming":
+            return case["case_id"] == "test-multipart-hash-sha256" and api_level in {"typed-protocol", "fluent"}
+        if workflow in {"server_to_client", "batch_id_placeholder"}:
             return False
         if api_level == "fluent":
             return (
@@ -1511,6 +1514,7 @@ class PythonKmipDriver:
 
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
+        verify_hash: bool = False,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1527,6 +1531,8 @@ class PythonKmipDriver:
                 authentication = None
             response = self._client.execute(batch, limits)
             try:
+                if verify_hash and response.item_count() != 1:
+                    raise ValueError("Hash response batch count did not match the request")
                 observed = response.item_at(0)
                 status_code = int(observed.result_status)
                 reason_code = observed.result_reason
@@ -1562,7 +1568,7 @@ class PythonKmipDriver:
                             getattr(observed, "decapsulate_response", None),
                         ) if payload is not None),
                     ) if value is not None],
-                    "_bytes": self._response_bytes(observed),
+                    "_bytes": None if verify_hash else self._response_bytes(observed),
                     "_ticket_ttlv": (
                         observed.login_response.ticket_ttlv
                         if observed.login_response is not None
@@ -1570,6 +1576,17 @@ class PythonKmipDriver:
                     ),
                     "_pending_correlation": None if pending_correlation is None else bytearray(pending_correlation),
                 }
+                if verify_hash:
+                    if observed.operation != protocol_values.Operation.HASH:
+                        raise ValueError("Hash response operation did not match the request")
+                    payload = observed.hash_response
+                    if success and payload is None:
+                        raise ValueError("Hash response payload is unavailable")
+                    result["_hash_correlation"] = None
+                    if payload is not None:
+                        with payload.response_ttlv:
+                            result["_bytes"] = payload.data
+                            result["_hash_correlation"] = payload.correlation_value
                 if verify_query:
                     if observed.operation != protocol_values.Operation.QUERY:
                         raise ValueError("Query response operation does not match the request")
@@ -1819,9 +1836,51 @@ class PythonKmipDriver:
             "diagnostic": diagnostic,
         }
 
+    def _run_multipart_hash(self, test_case: dict[str, Any]) -> dict[str, Any]:
+        from kmipkit import ttlv
+        from kmipkit.fluent import Request
+
+        chunks = (b"KMIP ", b"Hash", b"!")
+        correlation = None
+        for index, data in enumerate(chunks):
+            init = True if index == 0 else None
+            end = True if index == len(chunks) - 1 else None
+            with self._cryptographic_parameters(test_case, "Hash") as parameters:
+                if self._connection["api_level"] == "fluent":
+                    with Request(self._client).hash() as builder:
+                        builder.cryptographic_parameters_structure(parameters).data(data)
+                        if correlation is not None:
+                            builder.correlation_value(correlation)
+                        if init is not None:
+                            builder.init_indicator(init)
+                        if end is not None:
+                            builder.final_indicator(end)
+                        item = builder.build()
+                else:
+                    with ttlv.codec_limits_defaults() as limits, ttlv.ttlv_value_byte_string(data, limits) as payload:
+                        item = self._extensions.client_batch_item_hash(
+                            parameters, payload, correlation_value=correlation,
+                            init_indicator=init, final_indicator=end,
+                        )
+            with item:
+                outcome = self._exchange(item, verify_hash=True)
+            returned = outcome.pop("_hash_correlation")
+            if outcome["status"] != "passed":
+                return outcome
+            expected_digest = hashlib.sha256(b"".join(chunks)).digest() if end else None
+            valid_correlation = bool(returned) if init else returned is None
+            if not valid_correlation or outcome["_bytes"] != expected_digest:
+                return {**outcome, "status": "failed", "library_correctness": "failed",
+                        "server_compatibility": "unknown", "diagnostic": "Multipart Hash response fields did not match the stage"}
+            if init:
+                correlation = returned
+        return outcome
+
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
+        if case_id == "test-multipart-hash-sha256":
+            return self._run_multipart_hash(test_case)
         unique_name = f"kmipkit-python-{case_id}-{uuid.uuid4()}"
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
