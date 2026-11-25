@@ -157,7 +157,7 @@ def render() -> str:
     sources = source_map(lines)
     records: dict[str, list[list[str]]] = {}
     for line in lines:
-        if not line.startswith("| `KMIPKIT-0051-R"):
+        if not line.startswith("| `PAYLOAD-RULE-R") or line.count("|") != 10:
             continue
         cells = split_row(line)
         records.setdefault(cells[1], []).append(cells)
@@ -192,7 +192,7 @@ def render() -> str:
         "macro_rules! field {",
         "    ($rule:ident $name:literal $tag:tt $types:literal $min:literal $max:tt $nested:tt) => {",
         "        FieldDescriptor {",
-        '            rule_id: concat!("KMIPKIT-0051-", stringify!($rule)),',
+        '            rule_id: concat!("PAYLOAD-RULE-", stringify!($rule)),',
         "            name: $name,",
         "            tag: field_tag!($tag),",
         "            types: $types,",

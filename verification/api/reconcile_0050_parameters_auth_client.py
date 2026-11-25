@@ -119,7 +119,7 @@ def _operation_mapping(
     operation_id = operation["operationId"]
     method = next((
         method for method, suffix in DIRECT_METHODS.items()
-        if operation_id == f"KMIPKIT-ELEM-OP-C2S-{suffix}"
+        if operation_id == f"KMIP-ELEM-OP-C2S-{suffix}"
     ), None)
     if method is None:
         raise ReconciliationError(f"operation has no reviewed direct method: {operation_id}")
@@ -226,7 +226,7 @@ def _classify(
         operation_key = DIRECT_METHODS.get(method)
         if operation_key is None:
             raise ReconciliationError(f"unowned KMIPKIT-0050 Client method: {export_name}")
-        operation_id = f"KMIPKIT-ELEM-OP-C2S-{operation_key}"
+        operation_id = f"KMIP-ELEM-OP-C2S-{operation_key}"
         operation = operation_by_id.get(operation_id)
         if operation is None or operation.get("apiState") != "verified":
             raise ReconciliationError(f"direct method has no verified operation capability: {export_name}")

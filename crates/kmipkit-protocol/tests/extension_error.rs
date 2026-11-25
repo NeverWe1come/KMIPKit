@@ -1,6 +1,6 @@
-//! KMIPKIT-0012 protocol error contract tests.
+//! Protocol error contract tests for extensions.
 //!
-//! Traceability: KMIPKIT-0012-FR-011 and KMIPKIT-0012-FR-012.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use std::error::Error;
 use std::fmt::Write as _;

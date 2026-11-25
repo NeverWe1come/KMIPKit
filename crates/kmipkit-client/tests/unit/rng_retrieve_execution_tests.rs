@@ -2,15 +2,8 @@
 //! §6.1.49, Tables 316–318. These tests are source-derived, not official
 //! Test Case passes.
 //!
-//! Traceability: KMIPKIT-0041 FR-001–FR-008, SC-001–SC-003. This is Rust-only
-//! fake-transport evidence; it does not establish cross-language parity or
-//! two-server interoperability.
-//! Fluent construction and execution additionally trace to KMIPKIT-0093-FR-004,
-//! FR-007, and FR-008.
-//! `KMIPKIT-ELEM-OP-C2S-RNG-RETRIEVE`,
-//! `KMIPKIT-ELEM-ENUM-VALUE-OPERATION-RNG-RETRIEVE-00000025`,
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH`, and
-//! `KMIPKIT-ELEM-OPERATION-STRUCTURE-7-9-DATA`.
+//! Covers synchronous and fluent RNG Retrieve request construction and response
+//! validation in Rust using a fake transport, verifying Data Length and Data fields.
 
 use kmipkit_protocol::{ProtocolCauseCategory, RngRetrieveRequest};
 use kmipkit_test_support::ExchangeScript;

@@ -1,6 +1,6 @@
 //! Preservation regressions for unknown KMIP lifecycle results and extensions.
 //!
-//! Derived from KMIP 2.1 §§5.1 and 8.6 and KMIPKIT-0018 FR-008. These tests
+//! Derived from KMIP 2.1 §§5.1 and 8.6 response preservation rules. These tests
 //! verify accepted generic data retention; they are not official OASIS Test
 //! Cases and do not imply server policy for unknown result values.
 

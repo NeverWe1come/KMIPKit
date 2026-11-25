@@ -292,7 +292,7 @@ catalog generator verifies its exact contents, and Python binding tests cover
 known and unknown enum values and mask bits. All other handwritten and checked-in generated Python modules under
 `bindings/python/src/kmipkit` remain in the 85 percent gate. In particular,
 `_generated/public_api.py` is imported and validated by
-`tests/test_generated_api_manifest.py`, so the generated API declaration
+`bindings/python/tests/test_generated_api_manifest.py`, so the generated API declaration
 metadata is included in the coverage report. Tests and example consumers live
 outside that package and are not measured as product code.
 Cross-platform adapter CI pins uv 0.12.23, installs CPython 3.12 through uv,

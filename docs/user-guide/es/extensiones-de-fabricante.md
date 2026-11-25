@@ -88,7 +88,7 @@ de registro.
 Los valores reconocidos exponen una vista tipada y conservan su subárbol TTLV
 genérico original. Las extensiones no críticas sin reconocer siguen
 disponibles como TTLV genérico. Las extensiones críticas desconocidas se
-rechazan según KMIPKIT-0007; el registro no debilita esa regla. Los valores
+rechazan según el modelo de ejecución del cliente; el registro no debilita esa regla. Los valores
 genéricos conservan tags desconocidos, enumeraciones, bits de bitmask, campos
 repetidos y orden de hijos aceptados por la política de asignación TTLV de
 KMIPKit.

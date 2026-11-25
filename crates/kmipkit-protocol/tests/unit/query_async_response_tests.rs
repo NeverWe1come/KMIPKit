@@ -1,9 +1,9 @@
 //! Derived generic Query Asynchronous Requests response tests; not official
 //! conformance vectors. OASIS KMIP v2.1 §6.1.41, Table 286 has the open
-//! `KMIPKIT-DISC-039` caption discrepancy; this test preserves the payload
+//! caption discrepancy; this test preserves the payload
 //! without assigning it a typed schema.
 //!
-//! Traceability: `KMIPKIT-0009-FR-007`, `FR-012`.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_ttlv::{StructureView, Value, ValueView};
 

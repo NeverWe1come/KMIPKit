@@ -124,7 +124,7 @@ ni ninguna copia de Ticket Value.
 ## Alcance y limitaciones
 
 Los ejemplos de código se compilan contra las API Rust de cliente y protocolo.
-El manifiesto aprobado KMIPKIT-0043 y su registro de trazabilidad documentan los
+El manifiesto aprobado public API parity manifest y su registro de trazabilidad documentan los
 mapeos y la paridad de Delegated Login entre lenguajes. Las pruebas del proyecto
 cubren el fixture Login CN01 §2.48 fijado en el repositorio; las pruebas
 derivadas de la fuente para los demás casos no son fixtures oficiales. Esta guía

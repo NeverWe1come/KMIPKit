@@ -18,7 +18,7 @@ fn request() -> kmipkit_create_key_pair_request_v1_t {
 
 #[test]
 fn key_pair_v1_preserves_explicit_and_absent_attribute_groups() {
-    // KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2.
+    // OASIS KMIP 2.1 §6.1.2 and §6.1.9 attribute group handling.
     let mut input = request();
     let parsed = create_key_pair_request_v1(&raw const input).expect("valid semantic input");
     assert!(parsed.has_common_attributes());

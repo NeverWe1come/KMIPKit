@@ -1,9 +1,10 @@
 #![cfg(test)]
 
 //! Fake-transport Re-key contracts from OASIS KMIP v2.1 §6.1.46, Tables
-//! 303–307. Catalog cases `KMIPKIT-TEST-CN01-2-76` through `-87` have no
-//! pinned fixtures, so these are source-derived tests, not official fixture
-//! executions. Shared Pending and delivery behavior follows §§8.6, 9.1, 9.2.
+//! 303–307. Validates client execution of Re-key requests, pending response
+//! handling, and delivery state tracking. Shared Pending and delivery behavior
+//! follows §§8.6, 9.1, 9.2. These are source-derived tests, not official
+//! fixture executions.
 
 use kmipkit_protocol::{
     AttributeSet, CheckRequest, CreateRequest, ObjectType, RekeyRequest, UniqueIdentifier,

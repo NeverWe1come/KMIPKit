@@ -1,8 +1,8 @@
 //! Derived KMIP 2.1 Query Asynchronous Requests tests; not official vectors.
 //!
-//! Traceability: `KMIPKIT-0009-FR-001`, `FR-006`, `FR-009`; OASIS KMIP v2.1
+//! Verifies protocol model, request/response validation, and security invariants.
 //! §6.1.41, Table 285, and §7.1, Table 352. Response interpretation remains
-//! generic while `KMIPKIT-DISC-039` is open.
+//! generic as generic TTLV structures.
 
 use kmipkit_ttlv::ValueView;
 

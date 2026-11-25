@@ -1,4 +1,4 @@
-"""Consumer parity tests for KMIPKIT-0044 Register context selection."""
+"""Consumer parity tests for register opaque context Register context selection."""
 
 from __future__ import annotations
 

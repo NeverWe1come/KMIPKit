@@ -33,7 +33,7 @@ impl RawTag {
     /// KMIP versions.
     ///
     /// Exact catalog records take precedence over overlapping aggregate
-    /// ranges, following the `KMIPKit` project policy recorded in ADR-0010.
+    /// ranges, following the tag allocation precedence policy.
     /// This checks allocation only. A tag assigned by one supported KMIP
     /// version may be reserved or unassigned in another; the protocol layer
     /// remains responsible for checking the effective version, as well as
@@ -53,6 +53,23 @@ impl RawTag {
         }
     }
 
+    /// Checks this tag against the allocation catalog, allowing legacy KMIP 1.X
+    /// tags that were reserved in KMIP 2.0+.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::TagNotAllocated`] if the tag is unused or unallocated.
+    pub fn try_checked_allow_reserved(&self) -> Result<Tag, ModelError> {
+        match allocation_kind(self.0) {
+            Some(
+                TagAllocationKind::Assigned
+                | TagAllocationKind::Extension
+                | TagAllocationKind::Reserved,
+            ) => Ok(Tag(self.0)),
+            Some(TagAllocationKind::Unused) | None => Err(ModelError::TagNotAllocated),
+        }
+    }
+
     pub(crate) fn is_reserved(self) -> bool {
         matches!(allocation_kind(self.0), Some(TagAllocationKind::Reserved))
     }
@@ -62,7 +79,7 @@ impl RawTag {
 /// checked.
 ///
 /// Allocation follows `KMIPKit`'s project policy for exact records and
-/// aggregate ranges as recorded in ADR-0010 and the pinned versioned tag
+/// aggregate ranges as defined in the tag allocation precedence policy and the pinned versioned tag
 /// catalogs. A checked tag is not a claim that it is valid for a particular
 /// protocol version, or that its TTLV framing, Structure schema, extension
 /// semantics, or operation meaning is valid.

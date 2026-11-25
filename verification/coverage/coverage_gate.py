@@ -90,7 +90,10 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvDecodeErrorKind.java",
         # These package declarations apply the NullMarked default only.
         "bindings/java/src/main/java/org/kmipkit/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/credentials/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/fluent/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/protocol/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",

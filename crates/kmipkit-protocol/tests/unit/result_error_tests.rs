@@ -2,7 +2,7 @@
 //! and §9.16, Table 421's Discover Versions result rules. These are not
 //! official OASIS test vectors.
 //!
-//! Traceability: `KMIPKIT-0007-FR-002`, `-FR-003`; `KMIPKIT-0007-SC-001`.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use std::error::Error;
 

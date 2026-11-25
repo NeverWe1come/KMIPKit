@@ -3,7 +3,7 @@
 //! These cases exercise the documented callback views, conversions, and
 //! redacted diagnostics without adding credential transmission behavior.
 //!
-//! Traceability: KMIPKIT-0008-FR-001–FR-010; SC-001, SC-002, SC-005.
+//! Verifies protocol model, request/response validation, and security invariants.
 
 use kmipkit_protocol::{
     AttestationCredential, Authentication, Credential, CredentialType, CredentialValidationError,

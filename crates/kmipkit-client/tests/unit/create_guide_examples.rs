@@ -1,6 +1,5 @@
 //! Compile-check the fluent Create example in both user guides.
-//! It traces to KMIP v2.1 §6.1.8, Tables 186–188 and KMIPKIT-0093-FR-004,
-//! FR-007, and FR-008; these examples are informative, not conformance tests.
+//! It traces to KMIP v2.1 §6.1.8, Tables 186–188; these examples are informative, not conformance tests.
 
 use kmipkit_protocol::{AttributeSet, ObjectType};
 use kmipkit_ttlv::codec::CodecLimits;

@@ -6,10 +6,9 @@
 //! Object Group Member values are defined in §11.33. These are local protocol
 //! vectors, not official OASIS Test Cases.
 //!
-//! Traceability: `KMIPKIT-ELEM-OP-C2S-LOCATE`; `KMIPKIT-0017-FR-006`–FR-009,
-//! FR-011; `KMIPKIT-REQ-SPEC-6.1.28-001`, -002, -007, -008-001, -008-002,
-//! -011, -012, -013-001, and -013-002. The Object Group Member vector checks
-//! Table 247 value preservation only; server matching remains server behavior.
+//! Verifies protocol model, request/response validation, and security invariants.
+//! The Object Group Member vector checks Table 247 value preservation only;
+//! server matching remains server behavior.
 
 use crate::{
     AttributeSet, AttributeSetError, LocateError, LocateRequest, LocateResponse, ObjectGroupMember,

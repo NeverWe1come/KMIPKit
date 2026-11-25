@@ -1,4 +1,4 @@
-//! Typed KMIP 3.0 system-object operation payload models (KMIPKIT-0050).
+//! Typed KMIP 3.0 system-object operation payload models (KMIP 3.0 system-object operation payload models).
 
 use std::{error::Error, fmt};
 

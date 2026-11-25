@@ -14,7 +14,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 final class NamedProtocolValuesTest {
-    // OASIS KMIP Specification v2.1 §§11.12 and 12.1; KMIPKIT-0047-FR-001–004.
+    // OASIS KMIP Specification v2.1 §§11.12 and 12.1; named protocol values.
     @Test
     void namedValuesRetainUnknownRawValuesAndBits() {
         assertEquals(3L, KmipValues.CryptographicAlgorithm.AES);
@@ -49,7 +49,7 @@ final class NamedProtocolValuesTest {
         assertNull(KmipValues.v3_0OperationName(0x43));
     }
 
-    // OASIS KMIP Specification v2.1 §§11–12; KMIPKIT-0047-FR-001–004 and KMIPKIT-0093-FR-001–002.
+    // OASIS KMIP Specification v2.1 §§11–12; named protocol values and named tag values.
     @Test
     void everyGeneratedEnumerationValueHasANameAndPreservesUnknownValues() throws Exception {
         int enumerationCount = 0;

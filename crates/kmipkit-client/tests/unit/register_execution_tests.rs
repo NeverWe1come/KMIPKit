@@ -1,8 +1,9 @@
 #![cfg(test)]
 
 //! Fake-transport Register contracts from OASIS KMIP v2.1 §6.1.43,
-//! Tables 291–294. Traceability: all `KMIPKIT-REQ-SPEC-6.1.43-*` rows.
-//! These are derived execution tests, not official fixture passes.
+//! Tables 291–294. Validates client execution of Register operations across
+//! managed object types and attribute sets. These are derived execution tests,
+//! not official fixture passes.
 
 use kmipkit_protocol::{
     AttributeSet, Certificate, CheckRequest, ManagedObject, ObjectType, OpaqueObjectContext,

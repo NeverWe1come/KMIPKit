@@ -45,14 +45,14 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
-/** Java 17 registry tests tied to the shared KMIPKIT-0012 fixture corpus. */
+/** Java 17 registry tests tied to the shared vendor extension registry fixture corpus. */
 final class ExtensionRegistryTest {
     private static final String VENDOR = "example.vendor";
     private static final String ALPHA_NAME = "alpha";
     private static final String ALPHA_VERSION = "1";
     private static final String ALPHA_MARKER = "alpha-v1";
     private static final int MARKER_TAG = 0x420001;
-    // KMIP 2.1 §11.56 Extensions range; accepted under ADR-0010's tag allocation policy.
+    // KMIP 2.1 §11.56 Extensions range; accepted under the architecture decision on vendor extensions's tag allocation policy.
     private static final int VENDOR_RANGE_TAG = 0x540001;
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
 

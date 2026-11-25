@@ -1,7 +1,6 @@
 //! Project-derived fake-transport checks for OASIS KMIP Specification v2.1
 //! §6.1.23, Tables 232–234, and §4.59, Table 148. These are not official cases.
-//! Traceability: KMIPKIT-025-T232-REQUEST, T233-RESPONSE, T234-ERROR,
-//! KMIPKIT-025-COMMON-RESULT, and KMIPKIT-025-COMMON-DELIVERY.
+//! Verifies Get Usage Allocation request/response execution.
 
 use kmipkit_protocol::{
     GetUsageAllocationRequest, GetUsageAllocationResponse, ResultReason, UniqueIdentifier,

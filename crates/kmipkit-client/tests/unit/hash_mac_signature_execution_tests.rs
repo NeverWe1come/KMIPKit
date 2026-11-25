@@ -1,9 +1,8 @@
 //! Shared execution contracts derived from OASIS KMIP v2.1 Tables 235, 259,
 //! 262, 334, and 337. These tests are source-derived and do not claim an
-//! official Test Case pass. Traceability: `KMIPKIT-ELEM-OP-C2S-HASH`,
-//! `KMIPKIT-ELEM-OP-C2S-MAC`, `KMIPKIT-ELEM-OP-C2S-MAC-VERIFY`,
-//! `KMIPKIT-ELEM-OP-C2S-SIGN`, and
-//! `KMIPKIT-ELEM-OP-C2S-SIGNATURE-VERIFY`. Response output cardinality is
+//! official Test Case pass. Validates client execution of Hash, MAC, and
+//! Signature operations and their verification counterparts, asserting response
+//! output cardinality and error handling. Response output cardinality is
 //! derived from §6.1.24 Table 236, §6.1.32 Table 260, and §6.1.55 Table 335.
 
 use std::cell::RefCell;

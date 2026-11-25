@@ -1,4 +1,4 @@
-//! Public production-client contract for KMIPKIT-0013 User Story 4.
+//! Validates the public production client interface and execution contracts.
 //!
 //! The loopback peers require verified TLS 1.3 mutual authentication. Client
 //! construction is deliberately performed only from immutable client and
@@ -14,7 +14,7 @@
 //! KMIP Specification v2.1 §8.4 Table 397 and §11.56.
 //! Request and response boundaries additionally trace to OASIS KMIP
 //! Specification v2.1 §9.12, Table 417, and §§10.1.1–10.1.5; byte-limit and
-//! typed-decoding acceptance is defined by KMIPKIT-0013 FR-014 and FR-017.
+//! typed-decoding acceptance follows configured transport limits and typed response models.
 
 use std::io::{self, Read, Write};
 use std::net::{Shutdown, TcpListener};

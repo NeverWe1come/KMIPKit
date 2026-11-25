@@ -1,4 +1,4 @@
-//! Unit tests for multi-version client configuration, override, and `VersionGate` enforcement (KMIPKIT-0069).
+//! Unit tests for multi-version client configuration, override, and `VersionGate` enforcement for multi-version support.
 
 use kmipkit_protocol::{NewAttribute, ProtocolVersion, SetAttributeRequest};
 use kmipkit_test_support::ExchangeScript;

@@ -25,7 +25,7 @@
 extern "C" int32_t kmipkit_ttlv_value_view_copy_bytes(
         kmipkit_ttlv_value_view_t* view, uint8_t* buffer, uint64_t capacity);
 
-// Shared T076 layouts and declarations come from the generated internal
+// Shared client ABI layouts and declarations come from the generated internal
 // header; this bridge retains ABI assertions and Java-specific adapters.
 typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
 typedef struct kmipkit_client_t kmipkit_client_t;

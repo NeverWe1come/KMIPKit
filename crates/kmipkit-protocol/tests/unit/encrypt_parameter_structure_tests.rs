@@ -4,24 +4,7 @@
 //! rules do not independently reject the payload. These are source-derived
 //! tests, not claims that an official OASIS Test Case passed.
 //!
-//! Traceability: `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-BLOCK-CIPHER-MODE`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-COUNTER-LENGTH`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-CRYPTOGRAPHIC-ALGORITHM`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-DIGITAL-SIGNATURE-ALGORITHM`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-FIXED-FIELD-LENGTH`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-HASHING-ALGORITHM`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-INITIAL-COUNTER-VALUE`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-INVOCATION-FIELD-LENGTH`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-IV-LENGTH`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-KEY-ROLE-TYPE`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-MASK-GENERATOR`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-MASK-GENERATOR-HASHING-ALGORITHM`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-P-SOURCE`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-PADDING-METHOD`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-RANDOM-IV`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-SALT-LENGTH`,
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TAG-LENGTH`, and
-//! `KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-TRAILER-FIELD`.
+//! Validates protocol operation request and response message structures under OASIS KMIP specifications.
 
 use crate::decrypt::validate_request_payload as validate_decrypt_request_payload;
 use crate::encrypt::validate_request_payload;
@@ -241,7 +224,7 @@ fn assert_table_59_error_parity(
         assert_eq!(error.kind(), ProtocolErrorKind::InvalidValue);
         assert_eq!(error.cause_category(), ProtocolCauseCategory::InvalidValue);
         assert_eq!(error.to_string(), "invalid protocol value (invalid value)");
-        assert!(!error.to_string().contains("T025-sensitive-sentinel"));
+        assert!(!error.to_string().contains("test-sensitive-sentinel"));
     }
 }
 
@@ -287,7 +270,7 @@ fn encrypt_and_decrypt_table_59_errors_are_payload_free_and_identical() {
         let wrong_type = || {
             vec![(
                 member.tag,
-                Value::text_string("T025-sensitive-sentinel".to_owned()),
+                Value::text_string("test-sensitive-sentinel".to_owned()),
             )]
         };
         assert_table_59_error_parity(wrong_type(), wrong_type());

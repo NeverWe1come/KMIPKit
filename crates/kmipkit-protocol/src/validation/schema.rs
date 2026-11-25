@@ -172,10 +172,10 @@ pub fn validate_structure(
 fn unsupported_schema_report() -> ValidationReport {
     let mut report = ValidationReport::default();
     report.push(ValidationIssue::new(
-        ValidationCode::new("KMIPKIT-0051-P002"),
+        ValidationCode::new("PAYLOAD-POLICY-P002"),
         ValidationPath::root(),
         ValidationSeverity::Error,
-        ValidationSourceRef::ProjectRule("KMIPKIT-0051-P002"),
+        ValidationSourceRef::ProjectRule("PAYLOAD-POLICY-P002"),
     ));
     report
 }

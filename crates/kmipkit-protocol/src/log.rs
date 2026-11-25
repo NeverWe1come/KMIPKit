@@ -1,7 +1,7 @@
 //! Typed KMIP 2.1 Log request and response payloads.
 //!
 //! Fields follow OASIS KMIP Specification v2.1 §6.1.29, Tables 250–252.
-//! Section 7.19 defines Log Message; approved DISC-017 assigns Table 252 to Log.
+//! Section 7.19 defines Log Message; Table 252 defines the Log response.
 
 use std::{error::Error, fmt};
 
@@ -79,7 +79,7 @@ impl ValidateKmipRequest for LogRequest {
             .any(|extension| extension.tag().raw() == LOG_MESSAGE)
         {
             crate::validation::request_issue_report(
-                "KMIPKIT-0051-P005",
+                "PAYLOAD-POLICY-P005",
                 "Log Message",
                 ValidationSourceRef::Oasis {
                     document: "KMIP v2.1",

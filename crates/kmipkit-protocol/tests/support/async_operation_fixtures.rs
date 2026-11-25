@@ -2,7 +2,7 @@
 //!
 //! The field order and result cases follow OASIS KMIP v2.1 §§6.1.5, 6.1.38,
 //! 6.1.39, and 6.1.41, Tables 176–178, 276–280, and 285–287. Query response
-//! fixtures remain generic while `KMIPKIT-DISC-039` is open. These are derived
+//! fixtures remain generic as generic TTLV structures. These are derived
 //! fixtures, not official conformance vectors.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};

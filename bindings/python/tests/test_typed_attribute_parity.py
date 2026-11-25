@@ -1,4 +1,4 @@
-"""Four-language typed direct-attribute behavior for KMIPKIT-0053."""
+"""Four-language typed direct-attribute behavior for operation facade parity."""
 
 import pytest
 

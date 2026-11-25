@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "tests" / "fixtures" / "api" / "operation_catalog_parity.tsv"
 MANIFEST = ROOT / "bindings" / "shared" / "public-api.json"
 NORMATIVE_CATALOG = ROOT / "verification" / "conformance" / "catalog" / "kmip-2.1.json"
-OPERATION_ENUMERATION_ID = "KMIPKIT-ELEM-ENUMERATION-OPERATION"
-OPERATION_VALUE_ID_PREFIX = "KMIPKIT-ELEM-ENUM-VALUE-OPERATION-"
+OPERATION_ENUMERATION_ID = "KMIP-ELEM-ENUMERATION-OPERATION"
+OPERATION_VALUE_ID_PREFIX = "KMIP-ELEM-ENUM-VALUE-OPERATION-"
 _HEX_VALUE = re.compile(r"[0-9A-Fa-f]{8}")
 
 
@@ -65,7 +65,7 @@ def operation_catalog_rows(
             raise ValueError(
                 f"invalid normative KMIP Operation value for {operation_id}: {wire_value}"
             )
-        operation_suffix = operation_id.removeprefix("KMIPKIT-ELEM-OP-C2S-")
+        operation_suffix = operation_id.removeprefix("KMIP-ELEM-OP-C2S-")
         expected_element_id = (
             f"{OPERATION_VALUE_ID_PREFIX}{operation_suffix}-{wire_value.upper()}"
         )

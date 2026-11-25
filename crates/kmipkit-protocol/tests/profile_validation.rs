@@ -54,7 +54,7 @@ fn baseline_target_selection_requires_category_appropriate_evidence() {
     }
 
     // KMIP Profiles v2.1 §6.1 item 2 incorporates §3.1 and its subclauses.
-    // Its TLS 1.2 MAY is kept traceable, but ADR-0005's TLS 1.3-only boundary
+    // Its TLS 1.2 MAY is kept traceable, but synchronous transport policy's TLS 1.3-only boundary
     // makes it out of scope for KMIPKit 1.0 and excludes it from effective
     // Baseline requirements.
     for inherited_requirement in [

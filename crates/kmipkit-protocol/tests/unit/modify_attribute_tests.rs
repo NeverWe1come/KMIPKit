@@ -2,11 +2,10 @@
 
 //! Derived Modify Attribute request/response vectors for OASIS KMIP v2.1
 //! §6.1.34, Tables 265–266; §§4.2, 5.6–5.7, Tables 31–32 and 162–163;
-//! §11.2 Table 430; §§11.36 and 11.56. Traceability: KMIPKIT-0016-FR-008/
-//! FR-010 and SC-002/SC-003.
-//! Table 267 Result Reasons and Operation Failed are checked against §§11.46–11.47,
-//! Tables 479–480. T032 covers transport propagation; these vectors do not claim that
-//! an official OASIS case passed.
+//! §11.2 Table 430; §§11.36 and 11.56.
+//!
+//! Validates attribute modification requests, attribute instance index
+//! matching, and error result handling.
 
 use crate::{
     CurrentAttribute, ModifyAttributeRequest, ModifyAttributeResponse, NewAttribute,

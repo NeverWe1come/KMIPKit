@@ -86,7 +86,7 @@ import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TtlvValueView;
 
-/** Exercises the T076 client ABI through the Java facade against a local TLS 1.3 peer. */
+/** Exercises the client C ABI through the Java facade against a local TLS 1.3 peer. */
 final class ClientFacadeTlsIntegrationTest {
     private static final char[] STORE_PASSWORD = "kmipkit-test".toCharArray();
     private static final byte[] CORRELATION = {0, (byte) 0xa1, 0x7f};
@@ -761,7 +761,7 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
-                // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
+                // Response inspection: KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
                 try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
                         var json = queryResult.json(CodecLimits.defaults());
                         var xml = queryResult.xml(CodecLimits.defaults())) {
@@ -5731,7 +5731,7 @@ final class ClientFacadeTlsIntegrationTest {
 
     private static byte[] testCrlDer() throws Exception {
         try (InputStream input = ClientFacadeTlsIntegrationTest.class
-                .getResourceAsStream("/t076-test-crl.der")) {
+                .getResourceAsStream("/test-crl.der")) {
             if (input == null) {
                 throw new IllegalStateException("test CRL fixture is missing");
             }

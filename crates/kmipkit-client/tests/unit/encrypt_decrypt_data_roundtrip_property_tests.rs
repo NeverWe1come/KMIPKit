@@ -2,8 +2,9 @@
 //!
 //! References: KMIP Specification v2.1 §6.1.11, Table 196; §6.1.17, Table
 //! 214; §7.9, Tables 360–361. These are source-derived properties, not
-//! official OASIS Test Cases. Traceability: `KMIPKIT-0019-FR-001`,
-//! `KMIPKIT-0019-FR-009`, and `KMIPKIT-0019-FR-012`.
+//! Verifies exact round-trip serialization and data preservation for Encrypt
+//! and Decrypt payloads across supported data encodings. These are source-derived
+//! property tests, not official OASIS Test Cases.
 
 use std::fmt;
 

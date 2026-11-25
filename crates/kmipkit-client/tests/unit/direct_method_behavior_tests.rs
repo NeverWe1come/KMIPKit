@@ -1,4 +1,4 @@
-//! Fake-transport parity for the additive KMIPKIT-0050 direct methods.
+//! Fake-transport parity for the 56 direct Client methods.
 //!
 //! Operation direction and names follow OASIS KMIP v2.1 §6.1. These checks
 //! compare the encoded one-item Request Message with the corresponding

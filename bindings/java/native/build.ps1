@@ -9,7 +9,11 @@ $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
 $cargoTargetDirectory = Join-Path $repositoryRoot 'target'
 $nativeOutput = Join-Path $PSScriptRoot '..\target\native'
 $env:CARGO_TARGET_DIR = $cargoTargetDirectory
-$rustLibrary = Join-Path $cargoTargetDirectory 'debug\kmipkit_ffi.lib'
+$rustProfile = if ([string]::IsNullOrWhiteSpace($env:KMIPKIT_RUST_PROFILE)) { 'debug' } else { $env:KMIPKIT_RUST_PROFILE }
+if ($rustProfile -ne 'debug' -and $rustProfile -ne 'release') {
+    throw "Unsupported KMIPKIT_RUST_PROFILE '$rustProfile' (expected 'debug' or 'release')."
+}
+$rustLibrary = Join-Path $cargoTargetDirectory "$rustProfile\kmipkit_ffi.lib"
 $jniSource = Join-Path $PSScriptRoot 'kmipkit_jni.cpp'
 $zeroizingTestSource = Join-Path $PSScriptRoot 'tests\zeroizing_bytes_test.cpp'
 $clientBatchItemTransferTestSource = Join-Path $PSScriptRoot 'tests\client_batch_item_transfer_test.cpp'
@@ -30,7 +34,11 @@ if ([string]::IsNullOrWhiteSpace($devCommand) -or -not (Test-Path -LiteralPath $
 }
 
 New-Item -ItemType Directory -Path $nativeOutput -Force | Out-Null
-cargo build --locked -p kmipkit-ffi
+if ($rustProfile -eq 'release') {
+    cargo build --locked --release -p kmipkit-ffi
+} else {
+    cargo build --locked -p kmipkit-ffi
+}
 if ($LASTEXITCODE -ne 0) {
     throw "cargo build failed with exit code $LASTEXITCODE."
 }
@@ -167,6 +175,9 @@ $objectPath = Join-Path $nativeOutput 'kmipkit_jni.obj'
 $dllPath = Join-Path $nativeOutput 'kmipkit_jni.dll'
 $importPath = Join-Path $nativeOutput 'kmipkit_jni.lib'
 $compiler = 'cl.exe /nologo /std:c++17 /EHsc /MD /LD'
+if ($rustProfile -eq 'release') {
+    $compiler += ' /O2'
+}
 $compiler += ' /I' + '"' + $jniInclude + '"'
 $compiler += ' /I' + '"' + $jniPlatformInclude + '"'
 $compiler += ' /I' + '"' + $cHeader + '"'
