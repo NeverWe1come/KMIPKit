@@ -28,3 +28,31 @@ fn operations_and_masks_follow_the_requested_version() {
         );
     }
 }
+
+#[test]
+fn queried_objects_and_explicit_masks_are_versioned() {
+    assert!(query_response(2, 1, None).is_empty());
+
+    let mut payload = Structure::new();
+    for function in [2, 14] {
+        payload
+            .try_push(ttlv_item(TAG_QUERY_FUNCTION, Value::enumeration(function)))
+            .expect("query function");
+    }
+    for (major, minor, expected) in [(2, 1, &[2, 3, 4][..]), (3, 0, &[2, 3, 4, 7][..])] {
+        let fields = query_response(major, minor, Some(&payload));
+        let object_types: Vec<_> = fields
+            .iter()
+            .filter(|field| field.tag().raw() == TAG_OBJECT_TYPE)
+            .filter_map(extract_enumeration)
+            .collect();
+        assert_eq!(object_types, expected);
+        assert_eq!(
+            fields
+                .iter()
+                .filter(|field| field.tag().raw() == TAG_PROTECTION_STORAGE_MASKS)
+                .count(),
+            1
+        );
+    }
+}
