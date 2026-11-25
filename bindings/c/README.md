@@ -1,32 +1,39 @@
-# KMIPKit C binding
+# KMIPKit C Bindings (Stable C11 ABI)
 
-C headers and consumers for the Rust KMIPKit library through its C ABI.
+The C binding exposes the full KMIPKit 2.0 / 2.1 / 3.0 client surface through opaque handles, fixed-width types, versioned structs (`struct_size`, `abi_version`), and thread-local error snapshots.
 
-## Documentation
+* **[Installation & CMake Integration](docs/installation.md)**
+* **[Native Library & Memory Ownership](docs/native-library.md)**
+* **[Testing & ABI Consumer Verification](docs/testing.md)**
 
-- [Installation and build](docs/installation.md)
-- [Native library](docs/native-library.md)
-- [Testing](docs/testing.md)
-- [Examples](examples/README.md)
+## Quick Example
 
-## First local example
+```c
+#include <stdio.h>
+#include "kmipkit.h"
+#include "kmipkit_fluent.h"
 
-After following the installation guide, run from the repository root:
+int main(void) {
+    kmipkit_transport_config_t *transport = NULL;
+    if (kmipkit_transport_config_new_raw_tls(
+            "kms.internal.example.com", 5696,
+            "/etc/kmip/client.crt", "/etc/kmip/client.key", "/etc/kmip/ca.crt",
+            &transport) != KMIPKIT_OK) {
+        return 1;
+    }
 
-```sh
-cargo build --locked -p kmipkit-ffi
-cmake -S bindings/c -B build/c-consumer
-cmake --build build/c-consumer --config Release
-ctest --test-dir build/c-consumer -C Release \
-  -R '^kmipkit_vendor_extension_example$' --output-on-failure
+    kmipkit_client_t *client = NULL;
+    kmipkit_status_t st = kmipkit_client_new_default(transport, &client);
+    kmipkit_transport_config_free(transport);
+    if (st != KMIPKIT_OK) return 1;
+
+    kmipkit_discover_versions_response_t *resp = NULL;
+    if (kmipkit_client_discover_versions(client, &resp) == KMIPKIT_OK) {
+        printf("Discover Versions OK\n");
+        kmipkit_discover_versions_response_free(resp);
+    }
+
+    kmipkit_client_free(client);
+    return 0;
+}
 ```
-
-See the example guide for platform requirements and what this command exercises.
-
-## Shared behavior
-
-The [user guides](../../docs/README.md) describe KMIP operations and transports.
-The [binding architecture](../../docs/architecture/ffi-and-bindings.md) explains
-shared ownership and API boundaries. The [bindings index](../README.md) links
-the other languages. Local example success does not establish full language
-parity or KMIP conformance.

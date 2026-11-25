@@ -1,6 +1,6 @@
-"""Contract tests for the shared Python client facade (Python client facade).
+"""Contract tests for the shared Python client facade.
 
-The client facade is a language adapter over the reviewed client ABI C ABI. These
+The client facade is a language adapter over the reviewed client C ABI. These
 tests intentionally do not create a real network connection; Rust/C tests own
 transport-wire verification.
 """

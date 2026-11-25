@@ -256,7 +256,7 @@ def test_crypto_builder_wipes_staging_when_span_allocation_fails(
 def test_crypto_builder_rejects_wrong_setter_types_locally(
     setter: str, invalid: object,
 ) -> None:
-    """fluent crypto/003/005: invalid Python inputs fail before execution."""
+    """Invalid Python inputs fail locally before execution."""
     with fluent.EncryptBuilder() as builder:
         with pytest.raises(errors.InvalidInputError):
             getattr(builder, setter)(invalid)

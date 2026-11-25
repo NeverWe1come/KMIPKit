@@ -53,6 +53,23 @@ impl RawTag {
         }
     }
 
+    /// Checks this tag against the allocation catalog, allowing legacy KMIP 1.X
+    /// tags that were reserved in KMIP 2.0+.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ModelError::TagNotAllocated`] if the tag is unused or unallocated.
+    pub fn try_checked_allow_reserved(&self) -> Result<Tag, ModelError> {
+        match allocation_kind(self.0) {
+            Some(
+                TagAllocationKind::Assigned
+                | TagAllocationKind::Extension
+                | TagAllocationKind::Reserved,
+            ) => Ok(Tag(self.0)),
+            Some(TagAllocationKind::Unused) | None => Err(ModelError::TagNotAllocated),
+        }
+    }
+
     pub(crate) fn is_reserved(self) -> bool {
         matches!(allocation_kind(self.0), Some(TagAllocationKind::Reserved))
     }

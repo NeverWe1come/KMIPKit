@@ -1,32 +1,32 @@
-# Java testing
+# Testing the Java Bindings
 
-Run commands from the repository root with the prerequisites in
-[installation](installation.md).
+Run commands from the repository root after setting up the prerequisites in
+[installation](installation.md):
 
 ```sh
 sh bindings/java/gradlew -p bindings/java test
 sh bindings/java/gradlew -p bindings/java nativeJarSmoke
 ```
 
-On Windows replace `sh bindings/java/gradlew` with
-`& bindings/java/gradlew.bat` in PowerShell.
+On Windows in PowerShell:
 
-`test` runs JUnit against the JNI library built for the host. `nativeJarSmoke`
-starts a separate Java process to check loading from the packaged classifier
-JAR. The native build script also runs focused C++ checks.
+```powershell
+& bindings/java/gradlew.bat -p bindings/java test
+& bindings/java/gradlew.bat -p bindings/java nativeJarSmoke
+```
 
-The Maven path is:
+- `test` compiles the JNI bridge, runs focused native C++ checks, and runs JUnit.
+- `nativeJarSmoke` builds the classifier JAR and launches an isolated JVM process
+  verifying extraction and loading from the packaged JAR without setting
+  `-Dkmipkit.nativeLibrary`.
+
+## Maven Test & Coverage Path
 
 ```sh
 mvn --batch-mode --file bindings/java/pom.xml test
 ```
 
-It builds JNI, runs JUnit, and executes the
-[vendor extension example](../examples/README.md). See
-[the Maven configuration](../pom.xml) for coverage lifecycle bindings.
-
-Tests use [shared fixtures](../../shared/fixtures/), including the disposable
-[mTLS identities](../../shared/fixtures/login-mtls/README.md). Controlled local
-TLS tests require permission to bind a loopback port. External-server checks
-live in [verification](../../../verification/README.md) and require their own
-server configuration.
+Maven builds JNI, runs JUnit, and executes the
+[vendor extension example](../examples/README.md). Tests use shared fixtures under
+[bindings/shared/fixtures](../../shared/fixtures/), including disposable
+[mTLS identities](../../shared/fixtures/login-mtls/README.md).

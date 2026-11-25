@@ -1,7 +1,7 @@
 from kmipkit import protocol_values
 
 
-# OASIS KMIP Specification v2.1 §§11.12 and 12.1; named protocol values–004.
+# OASIS KMIP Specification v2.1 §§11.12 and 12.1; named protocol value handling.
 def test_named_values_preserve_unknown_raw_values_and_bits() -> None:
     algorithm = protocol_values.CryptographicAlgorithm
     assert algorithm.AES == 3

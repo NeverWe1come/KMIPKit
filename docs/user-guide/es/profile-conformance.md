@@ -81,11 +81,11 @@ no puede modificarlo ni eliminarlo, por lo que Modify, Delete y Set se rechazan
 incluso si el llamador afirma que está ausente; una vez establecido, §4.38
 también prohíbe actualizarlo o eliminarlo. Para Usage Limits, §4.59 y la
 Tabla 149 prohíben cambiar Total cuando ya empezó el uso de protección o
-después de Get Usage Allocation, según DEC-024. Un Set que cambie Total exige
+después de Get Usage Allocation, según las reglas estándar del protocolo. Un Set que cambie Total exige
 Usage Limits presente y conocido, los valores actuales de Total y Count,
 conserva Count y rechaza una estructura mal formada que omita un miembro
 obligatorio de §7.40 Tabla 392. Sigue vigente la restricción independiente de
-attribute operations para Add/Modify Usage Limits. La aplicación es responsable de
+operaciones de atributos para Add/Modify Usage Limits. La aplicación es responsable de
 aportar un estado fiable.
 
 ## Estado actual
@@ -170,7 +170,7 @@ KMIPKit no realiza esas operaciones criptográficas, no lee el reloj ni recupera
 atributos remotos, por lo que el mapeo no las aplica automáticamente.
 KMIP Specification v2.1 §4.57, párrafo 2, prohíbe usar un objeto Pre-Active
 con cualquier fin criptográfico, pero no identifica un actor ni una dirección
-de mensaje. KMIPKIT-DEC-020 interpreta esta regla como exclusiva del servidor
+de mensaje. El modelo de implementación interpreta esta regla como exclusiva del servidor
 para el cliente KMIPKit 1.0: §4.57 dice que el servidor conoce el State y es el
 único que lo modifica, y §6.1.17 define Encrypt como una petición del cliente
 para que el servidor realice el cifrado. La cláusula fuente permanece en el

@@ -1,0 +1,13 @@
+{
+  "KMIPKit Java Client Configuration": {
+    "prefix": "kmip-java-client",
+    "body": [
+      "var registry = ClientExtensionRegistry.defaults();",
+      "var config = ClientConfiguration.builder(registry).build();",
+      "try (var client = KmipClient.connect(config, \"${1:kms.example.com}\", ${2:5696})) {",
+      "    var versions = client.discoverVersions();",
+      "}"
+    ],
+    "description": "Connect to a KMIP server using KMIPKit Java bindings"
+  }
+}

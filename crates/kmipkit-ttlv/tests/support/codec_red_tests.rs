@@ -1,5 +1,5 @@
 #![cfg(test)]
-//! Decoder regression cases promoted from the the implementation Red harness.
+//! Decoder regression cases promoted from the implementation test harness.
 //!
 //! Every behavioral expectation reaches the production decoder through the
 //! private adapter, which retains the concise error-category assertions.

@@ -1,0 +1,11 @@
+{
+  "KMIPKit C Client Init": {
+    "prefix": "kmip-c-init",
+    "body": [
+      "kmipkit_client_t *client = NULL;",
+      "kmipkit_status_t st = kmipkit_client_create(&config, &client);",
+      "if (st != KMIPKIT_OK) { /* handle error */ }"
+    ],
+    "description": "Initialize a KMIPKit C11 client handle"
+  }
+}

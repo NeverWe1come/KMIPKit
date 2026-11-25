@@ -15,7 +15,7 @@ values remain intact. Success has an empty operation payload. The restriction
 against production-server availability applies to the server. Implementing
 the client operation does not establish an interoperability result.
 
-The approved diagnostic interoperability mapping mapping is also available through the C, Java and
+The approved diagnostic interoperability mapping is also available through the C, Java and
 Python client facades. C creates the batch item with
 `kmipkit_client_batch_item_interop` and reads the complete valid response with
 `kmipkit_client_batch_item_response_interop_ttlv`; release the returned
@@ -45,7 +45,7 @@ fn main() -> Result<(), kmipkit_protocol::ProtocolError> {
 ```
 
 Log follows §6.1.29, Tables 250–252, with Table 252 assigned to Log by the
-approved DISC-017 disposition. Supply a required Log Message and expect an
+protocol specification. Supply a required Log Message and expect an
 empty success payload. The caller must not submit secrets to the server log.
 KMIPKit owns the text as `SecretText`, redacts it from diagnostics and moves
 it into the zeroizing TTLV payload without cloning it.
