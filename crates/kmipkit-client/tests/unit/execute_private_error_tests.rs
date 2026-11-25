@@ -264,3 +264,23 @@ fn generic_extension_value_copy_preserves_wide_and_reference_scalar_types() {
         assert_eq!(copied_item.item_type(), item.item_type());
     }
 }
+
+#[test]
+fn discover_versions_outcome_requires_the_original_offer() {
+    use crate::execute_test_support::{ResponseItemFixture, response_bytes};
+
+    let wire = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
+    let message = decode_response_message(&wire, &super::CodecLimits::defaults())
+        .expect("the Discover Versions message has a valid envelope");
+    let item = message.batch_items().next().expect("one response item");
+    let request = BatchIdentity {
+        operation: super::DISCOVER_VERSIONS_OPERATION,
+        unique_batch_item_id: None,
+        response_context: None,
+        offered_versions: None,
+    };
+    let Err(error) = super::response_outcome(&request, item) else {
+        panic!("Discover Versions must validate the response against the original offer");
+    };
+    assert_eq!(error.kind(), ProtocolErrorKind::MalformedMessage);
+}
