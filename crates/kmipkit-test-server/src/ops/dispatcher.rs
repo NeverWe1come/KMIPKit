@@ -40,6 +40,36 @@ pub const DEACTIVATE_OPERATION: u32 = 0x0000_0040;
 pub const ENCAPSULATE_OPERATION: u32 = 0x0000_0041;
 pub const DECAPSULATE_OPERATION: u32 = 0x0000_0042;
 
+const SUPPORTED_OPERATIONS: &[u32] = &[
+    CREATE_OPERATION,
+    CREATE_KEY_PAIR_OPERATION,
+    REGISTER_OPERATION,
+    LOCATE_OPERATION,
+    GET_OPERATION,
+    GET_ATTRIBUTES_OPERATION,
+    GET_ATTRIBUTE_LIST_OPERATION,
+    ADD_ATTRIBUTE_OPERATION,
+    DELETE_ATTRIBUTE_OPERATION,
+    ACTIVATE_OPERATION,
+    REVOKE_OPERATION,
+    DESTROY_OPERATION,
+    QUERY_OPERATION,
+    DISCOVER_VERSIONS_OPERATION,
+    ENCRYPT_OPERATION,
+    DECRYPT_OPERATION,
+    SIGN_OPERATION,
+    SIGNATURE_VERIFY_OPERATION,
+    MAC_OPERATION,
+    MAC_VERIFY_OPERATION,
+    RNG_RETRIEVE_OPERATION,
+    HASH_OPERATION,
+    SET_ENDPOINT_ROLE_OPERATION,
+    PING_OPERATION,
+    DEACTIVATE_OPERATION,
+    ENCAPSULATE_OPERATION,
+    DECAPSULATE_OPERATION,
+];
+
 // Tag constants
 pub const TAG_REQUEST_MESSAGE: u32 = 0x0042_0078;
 pub const TAG_REQUEST_HEADER: u32 = 0x0042_0077;
@@ -60,6 +90,8 @@ pub const TAG_REQUEST_PAYLOAD: u32 = 0x0042_0079;
 pub const TAG_RESPONSE_PAYLOAD: u32 = 0x0042_007C;
 pub const TAG_UNIQUE_IDENTIFIER: u32 = 0x0042_0094;
 pub const TAG_OBJECT_TYPE: u32 = 0x0042_0057;
+const TAG_QUERY_FUNCTION: u32 = 0x0042_0074;
+const TAG_PROTECTION_STORAGE_MASKS: u32 = 0x0042_015F;
 pub const TAG_ENDPOINT_ROLE: u32 = 0x0042_0151;
 pub const TAG_DATA: u32 = 0x0042_00C2;
 pub const TAG_DATA_LENGTH: u32 = 0x0042_00CD;
@@ -144,18 +176,13 @@ impl Dispatcher {
         payload: Option<&Structure>,
         id_placeholder: &mut Option<String>,
     ) -> Result<Vec<Item>, (u32, &'static str)> {
-        if (major, minor) == (2, 0) && (0x0000_0036..=0x0000_003B).contains(&op) {
-            return Err((
-                REASON_OPERATION_NOT_SUPPORTED,
-                "Operation not supported in KMIP 2.0",
-            ));
-        }
-
-        if major < 3 && (0x0000_003C..=0x0000_0042).contains(&op) {
-            return Err((
-                REASON_OPERATION_NOT_SUPPORTED,
-                "Operation not supported in KMIP versions prior to 3.0",
-            ));
+        if !available_in_version(major, minor, op) {
+            let message = if (0x0000_003C..=0x0000_0042).contains(&op) {
+                "Operation not supported in KMIP versions prior to 3.0"
+            } else {
+                "Operation not supported in KMIP 2.0"
+            };
+            return Err((REASON_OPERATION_NOT_SUPPORTED, message));
         }
 
         let now_secs = now_unix_seconds();
@@ -794,11 +821,60 @@ impl Dispatcher {
                 )])
             }
 
-            QUERY_OPERATION | PING_OPERATION => Ok(Vec::new()),
+            QUERY_OPERATION => Ok(query_response(major, minor, payload)),
+            PING_OPERATION => Ok(Vec::new()),
 
             _ => Err((REASON_OPERATION_NOT_SUPPORTED, "Operation not supported")),
         }
     }
+}
+
+fn query_response(major: u32, minor: u32, payload: Option<&Structure>) -> Vec<Item> {
+    let Some(payload) = payload else {
+        return Vec::new();
+    };
+    let functions: Vec<_> = payload
+        .view()
+        .children()
+        .iter()
+        .filter(|child| child.tag().raw() == TAG_QUERY_FUNCTION)
+        .filter_map(extract_enumeration)
+        .collect();
+    let mut fields = Vec::new();
+    if functions.contains(&1) {
+        fields.extend(
+            SUPPORTED_OPERATIONS
+                .iter()
+                .copied()
+                .filter(|operation| available_in_version(major, minor, *operation))
+                .map(|operation| ttlv_item(TAG_OPERATION, Value::enumeration(operation))),
+        );
+    }
+    if functions.contains(&2) {
+        let object_types: &[u32] = if major >= 3 {
+            &[2, 3, 4, 7]
+        } else {
+            &[2, 3, 4]
+        };
+        fields.extend(
+            object_types
+                .iter()
+                .copied()
+                .map(|kind| ttlv_item(TAG_OBJECT_TYPE, Value::enumeration(kind))),
+        );
+    }
+    if (!fields.is_empty() && major == 2) || functions.contains(&14) {
+        fields.push(ttlv_item(
+            TAG_PROTECTION_STORAGE_MASKS,
+            Value::structure(Structure::new()),
+        ));
+    }
+    fields
+}
+
+fn available_in_version(major: u32, minor: u32, operation: u32) -> bool {
+    !((major, minor) == (2, 0) && (0x0000_0036..=0x0000_003B).contains(&operation)
+        || major < 3 && (0x0000_003C..=0x0000_0042).contains(&operation))
 }
 
 // Helpers
@@ -1134,3 +1210,7 @@ fn build_error_response(major: u32, minor: u32, reason: u32, message: &'static s
     let batch_item = ttlv_item(TAG_BATCH_ITEM, Value::structure(batch_struct));
     build_response_message(major, minor, vec![batch_item]).unwrap()
 }
+
+#[cfg(test)]
+#[path = "../../tests/unit/dispatcher_query_tests.rs"]
+mod query_tests;

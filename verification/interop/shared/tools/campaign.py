@@ -19,6 +19,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
 from verification.interop.shared.tools.matrix.generator import selected_cells
+from verification.interop.shared.tools.catalog_reports import load_catalog_reports
+from verification.interop.shared.tools.oasis_ttlv import attach_decoder_evidence
 
 LANGUAGES = ("rust", "c", "java", "python")
 VERSIONS = ("2.0", "2.1", "3.0")
@@ -145,6 +147,7 @@ def report(matrix, matrix_sha256, runs, languages, profile=None, catalog=None):
         matrix, matrix_sha256, runs, languages,
     )
     by_language = {language: Counter() for language in languages}
+    by_version = {}
     compatibility = Counter()
     route_coverage = {language: Counter() for language in languages}
     rows = []
@@ -173,6 +176,8 @@ def report(matrix, matrix_sha256, runs, languages, profile=None, catalog=None):
             if not required:
                 state = "not_applicable"
             by_language[language][state] += 1
+            version_counts = by_version.setdefault(row["protocol_version"], {})
+            version_counts.setdefault(language, Counter())[state] += 1
             if required:
                 for symbol in {row.get("public_api_symbol"), row.get("execution_api_symbol")} - {None}:
                     route_coverage[language][symbol] += int(state != "passed")
@@ -205,6 +210,7 @@ def report(matrix, matrix_sha256, runs, languages, profile=None, catalog=None):
             "server": server, "profile_id": profile["server"]["id"] if profile else None,
             "runs": provenance, "languages": list(languages),
             "summary": {name: dict(counts) for name, counts in by_language.items()},
+            "by_version": by_version,
             "public_api": {name: {"total": len(symbols), "complete": sum(n == 0 for n in symbols.values())}
                            for name, symbols in route_coverage.items()},
             "server_compatibility": dict(compatibility),
@@ -221,9 +227,14 @@ def write_jsonl(path, records):
             output.write(canonical(record) + "\n")
 
 
-def write_report(destination, result):
+def write_report(destination, result, catalog_runs=()):
     rows = result["rows"]
     overview = {key: value for key, value in result.items() if key != "rows"}
+    if catalog_runs:
+        overview["catalog_runs"] = [{k: v for k, v in run.items() if k != "cases"} for run in catalog_runs]
+        write_jsonl(destination / "catalog-checks.jsonl", (
+            {"run_id": run["run_id"], **case} for run in catalog_runs for case in run["cases"]
+        ))
     lines = ["# KMIPKit interoperability checks", "", f"Matrix SHA-256: `{overview['matrix_sha256']}`", "",
              "| Language | Public routes complete | Passed | Failed | Blocked | Pending |",
              "| --- | ---: | ---: | ---: | ---: | ---: |"]
@@ -236,6 +247,24 @@ def write_report(destination, result):
         lines.append(f"- Parity {status}: {count}")
     for status, count in overview["server_compatibility"].items():
         lines.append(f"- Live {status.replace('_', ' ')}: {count}")
+    for language, counts in overview.get("oasis_ttlv", {}).get("message_checks", {}).items():
+        lines.append(f"- {language} OASIS TTLV messages: " + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    for language, counts in overview.get("oasis_ttlv_construction", {}).get("message_checks", {}).items():
+        lines.append(f"- {language} constructed OASIS TTLV messages: "
+                     + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    if catalog_runs:
+        lines.extend(("", "## Installed-validator execution catalog", "",
+                      "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
+                      "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |"))
+        for run in catalog_runs:
+            execution = run["execution"]
+            counts = run["summary"]
+            cells = [run["language"], run["protocol_version"], run["scope"], execution["encoding"],
+                     execution["transport"], execution["api_level"]]
+            cells.extend(str(counts.get(state, 0)) for state in (
+                "passed", "failed", "server_unsupported", "policy_restricted", "not_run",
+            ))
+            lines.append("| " + " | ".join(cells) + " |")
     (destination / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     (destination / "summary.json").write_text(json.dumps(overview, indent=2) + "\n", encoding="utf-8")
     write_jsonl(destination / "checks.jsonl", rows)
@@ -248,7 +277,7 @@ def write_report(destination, result):
         for r in rows
     ]
     template = (SHARED / "tools" / "campaign.html").read_text(encoding="utf-8")
-    data = canonical({"summary": overview, "checks": display}).replace("<", "\\u003c")
+    data = canonical({"summary": overview, "checks": display, "catalog_runs": catalog_runs}).replace("<", "\\u003c")
     (destination / "index.html").write_text(template.replace("<!--CAMPAIGN_DATA-->", data), encoding="utf-8")
 
 
@@ -317,6 +346,16 @@ def main():
     parser.add_argument("--scope", choices=("local", "controlled", "live"), default="local")
     parser.add_argument("--connection", type=Path)
     parser.add_argument("--library-commit", help="Require evidence from this exact source commit")
+    parser.add_argument("--controlled-report", type=Path, action="append", default=[],
+                        help="Import an installed validator's controlled execution-catalog report")
+    parser.add_argument("--catalog-source", type=Path, action="append", default=[],
+                        help="Additional case catalog for matching installed-validator reports")
+    parser.add_argument("--live-report", type=Path, action="append", default=[],
+                        help="Import an installed validator's live execution-catalog report")
+    parser.add_argument("--oasis-ttlv-report", type=Path,
+                        help="Import decoder evidence for OASIS request and response shapes")
+    parser.add_argument("--oasis-construction-report", type=Path,
+                        help="Import local generic tag construction evidence for KMIP 2.x")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -346,17 +385,39 @@ def main():
         catalog = json.loads((SHARED / "catalog/kmipkit-2x-matrix-catalog.json").read_text(encoding="utf-8"))
         operations = {case["case_id"]: case.get("requires", {}).get("operation") for case in catalog["test_cases"]}
         result = report(matrix, digest, runs, languages, profile, operations)
+        if args.oasis_ttlv_report:
+            attach_decoder_evidence(args.oasis_ttlv_report, result, args.library_commit)
+        if args.oasis_construction_report:
+            attach_decoder_evidence(args.oasis_construction_report, result, args.library_commit, construct=True)
         result["runner_failures"] = failures
-        write_report(args.output_dir, result)
+        catalog_runs = load_catalog_reports(
+            [("controlled", path) for path in args.controlled_report] + [("live", path) for path in args.live_report],
+            (SHARED / "catalog/kmipkit-1.0-test-catalog.json",
+             SHARED / "catalog/kmipkit-2x-matrix-catalog.json", *args.catalog_source),
+            languages, tuple(args.version or VERSIONS), read_validated,
+        )
+        if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
+            raise ValueError("catalog evidence does not match the requested library commit")
+        write_report(args.output_dir, result, catalog_runs)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")
     print(json.dumps({k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}, indent=2))
-    if failures or result["parity"].get("mismatched") or (args.require_complete and any(
-        any(count for state, count in counts.items() if state not in ("passed", "not_applicable"))
-        for counts in result["summary"].values()
-    )):
+    if failures or result["parity"].get("mismatched") or (
+        args.require_complete and not coverage_complete(result, tuple(args.version or VERSIONS))
+    ):
         return 1
     return 0
+
+
+def coverage_complete(result, versions):
+    if result["unmapped_inventory"]:
+        return False
+    return all(
+        version in result["by_version"]
+        and language in result["by_version"][version]
+        and not any(result["by_version"][version][language].get(state) for state in ("pending", "blocked", "failed"))
+        for version in versions for language in result["languages"]
+    )
 
 
 if __name__ == "__main__":

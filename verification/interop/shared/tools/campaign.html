@@ -22,6 +22,15 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 <tbody></tbody>
 </table></div>
 <p id="compatibility"></p>
+<p id="inventory"></p>
+<p id="oasis-ttlv"></p>
+<details id="catalog-results" hidden>
+<summary>Installed-validator execution catalog</summary>
+<div class="scroll"><table id="catalog">
+<thead><tr><th>KMIP</th><th>Language</th><th>Scope</th><th>Transport</th><th>Encoding</th><th>API</th><th>Case</th><th>Outcome</th><th>KMIPKit</th><th>KMS</th><th>Result status</th><th>Result reason</th></tr></thead>
+<tbody></tbody>
+</table></div>
+</details>
 <label>Case, operation or API symbol <input id="search" type="search"></label>
 <label>Protocol version <select id="version"><option value="">All</option><option>2.0</option><option>2.1</option><option>3.0</option></select></label>
 <label>Language <select id="language"><option value="">All</option></select></label>
@@ -41,9 +50,20 @@ const [search, version, language, status] = fields;
 byId("server").textContent = server ? `${server.product} ${server.version} (${server.id})` : "Live server evidence pending";
 byId("compatibility").textContent = Object.entries(server_compatibility)
   .map(([state, count]) => `${state.replaceAll("_", " ")}: ${count}`).join(" · ");
+byId("inventory").textContent = `Unmapped normative entries: ${report.summary.unmapped_inventory}`;
+const fixtureChecks = [
+  ["decode", report.summary.oasis_ttlv?.message_checks || {}],
+  ["construction", report.summary.oasis_ttlv_construction?.message_checks || {}]
+];
+byId("oasis-ttlv").textContent = fixtureChecks.flatMap(([label, checks]) =>
+  Object.entries(checks).map(([name, counts]) =>
+    `${name} OASIS TTLV ${label}: ${Object.entries(counts).map(([state, count]) => `${count} ${state}`).join(", ")}`
+  )
+).join(" · ");
 function cells(parent, values) {
   for (const value of values) parent.insertCell().textContent = value ?? "—";
 }
+byId("catalog-results").hidden = report.catalog_runs.length === 0;
 for (const name of languages) {
   language.add(new Option(name, name));
   const counts = summary[name];
@@ -82,6 +102,23 @@ function render() {
   byId("previous").disabled = page === 0;
   byId("next").disabled = (page + 1) * pageSize >= matches;
   byId("range").textContent = matches ? `${page * pageSize + 1}–${Math.min(matches, (page + 1) * pageSize)} of ${matches}` : "No matches";
+  renderCatalog(term);
+}
+function renderCatalog(term) {
+  const body = document.querySelector("#catalog tbody");
+  body.replaceChildren();
+  for (const run of report.catalog_runs) {
+    if (version.value && version.value !== run.protocol_version) continue;
+    if (language.value && language.value !== run.language) continue;
+    for (const result of run.cases) {
+      if (term && ![result.case_id, result.operation].some(value => value?.toLowerCase().includes(term))) continue;
+      cells(body.insertRow(), [
+        run.protocol_version, run.language, run.scope, run.execution.transport, run.execution.encoding,
+        run.execution.api_level, result.case_id, result.status, result.library_correctness,
+        result.server_compatibility, result.result_status_code, result.result_reason_code
+      ]);
+    }
+  }
 }
 for (const field of fields) field.addEventListener("input", () => { page = 0; render(); });
 byId("previous").onclick = () => { page--; render(); };

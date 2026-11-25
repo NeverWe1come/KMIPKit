@@ -10,6 +10,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
+from verification.interop.shared.tools.operation_variants import plan as plan_operation_variants
+from verification.interop.shared.tools.operation_catalog import build_catalog, direction, select_cases
+from verification.interop.shared.tools.run_all import incomplete_case_ids
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -308,6 +311,141 @@ class VersionedContractTests(unittest.TestCase):
         self.assertNotIn("secret response bytes", json_output)
         self.assertNotIn("private key material", json_output)
         self.assertNotIn("secret body in malformed summary", json_output)
+
+    def test_operation_catalog_has_every_operation_in_each_specification_and_direction(self) -> None:
+        import jsonschema
+
+        schema = json.loads((ROOT / "verification/interop/shared/schemas/test-catalog.schema.json").read_text())
+        for version, count in (("2.0", 56), ("2.1", 62), ("3.0", 69)):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version)
+                jsonschema.validate(catalog, schema)
+                cases = catalog["test_cases"]
+                self.assertEqual(count, len(cases))
+                self.assertEqual(count, len({(case["operation"], direction(case)) for case in cases}))
+                self.assertEqual(
+                    {"client_to_server", "server_to_client"},
+                    {direction(case) for case in cases if case["operation"] == "Set Endpoint Role"},
+                )
+                self.assertTrue(all(case["execution"]["protocol_versions"] == [version] for case in cases))
+                self.assertTrue(all(case["execution"]["mutation"] == "mutating" for case in cases
+                                    if case["operation"] in {"Put", "Set Endpoint Role", "Login"}))
+                draft = {"Create Group", "Create User", "Create Credential", "Deactivate",
+                         "Obliterate", "Encapsulate", "Decapsulate"}
+                self.assertEqual(draft if version == "3.0" else set(),
+                                 draft & {case["operation"] for case in cases})
+
+    def test_extended_operation_catalog_retains_versioned_variants_and_negative_probes(self) -> None:
+        import jsonschema
+
+        schema = json.loads((ROOT / "verification/interop/shared/schemas/test-catalog.schema.json").read_text())
+        original = json.loads(
+            (ROOT / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text()
+        )["test_cases"]
+        for version in ("2.0", "2.1", "3.0"):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version, include_variants=True)
+                jsonschema.validate(catalog, schema)
+                cases = {case["case_id"]: case for case in catalog["test_cases"]}
+                self.assertEqual(catalog["statistics"]["total_cases"], len(cases))
+                self.assertTrue(all(case["execution"]["protocol_versions"] == [version] for case in cases.values()))
+                expected_variants = {
+                    case["case_id"] for case in original
+                    if version in case["execution"]["protocol_versions"]
+                }
+                self.assertLessEqual(expected_variants, cases.keys())
+                self.assertEqual(version != "3.0", "test-attr-name" in cases)
+                self.assertEqual(version == "2.0", "test-v20-reject-ping" in cases)
+
+    def test_single_part_hash_runs_without_mutation_opt_in(self) -> None:
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog = build_catalog(ROOT, version, include_variants=True)
+                cases = {case["case_id"]: case for case in catalog["test_cases"]}
+                operation = cases["test-crypto-hash-sha_256-0"]["execution"]
+                self.assertEqual("read_only", operation["mutation"])
+                self.assertEqual(["sha256_digest_matches_known_answer"], operation["assertions"])
+                self.assertEqual("mutating", cases["test-multipart-hash-sha256"]["execution"]["mutation"])
+
+    def test_catalog_completion_requires_evidence_for_each_selected_case(self) -> None:
+        catalog = build_catalog(ROOT, "2.1")
+        catalog = select_cases(catalog, operations=["Query", "Ping"], case_ids=[])
+        outgoing = "test-op-query"
+        incoming = "test-s2c-query"
+        ping = "test-op-ping"
+        results = {"cases": [
+            {"case_id": outgoing, "status": "passed", "library_correctness": "passed"},
+            {"case_id": incoming, "status": "not_run", "library_correctness": "not_checked"},
+            {"case_id": ping, "status": "server_unsupported", "library_correctness": "passed"},
+        ]}
+        self.assertEqual([ping, incoming], incomplete_case_ids(catalog, results))
+        results["cases"][2]["result_status_code"] = 1
+        self.assertEqual([incoming], incomplete_case_ids(catalog, results))
+
+    def test_catalog_filters_keep_exact_version_direction_and_case(self) -> None:
+        catalog = build_catalog(ROOT, "2.0", include_variants=True)
+        selected = select_cases(catalog, operations=["set endpoint role"],
+                                case_ids=["test-v20-reject-ping"])
+        self.assertEqual(3, selected["statistics"]["total_cases"])
+        self.assertEqual(1, selected["statistics"]["operations_covered"])
+        self.assertEqual(1, selected["statistics"]["server_to_client_operations_covered"])
+        self.assertEqual({"client_to_server", "server_to_client"},
+                         {direction(case) for case in selected["test_cases"] if case["operation"] == "Set Endpoint Role"})
+        with self.assertRaisesRegex(ValueError, "unknown operation or case"):
+            select_cases(catalog, operations=[], case_ids=["test-op-ping"])
+
+    def test_operation_variants_preserve_versions_and_stable_identifiers(self) -> None:
+        rows = list(plan_operation_variants(ROOT))
+        self.assertEqual(len(rows), len({row["variant_id"] for row in rows}))
+        self.assertEqual({"pending"}, {row["status"] for row in rows})
+        for version in ("2.0", "2.1", "3.0"):
+            with self.subTest(version=version):
+                selected = [row for row in rows if row["protocol_version"] == version]
+                self.assertTrue(all(("generic-ttlv" in row["api_levels"]) == (version != "3.0")
+                                    for row in selected))
+                self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "request"
+                                    for row in selected))
+                self.assertTrue(any(row.get("operation") == "Create" and row["role"] == "response"
+                                    for row in selected))
+                self.assertTrue(any(row["kind"] == "managed_object_attribute" and row["field"] == "Name"
+                                    and row["variant"] == "read_by_exact_reference" for row in selected))
+
+    def test_typed_and_fluent_outcomes_require_the_same_runtime_and_real_evidence(self) -> None:
+        typed = result_payload(run_id="typed", language="rust", protocol_version="2.1",
+                               transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")
+        fluent = result_payload(run_id="fluent", language="rust", protocol_version="2.1",
+                                 transport="raw_tls", encoding="TTLV", api_level="fluent", status="passed")
+        for run in (typed, fluent):
+            run["cases"][0]["result_status_code"] = 0
+            for case_id, status in (
+                ("test-rejection", "server_unsupported"),
+                ("test-failure", "failed"),
+                ("test-local", "passed"),
+            ):
+                run["cases"].append({"case_id": case_id, "status": status, "library_correctness": "passed",
+                                     "server_compatibility": "unknown"})
+        fluent["cases"].append({"case_id": "test-restricted", "status": "policy_restricted"})
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            paths = [write_result(root, run["run_id"], run) for run in (typed, fluent)]
+            result = aggregate_results(paths)
+            (comparison,) = result["matrices"][0]["api_outcome_comparisons"]
+            self.assertEqual({
+                "test-get": "MATCHED_PASS", "test-rejection": "MATCHED_UNSUPPORTED",
+                "test-failure": "MATCHED_OTHER", "test-local": "PENDING", "test-restricted": "PENDING",
+            }, comparison["cases"])
+            self.assertIn("MATCHED_PASS 1", generate_markdown(result))
+            self.assertIn("MATCHED_PASS 1", generate_html(result))
+
+            fluent["cases"][0]["result_status_code"] = 1
+            write_result(root, "fluent", fluent)
+            (different,) = aggregate_results(paths)["matrices"][0]["api_outcome_comparisons"]
+            self.assertEqual("MISMATCH", different["cases"]["test-get"])
+
+            fluent["execution"]["artifact_sha256"] = "e" * 64
+            write_result(root, "fluent", fluent)
+            self.assertEqual([], aggregate_results(paths)["matrices"][0]["api_outcome_comparisons"])
 
     def test_aggregator_requires_matching_base_evidence_but_ignores_route_differences(self) -> None:
         baseline = result_payload(run_id="rust", language="rust", protocol_version="2.1", transport="raw_tls", encoding="TTLV", api_level="typed-protocol", status="passed")

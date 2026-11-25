@@ -159,10 +159,13 @@ class OperationalToolsTests(unittest.TestCase):
         cmd_java = build_command_for_language("java", dummy_dir, prof, None, cat, vec, out)
         cmd_py = build_command_for_language("python", dummy_dir, prof, None, cat, vec, out)
 
-        self.assertIn("cargo", cmd_rust[0])
-        self.assertIn("kmipkit_c_validator", cmd_c[0])
-        self.assertTrue("gradle" in cmd_java[0] or "java" in cmd_java[0])
-        self.assertIn("python", cmd_py[0])
+        self.assertEqual(Path(cmd_rust[0]).name, "rust-kmip-validator")
+        self.assertEqual(Path(cmd_c[0]).name, "kmip_validator_c")
+        self.assertEqual(Path(cmd_java[0]).name, "java-kmip-validator")
+        self.assertEqual(cmd_py[1:3], ["-m", "kmipkit_validator"])
+        for command in (cmd_rust, cmd_c, cmd_java, cmd_py):
+            self.assertIn("run", command)
+            self.assertNotIn("--vectors", command)
 
         # Test dry-run execution
         import tempfile
@@ -181,7 +184,6 @@ class OperationalToolsTests(unittest.TestCase):
             self.assertEqual(len(res["runs"]), 2)
             self.assertEqual(res["runs"][0]["status"], "PLANNED")
             self.assertEqual(res["runs"][1]["status"], "PLANNED")
-        self.assertEqual(res["runs"][1]["status"], "PLANNED")
 
 
 if __name__ == "__main__":

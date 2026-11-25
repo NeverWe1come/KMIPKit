@@ -105,10 +105,68 @@ python3 verification/interop/shared/tools/campaign.py \
 
 The outputs include a summary in the terminal, `summary.json`,
 `summary.md`, the complete `checks.jsonl` and a paginated HTML table.
-`--require-complete` fails if an applicable obligation lacks successful
-local or controlled evidence. Live observations remain visible alongside
-that coverage. Expected rejections and policy restrictions can be recorded
-independently of the assertion outcome.
+`--require-complete` fails if a selected version and language lack coverage,
+an applicable obligation lacks successful local or controlled evidence, or
+normative inventory remains unmapped. Live observations remain visible
+alongside that coverage. Expected rejections and policy restrictions can be
+recorded independently of the assertion outcome.
+
+### Runs from the installed validators
+
+Build and install the four language consumers first, following their own
+README files. Then run their execution catalogs against one configured test KMS.
+
+```sh
+python3 verification/interop/shared/tools/run_all.py \
+  --connection /path/to/connection.json --profile /path/to/profile.json \
+  --output-dir verification/interop/results/kms-2.1 --campaign
+```
+
+Supply `--project LANGUAGE PATH` for consumers built in separate worktrees
+and `--python PATH` for the interpreter with the installed KMIPKit wheel.
+The output directory has one fresh report per language, consolidated
+catalog reports, and `campaign/index.html`. Repeat `--connection` with one
+file per protocol, transport, encoding and API selection to group multiple
+configurations in one report. Pass `--enable-mutations` when the configured
+connections opt into mutations.
+
+Import previous `results.json` reports by repeating `--controlled-report`
+or `--live-report` on `campaign.py`. The report displays these results by
+catalog case, language and execution settings. An individual planned obligation
+receives a result when the consumer supplies evidence for its obligation ID.
+
+### Generic TTLV decode checks from OASIS scenarios
+
+`tools/oasis_ttlv.py` converts the pinned XML request and response messages
+into generic TTLV vectors with deterministic bindings for fixture symbols.
+With `--runner LANGUAGE EXECUTABLE`, the installed library decodes the vectors
+and the tool compares the ordered tag, type and child-count sequence for each
+message. The output retains fixture digests and artifact provenance.
+
+Supply the Rust `kmip30-campaign` binary, the C `kmip30_c_constructors` binary,
+the Java `tools/run_draft_campaign.sh` script, or the Python
+`tools/run_campaign.sh` script for the respective language. Repeat
+`--runner` to check multiple languages. Run the Python wrapper with the
+installed wheel environment activated.
+
+```sh
+python3 verification/interop/shared/tools/oasis_ttlv.py \
+  --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+  --output /tmp/oasis-ttlv.jsonl --require-complete
+python3 verification/interop/shared/tools/campaign.py \
+  --oasis-ttlv-report /tmp/oasis-ttlv.jsonl --output-dir /tmp/kmip-campaign
+```
+
+Use `--construct --version 2.0 --version 2.1` with the same installed runners
+to build each complete fixture from its raw tag numbers and scalar values
+through the language's public generic item constructors. The runner walks
+the constructed model and the tool checks its ordered tag, type and child
+counts. Import this output into the campaign using
+`--oasis-construction-report`. These checks exercise construction locally.
+
+Each XML scenario step shows its request and response codec outcomes.
+Scenario execution remains pending until it has controlled or live
+exchange evidence.
 
 To launch a campaign-capable consumer, supply `--runner LANGUAGE EXECUTABLE`
 once per language and specify the scope. The runner is invoked directly
@@ -118,3 +176,77 @@ identity on the returned evidence. The optional profile is passed with
 `--profile` and supplies capability declarations to the report. A runner
 should write its evidence before exiting with a failure. Run a single
 language with one executable or repeat the option for multiple languages.
+
+## Operation variants and API comparisons
+
+Export the request and response field obligations and the managed-object
+attribute rules for KMIP 2.0, 2.1 and 3.0.
+
+```sh
+python3 verification/interop/shared/tools/operation_variants.py --output /tmp/kmip-operation-variants.jsonl
+```
+
+Each row includes its source section, presence or cardinality branch, and
+stable ID. These rows describe cases to implement. The distinct
+`requiredness_review` branch identifies a rule requiring manual review.
+
+Run the validator twice with the same connection settings and catalog,
+selecting `api_level: typed-protocol` in one configuration and
+`api_level: fluent` in the other. Keep the artifact and server configuration
+the same. Then combine their reports.
+
+```sh
+python3 verification/interop/shared/tools/aggregate_matrix.py \
+  /path/to/typed/results.json /path/to/fluent/results.json \
+  --format html --output /tmp/kmip-api-comparison.html
+```
+
+The paired columns show outcome agreement per case. `MATCHED_PASS` records
+the same successful assertion on both routes. `MATCHED_UNSUPPORTED` records
+the same server rejection. Cases omitted, withheld by policy, or validated
+locally without a server exchange remain pending in the paired columns.
+
+
+## Full operation selection
+
+Generate an exchange catalog for the target protocol version. Use the
+generated file as the validator's `--catalog` input for a dedicated test
+endpoint. Each row carries its exact specification section and direction.
+
+```sh
+python3 verification/interop/shared/tools/operation_catalog.py --version 3.0 --output /tmp/kmip-operations-3.0.json
+```
+
+Run the complete selections in one campaign by passing a connection file
+per version and API level.
+
+```sh
+python3 verification/interop/shared/tools/run_all.py --all-operations --campaign \
+  --connection /path/to/2.0.json --connection /path/to/2.1.json \
+  --connection /path/to/3.0.json --output-dir /tmp/kmip-operation-run
+```
+
+The catalogs include 56 operation/direction pairs for 2.0, 62 for 2.1,
+and 69 for the 3.0 Working Draft. Existing recipes are selected once for
+each direction. A planned row requires a tested recipe in the chosen
+consumer before the validator can report exchange evidence. A server
+rejection or a local delivery error remains visible in its result.
+
+Add `--with-variants` to either command to include the catalogued
+attribute, object, cryptography, batch and boundary cases alongside the
+operation cases. This selection retains the variants explicitly assigned
+to each version. KMIP 3.0 receives its operation cases and any variants
+explicitly assigned to 3.0 in the shared catalog.
+
+Select an exact operation name with `--operation` or an exact catalog ID
+with `--case`. Both options are repeatable and take the union of matches.
+Operation selection retains every matching direction. Both
+`operation_catalog.py` and `run_all.py --all-operations` accept these
+selectors. The generated catalog can also be passed to a standalone
+validator through its `--catalog` option.
+
+Add `--require-complete` to a live `run_all.py --all-operations` run to
+require evidence for every applicable selected case in each run. An
+observed KMIP rejection for an unsupported operation accounts for the
+execution while retaining its server compatibility status. A missing
+case, a blocked case, or a failed local assertion fails the check.
