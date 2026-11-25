@@ -16,6 +16,9 @@ on:
       - 'verification/interop/shared/**'
       - '.github/workflows/interop-python.yml'
 
+permissions:
+  contents: read
+
 jobs:
   validate-python:
     name: Build & Validate Python Project
@@ -38,7 +41,7 @@ jobs:
         run: rustup toolchain install 1.94 --profile minimal
 
       - name: Build pinned static OpenSSL
-        uses: ./.github/actions/setup-static-openssl
+        uses: $/.github/actions/setup-static-openssl
 
       - name: Build and install the reviewed Python wheel
         run: |
