@@ -594,6 +594,7 @@ fn kmip30_response_association_checks_operations_and_allows_only_a_missing_suffi
         operation: operation.raw(),
         unique_batch_item_id: None,
         response_context: None,
+        offered_versions: None,
     };
     let requests = [
         identity(ClientOperation::Ping),

@@ -25,7 +25,7 @@ pub(crate) fn key_block(secret_data: bool) -> Result<KeyBlock> {
     })
 }
 
-pub(crate) fn object(name: &str) -> Result<(ObjectType, Item, AttributeSet)> {
+pub(crate) fn object(name: &str, version: &str) -> Result<(ObjectType, Item, AttributeSet)> {
     let attrs = || {
         AttributeSet::try_new(vec![item(0x0042_002c, Value::integer(0x0c))?])
             .map_err(|_| "invalid fixture usage")
@@ -54,7 +54,7 @@ pub(crate) fn object(name: &str) -> Result<(ObjectType, Item, AttributeSet)> {
             CertificateRequest::try_new(1, CSR.to_vec())
                 .map_err(|_| "invalid CSR fixture")?
                 .into_item(),
-            crate::adapters::attributes("kmipkit-csr-fixture", 6, 256)?,
+            crate::adapters::attributes("kmipkit-csr-fixture", 6, 256, version)?,
         )),
         "Opaque Object" => Ok((
             ObjectType::from_raw(8),
@@ -68,7 +68,7 @@ pub(crate) fn object(name: &str) -> Result<(ObjectType, Item, AttributeSet)> {
             PgpKey::try_new(4, key_block(false)?)
                 .map_err(|_| "invalid PGP fixture")?
                 .into_item(),
-            crate::adapters::attributes("kmipkit-pgp-fixture", 3, 256)?,
+            crate::adapters::attributes("kmipkit-pgp-fixture", 3, 256, version)?,
         )),
         "Secret Data" => Ok((
             ObjectType::from_raw(7),
@@ -82,13 +82,13 @@ pub(crate) fn object(name: &str) -> Result<(ObjectType, Item, AttributeSet)> {
             SymmetricKey::try_new(key_block(false)?)
                 .map_err(|_| "invalid key fixture")?
                 .into_item(),
-            crate::adapters::attributes("kmipkit-key-fixture", 3, 256)?,
+            crate::adapters::attributes("kmipkit-key-fixture", 3, 256, version)?,
         )),
     }
 }
 
-pub(crate) fn register(name: &str) -> Result<kmipkit::ClientRequest> {
-    let (kind, object, attributes) = object(name)?;
+pub(crate) fn register(name: &str, version: &str) -> Result<kmipkit::ClientRequest> {
+    let (kind, object, attributes) = object(name, version)?;
     let request = RegisterRequest::new(kind, attributes, object);
     Ok(kmipkit::ClientRequest::Register(
         if name == "Opaque Object" {

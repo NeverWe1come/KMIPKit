@@ -14,19 +14,27 @@ pub(crate) fn report(
         return Err("connection/profile server identity mismatch");
     }
     let server = &profile["server"];
-    let product = server["product"]
-        .as_str()
+    let product = connection
+        .server_product
+        .as_deref()
+        .or_else(|| server["product"].as_str())
         .ok_or("server product metadata required")?;
-    let version = server["version"]
-        .as_str()
+    let version = connection
+        .server_version
+        .as_deref()
+        .or_else(|| server["version"].as_str())
         .filter(|v| !v.is_empty())
         .unwrap_or("unspecified");
+    let configuration_fingerprint = connection
+        .server_configuration_fingerprint
+        .clone()
+        .unwrap_or_else(|| hash(configuration));
     let count = |status: &str| cases.iter().filter(|c| c.status == status).count();
     Ok(json!({
         "schema_version": "2.0", "run_id": format!("rust-{}", uuid::Uuid::new_v4()),
         "tested_at": chrono::Utc::now().to_rfc3339(), "language": "rust",
         "server": { "id": connection.server_id, "product": product, "version": version,
-            "configuration_fingerprint": hash(configuration) },
+            "configuration_fingerprint": configuration_fingerprint },
         "protocol_version": connection.protocol_version, "catalog_sha256": hash(catalog),
         "execution": { "transport": connection.transport, "encoding": connection.encoding,
             "api_level": connection.api_level, "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),

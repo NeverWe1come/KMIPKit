@@ -71,7 +71,7 @@ class RequestNormalizer:
                 continue
             if kind == 1:
                 self.observe_response(value)
-            elif tag in self.IDENTIFIERS and kind in (2, 3, 7):
+            elif tag in self.IDENTIFIERS and kind in (2, 3, 7, 12):
                 self.alias("identifier", kind, value)
 
     def normalize(self, tree):
@@ -83,7 +83,7 @@ class RequestNormalizer:
                 safe_value = "<redacted>"
             elif kind == 1:
                 safe_value = self.normalize(value)
-            elif tag in self.IDENTIFIERS and kind in (2, 3, 7):
+            elif tag in self.IDENTIFIERS and kind in (2, 3, 7, 12):
                 safe_value = self.alias("identifier", kind, value)
             elif tag == 0x420055 and kind == 7:
                 safe_value = self.alias("name", kind, value)

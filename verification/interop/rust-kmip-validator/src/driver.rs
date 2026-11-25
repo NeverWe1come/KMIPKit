@@ -31,7 +31,7 @@ pub(crate) fn structure(_tag: u32, children: Vec<Item>) -> Result<Structure> {
     }
     Ok(result)
 }
-pub(crate) fn client(connection: &Connection) -> Result<Client> {
+pub(crate) fn transport_config(connection: &Connection) -> Result<TransportConfig> {
     connection.validate()?;
     if let Some(credentials) = connection
         .authentication
@@ -87,17 +87,28 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     if let Some(name) = &tls.server_name_override {
         builder = builder.tls_server_name(name);
     }
-    let transport = builder
+    builder
         .build()
-        .map_err(|_| "invalid TLS or endpoint configuration")?;
+        .map_err(|_| "invalid TLS or endpoint configuration")
+}
+
+pub(crate) fn client(connection: &Connection) -> Result<Client> {
+    let transport = transport_config(connection)?;
     let registry = client_extension_registry(Vec::new(), kmipkit::protocol::extension::defaults())
         .map_err(|_| "library registry failure")?;
-    let version = if connection.protocol_version == "2.0" {
-        kmipkit::ProtocolVersion::V2_0
-    } else {
-        kmipkit::ProtocolVersion::V2_1
+    let version = match connection.protocol_version.as_str() {
+        "2.0" => kmipkit::ProtocolVersion::V2_0,
+        "3.0" => kmipkit::ProtocolVersion::V3_0,
+        _ => kmipkit::ProtocolVersion::V2_1,
     };
-    let configuration = ClientConfiguration::new(registry).with_protocol_version(version);
+    let encoding = match connection.encoding.as_str() {
+        "JSON" => kmipkit_transport::WireEncoding::Json,
+        "XML" => kmipkit_transport::WireEncoding::Xml,
+        _ => kmipkit_transport::WireEncoding::Ttlv,
+    };
+    let configuration = ClientConfiguration::new(registry)
+        .with_protocol_version(version)
+        .with_wire_encoding(encoding);
     Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
@@ -174,6 +185,9 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
                     ValueView::TextString(v) => Some(
                         kmipkit::protocol::UniqueIdentifier::TextString(v.to_string()),
                     ),
+                    ValueView::Identifier(v) => Some(
+                        kmipkit::protocol::UniqueIdentifier::Identifier(v.to_string()),
+                    ),
                     _ => None,
                 });
                 if let Some(id) = &identifier {
@@ -232,7 +246,10 @@ pub(crate) fn execute(
         "XML" => kmipkit_transport::WireEncoding::Xml,
         _ => kmipkit_transport::WireEncoding::Ttlv,
     };
-    let options = RequestOptions::default().with_wire_encoding(encoding);
+    let mut options = RequestOptions::default().with_wire_encoding(encoding);
+    if connection.protocol_version == "3.0" {
+        options = options.with_protocol_version(kmipkit::ProtocolVersion::V3_0);
+    }
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
     // Direct operation methods are used where the public high-level API admits
     // the same immutable request. Authentication requires the explicit batch.

@@ -82,11 +82,13 @@ fn response_association_rejects_duplicate_request_id_matches() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     let responses = [
@@ -94,11 +96,13 @@ fn response_association_rejects_duplicate_request_id_matches() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"duplicate-request-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"different-response-id".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
 
@@ -114,11 +118,13 @@ fn response_association_rejects_an_unmatched_batch_item_identifier() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"requested-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     let responses = [BatchIdentity {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"returned-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
 
     assert_eq!(
@@ -134,17 +140,20 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-1".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     let responses = [BatchIdentity {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"request-0".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
 
     assert_eq!(
@@ -160,6 +169,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"request-1".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &later_response, true),
@@ -170,6 +180,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_001E,
         unique_batch_item_id: Some(b"unknown-id".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &unknown_response, true),
@@ -180,6 +191,7 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
         operation: 0x0000_0020,
         unique_batch_item_id: Some(b"request-0".to_vec()),
         response_context: None,
+        offered_versions: None,
     }];
     assert_eq!(
         associate_batch_items_allow_missing(&requests, &wrong_operation, true),
@@ -191,11 +203,13 @@ fn partial_stop_or_undo_responses_keep_request_id_associations() {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
         BatchIdentity {
             operation: 0x0000_001E,
             unique_batch_item_id: Some(b"request-0".to_vec()),
             response_context: None,
+            offered_versions: None,
         },
     ];
     assert_eq!(
@@ -226,7 +240,7 @@ fn response_decoder_requires_a_structure_root_and_valid_response_message() {
 }
 
 #[test]
-fn generic_extension_value_copy_preserves_all_wide_scalar_types() {
+fn generic_extension_value_copy_preserves_wide_and_reference_scalar_types() {
     let tag = RawTag::new(0x0042_0173)
         .expect("fixture tag fits the KMIP width")
         .try_checked()
@@ -236,6 +250,9 @@ fn generic_extension_value_copy_preserves_all_wide_scalar_types() {
         Value::big_integer(vec![0xA5; 8]),
         Value::interval(u32::MAX),
         Value::date_time_extended(i64::MIN),
+        Value::identifier("issued-id".to_owned()),
+        Value::reference("referenced-id".to_owned()),
+        Value::name_reference("named-id".to_owned()),
     ];
 
     for value in values {
@@ -246,4 +263,24 @@ fn generic_extension_value_copy_preserves_all_wide_scalar_types() {
         let copied_item = Item::new(tag, copied).expect("copied value remains a generic Item");
         assert_eq!(copied_item.item_type(), item.item_type());
     }
+}
+
+#[test]
+fn discover_versions_outcome_requires_the_original_offer() {
+    use crate::execute_test_support::{ResponseItemFixture, response_bytes};
+
+    let wire = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
+    let message = decode_response_message(&wire, &super::CodecLimits::defaults())
+        .expect("the Discover Versions message has a valid envelope");
+    let item = message.batch_items().next().expect("one response item");
+    let request = BatchIdentity {
+        operation: super::DISCOVER_VERSIONS_OPERATION,
+        unique_batch_item_id: None,
+        response_context: None,
+        offered_versions: None,
+    };
+    let Err(error) = super::response_outcome(&request, item) else {
+        panic!("Discover Versions must validate the response against the original offer");
+    };
+    assert_eq!(error.kind(), ProtocolErrorKind::MalformedMessage);
 }

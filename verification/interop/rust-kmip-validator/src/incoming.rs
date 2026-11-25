@@ -139,10 +139,10 @@ pub(crate) fn run(
     if connection.transport == "raw_tls" && connection.encoding != "TTLV" {
         return CaseResult::non_run(case, "not_run", "library_api_unavailable: raw TLS listener hardcodes TTLV decoding; OASIS KMIP 2.1 §6.2".to_owned());
     }
-    let version = if connection.protocol_version == "2.0" {
-        ProtocolVersion::V2_0
-    } else {
-        ProtocolVersion::V2_1
+    let version = match connection.protocol_version.as_str() {
+        "2.0" => ProtocolVersion::V2_0,
+        "3.0" => ProtocolVersion::V3_0,
+        _ => ProtocolVersion::V2_1,
     };
     let timeout = Some(Duration::from_secs(
         connection

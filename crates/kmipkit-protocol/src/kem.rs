@@ -488,6 +488,7 @@ fn parse_identifier(field: &Item) -> Option<UniqueIdentifier> {
         ValueView::TextString(value) => Some(UniqueIdentifier::TextString(value.to_owned())),
         ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
         ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
+        ValueView::Identifier(value) => Some(UniqueIdentifier::Identifier(value.to_owned())),
         _ => None,
     })
 }

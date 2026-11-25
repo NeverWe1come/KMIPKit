@@ -338,3 +338,106 @@ fn decapsulate_response_rejects_data_and_retains_unknown_extensions() {
         .unwrap_or(false);
     assert!(extension_is_retained);
 }
+
+#[test]
+fn kmip30_response_parsers_preserve_identifier_item_types() {
+    let group = successful_response(
+        0x3C,
+        structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::identifier("created-group".to_owned()),
+        )]),
+    );
+    let response = CreateGroupResponse::try_from_response_item(group.batch_items().next().unwrap())
+        .expect("Create Group accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("created-group".to_owned()))
+    );
+
+    let encapsulate = successful_response(
+        0x41,
+        structure([
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::identifier("encapsulation-key".to_owned()),
+            ),
+            item(DATA, Value::byte_string(vec![0xAA, 0xBB])),
+        ]),
+    );
+    let response = crate::EncapsulateResponse::try_from_response_item(
+        encapsulate.batch_items().next().unwrap(),
+    )
+    .expect("Encapsulate accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier(
+            "encapsulation-key".to_owned()
+        ))
+    );
+}
+
+#[test]
+fn create_key_pair_and_activate_preserve_identifier_item_types() {
+    const OBJECT_TYPE: u32 = 0x0042_0057;
+    const PRIVATE_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_0066;
+    const PUBLIC_KEY_UNIQUE_IDENTIFIER: u32 = 0x0042_006f;
+
+    let created = successful_response(
+        1,
+        structure([
+            item(OBJECT_TYPE, Value::enumeration(2)),
+            item(
+                UNIQUE_IDENTIFIER,
+                Value::identifier("created-key".to_owned()),
+            ),
+        ]),
+    );
+    let response =
+        crate::CreateResponse::try_from_response_item(created.batch_items().next().unwrap())
+            .expect("Create accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("created-key".to_owned()))
+    );
+
+    let pair = successful_response(
+        2,
+        structure([
+            item(
+                PRIVATE_KEY_UNIQUE_IDENTIFIER,
+                Value::identifier("private-key".to_owned()),
+            ),
+            item(
+                PUBLIC_KEY_UNIQUE_IDENTIFIER,
+                Value::identifier("public-key".to_owned()),
+            ),
+        ]),
+    );
+    let response =
+        crate::CreateKeyPairResponse::try_from_response_item(pair.batch_items().next().unwrap())
+            .expect("Create Key Pair accepts Identifiers");
+    assert_eq!(
+        response.private_key_unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("private-key".to_owned()))
+    );
+    assert_eq!(
+        response.public_key_unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("public-key".to_owned()))
+    );
+
+    let activated = successful_response(
+        0x12,
+        structure([item(
+            UNIQUE_IDENTIFIER,
+            Value::identifier("active-key".to_owned()),
+        )]),
+    );
+    let response =
+        crate::ActivateResponse::try_from_response_item(activated.batch_items().next().unwrap())
+            .expect("Activate accepts an Identifier");
+    assert_eq!(
+        response.unique_identifier(),
+        Some(&UniqueIdentifier::Identifier("active-key".to_owned()))
+    );
+}

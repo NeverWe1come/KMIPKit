@@ -1647,16 +1647,14 @@
           "2.1"
         ],
         "steps": [
-          "prepare_isolated_fixture",
           "execute_operation",
-          "verify_response",
-          "cleanup_fixture"
+          "verify_response"
         ],
         "assertions": [
           "response_matches_operation_contract",
-          "state_effect_matches_expectation"
+          "returned_identifiers_respect_maximum_items"
         ],
-        "mutation": "mutating",
+        "mutation": "read_only",
         "status": "planned"
       }
     },
@@ -7155,16 +7153,13 @@
           "2.1"
         ],
         "steps": [
-          "prepare_isolated_fixture",
           "execute_operation",
-          "verify_response",
-          "cleanup_fixture"
+          "verify_response"
         ],
         "assertions": [
-          "response_matches_operation_contract",
-          "state_effect_matches_expectation"
+          "sha256_digest_matches_known_answer"
         ],
-        "mutation": "mutating",
+        "mutation": "read_only",
         "status": "planned"
       }
     },
