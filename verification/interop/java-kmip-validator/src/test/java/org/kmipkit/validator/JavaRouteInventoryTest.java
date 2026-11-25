@@ -30,7 +30,7 @@ class JavaRouteInventoryTest {
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Get Constraints").status());
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Create").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Cancel").status());
-        assertEquals(JavaRouteInventory.Status.NO_PUBLIC_ROUTE, inventory.get("Set Endpoint Role").status());
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Set Endpoint Role").status());
 
         var clientQuery = catalog.cases().stream()
                 .filter(testCase -> testCase.caseId().equals("test-op-query"))
@@ -45,7 +45,7 @@ class JavaRouteInventoryTest {
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
 
         for (String caseId : Set.of(
-                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints")) {
+                "test-op-log", "test-op-get-constraints")) {
             var statefulCase = catalog.cases().stream()
                     .filter(testCase -> testCase.caseId().equals(caseId))
                     .findFirst().orElseThrow();

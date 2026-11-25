@@ -60,12 +60,51 @@ Other public typed request constructors are reported as pending until their
 case has a complete fixture, request recipe, response assertion, and cleanup.
 Asynchronous request types that only build payloads and operations with no
 public client request route carry separate API limitation reasons. The
-validator also constructs and decodes generic TTLV values locally. It does not
-send arbitrary generic TTLV requests, and the Java package has no distinct
-high-level API route. The KMIP 2.0 live route remains disabled while
-protocol-version preservation is outside the installed validator routes.
+validator also constructs and decodes generic TTLV values. Use
+`api_level: generic-ttlv` with `raw_tls` and `TTLV` to run Locate, Query,
+Discover Versions, RNG Retrieve, and single-part SHA-256 Hash in KMIP 2.0
+and 2.1, plus Ping in 2.1. These probes use a CA, a client certificate chain,
+and an unencrypted PKCS#8 PEM client key. RNG Retrieve follows the catalog's
+mutation opt-in.
+
+With mutation opt-in, the direct tag route also runs Create, Check, Get, Get
+Attributes, Get Attribute List, Activate, Revoke, Destroy, Archive and Recover.
+Each case uses the Text String identifier returned when it creates an isolated
+AES-256 key. The lifecycle checks validate the response identifier and confirm
+cleanup with Destroy. An activated key is revoked before Destroy.
+
+Activate, Revoke, Archive and Recover also use the isolated key lifecycle
+through the typed and Fluent routes.
 
 CI builds the JNI JAR from the revision under test and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
 and request/response handling; it is not evidence for a commercial or other
 deployed KMS.
+
+## Local KMIP 3.0 draft campaign
+
+After installing the artifact, build the standalone distribution.
+
+```sh
+bash bindings/java/gradlew --project-dir verification/interop/java-kmip-validator installDist
+python3 verification/interop/shared/tools/campaign.py --version 3.0 \
+  --runner java verification/interop/java-kmip-validator/tools/run_draft_campaign.sh \
+  --output-dir /tmp/kmip-java-draft
+```
+
+The runner verifies that the loaded JAR matches the installer manifest, calls
+all seven public generic-payload constructors through JNI, and checks their
+operation codes. It generates local evidence. The existing live runner
+handles KMIP 2.0 and 2.1.
+
+The same local runner accepts `--version 2.0 --version 2.1` to check the
+numeric values and allocation of concrete generic TTLV tags from the
+shared matrix.
+
+For one live typed KMIP 2.x Query Operations exchange, reuse the Java
+runner with `--scope live --connection PATH`. The report retains the numeric
+KMIP result and the outcome of the installed typed response checks.
+
+To select the common source revision for a cross-language run, pass a
+checkout of the exact commit to `tools/install_artifact.py --repository`.
+Use the JAR produced by that installer to build the standalone distribution.
