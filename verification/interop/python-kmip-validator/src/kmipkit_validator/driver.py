@@ -1633,12 +1633,6 @@ class PythonKmipDriver:
                         with payload.response_ttlv:
                             result["_bytes"] = payload.data
                             result["_hash_correlation"] = payload.correlation_value
-                if success and verify_locate:
-                    payload = observed.locate_response()
-                    if payload is None or len(payload.unique_identifiers) > 1 or (
-                        payload.located_items is not None and payload.located_items < len(payload.unique_identifiers)
-                    ):
-                        raise ValueError("Locate returned an invalid bounded result")
                 if verify_query:
                     if observed.operation != protocol_values.Operation.QUERY:
                         raise ValueError("Query response operation does not match the request")
@@ -1650,6 +1644,13 @@ class PythonKmipDriver:
                             # Exercise both decoded code lists without reporting any server data.
                             _ = query.operations, query.object_types
                 locate_response = observed.locate_response()
+                if success and verify_locate and (locate_response is None or (
+                    len(locate_response.unique_identifiers) > 1 or (
+                        locate_response.located_items is not None
+                        and locate_response.located_items < len(locate_response.unique_identifiers)
+                    )
+                )):
+                    raise ValueError("Locate returned an invalid bounded result")
                 if locate_response is not None:
                     result["_identifiers"].extend(locate_response.unique_identifiers)
                 return result
@@ -1761,7 +1762,8 @@ class PythonKmipDriver:
         if not identifiers:
             catalog, _ = load_catalog(DEFAULT_CATALOG)
             locate_case = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-locate")
-            locate = self._exchange(self._build_item(locate_case, None, name=name))
+            with self._build_item(locate_case, None, name=name) as item:
+                locate = self._exchange(item, verify_locate=True)
             if locate["status"] != "passed":
                 return False
             identifiers.extend(locate.get("_identifiers", []))
@@ -1769,7 +1771,7 @@ class PythonKmipDriver:
         for identifier in reversed(identifiers):
             try:
                 result = self._exchange(self._extensions.client_batch_item_destroy(identifier))
-                clean = clean and result["status"] in {"passed", "server_unsupported"}
+                clean = clean and result["status"] == "passed"
             except Exception:
                 clean = False
         return clean
@@ -1814,11 +1816,14 @@ class PythonKmipDriver:
             return result
         setup = self._start_async_create(name)
         identifiers = list(setup.get("_identifiers", []))
+        failure = "The prerequisite asynchronous Create request failed."
+        if setup.get("result_status_code") == 1 and not identifiers:
+            return self._blocked_prerequisite(failure)
         final: dict[str, Any]
         correlation = setup.get("_pending_correlation")
         try:
-            if setup["status"] == "server_unsupported" or setup["status"] == "failed":
-                final = setup
+            if setup["status"] in {"server_unsupported", "failed"}:
+                final = self._blocked_prerequisite(failure)
             elif setup["status"] != "pending" or not correlation:
                 final = {
                     "status": "not_run",

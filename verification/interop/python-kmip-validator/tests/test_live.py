@@ -729,6 +729,58 @@ class ControlledExchangeTests(unittest.TestCase):
         self.assertNotIn("interop-user-sentinel", json.dumps(observed))
         self.assertNotIn("interop-password-sentinel", json.dumps(observed))
 
+    def test_failed_async_create_does_not_count_as_poll_or_cancel(self):
+        for operation in ("poll", "cancel"):
+            for version in ("2.0", "2.1"):
+                with self.subTest(operation=operation, version=version):
+                    peer = ControlledTlsPeer(status=1, reason=5, protocol_version=version)
+                    observed = self._execute_ping(peer, case_id=f"test-op-{operation}", protocol_version=version)
+                    self.assertEqual("not_run", observed["status"])
+                    self.assertIsNone(observed.get("result_reason_code"))
+                    request, = peer.requests
+                    fields = parse_children(request[8:])
+                    self.assertEqual(1, int.from_bytes(find_value(fields, 0x42005C), "big"))
+                    self.assertEqual(1, int.from_bytes(find_value(fields, 0x420007), "big"))
+
+    def test_cancel_uses_pending_correlation_and_destroys_the_located_fixture(self):
+        owned_id = b"controlled-async-object"
+        token = b"peer-generated-correlation"
+        for minor in (0, 1):
+            with self.subTest(minor=minor):
+                def response(request):
+                    batch = parse_children(find_value(parse_children(request[8:]), 0x42000F))
+                    operation = int.from_bytes(find_value(batch, 0x42005C), "big")
+                    if operation == 0x19:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        self.assertEqual(token, find_value(payload, 0x420006))
+                        return ping_response(request, 1, 5, protocol_minor=minor)
+
+                    reply = parse_children(ping_response(request, 0, None, protocol_minor=minor)[8:])
+                    header = find_value(reply, 0x42007A)
+                    batch_fields = [enumeration(0x42005C, operation)]
+                    if operation == 1:
+                        batch_fields += [enumeration(0x42007F, 2), item(0x420006, 8, token), structure(0x42007C)]
+                    elif operation == 0x08:
+                        self.assertIn(b"owned-async-name", request)
+                        batch_fields += [enumeration(0x42007F, 0), structure(
+                            0x42007C, item(0x4200D5, 2, struct.pack(">i", 1)), item(0x420094, 7, owned_id),
+                        )]
+                    elif operation == 0x14:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        self.assertEqual(owned_id, find_value(payload, 0x420094))
+                        batch_fields += [enumeration(0x42007F, 0), structure(0x42007C, item(0x420094, 7, owned_id))]
+                    else:
+                        self.fail(f"Unexpected operation {operation}")
+                    return structure(0x42007B, item(0x42007A, 1, header), structure(0x42000F, *batch_fields))
+
+                version = f"2.{minor}"
+                peer = ControlledTlsPeer(connection_count=4, response_factory=response, protocol_version=version)
+                with patch("kmipkit_validator.driver.uuid.uuid4", return_value="owned-async-name"):
+                    observed = self._execute_ping(peer, case_id="test-op-cancel", protocol_version=version)
+                self.assertEqual("server_unsupported", observed["status"], observed)
+                self.assertEqual(5, observed["result_reason_code"])
+                self.assertEqual(4, len(peer.requests))
+
     def test_query_async_requests_uses_installed_explicit_async_api(self):
         from kmipkit import protocol_values
 
