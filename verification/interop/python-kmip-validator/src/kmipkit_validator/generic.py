@@ -1,6 +1,7 @@
 """KMIP 2.x exchanges built from generic tags using standard Python TLS."""
 
 import hashlib
+from functools import partial
 import socket
 import ssl
 import struct
@@ -28,7 +29,7 @@ OWNED_KEY_OPERATIONS = {
 } | DESCRIPTION_MUTATIONS
 EXTENDED_OPERATIONS = {
     CREATE_KEY_PAIR, REGISTER, RE_KEY, DERIVE_KEY, CERTIFY, RE_CERTIFY,
-    GET_USAGE_ALLOCATION, VALIDATE, CANCEL, POLL, RE_KEY_KEY_PAIR,
+    GET_USAGE_ALLOCATION, VALIDATE, RE_KEY_KEY_PAIR,
     ENCRYPT, DECRYPT, SIGN, SIGNATURE_VERIFY, MAC, MAC_VERIFY,
     CREATE_SPLIT_KEY, JOIN_SPLIT_KEY, IMPORT, EXPORT,
 }
@@ -98,7 +99,7 @@ def supports(case, connection):
     mutation = case["execution"]["mutation"]
     return (
         operation is not None
-        and (mutation == "mutating" if operation in (OWNED_KEY_OPERATIONS | EXTENDED_OPERATIONS)
+        and (mutation == "mutating" if operation in (OWNED_KEY_OPERATIONS | EXTENDED_OPERATIONS | {POLL, CANCEL})
              else mutation == "read_only" or operation in (0x25, 0x26)
              or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
@@ -183,11 +184,37 @@ def run(driver, case):
         return _locate_rotate_attribute(driver, case)
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case["case_id"])
+    if operation in {POLL, CANCEL}:
+        return driver._run_async_case(case, driver._fixture_name(case), exchange=partial(_async_target, driver))
     if operation in EXTENDED_OPERATIONS:
         return _run_extended(driver, operation)
     if case["case_id"] == "test-multipart-hash-sha256":
         return _multipart_hash(driver)
     return _execute(driver, operation)
+
+
+def _async_target(driver, operation, correlation):
+    from kmipkit.protocol_values import CancellationResult
+
+    code = POLL if operation == "Poll" else CANCEL
+
+    def verify(payload):
+        if code == POLL:
+            return _text_identifier(payload) is not None and _has_field(payload, 0x420057, "Enumeration", 2)
+        from kmipkit import ttlv
+
+        return (ttlv.ttlv_structure_view_item_count(payload) == 2
+                and _field_bytes(payload, 0x420006) == correlation
+                and any(_has_field(payload, 0x420012, "Enumeration", value)
+                        for value in (CancellationResult.CANCELED, CancellationResult.UNABLE_TO_CANCEL,
+                                      CancellationResult.COMPLETED, CancellationResult.FAILED,
+                                      CancellationResult.UNAVAILABLE)))
+
+    result = _checked_exchange(driver, code, expected=verify, custom_payload=[
+        driver._item(0x420006, "bytes", correlation),
+    ])
+    result["_pending"] = result.get("result_status_code") == 2 and result["status"] == "passed"
+    return result
 
 
 def _locate_rotate_attribute(driver, case):
@@ -417,6 +444,7 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         wire = _exchange(connection, _encode(request_view), ttlv.codec_limits_max_message_bytes(limits))
     payload_matches = True
     created_identifier = None
+    pending_correlation = None
     with ttlv.ttlv_decode(wire) as root, ttlv.ttlv_item_view_from_item(root) as view:
         with ttlv.ttlv_item_view_tag(view) as tag, ttlv.ttlv_item_view_value(view) as value:
             if ttlv.tag_value(tag) != 0x42007B:
@@ -431,6 +459,14 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
                 if batch.operation != operation:
                     raise ValueError("generic response operation mismatch")
                 status, reason = batch.result_status, batch.result_reason
+                if status == 2 and operation in {POLL, CANCEL}:
+                    with_payload = batch.response_payload
+                    if with_payload is not None:
+                        with_payload.close()
+                    token = batch.asynchronous_correlation_value
+                    if operation != POLL or with_payload is not None or reason is not None or not token:
+                        return _failure("Invalid asynchronous target response.")
+                    pending_correlation = bytearray(token)
                 if status == 0:
                     payload = batch.response_payload
                     payload_matches = payload is not None
@@ -447,6 +483,8 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
     details = {"result_status_code": status, "result_reason_code": reason}
     if created_identifier is not None:
         details["created_identifier"] = created_identifier
+    if pending_correlation is not None:
+        details["_correlation"] = pending_correlation
     if not payload_matches:
         return {**_failure("Generic success payload did not satisfy the case."), **details}
     outcome, compatibility = {
@@ -454,7 +492,7 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         (1, 5): ("server_unsupported", "unsupported"),
         (1, 8): ("server_unsupported", "unsupported"),
         (1, 12): ("policy_restricted", "policy_restricted"),
-    }.get((status, reason), ("failed", "unknown"))
+    }.get((status, reason), ("passed", "supported") if pending_correlation else ("failed", "unknown"))
     return {"status": outcome, "server_compatibility": compatibility,
             "library_correctness": "passed", "parity": "not_compared",
             "diagnostic": "generic TTLV request and response validated", **details}
@@ -688,12 +726,6 @@ def _run_extended(driver, operation):
         return priv_id, pub_id, res
 
     try:
-        if operation in (POLL, CANCEL):
-            return _checked_exchange(
-                driver, operation,
-                expected=lambda payload: _field_bytes(payload, 0x420006) is not None,
-                custom_payload=[item(0x420006, "bytes", b"\x01\x02\x03\x04\x05\x06")],
-            )
         if operation in (REGISTER, IMPORT):
             fields = ([item(0x420094, "text", "kmipkit-generic-import")] if operation == IMPORT else []) + [
                 item(0x420057, "enumeration", 2),

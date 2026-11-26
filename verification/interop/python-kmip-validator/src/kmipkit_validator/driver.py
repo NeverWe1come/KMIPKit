@@ -1805,12 +1805,13 @@ class PythonKmipDriver:
             "parity": "not_compared",
         }
 
-    def _run_async_case(self, test_case: dict[str, Any], name: str) -> dict[str, Any]:
+    def _run_async_case(self, test_case: dict[str, Any], name: str, *, exchange=None) -> dict[str, Any]:
+        exchange = self._async_exchange if exchange is None else exchange
         operation = test_case["operation"]
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
         if operation == "Query Asynchronous Requests":
-            result = self._async_exchange(operation)
+            result = exchange(operation)
             result.pop("_pending", None)
             result.pop("_correlation", None)
             return result
@@ -1828,11 +1829,11 @@ class PythonKmipDriver:
                 final = {
                     "status": "not_run",
                     "library_correctness": "passed",
-                    "server_compatibility": "supported",
+                    "server_compatibility": "unknown",
                     "parity": "not_compared",
                     "diagnostic": "server completed the asynchronous Create inline; no correlation value was available",
                 }
-            elif test_case.get("requires", {}).get("workflow_type") == "async_poll":
+            elif operation == "Poll" or test_case.get("requires", {}).get("workflow_type") == "async_poll":
                 current = correlation
                 final = {
                     "status": "not_run",
@@ -1842,7 +1843,7 @@ class PythonKmipDriver:
                     "diagnostic": "server remained Pending after the bounded Poll sequence",
                 }
                 for _ in range(16):
-                    final = self._async_exchange("Poll", current)
+                    final = exchange("Poll", current)
                     if final["status"] != "passed" or not final["_pending"]:
                         final.pop("_pending", None)
                         final.pop("_correlation", None)
@@ -1870,7 +1871,7 @@ class PythonKmipDriver:
                 if isinstance(current, bytearray):
                     current[:] = bytes(len(current))
             else:
-                final = self._async_exchange(operation, correlation)
+                final = exchange(operation, correlation)
                 final.pop("_pending", None)
                 final.pop("_correlation", None)
         finally:
@@ -1934,12 +1935,16 @@ class PythonKmipDriver:
                 correlation = returned
         return outcome
 
+    @staticmethod
+    def _fixture_name(test_case: dict[str, Any]) -> str:
+        return f"kmipkit-python-{test_case['case_id']}-{uuid.uuid4()}"
+
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
         if case_id == "test-multipart-hash-sha256":
             return self._run_multipart_hash(test_case)
-        unique_name = f"kmipkit-python-{case_id}-{uuid.uuid4()}"
+        unique_name = self._fixture_name(test_case)
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
         if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):

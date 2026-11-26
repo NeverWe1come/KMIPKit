@@ -627,13 +627,14 @@ class ControlledExchangeTests(unittest.TestCase):
         protocol_version: str = "2.1",
         encoding: str = "TTLV",
         transport: str = "raw_tls",
+        api_level: str = "typed-protocol",
     ) -> dict:
         connection = {
             "server_id": "loopback",
             "protocol_version": protocol_version,
             "transport": transport,
             "encoding": encoding,
-            "api_level": "typed-protocol",
+            "api_level": api_level,
             "endpoints": {
                 "raw_tls": {"host": "127.0.0.1", "port": peer.port},
                 "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
@@ -654,6 +655,11 @@ class ControlledExchangeTests(unittest.TestCase):
         driver = None
         try:
             driver = PythonKmipDriver(connection)
+            if api_level == "generic-ttlv":
+                from kmipkit_validator import generic
+
+                self.assertTrue(generic.supports(case, connection))
+                return generic.run(driver, case)
             return driver.execute_case(case)
         finally:
             if driver is not None:
@@ -742,24 +748,49 @@ class ControlledExchangeTests(unittest.TestCase):
                     self.assertEqual(1, int.from_bytes(find_value(fields, 0x42005C), "big"))
                     self.assertEqual(1, int.from_bytes(find_value(fields, 0x420007), "big"))
 
-    def test_cancel_uses_pending_correlation_and_destroys_the_located_fixture(self):
+    def test_async_targets_use_peer_correlation_and_destroy_the_located_fixture(self):
         owned_id = b"controlled-async-object"
         token = b"peer-generated-correlation"
-        for minor in (0, 1):
-            with self.subTest(minor=minor):
+        updated_token = b"peer-updated-correlation"
+        scenarios = (
+            ("cancel", "typed-protocol", "server_unsupported"),
+            ("cancel", "generic-ttlv", "server_unsupported"),
+            ("cancel", "generic-ttlv", "passed"),
+            ("cancel", "generic-ttlv", "failed"),
+            ("poll", "typed-protocol", "passed"),
+            ("poll", "generic-ttlv", "passed"),
+        )
+        for minor, (target, api_level, status) in ((minor, case) for minor in (0, 1) for case in scenarios):
+            with self.subTest(minor=minor, api_level=api_level, target=target, status=status):
                 def response(request):
                     batch = parse_children(find_value(parse_children(request[8:]), 0x42000F))
                     operation = int.from_bytes(find_value(batch, 0x42005C), "big")
                     if operation == 0x19:
                         payload = parse_children(find_value(batch, 0x420079))
                         self.assertEqual(token, find_value(payload, 0x420006))
-                        return ping_response(request, 1, 5, protocol_minor=minor)
+                        if status == "server_unsupported":
+                            return ping_response(request, 1, 5, protocol_minor=minor)
 
                     reply = parse_children(ping_response(request, 0, None, protocol_minor=minor)[8:])
                     header = find_value(reply, 0x42007A)
                     batch_fields = [enumeration(0x42005C, operation)]
                     if operation == 1:
                         batch_fields += [enumeration(0x42007F, 2), item(0x420006, 8, token), structure(0x42007C)]
+                    elif operation == 0x19:
+                        echo = token if status == "passed" else updated_token
+                        batch_fields += [enumeration(0x42007F, 0), structure(
+                            0x42007C, item(0x420006, 8, echo), enumeration(0x420012, 1),
+                        )]
+                    elif operation == 0x1A:
+                        payload = parse_children(find_value(batch, 0x420079))
+                        submitted = find_value(payload, 0x420006)
+                        if submitted == token:
+                            batch_fields += [enumeration(0x42007F, 2), item(0x420006, 8, updated_token)]
+                        else:
+                            self.assertEqual(updated_token, submitted)
+                            batch_fields += [enumeration(0x42007F, 0), structure(
+                                0x42007C, enumeration(0x420057, 2), item(0x420094, 7, owned_id),
+                            )]
                     elif operation == 0x08:
                         self.assertIn(b"owned-async-name", request)
                         batch_fields += [enumeration(0x42007F, 0), structure(
@@ -774,12 +805,15 @@ class ControlledExchangeTests(unittest.TestCase):
                     return structure(0x42007B, item(0x42007A, 1, header), structure(0x42000F, *batch_fields))
 
                 version = f"2.{minor}"
-                peer = ControlledTlsPeer(connection_count=4, response_factory=response, protocol_version=version)
+                connections = 4 if target == "cancel" else 5
+                peer = ControlledTlsPeer(connection_count=connections, response_factory=response, protocol_version=version)
                 with patch("kmipkit_validator.driver.uuid.uuid4", return_value="owned-async-name"):
-                    observed = self._execute_ping(peer, case_id="test-op-cancel", protocol_version=version)
-                self.assertEqual("server_unsupported", observed["status"], observed)
-                self.assertEqual(5, observed["result_reason_code"])
-                self.assertEqual(4, len(peer.requests))
+                    observed = self._execute_ping(peer, case_id=f"test-op-{target}", protocol_version=version,
+                                                  api_level=api_level)
+                reason = 5 if status == "server_unsupported" else None
+                self.assertEqual(status, observed["status"], observed)
+                self.assertEqual(reason, observed["result_reason_code"])
+                self.assertEqual(connections, len(peer.requests))
 
     def test_query_async_requests_uses_installed_explicit_async_api(self):
         from kmipkit import protocol_values
@@ -825,7 +859,7 @@ class ControlledExchangeTests(unittest.TestCase):
         extended = [
             "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
             "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
-            "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
             "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
             "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
             "test-op-import", "test-op-export",
@@ -835,7 +869,6 @@ class ControlledExchangeTests(unittest.TestCase):
         sym_key = structure(0x42008F, structure(0x420040, enumeration(0x420042, 1),
                             structure(0x420045, item(0x420043, 8, bytes(16)))))
         expected_connections = {
-            "test-op-poll": 1, "test-op-cancel": 1,
             "test-op-register": 3, "test-op-import": 3,
             "test-op-export": 4, "test-op-get-usage-allocation": 4,
             "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
@@ -880,8 +913,6 @@ class ControlledExchangeTests(unittest.TestCase):
                             fields = item(0x420094, 7, b"recert-id")
                         elif op in (0x17, 0x22, 0x24):
                             fields = enumeration(0x42009B, 1)
-                        elif op in (0x19, 0x1A):
-                            fields = item(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")
                         elif op == 0x1D:
                             fields = item(0x420066, 7, b"new-priv") + item(0x42006F, 7, b"new-pub")
                         elif op == 0x1F:
