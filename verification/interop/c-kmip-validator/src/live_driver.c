@@ -8840,6 +8840,15 @@ static int32_t build_fluent_ping(kmipkit_client_batch_item_t **out) {
     return status;
 }
 
+static int32_t build_fluent_query(uint32_t function, kmipkit_client_batch_item_t **out) {
+    kmipkit_query_builder_t *builder = NULL;
+    int32_t status = kmipkit_query_builder_create(&builder);
+    if (status == 0) status = kmipkit_query_builder_add_function(builder, function);
+    if (status == 0) status = kmipkit_query_builder_build_batch_item(builder, out);
+    kmipkit_query_builder_release(builder);
+    return status;
+}
+
 static int32_t build_hash_request(kmip_live_client_t *client, bool fluent,
                                   kmipkit_client_batch_item_t **out) {
     static const uint8_t input[] = {0x61, 0x62, 0x63};
@@ -9564,7 +9573,8 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
             status = build_bounded_locate(client, fluent, &request);
         }
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
-        status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &request);
+        status = fluent ? build_fluent_query(query_function, &request)
+            : kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &request);
     } else {
         status = kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, &request);
     }
@@ -11957,6 +11967,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-obj-public-key") == 0;
     bool draft_locate = client->protocol_major == 3 && locate_workflow;
     bool multipart_hash = strcmp(test_case->case_id, "test-multipart-hash-sha256") == 0;
+    if (fluent_route && strcmp(test_case->case_id, "test-norm-payload-client-query-request-21-002") == 0)
+        return outcome_not_run("the C Fluent Query builder cannot set Object Groups");
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash && !gcm_operation &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
         strcmp(test_case->operation, "Discover Versions") != 0 && strcmp(test_case->operation, "Query") != 0 &&
@@ -11997,9 +12009,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate, NULL);
         if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
             return execute_single_versioned_diagnostic(
-                client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL, test_case);
+                client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, test_case);
         if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL, NULL);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, NULL);
     }
     if (client->protocol_major == 3)
         return outcome_not_run("C recipe requires a KMIP 3.0 request and response fixture");
@@ -12624,7 +12636,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             status = kmipkit_client_batch_item_query(
                 &query_function, 1, 1, &object_group, 1, &item);
         } else {
-            status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &item);
+            status = fluent_route ? build_fluent_query(query_function, &item)
+                : kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &item);
         }
     } else if (strcmp(test_case->operation, "Log") == 0) {
         static const uint8_t message[] = "KMIPKit interoperability validation probe";

@@ -3888,6 +3888,72 @@ pub extern "C" fn kmipkit_client_discover_versions_v1(
     })
 }
 
+const MAX_QUERY_FUNCTIONS: usize = 1024;
+
+/// Creates a reusable Query builder with an initially empty list of functions.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_create(
+    out_builder: *mut *mut kmipkit_query_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::QueryBuilder,
+            HandleValue::QueryBuilder(Mutex::new(Vec::new())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Appends a KMIP Query Function, preserving the order and raw enumeration value.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_add_function(
+    builder: *mut kmipkit_query_builder_t,
+    function: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::QueryBuilder));
+        let HandleValue::QueryBuilder(functions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let mut functions = try_ffi!(functions.lock().map_err(|_| ERROR_INTERNAL));
+        if functions.len() >= MAX_QUERY_FUNCTIONS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        try_ffi!(functions.try_reserve(1).map_err(|_| ERROR_RESOURCE_LIMIT));
+        functions.push(kmipkit_protocol::QueryFunction::from_raw(function));
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Query item. At least one function is required.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_build_batch_item(
+    builder: *mut kmipkit_query_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = try_ffi!(reference_handle(builder, Kind::QueryBuilder));
+        let HandleValue::QueryBuilder(functions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let functions = try_ffi!(functions.lock().map_err(|_| ERROR_INTERNAL));
+        let request = kmipkit_protocol::QueryRequest::new(functions.iter().copied());
+        if !request.validate().is_valid() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Query(request)));
+        SUCCESS
+    })
+}
+
+/// Releases the opaque Query builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_release(builder: *mut kmipkit_query_builder_t) {
+    ffi_entrypoint(|| release(builder, Kind::QueryBuilder));
+}
+
 /// High-level direct Query helper for one or more KMIP Query Function enumerations.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_query_v1(
@@ -3901,16 +3967,25 @@ pub extern "C" fn kmipkit_client_query_v1(
         if query_functions.is_null() || query_function_count == 0 {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let count = try_ffi!(usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT));
-        if count > 1024 {
+        let count =
+            try_ffi!(usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT));
+        if count > MAX_QUERY_FUNCTIONS {
             return record_ffi_error(ERROR_RESOURCE_LIMIT);
         }
         // SAFETY: caller guarantees `query_functions` points to `count` u32 elements.
         let fns = unsafe { std::slice::from_raw_parts(query_functions, count) };
         let req = kmipkit_protocol::QueryRequest::new(
-            fns.iter().copied().map(kmipkit_protocol::QueryFunction::from_raw),
+            fns.iter()
+                .copied()
+                .map(kmipkit_protocol::QueryFunction::from_raw),
         );
-        execute_simple_request(client, ClientRequest::Query(req), limits, None, out_response)
+        execute_simple_request(
+            client,
+            ClientRequest::Query(req),
+            limits,
+            None,
+            out_response,
+        )
     })
 }
 
