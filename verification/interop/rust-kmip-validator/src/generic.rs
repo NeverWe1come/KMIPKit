@@ -1068,16 +1068,32 @@ fn run_extended_operation(
     version: ProtocolVersion,
     operation: u32,
 ) -> CaseResult {
-    outcome(case, run_extended_inner(connection, version, operation))
+    let mut cleanup = Vec::new();
+    let result = if matches!(operation, CERTIFY | RE_CERTIFY | VALIDATE) {
+        match extended_cert_ops(connection, version, operation, &mut cleanup) {
+            Ok(observed) => outcome(case, Ok(observed)),
+            Err(CertificateFailure::Exchange(problem)) => outcome(case, Err(problem)),
+            Err(CertificateFailure::Prerequisite(problem)) => {
+                CaseResult::non_run(case, "not_run", problem.to_owned())
+            }
+        }
+    } else {
+        outcome(
+            case,
+            run_extended_inner(connection, version, operation, &mut cleanup),
+        )
+    };
+    destroy_ids(connection, version, &cleanup);
+    result
 }
 
 fn run_extended_inner(
     connection: &Connection,
     version: ProtocolVersion,
     operation: u32,
+    cleanup: &mut Vec<String>,
 ) -> ExchangeResult {
-    let mut cleanup: Vec<String> = Vec::new();
-    let res = match operation {
+    match operation {
         POLL | CANCEL => {
             let fields = vec![item(
                 0x0042_0006,
@@ -1087,23 +1103,18 @@ fn run_extended_inner(
                 Ok(field_bytes(batch, 0x0042_0006).is_some())
             })
         }
-        REGISTER | IMPORT => extended_register_import(connection, version, operation, &mut cleanup),
+        REGISTER | IMPORT => extended_register_import(connection, version, operation, cleanup),
         CREATE_KEY_PAIR | RE_KEY_KEY_PAIR => {
-            extended_key_pair_ops(connection, version, operation, &mut cleanup)
+            extended_key_pair_ops(connection, version, operation, cleanup)
         }
         RE_KEY | EXPORT | GET_USAGE_ALLOCATION | DERIVE_KEY | CREATE_SPLIT_KEY | JOIN_SPLIT_KEY => {
-            extended_sym_ops(connection, version, operation, &mut cleanup)
+            extended_sym_ops(connection, version, operation, cleanup)
         }
-        CERTIFY | RE_CERTIFY | VALIDATE => {
-            extended_cert_ops(connection, version, operation, &mut cleanup)
-        }
-        ENCRYPT | DECRYPT => extended_encrypt_ops(connection, version, operation, &mut cleanup),
-        MAC | MAC_VERIFY => extended_mac_ops(connection, version, operation, &mut cleanup),
-        SIGN | SIGNATURE_VERIFY => extended_sign_ops(connection, version, operation, &mut cleanup),
+        ENCRYPT | DECRYPT => extended_encrypt_ops(connection, version, operation, cleanup),
+        MAC | MAC_VERIFY => extended_mac_ops(connection, version, operation, cleanup),
+        SIGN | SIGNATURE_VERIFY => extended_sign_ops(connection, version, operation, cleanup),
         _ => Err("unsupported extended generic operation"),
-    };
-    destroy_ids(connection, version, &cleanup);
-    res
+    }
 }
 
 fn extended_register_import(
@@ -1320,12 +1331,23 @@ fn extended_split_ops(
     })
 }
 
+enum CertificateFailure {
+    Exchange(&'static str),
+    Prerequisite(&'static str),
+}
+
+impl From<&'static str> for CertificateFailure {
+    fn from(problem: &'static str) -> Self {
+        Self::Exchange(problem)
+    }
+}
+
 fn extended_cert_ops(
     connection: &Connection,
     version: ProtocolVersion,
     operation: u32,
     cleanup: &mut Vec<String>,
-) -> ExchangeResult {
+) -> std::result::Result<(u32, Option<u32>), CertificateFailure> {
     let (priv_id, pub_id, kp_res) = create_rsa_key_pair(connection, version)?;
     if !priv_id.is_empty() {
         cleanup.push(priv_id);
@@ -1334,7 +1356,9 @@ fn extended_cert_ops(
         cleanup.push(pub_id.clone());
     }
     if kp_res? != (0, None) {
-        return Err("the prerequisite Create Key Pair request failed");
+        return Err(CertificateFailure::Prerequisite(
+            "the prerequisite Create Key Pair request failed",
+        ));
     }
     let certify_fields = vec![
         item(0x0042_0094, Value::text_string(pub_id))?,
@@ -1349,14 +1373,16 @@ fn extended_cert_ops(
         Ok(cert_id.is_some())
     });
     if operation == CERTIFY {
-        return cert_res;
+        return cert_res.map_err(CertificateFailure::Exchange);
     }
     if cert_res? != (0, None) {
-        return Err("the server rejected the prerequisite Certify request");
+        return Err(CertificateFailure::Prerequisite(
+            "the server rejected the prerequisite Certify request",
+        ));
     }
     let target_cert = cert_id.ok_or("Certify did not return an owned certificate")?;
     let fields = vec![item(0x0042_0094, Value::text_string(target_cert))?];
-    if operation == RE_CERTIFY {
+    let observed = if operation == RE_CERTIFY {
         exchange_payload(connection, version, RE_CERTIFY, fields, |batch| {
             if let Some(id) = text_identifier(batch) {
                 cleanup.push(id);
@@ -1370,7 +1396,8 @@ fn extended_cert_ops(
                 matches!(v, ValueView::Enumeration(1))
             }))
         })
-    }
+    };
+    observed.map_err(CertificateFailure::Exchange)
 }
 
 fn extended_encrypt_ops(

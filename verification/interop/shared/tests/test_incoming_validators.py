@@ -344,7 +344,7 @@ class DirectTagValidatorTests(unittest.TestCase):
             evidence = json.loads(report.read_text())["cases"]
             self.assertEqual(names, {case["case_id"] for case in evidence})
             for case in evidence:
-                self.assertIn(case["status"], {"not_run", "failed"})
+                self.assertEqual(case["status"], "not_run")
                 self.assertIsNone(case.get("result_status_code"))
                 self.assertIsNone(case.get("result_reason_code"))
 

@@ -154,6 +154,11 @@ Message and omitted the Operation field. The report preserves this as a
 failed exchange. The controlled peers separately verify a valid
 zero-length response and reject a count greater than the 32 bytes sent.
 
+Identifier-based `Certify` against an isolated RSA public key returned
+Operation Not Supported in both versions over generic TTLV in all four
+languages. That result leaves `Re-certify` and `Validate` unexecuted in these
+workflows, since they require the certificate identifier from `Certify`.
+
 The controlled Locate probes exercise all seven Rotate attributes in both
 versions through generic TTLV, typed protocol and Fluent in C, Java, Python
 and Rust, plus the direct Rust client method. Under KMIP 2.0 the clients
