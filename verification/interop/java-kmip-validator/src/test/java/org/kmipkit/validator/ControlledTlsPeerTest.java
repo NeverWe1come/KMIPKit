@@ -373,8 +373,10 @@ class ControlledTlsPeerTest {
         var mutations = java.util.Map.of("test-op-add-attribute", 0x0d, "test-op-modify-attribute", 0x0e,
                 "test-op-delete-attribute", 0x0f, "test-op-set-attribute", 0x31);
         byte[] initialDescription = item(0x4200fc, 7, "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII));
+        byte[] initialComment = item(0x4200fd, 7, "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII));
         byte[] changedDescription = item(0x4200fc, 7, "kmipkit-changed-description".getBytes(StandardCharsets.US_ASCII));
         byte[] descriptionReference = item(0x42013b, 5, intBytes(0x4200fc));
+        byte[] commentReference = item(0x42013b, 5, intBytes(0x4200fd));
         if ("typed-protocol".equals(apiLevel) || "generic-ttlv".equals(apiLevel)) {
             cases.addAll(List.of("test-op-check", "test-op-check-invalid",
                     "test-op-obtain-lease", "test-op-obtain-lease-invalid"));
@@ -403,7 +405,8 @@ class ControlledTlsPeerTest {
             boolean invalid = id.endsWith("-invalid");
             String caseId = invalid ? id.substring(0, id.length() - "-invalid".length()) : id;
             Integer mutation = mutations.get(caseId);
-            byte[] before = "test-op-add-attribute".equals(caseId) ? new byte[0] : initialDescription;
+            byte[] before = "test-op-add-attribute".equals(caseId) ? new byte[0]
+                    : ("test-op-delete-attribute".equals(caseId) ? initialComment : initialDescription);
             byte[] after = invalid ? before : "test-op-delete-attribute".equals(caseId)
                     ? new byte[0] : changedDescription;
             List<byte[]> responses = mutation != null ? List.of(create,
@@ -496,11 +499,13 @@ class ControlledTlsPeerTest {
                     assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(0x42002a))));
                 }
                 if (mutation != null) {
-                    assertEquals(before.length != 0, contains(requests.get(0), initialDescription));
+                    byte[] expectedInitial = "test-op-delete-attribute".equals(caseId) ? initialComment : initialDescription;
+                    byte[] expectedRef = "test-op-delete-attribute".equals(caseId) ? commentReference : descriptionReference;
+                    assertEquals(before.length != 0, contains(requests.get(0), expectedInitial));
                     for (int index : List.of(1, 3)) {
-                        assertTrue(contains(requests.get(index), structure(0x420079, identifier, descriptionReference)));
+                        assertTrue(contains(requests.get(index), structure(0x420079, identifier, expectedRef)));
                     }
-                    byte[] replacement = mutation == 0x0f ? descriptionReference : structure(0x42013d, changedDescription);
+                    byte[] replacement = mutation == 0x0f ? expectedRef : structure(0x42013d, changedDescription);
                     byte[] expectedPayload = mutation == 0x0e
                             ? structure(0x420079, identifier, structure(0x42013c, initialDescription), replacement)
                             : structure(0x420079, identifier, replacement);

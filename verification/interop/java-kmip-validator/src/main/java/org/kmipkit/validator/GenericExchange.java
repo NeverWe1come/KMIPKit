@@ -314,7 +314,8 @@ final class GenericExchange {
     private static JavaKmipDriver.CaseOutcome runOwnedKey(ConnectionConfig connection, int operation,
             int minor, int attributeTag, boolean strictAttribute, long start) {
         var createdId = new AtomicReference<byte[]>();
-        int initialTag = changesDescription(operation) && operation != ADD_ATTRIBUTE ? DESCRIPTION : attributeTag;
+        int initialTag = operation == DELETE_ATTRIBUTE ? 0x4200fd
+                : (changesDescription(operation) && operation != ADD_ATTRIBUTE ? DESCRIPTION : attributeTag);
         var create = execute(connection, CREATE, minor, null, initialTag, payload -> {
             byte[] id = textIdentifier(payload);
             createdId.set(id);
@@ -635,17 +636,18 @@ final class GenericExchange {
 
     private static JavaKmipDriver.CaseOutcome changeDescription(ConnectionConfig connection, int operation,
             int minor, byte[] id, Predicate<TtlvStructureView> sameId, long start) {
+        int attrTag = operation == DELETE_ATTRIBUTE ? 0x4200fd : DESCRIPTION;
         byte[] initial = operation == ADD_ATTRIBUTE ? null : TEXT_ATTRIBUTE_FIXTURE;
-        var before = execute(connection, GET_ATTRIBUTES, minor, id, DESCRIPTION,
-                payload -> sameId.test(payload) && descriptionMatches(payload, initial), start);
+        var before = execute(connection, GET_ATTRIBUTES, minor, id, attrTag,
+                payload -> sameId.test(payload) && descriptionMatches(payload, initial, attrTag), start);
         if (!"passed".equals(before.status())) {
             return JavaKmipDriver.CaseOutcome.failed("Could not read the initial Description.", elapsed(start));
         }
         var target = execute(connection, operation, minor, id, sameId, start);
         if ("passed".equals(target.status())) {
             byte[] expected = operation == DELETE_ATTRIBUTE ? null : CHANGED_DESCRIPTION;
-            var after = execute(connection, GET_ATTRIBUTES, minor, id, DESCRIPTION,
-                    payload -> sameId.test(payload) && descriptionMatches(payload, expected), start);
+            var after = execute(connection, GET_ATTRIBUTES, minor, id, attrTag,
+                    payload -> sameId.test(payload) && descriptionMatches(payload, expected, attrTag), start);
             if (!"passed".equals(after.status())) {
                 return JavaKmipDriver.CaseOutcome.failed("Could not verify the Description after mutation.", elapsed(start));
             }
@@ -653,7 +655,7 @@ final class GenericExchange {
         return target;
     }
 
-    private static boolean descriptionMatches(TtlvStructureView payload, byte[] expected) {
+    private static boolean descriptionMatches(TtlvStructureView payload, byte[] expected, int targetTag) {
         if (payload.itemCount() < 1) return false;
         boolean foundAttributes = false;
         for (long index = 0; index < payload.itemCount(); index++) {
@@ -665,7 +667,7 @@ final class GenericExchange {
                     boolean matched = false;
                     for (long attrIndex = 0; attrIndex < attributes.itemCount(); attrIndex++) {
                         try (var attr = attributes.itemAt(attrIndex); var attrTag = attr.tag()) {
-                            if (attrTag.raw() != DESCRIPTION) continue;
+                            if (attrTag.raw() != targetTag) continue;
                             if (expected == null) return false;
                             if (matched || attr.itemType() != TtlvItemType.TextString) return false;
                             try (var text = attr.value()) {
@@ -738,7 +740,7 @@ final class GenericExchange {
     private static TtlvItem descriptionPayload(int operation, byte[] objectId) {
         try (var id = item(0x420094, TtlvValue.TextString(objectId, LIMITS))) {
             if (operation == DELETE_ATTRIBUTE) {
-                try (var reference = item(0x42013b, TtlvValue.Enumeration(DESCRIPTION))) {
+                try (var reference = item(0x42013b, TtlvValue.Enumeration(0x4200fd))) {
                     return structureItem(0x420079, id, reference);
                 }
             }

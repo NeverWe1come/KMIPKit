@@ -851,6 +851,7 @@ class PythonKmipDriver:
         identifier = extensions.UniqueIdentifier.text_string("local-batch-count-fixture")
         driver = object.__new__(PythonKmipDriver)
         driver._extensions = extensions
+        driver._connection = {"protocol_version": "2.1"}
         batch = client.Batch.create()
         items = []
         try:
@@ -1340,11 +1341,10 @@ class PythonKmipDriver:
             builder.hashing_algorithm(6)
         elif operation in {"Sign", "Signature Verify"}:
             alg_code = {"RSA": 4, "ECDSA": 6}.get(algorithm, 4)
-            builder.cryptographic_algorithm(alg_code).hashing_algorithm(6)
             if alg_code == 4:
-                builder.padding_method(8).digital_signature_algorithm(5)
+                builder.padding_method(8).hashing_algorithm(6)
             else:
-                builder.digital_signature_algorithm(14)
+                builder.cryptographic_algorithm(alg_code).hashing_algorithm(6).digital_signature_algorithm(14)
         elif operation == "Hash":
             builder.hashing_algorithm(6)
         return builder.build().into_ttlv()

@@ -418,25 +418,29 @@ impl Attempt<'_> {
         Ok(result)
     }
     fn batch(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
+        let placeholder = UniqueIdentifier::Enumeration(1);
         let requests = if case.case_id.starts_with("test-batch-create-activate-destroy") {
             vec![
                 adapters::create(&self.name, &self.connection.protocol_version)?,
-                ClientRequest::Activate(ActivateRequest::new(None)),
-                ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
-                ClientRequest::Destroy(DestroyRequest::new(None)),
+                ClientRequest::Activate(ActivateRequest::new(Some(placeholder.clone()))),
+                ClientRequest::Revoke(
+                    RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)
+                        .with_unique_identifier(placeholder.clone()),
+                ),
+                ClientRequest::Destroy(DestroyRequest::new(Some(placeholder))),
             ]
         } else {
             vec![
                 fixtures::register("Symmetric Key", &self.connection.protocol_version)?,
-                ClientRequest::Activate(ActivateRequest::new(None)),
+                ClientRequest::Activate(ActivateRequest::new(Some(placeholder.clone()))),
                 ClientRequest::Encrypt(
-                    EncryptRequest::new(None, Some(plain()))
+                    EncryptRequest::new(Some(placeholder.clone()), Some(plain()))
                         .with_cryptographic_parameters(parameters(3)?)
                         .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
                 ),
                 ClientRequest::Decrypt(
                     DecryptRequest::new(
-                        None,
+                        Some(placeholder.clone()),
                         Some(OperationData::ByteString(SecretBytes::new(
                             include_bytes!("../tests/fixtures/aes256-cbc.bin").to_vec(),
                         ))),
@@ -444,8 +448,11 @@ impl Attempt<'_> {
                     .with_cryptographic_parameters(parameters(3)?)
                     .with_iv_counter_nonce(SecretBytes::new(vec![0; 16])),
                 ),
-                ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
-                ClientRequest::Destroy(DestroyRequest::new(None)),
+                ClientRequest::Revoke(
+                    RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)
+                        .with_unique_identifier(placeholder.clone()),
+                ),
+                ClientRequest::Destroy(DestroyRequest::new(Some(placeholder))),
             ]
         };
         let results = driver::batch(self.client, self.connection, requests, false)?;

@@ -331,7 +331,9 @@ fn run_owned_key(
     operation: u32,
 ) -> CaseResult {
     let mut identifier = None;
-    let create_reference = if changes_description(operation) && operation != ADD_ATTRIBUTE {
+    let create_reference = if operation == DELETE_ATTRIBUTE {
+        0x0042_00fd
+    } else if changes_description(operation) && operation != ADD_ATTRIBUTE {
         DESCRIPTION
     } else {
         key_attribute_reference(&case.case_id).unwrap_or_default()
@@ -670,16 +672,21 @@ fn mutate_description(
     operation: u32,
     id: &str,
 ) -> ExchangeResult {
+    let attr_tag = if operation == DELETE_ATTRIBUTE {
+        0x0042_00fd
+    } else {
+        DESCRIPTION
+    };
     let read = |expected| {
         exchange_with_reference(
             connection,
             version,
             GET_ATTRIBUTES,
             Some(id),
-            DESCRIPTION,
+            attr_tag,
             |batch| {
                 Ok(text_identifier(batch).as_deref() == Some(id)
-                    && description_matches(batch, expected))
+                    && description_matches(batch, expected, attr_tag))
             },
         )
     };
@@ -693,7 +700,7 @@ fn mutate_description(
         fields.push(description_wrapper(0x0042_013c, TEXT_ATTRIBUTE_FIXTURE)?);
     }
     if operation == DELETE_ATTRIBUTE {
-        fields.push(item(0x0042_013b, Value::enumeration(DESCRIPTION))?);
+        fields.push(item(0x0042_013b, Value::enumeration(attr_tag))?);
     } else {
         fields.push(description_wrapper(0x0042_013d, CHANGED_DESCRIPTION)?);
     }
@@ -716,7 +723,7 @@ fn description_wrapper(tag: u32, text: &str) -> Result<Item> {
     )
 }
 
-fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>) -> bool {
+fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>, attr_tag: u32) -> bool {
     let Some(expected) = expected else {
         let has_attrs = batch
             .with_response_payload(|payload| {
@@ -738,7 +745,7 @@ fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>)
             attributes
                 .children()
                 .iter()
-                .all(|item| item.tag().raw() != DESCRIPTION)
+                .all(|item| item.tag().raw() != attr_tag)
         });
     };
     has_field(batch, 0x0042_0125, |value| {
@@ -748,7 +755,7 @@ fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>)
         let mut matches = attributes
             .children()
             .iter()
-            .filter(|item| item.tag().raw() == DESCRIPTION);
+            .filter(|item| item.tag().raw() == attr_tag);
         let Some(description) = matches.next() else {
             return false;
         };

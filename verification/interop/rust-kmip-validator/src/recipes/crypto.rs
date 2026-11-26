@@ -111,7 +111,12 @@ impl Attempt<'_> {
         if case.requires["block_cipher_mode"] == "GCM" {
             return self.authenticated_encryption(case);
         }
-        let algorithm = case.requires["algorithm"].as_str().unwrap_or("AES");
+        let default_alg = match case.operation.as_str() {
+            "MAC" | "MAC Verify" => "HMAC_SHA256",
+            "Sign" | "Signature Verify" => "RSA",
+            _ => "AES",
+        };
+        let algorithm = case.requires["algorithm"].as_str().unwrap_or(default_alg);
         let bits = case.requires["key_length"]
             .as_i64()
             .and_then(|value| i32::try_from(value).ok())

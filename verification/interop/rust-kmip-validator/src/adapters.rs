@@ -634,11 +634,27 @@ pub(crate) fn request(
         "Sign" => ClientRequest::Sign(
             SignRequest::new()
                 .with_unique_identifier(id()?)
+                .with_cryptographic_parameters(
+                    CryptographicParametersBuilder::new()
+                        .with_hashing_algorithm(6)
+                        .with_padding_method(8)
+                        .build()
+                        .map(CryptographicParameters::into_ttlv)
+                        .map_err(|_| "explicit cryptographic parameters rejected")?,
+                )
                 .with_data(data()),
         ),
         "Signature Verify" => ClientRequest::SignatureVerify(
             SignatureVerifyRequest::new()
                 .with_unique_identifier(id()?)
+                .with_cryptographic_parameters(
+                    CryptographicParametersBuilder::new()
+                        .with_hashing_algorithm(6)
+                        .with_padding_method(8)
+                        .build()
+                        .map(CryptographicParameters::into_ttlv)
+                        .map_err(|_| "explicit cryptographic parameters rejected")?,
+                )
                 .with_data(data())
                 .with_signature_data(SecretBytes::new(vec![0; 256])),
         ),

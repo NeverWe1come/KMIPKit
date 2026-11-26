@@ -601,24 +601,25 @@ class LiveContract(unittest.TestCase):
                 for persist in (True, False):
                     with self.subTest(minor=minor, operation=name, persist=persist):
                         description = None if name == "add" else initial
+                        attr_tag = 0x4200fd if name == "delete" else 0x4200fc
 
                         def reply(tree):
                             nonlocal description
                             operation = find(tree, 0x42005c)
                             payload = [ttlv(0x420094, 7, "fixture-key")]
                             if operation == 1:
-                                self.assertEqual(description, find(tree, 0x4200fc))
+                                self.assertEqual(description, find(tree, attr_tag))
                                 payload.insert(0, ttlv(0x420057, 5, 2))
                             elif operation == 0x0b:
-                                self.assertEqual(0x4200fc, find(tree, 0x42013b))
+                                self.assertEqual(attr_tag, find(tree, 0x42013b))
                                 if description is not None:
-                                    payload.append(ttlv(0x420125, 1, [ttlv(0x4200fc, 7, description)]))
+                                    payload.append(ttlv(0x420125, 1, [ttlv(attr_tag, 7, description)]))
                             elif operation == target:
                                 current = find(tree, 0x42013c)
                                 new = find(tree, 0x42013d)
                                 self.assertEqual(initial if name == "modify" else None, find(current or [], 0x4200fc))
                                 if name == "delete":
-                                    self.assertEqual(0x4200fc, find(tree, 0x42013b))
+                                    self.assertEqual(attr_tag, find(tree, 0x42013b))
                                     self.assertIsNone(new)
                                 else:
                                     self.assertEqual(changed, find(new or [], 0x4200fc))
@@ -759,7 +760,8 @@ class LiveContract(unittest.TestCase):
                     continue
                 operation = find(batch, 0x42005c)
                 name = operations[operation]
-                uid = find(batch, 0x420094) or f"owned-{sequence}"
+                raw_uid = find(batch, 0x420094)
+                uid = raw_uid if isinstance(raw_uid, str) else f"owned-{sequence}"
                 payload = [ttlv(0x420094, 7, uid)]
                 status, reason = 0, None
                 if name == "Create" and find(tree, 0x420007) == 1:

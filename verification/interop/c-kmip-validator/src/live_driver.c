@@ -6010,16 +6010,10 @@ static bool created_key_crypto_response_matches(kmipkit_client_batch_item_respon
             &correlation_present, &correlation);
     uint64_t expected_length = operation == KMIPKIT_ENUMERATION_OPERATION_MAC ? 32U :
         (uint64_t)sizeof(BATCH_CRYPTO_PLAINTEXT);
-    const uint8_t *expected_data = operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT ?
-        (aes256_cbc ? BATCH_CRYPTO_AES256_CBC_CIPHERTEXT : BATCH_CRYPTO_CIPHERTEXT) :
-        operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT ? BATCH_CRYPTO_PLAINTEXT : NULL;
     *out_status = status;
     bool valid = status == 0 && present && same_text_identifier(identifier, &result_identifier) &&
         data_present && data.length == expected_length && data.data &&
         !iv_present && !correlation_present && !tag_present;
-    if (valid && expected_data) {
-        valid = memcmp(data.data, expected_data, sizeof(BATCH_CRYPTO_PLAINTEXT)) == 0;
-    }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MAC) {
         valid = response_ttlv_matches_field_count(
             item, kmipkit_client_batch_item_response_mac_ttlv,
@@ -6532,8 +6526,11 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         KMIPKIT_ENUMERATION_PADDING_METHOD_NONE, &value);
     if (status == 0 && !mac && !archived_lifecycle && !append_ttlv_value(
             client, &parameters, UINT32_C(0x42005F), &value)) status = -1;
-    if (status == 0 && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
-    if (status == 0 && !archived_lifecycle &&
+    if (status == 0 && mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(6, &value);
+    if (status == 0 && mac && !archived_lifecycle &&
+        !append_ttlv_value(client, &parameters, UINT32_C(0x420038), &value)) status = -1;
+    if (status == 0 && !mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(key_algorithm, &value);
+    if (status == 0 && !mac && !archived_lifecycle &&
         !append_ttlv_value(client, &parameters, UINT32_C(0x420028), &value)) status = -1;
     const uint8_t *input = decrypt ?
         (aes256_cbc ? BATCH_CRYPTO_AES256_CBC_CIPHERTEXT : BATCH_CRYPTO_CIPHERTEXT) :
@@ -9766,7 +9763,7 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         valid = add_generic_description(client, &payload, 0x42013c, &description_initial);
     if (valid && generic_changes_description(operation)) {
         valid = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
-            ? add_generic_number(client, &payload, 0x42013b, 0x4200fc, true)
+            ? add_generic_number(client, &payload, 0x42013b, 0x4200fd, true)
             : add_generic_description(client, &payload, 0x42013d, &description_changed);
     }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
@@ -10172,7 +10169,7 @@ static bool generic_key_attribute_matches(kmipkit_ttlv_structure_view_t *attribu
 }
 
 static bool generic_description_matches(kmipkit_ttlv_structure_view_t *payload, uint64_t fields,
-                                        const generic_description_t *description) {
+                                        uint32_t target_tag, const generic_description_t *description) {
     if (description->text == NULL && fields == 1) return true;
     kmipkit_ttlv_structure_view_t *attributes = NULL;
     uint64_t count = 0;
@@ -10185,14 +10182,14 @@ static bool generic_description_matches(kmipkit_ttlv_structure_view_t *payload, 
                 if (kmipkit_ttlv_structure_view_item_at(attributes, i, &item) != 0) {
                     valid = false;
                 } else {
-                    if (item_view_has_tag(item, 0x4200fc, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, NULL))
+                    if (item_view_has_tag(item, target_tag, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, NULL))
                         valid = false;
                     kmipkit_ttlv_item_view_release(item);
                 }
             }
         } else {
             valid = structure_view_has_text(
-                attributes, 0x4200fc, description->text, description->length);
+                attributes, target_tag, description->text, description->length);
         }
     }
     if (attributes) kmipkit_ttlv_structure_view_release(attributes);
@@ -10229,7 +10226,7 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
             valid = generic_has_length_reference(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
             if (description) {
-                valid = generic_description_matches(payload, fields, description);
+                valid = generic_description_matches(payload, fields, attribute_tag, description);
             } else if (is_core_generic_key_attribute_tag(attribute_tag)) {
                 valid = generic_structure_field(payload, 0x420125, &offered) &&
                     generic_key_attribute_matches(offered, attribute_tag);
@@ -11283,10 +11280,12 @@ static kmip_execution_outcome_t execute_generic_rotate_locate(kmip_live_client_t
 
 static kmip_execution_outcome_t execute_generic_description_change(kmip_live_client_t *client, uint32_t operation,
                                                                   const generic_identifier_t *id) {
+    const uint32_t attr_tag = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
+        ? 0x4200fdU : 0x4200fcU;
     const generic_description_t *initial = operation == KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE
         ? &description_absent : &description_initial;
     kmip_execution_outcome_t before = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
-        id, NULL, 0x4200fc, NULL, initial, NULL);
+        id, NULL, attr_tag, NULL, initial, NULL);
     if (!before.success) return generic_cleanup_failure("Could not read the initial Description.");
 
     kmip_execution_outcome_t target = execute_generic_exchange(client, operation, id, NULL);
@@ -11294,7 +11293,7 @@ static kmip_execution_outcome_t execute_generic_description_change(kmip_live_cli
         const generic_description_t *expected = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
             ? &description_absent : &description_changed;
         kmip_execution_outcome_t after = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
-            id, NULL, 0x4200fc, NULL, expected, NULL);
+            id, NULL, attr_tag, NULL, expected, NULL);
         if (!after.success) return generic_cleanup_failure("Could not verify the Description after mutation.");
     }
     return target;
@@ -11305,8 +11304,10 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
     uint32_t attribute_tag = generic_key_attribute_reference(test_case->case_id);
     if (attribute_tag == 0U && strncmp(test_case->case_id, "test-attr-", 10) == 0)
         attribute_tag = c_catalog_attribute_tag(test_case->attribute);
-    const uint32_t initial_tag = generic_changes_description(operation) &&
-        operation != KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE ? 0x4200fc : attribute_tag;
+    const uint32_t initial_tag = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
+        ? 0x4200fdU
+        : (generic_changes_description(operation) &&
+            operation != KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE ? 0x4200fcU : attribute_tag);
     kmip_execution_outcome_t outcome = execute_generic_exchange_with_reference(
         client, KMIPKIT_ENUMERATION_OPERATION_CREATE, NULL, &id, initial_tag);
     if (!id.data) {

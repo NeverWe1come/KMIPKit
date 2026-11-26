@@ -544,8 +544,10 @@ def _run_owned_key(driver, operation, case):
     case_id = case["case_id"]
     attr_name = case.get("requires", {}).get("attribute")
     reference = KEY_ATTRIBUTES[case_id][0] if (operation == GET_ATTRIBUTES and case_id in KEY_ATTRIBUTES) else None
-    if operation in (MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE):
+    if operation in (MODIFY_ATTRIBUTE, SET_ATTRIBUTE):
         reference = DESCRIPTION
+    elif operation == DELETE_ATTRIBUTE:
+        reference = 0x4200FD
     created = _checked_exchange(driver, CREATE, attribute_reference=reference)
     identifier = created.pop("created_identifier", None)
     if identifier is None:
@@ -634,14 +636,16 @@ def _run_owned_key(driver, operation, case):
 
 
 def _mutate_description(driver, operation, identifier):
+    attr_tag = 0x4200FD if operation == DELETE_ATTRIBUTE else DESCRIPTION
+
     def same_id(payload):
         return _text_identifier(payload) == identifier
 
     def read(expected):
         return _checked_exchange(
             driver, GET_ATTRIBUTES, identifier,
-            lambda payload: same_id(payload) and _description_matches(payload, expected),
-            attribute_reference=DESCRIPTION,
+            lambda payload: same_id(payload) and _description_matches(payload, expected, attr_tag),
+            attribute_reference=attr_tag,
         )
 
     initial = None if operation == ADD_ATTRIBUTE else TEXT_ATTRIBUTE_FIXTURE
@@ -654,7 +658,7 @@ def _mutate_description(driver, operation, identifier):
     return target
 
 
-def _description_matches(payload, expected):
+def _description_matches(payload, expected, attr_tag=DESCRIPTION):
     from kmipkit import ttlv
 
     count = ttlv.ttlv_structure_view_item_count(payload)
@@ -669,11 +673,11 @@ def _description_matches(payload, expected):
                     continue
                 with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as attrs:
                     for attr in _fields(attrs):
-                        with ttlv.ttlv_item_view_tag(attr) as attr_tag:
-                            if ttlv.tag_value(attr_tag) == DESCRIPTION:
+                        with ttlv.ttlv_item_view_tag(attr) as item_tag:
+                            if ttlv.tag_value(item_tag) == attr_tag:
                                 return False
         return True
-    return count >= 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
+    return count >= 2 and _has_key_attribute(payload, attr_tag, "TextString", expected)
 
 
 def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None,
@@ -704,7 +708,7 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         if operation == MODIFY_ATTRIBUTE:
             payload_fields.append(node(0x42013C, [item(DESCRIPTION, "text", TEXT_ATTRIBUTE_FIXTURE.decode("ascii"))]))
         if operation == DELETE_ATTRIBUTE:
-            payload_fields.append(item(0x42013B, "enumeration", DESCRIPTION))
+            payload_fields.append(item(0x42013B, "enumeration", 0x4200FD))
         if operation in (ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, SET_ATTRIBUTE):
             payload_fields.append(node(0x42013D, [item(DESCRIPTION, "text", CHANGED_DESCRIPTION.decode("ascii"))]))
         if operation == CHECK:

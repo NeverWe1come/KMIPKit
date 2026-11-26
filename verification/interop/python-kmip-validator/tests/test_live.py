@@ -439,6 +439,7 @@ class ControlledExchangeTests(unittest.TestCase):
                         seen = []
                         description = None if target == "add-attribute" else b"kmipkit-attribute-fixture"
                         updated = b"kmipkit-changed-description"
+                        attr_tag = 0x4200FD if target == "delete-attribute" else 0x4200FC
 
                         def answer(request):
                             nonlocal description
@@ -451,7 +452,7 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual(find_value(payload, 0x420028), struct.pack(">I", 3))
                                 self.assertEqual(find_value(payload, 0x42002A), struct.pack(">i", 256))
                                 if target in mutations:
-                                    self.assertEqual(description, find_value(payload, 0x4200FC))
+                                    self.assertEqual(description, find_value(payload, attr_tag))
                                 fields = enumeration(0x420057, 2) + fields
                             else:
                                 self.assertEqual(find_value(payload, 0x420094), owned_id)
@@ -463,9 +464,9 @@ class ControlledExchangeTests(unittest.TestCase):
                                 fields = (enumeration(0x420057, 2)
                                           + item(0x420094, 7, owned_id if valid_get else b"foreign-key-id") + key)
                             if target in mutations and operation == 11:
-                                self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x4200FC))
+                                self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", attr_tag))
                                 if description is not None:
-                                    fields += structure(0x420125, item(0x4200FC, 7, description))
+                                    fields += structure(0x420125, item(attr_tag, 7, description))
                             if operation == mutations.get(target):
                                 current = find_value(payload, 0x42013C)
                                 new = find_value(payload, 0x42013D)
@@ -474,7 +475,7 @@ class ControlledExchangeTests(unittest.TestCase):
                                 else:
                                     self.assertIsNone(current)
                                 if target == "delete-attribute":
-                                    self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x4200FC))
+                                    self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", attr_tag))
                                     self.assertIsNone(new)
                                 else:
                                     self.assertEqual([(0x4200FC, 7, updated)], parse_children(new))
