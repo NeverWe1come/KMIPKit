@@ -98,7 +98,15 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         Ok(observed) => {
             // Shape metadata is inspected in memory; payload bytes never enter reports.
             let _shape = observed.payload_tags;
-            observed_result(case, observed.status, observed.reason)
+            let mut result = observed_result(case, observed.status, observed.reason);
+            if connection.api_level == "high-level" {
+                result.actual_api_level = Some(if observed.used_high_level {
+                    "high-level"
+                } else {
+                    "typed-protocol"
+                });
+            }
+            result
         }
         Err(crate::recipes::Failure::LocalRejection(reason)) => {
             let mut result = CaseResult::non_run(case, "not_run", reason.to_owned());

@@ -1997,6 +1997,7 @@ class PythonKmipDriver:
                 if outcome["status"] == "passed":
                     self._own_kem_fixture(identifiers, outcome)
                 return outcome
+            built_high_level = False
             if operation == "Logout":
                 login = self._exchange(self._extensions.client_batch_item_login(request_count=2))
                 if login["status"] != "passed":
@@ -2051,10 +2052,13 @@ class PythonKmipDriver:
                     target = self._build_fluent_item(test_case, target_identifier, name=unique_name)
                 elif self._api_level == "high-level":
                     target = self._build_high_level_item(test_case, target_identifier, name=unique_name)
+                    built_high_level = True
                 else:
                     target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
             activation_attempted = operation == "Activate"
             result = self._exchange(target)
+            if built_high_level:
+                result["actual_api_level"] = "high-level"
             if (operation in {"Activate", "Revoke"} and result["status"] == "passed"
                     and target_identifier not in result.get("_identifiers", ())):
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown",

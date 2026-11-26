@@ -5,7 +5,7 @@ use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
     DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse, ProtocolVersion,
-    QueryResponse, ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
+    ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
@@ -642,9 +642,21 @@ fn check_probe(
                 .located_items()
                 .is_none_or(|total| usize::try_from(total).is_ok_and(|total| total >= returned))
     } else if operation == 0x18 {
-        let query =
-            QueryResponse::try_from_response_item(batch).map_err(|_| "invalid Query response")?;
-        query.operations().next().is_some()
+        batch
+            .with_response_payload(|payload| {
+                let mut operations = payload
+                    .children()
+                    .iter()
+                    .filter(|field| field.tag().raw() == 0x0042_005c)
+                    .peekable();
+                operations.peek().is_some()
+                    && operations.all(|field| {
+                        field.with_value(
+                            |value| matches!(value, ValueView::Enumeration(code) if *code != 0),
+                        )
+                    })
+            })
+            .unwrap_or(false)
     } else if operation == 0x1e {
         let discover =
             DiscoverVersionsResponse::try_from_response_item_for_offer(batch, &[version])

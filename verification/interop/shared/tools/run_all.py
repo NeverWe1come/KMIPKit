@@ -32,7 +32,7 @@ if str(_current_dir) not in sys.path:
 try:
     from verification.interop.shared.tools.aggregate_matrix import aggregate_results, generate_html, generate_markdown
     from verification.interop.shared.tools.campaign import read_validated
-    from verification.interop.shared.tools.cosmian_minimum import ALLOWED_VERSIONS, CONSTRUCTION_APIS
+    from verification.interop.shared.tools.cosmian_minimum import ALLOWED_VERSIONS, CONSTRUCTION_APIS, HIGH_LEVEL_OPERATIONS
     from verification.interop.shared.tools.cosmian_minimum import build_selection as build_cosmian_selection
     from verification.interop.shared.tools.operation_catalog import build_catalog, build_normative_catalog, select_cases
 except ImportError:
@@ -262,10 +262,17 @@ def incomplete_case_ids(catalog, results):
             raise ValueError("result contains an unexpected or duplicate case ID")
         observed[case_id] = case
 
+    requested_api = results["execution"]["api_level"]
+    direct_operations = HIGH_LEVEL_OPERATIONS.get(results["language"], set())
     return sorted(
         case_id for case_id, recipe in expected.items()
         if recipe["execution"]["status"] != "not_applicable"
-        and not complete_observation(recipe, observed.get(case_id, {}))
+        and (requested_api != "high-level" or (
+            recipe["requires"].get("workflow_type") != "server_to_client"
+            and recipe["operation"] in direct_operations
+        ))
+        and (not complete_observation(recipe, observed.get(case_id, {}))
+             or (requested_api == "high-level" and observed.get(case_id, {}).get("actual_api_level") != "high-level"))
     )
 
 
@@ -385,11 +392,13 @@ def main() -> None:
         if args.cosmian_minimum and args.require_complete and not (args.operation or args.case):
             pairs = {(config["protocol_version"], config["api_level"]) for config in configurations.values()}
             for version in ALLOWED_VERSIONS:
-                for api in CONSTRUCTION_APIS:
-                    if (version, api) not in pairs:
-                        gaps = True
-                        completion.extend({"language": lang, "protocol_version": version, "api_level": api,
-                                           "status": "missing_connection"} for lang in langs)
+                for lang in langs:
+                    required = (*CONSTRUCTION_APIS, "high-level") if lang in HIGH_LEVEL_OPERATIONS else CONSTRUCTION_APIS
+                    for api in required:
+                        if (version, api) not in pairs:
+                            gaps = True
+                            completion.append({"language": lang, "protocol_version": version,
+                                               "api_level": api, "status": "missing_connection"})
         if args.all_operations:
             catalog_dir = out_dir / "catalogs"
             selections = {}

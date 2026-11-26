@@ -158,6 +158,7 @@ fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<Clien
 
 pub(crate) struct Observed {
     pub status: u32,
+    pub used_high_level: bool,
     pub reason: Option<u32>,
     pub payload_tags: Vec<u32>,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
@@ -237,6 +238,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     }
     Observed {
         status: result.status().raw(),
+        used_high_level: false,
         reason: result.reason().map(kmipkit::ResultReason::raw),
         payload_tags,
         identifier,
@@ -245,6 +247,13 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         bytes,
         validity,
         ticket,
+    }
+}
+
+fn observed_high_level(response: &ClientBatchItemResponse) -> Observed {
+    Observed {
+        used_high_level: true,
+        ..observed(response)
     }
 }
 
@@ -271,262 +280,262 @@ pub(crate) fn execute(
             ClientRequest::DiscoverVersions(request) => {
                 return client
                     .discover_versions_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Ping(_) => {
                 return client
                     .ping_with_options(&limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Query(request) => {
                 return client
                     .query_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::DelegatedLogin(request) => {
                 return client
                     .delegated_login_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Login(request) => {
                 return client
                     .login_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Logout(request) => {
                 return client
                     .logout_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Get(request) => {
                 return client
                     .get_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Locate(request) => {
                 return client
                     .locate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::AddAttribute(request) => {
                 return client
                     .add_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::AdjustAttribute(request) => {
                 return client
                     .adjust_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::DeleteAttribute(request) => {
                 return client
                     .delete_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ModifyAttribute(request) => {
                 return client
                     .modify_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetAttribute(request) => {
                 return client
                     .set_attribute_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetAttributes(request) => {
                 return client
                     .get_attributes_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Encrypt(request) => {
                 return client
                     .encrypt_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Decrypt(request) => {
                 return client
                     .decrypt_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Certify(request) => {
                 return client
                     .certify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Check(request) => {
                 return client
                     .check_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ObtainLease(request) => {
                 return client
                     .obtain_lease_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Recertify(request) => {
                 return client
                     .recertify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Rekey(request) => {
                 return client
                     .rekey_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RekeyKeyPair(request) => {
                 return client
                     .rekey_key_pair_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::ReProvision(request) => {
                 return client
                     .reprovision_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Register(request) => {
                 return client
                     .register_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Revoke(request) => {
                 return client
                     .revoke_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Activate(request) => {
                 return client
                     .activate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Archive(request) => {
                 return client
                     .archive_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Destroy(request) => {
                 return client
                     .destroy_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Recover(request) => {
                 return client
                     .recover_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Pkcs11(request) => {
                 return client
                     .pkcs11_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::DeriveKey(request) => {
                 return client
                     .derive_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Export(request) => {
                 return client
                     .export_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Import(request) => {
                 return client
                     .import_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::JoinSplitKey(request) => {
                 return client
                     .join_split_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Hash(request) => {
                 return client
                     .hash_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Mac(request) => {
                 return client
                     .mac_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::MacVerify(request) => {
                 return client
                     .mac_verify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Sign(request) => {
                 return client
                     .sign_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SignatureVerify(request) => {
                 return client
                     .signature_verify_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetAttributeList(request) => {
                 return client
                     .get_attribute_list_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetConstraints(request) => {
                 return client
                     .set_constraints_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::SetDefaults(request) => {
                 return client
                     .set_defaults_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetUsageAllocation(request) => {
                 return client
                     .get_usage_allocation_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Validate(request) => {
                 return client
                     .validate_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RngRetrieve(request) => {
                 return client
                     .rng_retrieve_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Log(request) => {
                 return client
                     .log_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Interop(request) => {
                 return client
                     .interop_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::RngSeed(request) => {
                 return client
                     .rng_seed_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::Create(request) => {
                 return client
                     .create_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::CreateKeyPair(request) => {
                 return client
                     .create_key_pair_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::CreateSplitKey(request) => {
                 return client
                     .create_split_key_with_options(request, &limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             ClientRequest::GetConstraints(_) => {
                 return client
                     .get_constraints_with_options(&limits, &options)
-                    .map(|response| observed(&response));
+                    .map(|response| observed_high_level(&response));
             }
             request => return execute_batch(client, connection, request, &options, &limits),
         }
@@ -634,6 +643,7 @@ pub(crate) fn asynchronous(
     }?;
     Ok(Observed {
         status: response.result().status().raw(),
+        used_high_level: false,
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         payload_tags: Vec::new(),
         identifier: None,

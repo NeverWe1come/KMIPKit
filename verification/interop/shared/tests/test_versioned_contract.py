@@ -373,17 +373,23 @@ class VersionedContractTests(unittest.TestCase):
         outgoing = "test-op-query"
         incoming = "test-s2c-query"
         ping = "test-op-ping"
-        results = {"cases": [
+        results = {"language": "rust", "execution": {"api_level": "typed-protocol"}, "cases": [
             {"case_id": outgoing, "status": "passed", "library_correctness": "passed"},
             {"case_id": incoming, "status": "not_run", "library_correctness": "not_checked"},
             {"case_id": ping, "status": "server_unsupported", "library_correctness": "passed"},
         ]}
         self.assertEqual([ping, outgoing, incoming], incomplete_case_ids(catalog, results))
         results["cases"][0]["result_status_code"] = 0
-        results["cases"][2]["result_status_code"] = 1
+        results["cases"][2].update(result_status_code=1, result_reason_code=5)
         self.assertEqual([incoming], incomplete_case_ids(catalog, results))
         results["cases"][1].update(status="passed", library_correctness="passed",
                                    server_compatibility="supported")
+        self.assertEqual([], incomplete_case_ids(catalog, results))
+        results["execution"]["api_level"] = "high-level"
+        results["cases"][0]["actual_api_level"] = "typed-protocol"
+        results["cases"][2]["actual_api_level"] = "high-level"
+        self.assertEqual([outgoing], incomplete_case_ids(catalog, results))
+        results["cases"][0]["actual_api_level"] = "high-level"
         self.assertEqual([], incomplete_case_ids(catalog, results))
         results["cases"].append(results["cases"][0])
         with self.assertRaisesRegex(ValueError, "duplicate case"):
@@ -391,12 +397,12 @@ class VersionedContractTests(unittest.TestCase):
 
     def test_completion_report_cannot_supply_typed_evidence_for_fluent(self) -> None:
         connection = {
-            "server_id": "fixture", "protocol_version": "2.1",
+            "server_id": "fixture", "protocol_version": "2.1", "server_configuration_fingerprint": "c" * 64,
             "transport": "raw_tls", "encoding": "TTLV", "api_level": "fluent",
         }
         evidence = {
             "language": "rust", "protocol_version": "2.1", "catalog_sha256": "a" * 64,
-            "server": {"id": "fixture"},
+            "server": {"id": "fixture", "configuration_fingerprint": "c" * 64},
             "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "fluent"},
         }
         validate_completion_report(evidence, "rust", connection, "a" * 64)

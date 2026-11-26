@@ -274,21 +274,22 @@ def _run(
                     library_correctness="passed",
                     server_compatibility="supported",
                 )
-            results.append(
-                _case_record(
-                    case_id,
-                    observation["status"],
-                    observation["library_correctness"],
-                    observation["server_compatibility"],
-                    observation.get("diagnostic") or (
-                        "response verified" if observation["status"] == "passed"
-                        else "KMIP response reported non-success status"
-                    ),
-                    elapsed,
-                    observation.get("result_status_code"),
-                    observation.get("result_reason_code"),
-                )
+            record = _case_record(
+                case_id,
+                observation["status"],
+                observation["library_correctness"],
+                observation["server_compatibility"],
+                observation.get("diagnostic") or (
+                    "response verified" if observation["status"] == "passed"
+                    else "KMIP response reported non-success status"
+                ),
+                elapsed,
+                observation.get("result_status_code"),
+                observation.get("result_reason_code"),
             )
+            if "actual_api_level" in observation:
+                record["actual_api_level"] = observation["actual_api_level"]
+            results.append(record)
         except Exception:
             # Do not serialize exceptions: they may retain credentials or peer text.
             elapsed = (datetime.now(timezone.utc) - started).total_seconds() * 1000

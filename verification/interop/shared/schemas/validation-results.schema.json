@@ -60,6 +60,7 @@
           "server_compatibility": { "enum": ["supported", "unsupported", "policy_restricted", "unknown"] },
           "parity": { "enum": ["matched", "mismatched", "not_compared"] },
           "duration_ms": { "type": "number", "minimum": 0 },
+          "actual_api_level": { "enum": ["high-level", "typed-protocol", "fluent", "generic-ttlv"] },
           "result_status": { "type": "string" },
           "result_reason": { "type": "string" },
           "result_status_code": { "type": "integer", "minimum": 0, "maximum": 4294967295 },

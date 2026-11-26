@@ -207,6 +207,64 @@ class DirectTagValidatorTests(unittest.TestCase):
                         self.skipTest(f"Installed {language} validator required")
                     self.owned_key_exchange(language, minor, "test-op-archive", 21, unsupported=True)
 
+    def test_generic_query_checks_requested_operations_without_a_typed_decoder(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                with self.subTest(language=language, minor=minor):
+                    if not available:
+                        self.skipTest(f"Installed {language} validator required")
+                    self.query_operations(language, minor)
+
+    def query_operations(self, language, minor):
+        with tempfile.TemporaryDirectory(prefix="kmipkit-query-operations-") as dirname:
+            work = Path(dirname)
+            catalog = version_catalog(f"2.{minor}")
+            query = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-query")
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, [query])))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
+                                           "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(10)
+                connection = work / "connection.json"
+                connection.write_text(json.dumps(connection_config(minor, listener.getsockname()[1], incoming=False)))
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    try:
+                        raw, _ = self.accept_request(listener, process, "Query Operations")
+                        raw.settimeout(5)
+                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                            request = only(read_message(peer), 0x420078, 1)
+                            batch = only(request, 0x42000F, 1)
+                            self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", 0x18))
+                            payload = only(batch, 0x420079, 1)
+                            self.assertEqual(payload, [(0x420074, 5, struct.pack(">I", 1))])
+                            batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                            peer.sendall(structure(
+                                0x42007B,
+                                structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                          number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, 0x18), *batch_ids,
+                                          number(0x42007F, 5, 0), structure(0x42007C, number(0x42005C, 5, 1))),
+                            ))
+                        _, stderr = process.communicate(timeout=15)
+                        self.assertEqual(process.returncode, 0, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            result, = json.loads(report.read_text())["cases"]
+            self.assertEqual((result["status"], result["result_status_code"]), ("passed", 0))
+            save_evidence(report, catalog_path, f"{language}-2.{minor}-query-operations")
+
     def test_obtain_lease_validates_result_and_cleans_up(self):
         for language, available in installed_validators():
             for minor in (0, 1):

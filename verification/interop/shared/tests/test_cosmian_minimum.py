@@ -33,7 +33,8 @@ class CosmianMinimumTests(unittest.TestCase):
                 [(row["kind"], row["name"], row["declared_support"]) for row in report["rows"]],
             )
             for row in report["rows"]:
-                routes = {(item["language"], item["api_level"]) for item in row["obligations"]}
+                routes = {(item["language"], item["api_level"]) for item in row["obligations"]
+                          if item["api_level"] != "high-level"}
                 self.assertEqual(routes, {(language, api) for language in ("rust", "c", "java", "python")
                                           for api in ("typed-protocol", "fluent", "generic-ttlv")})
                 self.assertLessEqual(set(row["server_cases"]) | set(row["local_cases"]), cases.keys())
@@ -85,6 +86,29 @@ class CosmianMinimumTests(unittest.TestCase):
         result, = evidence["case_results"]
         self.assertEqual(result["result_reason_code"], 5)
         self.assertEqual(result["scope"], "controlled")
+
+    def test_high_level_results_require_a_distinct_observed_route(self):
+        catalog, inventory = build_selection(ROOT, "2.1")
+        case = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-query")
+        evidence = {"case_id": case["case_id"], "assertions": case["execution"]["assertions"],
+                    "recipe_sha256": recipe_digest(case), "status": "passed", "library_correctness": "passed"}
+        run = {
+            "run_id": "high-query", "scope": "controlled", "protocol_version": "2.1", "language": "rust",
+            "catalog_sha256": "a" * 64,
+            "execution": {"api_level": "high-level", "library_commit": "b" * 40, "artifact_sha256": "c" * 64},
+        }
+        reports = [
+            {**run, "cases": [{**evidence, "actual_api_level": "high-level"}]},
+            {**run, "run_id": "typed-fallback", "cases": [{**evidence, "actual_api_level": "typed-protocol"}]},
+            {**run, "run_id": "missing-api", "cases": [evidence]},
+        ]
+        result = with_execution_evidence(inventory, catalog, reports)
+        query = next(row for row in result["rows"] if row["kind"] == "operation" and row["name"] == "Query")
+        obligation, = [item for item in query["obligations"] if item["api_level"] == "high-level"]
+        self.assertEqual(obligation["language"], "rust")
+        self.assertEqual([item["run_id"] for item in obligation["case_results"]], ["high-query"])
+        self.assertEqual([item["run_id"] for item in obligation["unverified_route_results"]],
+                         ["typed-fallback", "missing-api"])
 
     def test_oasis_fixture_evidence_preserves_operation_variants_and_scope(self):
         _, report = build_selection(ROOT, "2.1")

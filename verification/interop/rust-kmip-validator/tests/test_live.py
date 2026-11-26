@@ -596,6 +596,8 @@ class LiveContract(unittest.TestCase):
                         _, report = self.command(self.connection(version=version, transport="https", encoding=encoding, api=api), self.rows("test-op-query"))
                         case = report["cases"][0]
                         self.assertEqual(case["status"], "passed", case)
+                        if api == "high-level":
+                            self.assertEqual(case["actual_api_level"], "high-level")
                         normalized.append((case["status"], case["result_status"], case.get("result_reason")))
         self.assertEqual(len(set(normalized)), 1)
 

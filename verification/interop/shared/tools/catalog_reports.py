@@ -65,7 +65,7 @@ def materialize_cases(cases, catalog, scope, path):
         metadata = catalog[case_id]
         row = {
             key: case[key]
-            for key in ("case_id", "status", "library_correctness", "result_status_code", "result_reason_code")
+            for key in ("case_id", "status", "library_correctness", "result_status_code", "result_reason_code", "actual_api_level")
             if key in case
         }
         row["operation"] = metadata["operation"]

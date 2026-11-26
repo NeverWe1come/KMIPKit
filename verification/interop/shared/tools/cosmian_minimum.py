@@ -51,6 +51,23 @@ FIELD_EXCHANGES = {
 }
 
 CONSTRUCTION_APIS = ("typed-protocol", "fluent", "generic-ttlv")
+# Distinct public operation methods or request models used by each consumer.
+HIGH_LEVEL_OPERATIONS = {
+    "rust": {
+        "Activate", "Add Attribute", "Adjust Attribute", "Archive", "Certify", "Check", "Create",
+        "Create Key Pair", "Create Split Key", "Decrypt", "Delete Attribute", "Delegated Login",
+        "Derive Key", "Destroy", "Discover Versions", "Encrypt", "Export", "Get", "Get Attribute List",
+        "Get Attributes", "Get Constraints", "Get Usage Allocation", "Hash", "Import", "Interop",
+        "Join Split Key", "Locate", "Log", "Login", "Logout", "MAC", "MAC Verify", "Modify Attribute",
+        "Obtain Lease", "PKCS#11", "Ping", "Query", "Re-certify", "Re-key", "Re-key Key Pair",
+        "Re-provision", "Recover", "Register", "Revoke", "RNG Retrieve", "RNG Seed", "Set Attribute",
+        "Set Constraints", "Set Defaults", "Sign", "Signature Verify", "Validate",
+    },
+    "python": {
+        "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes", "Get Attribute List",
+        "Modify Attribute", "Query Asynchronous Requests", "Set Attribute",
+    },
+}
 LEGACY_BOUNDARIES = {
     "Template": "legacy managed object",
     "Template-Attribute Structures": "legacy attribute container",
@@ -160,16 +177,25 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
         })
 
     for row in rows:
+        expectation = {
+            "supported": "verify_result",
+            "not_implemented": "verify_unsupported_response",
+            "vendor_extension": "verify_provider_fixture",
+            "not_applicable": "verify_version_boundary",
+        }[row["declared_support"]]
         row["obligations"] = [
-            {"language": language, "api_level": api,
-             "expectation": {
-                 "supported": "verify_result",
-                 "not_implemented": "verify_unsupported_response",
-                 "vendor_extension": "verify_provider_fixture",
-                 "not_applicable": "verify_version_boundary",
-             }[row["declared_support"]]}
+            {"language": language, "api_level": api, "expectation": expectation}
             for language in LANGUAGES for api in CONSTRUCTION_APIS
         ]
+        for language, operations in HIGH_LEVEL_OPERATIONS.items():
+            direct = [case_id for case_id in row["server_cases"]
+                      if candidates[case_id]["operation"] in operations
+                      and direction(candidates[case_id]) == "client_to_server"]
+            if direct:
+                row["obligations"].append({
+                    "language": language, "api_level": "high-level", "expectation": expectation,
+                    "case_ids": direct,
+                })
 
     selection = with_cases(catalog,
                            [case for case_id, case in candidates.items() if case_id in used])
@@ -212,7 +238,14 @@ def with_execution_evidence(inventory, catalog, catalog_runs):
                                         for result in unassigned_local.get(case_id, [])]
         for obligation in row["obligations"]:
             route = by_route[obligation["language"], obligation["api_level"]]
-            obligation["case_results"] = [result for case_id in row["server_cases"] for result in route.get(case_id, [])]
+            selected = obligation.get("case_ids", row["server_cases"])
+            results = [result for case_id in selected for result in route.get(case_id, [])]
+            if obligation["api_level"] == "high-level":
+                obligation["unverified_route_results"] = [
+                    result for result in results if result.get("actual_api_level") != "high-level"
+                ]
+                results = [result for result in results if result.get("actual_api_level") == "high-level"]
+            obligation["case_results"] = results
     return report
 
 
