@@ -137,6 +137,17 @@ required by the KMIP 2.0 and 2.1 structured Query response tables. The
 generic probe records the returned operations and the typed validation
 reports the missing field. [KMIP 2.0 §6.1.37](https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html) · [KMIP 2.1 §6.1.39](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html)
 
+In the binary TTLV tests, `Set Attribute` and `Modify Attribute` changed
+`Description` on an isolated object and returned the new value on readback.
+For an object without `Description`, Cosmian returned an empty `Attributes`
+structure alongside the identifier. The standard requires only the
+identifier in that case. The strict Add recipe records this as a failed
+prerequisite. In a separate probe, Cosmian acknowledged adding the
+description and returned it on readback. It also acknowledged
+`Delete Attribute` with an `Attribute Reference` for Description, but the
+next read still returned the field. These observations were reproduced in
+both 2.0 and 2.1. [KMIP 2.0 §6.1.19](https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html) · [KMIP 2.1 §6.1.20](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html)
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its
