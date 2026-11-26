@@ -370,9 +370,9 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_query_fields_require_the_selected_structure(self):
         for language, available in installed_validators():
-            routes = ("generic-ttlv", "typed-protocol")
-            if language == "rust":
-                routes += ("fluent", "high-level")
+            routes = ("generic-ttlv", "typed-protocol", "high-level")
+            if language != "c":
+                routes += ("fluent",)
             for minor in (0, 1):
                 for route in routes:
                     for invalid in (False, True):

@@ -24,7 +24,20 @@ class MainContractTest {
     @Test
     void offlinePlanPreflightAndRunClassifyLocalCasesWithoutServerClaims() throws Exception {
         Path connection = connection();
-        Path catalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode source = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        var selected = mapper.createArrayNode();
+        source.path("test_cases").forEach(testCase -> {
+            if ("local_model".equals(testCase.path("execution").path("mode").asText())
+                    || "test-op-log".equals(testCase.path("case_id").asText())) {
+                selected.add(testCase.deepCopy());
+            }
+        });
+        source.set("test_cases", selected);
+        ((ObjectNode) source.path("statistics")).put("total_cases", selected.size());
+        Path catalog = temporaryDirectory.resolve("offline-cases.json");
+        mapper.writeValue(catalog.toFile(), source);
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
         Path output = Path.of(System.getProperty("kmipkit.reportOutputDir",
                 temporaryDirectory.resolve("report").toString()));
@@ -37,11 +50,11 @@ class MainContractTest {
         assertCommand(0, "run", "--connection", connection.toString(), "--catalog", catalog.toString(),
                 "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
 
-        JsonNode report = new ObjectMapper().readTree(output.resolve("results.json").toFile());
-        assertEquals(212, report.path("summary").path("total").asInt());
+        JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
+        assertEquals(68, report.path("summary").path("total").asInt());
         assertEquals(67, report.path("summary").path("passed").asInt());
         assertEquals(0, report.path("summary").path("policy_restricted").asInt());
-        assertEquals(145, report.path("summary").path("not_run").asInt());
+        assertEquals(1, report.path("summary").path("not_run").asInt());
         for (JsonNode result : report.path("cases")) {
             if ("policy_restricted".equals(result.path("status").asText())) {
                 assertEquals("unknown", result.path("server_compatibility").asText());

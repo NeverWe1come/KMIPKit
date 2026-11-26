@@ -185,8 +185,9 @@ class CosmianMinimumTests(unittest.TestCase):
         ]
         result = with_execution_evidence(inventory, catalog, reports)
         query = next(row for row in result["rows"] if row["kind"] == "operation" and row["name"] == "Query")
-        obligation, = [item for item in query["obligations"] if item["api_level"] == "high-level"]
-        self.assertEqual(obligation["language"], "rust")
+        by_language = {item["language"]: item for item in query["obligations"] if item["api_level"] == "high-level"}
+        self.assertEqual(set(by_language), {"c", "java", "python", "rust"})
+        obligation = by_language["rust"]
         self.assertEqual([item["run_id"] for item in obligation["case_results"]], ["high-query"])
         self.assertEqual([item["run_id"] for item in obligation["unverified_route_results"]],
                          ["typed-fallback", "missing-api"])

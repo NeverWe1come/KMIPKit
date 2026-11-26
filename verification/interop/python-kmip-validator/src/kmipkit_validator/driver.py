@@ -137,7 +137,7 @@ class PythonKmipDriver:
     _HIGH_LEVEL_OPERATIONS = {
         "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes",
         "Get Attribute List", "Modify Attribute", "Set Attribute",
-        "Query Asynchronous Requests",
+        "Query", "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
         "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify", "Certify",
@@ -287,6 +287,8 @@ class PythonKmipDriver:
             )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
+        if api_level == "high-level" and case["operation"] == "Query":
+            return case["case_id"] == "test-op-query" or "query_function" in case.get("requires", {})
         return (
             api_level == "high-level"
             and workflow != "async_poll"
@@ -1761,26 +1763,30 @@ class PythonKmipDriver:
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
-        query_field: int | None = None,
+        query_field: int | None = None, high_level_query: list[int] | None = None,
         key_block: tuple[Any, Any | None, int] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
-        batch = self._client_module.Batch.create()
+        batch = None
         authentication = None
         limits = ttlv.codec_limits_defaults()
         try:
-            if asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(asynchronous_indicator)
-            batch.add_item(item)
-            authentication = self._authentication()
-            if authentication is not None:
-                batch.set_authentication(authentication)
-                authentication = None
-            response = self._client.execute(batch, limits)
+            if high_level_query is not None:
+                response = self._client.query(high_level_query, limits)
+            else:
+                batch = self._client_module.Batch.create()
+                if asynchronous_indicator is not None:
+                    batch.set_asynchronous_indicator(asynchronous_indicator)
+                batch.add_item(item)
+                authentication = self._authentication()
+                if authentication is not None:
+                    batch.set_authentication(authentication)
+                    authentication = None
+                response = self._client.execute(batch, limits)
             try:
-                if verify_hash and response.item_count() != 1:
-                    raise ValueError("Hash response batch count did not match the request")
+                if (verify_hash or verify_query or query_field is not None) and response.item_count() != 1:
+                    raise ValueError("Response batch count did not match the request")
                 observed = response.item_at(0)
                 status_code = int(observed.result_status)
                 reason_code = observed.result_reason
@@ -1897,7 +1903,8 @@ class PythonKmipDriver:
         finally:
             if authentication is not None:
                 authentication.close()
-            batch.close()
+            if batch is not None:
+                batch.close()
             limits.close()
 
     def query_operations_and_objects(self) -> dict[str, Any]:
@@ -2284,10 +2291,25 @@ class PythonKmipDriver:
             return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
-        if operation == "Query" and "query_function" in test_case.get("requires", {}):
-            parameters = test_case["requires"]
-            with self._extensions.client_batch_item_query([int(parameters["query_function"])]) as item:
-                outcome = self._exchange(item, query_field=int(parameters["query_result_tag"]))
+        if operation == "Query":
+            parameters = test_case.get("requires", {})
+            query_field = int(parameters["query_result_tag"]) if "query_result_tag" in parameters else None
+            functions = [int(parameters["query_function"])] if "query_function" in parameters else [1, 2]
+            if self._api_level == "high-level":
+                if self._connection.get("authentication", {}).get("username_password"):
+                    return {
+                        "status": "not_run", "library_correctness": "not_checked",
+                        "server_compatibility": "unknown", "parity": "not_compared",
+                        "diagnostic": "The high-level Query method cannot set a KMIP batch credential",
+                    }
+                outcome = self._exchange(None, verify_query=True, query_field=query_field, high_level_query=functions)
+                outcome["actual_api_level"] = "high-level"
+            elif self._api_level == "fluent":
+                with self._client.request().query() as builder, builder.functions(functions).build() as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field)
+            else:
+                with self._extensions.client_batch_item_query(functions) as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field)
             return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
             build = self._build_fluent_item if self._api_level == "fluent" else self._build_item

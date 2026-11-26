@@ -1473,12 +1473,13 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         set_error(error, error_capacity, "unsupported KMIP version or encoding", 0);
         return false;
     }
-    if ((strcmp(configuration->api_level, "typed-protocol") == 0 || strcmp(configuration->api_level, "fluent") == 0) &&
+    const bool native_client = strcmp(configuration->api_level, "generic-ttlv") != 0;
+    if (native_client &&
         !has_tls_material(configuration)) {
         set_error(error, error_capacity, "CA certificate, client certificate and client key are required", 0);
         return false;
     }
-    if ((strcmp(configuration->api_level, "typed-protocol") == 0 || strcmp(configuration->api_level, "fluent") == 0) &&
+    if (native_client &&
         (configuration->username_env[0] != '\0' || configuration->password_env[0] != '\0')) {
         if (configuration->username_env[0] == '\0' || configuration->password_env[0] == '\0' ||
             !getenv(configuration->username_env) || getenv(configuration->username_env)[0] == '\0' ||
@@ -1495,7 +1496,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
     snprintf(out_client->api_level, sizeof(out_client->api_level), "%s", configuration->api_level);
     out_client->configured_version_propagation_available =
         KMIPKIT_C_VERSION_PROPAGATION_AVAILABLE != 0;
-    if ((strcmp(out_client->api_level, "typed-protocol") == 0 || strcmp(out_client->api_level, "fluent") == 0) &&
+    if (native_client &&
         out_client->protocol_minor == 0 &&
         !out_client->configured_version_propagation_available) {
         set_error(error, error_capacity,
@@ -1508,7 +1509,7 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
         kmip_live_client_close(out_client);
         return false;
     }
-    if ((strcmp(out_client->api_level, "typed-protocol") == 0 || strcmp(out_client->api_level, "fluent") == 0) &&
+    if (native_client &&
         !create_client(configuration, out_client, error, error_capacity)) {
         kmip_live_client_close(out_client);
         return false;
@@ -9539,6 +9540,12 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid Query field fixture.");
         return outcome;
     }
+    const bool high_level = strcmp(client->api_level, "high-level") == 0;
+    if (high_level) {
+        status = kmipkit_client_query_v1(client->client, &query_function, 1, client->limits, &response);
+        outcome.used_high_level = true;
+        goto read_response;
+    }
     if (operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
         status = fluent ? build_fluent_ping(&request) : kmipkit_client_batch_item_ping(&request);
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
@@ -9585,6 +9592,7 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
             goto cleanup;
         }
     }
+read_response:
     if (status == 0) status = kmipkit_client_batch_response_item_at(response, 0, &item);
     if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(item, &metadata);
     if (status != 0 || metadata.operation != operation) {
@@ -11925,8 +11933,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("server-initiated exchange requires a supported API, --listen and a peer trigger");
     }
     if (strcmp(client->api_level, "high-level") == 0) {
-        return outcome_not_run(
-            "the C binding exposes no high-level client route for this case");
+        if (strcmp(test_case->operation, "Query") != 0 ||
+            (!test_case->query_function[0] && strcmp(test_case->case_id, "test-op-query") != 0))
+            return outcome_not_run("the C validator has no high-level recipe for this case");
+        if (client->username_env[0] != 0)
+            return outcome_not_run("the high-level Query method cannot set a KMIP batch credential");
+        return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY,
+            false, NULL, test_case->query_function[0] ? test_case : NULL);
     }
     bool get_key_block = key_block_case(test_case->case_id);
     uint32_t key_material_format = asymmetric_key_format(test_case->case_id);

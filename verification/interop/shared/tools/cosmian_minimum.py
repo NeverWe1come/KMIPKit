@@ -64,6 +64,8 @@ FIELD_EXCHANGES = {
 CONSTRUCTION_APIS = ("typed-protocol", "fluent", "generic-ttlv")
 # Distinct public operation methods or request models used by each consumer.
 HIGH_LEVEL_OPERATIONS = {
+    "c": {"Query"},
+    "java": {"Query"},
     "rust": {
         "Activate", "Add Attribute", "Adjust Attribute", "Archive", "Certify", "Check", "Create",
         "Create Key Pair", "Create Split Key", "Decrypt", "Delete Attribute", "Delegated Login",
@@ -76,7 +78,7 @@ HIGH_LEVEL_OPERATIONS = {
     },
     "python": {
         "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes", "Get Attribute List",
-        "Modify Attribute", "Query Asynchronous Requests", "Set Attribute",
+        "Modify Attribute", "Query", "Query Asynchronous Requests", "Set Attribute",
     },
 }
 LEGACY_BOUNDARIES = {

@@ -100,6 +100,7 @@ typedef struct {
     bool library_failed;
     bool server_unsupported;
     bool policy_restricted;
+    bool used_high_level;
     bool has_result_status_code;
     bool has_result_reason_code;
     uint32_t result_status_code;
@@ -121,6 +122,7 @@ typedef struct {
     char operation[KMIP_MAX_NAME_LEN];
     kmip_case_status_t status;
     char library_correctness[16];
+    bool used_high_level;
     bool has_result_status_code;
     bool has_result_reason_code;
     uint32_t result_status_code;

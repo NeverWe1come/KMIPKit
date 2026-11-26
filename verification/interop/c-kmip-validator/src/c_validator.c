@@ -464,6 +464,7 @@ void kmip_run_suite(
             strncpy(res->detail, outcome.result_reason, sizeof(res->detail) - 1);
             out_summary->failed++;
         }
+        res->used_high_level = outcome.used_high_level;
         res->has_result_status_code = outcome.has_result_status_code;
         res->has_result_reason_code = outcome.has_result_reason_code;
         res->result_status_code = outcome.result_status_code;
@@ -671,6 +672,8 @@ bool kmip_render_json(const kmip_validation_summary_t *summary, const char *file
         fputs(",\n      \"server_compatibility\": ", f);
         json_write_string(f, server_compatibility_name(r));
         fputs(",\n      \"parity\": \"not_compared\"", f);
+        if (r->used_high_level)
+            fprintf(f, ",\n      \"actual_api_level\": \"high-level\"");
         if (r->has_result_status_code)
             fprintf(f, ",\n      \"result_status_code\": %u", r->result_status_code);
         if (r->has_result_reason_code)

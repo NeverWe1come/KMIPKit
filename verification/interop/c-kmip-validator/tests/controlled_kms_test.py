@@ -850,7 +850,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
-                    listener.settimeout(0.05)
+                    listener.settimeout(2)
                     connection = {
                         "server_id": "owned-key-peer", "server_configuration_fingerprint": "b" * 64,
                         "server_product": "controlled peer", "server_version": "fixture",
@@ -874,7 +874,12 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                           stderr=subprocess.PIPE) as process:
                         try:
                             for operation in exchanges:
-                                raw, _ = listener.accept()
+                                try:
+                                    raw, _ = listener.accept()
+                                except TimeoutError as error:
+                                    raise AssertionError(
+                                        f"{version} {target} valid={valid}: no request for operation {operation:#x}"
+                                    ) from error
                                 with context.wrap_socket(raw, server_side=True) as stream:
                                     stream.settimeout(5)
                                     request = read_message(stream)
