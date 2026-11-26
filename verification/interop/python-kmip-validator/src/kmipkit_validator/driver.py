@@ -138,7 +138,8 @@ class PythonKmipDriver:
         "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
-        "Create", "Create Key Pair", "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
+        "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify",
+        "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
         "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
@@ -277,7 +278,7 @@ class PythonKmipDriver:
             return (
                 workflow != "async_poll" and case["operation"] in cls._FLUENT_OPERATIONS
                 and (case["operation"] != "Create" or case.get("requires", {}).get("object_type")
-                     in (None, "Symmetric Key", "Private Key", "Public Key"))
+                     in (None, "Symmetric Key", "Private Key", "Public Key", "Split Key"))
             )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
@@ -291,8 +292,6 @@ class PythonKmipDriver:
     def route_limitation(cls, case: dict[str, Any], api_level: str) -> str:
         workflow = case.get("requires", {}).get("workflow_type")
         if api_level == "fluent":
-            if case.get("operation") == "Create Split Key":
-                return "the pinned Fluent Split Key builder cannot copy attributes from a public AttributeSet"
             return "the installed Python Fluent API has no equivalent recipe for this catalog case"
         if api_level == "high-level":
             if case.get("operation") in cls._HIGH_LEVEL_OPERATIONS:
@@ -402,6 +401,18 @@ class PythonKmipDriver:
             operation == "Create" and case.get("requires", {}).get("object_type") in {"Private Key", "Public Key"}
         ):
             return self._build_key_pair(case, fluent=True)
+        if operation == "Create Split Key" or (
+            operation == "Create" and case.get("requires", {}).get("object_type") == "Split Key"
+        ):
+            with (self._fixture_attributes(name) as source,
+                  attribute_operations.AttributeSet.try_new(source) as attributes,
+                  request.create_split_key(2, 2, 2, 1) as builder):
+                return builder.attributes(attributes).build()
+        if operation == "Register":
+            return self._register_item(case, name, fluent_request=request)
+        if operation == "Re-certify":
+            with request.recertify(identifier) as builder:
+                return builder.certificate_request_type(1).certificate_request_value(self._certificate_request()).build()
         if operation == "Get Attributes":
             return request.get_attributes(identifier, self._attribute_references(case)).build()
         if operation == "Get Attribute List":
@@ -1175,6 +1186,94 @@ class PythonKmipDriver:
                     return int(match.group(1), 16)
         return None
 
+    @staticmethod
+    def _certificate_request() -> bytes:
+        root = Path(__file__).resolve().parents[5]
+        return (root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes()
+
+    def _register_fixture(self, case: dict[str, Any], name: str) -> tuple[int, Any, Any]:
+        from kmipkit import ttlv
+
+        object_type = case.get("requires", {}).get("object_type", "Opaque Object")
+        fixture_root = Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures"
+        if object_type == "Certificate":
+            cert = (fixture_root / "certificate.der").read_bytes()
+            attrs = self._structure(
+                [
+                    self._item(0x0042_002C, "integer", 0x20),
+                    self._item(0x0042_0028, "enumeration", 6),
+                    self._item(0x0042_002A, "integer", 256),
+                    self._item(0x0042_00AD, "integer", len(cert) * 8),
+                ]
+            )
+            object_item = self._structure_item(
+                0x0042_0013,
+                [self._item(0x0042_001D, "enumeration", 1), self._item(0x0042_001E, "bytes", cert)],
+            )
+            raw_object_type = 1
+        elif object_type == "Certificate Request":
+            cert = self._certificate_request()
+            attrs = self._fixture_attributes(name, 6, 256)
+            object_item = self._structure_item(
+                0x0042_0018,
+                [self._item(0x0042_0019, "enumeration", 1), self._item(0x0042_0140, "bytes", cert)],
+            )
+            raw_object_type = 10
+        elif object_type == "Opaque Object":
+            attrs = ttlv.ttlv_structure_create()
+            object_item = self._structure_item(
+                0x0042_005B,
+                [self._item(0x0042_0059, "enumeration", 1), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
+            )
+            raw_object_type = 8
+        elif object_type in {"PGP Key", "Secret Data"}:
+            key_material = self._item(0x0042_0043, "bytes", bytes(range(32)))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block_fields = [
+                self._item(0x0042_0042, "enumeration", 1),
+                key_value,
+            ]
+            if object_type == "PGP Key":
+                key_block_fields.extend(
+                    [
+                        self._item(0x0042_0028, "enumeration", 3),
+                        self._item(0x0042_002A, "integer", 256),
+                    ]
+                )
+            key_block = self._structure_item(
+                0x0042_0040,
+                key_block_fields,
+            )
+            if object_type == "PGP Key":
+                object_item = self._structure_item(
+                    0x0042_00BD,
+                    [self._item(0x0042_00BE, "integer", 4), key_block],
+                )
+                attrs = self._fixture_attributes(name)
+                raw_object_type = 9
+            else:
+                attrs = self._structure([self._item(0x0042_002C, "integer", 0x0C)])
+                object_item = self._structure_item(
+                    0x0042_0085,
+                    [self._item(0x0042_0086, "enumeration", 1), key_block],
+                )
+                raw_object_type = 7
+        else:
+            raise LocalRecipeUnavailable("Python Register fixture is unavailable for this object type")
+        return raw_object_type, attrs, object_item
+
+    def _register_item(self, case: dict[str, Any], name: str, *, fluent_request: Any = None) -> Any:
+        from kmipkit import attribute_operations
+
+        object_type, attributes, object_item = self._register_fixture(case, name)
+        with attributes, object_item:
+            if fluent_request is not None:
+                with (attribute_operations.AttributeSet.try_new(attributes) as values,
+                      fluent_request.register(object_item, object_type) as builder):
+                    return builder.attributes(values).build()
+            with self._extensions.RegisterRequest.create(object_type, attributes, object_item) as request:
+                return self._extensions.client_batch_item_register(request)
+
     def _build_item(
         self,
         case: dict[str, Any],
@@ -1193,6 +1292,8 @@ class PythonKmipDriver:
             return self._build_draft_item(operation, identifier, name, fluent=False, ciphertext=auxiliary)
         if operation == "Set Endpoint Role":
             return extension.client_batch_item_set_endpoint_role(1)
+        if operation == "Register":
+            return self._register_item(case, name)
         params = (
             self._cryptographic_parameters(case, operation)
             if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify", "Hash"}
@@ -1233,78 +1334,6 @@ class PythonKmipDriver:
                 return self._build_key_pair(case, fluent=False)
             if operation == "Create Split Key":
                 return extension.client_batch_item_create_split_key(2, 2, 2, 1, attrs)
-            if operation == "Register":
-                object_type = case.get("requires", {}).get("object_type", "Opaque Object")
-                fixture_root = Path(__file__).resolve().parents[5]
-                if object_type == "Certificate":
-                    cert = (fixture_root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate.der").read_bytes()
-                    attrs.close()
-                    attrs = self._structure(
-                        [
-                            self._item(0x0042_002C, "integer", 0x20),
-                            self._item(0x0042_0028, "enumeration", 6),
-                            self._item(0x0042_002A, "integer", 256),
-                            self._item(0x0042_00AD, "integer", len(cert) * 8),
-                        ]
-                    )
-                    object_item = self._structure_item(
-                        0x0042_0013,
-                        [self._item(0x0042_001D, "enumeration", 1), self._item(0x0042_001E, "bytes", cert)],
-                    )
-                    raw_object_type = 1
-                elif object_type == "Certificate Request":
-                    cert = (fixture_root / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes()
-                    attrs.close()
-                    attrs = self._fixture_attributes(name, 6, 256)
-                    object_item = self._structure_item(
-                        0x0042_0018,
-                        [self._item(0x0042_0019, "enumeration", 1), self._item(0x0042_0140, "bytes", cert)],
-                    )
-                    raw_object_type = 10
-                elif object_type == "Opaque Object":
-                    attrs.close()
-                    attrs = ttlv.ttlv_structure_create()
-                    object_item = self._structure_item(
-                        0x0042_005B,
-                        [self._item(0x0042_0059, "enumeration", 1), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
-                    )
-                    raw_object_type = 8
-                elif object_type in {"PGP Key", "Secret Data"}:
-                    key_material = self._item(0x0042_0043, "bytes", bytes(range(32)))
-                    key_value = self._structure_item(0x0042_0045, [key_material])
-                    key_block_fields = [
-                        self._item(0x0042_0042, "enumeration", 1),
-                        key_value,
-                    ]
-                    if object_type == "PGP Key":
-                        key_block_fields.extend(
-                            [
-                                self._item(0x0042_0028, "enumeration", 3),
-                                self._item(0x0042_002A, "integer", 256),
-                            ]
-                        )
-                    key_block = self._structure_item(
-                        0x0042_0040,
-                        key_block_fields,
-                    )
-                    if object_type == "PGP Key":
-                        object_item = self._structure_item(
-                            0x0042_00BD,
-                            [self._item(0x0042_00BE, "integer", 4), key_block],
-                        )
-                        raw_object_type = 9
-                    else:
-                        attrs.close()
-                        attrs = self._structure([self._item(0x0042_002C, "integer", 0x0C)])
-                        object_item = self._structure_item(
-                            0x0042_0085,
-                            [self._item(0x0042_0086, "enumeration", 1), key_block],
-                        )
-                        raw_object_type = 7
-                else:
-                    raise LocalRecipeUnavailable("Python Register fixture is unavailable for this object type")
-                request = extension.RegisterRequest.create(raw_object_type, attrs, object_item)
-                return extension.client_batch_item_register(request)
             if operation == "Import":
                 attrs.close()
                 attrs = ttlv.ttlv_structure_create()
@@ -1458,7 +1487,7 @@ class PythonKmipDriver:
             if operation == "Certify":
                 return extension.client_batch_item_certify(
                     certificate_request_type=1,
-                    certificate_request_value=(Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures/certificate-request.der").read_bytes(),
+                    certificate_request_value=self._certificate_request(),
                 )
             if operation == "Re-certify":
                 return extension.client_batch_item_recertify(

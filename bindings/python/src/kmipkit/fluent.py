@@ -2745,7 +2745,7 @@ class _AttributeCollectionBuilder(_TypedOperationBuilder):
     def _validate_attribute(self, value: ttlv.TtlvItem) -> None:
         if not isinstance(value, ttlv.TtlvItem):
             errors.raise_for_status(4)
-        with ttlv.Structure.create() as empty:
+        with ttlv.ttlv_structure_create() as empty:
             with attribute_operations.AttributeSet.try_new(empty) as s:
                 s.try_push(value)
 
@@ -2773,9 +2773,9 @@ class _AttributeCollectionBuilder(_TypedOperationBuilder):
         copies: list[ttlv.TtlvItem] = []
         try:
             with values.as_items() as items:
-                with items.view() as view:
-                    for idx in range(view.item_count()):
-                        with view.item_at(idx) as item:
+                with ttlv.ttlv_structure_view(items) as view:
+                    for idx in range(ttlv.ttlv_structure_view_item_count(view)):
+                        with ttlv.ttlv_structure_view_item_at(view, idx) as item:
                             copies.append(item.copy())
         except BaseException:
             for item in copies:
@@ -3081,9 +3081,7 @@ class RegisterBuilder(_AttributeCollectionBuilder):
         from .managed_objects import ManagedObject
 
         if isinstance(value, ManagedObject):
-            with value.view() as view:
-                with view.copy() as item:
-                    return self.object_item(value.object_type(), item)
+            return self.object_item(value.object_type, value)
         if isinstance(value, ttlv.TtlvItem) and self._object_type is not None:
             return self.object_item(self._object_type, value)
         errors.raise_for_status(4)

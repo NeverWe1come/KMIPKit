@@ -254,6 +254,38 @@ class ControlledExchangeTests(unittest.TestCase):
                     observations.append((peer.requests[0], peer.responses[0]))
                 self.assertEqual(*observations)
 
+    def test_fluent_split_key_register_and_recertify_match_typed_requests(self):
+        from kmipkit.protocol_values import Operation
+
+        cases = {
+            "test-op-create-split-key": Operation.CREATE_SPLIT_KEY,
+            "test-obj-split-key": Operation.CREATE_SPLIT_KEY,
+            "test-op-register": Operation.REGISTER,
+            "test-obj-certificate": Operation.REGISTER,
+            "test-obj-certificate-request": Operation.REGISTER,
+            "test-obj-opaque-object": Operation.REGISTER,
+            "test-obj-pgp-key": Operation.REGISTER,
+            "test-obj-secret-data": Operation.REGISTER,
+            "test-op-re-certify": Operation.RE_CERTIFY,
+        }
+        for version in ("2.0", "2.1"):
+            for case_id, operation in cases.items():
+                with self.subTest(version=version, case_id=case_id):
+                    requests = []
+                    for fluent in (False, True):
+                        peer = ControlledTlsPeer(protocol_version=version, status=1, reason=5)
+                        result = self._execute_attribute_route(
+                            peer, high_level=False, case_id=case_id, encoding="TTLV",
+                            transport="raw_tls", protocol_version=version, fluent=fluent,
+                        )
+                        self.assertEqual("server_unsupported", result["status"])
+                        request, = peer.requests
+                        self.assertEqual(int(operation), int.from_bytes(
+                            find_value(parse_children(request[8:]), 0x42005C), "big",
+                        ))
+                        requests.append(request)
+                    self.assertEqual(*requests)
+
     def test_generic_tags_reach_a_kmip2_peer_through_the_normal_runner(self):
         from kmipkit_validator.cli import _plan, _run
 
