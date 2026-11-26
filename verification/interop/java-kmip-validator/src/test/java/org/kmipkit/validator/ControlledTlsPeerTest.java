@@ -57,6 +57,7 @@ import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -1147,6 +1148,10 @@ class ControlledTlsPeerTest {
                         Path connection = temporaryDirectory.resolve("ext-connection.json");
                         mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
                         var serverError = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+                        var operations = new ArrayList<Integer>();
+                        byte[] initial = "java-peer-initial-token".getBytes(StandardCharsets.US_ASCII);
+                        byte[] updated = "java-peer-updated-token".getBytes(StandardCharsets.US_ASCII);
+                        boolean asynchronous = Set.of("test-op-poll", "test-op-cancel").contains(caseId);
                         Thread peer = new Thread(() -> {
                             try {
                                 listener.setSoTimeout(500);
@@ -1156,6 +1161,30 @@ class ControlledTlsPeerTest {
                                         int op = extractFirstIntTag(req, 0x42005c);
                                         byte[] batchId = extractFirstBytesTag(req, 0x420093);
                                         byte[] reqId = extractFirstTagBytes(req, 0x420094, 7);
+                                        operations.add(op);
+                                        byte[] ver = structure(0x420069, item(0x42006a, 2, intBytes(2)),
+                                                item(0x42006b, 2, intBytes(minor)));
+                                        byte[] hdr = structure(0x42007a, ver, item(0x420092, 9, longBytes(1L)),
+                                                item(0x42000d, 2, intBytes(1)));
+                                        byte[] submitted = extractFirstBytesTag(req, 0x420006);
+                                        if (asynchronous && op == 1) {
+                                            assertEquals(1, extractFirstIntTag(req, 0x420007));
+                                            byte[] batch = structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                    item(0x42007f, 5, intBytes(2)), item(0x420006, 8, initial),
+                                                    structure(0x42007c));
+                                            socket.getOutputStream().write(structure(0x42007b, hdr, batch));
+                                            socket.getOutputStream().flush();
+                                            continue;
+                                        }
+                                        if (asynchronous && op == 0x1a && Arrays.equals(submitted, initial)) {
+                                            byte[] batch = structure(0x42000f, item(0x42005c, 5, intBytes(op)),
+                                                    item(0x42007f, 5, intBytes(2)), item(0x420006, 8, updated));
+                                            socket.getOutputStream().write(structure(0x42007b, hdr, batch));
+                                            socket.getOutputStream().flush();
+                                            continue;
+                                        }
+                                        if (asynchronous && op == 0x19) assertArrayEquals(initial, submitted);
+                                        if (asynchronous && op == 0x1a) assertArrayEquals(updated, submitted);
                                         if (op == 6) {
                                             assertTrue(contains(req, structure(0x420079,
                                                     item(0x420094, 7, "pub-key".getBytes(StandardCharsets.US_ASCII)),
@@ -1188,9 +1217,10 @@ class ControlledTlsPeerTest {
                                                     item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)),
                                                     item(0x42009b, 5, intBytes(1)));
                                             case 0x19 -> concat(
-                                                    item(0x420006, 8, new byte[]{1, 2, 3, 4, 5, 6}),
+                                                    item(0x420006, 8, initial),
                                                     item(0x420012, 5, intBytes(1)));
-                                            case 0x1a -> item(0x420006, 8, new byte[]{1, 2, 3, 4, 5, 6});
+                                            case 0x1a -> concat(item(0x420057, 5, intBytes(2)), item(0x420094, 7,
+                                                    "owned-key".getBytes(StandardCharsets.US_ASCII)));
                                             case 0x1d -> concat(
                                                     item(0x420066, 7, "new-priv".getBytes(StandardCharsets.US_ASCII)),
                                                     item(0x42006f, 7, "new-pub".getBytes(StandardCharsets.US_ASCII)));
@@ -1217,10 +1247,6 @@ class ControlledTlsPeerTest {
                                             default -> item(0x420094, 7, reqId != null ? reqId
                                                     : "owned-key".getBytes(StandardCharsets.US_ASCII));
                                         };
-                                        byte[] ver = structure(0x420069, item(0x42006a, 2, intBytes(2)),
-                                                item(0x42006b, 2, intBytes(minor)));
-                                        byte[] hdr = structure(0x42007a, ver, item(0x420092, 9, longBytes(1L)),
-                                                item(0x42000d, 2, intBytes(1)));
                                         byte[] batch = batchId != null
                                                 ? structure(0x42000f, item(0x42005c, 5, intBytes(op)),
                                                         item(0x420093, 8, batchId), item(0x42007f, 5, intBytes(0)),
@@ -1249,6 +1275,10 @@ class ControlledTlsPeerTest {
                         peer.join(2000);
                         JsonNode report = mapper.readTree(output.resolve("results.json").toFile());
                         assertNull(serverError.get());
+                        if (asynchronous) {
+                            assertEquals("test-op-poll".equals(caseId)
+                                    ? List.of(1, 0x1a, 0x1a, 0x14) : List.of(1, 0x19), operations);
+                        }
                         assertEquals("passed", report.path("cases").get(0).path("status").asText(),
                                 api + " " + version + " " + caseId + " -> " + report.path("cases").get(0));
                         assertEquals(0, exit, api + " " + version + " " + caseId + " err=" + errOut.toString(StandardCharsets.UTF_8));

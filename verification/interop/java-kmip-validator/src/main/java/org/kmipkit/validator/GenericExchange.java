@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
@@ -682,6 +683,11 @@ final class GenericExchange {
 
     private static JavaKmipDriver.CaseOutcome check(byte[] wire, int operation, int minor, long start,
             Predicate<TtlvStructureView> expected) {
+        return check(wire, operation, minor, start, expected, null);
+    }
+
+    private static JavaKmipDriver.CaseOutcome check(byte[] wire, int operation, int minor, long start,
+            Predicate<TtlvStructureView> expected, AtomicReference<byte[]> pending) {
         try (var root = TtlvCodec.decode(wire); var view = root.view();
                 var tag = view.tag(); var value = view.value()) {
             if (tag.raw() != 0x42007b) throw new IllegalArgumentException("Wrong response root");
@@ -698,6 +704,16 @@ final class GenericExchange {
                     double duration = elapsed(start);
                     if (status == 0 && reason == null && batch.withResponsePayload(expected::test).orElse(false)) {
                         return JavaKmipDriver.CaseOutcome.passed(duration, status, null);
+                    }
+                    if (status == 2 && reason == null && pending != null) {
+                        var payload = batch.withResponsePayload(TtlvStructureView::itemCount);
+                        boolean expectedShape = operation == CREATE ? payload.orElse(-1L) == 0 : payload.isEmpty();
+                        var token = batch.asynchronousCorrelationValue().orElse(null);
+                        if (expectedShape && token != null && token.length != 0) {
+                            pending.set(token);
+                            return JavaKmipDriver.CaseOutcome.passed(duration, status, null);
+                        }
+                        if (token != null) Arrays.fill(token, (byte) 0);
                     }
                     if (status == 1 && reason != null) {
                         if (reason == KmipValues.ResultReason.OPERATION_NOT_SUPPORTED
@@ -860,18 +876,31 @@ final class GenericExchange {
 
     private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
             TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start) {
+        return executePayload(connection, operation, minor, customPayload, expected, start, null);
+    }
+
+    private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
+            TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start,
+            AtomicReference<byte[]> pending) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
-                var header = structureItem(0x420077, version, count);
+                var header = pending != null && operation == CREATE
+                        ? structureItem(0x420077, version, item(0x420007, TtlvValue.Enumeration(1)), count)
+                        : structureItem(0x420077, version, count);
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var batch = structureItem(0x42000f, identifier, customPayload);
                 var req = structureItem(0x420078, header, batch);
                 var view = req.view()) {
-            byte[] wire = exchange(connection, encode(view));
+            byte[] request = encode(view);
             try {
-                return check(wire, operation, minor, start, expected);
+                byte[] wire = exchange(connection, request);
+                try {
+                    return check(wire, operation, minor, start, expected, pending);
+                } finally {
+                    Arrays.fill(wire, (byte) 0);
+                }
             } finally {
-                Arrays.fill(wire, (byte) 0);
+                Arrays.fill(request, (byte) 0);
             }
         } catch (GeneralSecurityException | IOException | RuntimeException error) {
             return JavaKmipDriver.CaseOutcome.failed("Generic TTLV exchange or validation failed ("
@@ -924,16 +953,96 @@ final class GenericExchange {
         }
     }
 
+    static byte[] asynchronousCreateIdentifier(TtlvStructureView payload) {
+        return hasField(payload, 0x420057, TtlvItemType.Enumeration, 2) ? textIdentifier(payload) : null;
+    }
+
+    private static boolean asynchronousCreateResult(TtlvStructureView payload, AtomicReference<byte[]> owned) {
+        byte[] identifier = asynchronousCreateIdentifier(payload);
+        if (identifier == null) return false;
+        owned.set(identifier);
+        return true;
+    }
+
+    private static boolean asynchronousCancelResult(TtlvStructureView payload, byte[] token) {
+        if (payload.itemCount() != 2) return false;
+        byte[] echoed = fieldBytes(payload, 0x420006);
+        if (echoed == null) return false;
+        try {
+            if (!Arrays.equals(echoed, token)) return false;
+            for (int result = 1; result <= 5; result++) {
+                if (hasField(payload, 0x420012, TtlvItemType.Enumeration, result)) return true;
+            }
+            return false;
+        } finally {
+            Arrays.fill(echoed, (byte) 0);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome asynchronousTarget(
+            ConnectionConfig connection, int operation, int minor, byte[] token,
+            AtomicReference<byte[]> pending, AtomicReference<byte[]> owned, long start) {
+        try (var payload = structureItem(0x420079, item(0x420006, TtlvValue.ByteString(token, LIMITS)))) {
+            return executePayload(connection, operation, minor, payload,
+                    operation == CANCEL ? p -> asynchronousCancelResult(p, token)
+                            : p -> asynchronousCreateResult(p, owned),
+                    start, operation == POLL ? pending : null);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runAsynchronous(
+            ConnectionConfig connection, int operation, int minor, long start) {
+        var owned = new AtomicReference<byte[]>();
+        var pending = new AtomicReference<byte[]>();
+        byte[] name = ("kmipkit-java-async-" + UUID.randomUUID()).getBytes(StandardCharsets.US_ASCII);
+        try (var attributes = structureItem(0x420125,
+                    structureItem(0x420053, item(0x420055, TtlvValue.TextString(name, LIMITS)),
+                            item(0x420054, TtlvValue.Enumeration(1))),
+                    item(0x420028, TtlvValue.Enumeration(3)), item(0x42002a, TtlvValue.Integer(128)),
+                    item(0x42002c, TtlvValue.Integer(4)));
+                var payload = structureItem(0x420079, item(0x420057, TtlvValue.Enumeration(2)), attributes)) {
+            executePayload(connection, CREATE, minor, payload, p -> asynchronousCreateResult(p, owned), start, pending);
+        }
+        var result = JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create returned no Pending correlation.", elapsed(start));
+        if (pending.get() != null) {
+            for (int poll = 0; poll < 16; poll++) {
+                byte[] token = pending.getAndSet(null);
+                try {
+                    result = asynchronousTarget(connection, operation, minor, token, pending, owned, start);
+                } finally {
+                    Arrays.fill(token, (byte) 0);
+                }
+                if (pending.get() == null) break;
+                if (poll == 15) {
+                    byte[] finalToken = pending.getAndSet(null);
+                    try {
+                        var cleanup = asynchronousTarget(connection, CANCEL, minor, finalToken, pending, owned, start);
+                        result = "passed".equals(cleanup.status())
+                                ? JavaKmipDriver.CaseOutcome.notRun("The server remained Pending after the bounded Poll sequence.", elapsed(start))
+                                : JavaKmipDriver.CaseOutcome.failed("Could not cancel the fixture after the bounded Poll sequence.", elapsed(start));
+                    } finally {
+                        Arrays.fill(finalToken, (byte) 0);
+                    }
+                }
+            }
+        }
+        byte[] identifier = owned.get();
+        if (identifier != null) {
+            var cleanup = execute(connection, DESTROY, minor, identifier,
+                    payload -> Arrays.equals(textIdentifier(payload), identifier), start);
+            if (!"passed".equals(cleanup.status())) {
+                return JavaKmipDriver.CaseOutcome.failed("Could not destroy the asynchronous Create fixture.", elapsed(start));
+            }
+        }
+        return result;
+    }
+
     private static JavaKmipDriver.CaseOutcome runExtended(ConnectionConfig connection, int operation,
             int minor, long start) {
         var cleanup = new java.util.ArrayList<byte[]>();
         try {
             if (operation == POLL || operation == CANCEL) {
-                try (var corr = item(0x420006, TtlvValue.ByteString(new byte[]{1, 2, 3, 4, 5, 6}, LIMITS));
-                        var payload = structureItem(0x420079, corr)) {
-                    return executePayload(connection, operation, minor, payload,
-                            p -> fieldBytes(p, 0x420006) != null, start);
-                }
+                return runAsynchronous(connection, operation, minor, start);
             }
             if (operation == REGISTER || operation == IMPORT) {
                 return runExtendedRegisterImport(connection, operation, minor, cleanup, start);

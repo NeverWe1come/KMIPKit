@@ -7,6 +7,7 @@ import org.kmipkit.credentials.SecretText;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.AttributeReference;
+import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
@@ -63,6 +65,11 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     /** Creates one TLS client for a run; client construction itself performs no exchange. */
     public static JavaKmipDriver connect(ConnectionConfig connection) {
+        return new JavaKmipDriver(configuredClient(connection, KmipClient::create), connection);
+    }
+
+    private static <T> T configuredClient(ConnectionConfig connection,
+            BiFunction<ClientConfiguration, TransportConfiguration, T> factory) {
         ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                 List.of(), ExtensionRegistryLimits.defaults());
         ClientConfiguration baseConfiguration = ClientConfiguration.create(registry);
@@ -72,7 +79,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                 toProtocolVersion(connection.protocolVersion()));
         TransportConfiguration transport = buildTransport(connection);
         try (registry; baseConfiguration; encodingConfiguration; protocolConfiguration; transport) {
-            return new JavaKmipDriver(KmipClient.create(protocolConfiguration, transport), connection);
+            return factory.apply(protocolConfiguration, transport);
         }
     }
 
@@ -983,20 +990,113 @@ public final class JavaKmipDriver implements AutoCloseable {
         return Authentication.create(List.of(credential));
     }
 
+    private CaseOutcome executeAsynchronous(CatalogLoader.CatalogCase testCase, boolean cancel, long start) {
+        if (connection.usernamePassword() != null) {
+            return CaseOutcome.notRun("The asynchronous client API cannot attach Request Header Authentication.",
+                    elapsedMillis(start));
+        }
+        byte[] token = null;
+        UniqueIdentifier owned = null;
+        CaseOutcome target;
+        try (var nativeClient = configuredClient(connection, Client::create);
+                var attrs = symmetricKeyAttributes("async-" + UUID.randomUUID(), 128, 4);
+                var request = ClientBatchItem.create(2, attrs, null);
+                var batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            batch.add(request);
+            try (var response = nativeClient.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return CaseOutcome.failed("The asynchronous Create response count was invalid.", elapsedMillis(start));
+                }
+                try (var item = response.itemAt(0)) {
+                    if (item.resultStatus() == 0) {
+                        owned = item.createResponse().orElseThrow().uniqueIdentifier();
+                    } else if (item.resultStatus() == 2) {
+                        token = item.pendingCorrelationValue().orElse(null);
+                    }
+                }
+            }
+            if (token == null || token.length == 0) {
+                target = CaseOutcome.notRun("The prerequisite Create returned no Pending correlation.", elapsedMillis(start));
+            } else if (cancel) {
+                try (var response = nativeClient.executeCancel(token, CODEC_LIMITS)) {
+                    var metadata = response.metadataV1();
+                    if (metadata.resultStatus() != 0) {
+                        target = nonSuccessOutcome(testCase, metadata.resultStatus(), metadata.resultReason().orElse(-1), start);
+                    } else {
+                        long value = response.cancelResponse().orElseThrow().cancellationResult().orElse(-1);
+                        target = value >= 1 && value <= 5 ? CaseOutcome.passed(elapsedMillis(start), 0L, null)
+                                : CaseOutcome.failed("The Cancel response omitted a valid Cancellation Result.", elapsedMillis(start));
+                    }
+                }
+            } else {
+                target = null;
+                for (int poll = 0; poll < 16; poll++) {
+                    try (var response = nativeClient.executePoll(token, CODEC_LIMITS)) {
+                        var typed = response.pollResponse().orElseThrow();
+                        var metadata = response.metadataV1();
+                        if (typed.isPending()) {
+                            var updated = new AtomicReference<byte[]>();
+                            typed.withAsynchronousCorrelationValue(value -> {
+                                byte[] copy = new byte[value.remaining()];
+                                value.get(copy);
+                                updated.set(copy);
+                            });
+                            Arrays.fill(token, (byte) 0);
+                            token = updated.get();
+                            if (token == null || token.length == 0) {
+                                target = CaseOutcome.failed("The Pending Poll response omitted its correlation.", elapsedMillis(start));
+                                break;
+                            }
+                            continue;
+                        }
+                        if (metadata.resultStatus() != 0) {
+                            target = nonSuccessOutcome(testCase, metadata.resultStatus(), metadata.resultReason().orElse(-1), start);
+                            break;
+                        }
+                        try (var payload = response.responsePayloadTtlv().orElseThrow();
+                                var view = payload.view()) {
+                            byte[] identifier = GenericExchange.asynchronousCreateIdentifier(view);
+                            if (identifier != null) {
+                                owned = UniqueIdentifier.textString(new String(identifier, StandardCharsets.UTF_8));
+                            }
+                        }
+                        target = owned == null
+                                ? CaseOutcome.failed("Completed Poll omitted the owned Create identifier.", elapsedMillis(start))
+                                : CaseOutcome.passed(elapsedMillis(start), 0L, null);
+                        break;
+                    }
+                }
+                if (target == null) {
+                    try (var cleanup = nativeClient.executeCancel(token, CODEC_LIMITS)) {
+                        long cancelled = cleanup.metadataV1().cancellationResult().orElse(-1);
+                        target = cancelled == 1
+                                ? CaseOutcome.notRun("The server remained Pending after the bounded Poll sequence.", elapsedMillis(start))
+                                : CaseOutcome.failed("Could not cancel the fixture after the bounded Poll sequence.", elapsedMillis(start));
+                    }
+                }
+            }
+        } catch (RuntimeException error) {
+            target = exchangeFailure(error, start);
+        } finally {
+            if (token != null) Arrays.fill(token, (byte) 0);
+        }
+        if (owned != null) {
+            var cleanup = destroyTarget(testCase, owned, start);
+            if (!"passed".equals(cleanup.status())) {
+                return CaseOutcome.failed("Could not destroy the asynchronous Create fixture.", elapsedMillis(start));
+            }
+        }
+        return target;
+    }
+
     private CaseOutcome executeExtended(CatalogLoader.CatalogCase testCase, long start) {
         String op = testCase.operation();
         boolean fluent = "fluent".equals(connection.apiLevel());
         var cleanup = new ArrayList<UniqueIdentifier>();
         try {
-            if ("Poll".equals(op)) {
-                try (var req = org.kmipkit.extensions.PollRequest.create(new byte[]{1, 2, 3, 4, 5, 6})) {
-                    return executeRequest(testCase, withBatchId(ClientBatchItem.poll(req)), r -> true, start);
-                }
-            }
-            if ("Cancel".equals(op)) {
-                try (var req = org.kmipkit.extensions.CancelRequest.create(new byte[]{1, 2, 3, 4, 5, 6})) {
-                    return executeRequest(testCase, withBatchId(ClientBatchItem.cancel(req)), r -> true, start);
-                }
+            if ("Poll".equals(op) || "Cancel".equals(op)) {
+                return executeAsynchronous(testCase, "Cancel".equals(op), start);
             }
             if ("Import".equals(op)) {
                 var uid = UniqueIdentifier.textString("kmipkit-java-import-" + UUID.randomUUID());
