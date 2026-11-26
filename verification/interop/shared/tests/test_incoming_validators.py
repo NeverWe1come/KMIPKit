@@ -203,8 +203,11 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_rotate_attributes_cross_the_version_boundary_through_each_api(self):
         for language, available in installed_validators():
+            routes = ["generic-ttlv", "typed-protocol", "fluent"]
+            if language == "rust":
+                routes.append("high-level")
             for minor in (0, 1):
-                for api in ("generic-ttlv", "typed-protocol", "fluent"):
+                for api in routes:
                     with self.subTest(language=language, minor=minor, api=api):
                         if not available:
                             self.skipTest(f"Installed {language} validator required")
@@ -274,6 +277,8 @@ class DirectTagValidatorTests(unittest.TestCase):
             for case in evidence["cases"]:
                 self.assertEqual(("passed", "passed"), (case["status"], case["library_correctness"]))
                 self.assertEqual(0 if minor == 1 else None, case.get("result_status_code"))
+                if api == "high-level":
+                    self.assertEqual(api, case.get("actual_api_level"))
             save_evidence(report, catalog_path, f"{language}-{protocol_version}-{api}-rotate-boundary")
 
     def test_archive_unsupported_response_preserves_cleanup(self):

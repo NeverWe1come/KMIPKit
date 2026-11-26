@@ -194,7 +194,7 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
             for language in LANGUAGES for api in CONSTRUCTION_APIS
         ]
         for language, operations in HIGH_LEVEL_OPERATIONS.items():
-            direct = [case_id for case_id in row["server_cases"]
+            direct = [case_id for case_id in row["server_cases"] + row.get("boundary_cases", [])
                       if candidates[case_id]["operation"] in operations
                       and direction(candidates[case_id]) == "client_to_server"]
             if direct:

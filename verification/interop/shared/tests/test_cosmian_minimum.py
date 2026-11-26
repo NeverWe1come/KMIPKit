@@ -49,7 +49,11 @@ class CosmianMinimumTests(unittest.TestCase):
                     for case_id in row["server_cases"]:
                         self.assertEqual(direction(cases[case_id]), expected_direction)
             reports[version] = {(r["kind"], r["name"]): r for r in report["rows"]}
-        self.assertEqual(reports["2.0"]["attribute", "Rotate Date"]["disposition"], "version_boundary_required")
+        rotate_date = reports["2.0"]["attribute", "Rotate Date"]
+        self.assertEqual(rotate_date["disposition"], "version_boundary_required")
+        high_level, = [route for route in rotate_date["obligations"] if route["api_level"] == "high-level"]
+        self.assertEqual(("rust", ["test-v20-locate-rotate-date"]),
+                         (high_level["language"], high_level["case_ids"]))
         self.assertIn("test-attr-rotate-date", reports["2.1"]["attribute", "Rotate Date"]["server_cases"])
         self.assertIn("test-attr-rotate-date-normative", reports["2.1"]["attribute", "Rotate Date"]["server_cases"])
         for version in ("2.0", "2.1"):

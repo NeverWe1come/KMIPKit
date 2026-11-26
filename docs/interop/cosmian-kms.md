@@ -154,6 +154,18 @@ Message and omitted the Operation field. The report preserves this as a
 failed exchange. The controlled peers separately verify a valid
 zero-length response and reject a count greater than the 32 bytes sent.
 
+The controlled Locate probes exercise all seven Rotate attributes in both
+versions through generic TTLV, typed protocol and Fluent in C, Java, Python
+and Rust, plus the direct Rust client method. Under KMIP 2.0 the clients
+reject the attribute before sending a request. Under KMIP 2.1 the controlled
+peer verifies the exact attribute and returns an empty Locate result.
+
+Cosmian KMS 5.28.0 accepted Locate with Rotate Automatic, Date, Generation,
+Interval, Latest and Offset on all 13 routes under KMIP 2.1. It rejected
+Rotate Name because its TTLV parser did not recognize Rotate Name Value
+(`0x420170`). The resulting Invalid Message response omitted Operation.
+All 13 routes reported the exchange as failed.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its

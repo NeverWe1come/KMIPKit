@@ -94,6 +94,8 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
     }
     let start = std::time::Instant::now();
     let (result, clean) = crate::recipes::execute(case, connection, client);
+    let rotate_boundary =
+        case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string();
     let mut output = match result {
         Ok(observed) => {
             // Shape metadata is inspected in memory; payload bytes never enter reports.
@@ -130,6 +132,8 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                 )
             } else if case.requires["expected_status"] == "NotSent"
                 && error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent)
+                && (!rotate_boundary
+                    || error.cause_category() == Some(kmipkit::ClientCauseCategory::InvalidInput))
             {
                 let mut result = CaseResult::non_run(
                     case,
@@ -137,6 +141,13 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                     "version boundary rejected before sending; server not checked".to_owned(),
                 );
                 result.library_correctness = "passed";
+                if rotate_boundary
+                    && connection.api_level == "high-level"
+                    && connection.authentication.is_none()
+                {
+                    // This recipe calls Client::locate_with_options directly.
+                    result.actual_api_level = Some("high-level");
+                }
                 result
             } else {
                 CaseResult::non_run(
