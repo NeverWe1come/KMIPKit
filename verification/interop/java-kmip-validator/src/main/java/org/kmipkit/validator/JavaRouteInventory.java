@@ -48,6 +48,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The typed outbound role request requires explicit mutation opt-in.");
         }
+        if (JavaKmipDriver.registerOpaqueCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver registers, reads and destroys an isolated Opaque Object.");
+        }
         if (JavaKmipDriver.createSplitKeyCase(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The driver creates two isolated split key parts and destroys the returned objects.");

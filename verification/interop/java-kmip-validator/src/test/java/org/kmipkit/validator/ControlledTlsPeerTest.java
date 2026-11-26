@@ -368,13 +368,16 @@ class ControlledTlsPeerTest {
         byte[] initialDescription = item(0x4200fc, 7, "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII));
         byte[] changedDescription = item(0x4200fc, 7, "kmipkit-changed-description".getBytes(StandardCharsets.US_ASCII));
         byte[] descriptionReference = item(0x42013b, 5, intBytes(0x4200fc));
+        if ("typed-protocol".equals(apiLevel) || "generic-ttlv".equals(apiLevel)) {
+            cases.addAll(List.of("test-op-check", "test-op-check-invalid",
+                    "test-op-obtain-lease", "test-op-obtain-lease-invalid"));
+        }
         if ("generic-ttlv".equals(apiLevel)) {
             for (String mutation : mutations.keySet()) {
                 cases.add(mutation);
                 cases.add(mutation + "-invalid");
             }
             cases.add("test-op-create");
-            cases.addAll(List.of("test-op-check", "test-op-check-invalid"));
             cases.add("test-op-get-invalid");
             cases.add("test-op-get-attributes");
             cases.add("test-op-get-attributes-invalid");
@@ -413,6 +416,9 @@ class ControlledTlsPeerTest {
                 case "test-op-get-invalid" -> List.of(create, invalidGet, destroy);
                 case "test-op-get-attributes" -> List.of(create, getAttrs, destroy);
                 case "test-op-get-attributes-invalid" -> List.of(create, invalidAttrs, destroy);
+                case "test-op-obtain-lease", "test-op-obtain-lease-invalid" -> List.of(create,
+                        legacyKeyResponse(minor, 0x10, identifier, item(0x420049, invalid ? 2 : 10, intBytes(0)),
+                                item(0x420048, 9, longBytes(1))), destroy);
                 case "test-op-destroy", "test-op-create" -> List.of(create, destroy);
                 default -> List.of(create, archive, recover, destroy);
             };
@@ -423,6 +429,7 @@ class ControlledTlsPeerTest {
                         "test-op-revoke-invalid" -> List.of(1, 18, 19, 20);
                 case "test-op-get-attribute-list", "test-op-get-attribute-list-invalid" -> List.of(1, 12, 20);
                 case "test-op-get-attributes", "test-op-get-attributes-invalid" -> List.of(1, 0x0b, 0x14);
+                case "test-op-obtain-lease", "test-op-obtain-lease-invalid" -> List.of(1, 0x10, 0x14);
                 case "test-op-destroy", "test-op-create" -> List.of(1, 0x14);
                 default -> List.of(1, 0x15, 0x16, 0x14);
             };
@@ -467,7 +474,7 @@ class ControlledTlsPeerTest {
                     assertEquals(invalid ? "failed" : "passed", evidence.path("status").asText());
                 } else try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
                     var outcome = driver.execute(testCase);
-                    assertEquals("passed", outcome.status(), outcome.toString());
+                    assertEquals(invalid ? "failed" : "passed", outcome.status(), outcome.toString());
                 }
                 var requests = peer.get(15, TimeUnit.SECONDS);
                 assertEquals(operations.size(), requests.size());
@@ -497,6 +504,7 @@ class ControlledTlsPeerTest {
                             item(0x420082, 5, intBytes(6)))));
                 }
                 if ("test-op-check".equals(caseId)) {
+                    assertTrue(contains(requests.get(0), item(0x42002c, 2, intBytes(4))));
                     assertTrue(contains(requests.get(2), structure(0x420079, identifier, item(0x42002c, 2, intBytes(4)))));
                 }
                 for (int index = 1; index < requests.size(); index++) {
@@ -560,6 +568,55 @@ class ControlledTlsPeerTest {
         byte[] splitKey = structure(0x420089, item(0x42008b, 2, intBytes(2)), item(0x420044, 2, intBytes(part)),
                 item(0x42008c, 2, intBytes(2)), item(0x42008a, 5, intBytes(1)), keyBlock);
         return legacyKeyResponse(minor, 0x0a, item(0x420057, 5, intBytes(5)), identifier, splitKey);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void opaqueObjectRegistrationChecksReadbackAndCleansUp(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(row -> row.caseId().equals("test-obj-opaque-object"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, JavaRouteInventory.routeFor(testCase).status());
+        assertTrue(JavaKmipDriver.supportsFluent(testCase));
+
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] identifier = item(0x420094, 7, "registered-opaque".getBytes(StandardCharsets.US_ASCII));
+        byte[] objectType = item(0x420057, 5, intBytes(8));
+        byte[] opaqueType = item(0x420059, 5, intBytes(0x80000001));
+        byte[] expected = "KMIPKit dedicated opaque fixture".getBytes(StandardCharsets.US_ASCII);
+        for (boolean wrongValue : List.of(false, true)) {
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path connection = temporaryDirectory.resolve("opaque.json");
+                Files.writeString(connection, config.put("protocol_version", version).toString());
+                byte[] returned = expected.clone();
+                if (wrongValue) returned[0] ^= 1;
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 3, identifier)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x0a, objectType, identifier,
+                                structure(0x42005b, opaqueType, item(0x42005a, 8, returned)))),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, identifier))));
+                var thread = new Thread(peer, "java-validator-register-opaque");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(wrongValue ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(3))));
+                assertTrue(contains(requests.get(0), objectType));
+                assertTrue(contains(requests.get(0), structure(0x42005b, opaqueType, item(0x42005a, 8, expected))));
+                assertTrue(contains(requests.get(1), item(0x42005c, 5, intBytes(0x0a))));
+                assertTrue(contains(requests.get(1), identifier));
+                assertTrue(contains(requests.get(2), item(0x42005c, 5, intBytes(0x14))));
+                assertTrue(contains(requests.get(2), identifier));
+            }
+        }
     }
 
     @ParameterizedTest

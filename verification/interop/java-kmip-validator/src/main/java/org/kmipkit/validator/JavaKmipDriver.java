@@ -13,7 +13,9 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.OpaqueObjectContext;
 import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.RegisterRequest;
 import org.kmipkit.extensions.RevocationReason;
 import org.kmipkit.extensions.RevokeRequest;
 import org.kmipkit.extensions.TransportConfiguration;
@@ -47,6 +49,8 @@ public final class JavaKmipDriver implements AutoCloseable {
     private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] SHA256_EXPECTED = HexFormat.of().parseHex(
             "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    private static final long OPAQUE_DATA_TYPE = 0x8000_0001L;
+    private static final byte[] OPAQUE_FIXTURE = "KMIPKit dedicated opaque fixture".getBytes(StandardCharsets.US_ASCII);
     private final KmipClient client;
     private final ConnectionConfig connection;
 
@@ -73,6 +77,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if (registerOpaqueCase(testCase)) {
+            return executeRegisterOpaque(testCase, start);
+        }
         if (createSplitKeyCase(testCase)) {
             return executeCreateSplitKey(testCase, start);
         }
@@ -104,8 +111,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
-        return createSplitKeyCase(testCase) || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
-                || Set.of("Create", "Ping").contains(testCase.operation());
+        return !typedOnlyKeyProbe(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
+                || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
+                || Set.of("Create", "Ping").contains(testCase.operation()));
     }
 
     static boolean typedRngCase(CatalogLoader.CatalogCase testCase) {
@@ -286,8 +294,76 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
-        return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
+        return attributeRead(testCase) || typedOnlyKeyProbe(testCase)
+                || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
                 "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
+    }
+
+    private static boolean typedOnlyKeyProbe(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-check", "test-op-obtain-lease").contains(testCase.caseId());
+    }
+
+    static boolean registerOpaqueCase(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-register", "test-obj-opaque-object").contains(testCase.caseId());
+    }
+
+    private CaseOutcome executeRegisterOpaque(CatalogLoader.CatalogCase testCase, long start) {
+        var registered = new AtomicReference<UniqueIdentifier>();
+        CaseOutcome target;
+        try (var type = GenericExchange.item(0x420059, TtlvValue.Enumeration(OPAQUE_DATA_TYPE));
+                var data = GenericExchange.item(0x42005a, TtlvValue.ByteString(OPAQUE_FIXTURE, CODEC_LIMITS));
+                var opaque = ManagedObject.opaqueObject(List.of(type, data))) {
+            var request = buildRegisterOpaque(opaque);
+            target = executeRequest(testCase, withBatchId(request), result ->
+                    result.registerResponse().filter(payload -> {
+                        try (payload) {
+                            registered.set(payload.uniqueIdentifier());
+                            return registered.get() != null;
+                        }
+                    }).isPresent(), start);
+        } catch (RuntimeException exception) {
+            target = exchangeFailure(exception, start);
+        }
+        var id = registered.get();
+        if (id == null) return target;
+        if ("passed".equals(target.status())) {
+            target = executeRequest(testCase, withBatchId(ClientBatchItem.get(id, null, null, null, null)),
+                    result -> verifyOpaqueReadback(result, id), start);
+        }
+        var cleanup = executeRequest(testCase, withBatchId(ClientBatchItem.destroy(id)), result ->
+                result.destroyResponse().map(value -> sameIdentifier(value.uniqueIdentifier(), id)).orElse(false), start);
+        return "passed".equals(cleanup.status()) ? target
+                : CaseOutcome.failed("Cleanup Destroy failed for the registered Opaque Object.", elapsedMillis(start));
+    }
+
+    private ClientBatchItem buildRegisterOpaque(ManagedObject opaque) {
+        if ("fluent".equals(connection.apiLevel())) {
+            try (var builder = client.request().register()) {
+                return builder.object(opaque).opaqueObjectContext(OpaqueObjectContext.GENERIC).build();
+            }
+        }
+        try (var view = opaque.view(); var item = view.copy(); var attrs = TtlvStructure.create();
+                var request = RegisterRequest.create((int) opaque.objectType(), attrs, item);
+                var contextual = request.withOpaqueObjectContext(OpaqueObjectContext.GENERIC)) {
+            return ClientBatchItem.register(contextual);
+        }
+    }
+
+    private static boolean verifyOpaqueReadback(ClientBatchItemResult result, UniqueIdentifier id) {
+        var response = result.getResponse().orElse(null);
+        if (response == null) return false;
+        try (response) {
+            if (response.objectTypeRaw().orElse(-1) != 8
+                    || response.uniqueIdentifier().filter(value -> sameIdentifier(id, value)).isEmpty()
+                    || response.object().isEmpty()) return false;
+            try (var object = response.object().orElseThrow().view()) {
+                if (object.itemCount() != 1) return false;
+                try (var item = object.itemAt(0); var wire = item.copy(); var opaque = ManagedObject.fromItem(8, wire)) {
+                    return opaque.opaqueDataType() == OPAQUE_DATA_TYPE
+                            && Arrays.equals(opaque.opaqueDataValue(), OPAQUE_FIXTURE);
+                }
+            }
+        }
     }
 
     static boolean createSplitKeyCase(CatalogLoader.CatalogCase testCase) {
@@ -361,13 +437,19 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    private TtlvStructure createOwnedKeyAttributes(CatalogLoader.CatalogCase testCase, String name) {
+        TtlvStructure attributes = createTestKeyAttributes(name, isDraft());
+        if (!"test-op-check".equals(testCase.caseId())) return attributes;
+        return appendOwnedValue(attributes, 0x0042_002c, TtlvValue.Integer(4));
+    }
+
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
         String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
         UniqueIdentifier createdIdentifier = null;
         long createStatus = -1;
         long createReason = -1;
         long createObjectType = -1;
-        try (TtlvStructure attributes = createTestKeyAttributes(objectName, isDraft());
+        try (TtlvStructure attributes = createOwnedKeyAttributes(testCase, objectName);
                 ClientBatchItem request = withBatchId(buildCreate(attributes, !ownedObjectCase(testCase)));
                 ClientBatch batch = ClientBatch.create()) {
             long requestOperation = request.operation();
@@ -422,7 +504,9 @@ public final class JavaKmipDriver implements AutoCloseable {
             try {
                 target = switch (testCase.caseId()) {
                     case "test-op-get" -> getTarget(testCase, createdIdentifier, start);
-                    case "test-op-activate", "test-op-revoke" -> activateAndRevoke(testCase, createdIdentifier, start);
+                    case "test-op-activate", "test-op-revoke", "test-op-check" ->
+                            activateAndRevoke(testCase, createdIdentifier, start);
+                    case "test-op-obtain-lease" -> obtainLeaseTarget(testCase, createdIdentifier, start);
                     case "test-op-archive", "test-op-recover" -> archiveAndRecover(testCase, createdIdentifier, start);
                     default -> readAttributes(testCase, createdIdentifier, objectName, start);
                 };
@@ -472,6 +556,7 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private CaseOutcome activateAndRevoke(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
         boolean activateTarget = "test-op-activate".equals(testCase.caseId());
+        boolean revokeTarget = "test-op-revoke".equals(testCase.caseId());
         boolean fluent = "fluent".equals(connection.apiLevel());
         ClientBatchItem request = activateTarget && fluent
                 ? client.request().activate(id).build() : ClientBatchItem.activate(id);
@@ -481,7 +566,9 @@ public final class JavaKmipDriver implements AutoCloseable {
             return activateTarget ? activated
                     : CaseOutcome.notRun("The server rejected isolated Activate setup.", elapsedMillis(start));
         }
-        var revoked = executeRequest(testCase, withBatchId(revokeRequest(id, fluent && !activateTarget)), result -> {
+        CaseOutcome target = "passed".equals(activated.status()) && "test-op-check".equals(testCase.caseId())
+                ? checkTarget(testCase, id, start) : activated;
+        var revoked = executeRequest(testCase, withBatchId(revokeRequest(id, fluent && revokeTarget)), result -> {
             var response = result.revokeResponse().orElse(null);
             if (response == null) return false;
             try (response) {
@@ -489,9 +576,29 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
         }, start);
         if (!"passed".equals(activated.status())) return activated;
-        if (!activateTarget) return revoked;
-        return "passed".equals(revoked.status()) ? activated
+        if (revokeTarget) return revoked;
+        return "passed".equals(revoked.status()) ? target
                 : CaseOutcome.failed("Cleanup Revoke failed for the activated key.", elapsedMillis(start));
+    }
+
+    private CaseOutcome checkTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        int usageMask = 4;
+        return executeRequest(testCase, withBatchId(ClientBatchItem.check(id, null, usageMask, null)), result ->
+                result.checkResponse().filter(payload -> {
+                    try (payload) {
+                        return payload.uniqueIdentifier().filter(value -> sameIdentifier(id, value)).isPresent()
+                                && (payload.cryptographicUsageMask().orElse(usageMask) & usageMask) == usageMask;
+                    }
+                }).isPresent(), start);
+    }
+
+    private CaseOutcome obtainLeaseTarget(CatalogLoader.CatalogCase testCase, UniqueIdentifier id, long start) {
+        return executeRequest(testCase, withBatchId(ClientBatchItem.obtainLease(id)), result ->
+                result.obtainLeaseResponse().filter(payload -> {
+                    try (payload) {
+                        return sameIdentifier(id, payload.uniqueIdentifier());
+                    }
+                }).isPresent(), start);
     }
 
     private ClientBatchItem revokeRequest(UniqueIdentifier id, boolean fluent) {

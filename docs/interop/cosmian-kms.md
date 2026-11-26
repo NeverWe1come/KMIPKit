@@ -148,6 +148,12 @@ description and returned it on readback. It also acknowledged
 next read still returned the field. These observations were reproduced in
 both 2.0 and 2.1. [KMIP 2.0 §6.1.19](https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html) · [KMIP 2.1 §6.1.20](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html)
 
+The binary `RNG Retrieve` probe returned exactly 32 bytes in both versions.
+For `RNG Seed`, the pinned server returned Operation Failed with Invalid
+Message and omitted the Operation field. The report preserves this as a
+failed exchange. The controlled peers separately verify a valid
+zero-length response and reject a count greater than the 32 bytes sent.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its
