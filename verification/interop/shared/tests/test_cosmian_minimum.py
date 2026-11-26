@@ -10,7 +10,9 @@ from verification.interop.shared.tools.cosmian_minimum import (
     ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
 )
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
-from verification.interop.shared.tools.run_all import Listener, build_command_for_language
+from verification.interop.shared.tools.run_all import (
+    Listener, build_command_for_language, incomplete_case_ids, table_operation_expectations,
+)
 
 
 class CosmianMinimumTests(unittest.TestCase):
@@ -58,6 +60,23 @@ class CosmianMinimumTests(unittest.TestCase):
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])
         self.assertTrue(reports["2.1"]["transparent_key", "RSA Private Key"]["normative_targets"])
         self.assertEqual(reports["2.1"]["attribute", "Attribute Index"]["disposition"], "vendor_fixture_required")
+
+    def test_table_completion_requires_the_declared_operation_result(self):
+        catalog, inventory = build_selection(ROOT, "2.1")
+        expectations = table_operation_expectations(inventory)
+        query, archive = "test-op-query", "test-op-archive"
+        cases = [case for case in catalog["test_cases"] if case["case_id"] in {query, archive}]
+        selected = {"test_cases": cases}
+        success = {"status": "passed", "library_correctness": "passed", "result_status_code": 0}
+        unsupported = {"status": "server_unsupported", "library_correctness": "passed",
+                       "result_status_code": 1, "result_reason_code": 5}
+        results = {
+            "language": "c", "execution": {"api_level": "generic-ttlv"},
+            "cases": [{"case_id": query, **unsupported}, {"case_id": archive, **success}],
+        }
+        self.assertEqual([archive, query], incomplete_case_ids(selected, results, expectations))
+        results["cases"] = [{"case_id": query, **success}, {"case_id": archive, **unsupported}]
+        self.assertEqual([], incomplete_case_ids(selected, results, expectations))
 
     def test_row_evidence_matches_the_report_version_language_and_api(self):
         catalog, inventory = build_selection(ROOT, "2.1")

@@ -252,10 +252,21 @@ def write_master_reports(output_dir, paths):
     return report
 
 
-def incomplete_case_ids(catalog, results):
+def table_operation_expectations(scope):
+    """Map operation recipes to the provider behavior recorded in the table."""
+    return {
+        case_id: row["declared_support"]
+        for row in scope["rows"]
+        if row["kind"] == "operation" and row["declared_support"] in {"supported", "not_implemented"}
+        for case_id in row["server_cases"]
+    }
+
+
+def incomplete_case_ids(catalog, results, operation_expectations=None):
     """Return case IDs without the type of evidence required by their recipe."""
     expected = {case["case_id"]: case for case in catalog["test_cases"]}
     observed = {}
+    operation_expectations = operation_expectations or {}
     for case in results["cases"]:
         case_id = case["case_id"]
         if case_id not in expected or case_id in observed:
@@ -271,12 +282,12 @@ def incomplete_case_ids(catalog, results):
             recipe["requires"].get("workflow_type") != "server_to_client"
             and recipe["operation"] in direct_operations
         ))
-        and (not complete_observation(recipe, observed.get(case_id, {}))
+        and (not complete_observation(recipe, observed.get(case_id, {}), operation_expectations.get(case_id))
              or (requested_api == "high-level" and observed.get(case_id, {}).get("actual_api_level") != "high-level"))
     )
 
 
-def complete_observation(recipe, observation):
+def complete_observation(recipe, observation, declared_support=None):
     if observation.get("library_correctness") != "passed":
         return False
     status = observation.get("status")
@@ -289,7 +300,10 @@ def complete_observation(recipe, observation):
         return (status == "passed" and result_code == 1
                 and (not reasons or observation.get("result_reason_code") in reasons))
     if status == "server_unsupported":
-        return result_code == 1 and observation.get("result_reason_code") in {5, 8}
+        return (declared_support != "supported" and result_code == 1
+                and observation.get("result_reason_code") in {5, 8})
+    if declared_support == "not_implemented":
+        return False
     if status != "passed":
         return False
     if result_code is not None:
@@ -403,10 +417,12 @@ def main() -> None:
             catalog_dir = out_dir / "catalogs"
             selections = {}
             catalog_digests = {}
+            operation_expectations = {}
             catalog_dir.mkdir(parents=True, exist_ok=True)
             for version in versions:
                 if args.cosmian_minimum:
                     catalog, scope = build_cosmian_selection(base_dir, version)
+                    operation_expectations[version] = table_operation_expectations(scope)
                     with (catalog_dir / f"kmip-{version}-cosmian-scope.json").open("x", encoding="utf-8") as stream:
                         json.dump(scope, stream, indent=2, ensure_ascii=False)
                     if args.require_complete and not (args.operation or args.case):
@@ -478,7 +494,7 @@ def main() -> None:
                     try:
                         evidence = read_validated(evidence_path, "validation-results.schema.json")
                         validate_completion_report(evidence, run["language"], configuration, catalog_digest)
-                        missing = incomplete_case_ids(selections[version], evidence)
+                        missing = incomplete_case_ids(selections[version], evidence, operation_expectations.get(version))
                     except ValueError:
                         entry["status"] = "invalid_report"
                         gaps = True
