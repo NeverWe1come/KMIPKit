@@ -9551,7 +9551,11 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     }
     const bool high_level = strcmp(client->api_level, "high-level") == 0;
     if (high_level) {
-        status = kmipkit_client_query_v1(client->client, &query_function, 1, client->limits, &response);
+        kmipkit_protocol_version_v1_t offered = {.major = client->protocol_major, .minor = client->protocol_minor};
+        if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
+            status = kmipkit_client_discover_versions_v1(client->client, &offered, 1, client->limits, &response);
+        else
+            status = kmipkit_client_query_v1(client->client, &query_function, 1, client->limits, &response);
         outcome.used_high_level = true;
         goto read_response;
     }
@@ -9621,6 +9625,13 @@ read_response:
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
                 present = query_field ? query_response_has_structure(item, query_tag, &status)
                     : query_response_has_operations(item, &status);
+            } else if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS) {
+                kmipkit_protocol_version_v1_t returned = {0};
+                uint64_t count = 0;
+                status = kmipkit_client_batch_item_response_discover_versions_supported_versions(
+                    item, &present, &returned, 1, &count);
+                present = present && count == 1 && returned.major == client->protocol_major &&
+                    returned.minor == client->protocol_minor;
             } else {
                 uint32_t role = 0;
                 kmipkit_byte_span_v1_t vendor = {0};
@@ -11943,13 +11954,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("server-initiated exchange requires a supported API, --listen and a peer trigger");
     }
     if (strcmp(client->api_level, "high-level") == 0) {
-        if (strcmp(test_case->operation, "Query") != 0 ||
-            (!test_case->query_function[0] && strcmp(test_case->case_id, "test-op-query") != 0))
+        const bool discover = strcmp(test_case->case_id, "test-op-discover-versions") == 0;
+        const bool query = strcmp(test_case->operation, "Query") == 0 &&
+            (test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
+        if (!discover && !query)
             return outcome_not_run("the C validator has no high-level recipe for this case");
         if (client->username_env[0] != 0)
-            return outcome_not_run("the high-level Query method cannot set a KMIP batch credential");
-        return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY,
-            false, NULL, test_case->query_function[0] ? test_case : NULL);
+            return outcome_not_run("the high-level method cannot set a KMIP batch credential");
+        const uint32_t operation = discover ? KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS
+            : KMIPKIT_ENUMERATION_OPERATION_QUERY;
+        return execute_single_versioned_diagnostic(client, operation, false, NULL,
+            query && test_case->query_function[0] ? test_case : NULL);
     }
     bool get_key_block = key_block_case(test_case->case_id);
     uint32_t key_material_format = asymmetric_key_format(test_case->case_id);
@@ -11971,7 +11986,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("the C Fluent Query builder cannot set Object Groups");
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash && !gcm_operation &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        strcmp(test_case->operation, "Discover Versions") != 0 && strcmp(test_case->operation, "Query") != 0 &&
+        strcmp(test_case->operation, "Query") != 0 &&
         strcmp(test_case->operation, "RNG Retrieve") != 0 && strcmp(test_case->operation, "RNG Seed") != 0 &&
         strcmp(test_case->operation, "Get") != 0 && strcmp(test_case->operation, "Destroy") != 0 &&
         strcmp(test_case->operation, "Activate") != 0 && strcmp(test_case->operation, "Archive") != 0 &&
@@ -12301,15 +12316,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5") == 0)
         return execute_created_key_signature(
             client, KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, false, false);
-    const char *const allow_v20_discover_versions_decode =
-        getenv("KMIPKIT_C_ROUTE_DISCOVER_VERSIONS_V20_DECODE");
-    if (strcmp(test_case->operation, "Discover Versions") == 0 &&
-        client->protocol_minor == 0 &&
-        (!allow_v20_discover_versions_decode ||
-         strcmp(allow_v20_discover_versions_decode, "1") != 0)) {
-        return outcome_not_run(
-            "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
-    }
     bool cryptographic_algorithm_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
@@ -12616,7 +12622,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_set_defaults(NULL, &item);
         if (status == 0) status = set_batch_item_id(&item, "interop-set-defaults");
     } else if (strcmp(test_case->operation, "Discover Versions") == 0) {
-        status = kmipkit_client_batch_item_discover_versions(&item);
+        const kmipkit_protocol_version_v1_t offered = {.major = client->protocol_major,
+                                                     .minor = client->protocol_minor};
+        status = kmipkit_client_batch_item_discover_versions_with_versions(&offered, 1, &item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
         status = fluent_route ? build_fluent_ping(&item) : kmipkit_client_batch_item_ping(&item);
     } else if (strcmp(test_case->operation, "Locate") == 0) {
@@ -13947,12 +13955,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit could not read the typed Discover Versions payload (status %d)", status);
             goto cleanup;
         }
-        const bool fixed_offer_matches = version_count == 1 &&
-            versions[0].major == 2 && versions[0].minor == 1;
-        if (!present || !fixed_offer_matches) {
+        const bool offer_matches = version_count == 1 &&
+            versions[0].major == client->protocol_major && versions[0].minor == client->protocol_minor;
+        if (!present || !offer_matches) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "server did not report the C Discover Versions builder's fixed KMIP 2.1 offer");
+                     "Discover Versions did not return exactly the offered version");
         }
     } else if (delegated_login_workflow) {
         if (!delegated_login_response_matches_fixture(response_item, &status)) {

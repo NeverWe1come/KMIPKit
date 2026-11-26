@@ -95,6 +95,9 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("Query".equals(testCase.operation())) {
             return executeQuery(testCase, start);
         }
+        if ("test-op-discover-versions".equals(testCase.caseId())) {
+            return executeDiscoverVersions(testCase, start);
+        }
         if (registerOpaqueCase(testCase)) {
             return executeRegisterOpaque(testCase, start);
         }
@@ -137,14 +140,8 @@ public final class JavaKmipDriver implements AutoCloseable {
                 }).isPresent()
                 : verifyTypedResponse("Query", result);
         if ("high-level".equals(connection.apiLevel())) {
-            try (var response = client.query(new int[]{function}, CODEC_LIMITS, null)) {
-                return verifyResponse(testCase, KmipValues.Operation.QUERY, response, verify, start);
-            } catch (ClientOperationException exception) {
-                return exchangeFailure(exception, start);
-            } catch (Exception exception) {
-                return CaseOutcome.failed("KMIP Query exchange failed; remote diagnostic text was suppressed.",
-                        elapsedMillis(start));
-            }
+            return executeHighLevel(testCase, KmipValues.Operation.QUERY,
+                    () -> client.query(new int[]{function}, CODEC_LIMITS, null), verify, start);
         }
         if ("fluent".equals(connection.apiLevel())) {
             try (var builder = client.request().query()) {
@@ -152,6 +149,37 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
         }
         return executeRequest(testCase, withBatchId(ClientBatchItem.query(new int[]{function}, null)), verify, start);
+    }
+
+    private CaseOutcome executeDiscoverVersions(CatalogLoader.CatalogCase testCase, long start) {
+        var offered = List.of(toProtocolVersion(connection.protocolVersion()));
+        Predicate<ClientBatchItemResult> verify = result -> result.supportedVersions().orElse(List.of()).equals(offered);
+        if ("high-level".equals(connection.apiLevel())) {
+            return executeHighLevel(testCase, KmipValues.Operation.DISCOVER_VERSIONS,
+                    () -> client.discoverVersions(offered, CODEC_LIMITS, null), verify, start);
+        }
+        if ("fluent".equals(connection.apiLevel())) {
+            try (var builder = client.request().discoverVersions()) {
+                return executeRequest(testCase, withBatchId(builder.protocolVersions(offered).build()), verify, start);
+            }
+        }
+        return executeRequest(testCase, withBatchId(ClientBatchItem.discoverVersions(offered)), verify, start);
+    }
+
+    @FunctionalInterface
+    private interface HighLevelExchange {
+        ClientBatchResponse execute() throws ClientOperationException;
+    }
+
+    private static CaseOutcome executeHighLevel(CatalogLoader.CatalogCase testCase, long operation,
+            HighLevelExchange exchange, Predicate<ClientBatchItemResult> verify, long start) {
+        try (var response = exchange.execute()) {
+            return verifyResponse(testCase, operation, response, verify, start);
+        } catch (ClientOperationException exception) {
+            return exchangeFailure(exception, start);
+        } catch (Exception exception) {
+            return CaseOutcome.failed("KMIP exchange failed; remote diagnostic text was suppressed.", elapsedMillis(start));
+        }
     }
 
     static boolean queryFieldCase(CatalogLoader.CatalogCase testCase) {

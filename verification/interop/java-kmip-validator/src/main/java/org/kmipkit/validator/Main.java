@@ -256,7 +256,8 @@ public final class Main {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
         }
         if ("high-level".equals(apiLevel)) {
-            return ("test-op-query".equals(testCase.caseId()) || JavaKmipDriver.queryFieldCase(testCase))
+            return (Set.of("test-op-query", "test-op-discover-versions").contains(testCase.caseId())
+                    || JavaKmipDriver.queryFieldCase(testCase))
                     && hasTypedRoute(testCase)
                     && connection.usernamePassword() == null;
         }

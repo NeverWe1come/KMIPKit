@@ -54,7 +54,8 @@ class ValidatorContractTests(unittest.TestCase):
         self.assertTrue(PythonKmipDriver.supports(by_id["test-op-ping"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-s2c-query"], "typed-protocol"))
         self.assertFalse(PythonKmipDriver.supports(by_id["test-enum-cryptographic-algorithm"], "typed-protocol"))
-        self.assertFalse(PythonKmipDriver.supports(by_id["test-op-query"], "high-level"))
+        self.assertTrue(PythonKmipDriver.supports(by_id["test-op-query"], "high-level"))
+        self.assertFalse(PythonKmipDriver.supports(by_id["test-s2c-query"], "high-level"))
         self.assertTrue(PythonKmipDriver.supports(by_id["test-op-create"], "typed-protocol"))
 
     def test_python_driver_exercises_the_public_high_level_attribute_requests(self):
