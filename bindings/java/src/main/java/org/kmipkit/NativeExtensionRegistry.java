@@ -264,6 +264,7 @@ public final class NativeExtensionRegistry {
             boolean criticalityIndicator);
     public static native long clientBatchItemWithExtension(long item, long requestExtension);
     public static native long clientBatchItemDiscoverVersions();
+    public static native long clientBatchItemDiscoverVersionsWithVersions(int[] majors, int[] minors);
     public static native long clientBatchItemOperation(long item);
     public static native long clientBatchItemPing();
     public static native long symmetricKeyBuilderCreate();

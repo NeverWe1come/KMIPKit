@@ -418,7 +418,7 @@ impl Attempt<'_> {
         Ok(result)
     }
     fn batch(&mut self, case: &Case) -> std::result::Result<Observed, Failure> {
-        let requests = if case.case_id == "test-batch-create-activate-destroy" {
+        let requests = if case.case_id.starts_with("test-batch-create-activate-destroy") {
             vec![
                 adapters::create(&self.name, &self.connection.protocol_version)?,
                 ClientRequest::Activate(ActivateRequest::new(None)),
@@ -459,7 +459,10 @@ impl Attempt<'_> {
                 .nth(index)
                 .ok_or(Failure::Assertion("batch result missing"));
         }
-        if case.case_id == "test-batch-register-encrypt-decrypt-destroy" {
+        if case
+            .case_id
+            .starts_with("test-batch-register-encrypt-decrypt-destroy")
+        {
             let bytes = results
                 .get(3)
                 .and_then(|r| r.bytes.as_ref())

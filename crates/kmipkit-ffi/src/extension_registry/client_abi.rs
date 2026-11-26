@@ -1132,6 +1132,76 @@ pub extern "C" fn kmipkit_client_batch_item_count(
     })
 }
 
+/// Validates a client batch offline for `protocol_version` and builds the
+/// wire-ready `kmipkit_request_message_t` without performing transport I/O.
+///
+/// On success, the batch handle in `*inout_batch` is consumed and cleared to
+/// null. On failure, `*inout_batch` remains unchanged and owned by the caller.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_build_request_message(
+    inout_batch: *mut *mut kmipkit_client_batch_t,
+    protocol_version: kmipkit_protocol_version_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_message: *mut *mut kmipkit_request_message_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_message);
+        if inout_batch.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: caller supplies a writable in/out slot for the batch handle.
+        let batch_slot = unsafe { &mut *inout_batch };
+        let batch_handle = *batch_slot;
+        if batch_handle.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let default_limits = CodecLimits::defaults();
+        let limits_arc = if limits.is_null() {
+            None
+        } else {
+            let limits_handle = read_handle!(limits, CodecLimits);
+            let HandleValue::CodecLimits(l) = &limits_handle.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            Some(Arc::clone(l))
+        };
+        let codec_limits = limits_arc.as_deref().unwrap_or(&default_limits);
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(
+            protocol_version.major,
+            protocol_version.minor,
+        );
+        let handle = read_handle!(batch_handle, ClientBatch);
+        let HandleValue::ClientBatch(batch_arc) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = batch_arc.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(builder) = guard.take() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let client_batch = builder.into_batch();
+        match client_batch.build_request_message(version, codec_limits) {
+            Ok(message) => {
+                drop(guard);
+                drop(handle);
+                let _ = owned_payload(batch_handle, Kind::ClientBatch);
+                *batch_slot = std::ptr::null_mut();
+                *out = try_ffi!(try_make_handle(
+                    Kind::RequestMessage,
+                    HandleValue::RequestMessage(Arc::new(message)),
+                ));
+                SUCCESS
+            }
+            Err(error) => {
+                drop(guard);
+                drop(handle);
+                record_client_error(&error)
+            }
+        }
+    })
+}
+
 /// Returns the KMIP 2.1 Operation Enumeration for a typed request batch item.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_batch_item_operation(

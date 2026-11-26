@@ -72,6 +72,25 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(NativeExtensionRegistry.clientBatchItemDiscoverVersions(), List.of());
     }
 
+    /**
+     * Creates a Discover Versions request batch item offering the given ordered protocol versions.
+     * Passing an empty list uses the default KMIP 2.1 offer.
+     */
+    public static ClientBatchItem discoverVersions(List<ProtocolVersion> protocolVersions) {
+        java.util.Objects.requireNonNull(protocolVersions, "protocolVersions");
+        NativeExtensionRegistry.ensureLoaded();
+        int[] majors = new int[protocolVersions.size()];
+        int[] minors = new int[protocolVersions.size()];
+        for (int i = 0; i < protocolVersions.size(); i++) {
+            ProtocolVersion v = java.util.Objects.requireNonNull(protocolVersions.get(i), "protocolVersion");
+            majors[i] = v.major();
+            minors[i] = v.minor();
+        }
+        return new ClientBatchItem(
+                NativeExtensionRegistry.clientBatchItemDiscoverVersionsWithVersions(majors, minors),
+                List.of());
+    }
+
     /** Creates an empty client-initiated KMIP Ping request batch item. */
     public static ClientBatchItem ping() {
         NativeExtensionRegistry.ensureLoaded();

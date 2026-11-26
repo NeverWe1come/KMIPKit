@@ -1816,6 +1816,55 @@ class Batch(_ClientHandle):
             _wipe_staging_buffer(data)
         return self
 
+    def build_request_message(
+        self,
+        protocol_version: ProtocolVersion | tuple[int, int] = ProtocolVersion(2, 1),
+        limits: ttlv.CodecLimits | None = None,
+    ) -> Any:
+        """Validate this batch offline and build the wire-ready RequestMessage.
+
+        Consumes this batch on success. Raises a typed KMIPKit error if the
+        batch is empty, violates KMIP version gates, or has invalid ID
+        Placeholder / batch-item option semantics.
+        """
+        from . import messages
+
+        if isinstance(protocol_version, tuple) and len(protocol_version) == 2:
+            pv = ProtocolVersion(int(protocol_version[0]), int(protocol_version[1]))
+        elif isinstance(protocol_version, ProtocolVersion):
+            pv = protocol_version
+        else:
+            errors.raise_for_status(4)
+        if limits is not None and not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        c_version = ffi.new("kmipkit_protocol_version_v1_t *")
+        c_version[0].major = pv.major
+        c_version[0].minor = pv.minor
+        out_msg = ffi.new("kmipkit_request_message_t **")
+        limits_ptr = limits._pointer() if limits is not None else ffi.NULL
+        with _NATIVE_CALL_LOCK:
+            self._acquire_ownership_lock()
+            try:
+                original = self._pointer()
+                inout = ffi.new(
+                    "kmipkit_client_batch_t **",
+                    ffi.cast("kmipkit_client_batch_t *", original),
+                )
+                original, owner = self._take()
+                try:
+                    status = lib.kmipkit_client_batch_build_request_message(
+                        inout, c_version[0], limits_ptr, out_msg
+                    )
+                except BaseException:
+                    self._restore(original, owner)
+                    raise
+                if inout[0] != ffi.NULL:
+                    self._restore(original, owner)
+                _raise_abi_status(status)
+            finally:
+                self._release_ownership_lock()
+        return _wrap_owned_handle(messages.RequestMessage, out_msg[0])
+
 
 class _BatchItemResultNativeState:
     __slots__ = (
@@ -3562,6 +3611,147 @@ class Client(_ClientHandle):
         if options is not None:
             builder.with_options(options)
         return builder.execute(limits)
+
+    def discover_versions(
+        self,
+        limits: ttlv.CodecLimits,
+        *,
+        protocol_versions: Sequence[ProtocolVersion | tuple[int, int]] | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Discover Versions request."""
+        with self.request().discover_versions() as builder:
+            if protocol_versions:
+                builder.protocol_versions(protocol_versions)
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def query(
+        self,
+        query_functions: Sequence[int],
+        limits: ttlv.CodecLimits,
+        *,
+        object_groups: Sequence[str] | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Query request."""
+        with self.request().query() as builder:
+            builder.functions(query_functions)
+            if object_groups is not None:
+                builder.object_groups(object_groups)
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def ping(
+        self,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Ping request."""
+        with self.request().ping() as builder:
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def rng_retrieve(
+        self,
+        data_length: int,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed RNG Retrieve request."""
+        with self.request().rng_retrieve(data_length) as builder:
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def rng_seed(
+        self,
+        data: bytes | bytearray | memoryview,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed RNG Seed request."""
+        with self.request().rng_seed(data) as builder:
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def check_by_id(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        limits: ttlv.CodecLimits,
+        *,
+        usage_limits_count: int | None = None,
+        cryptographic_usage_mask: int | None = None,
+        lease_time: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Check request for an explicit Unique Identifier."""
+        with self.request().check(unique_identifier) as builder:
+            if usage_limits_count is not None:
+                builder.usage_limits_count(usage_limits_count)
+            if cryptographic_usage_mask is not None:
+                builder.cryptographic_usage_mask(cryptographic_usage_mask)
+            if lease_time is not None:
+                builder.lease_time(lease_time)
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def export_by_id(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        limits: ttlv.CodecLimits,
+        *,
+        key_format_type: int | None = None,
+        key_wrap_type: int | None = None,
+        key_compression_type: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Export request for an explicit Unique Identifier."""
+        with self.request().export(unique_identifier) as builder:
+            if key_format_type is not None:
+                builder.key_format_type(key_format_type)
+            if key_wrap_type is not None:
+                builder.key_wrap_type(key_wrap_type)
+            if key_compression_type is not None:
+                builder.key_compression_type(key_compression_type)
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def obtain_lease_by_id(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute a typed Obtain Lease request for an explicit Unique Identifier."""
+        with self.request().obtain_lease(unique_identifier) as builder:
+            if options is not None:
+                builder.with_options(options)
+            return builder.execute(limits)
+
+    def execute_item(
+        self,
+        item: extensions.ClientBatchItem,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Execute any single typed ClientBatchItem directly."""
+        with Batch.create() as batch:
+            batch.add_item(item)
+            if options is not None:
+                return self.execute_with_options(batch, limits, options)
+            return self.execute(batch, limits)
 
     @classmethod
     def create(

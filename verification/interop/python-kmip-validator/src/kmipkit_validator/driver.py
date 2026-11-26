@@ -140,8 +140,11 @@ class PythonKmipDriver:
         "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
-        "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify",
-        "Ping", "Get", "Get Attributes", "Get Attribute List", "Locate",
+        "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify", "Certify",
+        "Discover Versions", "Query", "Ping", "Check", "Export", "Import",
+        "RNG Retrieve", "RNG Seed", "Derive Key", "Validate", "Join Split Key",
+        "Obtain Lease", "Get Usage Allocation", "Modify Attribute",
+        "Get", "Get Attributes", "Get Attribute List", "Locate",
         "Activate", "Archive", "Recover", "Destroy", "Revoke", "Re-key", "Re-key Key Pair",
         "Add Attribute", "Set Attribute", "Delete Attribute",
         "Encrypt", "Decrypt", "Hash", "MAC", "MAC Verify", "Sign", "Signature Verify",
@@ -409,6 +412,76 @@ class PythonKmipDriver:
             return self._build_draft_item(operation, identifier, name, fluent=True, ciphertext=auxiliary)
         if operation == "Ping":
             return request.ping().build()
+        if operation == "Discover Versions":
+            ver = tuple(int(p) for p in self._connection["protocol_version"].split("."))
+            with request.discover_versions() as builder:
+                return builder.protocol_version(ver).build()
+        if operation == "Query":
+            from kmipkit import protocol_values
+            with request.query() as builder:
+                return builder.functions([protocol_values.QueryFunction.QUERY_OPERATIONS, protocol_values.QueryFunction.QUERY_OBJECTS]).build()
+        if operation == "RNG Retrieve":
+            with request.rng_retrieve(32) as builder:
+                return builder.build()
+        if operation == "RNG Seed":
+            with request.rng_seed(bytes(32)) as builder:
+                return builder.build()
+        if operation == "Check":
+            with request.check(identifier) as builder:
+                return builder.cryptographic_usage_mask(4).build()
+        if operation == "Export":
+            with request.export(identifier) as builder:
+                return builder.build()
+        if operation == "Obtain Lease":
+            with request.obtain_lease(identifier) as builder:
+                return builder.build()
+        if operation == "Get Usage Allocation":
+            with request.get_usage_allocation(identifier, 1) as builder:
+                return builder.build()
+        if operation == "Certify":
+            with request.certify() as builder:
+                return builder.certificate_request_type(1).certificate_request_value(self._certificate_request()).build()
+        if operation == "Derive Key":
+            with (
+                self._fixture_attributes(name) as attrs,
+                self._structure([
+                    self._item(0x0042_0084, "bytes", b"KMIPKit-PBKDF2-Salt"),
+                    self._item(0x0042_003C, "integer", 1000),
+                ]) as params,
+                request.derive_key() as builder,
+            ):
+                return builder.object_type(2).unique_identifier(identifier).derivation_method(1).derivation_parameters(params).attributes(attrs).build()
+        if operation == "Validate":
+            from pathlib import Path
+            certificate_bytes = (
+                Path(__file__).resolve().parents[5]
+                / "verification/interop/rust-kmip-validator/tests/fixtures/certificate.der"
+            ).read_bytes()
+            with (
+                self._structure([
+                    self._item(0x0042_001D, "enumeration", 1),
+                    self._item(0x0042_001E, "bytes", certificate_bytes),
+                ]) as cert,
+                request.validate() as builder,
+            ):
+                return builder.certificate(cert).build()
+        if operation == "Import":
+            key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block = self._structure_item(0x0042_0040, [
+                self._item(0x0042_0042, "enumeration", 1),
+                key_value,
+                self._item(0x0042_0028, "enumeration", 3),
+                self._item(0x0042_002A, "integer", 256),
+            ])
+            sym_key = self._structure_item(0x0042_008F, [key_block])
+            with self._fixture_attributes(name) as attrs, self._structure([sym_key]) as any_obj, request.import_object() as builder:
+                return builder.unique_identifier(name).object_type(2).attributes(attrs).object(any_obj).replace_existing(False).build()
+        if operation == "Modify Attribute":
+            tag, kind = 0x0042_00FD, "text"
+            current_value = "old test value" if case["case_id"] == "test-neg-modify-attribute-current-mismatch" else "KMIPKit interop test"
+            with self._legacy_attribute_item(current_value, tag=tag, kind=kind) as cur, self._legacy_attribute_item("new test value", tag=tag, kind=kind) as upd, request.modify_attribute(identifier) as builder:
+                return builder.current_attribute(cur).new_attribute(upd).build()
         if operation == "Create Key Pair" or (
             operation == "Create" and case.get("requires", {}).get("object_type") in {"Private Key", "Public Key"}
         ):
@@ -576,20 +649,7 @@ class PythonKmipDriver:
             )
         scenario = case.get("requires", {}).get("protocol_scenario", {})
         scenario_id = scenario.get("scenario_id")
-        limitations = {
-            "test-batch-count-zero-rejected": (
-                "API gap: Batch exposes no offline request validation or serialization result for an empty batch"
-            ),
-            "test-batch-single-item-options-omitted": (
-                "API gap: Batch exposes no encoded Request Header view to assert omission of default options"
-            ),
-            "test-batch-placeholder-forward-reference-rejected": (
-                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
-            ),
-            "test-batch-placeholder-without-producer-rejected": (
-                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
-            ),
-        }
+        limitations: dict[str, str] = {}
         return limitations.get(scenario_id)
 
     @staticmethod
@@ -691,9 +751,86 @@ class PythonKmipDriver:
 
     @staticmethod
     def _execute_local_batch_case(test_case: dict[str, Any], scenario: dict[str, Any]) -> None:
-        from kmipkit import client, extensions
+        from kmipkit import client, errors, extensions, ttlv
 
         scenario_id = scenario["scenario_id"]
+        if scenario_id == "test-batch-count-zero-rejected":
+            batch = client.Batch.create()
+            try:
+                try:
+                    msg = batch.build_request_message((2, 1))
+                except errors.KmipKitError:
+                    return
+                msg.close()
+                raise ValueError("empty batch was not rejected by build_request_message")
+            finally:
+                batch.close()
+
+        if scenario_id == "test-batch-single-item-options-omitted":
+            batch = client.Batch.create()
+            item = extensions.client_batch_item_discover_versions([(2, 1)])
+            try:
+                batch.add_item(item)
+                msg = batch.build_request_message((2, 1))
+                try:
+                    hdr = msg.header()
+                    try:
+                        struct = hdr.to_ttlv()
+                        try:
+                            view = ttlv.ttlv_structure_view(struct)
+                            try:
+                                tags = {
+                                    ttlv.ttlv_item_view_tag(
+                                        ttlv.ttlv_structure_view_item_at(view, idx)
+                                    )
+                                    for idx in range(ttlv.ttlv_structure_view_item_count(view))
+                                }
+                                if 0x0042_0010 in tags or 0x0042_000E in tags:
+                                    raise ValueError("default batch options were not omitted from header")
+                            finally:
+                                view.close()
+                        finally:
+                            struct.close()
+                    finally:
+                        hdr.close()
+                finally:
+                    msg.close()
+            finally:
+                batch.close()
+                item.close()
+            return
+
+        if scenario_id in (
+            "test-batch-placeholder-forward-reference-rejected",
+            "test-batch-placeholder-without-producer-rejected",
+        ):
+            batch = client.Batch.create()
+            placeholder = extensions.UniqueIdentifier.id_placeholder()
+            items = [extensions.client_batch_item_activate(placeholder)]
+            if scenario_id == "test-batch-placeholder-forward-reference-rejected":
+                attrs = ttlv.ttlv_structure_create()
+                try:
+                    items.append(extensions.client_batch_item_create(2, attrs))
+                finally:
+                    attrs.close()
+            try:
+                for idx, it in enumerate(items):
+                    tagged = extensions.with_unique_batch_item_id(it, idx.to_bytes(4, "big"))
+                    it.close()
+                    items[idx] = tagged
+                    batch.add_item(tagged)
+                batch.set_ordered(True)
+                try:
+                    msg = batch.build_request_message((2, 1))
+                except errors.KmipKitError:
+                    return
+                msg.close()
+                raise ValueError(f"{scenario_id} was not rejected offline")
+            finally:
+                batch.close()
+                for it in items:
+                    it.close()
+
         if scenario_id != "test-batch-count-mismatch-rejected":
             raise ValueError(f"unsupported local batch scenario {scenario_id}")
 
@@ -2109,8 +2246,8 @@ class PythonKmipDriver:
         if case_id == "test-multipart-hash-sha256":
             return self._run_multipart_hash(test_case)
         unique_name = self._fixture_name(test_case)
-        key_block_shape = test_case["requires"].get("key_block_shape")
-        key_material_format = test_case["requires"].get("key_material_format")
+        key_block_shape = test_case.get("requires", {}).get("key_block_shape")
+        key_material_format = test_case.get("requires", {}).get("key_material_format")
         if operation == "Get" and key_material_format in {"10", "11", "20", "21"}:
             return self._execute_asymmetric_key(int(key_material_format))
         if operation == "Get" and key_block_shape in {"wrapped", "transparent"}:

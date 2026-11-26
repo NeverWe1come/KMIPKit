@@ -4680,6 +4680,47 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
     })
 }
 
+/// Creates a Discover Versions request batch item offering the caller-specified
+/// ordered protocol versions. If `version_count == 0`, behaves identically to
+/// `kmipkit_client_batch_item_discover_versions`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
+    versions: *const crate::kmipkit_protocol_version_v1_t,
+    version_count: u64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let item = if version_count == 0 {
+            ClientBatchItem::discover_versions()
+        } else {
+            if versions.is_null() {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            let count = try_ffi!(usize::try_from(version_count).map_err(|_| ERROR_INVALID_INPUT));
+            if count > 1024 {
+                return record_ffi_error(ERROR_RESOURCE_LIMIT);
+            }
+            // SAFETY: caller guarantees `versions` points to `count` initialized entries.
+            let slice = unsafe { std::slice::from_raw_parts(versions, count) };
+            let mut offered = Vec::with_capacity(count);
+            for v in slice {
+                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(v.major, v.minor));
+            }
+            let request = try_ffi!(
+                kmipkit_protocol::DiscoverVersionsRequest::with_versions(offered)
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            );
+            ClientBatchItem::new(ClientRequest::DiscoverVersions(request))
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(item)),
+        ));
+        SUCCESS
+    })
+}
+
 /// Creates an Interop request from KMIP 2.1 §6.1.26, Table 241.
 ///
 /// The Function Enumeration is open and the Identifier is a UTF-8 Text String.

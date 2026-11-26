@@ -3778,3 +3778,205 @@ pub unsafe extern "C" fn kmipkit_ping_builder_execute_with_options_v1(
 pub extern "C" fn kmipkit_ping_builder_release(builder: *mut kmipkit_ping_builder_t) {
     ffi_entrypoint(|| release(builder, Kind::PingBuilder));
 }
+
+/// Executes any single typed `kmipkit_client_batch_item_t` directly against `client`
+/// with optional `kmipkit_request_options_v1_t`. On success, `*inout_item` is consumed
+/// and cleared to null; on error it remains caller-owned.
+///
+/// # Safety
+/// `options` must be null or point to a readable, aligned v1 request-options record.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_execute_item_v1(
+    client: *mut kmipkit_client_t,
+    inout_item: *mut *mut kmipkit_client_batch_item_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if inout_item.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let req_options = if options.is_null() {
+            RequestOptions::default()
+        } else {
+            if !options.is_aligned() {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            // SAFETY: non-null, aligned caller pointer to kmipkit_request_options_v1_t.
+            match super::request_options_from_v1(unsafe { &*options }) {
+                Ok(parsed) => parsed,
+                Err(status) => return record_ffi_error(status),
+            }
+        };
+        // SAFETY: caller supplies a writable in/out slot for the batch item handle.
+        let item_slot = unsafe { &mut *inout_item };
+        let item_handle = *item_slot;
+        if item_handle.is_null() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let borrowed = read_handle!(item_handle, BatchItem);
+        if !matches!(&borrowed.value, HandleValue::BatchItem(_)) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        drop(borrowed);
+        let item = match owned_payload(item_handle, Kind::BatchItem) {
+            Ok(HandleValue::BatchItem(item)) => *item,
+            Ok(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+            Err(status) => return record_ffi_error(status),
+        };
+        *item_slot = std::ptr::null_mut();
+        let out = out_slot!(out_response);
+        let client_handle = read_handle!(client, Client);
+        let HandleValue::Client(client_mutex) = &client_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let limits_handle = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(codec_limits) = &limits_handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut guard) = client_mutex.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let batch = ClientBatch::new(item);
+        match guard.execute_with_options(batch, codec_limits.as_ref(), &req_options) {
+            Ok(response) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ClientBatchResponse,
+                    HandleValue::ClientBatchResponse(Arc::new(response)),
+                ));
+                SUCCESS
+            }
+            Err(error) => record_client_error(&error),
+        }
+    })
+}
+
+/// High-level direct Discover Versions helper offering `versions` (or default 2.1 when empty).
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_discover_versions_v1(
+    client: *mut kmipkit_client_t,
+    versions: *const kmipkit_protocol_version_v1_t,
+    version_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = if version_count == 0 {
+            ClientRequest::DiscoverVersions(kmipkit_protocol::DiscoverVersionsRequest::new())
+        } else {
+            if versions.is_null() {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            }
+            let count = try_ffi!(usize::try_from(version_count).map_err(|_| ERROR_INVALID_INPUT));
+            if count > 1024 {
+                return record_ffi_error(ERROR_RESOURCE_LIMIT);
+            }
+            // SAFETY: caller guarantees `versions` points to `count` initialized entries.
+            let slice = unsafe { std::slice::from_raw_parts(versions, count) };
+            let offered = slice
+                .iter()
+                .map(|v| kmipkit_protocol::ProtocolVersion::from_raw(v.major, v.minor))
+                .collect();
+            let req = try_ffi!(
+                kmipkit_protocol::DiscoverVersionsRequest::with_versions(offered)
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            );
+            ClientRequest::DiscoverVersions(req)
+        };
+        execute_simple_request(client, request, limits, None, out_response)
+    })
+}
+
+/// High-level direct Query helper for one or more KMIP Query Function enumerations.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_query_v1(
+    client: *mut kmipkit_client_t,
+    query_functions: *const u32,
+    query_function_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if query_functions.is_null() || query_function_count == 0 {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let count = try_ffi!(usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT));
+        if count > 1024 {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        // SAFETY: caller guarantees `query_functions` points to `count` u32 elements.
+        let fns = unsafe { std::slice::from_raw_parts(query_functions, count) };
+        let req = kmipkit_protocol::QueryRequest::new(
+            fns.iter().copied().map(kmipkit_protocol::QueryFunction::from_raw),
+        );
+        execute_simple_request(client, ClientRequest::Query(req), limits, None, out_response)
+    })
+}
+
+/// High-level direct RNG Retrieve helper.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_rng_retrieve_v1(
+    client: *mut kmipkit_client_t,
+    data_length: i32,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let req = kmipkit_protocol::RngRetrieveRequest::new(data_length);
+        execute_simple_request(
+            client,
+            ClientRequest::RngRetrieve(req),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// High-level direct RNG Seed helper.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_rng_seed_v1(
+    client: *mut kmipkit_client_t,
+    data: *const u8,
+    data_length: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let bytes = try_ffi!(input_span(data, data_length, MAX_FFI_INPUT_BYTES));
+        let req = kmipkit_protocol::RngSeedRequest::new(SecretBytes::new(bytes.to_vec()));
+        execute_simple_request(
+            client,
+            ClientRequest::RngSeed(req),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// High-level direct Obtain Lease helper for an explicit Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_obtain_lease_by_id_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::ObtainLease(
+                kmipkit_protocol::ObtainLeaseRequest::new().with_unique_identifier(identifier),
+            ),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}

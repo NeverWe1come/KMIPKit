@@ -380,6 +380,8 @@ int32_t kmipkit_client_async_operation_outcome_extension_ttlv_at(
 int32_t kmipkit_client_batch_item_response_pending_correlation_value(kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_byte_span_v1_t*);
 int32_t kmipkit_client_batch_item_response_discover_versions_supported_versions(
         kmipkit_client_batch_item_response_t*, uint8_t*, kmipkit_protocol_version_v1_t*, uint64_t, uint64_t*);
+int32_t kmipkit_client_batch_item_discover_versions_with_versions(
+        const kmipkit_protocol_version_v1_t*, uint64_t, kmipkit_client_batch_item_t**);
 int32_t kmipkit_last_error_get(int32_t*, uint32_t*, uint32_t*, uint32_t*);
 int32_t kmipkit_last_error_clear(void);
 }
@@ -3003,6 +3005,39 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     return guarded<jlong>(env, 0, [&] {
         return return_handle<kmipkit_client_batch_item_t>(env, [](auto output) {
             return kmipkit_client_batch_item_discover_versions(output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDiscoverVersionsWithVersions(
+        JNIEnv* env, jclass, jintArray majors_array, jintArray minors_array) {
+    return guarded<jlong>(env, 0, [&] {
+        if (majors_array == nullptr || minors_array == nullptr) {
+            return return_handle<kmipkit_client_batch_item_t>(env, [](auto output) {
+                return kmipkit_client_batch_item_discover_versions(output);
+            });
+        }
+        const jsize count = env->GetArrayLength(majors_array);
+        if (count != env->GetArrayLength(minors_array)) {
+            throw_status(env, 4);
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_protocol_version_v1_t> versions;
+        versions.reserve(static_cast<size_t>(count));
+        if (count > 0) {
+            std::vector<jint> majors(static_cast<size_t>(count));
+            std::vector<jint> minors(static_cast<size_t>(count));
+            env->GetIntArrayRegion(majors_array, 0, count, majors.data());
+            env->GetIntArrayRegion(minors_array, 0, count, minors.data());
+            for (jsize i = 0; i < count; ++i) {
+                versions.push_back(kmipkit_protocol_version_v1_t{majors[i], minors[i]});
+            }
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_discover_versions_with_versions(
+                    versions.empty() ? nullptr : versions.data(),
+                    static_cast<uint64_t>(versions.size()),
+                    output);
         });
     });
 }

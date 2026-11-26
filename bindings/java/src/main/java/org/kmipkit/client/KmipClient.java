@@ -120,6 +120,103 @@ public final class KmipClient implements AutoCloseable {
         if (options != null) builder.withOptions(options);
         return builder.execute(limits);
     }
+    /** Executes a typed Discover Versions request offering the given protocol versions. */
+    public ClientBatchResponse discoverVersions(
+            java.util.List<org.kmipkit.extensions.ProtocolVersion> protocolVersions,
+            CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().discoverVersions()) {
+            if (protocolVersions != null && !protocolVersions.isEmpty()) {
+                builder.protocolVersions(protocolVersions);
+            }
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Query request for one or more KMIP Query Functions. */
+    public ClientBatchResponse query(int[] queryFunctions, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().query()) {
+            if (queryFunctions != null && queryFunctions.length > 0) builder.functions(queryFunctions);
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Ping request. */
+    public ClientBatchResponse ping(CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        var builder = request().ping();
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes a typed RNG Retrieve request. */
+    public ClientBatchResponse rngRetrieve(int dataLength, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().rngRetrieve().dataLength(dataLength)) {
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed RNG Seed request. */
+    public ClientBatchResponse rngSeed(byte[] data, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().rngSeed().data(data)) {
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Check request for an explicit Unique Identifier. */
+    public ClientBatchResponse checkById(
+            UniqueIdentifier id, Long usageLimitsCount, Integer cryptographicUsageMask, Long leaseTime,
+            CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().check().uniqueIdentifier(id)) {
+            if (usageLimitsCount != null) builder.usageLimitsCount(usageLimitsCount);
+            if (cryptographicUsageMask != null) builder.cryptographicUsageMask(cryptographicUsageMask);
+            if (leaseTime != null) builder.leaseTime(leaseTime);
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Export request for an explicit Unique Identifier. */
+    public ClientBatchResponse exportById(
+            UniqueIdentifier id, Long keyFormatType, Long keyWrapType, Long keyCompressionType,
+            CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().export().uniqueIdentifier(id)) {
+            if (keyFormatType != null) builder.keyFormatType(keyFormatType);
+            if (keyWrapType != null) builder.keyWrapType(keyWrapType);
+            if (keyCompressionType != null) builder.keyCompressionType(keyCompressionType);
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Obtain Lease request for an explicit Unique Identifier. */
+    public ClientBatchResponse obtainLeaseById(
+            UniqueIdentifier id, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().obtainLease().uniqueIdentifier(id)) {
+            if (options != null) builder.withOptions(options);
+            return builder.execute(limits);
+        }
+    }
+    /** Executes a typed Get Attribute List request for an optional Unique Identifier. */
+    public ClientBatchResponse getAttributeList(
+            UniqueIdentifier id, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        var builder = request().getAttributeList(id);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes any single typed ClientBatchItem directly. */
+    public ClientBatchResponse executeItem(
+            org.kmipkit.extensions.ClientBatchItem item, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (item; var batch = org.kmipkit.extensions.ClientBatch.create()) {
+            batch.add(item);
+            return options == null ? client.execute(batch, limits) : client.executeWithOptions(batch, limits, options);
+        }
+    }
     public org.kmipkit.extensions.ClientBatchResponse execute(
             org.kmipkit.extensions.ClientBatch batch, org.kmipkit.ttlv.CodecLimits limits)
             throws org.kmipkit.ClientOperationException { return client.execute(batch, limits); }

@@ -575,6 +575,60 @@ class UniqueIdentifier:
     def integer(cls, value: int) -> UniqueIdentifier:
         return cls(UniqueIdentifierKind.INTEGER, number=value)
 
+    @classmethod
+    def id_placeholder(cls) -> UniqueIdentifier:
+        """Return the KMIP 2.0/2.1 ID Placeholder Unique Identifier (Enumeration 0x00000001)."""
+        return cls(UniqueIdentifierKind.ENUMERATION, number=1)
+
+    @classmethod
+    def batch_reference(cls, offset: int) -> UniqueIdentifier:
+        """Return a KMIP 2.0/2.1 negative integer batch-item reference (e.g. -1 for prior item)."""
+        return cls(UniqueIdentifierKind.INTEGER, number=offset)
+
+
+VENDOR_TAG_ATTRIBUTE_INDEX = 0x0042_0009
+VENDOR_TAG_CRITICAL = 0x0042_0026
+VENDOR_TAG_OBJECT_GROUP_MEMBER = 0x0042_00AC
+
+
+def vendor_attribute_index(index: int) -> ttlv.Item:
+    """Build an opt-in vendor Attribute Index (0x420009, Integer) TTLV item."""
+    raw = ttlv.raw_tag_from_raw(VENDOR_TAG_ATTRIBUTE_INDEX)
+    tag = ttlv.raw_tag_try_checked(raw)
+    val = ttlv.ttlv_value_integer(index)
+    try:
+        return ttlv.ttlv_item_create(tag, val, ttlv.codec_limits_defaults())
+    finally:
+        val.close()
+        tag.close()
+        raw.close()
+
+
+def vendor_critical(critical: bool) -> ttlv.Item:
+    """Build an opt-in vendor Critical (0x420026, Boolean) TTLV item."""
+    raw = ttlv.raw_tag_from_raw(VENDOR_TAG_CRITICAL)
+    tag = ttlv.raw_tag_try_checked(raw)
+    val = ttlv.ttlv_value_boolean(bool(critical))
+    try:
+        return ttlv.ttlv_item_create(tag, val, ttlv.codec_limits_defaults())
+    finally:
+        val.close()
+        tag.close()
+        raw.close()
+
+
+def vendor_object_group_member(member: int) -> ttlv.Item:
+    """Build an opt-in vendor Object Group Member (0x4200AC, Enumeration) TTLV item."""
+    raw = ttlv.raw_tag_from_raw(VENDOR_TAG_OBJECT_GROUP_MEMBER)
+    tag = ttlv.raw_tag_try_checked(raw)
+    val = ttlv.ttlv_value_enumeration(member)
+    try:
+        return ttlv.ttlv_item_create(tag, val, ttlv.codec_limits_defaults())
+    finally:
+        val.close()
+        tag.close()
+        raw.close()
+
     def __repr__(self) -> str:
         return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
 
@@ -1808,12 +1862,36 @@ def client_batch_item_unique_batch_item_id(item: ClientBatchItem) -> bytes | Non
     return bytes(ffi.buffer(value.data, length)) if length else b""
 
 
-def client_batch_item_discover_versions() -> ClientBatchItem:
-    """Create an empty Discover Versions request batch item."""
+def client_batch_item_discover_versions(
+    protocol_versions: Sequence[tuple[int, int] | Any] | None = None,
+) -> ClientBatchItem:
+    """Create a Discover Versions request batch item.
+
+    When ``protocol_versions`` is provided, offers those ordered ``(major, minor)``
+    versions (or ``ProtocolVersion`` instances). When omitted or empty, uses the
+    default KMIP 2.1 offer.
+    """
+    if not protocol_versions:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_discover_versions",
+            (),
+        )
+        return _wrap_owned_handle(ClientBatchItem, handle)
+    version_array = ffi.new("kmipkit_protocol_version_v1_t[]", len(protocol_versions))
+    for index, entry in enumerate(protocol_versions):
+        if hasattr(entry, "major") and hasattr(entry, "minor"):
+            major, minor = int(entry.major), int(entry.minor)
+        elif isinstance(entry, tuple) and len(entry) == 2:
+            major, minor = int(entry[0]), int(entry[1])
+        else:
+            errors.raise_for_status(4)
+        version_array[index].major = _integer_range(major, -(1 << 31), (1 << 31) - 1)
+        version_array[index].minor = _integer_range(minor, -(1 << 31), (1 << 31) - 1)
     handle = _make_handle(
         "kmipkit_client_batch_item_t",
-        "kmipkit_client_batch_item_discover_versions",
-        (),
+        "kmipkit_client_batch_item_discover_versions_with_versions",
+        (version_array, len(protocol_versions)),
     )
     return _wrap_owned_handle(ClientBatchItem, handle)
 

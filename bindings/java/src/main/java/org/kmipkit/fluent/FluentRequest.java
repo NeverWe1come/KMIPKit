@@ -92,4 +92,18 @@ public final class FluentRequest {
     public MacBuilder mac() { return new MacBuilder(client); }
     public MacVerifyBuilder macVerify() { return new MacVerifyBuilder(client); }
     public HashBuilder hash() { return new HashBuilder(client); }
+    public QueryBuilder query() { return new QueryBuilder(client); }
+    public DiscoverVersionsBuilder discoverVersions() { return new DiscoverVersionsBuilder(client); }
+    public CheckBuilder check() { return new CheckBuilder(client); }
+    public ExportBuilder export() { return new ExportBuilder(client); }
+    public ImportBuilder importObject() { return new ImportBuilder(client); }
+    public RngRetrieveBuilder rngRetrieve() { return new RngRetrieveBuilder(client); }
+    public RngSeedBuilder rngSeed() { return new RngSeedBuilder(client); }
+    public CertifyBuilder certify() { return new CertifyBuilder(client); }
+    public DeriveKeyBuilder deriveKey() { return new DeriveKeyBuilder(client); }
+    public ValidateBuilder validate() { return new ValidateBuilder(client); }
+    public JoinSplitKeyBuilder joinSplitKey() { return new JoinSplitKeyBuilder(client); }
+    public ObtainLeaseBuilder obtainLease() { return new ObtainLeaseBuilder(client); }
+    public GetUsageAllocationBuilder getUsageAllocation() { return new GetUsageAllocationBuilder(client); }
+    public ModifyAttributeBuilder modifyAttribute() { return new ModifyAttributeBuilder(client); }
 }

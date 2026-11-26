@@ -1558,6 +1558,15 @@ else:
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_discover_versions(
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_discover_versions_with_versions(
+        const kmipkit_protocol_version_v1_t *versions,
+        uint64_t version_count,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_build_request_message(
+        kmipkit_client_batch_t **inout_batch,
+        kmipkit_protocol_version_v1_t protocol_version,
+        kmipkit_codec_limits_t *limits,
+        kmipkit_request_message_t **out_message);
     int32_t kmipkit_client_batch_item_ping(
         kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_create_group(

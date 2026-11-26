@@ -2569,6 +2569,12 @@ int32_t kmipkit_client_batch_item_derive_key(uint32_t object_type, const kmipkit
 int32_t kmipkit_client_batch_item_destroy(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0007-FR-001, KMIPKIT-0007-FR-002, KMIPKIT-0012-FR-005, KMIPKIT-0012-FR-010, KMIPKIT-0012-FR-011, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_client_batch_item_discover_versions(kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_item_discover_versions_with_versions(const kmipkit_protocol_version_v1_t * versions, uint64_t version_count, kmipkit_client_batch_item_t ** out_item);
+int32_t kmipkit_client_batch_build_request_message(kmipkit_client_batch_t ** inout_batch, kmipkit_protocol_version_v1_t protocol_version, kmipkit_codec_limits_t * limits, kmipkit_request_message_t ** out_message);
+/* Opt-in vendor attribute extension tags (Cosmian KMS interoperability). */
+#define KMIPKIT_VENDOR_TAG_ATTRIBUTE_INDEX 0x00420009u
+#define KMIPKIT_VENDOR_TAG_CRITICAL 0x00420026u
+#define KMIPKIT_VENDOR_TAG_OBJECT_GROUP_MEMBER 0x004200ACu
 /* Creates an opt-in KMIP 3.0 Working Draft Encapsulate route from ordered generic TTLV, citing §6.1.22, Table 317. This route preserves fields but does not validate operation-specific schema.
  */
 /* KMIPKIT-0053-FR-018 */

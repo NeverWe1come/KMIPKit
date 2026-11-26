@@ -126,7 +126,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
         ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
                 ? withBatchId(client.request().ping().build())
-                : TypedRequestFactory.create(testCase.operation(), !isDraft());
+                : TypedRequestFactory.create(testCase.operation(), !isDraft(), toProtocolVersion(connection.protocolVersion()));
         return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
     }
 
@@ -149,8 +149,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static final Set<String> EXTENDED_FLUENT_OPERATIONS = Set.of(
-            "Create Key Pair", "Register", "Re-key", "Re-key Key Pair", "Re-certify",
-            "Add Attribute", "Set Attribute", "Delete Attribute",
+            "Create Key Pair", "Register", "Re-key", "Re-key Key Pair", "Certify", "Re-certify", "Validate",
+            "Derive Key", "Join Split Key", "Import", "Export", "Get Usage Allocation",
+            "Add Attribute", "Modify Attribute", "Delete Attribute", "Set Attribute",
             "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"
     );
 
@@ -175,7 +176,8 @@ public final class JavaKmipDriver implements AutoCloseable {
         return !typedOnlyKeyProbe(testCase) && !queryFieldCase(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
                 || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || EXTENDED_FLUENT_OPERATIONS.contains(testCase.operation())
-                || Set.of("Create", "Ping").contains(testCase.operation()));
+                || Set.of("Create", "Ping", "Query", "Discover Versions", "Check", "Obtain Lease",
+                          "RNG Retrieve", "RNG Seed").contains(testCase.operation()));
     }
 
     static boolean typedRngCase(CatalogLoader.CatalogCase testCase) {

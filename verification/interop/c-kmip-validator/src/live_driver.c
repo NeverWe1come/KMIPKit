@@ -12175,6 +12175,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool multipart_hash = strcmp(test_case->case_id, "test-multipart-hash-sha256") == 0;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash && !gcm_operation &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
+        strcmp(test_case->operation, "Discover Versions") != 0 && strcmp(test_case->operation, "Query") != 0 &&
+        strcmp(test_case->operation, "RNG Retrieve") != 0 && strcmp(test_case->operation, "RNG Seed") != 0 &&
+        strcmp(test_case->operation, "Get") != 0 && strcmp(test_case->operation, "Destroy") != 0 &&
+        strcmp(test_case->operation, "Activate") != 0 && strcmp(test_case->operation, "Archive") != 0 &&
+        strcmp(test_case->operation, "Recover") != 0 && strcmp(test_case->operation, "Obtain Lease") != 0 &&
+        strcmp(test_case->operation, "Get Attribute List") != 0 && strcmp(test_case->operation, "Check") != 0 &&
+        strcmp(test_case->operation, "Export") != 0 &&
         !hash_workflow && !locate_workflow && !rotate && !create_key_pair_workflow &&
         strcmp(test_case->case_id, "test-op-revoke") != 0 && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&

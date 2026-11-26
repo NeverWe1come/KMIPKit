@@ -1772,6 +1772,37 @@ impl ClientBatch {
     pub const fn request_time_stamp(&self) -> Option<i64> {
         self.request_time_stamp
     }
+
+    /// Validates this batch offline for `protocol_version` and builds the
+    /// complete wire-ready [`RequestMessage`] without performing transport I/O.
+    ///
+    /// This enforces empty-batch rejection, KMIP version gates (operations and
+    /// tags), ID Placeholder ordering rules, and header option encoding rules.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized [`ClientError`] with `RequestDeliveryState::NotSent`
+    /// if the batch fails validation or version gating.
+    pub fn build_request_message(
+        self,
+        protocol_version: ProtocolVersion,
+        limits: &CodecLimits,
+    ) -> Result<RequestMessage, ClientError> {
+        let batch = self.with_protocol_version(protocol_version);
+        validate_version_and_operations(protocol_version, &batch)?;
+        let options = validate_batch(&batch, protocol_version).map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+        validate_typed_request_preflight(&batch, false)?;
+        validate_query_batch_limits(&batch, limits)
+            .map_err(|error| protocol_failure_at(error, RequestDeliveryState::NotSent))?;
+        let maximum_response_size = maximum_response_size_for_batch(&batch, limits);
+        build_and_validate_request_message(batch, &options, maximum_response_size)
+    }
 }
 
 impl fmt::Debug for ClientBatch {
@@ -5958,25 +5989,29 @@ impl Client {
         }
         let (mut response_message, wire_response, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
+        let mut normalized_message_level_error = false;
         if response_message.header().protocol_version() == options.protocol_version
-            && let [request_identity] = request_identities.as_slice()
+            && let Some(first_request) = request_identities.first()
         {
+            let is_single_request = request_identities.len() == 1;
             let normalize_operation = {
                 let mut response_items = response_message.batch_items();
                 matches!(
                     (response_items.next(), response_items.next()),
                     (Some(item), None)
                         if item.operation().is_none()
+                            && (is_single_request || item.with_unique_batch_item_id(|_| ()).is_none())
                             && item.result_status()
                                 == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
                             && item.result_reason().is_some()
                 )
             };
             if normalize_operation {
+                normalized_message_level_error = !is_single_request;
                 response_message = response_message
                     .with_single_failed_operation(
-                        request_identity.operation,
-                        request_identity.unique_batch_item_id.as_deref(),
+                        first_request.operation,
+                        first_request.unique_batch_item_id.as_deref(),
                     )
                     .map_err(|error| {
                         ClientError::protocol(
@@ -6006,6 +6041,7 @@ impl Client {
             wire_response,
             self.configuration.extension_registry(),
             limits,
+            normalized_message_level_error,
             #[cfg(test)]
             self.pending_owner_observer.as_ref(),
         )
@@ -8364,7 +8400,14 @@ fn resolve_and_gate_version(
         .protocol_version()
         .or_else(|| batch.protocol_version())
         .unwrap_or_else(|| configuration.protocol_version());
+    validate_version_and_operations(effective_version, batch)?;
+    Ok(effective_version)
+}
 
+fn validate_version_and_operations(
+    effective_version: ProtocolVersion,
+    batch: &ClientBatch,
+) -> Result<(), ClientError> {
     if !effective_version.is_catalogued() {
         return Err(ClientError::validation(
             ClientCauseCategory::InvalidInput,
@@ -8387,7 +8430,7 @@ fn resolve_and_gate_version(
         })?;
     }
 
-    Ok(effective_version)
+    Ok(())
 }
 
 pub(super) fn validate_batch(
@@ -9387,6 +9430,7 @@ fn validate_response(
     wire_response: kmipkit_transport::TransportResponse,
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
+    message_level_failure: bool,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<ClientBatchResponse, ResponseValidationError> {
     let result = validate_response_inner(
@@ -9395,6 +9439,7 @@ fn validate_response(
         &response,
         registry,
         limits,
+        message_level_failure,
         #[cfg(test)]
         pending_owner_observer,
     );
@@ -9435,6 +9480,7 @@ fn validate_response_inner(
     response: &ResponseMessage,
     registry: &ClientExtensionRegistry,
     limits: &CodecLimits,
+    message_level_failure: bool,
     #[cfg(test)] pending_owner_observer: Option<&ZeroizationObserver>,
 ) -> Result<Vec<PendingClientBatchItemResponse>, ProtocolError> {
     let resp_ver = response.header().protocol_version();
@@ -9447,14 +9493,15 @@ fn validate_response_inner(
         .iter()
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let partial_response_permitted = response_items.len() < request_identities.len()
-        && matches!(
-            options.batch_error_continuation.effective,
-            BATCH_ERROR_CONTINUATION_STOP | BATCH_ERROR_CONTINUATION_UNDO
-        )
-        && response_items.iter().any(|item| {
-            item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
-        });
+    let partial_response_permitted = message_level_failure
+        || (response_items.len() < request_identities.len()
+            && matches!(
+                options.batch_error_continuation.effective,
+                BATCH_ERROR_CONTINUATION_STOP | BATCH_ERROR_CONTINUATION_UNDO
+            )
+            && response_items.iter().any(|item| {
+                item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+            }));
     let association = if resp_ver == ProtocolVersion::V3_0 {
         associate_v3_batch_items(
             request_identities,
