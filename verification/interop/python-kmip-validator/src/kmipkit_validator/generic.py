@@ -777,11 +777,13 @@ def _run_extended(driver, operation):
                     cleanup.append(cert_id)
                 return cert_id is not None
             cert_res = _checked_exchange(driver, CERTIFY, expected=check_cert, custom_payload=[
-                item(0x420094, "text", pub_id), item(0x420019, "enumeration", 2),
-                item(0x420018, "bytes", b"\x30\x00"),
+                item(0x420094, "text", pub_id),
+                node(0x420125, [item(0x42001D, "enumeration", 1)]),
             ])
-            if operation == CERTIFY or cert_res["status"] != "passed":
+            if operation == CERTIFY:
                 return cert_res
+            if cert_res["status"] != "passed":
+                return _failure("The server rejected the prerequisite Certify request.", "not_run")
             if operation == RE_CERTIFY:
                 def check_recert(payload):
                     nid = _text_identifier(payload)

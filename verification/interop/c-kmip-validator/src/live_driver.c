@@ -10431,16 +10431,18 @@ static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *cli
             append_ttlv_interval(client, &rk, 0x420058, 3600);
             out = execute_generic_custom(client, 0x1d, rk, check_ext_key_pair, &ctx);
         } else if (op == 0x06 || op == 0x07 || op == 0x17) {
-            static const uint8_t csr[2] = {0x30, 0x00};
             kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+            kmipkit_ttlv_structure_t *attributes = make_ttlv_struct();
             append_ttlv_text(client, &cp, 0x420094, ctx.ids[1]);
-            append_ttlv_enum(client, &cp, 0x420019, 2);
-            append_ttlv_bytes(client, &cp, 0x420018, csr, sizeof(csr));
+            append_ttlv_enum(client, &attributes, 0x42001d, 1);
+            append_ttlv_struct(client, &cp, 0x420125, attributes);
             out = execute_generic_custom(client, 0x06, cp, check_ext_single_id, &ctx);
             if (op != 0x06 && out.success) {
                 kmipkit_ttlv_structure_t *vp = make_ttlv_struct();
                 append_ttlv_text(client, &vp, 0x420094, ctx.ids[2]);
                 out = execute_generic_custom(client, op, vp, op == 0x07 ? check_ext_single_id : check_ext_valid, &ctx);
+            } else if (op != 0x06) {
+                out = outcome_not_run("The server rejected the prerequisite Certify request.");
             }
         } else {
             out = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[0]);

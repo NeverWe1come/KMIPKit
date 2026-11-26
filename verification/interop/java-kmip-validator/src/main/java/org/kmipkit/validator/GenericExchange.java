@@ -1112,16 +1112,18 @@ final class GenericExchange {
         var certRef = new AtomicReference<byte[]>();
         JavaKmipDriver.CaseOutcome certRes;
         try (var uid = item(0x420094, TtlvValue.TextString(pub.get(), LIMITS));
-                var crt = item(0x420019, TtlvValue.Enumeration(2));
-                var csr = item(0x420018, TtlvValue.ByteString(new byte[]{0x30, 0x00}, LIMITS));
-                var payload = structureItem(0x420079, uid, crt, csr)) {
+                var attributes = structureItem(0x420125, item(0x42001d, TtlvValue.Enumeration(1)));
+                var payload = structureItem(0x420079, uid, attributes)) {
             certRes = executePayload(connection, CERTIFY, minor, payload, p -> {
                 byte[] cid = textIdentifier(p);
                 if (cid != null) { certRef.set(cid); cleanup.add(cid); }
                 return cid != null;
             }, start);
         }
-        if (operation == CERTIFY || !"passed".equals(certRes.status())) return certRes;
+        if (operation == CERTIFY) return certRes;
+        if (!"passed".equals(certRes.status())) {
+            return JavaKmipDriver.CaseOutcome.notRun("The server rejected the prerequisite Certify request.", elapsed(start));
+        }
         try (var uid = item(0x420094, TtlvValue.TextString(certRef.get(), LIMITS));
                 var payload = structureItem(0x420079, uid)) {
             if (operation == RE_CERTIFY) {

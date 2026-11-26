@@ -1156,6 +1156,11 @@ class ControlledTlsPeerTest {
                                         int op = extractFirstIntTag(req, 0x42005c);
                                         byte[] batchId = extractFirstBytesTag(req, 0x420093);
                                         byte[] reqId = extractFirstTagBytes(req, 0x420094, 7);
+                                        if (op == 6) {
+                                            assertTrue(contains(req, structure(0x420079,
+                                                    item(0x420094, 7, "pub-key".getBytes(StandardCharsets.US_ASCII)),
+                                                    structure(0x420125, item(0x42001d, 5, intBytes(1))))));
+                                        }
                                         byte[] payload = switch (op) {
                                             case 1 -> concat(item(0x420057, 5, intBytes(2)),
                                                     item(0x420094, 7, "owned-key".getBytes(StandardCharsets.US_ASCII)));

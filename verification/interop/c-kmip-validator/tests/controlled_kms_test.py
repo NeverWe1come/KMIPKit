@@ -2288,6 +2288,8 @@ def verify_generic_extended_operations(binary, openssl, repository):
                                     elif op == 5:
                                         fields = tlv(0x420094, 7, b"derived-key")
                                     elif op == 6:
+                                        assert tlv(0x420079, 1, tlv(0x420094, 7, b"pub-key")
+                                                   + tlv(0x420125, 1, enumeration(0x42001d, 1))) in request
                                         fields = tlv(0x420094, 7, b"cert-id")
                                     elif op == 7:
                                         fields = tlv(0x420094, 7, b"recert-id")

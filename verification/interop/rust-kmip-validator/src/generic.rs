@@ -159,7 +159,9 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-encrypt" | "test-crypto-encrypt-aes-256-cbc", "2.0" | "2.1") => Some(ENCRYPT),
         ("test-op-decrypt" | "test-crypto-decrypt-aes-256-cbc", "2.0" | "2.1") => Some(DECRYPT),
         (
-            "test-op-sign" | "test-crypto-sign-rsa-2048-pkcs1_v1_5" | "test-crypto-sign-ecdsa-256-p_256",
+            "test-op-sign"
+            | "test-crypto-sign-rsa-2048-pkcs1_v1_5"
+            | "test-crypto-sign-ecdsa-256-p_256",
             "2.0" | "2.1",
         ) => Some(SIGN),
         (
@@ -999,14 +1001,8 @@ fn create_rsa_key_pair(
                 item(0x0042_002a, Value::integer(2048))?,
             ],
         )?,
-        node(
-            0x0042_0127,
-            vec![item(0x0042_002c, Value::integer(1))?],
-        )?,
-        node(
-            0x0042_0128,
-            vec![item(0x0042_002c, Value::integer(2))?],
-        )?,
+        node(0x0042_0127, vec![item(0x0042_002c, Value::integer(1))?])?,
+        node(0x0042_0128, vec![item(0x0042_002c, Value::integer(2))?])?,
     ];
     let mut priv_id = None;
     let mut pub_id = None;
@@ -1015,7 +1011,11 @@ fn create_rsa_key_pair(
         pub_id = field_text(batch, 0x0042_006f);
         Ok(priv_id.is_some() && pub_id.is_some())
     })?;
-    Ok((priv_id.unwrap_or_default(), pub_id.unwrap_or_default(), Ok(res)))
+    Ok((
+        priv_id.unwrap_or_default(),
+        pub_id.unwrap_or_default(),
+        Ok(res),
+    ))
 }
 
 fn run_extended_operation(
@@ -1024,10 +1024,7 @@ fn run_extended_operation(
     version: ProtocolVersion,
     operation: u32,
 ) -> CaseResult {
-    outcome(
-        case,
-        run_extended_inner(connection, version, operation),
-    )
+    outcome(case, run_extended_inner(connection, version, operation))
 }
 
 fn run_extended_inner(
@@ -1297,8 +1294,7 @@ fn extended_cert_ops(
     }
     let certify_fields = vec![
         item(0x0042_0094, Value::text_string(pub_id))?,
-        item(0x0042_0019, Value::enumeration(2))?,
-        item(0x0042_0018, Value::byte_string(vec![0x30, 0x00]))?,
+        node(0x0042_0125, vec![item(0x0042_001d, Value::enumeration(1))?])?,
     ];
     let mut cert_id = None;
     let cert_res = exchange_payload(connection, version, CERTIFY, certify_fields, |batch| {
@@ -1308,10 +1304,13 @@ fn extended_cert_ops(
         }
         Ok(cert_id.is_some())
     });
-    if operation == CERTIFY || cert_res != Ok((0, None)) {
+    if operation == CERTIFY {
         return cert_res;
     }
-    let target_cert = cert_id.unwrap_or_else(|| "fixture-cert".to_owned());
+    if cert_res? != (0, None) {
+        return Err("the server rejected the prerequisite Certify request");
+    }
+    let target_cert = cert_id.ok_or("Certify did not return an owned certificate")?;
     let fields = vec![item(0x0042_0094, Value::text_string(target_cert))?];
     if operation == RE_CERTIFY {
         exchange_payload(connection, version, RE_CERTIFY, fields, |batch| {
@@ -1378,10 +1377,7 @@ fn extended_encrypt_ops(
                 item(0x0042_005f, Value::enumeration(3))?,
             ],
         )?,
-        item(
-            0x0042_00c2,
-            Value::byte_string(cipher.unwrap_or_default()),
-        )?,
+        item(0x0042_00c2, Value::byte_string(cipher.unwrap_or_default()))?,
         item(0x0042_003d, Value::byte_string(iv))?,
     ];
     exchange_payload(connection, version, DECRYPT, dec_fields, |batch| {
@@ -1409,10 +1405,7 @@ fn extended_mac_ops(
     }
     let mac_fields = vec![
         item(0x0042_0094, Value::text_string(key_id.clone()))?,
-        node(
-            0x0042_002b,
-            vec![item(0x0042_0038, Value::enumeration(6))?],
-        )?,
+        node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
         item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
     ];
     let mut tag = None;
@@ -1425,10 +1418,7 @@ fn extended_mac_ops(
     }
     let verify_fields = vec![
         item(0x0042_0094, Value::text_string(key_id))?,
-        node(
-            0x0042_002b,
-            vec![item(0x0042_0038, Value::enumeration(6))?],
-        )?,
+        node(0x0042_002b, vec![item(0x0042_0038, Value::enumeration(6))?])?,
         item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
         item(0x0042_00c6, Value::byte_string(tag.unwrap_or_default()))?,
     ];

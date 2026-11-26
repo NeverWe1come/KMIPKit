@@ -969,6 +969,10 @@ class LiveContract(unittest.TestCase):
                         elif op == 5:
                             fields = [ttlv(0x420094, 7, "derived-key")]
                         elif op == 6:
+                            self.assertEqual(payload, parse(
+                                ttlv(0x420094, 7, "pub-key")
+                                + ttlv(0x420125, 1, [ttlv(0x42001d, 5, 1)])
+                            ))
                             fields = [ttlv(0x420094, 7, "cert-id")]
                         elif op == 7:
                             fields = [ttlv(0x420094, 7, "recert-id")]

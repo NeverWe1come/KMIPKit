@@ -1041,14 +1041,22 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
             if ("Certify".equals(op) || "Re-certify".equals(op) || "Validate".equals(op)) {
                 var certRef = new AtomicReference<UniqueIdentifier>();
-                var certRes = executeRequest(testCase,
-                        withBatchId(ClientBatchItem.certify(pubRef.get(), 2L, new byte[]{0x30, 0x00}, null, null)),
-                        r -> r.certifyResponse().map(p -> {
-                            certRef.set(p.uniqueIdentifier());
-                            cleanup.add(p.uniqueIdentifier());
-                            return true;
-                        }).orElse(false), start);
-                if ("Certify".equals(op) || !"passed".equals(certRes.status())) return certRes;
+                CaseOutcome certRes;
+                try (var attrs = appendOwnedValue(TtlvStructure.create(), 0x42001d, TtlvValue.Enumeration(1))) {
+                    certRes = executeRequest(testCase,
+                            withBatchId(ClientBatchItem.certify(pubRef.get(), null, null, attrs, null)),
+                            r -> r.certifyResponse().filter(payload -> {
+                                try (payload) {
+                                    certRef.set(payload.uniqueIdentifier());
+                                    cleanup.add(payload.uniqueIdentifier());
+                                    return true;
+                                }
+                            }).isPresent(), start);
+                }
+                if ("Certify".equals(op)) return certRes;
+                if (!"passed".equals(certRes.status())) {
+                    return CaseOutcome.notRun("The server rejected the prerequisite Certify request.", elapsedMillis(start));
+                }
                 if ("Re-certify".equals(op)) {
                     ClientBatchItem rcReq;
                     if (fluent) {

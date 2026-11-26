@@ -821,6 +821,8 @@ class ControlledExchangeTests(unittest.TestCase):
                         elif op == 5:
                             fields = item(0x420094, 7, b"derived-key")
                         elif op == 6:
+                            self.assertEqual(req_payload, item(0x420094, 7, b"pub-key")
+                                             + structure(0x420125, enumeration(0x42001D, 1)))
                             fields = item(0x420094, 7, b"cert-id")
                         elif op == 7:
                             fields = item(0x420094, 7, b"recert-id")
