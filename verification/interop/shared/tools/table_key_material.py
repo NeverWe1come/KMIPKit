@@ -46,9 +46,10 @@ def vectors(root, versions=ALLOWED_VERSIONS):
         for name, _, _, _, _, fields in KEY_FORMATS:
             format_code = names.symbol("KeyFormatType", f"Transparent {name}")
             tag, _, _ = fields[-1]
+            missing_fields = (fields[0], fields[2]) if name == "RSA Private Key" else fields[:-1]
             for scenario, values in (
                 ("complete", fields),
-                ("missing-field", fields[:-1]),
+                ("missing-field", missing_fields),
                 ("wrong-type", (*fields[:-1], (tag, "TextString", "wrong-type"))),
                 ("duplicate-field", (*fields, fields[0])),
             ):

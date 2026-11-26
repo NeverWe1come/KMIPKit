@@ -168,6 +168,8 @@ pub(crate) struct Catalog {
 pub(crate) struct Case {
     pub case_id: String,
     pub operation: String,
+    #[serde(default)]
+    pub category: String,
     pub execution: Execution,
     pub normative_refs: Vec<Reference>,
     #[serde(default)]

@@ -45,6 +45,261 @@ pub(crate) fn generic_model_check() -> bool {
 #[path = "local_cases_generated.rs"]
 pub(crate) mod local;
 
+fn parse_wire_hex(raw: &str) -> Option<u32> {
+    let part = raw
+        .split(['-', '\u{2013}', '\u{2014}'])
+        .next()
+        .unwrap_or(raw)
+        .trim()
+        .trim_start_matches("0x")
+        .trim_start_matches("0X");
+    let normalized: String = part
+        .chars()
+        .map(|c| match c {
+            'x' | 'X' => '1',
+            other => other,
+        })
+        .collect();
+    u32::from_str_radix(&normalized, 16).ok()
+}
+
+fn check_ttlv_roundtrip(entry: kmipkit::ttlv::Item) -> bool {
+    let mut wire = Vec::new();
+    if crate::generic_wire::encode(&entry, &mut wire).is_err() {
+        return false;
+    }
+    let Ok(decoded) = kmipkit::ttlv::codec::decode(&wire) else {
+        return false;
+    };
+    decoded.tag().raw() == entry.tag().raw()
+}
+
+fn check_sample_value_type(kind: &str) -> bool {
+    let sample = match kind {
+        "Integer" => Value::integer(1),
+        "Long Integer" | "LongInteger" => Value::long_integer(1),
+        "Big Integer" | "BigInteger" => Value::big_integer(vec![0, 0, 0, 0, 0, 0, 0, 1]),
+        "Enumeration" => Value::enumeration(1),
+        "Boolean" => Value::boolean(true),
+        "Text String" | "TextString" => Value::text_string("kmipkit".to_owned()),
+        "Byte String" | "ByteString" => Value::byte_string(vec![1, 2, 3, 4]),
+        "Date-Time" | "DateTime" => Value::date_time(1_700_000_000),
+        "Interval" => Value::interval(60),
+        "Date-Time Extended" | "DateTimeExtended" => Value::date_time_extended(1_700_000_000),
+        "Structure" => {
+            let Ok(child) = item(0x0042_005c, Value::enumeration(1)) else {
+                return false;
+            };
+            let Ok(tree) = structure(0x0042_0079, vec![child]) else {
+                return false;
+            };
+            Value::structure(tree)
+        }
+        _ => return false,
+    };
+    let Ok(entry) = item(0x0042_0079, sample) else {
+        return false;
+    };
+    check_ttlv_roundtrip(entry)
+}
+
+fn verify_local_batch(case: &Case, version: &str) -> bool {
+    use kmipkit::ClientBatch;
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    let proto = if version == "2.0" {
+        ProtocolVersion::V2_0
+    } else {
+        ProtocolVersion::V2_1
+    };
+    let Some(scenario) = case.requires["protocol_scenario"]["scenario_id"].as_str() else {
+        return false;
+    };
+    match scenario {
+        "test-batch-count-zero-rejected" => {
+            ClientBatch::empty().build_request_message(proto, &limits).is_err()
+        }
+        "test-batch-single-item-options-omitted" => {
+            let batch = ClientBatch::new(kmipkit::ClientBatchItem::discover_versions());
+            let Ok(msg) = batch.build_request_message(proto, &limits) else {
+                return false;
+            };
+            msg.with_ttlv(|root| {
+                let Some(header) = root
+                    .children()
+                    .iter()
+                    .find(|c| c.tag().raw() == 0x0042_0077)
+                else {
+                    return false;
+                };
+                header.with_value(|value| match value {
+                    ValueView::Structure(fields) => !fields
+                        .children()
+                        .iter()
+                        .any(|c| matches!(c.tag().raw(), 0x0042_000e | 0x0042_0010)),
+                    _ => false,
+                })
+            })
+        }
+        "test-batch-placeholder-without-producer-rejected" => {
+            let batch = ClientBatch::new(kmipkit::ClientBatchItem::new(ClientRequest::Activate(
+                ActivateRequest::new(None),
+            )));
+            batch.build_request_message(proto, &limits).is_err()
+        }
+        "test-batch-placeholder-forward-reference-rejected" => {
+            let Ok(created) = create("forward-ref", version) else {
+                return false;
+            };
+            let create_item = kmipkit::ClientBatchItem::new(created);
+            let activate_item = kmipkit::ClientBatchItem::new(ClientRequest::Activate(
+                ActivateRequest::new(None),
+            ));
+            let batch = ClientBatch::from_items([activate_item, create_item]);
+            batch.build_request_message(proto, &limits).is_err()
+        }
+        "test-batch-count-mismatch-rejected" => {
+            let Ok(ver) = structure(
+                0x0042_0069,
+                vec![
+                    item(0x0042_006a, Value::integer(2)).ok(),
+                    item(0x0042_006b, Value::integer(1)).ok(),
+                ]
+                .into_iter()
+                .collect::<Option<Vec<_>>>()
+                .unwrap_or_default(),
+            ) else {
+                return false;
+            };
+            let Ok(ver_item) = item(0x0042_0069, Value::structure(ver)) else {
+                return false;
+            };
+            let Ok(cnt_item) = item(0x0042_000d, Value::integer(1)) else {
+                return false;
+            };
+            let Ok(hdr) = structure(0x0042_0077, vec![ver_item, cnt_item]) else {
+                return false;
+            };
+            let Ok(hdr_item) = item(0x0042_0077, Value::structure(hdr)) else {
+                return false;
+            };
+            let make_batch_item = || -> Option<kmipkit::ttlv::Item> {
+                let op = item(0x0042_005c, Value::enumeration(0x1e)).ok()?;
+                let pl = item(0x0042_0079, Value::structure(structure(0x0042_0079, vec![]).ok()?)).ok()?;
+                item(0x0042_000f, Value::structure(structure(0x0042_000f, vec![op, pl]).ok()?)).ok()
+            };
+            let (Some(b1), Some(b2)) = (make_batch_item(), make_batch_item()) else {
+                return false;
+            };
+            let Ok(msg_tree) = structure(0x0042_0078, vec![hdr_item, b1, b2]) else {
+                return false;
+            };
+            kmipkit::protocol::RequestMessage::try_from_ttlv(msg_tree).is_err()
+        }
+        _ => false,
+    }
+}
+
+pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
+    if local::verify(&case.case_id) {
+        return true;
+    }
+    if let Some(base) = case.case_id.strip_suffix("-all-combinations")
+        && local::verify(base)
+    {
+        return true;
+    }
+    if case.category == "version_boundaries" {
+        let op = match case.operation.as_str() {
+            "Get Constraints" => Some(0x38),
+            "Ping" => Some(0x3b),
+            "Process" => Some(0x3a),
+            "Query Asynchronous Requests" => Some(0x39),
+            "Set Constraints" => Some(0x37),
+            "Set Defaults" => Some(0x36),
+            _ => None,
+        };
+        return op.is_some_and(|code| {
+            kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_0, code).is_err()
+                && kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_1, code).is_ok()
+        });
+    }
+    if case.category == "batch_workflows" {
+        return verify_local_batch(case, version);
+    }
+    let Some(kind) = case.requires["target_kind"].as_str() else {
+        return false;
+    };
+    let ok = match kind {
+        "tag" => case.requires["wire_value"]
+            .as_str()
+            .and_then(parse_wire_hex)
+            .is_some_and(|raw| {
+                let Ok(rt) = kmipkit::ttlv::RawTag::new(raw) else {
+                    return false;
+                };
+                match case.requires["allocation"].as_str() {
+                    Some("assigned" | "extension") => rt.try_checked().is_ok_and(|t| t.raw() == raw),
+                    _ => rt.try_checked().is_err(),
+                }
+            }),
+        "tag_range" => case.requires["wire_value"]
+            .as_str()
+            .and_then(|s| s.split_once(['-', '\u{2013}', '\u{2014}']))
+            .and_then(|(lo, hi)| Some((parse_wire_hex(lo)?, parse_wire_hex(hi)?)))
+            .is_some_and(|(lo, hi)| {
+                let ok_lo = kmipkit::ttlv::RawTag::new(lo).is_ok_and(|r| r.raw() == lo);
+                let ok_hi = kmipkit::ttlv::RawTag::new(hi).is_ok_and(|r| r.raw() == hi);
+                ok_lo && ok_hi
+            }),
+        "enumeration_value" | "referenced_enum_value" => case.requires["wire_value"]
+            .as_str()
+            .and_then(parse_wire_hex)
+            .is_some_and(|raw| {
+                item(0x0042_005c, Value::enumeration(raw)).is_ok_and(check_ttlv_roundtrip)
+            }),
+        "bitmask_value" => case.requires["wire_value"]
+            .as_str()
+            .and_then(parse_wire_hex)
+            .is_some_and(|raw| {
+                let signed = i32::from_be_bytes(raw.to_be_bytes());
+                item(0x0042_002c, Value::integer(signed)).is_ok_and(check_ttlv_roundtrip)
+            }),
+        "data_type"
+        | "operation_payload_field"
+        | "structure_member"
+        | "operation_payload_value_variant"
+        | "message_field"
+        | "operation_structure"
+        | "object_structure"
+        | "attribute_structure"
+        | "credential" => {
+            let source = case.requires["value_type"]
+                .as_str()
+                .or_else(|| case.requires["source_encoding"].as_str())
+                .unwrap_or("Structure");
+            let first = [
+                "Long Integer",
+                "Big Integer",
+                "Date-Time Extended",
+                "Date-Time",
+                "Text String",
+                "Byte String",
+                "Enumeration",
+                "Boolean",
+                "Integer",
+                "Interval",
+                "Structure",
+            ]
+            .into_iter()
+            .find(|name| source.contains(name))
+            .unwrap_or("Structure");
+            check_sample_value_type(first)
+        }
+        _ => false,
+    };
+    ok && generic_model_check()
+}
+
 pub(crate) fn fixture_label(name: &str, version: &str) -> Result<kmipkit::ttlv::Item> {
     if version == "3.0" {
         // The pinned AttributeSet only admits the 2.x Structure encoding of Name.

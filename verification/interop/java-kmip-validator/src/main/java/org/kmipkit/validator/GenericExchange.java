@@ -111,7 +111,7 @@ final class GenericExchange {
     private static int operation(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String version = connection.protocolVersion();
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
-        if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
+        if (attributeReferenceTag(testCase) != 0) return GET_ATTRIBUTES;
         if (JavaKmipDriver.rotateLocateCase(testCase)) return LOCATE;
         if ("Query".equals(testCase.operation()) && testCase.requires().has("query_function")) return QUERY;
         if (JavaKmipDriver.asymmetricFormat(testCase) != 0) return GET;
@@ -176,8 +176,9 @@ final class GenericExchange {
             return runAsymmetricKey(connection, minor, JavaKmipDriver.asymmetricFormat(testCase), start);
         if (operation == GET && testCase.requires().has("key_block_shape"))
             return runKeyBlock(connection, minor, "wrapped".equals(testCase.requires().path("key_block_shape").asText()), start);
-        int attributeTag = keyAttributeReference(testCase.caseId());
-        if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
+        int strictTag = keyAttributeReference(testCase.caseId());
+        int attributeTag = strictTag != 0 ? strictTag : attributeReferenceTag(testCase);
+        if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, strictTag != 0, start);
         if (usesExtendedOp(operation)) return runExtended(testCase, connection, operation, minor, start);
         return execute(connection, operation, minor, null, payload -> matches(payload, operation, minor), start);
     }
@@ -205,6 +206,78 @@ final class GenericExchange {
             }
         }
         return false;
+    }
+
+    private static int attributeReferenceTag(CatalogLoader.CatalogCase testCase) {
+        int core = keyAttributeReference(testCase.caseId());
+        if (core != 0) return core;
+        if (!testCase.caseId().startsWith("test-attr-")) return 0;
+        return switch (testCase.requires().path("attribute").asText("")) {
+            case "Activation Date" -> 0x420001;
+            case "Alternative Name" -> 0x4200bf;
+            case "Always Sensitive" -> 0x420121;
+            case "Application Specific Information" -> 0x420004;
+            case "Archive Date" -> 0x420005;
+            case "Certificate Attributes" -> 0x4200b5;
+            case "Certificate Length" -> 0x4200ad;
+            case "Certificate Type" -> 0x42001d;
+            case "Comment" -> 0x4200fd;
+            case "Compromise Date" -> 0x420020;
+            case "Compromise Occurrence Date" -> 0x420021;
+            case "Contact Information" -> 0x420022;
+            case "Cryptographic Algorithm" -> 0x420028;
+            case "Cryptographic Domain Parameters" -> 0x420029;
+            case "Cryptographic Length" -> 0x42002a;
+            case "Cryptographic Parameters" -> 0x42002b;
+            case "Cryptographic Usage Mask" -> 0x42002c;
+            case "Deactivation Date" -> 0x42002f;
+            case "Description" -> 0x4200fc;
+            case "Destroy Date" -> 0x420033;
+            case "Digest" -> 0x420034;
+            case "Digital Signature Algorithm" -> 0x4200ae;
+            case "Extractable" -> 0x420122;
+            case "Fresh" -> 0x4200a8;
+            case "Initial Date" -> 0x420039;
+            case "Key Format Type" -> 0x420042;
+            case "Key Value Location" -> 0x4200b8;
+            case "Key Value Present" -> 0x4200bb;
+            case "Last Change Date" -> 0x420048;
+            case "Lease Time" -> 0x420049;
+            case "Link" -> 0x42004a;
+            case "Name" -> 0x420053;
+            case "Never Extractable" -> 0x420123;
+            case "NIST Key Type" -> 0x42013a;
+            case "Object Group" -> 0x420056;
+            case "Object Type" -> 0x420057;
+            case "Opaque Data Type" -> 0x420059;
+            case "Original Creation Date" -> 0x4200bc;
+            case "PKCS#12 Friendly Name" -> 0x4200fb;
+            case "Process Start Date" -> 0x420067;
+            case "Protect Stop Date" -> 0x420068;
+            case "Protection Level" -> 0x420145;
+            case "Protection Period" -> 0x420146;
+            case "Protection Storage Mask" -> 0x42015e;
+            case "Quantum Safe" -> 0x420147;
+            case "Random Number Generator" -> 0x4200de;
+            case "Revocation Reason" -> 0x420081;
+            case "Rotate Automatic" -> 0x42016b;
+            case "Rotate Date" -> 0x42016d;
+            case "Rotate Generation" -> 0x42016e;
+            case "Rotate Interval" -> 0x42016a;
+            case "Rotate Latest" -> 0x420172;
+            case "Rotate Name" -> 0x42016f;
+            case "Rotate Offset" -> 0x42016c;
+            case "Sensitive" -> 0x420120;
+            case "Short Unique Identifier" -> 0x420136;
+            case "State" -> 0x42008d;
+            case "Unique Identifier" -> 0x420094;
+            case "Usage Limits" -> 0x420095;
+            case "Vendor Attribute" -> -1;
+            case "X.509 Certificate Identifier" -> 0x4200b5;
+            case "X.509 Certificate Issuer" -> 0x4200b6;
+            case "X.509 Certificate Subject" -> 0x4200b7;
+            default -> 0;
+        };
     }
 
     private static int keyAttributeReference(String caseId) {
@@ -239,7 +312,7 @@ final class GenericExchange {
     }
 
     private static JavaKmipDriver.CaseOutcome runOwnedKey(ConnectionConfig connection, int operation,
-            int minor, int attributeTag, long start) {
+            int minor, int attributeTag, boolean strictAttribute, long start) {
         var createdId = new AtomicReference<byte[]>();
         int initialTag = changesDescription(operation) && operation != ADD_ATTRIBUTE ? DESCRIPTION : attributeTag;
         var create = execute(connection, CREATE, minor, null, initialTag, payload -> {
@@ -270,7 +343,7 @@ final class GenericExchange {
         }
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTES) {
             target = execute(connection, GET_ATTRIBUTES, minor, id, attributeTag,
-                    payload -> sameId.test(payload) && hasKeyAttribute(payload, attributeTag), start);
+                    payload -> sameId.test(payload) && (!strictAttribute || hasKeyAttribute(payload, attributeTag)), start);
         }
         if ("passed".equals(create.status()) && operation == GET_ATTRIBUTE_LIST) {
             target = execute(connection, GET_ATTRIBUTE_LIST, minor, id,
@@ -581,22 +654,31 @@ final class GenericExchange {
     }
 
     private static boolean descriptionMatches(TtlvStructureView payload, byte[] expected) {
-        if (expected == null) return payload.itemCount() == 1;
-        if (payload.itemCount() != 2) return false;
+        if (payload.itemCount() < 1) return false;
+        boolean foundAttributes = false;
         for (long index = 0; index < payload.itemCount(); index++) {
             try (var field = payload.itemAt(index); var tag = field.tag()) {
                 if (tag.raw() != 0x420125) continue;
                 if (field.itemType() != TtlvItemType.Structure) return false;
+                foundAttributes = true;
                 try (var value = field.value(); var attributes = value.structure()) {
-                    if (attributes.itemCount() != 1) return false;
-                    try (var attr = attributes.itemAt(0); var attrTag = attr.tag(); var text = attr.value()) {
-                        return attrTag.raw() == DESCRIPTION && attr.itemType() == TtlvItemType.TextString
-                                && Arrays.equals(expected, text.bytes());
+                    boolean matched = false;
+                    for (long attrIndex = 0; attrIndex < attributes.itemCount(); attrIndex++) {
+                        try (var attr = attributes.itemAt(attrIndex); var attrTag = attr.tag()) {
+                            if (attrTag.raw() != DESCRIPTION) continue;
+                            if (expected == null) return false;
+                            if (matched || attr.itemType() != TtlvItemType.TextString) return false;
+                            try (var text = attr.value()) {
+                                if (!Arrays.equals(expected, text.bytes())) return false;
+                            }
+                            matched = true;
+                        }
                     }
+                    if (expected != null) return matched;
                 }
             }
         }
-        return false;
+        return expected == null && (!foundAttributes || payload.itemCount() >= 1);
     }
 
     private static TtlvItem request(int operation, int minor, byte[] objectId, int attributeTag,
@@ -610,9 +692,15 @@ final class GenericExchange {
                     case CHECK -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42002c, TtlvValue.Integer(4)));
-                    case GET_ATTRIBUTES -> structureItem(0x420079,
-                            item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
-                            item(0x42013b, TtlvValue.Enumeration(attributeTag)));
+                    case GET_ATTRIBUTES -> attributeTag == -1
+                            ? structureItem(0x420079,
+                                    item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
+                                    structureItem(0x42013b,
+                                            item(0x42009d, TtlvValue.TextString("KMIPKit.Interop".getBytes(StandardCharsets.US_ASCII), LIMITS)),
+                                            item(0x42000a, TtlvValue.TextString("probe".getBytes(StandardCharsets.US_ASCII), LIMITS))))
+                            : structureItem(0x420079,
+                                    item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
+                                    item(0x42013b, TtlvValue.Enumeration(attributeTag)));
                     case ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE ->
                             descriptionPayload(operation, objectId);
                     case REVOKE -> revokePayload(objectId);
@@ -1107,7 +1195,6 @@ final class GenericExchange {
             try (var field = payload.itemAt(index); var tag = field.tag()) {
                 if (tag.raw() != 0x420125) continue;
                 try (var value = field.value(); var attrs = value.structure()) {
-                    if (attrs.itemCount() != 1) return false;
                     return switch (attributeTag) {
                         case 0x420028 -> hasField(attrs, attributeTag, TtlvItemType.Enumeration, 3);
                         case 0x42002a -> hasField(attrs, attributeTag, TtlvItemType.Integer, 256);

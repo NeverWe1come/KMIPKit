@@ -80,7 +80,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         return result;
     }
     if case.execution.mode == "local_model" {
-        let passed = adapters::local::verify(&case.case_id);
+        let passed = adapters::verify_local(case, &connection.protocol_version);
         let mut result = CaseResult::non_run(
             case,
             if passed { "passed" } else { "failed" },

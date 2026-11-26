@@ -58,7 +58,7 @@ pub(crate) fn object(name: &str, version: &str) -> Result<(ObjectType, Item, Att
         )),
         "Opaque Object" => Ok((
             ObjectType::from_raw(8),
-            OpaqueObject::try_new(1, b"dedicated fixture".to_vec())
+            OpaqueObject::try_new(0x8000_0001, b"dedicated fixture".to_vec())
                 .map_err(|_| "invalid opaque fixture")?
                 .into_item(),
             AttributeSet::new(),

@@ -6214,12 +6214,192 @@ static bool preactive_encrypt_response_has_no_output(
         !tag.data && tag.length == 0U;
 }
 
+static void release_created_identifier_copy(
+    kmipkit_unique_identifier_v1_t *id,
+    char **backing_text) {
+    if (backing_text && *backing_text) {
+        free(*backing_text);
+        *backing_text = NULL;
+    }
+    if (id) {
+        memset(id, 0, sizeof(*id));
+        id->struct_size = (uint32_t)sizeof(*id);
+        id->abi_version = 1;
+    }
+}
+
+static bool copy_text_unique_identifier(
+    const kmipkit_unique_identifier_v1_t *src,
+    kmipkit_unique_identifier_v1_t *dst,
+    char **out_backing) {
+    if (!src || !dst || !out_backing ||
+        src->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        !src->text_data || src->text_length == 0) {
+        return false;
+    }
+    char *copy = malloc((size_t)src->text_length + 1U);
+    if (!copy) return false;
+    memcpy(copy, src->text_data, (size_t)src->text_length);
+    copy[src->text_length] = '\0';
+    *out_backing = copy;
+    *dst = (kmipkit_unique_identifier_v1_t){
+        .struct_size = (uint32_t)sizeof(*dst),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = (const uint8_t *)copy,
+        .text_length = src->text_length,
+    };
+    return true;
+}
+
+static int32_t execute_single_typed_item(
+    kmip_live_client_t *client,
+    kmipkit_client_batch_item_t **item,
+    const char *item_id,
+    bool validate_request,
+    kmipkit_client_batch_response_t **out_response,
+    kmipkit_client_batch_item_response_t **out_item_response,
+    kmipkit_client_batch_item_metadata_v2_t *out_metadata,
+    kmip_execution_outcome_t *out_outcome,
+    uint32_t expected_operation,
+    const char *step_label) {
+    if (!client || !item || !*item || !out_response || !out_item_response || !out_metadata) {
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    *out_response = NULL;
+    *out_item_response = NULL;
+    *out_metadata = (kmipkit_client_batch_item_metadata_v2_t){
+        .struct_size = (uint32_t)sizeof(*out_metadata),
+        .abi_version = 2,
+    };
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    char diagnostic[256] = {0};
+    int32_t status = 0;
+    if (item_id && item_id[0] != '\0') status = set_batch_item_id(item, item_id);
+    if (status == 0 && validate_request &&
+        !request_item_is_valid(*item, diagnostic, sizeof(diagnostic))) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+            else authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, item);
+    if (status != 0) {
+        if (batch) kmipkit_client_batch_release(batch);
+        if (out_outcome && !out_outcome->result_reason[0]) {
+            out_outcome->library_failed = true;
+            if (diagnostic[0] != '\0') {
+                snprintf(out_outcome->result_reason, sizeof(out_outcome->result_reason),
+                         "KMIPKit rejected %s: %.160s", step_label, diagnostic);
+            } else {
+                snprintf(out_outcome->result_reason, sizeof(out_outcome->result_reason),
+                         "KMIPKit could not construct %s (status %d)", step_label, status);
+            }
+        }
+        return status;
+    }
+    status = kmipkit_client_execute(client->client, &batch, client->limits, out_response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (status != 0) {
+        uint32_t category = 0, cause = 0, delivery = 0;
+        int32_t last_status = status;
+        (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+        if (out_outcome && !out_outcome->result_reason[0]) {
+            out_outcome->library_failed = true;
+            snprintf(out_outcome->result_reason, sizeof(out_outcome->result_reason),
+                     "KMIPKit could not execute %s (category=%u cause=%u delivery=%u)",
+                     step_label, category, cause, delivery);
+        }
+        return status;
+    }
+    uint64_t response_count = 0;
+    status = kmipkit_client_batch_response_item_count(*out_response, &response_count);
+    if (status == 0 && response_count != 1U) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_response_item_at(*out_response, 0, out_item_response);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        *out_item_response, out_metadata);
+    if (status == 0 && expected_operation != 0U && out_metadata->operation != expected_operation) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status != 0 && out_outcome && !out_outcome->result_reason[0]) {
+        out_outcome->library_failed = true;
+        snprintf(out_outcome->result_reason, sizeof(out_outcome->result_reason),
+                 "KMIPKit returned an invalid %s response (status %d)", step_label, status);
+    }
+    return status;
+}
+
+static bool cleanup_single_object_sequential(
+    kmip_live_client_t *client,
+    const kmipkit_unique_identifier_v1_t *id,
+    bool revoke_first,
+    const char *revoke_item_id,
+    const char *destroy_item_id,
+    int32_t *out_status) {
+    if (!client || !id || id->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        !id->text_data || id->text_length == 0) {
+        if (out_status) *out_status = 0;
+        return true;
+    }
+    int32_t status = 0;
+    bool valid = true;
+    if (revoke_first) {
+        kmipkit_client_batch_item_t *revoke_item = NULL;
+        kmipkit_client_batch_response_t *revoke_response = NULL;
+        kmipkit_client_batch_item_response_t *revoke_result = NULL;
+        kmipkit_client_batch_item_metadata_v2_t revoke_metadata = {0};
+        status = create_revocation_item(id, &revoke_item);
+        if (status == 0) {
+            status = execute_single_typed_item(
+                client, &revoke_item, revoke_item_id, true,
+                &revoke_response, &revoke_result, &revoke_metadata,
+                NULL, KMIPKIT_ENUMERATION_OPERATION_REVOKE, "cleanup Revoke");
+        }
+        valid = status == 0 &&
+            revoke_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            revoke_response_matches_created_key(revoke_result, id, &status);
+        if (revoke_result) kmipkit_client_batch_item_response_release(revoke_result);
+        if (revoke_response) kmipkit_client_batch_response_release(revoke_response);
+        if (revoke_item) kmipkit_client_batch_item_release(revoke_item);
+    }
+    if (valid) {
+        kmipkit_client_batch_item_t *destroy_item = NULL;
+        kmipkit_client_batch_response_t *destroy_response = NULL;
+        kmipkit_client_batch_item_response_t *destroy_result = NULL;
+        kmipkit_client_batch_item_metadata_v2_t destroy_metadata = {0};
+        status = kmipkit_client_batch_item_destroy(id, &destroy_item);
+        if (status == 0) {
+            status = execute_single_typed_item(
+                client, &destroy_item, destroy_item_id, true,
+                &destroy_response, &destroy_result, &destroy_metadata,
+                NULL, KMIPKIT_ENUMERATION_OPERATION_DESTROY, "cleanup Destroy");
+        }
+        valid = status == 0 &&
+            destroy_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            destroy_response_matches_key(destroy_result, id, &status);
+        if (destroy_result) kmipkit_client_batch_item_response_release(destroy_result);
+        if (destroy_response) kmipkit_client_batch_response_release(destroy_response);
+        if (destroy_item) kmipkit_client_batch_item_release(destroy_item);
+    }
+    if (out_status) *out_status = status;
+    return valid;
+}
+
 static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *client,
                                                            uint32_t operation,
                                                            bool aes256_cbc,
                                                            bool preactive_rejection) {
     /* Archive follows KMIP 2.0/2.1 §6.1.4; crypto fixtures follow §§6.1.11,
-     * 6.1.17, and 6.1.31–6.1.33. Each fixture isolates and cleans up its key. */
+     * 6.1.17, and 6.1.31–6.1.33. Each fixture sends explicit-UID single ops
+     * and cleans up its created object cleanly. */
     bool archive = operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE;
     bool recover = operation == KMIPKIT_ENUMERATION_OPERATION_RECOVER;
     bool archived_lifecycle = archive || recover;
@@ -6228,73 +6408,34 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     bool decrypt = operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
     bool mac_verify = operation == KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY;
     bool mac = operation == KMIPKIT_ENUMERATION_OPERATION_MAC || mac_verify;
-    const uint32_t active_key_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        operation,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    const uint32_t archive_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    const uint32_t recover_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE,
-        KMIPKIT_ENUMERATION_OPERATION_RECOVER, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    const uint32_t preactive_encrypt_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const encrypt_item_ids[] = {
-        "encrypt-create", "encrypt-activate", "encrypt-target", "encrypt-revoke", "encrypt-destroy"
-    };
-    static const char *const decrypt_item_ids[] = {
-        "decrypt-create", "decrypt-activate", "decrypt-target", "decrypt-revoke", "decrypt-destroy"
-    };
-    static const char *const mac_item_ids[] = {
-        "mac-create", "mac-activate", "mac-target", "mac-revoke", "mac-destroy"
-    };
-    static const char *const mac_verify_item_ids[] = {
-        "mac-verify-create", "mac-verify-activate", "mac-verify-target",
-        "mac-verify-revoke", "mac-verify-destroy"
-    };
-    static const char *const archive_item_ids[] = {
-        "archive-create", "archive-target", "archive-revoke", "archive-destroy"
-    };
-    static const char *const recover_item_ids[] = {
-        "recover-create", "recover-archive", "recover-target", "recover-destroy"
-    };
-    static const char *const preactive_encrypt_item_ids[] = {
-        "preactive-encrypt-create", "preactive-encrypt-target",
-        "preactive-encrypt-revoke", "preactive-encrypt-destroy"
-    };
-    const uint32_t *operations = preactive_encrypt_rejection ? preactive_encrypt_operations :
-        recover ? recover_operations :
-        archive ? archive_operations : active_key_operations;
-    size_t operation_count = (archive || recover || preactive_encrypt_rejection) ? 4U : 5U;
-    size_t target_index = preactive_encrypt_rejection ? 1U : recover ? 2U : archive ? 1U : 2U;
-    size_t revoke_index = (archive || preactive_encrypt_rejection) ? 2U : 3U;
-    size_t destroy_index = (archive || recover || preactive_encrypt_rejection) ? 3U : 4U;
-    const char *const *item_ids = mac_verify ? mac_verify_item_ids :
-        preactive_encrypt_rejection ? preactive_encrypt_item_ids :
-        recover ? recover_item_ids :
-        archive ? archive_item_ids :
-        mac ? mac_item_ids : decrypt ? decrypt_item_ids : encrypt_item_ids;
     const char *operation_name = preactive_encrypt_rejection ? "pre-active Encrypt" :
         mac_verify ? "MAC Verify" :
         recover ? "Recover" :
         archive ? "Archive" : mac ? "MAC" : decrypt ? "Decrypt" : "Encrypt";
+    const char *create_id = preactive_encrypt_rejection ? "preactive-encrypt-create" :
+        mac_verify ? "mac-verify-create" : recover ? "recover-create" : archive ? "archive-create" :
+        mac ? "mac-create" : decrypt ? "decrypt-create" : "encrypt-create";
+    const char *activate_id = mac_verify ? "mac-verify-activate" :
+        recover ? "recover-archive" : mac ? "mac-activate" :
+        decrypt ? "decrypt-activate" : "encrypt-activate";
+    const char *target_id_str = preactive_encrypt_rejection ? "preactive-encrypt-target" :
+        mac_verify ? "mac-verify-target" : recover ? "recover-target" : archive ? "archive-target" :
+        mac ? "mac-target" : decrypt ? "decrypt-target" : "encrypt-target";
+    const char *revoke_id = preactive_encrypt_rejection ? "preactive-encrypt-revoke" :
+        mac_verify ? "mac-verify-revoke" : archive ? "archive-revoke" :
+        mac ? "mac-revoke" : decrypt ? "decrypt-revoke" : "encrypt-revoke";
+    const char *destroy_id = preactive_encrypt_rejection ? "preactive-encrypt-destroy" :
+        mac_verify ? "mac-verify-destroy" : recover ? "recover-destroy" : archive ? "archive-destroy" :
+        mac ? "mac-destroy" : decrypt ? "decrypt-destroy" : "encrypt-destroy";
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[5] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[5] = {NULL};
-    kmipkit_ttlv_structure_t *attributes = NULL;
-    kmipkit_ttlv_structure_t *parameters = NULL;
-    kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_ttlv_value_t *plaintext = NULL;
-    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *prep_item = NULL, *target_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *prep_resp = NULL, *target_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *prep_res = NULL, *target_res = NULL;
+    kmipkit_ttlv_structure_t *attributes = NULL, *parameters = NULL;
+    kmipkit_ttlv_value_t *value = NULL, *plaintext = NULL;
+    kmipkit_unique_identifier_v1_t key_id = {.struct_size = (uint32_t)sizeof(key_id), .abi_version = 1};
+    char *key_id_backing = NULL;
+    bool needs_revoke = false;
     static const uint8_t mac_data_bytes[] = {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
         0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -6302,11 +6443,6 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f
     };
     kmipkit_byte_span_v1_t mac_data = {mac_data_bytes, sizeof(mac_data_bytes)};
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     uint32_t key_algorithm = mac ? KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_HMAC_SHA256 :
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
     uint32_t key_length = mac || aes256_cbc ? 256U : 128U;
@@ -6317,15 +6453,75 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
     int32_t status = create_cryptographic_key_attributes(
         client, key_algorithm, key_length, &attributes) ? 0 : -1;
-    if (status == 0) status = kmipkit_ttlv_value_integer(
-        (int32_t)usage_mask, &value);
+    if (status == 0) status = kmipkit_ttlv_value_integer((int32_t)usage_mask, &value);
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value)) status = -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
-    /* Archive/Recover use the archived-key lifecycle from KMIP §6.1.4 and
-     * §6.1.38 (2.0) / §6.1.42 (2.1); neither requires Activate first. */
-    if (status == 0 && !archived_lifecycle && !preactive_encrypt_rejection)
-        status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not construct %s Create request (status %d)", operation_name, status);
+        goto cleanup;
+    }
+    status = execute_single_typed_item(
+        client, &create_item, create_id, true, &create_resp, &create_res, &meta,
+        &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE, "isolated Create");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "isolated %s setup Create was rejected (status=%u reason=%u)",
+                 operation_name, meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    {
+        uint8_t identifier_present = 0;
+        uint32_t object_type = 0;
+        kmipkit_unique_identifier_v1_t raw_id = {.struct_size = (uint32_t)sizeof(raw_id), .abi_version = 1};
+        status = kmipkit_client_batch_item_response_create(
+            create_res, &identifier_present, &object_type, &raw_id);
+        if (status != 0 || !identifier_present ||
+            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            !copy_text_unique_identifier(&raw_id, &key_id, &key_id_backing)) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not return a valid Create identifier for %s", operation_name);
+            goto cleanup;
+        }
+    }
+    if (!archived_lifecycle && !preactive_encrypt_rejection) {
+        status = kmipkit_client_batch_item_activate(&key_id, &prep_item);
+        if (status == 0) status = execute_single_typed_item(
+            client, &prep_item, activate_id, true, &prep_resp, &prep_res, &meta,
+            &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "isolated Activate");
+        if (status != 0) goto cleanup;
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+            !activate_response_matches_created_key(prep_res, &key_id, &status)) {
+            if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) record_kmip_result(&outcome, &meta);
+            else outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "isolated %s Activate failed (status=%u reason=%u)",
+                     operation_name, meta.result_status, meta.result_reason);
+            goto cleanup;
+        }
+        needs_revoke = true;
+    } else if (recover) {
+        status = kmipkit_client_batch_item_archive(&key_id, &prep_item);
+        if (status == 0) status = execute_single_typed_item(
+            client, &prep_item, activate_id, true, &prep_resp, &prep_res, &meta,
+            &outcome, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, "isolated Archive setup");
+        if (status != 0) goto cleanup;
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+            !archive_response_matches_key(prep_res, &key_id, &status)) {
+            if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) record_kmip_result(&outcome, &meta);
+            else outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "isolated Recover Archive setup failed (status=%u reason=%u)",
+                     meta.result_status, meta.result_reason);
+            goto cleanup;
+        }
+    }
     if (status == 0) status = kmipkit_ttlv_structure_create(&parameters);
     if (status == 0 && !mac && !archived_lifecycle) status = kmipkit_ttlv_value_enumeration(
         aes256_cbc ? KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_CBC :
@@ -6346,127 +6542,52 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
         0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
     };
-    const kmipkit_byte_span_v1_t cbc_iv = {
-        .data = cbc_iv_bytes,
-        .length = sizeof(cbc_iv_bytes),
-    };
+    const kmipkit_byte_span_v1_t cbc_iv = {.data = cbc_iv_bytes, .length = sizeof(cbc_iv_bytes)};
     if (status == 0 && !archived_lifecycle) status = batch_crypto_secret_value(
         input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
     if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
-        &placeholder, parameters, plaintext, &mac_data, NULL, 0, 0, &items[target_index]);
+        &key_id, parameters, plaintext, &mac_data, NULL, 0, 0, &target_item);
     else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
-        &placeholder, parameters, plaintext, NULL, 0, 0, &items[target_index]);
+        &key_id, parameters, plaintext, NULL, 0, 0, &target_item);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
-        &placeholder, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
-        NULL, NULL, 0, 0, NULL, &items[target_index]);
-    else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(
-        &placeholder, &items[target_index]);
-    else if (status == 0 && recover) {
-        status = kmipkit_client_batch_item_archive(&placeholder, &items[1]);
-        if (status == 0) status = kmipkit_client_batch_item_recover(
-            &placeholder, &items[target_index]);
-    } else if (status == 0) {
-        status = kmipkit_client_batch_item_encrypt(
-            &placeholder, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
-            NULL, 0, 0, NULL, &items[target_index]);
-    }
-    if (status == 0 && !recover) status = create_revocation_item(&placeholder, &items[revoke_index]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[destroy_index]);
-    char validation_diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < operation_count; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(
-                items[index], validation_diagnostic, sizeof(validation_diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < operation_count; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
+        &key_id, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
+        NULL, NULL, 0, 0, NULL, &target_item);
+    else if (status == 0 && archive) status = kmipkit_client_batch_item_archive(&key_id, &target_item);
+    else if (status == 0 && recover) status = kmipkit_client_batch_item_recover(&key_id, &target_item);
+    else if (status == 0) status = kmipkit_client_batch_item_encrypt(
+        &key_id, parameters, plaintext, aes256_cbc ? &cbc_iv : NULL,
+        NULL, 0, 0, NULL, &target_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not construct the isolated %s request (status %d)", operation_name, status);
+                 "KMIPKit could not construct target %s request (status %d)", operation_name, status);
         goto cleanup;
     }
-    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
-    if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not execute the isolated %s request (category=%u cause=%u delivery=%u)",
-                 operation_name, category, cause, delivery);
-        goto cleanup;
-    }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != operation_count) status = KMIPKIT_ERROR_INVALID_INPUT;
+    status = execute_single_typed_item(
+        client, &target_item, target_id_str, true, &target_resp, &target_res, &meta,
+        &outcome, operation, operation_name);
+    if (status != 0) goto cleanup;
     bool expected_encrypt_failure = false;
-    for (size_t index = 0; status == 0 && index < operation_count; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-            if (preactive_encrypt_rejection && index == target_index &&
-                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
-                metadata.has_result_reason != 0 &&
-                metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_CRYPTOGRAPHIC_FAILURE) {
-                record_kmip_result(&outcome, &metadata);
-                expected_encrypt_failure = true;
-                continue;
-            }
-            record_kmip_result(&outcome, &metadata);
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        if (preactive_encrypt_rejection &&
+            meta.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+            meta.has_result_reason != 0 &&
+            meta.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_CRYPTOGRAPHIC_FAILURE) {
+            record_kmip_result(&outcome, &meta);
+            expected_encrypt_failure = true;
+        } else {
+            record_kmip_result(&outcome, &meta);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled %s lifecycle item %zu was rejected (status=%u reason=%u)",
-                     operation_name, index, metadata.result_status, metadata.result_reason);
+                     "controlled %s target was rejected (status=%u reason=%u)",
+                     operation_name, meta.result_status, meta.result_reason);
             goto cleanup;
         }
     }
-    if (status != 0) {
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an invalid isolated %s response (status %d)", operation_name, status);
-        goto cleanup;
-    }
-    uint8_t identifier_present = 0;
-    uint32_t object_type = 0;
-    kmipkit_unique_identifier_v1_t identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    status = kmipkit_client_batch_item_response_create(
-        responses[0], &identifier_present, &object_type, &identifier);
-    bool valid = status == 0 && identifier_present &&
-        object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY &&
-        identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        identifier.text_data && identifier.text_length &&
-        (preactive_encrypt_rejection ?
-         (expected_encrypt_failure && preactive_encrypt_response_has_no_output(
-              responses[target_index], &status)) :
-         recover ? (archive_response_matches_key(responses[1], &identifier, &status) &&
-                    recover_response_matches_key(responses[target_index], &identifier, &status)) :
-         archive ? archive_response_matches_key(responses[1], &identifier, &status) :
-          (activate_response_matches_created_key(responses[1], &identifier, &status) &&
-          created_key_crypto_response_matches(responses[2], &identifier, operation,
-                                              aes256_cbc, &status))) &&
-        (recover || (revoke_response_matches_created_key(responses[revoke_index], &identifier, &status) &&
-        response_ttlv_matches_identifier(responses[revoke_index], kmipkit_client_batch_item_response_revoke_ttlv,
-                                         &identifier, &status))) &&
-        destroy_response_matches_key(responses[destroy_index], &identifier, &status);
+    bool valid = preactive_encrypt_rejection
+        ? (expected_encrypt_failure && preactive_encrypt_response_has_no_output(target_res, &status))
+        : recover ? recover_response_matches_key(target_res, &key_id, &status)
+        : archive ? archive_response_matches_key(target_res, &key_id, &status)
+        : created_key_crypto_response_matches(target_res, &key_id, operation, aes256_cbc, &status);
     outcome.success = valid;
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
@@ -6477,18 +6598,34 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     if (valid && preactive_encrypt_rejection) {
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit preserved the expected OperationFailed/CryptographicFailure result and omitted Encrypt output");
-    } else if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-        "KMIPKit %s response did not match the created key, cryptographic data, or cleanup results",
-        operation_name);
+    } else if (!valid) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit %s response did not match the created key or cryptographic data", operation_name);
+    }
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 5; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    if (key_id_backing) {
+        int32_t cleanup_status = 0;
+        if (!cleanup_single_object_sequential(
+                client, &key_id, needs_revoke, revoke_id, destroy_id, &cleanup_status)) {
+            if (outcome.success) {
+                outcome.success = false;
+                outcome.library_failed = cleanup_status != 0;
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit did not complete %s fixture cleanup", operation_name);
+            }
+        }
+        release_created_identifier_copy(&key_id, &key_id_backing);
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    if (target_res) kmipkit_client_batch_item_response_release(target_res);
+    if (prep_res) kmipkit_client_batch_item_response_release(prep_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (target_resp) kmipkit_client_batch_response_release(target_resp);
+    if (prep_resp) kmipkit_client_batch_response_release(prep_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (target_item) kmipkit_client_batch_item_release(target_item);
+    if (prep_item) kmipkit_client_batch_item_release(prep_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     if (parameters) kmipkit_ttlv_structure_release(parameters);
     if (plaintext) kmipkit_ttlv_value_release(plaintext);
@@ -6570,35 +6707,18 @@ static bool created_key_sign_failure_response_is_empty(
 
 static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *client, bool fluent) {
     /* OASIS KMIP 2.0/2.1 §6.1.9 returns identifiers for both created objects. */
-    static const uint32_t operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "create-pair", "destroy-private", "destroy-public"
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[3] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[3] = {NULL};
+    kmipkit_client_batch_item_t *create_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL;
     kmipkit_ttlv_structure_t *common_attributes = NULL;
     kmipkit_ttlv_structure_t *private_attributes = NULL;
     kmipkit_ttlv_structure_t *public_attributes = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    const kmipkit_unique_identifier_v1_t private_request_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PRIVATE_KEY
-    };
-    const kmipkit_unique_identifier_v1_t public_request_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PUBLIC_KEY
-    };
-    int32_t status;
+    kmipkit_unique_identifier_v1_t priv_id = {.struct_size = (uint32_t)sizeof(priv_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t pub_id = {.struct_size = (uint32_t)sizeof(pub_id), .abi_version = 1};
+    char *priv_backing = NULL, *pub_backing = NULL;
+    int32_t status = 0;
     if (fluent) {
         kmipkit_create_key_pair_builder_t *builder = NULL;
         status = kmipkit_create_key_pair_builder_create(&builder);
@@ -6609,7 +6729,7 @@ static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *clie
             builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN);
         if (status == 0) status = kmipkit_create_key_pair_builder_set_public_usage_mask(
             builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY);
-        if (status == 0) status = kmipkit_create_key_pair_builder_build_batch_item(builder, &items[0]);
+        if (status == 0) status = kmipkit_create_key_pair_builder_build_batch_item(builder, &create_item);
         if (builder) kmipkit_create_key_pair_builder_release(builder);
     } else {
         status = kmipkit_ttlv_structure_create(&common_attributes);
@@ -6635,32 +6755,7 @@ static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *clie
                 client, &public_attributes, UINT32_C(0x42002C), &value))
             status = KMIPKIT_ERROR_INVALID_INPUT;
         if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
-            common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
-    }
-    if (status == 0) status = kmipkit_client_batch_item_destroy(
-        &private_request_identifier, &items[1]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(
-        &public_request_identifier, &items[2]);
-    char validation_diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 3; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(
-                items[index], validation_diagnostic, sizeof(validation_diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 3; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
+            common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &create_item);
     }
     if (status != 0) {
         outcome.library_failed = true;
@@ -6668,74 +6763,58 @@ static kmip_execution_outcome_t execute_create_key_pair(kmip_live_client_t *clie
                  "KMIPKit could not construct the isolated Create Key Pair request (status %d)", status);
         goto cleanup;
     }
-    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
-    if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-        outcome.library_failed = true;
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, "create-pair", true, &create_resp, &create_res, &meta,
+        &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, "isolated Create Key Pair");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not execute the isolated Create Key Pair request "
-                 "(category=%u cause=%u delivery=%u)", category, cause, delivery);
-        goto cleanup;
-    }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != 3) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 3; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-            record_kmip_result(&outcome, &metadata);
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled Create Key Pair lifecycle item %zu was rejected "
-                     "(status=%u reason=%u)", index, metadata.result_status, metadata.result_reason);
-            goto cleanup;
-        }
-    }
-    if (status != 0) {
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an invalid isolated Create Key Pair response (status %d)", status);
+                 "controlled Create Key Pair was rejected (status=%u reason=%u)",
+                 meta.result_status, meta.result_reason);
         goto cleanup;
     }
     uint8_t pair_present = 0;
-    kmipkit_unique_identifier_v1_t private_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t public_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
+    kmipkit_unique_identifier_v1_t raw_priv = {.struct_size = (uint32_t)sizeof(raw_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t raw_pub = {.struct_size = (uint32_t)sizeof(raw_pub), .abi_version = 1};
     status = kmipkit_client_batch_item_response_create_key_pair(
-        responses[0], &pair_present, &private_identifier, &public_identifier);
+        create_res, &pair_present, &raw_priv, &raw_pub);
     bool valid = status == 0 && pair_present &&
-        private_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        public_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        private_identifier.text_data && private_identifier.text_length &&
-        public_identifier.text_data && public_identifier.text_length &&
-        !same_text_identifier(&private_identifier, &public_identifier) &&
-        destroy_response_matches_key(responses[1], &private_identifier, &status) &&
-        destroy_response_matches_key(responses[2], &public_identifier, &status);
-    outcome.success = valid;
-    outcome.library_failed = status != 0;
-    outcome.library_validated = status == 0;
-    outcome.has_result_status_code = status == 0;
+        copy_text_unique_identifier(&raw_priv, &priv_id, &priv_backing) &&
+        copy_text_unique_identifier(&raw_pub, &pub_id, &pub_backing) &&
+        !same_text_identifier(&priv_id, &pub_id);
+    if (!valid) {
+        outcome.library_failed = status != 0;
+        outcome.library_validated = status == 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Create Key Pair response did not return distinct identifiers");
+        goto cleanup;
+    }
+    outcome.success = true;
+    outcome.library_validated = true;
+    outcome.has_result_status_code = true;
     outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
-    if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-        "KMIPKit Create Key Pair response did not match its returned identifiers or cleanup results");
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 3; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    {
+        int32_t priv_status = 0, pub_status = 0;
+        bool priv_ok = cleanup_single_object_sequential(
+            client, &priv_id, false, NULL, "destroy-private", &priv_status);
+        bool pub_ok = cleanup_single_object_sequential(
+            client, &pub_id, false, NULL, "destroy-public", &pub_status);
+        if (outcome.success && (!priv_ok || !pub_ok)) {
+            outcome.success = false;
+            outcome.library_failed = (priv_status != 0 || pub_status != 0);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Create Key Pair cleanup failed");
+        }
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    release_created_identifier_copy(&priv_id, &priv_backing);
+    release_created_identifier_copy(&pub_id, &pub_backing);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (common_attributes) kmipkit_ttlv_structure_release(common_attributes);
     if (private_attributes) kmipkit_ttlv_structure_release(private_attributes);
     if (public_attributes) kmipkit_ttlv_structure_release(public_attributes);
@@ -7046,11 +7125,6 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     kmipkit_ttlv_structure_view_t *response_ttlv_view = NULL;
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_authentication_t *authentication = NULL;
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     kmipkit_unique_identifier_v1_t split_identifiers[2] = {
         {.struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1},
         {.struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1}
@@ -7119,26 +7193,32 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
             !split_identifiers[1].text_data || !split_identifiers[1].text_length ||
             same_text_identifier(&split_identifiers[0], &split_identifiers[1])))
         status = KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_unique_identifier_v1_t split_id_copies[2] = {
+        {.struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1},
+        {.struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1}
+    };
+    char *split_backings[2] = {NULL, NULL};
+    char *joined_backing = NULL;
+    if (status == 0) {
+        for (size_t index = 0; index < 2; ++index) {
+            if (!copy_text_unique_identifier(&split_identifiers[index], &split_id_copies[index],
+                                             &split_backings[index])) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+                break;
+            }
+        }
+    }
     for (size_t index = 0; status == 0 && index < 2; ++index)
         status = kmipkit_split_key_reference_create(
-            &split_identifiers[index], 2, &references[index]);
+            &split_id_copies[index], 2, &references[index]);
     if (status == 0) status = kmipkit_client_batch_item_join_split_key(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, references, 2,
         0, 0, NULL, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[1]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&split_identifiers[0], &items[2]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&split_identifiers[1], &items[3]);
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index + 1]);
-        if (status == 0 && !request_item_is_valid(items[index], diagnostic, sizeof(diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
+    if (status == 0) status = set_batch_item_id(&items[0], item_ids[1]);
+    if (status == 0 && !request_item_is_valid(items[0], diagnostic, sizeof(diagnostic)))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_create(&join_batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(join_batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        join_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 4; ++index)
-        status = kmipkit_client_batch_add_item(join_batch, &items[index]);
+    if (status == 0) status = kmipkit_client_batch_add_item(join_batch, &items[0]);
     if (status == 0 && client->username_env[0] != '\0') {
         if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
         else {
@@ -7152,29 +7232,28 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     if (status == 0) {
         uint64_t response_count = 0;
         status = kmipkit_client_batch_response_item_count(join_response, &response_count);
-        if (status == 0 && response_count != 4) status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0 && response_count != 1U) status = KMIPKIT_ERROR_INVALID_INPUT;
     }
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        status = kmipkit_client_batch_response_item_at(join_response, index, &responses[index]);
+    if (status == 0) status = kmipkit_client_batch_response_item_at(join_response, 0, &responses[0]);
+    if (status == 0) {
         metadata = (kmipkit_client_batch_item_metadata_v2_t){
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
         };
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && (metadata.operation != operations[index + 1] ||
+        status = kmipkit_client_batch_item_response_metadata_v2(responses[0], &metadata);
+        if (status == 0 && (metadata.operation != operations[1] ||
                 metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
             record_kmip_result(&outcome, &metadata);
             status = KMIPKIT_ERROR_INVALID_INPUT;
         }
     }
     uint8_t joined_present = 0;
+    kmipkit_unique_identifier_v1_t joined_copy = {.struct_size = (uint32_t)sizeof(joined_copy), .abi_version = 1};
     if (status == 0) status = kmipkit_client_batch_item_response_join_split_key(
         responses[0], &joined_present, &joined_identifier);
     if (status == 0 && (!joined_present ||
-            joined_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !joined_identifier.text_data || !joined_identifier.text_length ||
-            same_text_identifier(&joined_identifier, &split_identifiers[0]) ||
-            same_text_identifier(&joined_identifier, &split_identifiers[1])))
+            !copy_text_unique_identifier(&joined_identifier, &joined_copy, &joined_backing) ||
+            same_text_identifier(&joined_copy, &split_id_copies[0]) ||
+            same_text_identifier(&joined_copy, &split_id_copies[1])))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_response_join_split_key_ttlv(
         responses[0], &response_ttlv_present, &response_ttlv);
@@ -7184,11 +7263,21 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
         response_ttlv_view, &response_ttlv_item_count);
     if (status == 0 && response_ttlv_item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && (!destroy_response_matches_key(
-            responses[1], &joined_identifier, &status) ||
-            !destroy_response_matches_key(responses[2], &split_identifiers[0], &status) ||
-            !destroy_response_matches_key(responses[3], &split_identifiers[1], &status)))
-        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
+    {
+        int32_t clean_j = 0, clean_0 = 0, clean_1 = 0;
+        bool j_ok = cleanup_single_object_sequential(
+            client, &joined_copy, false, NULL, item_ids[2], &clean_j);
+        bool s0_ok = cleanup_single_object_sequential(
+            client, &split_id_copies[0], false, NULL, item_ids[3], &clean_0);
+        bool s1_ok = cleanup_single_object_sequential(
+            client, &split_id_copies[1], false, NULL, item_ids[4], &clean_1);
+        if (status == 0 && (!j_ok || !s0_ok || !s1_ok)) {
+            status = (clean_j ? clean_j : clean_0 ? clean_0 : clean_1 ? clean_1 : KMIPKIT_ERROR_INVALID_INPUT);
+        }
+    }
+    release_created_identifier_copy(&joined_copy, &joined_backing);
+    release_created_identifier_copy(&split_id_copies[0], &split_backings[0]);
+    release_created_identifier_copy(&split_id_copies[1], &split_backings[1]);
     if (status == 0) {
         outcome.success = true;
         outcome.library_validated = true;
@@ -7224,45 +7313,17 @@ static kmip_execution_outcome_t execute_join_split_key(kmip_live_client_t *clien
 
 static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.42 and 2.1 §6.1.46 return a replacement identifier. */
-    static const uint32_t operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE,
-        KMIPKIT_ENUMERATION_OPERATION_RE_KEY,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "rekey-create", "rekey-target", "rekey-revoke-replacement",
-        "rekey-destroy-replacement", "rekey-revoke-original", "rekey-destroy-original"
-    };
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *create_batch = NULL;
-    kmipkit_client_batch_response_t *create_response = NULL;
-    kmipkit_client_batch_item_t *create_item = NULL;
-    kmipkit_client_batch_item_response_t *create_result = NULL;
-    kmipkit_client_batch_t *rekey_batch = NULL;
-    kmipkit_client_batch_response_t *rekey_response = NULL;
-    kmipkit_client_batch_item_t *items[5] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[5] = {NULL};
-    kmipkit_ttlv_structure_t *attributes = NULL;
-    kmipkit_ttlv_structure_t *response_ttlv = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *rekey_item = NULL;
+    kmipkit_client_batch_response_t *create_response = NULL, *rekey_response = NULL;
+    kmipkit_client_batch_item_response_t *create_result = NULL, *rekey_result = NULL;
+    kmipkit_ttlv_structure_t *attributes = NULL, *response_ttlv = NULL;
     kmipkit_ttlv_structure_view_t *response_ttlv_view = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    kmipkit_unique_identifier_v1_t original_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t replacement_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t identifier_present = 0;
-    uint8_t response_ttlv_present = 0;
+    kmipkit_unique_identifier_v1_t orig_id = {.struct_size = (uint32_t)sizeof(orig_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t repl_id = {.struct_size = (uint32_t)sizeof(repl_id), .abi_version = 1};
+    char *orig_backing = NULL, *repl_backing = NULL;
+    uint8_t identifier_present = 0, response_ttlv_present = 0, replacement_present = 0;
     uint32_t object_type = 0;
     uint64_t response_ttlv_item_count = 0;
     int32_t status = create_cryptographic_key_attributes(
@@ -7270,116 +7331,65 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
         0 : KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
-    char diagnostic[256] = {0};
-    if (status == 0) status = set_batch_item_id(&create_item, item_ids[0]);
-    if (status == 0 && !request_item_is_valid(create_item, diagnostic, sizeof(diagnostic)))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_client_batch_create(&create_batch);
-    if (status == 0) status = kmipkit_client_batch_add_item(create_batch, &create_item);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(create_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Re-key could not construct setup Create (status %d)", status);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &create_batch, client->limits, &create_response);
-    uint64_t response_count = 0;
-    if (status == 0) status = kmipkit_client_batch_response_item_count(
-        create_response, &response_count);
-    if (status == 0 && response_count != 1) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_client_batch_response_item_at(
-        create_response, 0, &create_result);
-    kmipkit_client_batch_item_metadata_v2_t metadata = {
-        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-    };
-    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-        create_result, &metadata);
-    if (status == 0 && (metadata.operation != operations[0] ||
-            metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-        record_kmip_result(&outcome, &metadata);
-        status = KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, "rekey-create", true, &create_response, &create_result,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE, "Re-key setup Create");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_batch_item_response_create(
-        create_result, &identifier_present, &object_type, &original_identifier);
-    if (status == 0 && (!identifier_present ||
-            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
-            original_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !original_identifier.text_data || !original_identifier.text_length))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-
-    if (status == 0) status = kmipkit_client_batch_item_rekey(
-        &original_identifier, 0, 0, NULL, NULL, &items[0]);
-    if (status == 0) status = create_revocation_item(&placeholder, &items[1]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[2]);
-    if (status == 0) status = create_revocation_item(&original_identifier, &items[3]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&original_identifier, &items[4]);
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index + 1]);
-        if (status == 0 && !request_item_is_valid(items[index], diagnostic, sizeof(diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_unique_identifier_v1_t raw_orig = {.struct_size = (uint32_t)sizeof(raw_orig), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create(
+        create_result, &identifier_present, &object_type, &raw_orig);
+    if (status != 0 || !identifier_present ||
+        object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        !copy_text_unique_identifier(&raw_orig, &orig_id, &orig_backing)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Re-key Create did not return a valid identifier");
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_batch_create(&rekey_batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(rekey_batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        rekey_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 5; ++index)
-        status = kmipkit_client_batch_add_item(rekey_batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(rekey_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
+    status = kmipkit_client_batch_item_rekey(&orig_id, 0, 0, NULL, NULL, &rekey_item);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Re-key could not construct target request (status %d)", status);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &rekey_batch, client->limits, &rekey_response);
-    response_count = 0;
-    if (status == 0) status = kmipkit_client_batch_response_item_count(
-        rekey_response, &response_count);
-    if (status == 0 && response_count != 5) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
-        metadata = (kmipkit_client_batch_item_metadata_v2_t){
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(rekey_response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && metadata.operation != operations[index + 1])
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
+    status = execute_single_typed_item(
+        client, &rekey_item, "rekey-target", true, &rekey_response, &rekey_result,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_RE_KEY, "Re-key");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key was rejected (status=%u reason=%u)", meta.result_status, meta.result_reason);
+        goto cleanup;
     }
-    uint8_t replacement_present = 0;
-    if (status == 0) status = kmipkit_client_batch_item_response_rekey(
-        responses[0], &replacement_present, &replacement_identifier);
-    if (status == 0 && (!replacement_present ||
-            replacement_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !replacement_identifier.text_data || !replacement_identifier.text_length ||
-            same_text_identifier(&replacement_identifier, &original_identifier)))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_unique_identifier_v1_t raw_repl = {.struct_size = (uint32_t)sizeof(raw_repl), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_rekey(rekey_result, &replacement_present, &raw_repl);
+    bool copied_repl = status == 0 && replacement_present &&
+        copy_text_unique_identifier(&raw_repl, &repl_id, &repl_backing);
+    if (!copied_repl || same_text_identifier(&repl_id, &orig_id)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_response_rekey_ttlv(
-        responses[0], &response_ttlv_present, &response_ttlv);
-    if (status == 0 && (!response_ttlv_present || !response_ttlv))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
+        rekey_result, &response_ttlv_present, &response_ttlv);
+    if (status == 0 && (!response_ttlv_present || !response_ttlv)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_view(response_ttlv, &response_ttlv_view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
         response_ttlv_view, &response_ttlv_item_count);
     if (status == 0 && response_ttlv_item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && (!destroy_response_matches_key(
-            responses[2], &replacement_identifier, &status) ||
-            !destroy_response_matches_key(responses[4], &original_identifier, &status)))
-        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
     if (status == 0) {
         outcome.success = true;
         outcome.library_validated = true;
@@ -7387,23 +7397,32 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
         outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
     } else {
         outcome.library_failed = true;
-        if (!outcome.result_reason[0])
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Re-key did not return a replacement identifier and clean both objects (status %d)",
-                     status);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Re-key did not return a valid replacement identifier (status %d)", status);
     }
 
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 5; ++index)
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
+cleanup:
+    {
+        int32_t repl_status = 0, orig_status = 0;
+        bool repl_ok = cleanup_single_object_sequential(
+            client, &repl_id, false, NULL, "rekey-destroy-replacement", &repl_status);
+        bool orig_ok = cleanup_single_object_sequential(
+            client, &orig_id, false, NULL, "rekey-destroy-original", &orig_status);
+        if (outcome.success && (!repl_ok || !orig_ok)) {
+            outcome.success = false;
+            outcome.library_failed = (repl_status != 0 || orig_status != 0);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Re-key did not complete cleanup of both keys");
+        }
+    }
+    release_created_identifier_copy(&repl_id, &repl_backing);
+    release_created_identifier_copy(&orig_id, &orig_backing);
+    if (rekey_result) kmipkit_client_batch_item_response_release(rekey_result);
     if (create_result) kmipkit_client_batch_item_response_release(create_result);
-    for (size_t index = 0; index < 5; ++index)
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    if (rekey_item) kmipkit_client_batch_item_release(rekey_item);
     if (create_item) kmipkit_client_batch_item_release(create_item);
     if (rekey_response) kmipkit_client_batch_response_release(rekey_response);
-    if (rekey_batch) kmipkit_client_batch_release(rekey_batch);
     if (create_response) kmipkit_client_batch_response_release(create_response);
-    if (create_batch) kmipkit_client_batch_release(create_batch);
     if (response_ttlv_view) kmipkit_ttlv_structure_view_release(response_ttlv_view);
     if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
@@ -7413,217 +7432,129 @@ static kmip_execution_outcome_t execute_rekey(kmip_live_client_t *client) {
 
 static kmip_execution_outcome_t execute_derive_key(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0/2.1 §6.1.14 and §7.12: derive from an explicitly permitted AES key. */
-    static const uint32_t setup_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE,
-        KMIPKIT_ENUMERATION_OPERATION_ACTIVATE
-    };
-    static const uint32_t target_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_DERIVE_KEY,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "derive-create", "derive-activate", "derive-target",
-        "derive-revoke-source", "derive-destroy-derived", "derive-destroy-source"
-    };
     static const uint8_t derivation_data[] = "synthetic-derivation-data";
     static const uint8_t derivation_salt[] = "synthetic-derivation-salt";
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-        .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *setup_batch = NULL;
-    kmipkit_client_batch_response_t *setup_response = NULL;
-    kmipkit_client_batch_item_t *setup_items[2] = {NULL};
-    kmipkit_client_batch_item_response_t *setup_results[2] = {NULL};
-    kmipkit_client_batch_t *derive_batch = NULL;
-    kmipkit_client_batch_response_t *derive_response = NULL;
-    kmipkit_client_batch_item_t *derive_items[4] = {NULL};
-    kmipkit_client_batch_item_response_t *derive_results[4] = {NULL};
-    kmipkit_ttlv_structure_t *source_attributes = NULL;
-    kmipkit_ttlv_structure_t *output_attributes = NULL;
-    kmipkit_ttlv_structure_t *derivation_parameters = NULL;
-    kmipkit_ttlv_structure_t *cryptographic_parameters = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *activate_item = NULL, *derive_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *activate_resp = NULL, *derive_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *activate_res = NULL, *derive_res = NULL;
+    kmipkit_ttlv_structure_t *source_attributes = NULL, *output_attributes = NULL;
+    kmipkit_ttlv_structure_t *derivation_parameters = NULL, *cryptographic_parameters = NULL;
     kmipkit_ttlv_structure_t *response_ttlv = NULL;
     kmipkit_ttlv_structure_view_t *response_ttlv_view = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    kmipkit_unique_identifier_v1_t source_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t derived_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t derived_identifier_present = 0;
-    uint8_t response_ttlv_present = 0;
-    uint64_t response_count = 0;
+    kmipkit_unique_identifier_v1_t source_id = {.struct_size = (uint32_t)sizeof(source_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t derived_id = {.struct_size = (uint32_t)sizeof(derived_id), .abi_version = 1};
+    char *source_backing = NULL, *derived_backing = NULL;
+    bool source_active = false;
+    uint8_t source_identifier_present = 0, derived_identifier_present = 0, response_ttlv_present = 0;
+    uint32_t source_object_type = 0;
     uint64_t response_ttlv_item_count = 0;
     int32_t status = create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &source_attributes) ?
         0 : KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DERIVE_KEY, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &source_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &source_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create(
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, source_attributes, NULL, &setup_items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(
-        &placeholder, &setup_items[1]);
-    for (size_t index = 0; status == 0 && index < 2; ++index)
-        status = set_batch_item_id(&setup_items[index], item_ids[index]);
-    if (status == 0) status = kmipkit_client_batch_create(&setup_batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(setup_batch, 1);
-    for (size_t index = 0; status == 0 && index < 2; ++index)
-        status = kmipkit_client_batch_add_item(setup_batch, &setup_items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(setup_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, source_attributes, NULL, &create_item);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Derive Key could not construct setup Create (status %d)", status);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &setup_batch, client->limits, &setup_response);
-    if (status == 0) status = kmipkit_client_batch_response_item_count(setup_response, &response_count);
-    if (status == 0 && response_count != 2) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 2; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(setup_response, index, &setup_results[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            setup_results[index], &metadata);
-        if (status == 0 && (metadata.operation != setup_operations[index] ||
-                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, "derive-create", true, &create_resp, &create_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE, "Derive Key Create");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
     }
-    uint8_t source_identifier_present = 0;
-    uint32_t source_object_type = 0;
-    if (status == 0) status = kmipkit_client_batch_item_response_create(
-        setup_results[0], &source_identifier_present, &source_object_type, &source_identifier);
-    if (status == 0 && (!source_identifier_present ||
-            source_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
-            source_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !source_identifier.text_data || !source_identifier.text_length))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-
+    kmipkit_unique_identifier_v1_t raw_source = {.struct_size = (uint32_t)sizeof(raw_source), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create(
+        create_res, &source_identifier_present, &source_object_type, &raw_source);
+    if (status != 0 || !source_identifier_present ||
+        source_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        !copy_text_unique_identifier(&raw_source, &source_id, &source_backing)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Derive Key Create did not return a valid identifier");
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_activate(&source_id, &activate_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &activate_item, "derive-activate", true, &activate_resp, &activate_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "Derive Key Activate");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
+    }
+    source_active = true;
     if (status == 0) status = kmipkit_ttlv_structure_create(&derivation_parameters);
     if (status == 0) status = kmipkit_ttlv_structure_create(&cryptographic_parameters);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_HASHING_ALGORITHM_SHA_256, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &cryptographic_parameters, UINT32_C(0x420038), &value))
+    if (status == 0 && !append_ttlv_value(client, &cryptographic_parameters, UINT32_C(0x420038), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && !structure_into_value(
-            client, &cryptographic_parameters, &value))
+    if (status == 0 && !structure_into_value(client, &cryptographic_parameters, &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && !append_ttlv_value(
-            client, &derivation_parameters, UINT32_C(0x42002B), &value))
+    if (status == 0 && !append_ttlv_value(client, &derivation_parameters, UINT32_C(0x42002B), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_byte_string(
         client->limits, derivation_data, sizeof(derivation_data) - 1, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &derivation_parameters, UINT32_C(0x420030), &value))
+    if (status == 0 && !append_ttlv_value(client, &derivation_parameters, UINT32_C(0x420030), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_byte_string(
         client->limits, derivation_salt, sizeof(derivation_salt) - 1, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &derivation_parameters, UINT32_C(0x420084), &value))
+    if (status == 0 && !append_ttlv_value(client, &derivation_parameters, UINT32_C(0x420084), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(1000, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &derivation_parameters, UINT32_C(0x42003C), &value))
+    if (status == 0 && !append_ttlv_value(client, &derivation_parameters, UINT32_C(0x42003C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0 && !create_cryptographic_key_attributes(
             client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &output_attributes))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &output_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &output_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) {
-        status = kmipkit_client_batch_item_derive_key(
-            KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, &source_identifier, 1,
-            KMIPKIT_ENUMERATION_DERIVATION_METHOD_PBKDF2, derivation_parameters,
-            output_attributes, &derive_items[0]);
-        if (status != 0) {
-            uint32_t category = 0, cause = 0, delivery = 0;
-            (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit rejected the locally constructed Derive Key request "
-                     "(category=%u cause=%u delivery=%u)", category, cause, delivery);
-        }
+    if (status == 0) status = kmipkit_client_batch_item_derive_key(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, &source_id, 1,
+        KMIPKIT_ENUMERATION_DERIVATION_METHOD_PBKDF2, derivation_parameters,
+        output_attributes, &derive_item);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit rejected Derive Key construction (status %d)", status);
+        goto cleanup;
     }
-    if (status == 0) status = create_revocation_item(&source_identifier, &derive_items[1]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &derive_items[2]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&source_identifier, &derive_items[3]);
-    char diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        status = set_batch_item_id(&derive_items[index], item_ids[index + 2]);
-        if (status == 0 && !request_item_is_valid(derive_items[index], diagnostic, sizeof(diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
+    status = execute_single_typed_item(
+        client, &derive_item, "derive-target", true, &derive_resp, &derive_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_DERIVE_KEY, "Derive Key");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Derive Key was rejected (status=%u reason=%u)", meta.result_status, meta.result_reason);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_batch_create(&derive_batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(derive_batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        derive_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 4; ++index)
-        status = kmipkit_client_batch_add_item(derive_batch, &derive_items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(derive_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &derive_batch, client->limits, &derive_response);
-    response_count = 0;
-    if (status == 0) status = kmipkit_client_batch_response_item_count(derive_response, &response_count);
-    if (status == 0 && response_count != 4) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(derive_response, index, &derive_results[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            derive_results[index], &metadata);
-        if (status == 0 && metadata.operation != target_operations[index])
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-    }
-    if (status == 0) status = kmipkit_client_batch_item_response_derive_key(
-        derive_results[0], &derived_identifier_present, &derived_identifier);
-    if (status == 0 && (!derived_identifier_present ||
-            derived_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !derived_identifier.text_data || !derived_identifier.text_length ||
-            same_text_identifier(&derived_identifier, &source_identifier)))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_unique_identifier_v1_t raw_derived = {.struct_size = (uint32_t)sizeof(raw_derived), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_derive_key(derive_res, &derived_identifier_present, &raw_derived);
+    bool copied_derived = status == 0 && derived_identifier_present &&
+        copy_text_unique_identifier(&raw_derived, &derived_id, &derived_backing);
+    if (!copied_derived || same_text_identifier(&derived_id, &source_id)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_response_derive_key_ttlv(
-        derive_results[0], &response_ttlv_present, &response_ttlv);
-    if (status == 0 && (!response_ttlv_present || !response_ttlv))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
+        derive_res, &response_ttlv_present, &response_ttlv);
+    if (status == 0 && (!response_ttlv_present || !response_ttlv)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_view(response_ttlv, &response_ttlv_view);
     if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
         response_ttlv_view, &response_ttlv_item_count);
     if (status == 0 && response_ttlv_item_count == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && (!destroy_response_matches_key(
-            derive_results[2], &derived_identifier, &status) ||
-            !destroy_response_matches_key(derive_results[3], &source_identifier, &status)))
-        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
     if (status == 0) {
         outcome.success = true;
         outcome.library_validated = true;
@@ -7631,27 +7562,37 @@ static kmip_execution_outcome_t execute_derive_key(kmip_live_client_t *client) {
         outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
     } else {
         outcome.library_failed = true;
-        if (!outcome.result_reason[0])
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Derive Key did not return its typed result and complete cleanup (status %d)",
-                     status);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Derive Key did not return its typed result (status %d)", status);
     }
 
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 2; ++index) {
-        if (setup_results[index]) kmipkit_client_batch_item_response_release(setup_results[index]);
-        if (setup_items[index]) kmipkit_client_batch_item_release(setup_items[index]);
+cleanup:
+    {
+        int32_t drv_status = 0, src_status = 0;
+        bool drv_ok = cleanup_single_object_sequential(
+            client, &derived_id, false, NULL, "derive-destroy-derived", &drv_status);
+        bool src_ok = cleanup_single_object_sequential(
+            client, &source_id, source_active, "derive-revoke-source", "derive-destroy-source", &src_status);
+        if (outcome.success && (!drv_ok || !src_ok)) {
+            outcome.success = false;
+            outcome.library_failed = (drv_status != 0 || src_status != 0);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Derive Key did not complete fixture cleanup");
+        }
     }
-    for (size_t index = 0; index < 4; ++index) {
-        if (derive_results[index]) kmipkit_client_batch_item_response_release(derive_results[index]);
-        if (derive_items[index]) kmipkit_client_batch_item_release(derive_items[index]);
-    }
+    release_created_identifier_copy(&derived_id, &derived_backing);
+    release_created_identifier_copy(&source_id, &source_backing);
+    if (derive_res) kmipkit_client_batch_item_response_release(derive_res);
+    if (activate_res) kmipkit_client_batch_item_response_release(activate_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (derive_resp) kmipkit_client_batch_response_release(derive_resp);
+    if (activate_resp) kmipkit_client_batch_response_release(activate_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (derive_item) kmipkit_client_batch_item_release(derive_item);
+    if (activate_item) kmipkit_client_batch_item_release(activate_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (response_ttlv_view) kmipkit_ttlv_structure_view_release(response_ttlv_view);
     if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
-    if (setup_response) kmipkit_client_batch_response_release(setup_response);
-    if (setup_batch) kmipkit_client_batch_release(setup_batch);
-    if (derive_response) kmipkit_client_batch_response_release(derive_response);
-    if (derive_batch) kmipkit_client_batch_release(derive_batch);
     if (source_attributes) kmipkit_ttlv_structure_release(source_attributes);
     if (output_attributes) kmipkit_ttlv_structure_release(output_attributes);
     if (derivation_parameters) kmipkit_ttlv_structure_release(derivation_parameters);
@@ -7662,333 +7603,152 @@ static kmip_execution_outcome_t execute_derive_key(kmip_live_client_t *client) {
 
 static kmip_execution_outcome_t execute_rekey_key_pair(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.43 and 2.1 §6.1.47 return both replacement key identifiers. */
-    static const uint32_t setup_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR,
-        KMIPKIT_ENUMERATION_OPERATION_ACTIVATE
-    };
-    static const uint32_t cleanup_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "rekey-pair-create", "rekey-pair-activate", "rekey-pair-target",
-        "rekey-pair-revoke-original", "rekey-pair-revoke-replacement",
-        "rekey-pair-destroy-original-private", "rekey-pair-destroy-original-public",
-        "rekey-pair-destroy-replacement-private", "rekey-pair-destroy-replacement-public"
-    };
-    const kmipkit_unique_identifier_v1_t private_identifier_selector = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PRIVATE_KEY
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *setup_batch = NULL;
-    kmipkit_client_batch_response_t *setup_response = NULL;
-    kmipkit_client_batch_item_t *setup_items[2] = {NULL};
-    kmipkit_client_batch_item_response_t *setup_results[2] = {NULL};
-    kmipkit_client_batch_t *target_batch = NULL;
-    kmipkit_client_batch_response_t *target_response = NULL;
-    kmipkit_client_batch_item_t *target_item = NULL;
-    kmipkit_client_batch_item_response_t *target_result = NULL;
-    kmipkit_client_batch_t *cleanup_batch = NULL;
-    kmipkit_client_batch_response_t *cleanup_response = NULL;
-    kmipkit_client_batch_item_t *cleanup_items[6] = {NULL};
-    kmipkit_client_batch_item_response_t *cleanup_results[6] = {NULL};
-    kmipkit_ttlv_structure_t *common_attributes = NULL;
-    kmipkit_ttlv_structure_t *private_attributes = NULL;
-    kmipkit_ttlv_structure_t *public_attributes = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *activate_item = NULL, *target_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *activate_resp = NULL, *target_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *activate_res = NULL, *target_res = NULL;
+    kmipkit_ttlv_structure_t *common_attributes = NULL, *private_attributes = NULL, *public_attributes = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    kmipkit_unique_identifier_v1_t original_private_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t original_public_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t replacement_private_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t replacement_public_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t pair_present = 0;
-    uint8_t replacement_pair_present = 0;
-    uint64_t response_count = 0;
-    int32_t last_error_status = 0;
-    uint32_t last_error_category = 0;
-    uint32_t last_error_cause = 0;
-    uint32_t last_error_delivery = 0;
-    char diagnostic[256] = {0};
-    char stage_detail[128] = {0};
-    const char *stage = "construct initial key pair";
+    kmipkit_unique_identifier_v1_t orig_priv = {.struct_size = (uint32_t)sizeof(orig_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t orig_pub = {.struct_size = (uint32_t)sizeof(orig_pub), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t repl_priv = {.struct_size = (uint32_t)sizeof(repl_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t repl_pub = {.struct_size = (uint32_t)sizeof(repl_pub), .abi_version = 1};
+    char *orig_priv_b = NULL, *orig_pub_b = NULL, *repl_priv_b = NULL, *repl_pub_b = NULL;
+    bool orig_priv_active = false;
+    uint8_t pair_present = 0, repl_pair_present = 0;
     int32_t status = kmipkit_ttlv_structure_create(&common_attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x420028), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x420028), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x42002A), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x42002A), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &private_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &private_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&public_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &public_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &public_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
-        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &setup_items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(
-        &private_identifier_selector, &setup_items[1]);
-    for (size_t index = 0; status == 0 && index < 2; ++index) {
-        status = set_batch_item_id(&setup_items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(setup_items[index], diagnostic, sizeof(diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&setup_batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(setup_batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        setup_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 2; ++index)
-        status = kmipkit_client_batch_add_item(setup_batch, &setup_items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(setup_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
-    stage = "execute initial key pair and activation";
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &setup_batch, client->limits, &setup_response);
-    stage = "read initial key pair and activation responses";
-    if (status == 0) status = kmipkit_client_batch_response_item_count(setup_response, &response_count);
-    if (status == 0 && response_count != 2) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 2; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(setup_response, index, &setup_results[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            setup_results[index], &metadata);
-        if (status == 0 && (metadata.operation != setup_operations[index] ||
-                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-    }
-    if (status == 0) status = kmipkit_client_batch_item_response_create_key_pair(
-        setup_results[0], &pair_present, &original_private_identifier, &original_public_identifier);
-    if (status == 0 && (!pair_present ||
-            original_private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !original_private_identifier.text_data || !original_private_identifier.text_length ||
-            original_public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !original_public_identifier.text_data || !original_public_identifier.text_length ||
-            same_text_identifier(&original_private_identifier, &original_public_identifier) ||
-            !activate_response_matches_created_key(
-                setup_results[1], &original_private_identifier, &status)))
-        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
-
-    stage = "construct Re-key Key Pair request";
-    if (status == 0) status = kmipkit_client_batch_item_rekey_key_pair(
-        &original_private_identifier, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, &target_item);
-    if (status == 0) status = set_batch_item_id(&target_item, item_ids[2]);
-    if (status == 0 && !request_item_is_valid(target_item, diagnostic, sizeof(diagnostic)))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_client_batch_create(&target_batch);
-    if (status == 0) status = kmipkit_client_batch_add_item(target_batch, &target_item);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(target_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
-    stage = "execute Re-key Key Pair and read response";
-    if (status == 0) status = kmipkit_client_execute(
-        client->client, &target_batch, client->limits, &target_response);
-    response_count = 0;
-    if (status == 0) status = kmipkit_client_batch_response_item_count(target_response, &response_count);
-    if (status == 0 && response_count != 1) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_client_batch_response_item_at(target_response, 0, &target_result);
-    if (status == 0) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_item_response_metadata_v2(target_result, &metadata);
-        if (status == 0 && (metadata.operation != KMIPKIT_ENUMERATION_OPERATION_RE_KEY_KEY_PAIR ||
-                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-    }
-    if (status == 0) status = kmipkit_client_batch_item_response_rekey_key_pair(
-        target_result, &replacement_pair_present,
-        &replacement_private_identifier, &replacement_public_identifier);
-    if (status == 0 && (!replacement_pair_present ||
-            replacement_private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !replacement_private_identifier.text_data || !replacement_private_identifier.text_length ||
-            replacement_public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
-            !replacement_public_identifier.text_data || !replacement_public_identifier.text_length ||
-            same_text_identifier(&replacement_private_identifier, &replacement_public_identifier) ||
-            same_text_identifier(&original_private_identifier, &replacement_private_identifier) ||
-            same_text_identifier(&original_private_identifier, &replacement_public_identifier) ||
-            same_text_identifier(&original_public_identifier, &replacement_private_identifier) ||
-            same_text_identifier(&original_public_identifier, &replacement_public_identifier)))
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0 && !response_ttlv_matches_field_count(
-            target_result, kmipkit_client_batch_item_response_rekey_key_pair_ttlv,
-            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status))
-        status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
-
-    if (status == 0) {
-        stage = "construct original private-key revoke";
-        status = create_revocation_item(&original_private_identifier, &cleanup_items[0]);
-    }
-    if (status == 0) {
-        stage = "construct replacement private-key revoke";
-        status = create_revocation_item(&replacement_private_identifier, &cleanup_items[1]);
-    }
-    if (status == 0) {
-        stage = "construct original private-key destroy";
-        status = kmipkit_client_batch_item_destroy(
-            &original_private_identifier, &cleanup_items[2]);
-    }
-    if (status == 0) {
-        stage = "construct original public-key destroy";
-        status = kmipkit_client_batch_item_destroy(
-            &original_public_identifier, &cleanup_items[3]);
-    }
-    if (status == 0) {
-        stage = "construct replacement private-key destroy";
-        status = kmipkit_client_batch_item_destroy(
-            &replacement_private_identifier, &cleanup_items[4]);
-    }
-    if (status == 0) {
-        stage = "construct replacement public-key destroy";
-        status = kmipkit_client_batch_item_destroy(
-            &replacement_public_identifier, &cleanup_items[5]);
-    }
-    if (status == 0) stage = "validate and add cleanup items";
-    for (size_t index = 0; status == 0 && index < 6; ++index) {
-        (void)snprintf(stage_detail, sizeof(stage_detail),
-                       "assign cleanup item %zu identifier", index);
-        stage = stage_detail;
-        status = set_batch_item_id(&cleanup_items[index], item_ids[index + 3]);
-        if (status == 0) {
-            (void)snprintf(stage_detail, sizeof(stage_detail),
-                           "validate cleanup item %zu", index);
-            stage = stage_detail;
-            if (!request_item_is_valid(
-                    cleanup_items[index], diagnostic, sizeof(diagnostic)))
-                status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-    }
-    if (status == 0) {
-        stage = "create cleanup batch";
-        status = kmipkit_client_batch_create(&cleanup_batch);
-    }
-    if (status == 0) {
-        stage = "set cleanup batch order option";
-        status = kmipkit_client_batch_set_order_option(cleanup_batch, 1);
-    }
-    if (status == 0) {
-        stage = "set cleanup error continuation";
-        status = kmipkit_client_batch_add_error_continuation_value(
-            cleanup_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    }
-    for (size_t index = 0; status == 0 && index < 6; ++index) {
-        stage = "add cleanup item to batch";
-        status = kmipkit_client_batch_add_item(cleanup_batch, &cleanup_items[index]);
-    }
-    if (status == 0 && client->username_env[0] != '\0') {
-        stage = "configure cleanup authentication";
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(cleanup_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
-    if (status == 0) {
-        stage = "execute cleanup batch";
-        status = kmipkit_client_execute(
-            client->client, &cleanup_batch, client->limits, &cleanup_response);
-    }
-    response_count = 0;
-    if (status == 0) status = kmipkit_client_batch_response_item_count(cleanup_response, &response_count);
-    if (status == 0 && response_count != 6) status = KMIPKIT_ERROR_INVALID_INPUT;
-    const kmipkit_unique_identifier_v1_t *cleanup_identifiers[] = {
-        &original_private_identifier, &replacement_private_identifier,
-        &original_private_identifier, &original_public_identifier,
-        &replacement_private_identifier, &replacement_public_identifier
-    };
-    for (size_t index = 0; status == 0 && index < 6; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(cleanup_response, index, &cleanup_results[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            cleanup_results[index], &metadata);
-        if (status == 0 && (metadata.operation != cleanup_operations[index] ||
-                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-        if (status == 0 && index < 2 && !revoke_response_matches_created_key(
-                cleanup_results[index], cleanup_identifiers[index], &status))
-            status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
-        if (status == 0 && index >= 2 && !destroy_response_matches_key(
-                cleanup_results[index], cleanup_identifiers[index], &status))
-            status = status == 0 ? KMIPKIT_ERROR_INVALID_INPUT : status;
-    }
-    if (status == 0) {
-        outcome.success = true;
-        outcome.library_validated = true;
-        outcome.has_result_status_code = true;
-        outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
-    } else {
+        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &create_item);
+    if (status != 0) {
         outcome.library_failed = true;
-        if (!outcome.result_reason[0]) {
-            (void)kmipkit_last_error_get(&last_error_status, &last_error_category,
-                                         &last_error_cause, &last_error_delivery);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key Key Pair: could not construct initial key pair (status %d)", status);
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, "rekey-pair-create", true, &create_resp, &create_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, "Re-key Key Pair Create");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
+    }
+    kmipkit_unique_identifier_v1_t raw_priv = {.struct_size = (uint32_t)sizeof(raw_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t raw_pub = {.struct_size = (uint32_t)sizeof(raw_pub), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create_key_pair(
+        create_res, &pair_present, &raw_priv, &raw_pub);
+    if (status != 0 || !pair_present ||
+        !copy_text_unique_identifier(&raw_priv, &orig_priv, &orig_priv_b) ||
+        !copy_text_unique_identifier(&raw_pub, &orig_pub, &orig_pub_b) ||
+        same_text_identifier(&orig_priv, &orig_pub)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key Key Pair: initial Create Key Pair response was invalid");
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_activate(&orig_priv, &activate_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &activate_item, "rekey-pair-activate", true, &activate_resp, &activate_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "Re-key Key Pair Activate");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        !activate_response_matches_created_key(activate_res, &orig_priv, &status)) {
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) record_kmip_result(&outcome, &meta);
+        else outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key Key Pair: Activate failed (status=%u reason=%u)",
+                 meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    orig_priv_active = true;
+    status = kmipkit_client_batch_item_rekey_key_pair(
+        &orig_priv, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, &target_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &target_item, "rekey-pair-target", true, &target_resp, &target_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_RE_KEY_KEY_PAIR, "Re-key Key Pair");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key Key Pair was rejected (status=%u reason=%u)",
+                 meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    kmipkit_unique_identifier_v1_t raw_rpriv = {.struct_size = (uint32_t)sizeof(raw_rpriv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t raw_rpub = {.struct_size = (uint32_t)sizeof(raw_rpub), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_rekey_key_pair(
+        target_res, &repl_pair_present, &raw_rpriv, &raw_rpub);
+    if (status != 0 || !repl_pair_present ||
+        !copy_text_unique_identifier(&raw_rpriv, &repl_priv, &repl_priv_b) ||
+        !copy_text_unique_identifier(&raw_rpub, &repl_pub, &repl_pub_b) ||
+        same_text_identifier(&repl_priv, &repl_pub) ||
+        same_text_identifier(&orig_priv, &repl_priv) ||
+        same_text_identifier(&orig_priv, &repl_pub) ||
+        same_text_identifier(&orig_pub, &repl_priv) ||
+        same_text_identifier(&orig_pub, &repl_pub) ||
+        !response_ttlv_matches_field_count(
+            target_res, kmipkit_client_batch_item_response_rekey_key_pair_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status)) {
+        outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Re-key Key Pair response did not return distinct replacement identifiers");
+        goto cleanup;
+    }
+    outcome.success = true;
+    outcome.library_validated = true;
+    outcome.has_result_status_code = true;
+    outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+
+cleanup:
+    {
+        int32_t s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+        bool ok1 = cleanup_single_object_sequential(
+            client, &repl_priv, false, NULL, "rekey-pair-destroy-replacement-private", &s1);
+        bool ok2 = cleanup_single_object_sequential(
+            client, &repl_pub, false, NULL, "rekey-pair-destroy-replacement-public", &s2);
+        bool ok3 = cleanup_single_object_sequential(
+            client, &orig_priv, orig_priv_active,
+            "rekey-pair-revoke-original", "rekey-pair-destroy-original-private", &s3);
+        bool ok4 = cleanup_single_object_sequential(
+            client, &orig_pub, false, NULL, "rekey-pair-destroy-original-public", &s4);
+        if (outcome.success && (!ok1 || !ok2 || !ok3 || !ok4)) {
+            outcome.success = false;
+            outcome.library_failed = (s1 || s2 || s3 || s4);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "Re-key Key Pair: %.72s (status %d, category %u, cause %u, delivery %u): %.64s",
-                     stage, status, last_error_category, last_error_cause, last_error_delivery,
-                     diagnostic);
+                     "Re-key Key Pair cleanup failed");
         }
     }
-
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 2; ++index) {
-        if (setup_results[index]) kmipkit_client_batch_item_response_release(setup_results[index]);
-        if (setup_items[index]) kmipkit_client_batch_item_release(setup_items[index]);
-    }
-    for (size_t index = 0; index < 6; ++index) {
-        if (cleanup_results[index]) kmipkit_client_batch_item_response_release(cleanup_results[index]);
-        if (cleanup_items[index]) kmipkit_client_batch_item_release(cleanup_items[index]);
-    }
-    if (target_result) kmipkit_client_batch_item_response_release(target_result);
+    release_created_identifier_copy(&repl_priv, &repl_priv_b);
+    release_created_identifier_copy(&repl_pub, &repl_pub_b);
+    release_created_identifier_copy(&orig_priv, &orig_priv_b);
+    release_created_identifier_copy(&orig_pub, &orig_pub_b);
+    if (target_res) kmipkit_client_batch_item_response_release(target_res);
+    if (activate_res) kmipkit_client_batch_item_response_release(activate_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (target_resp) kmipkit_client_batch_response_release(target_resp);
+    if (activate_resp) kmipkit_client_batch_response_release(activate_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
     if (target_item) kmipkit_client_batch_item_release(target_item);
-    if (setup_response) kmipkit_client_batch_response_release(setup_response);
-    if (target_response) kmipkit_client_batch_response_release(target_response);
-    if (cleanup_response) kmipkit_client_batch_response_release(cleanup_response);
-    if (setup_batch) kmipkit_client_batch_release(setup_batch);
-    if (target_batch) kmipkit_client_batch_release(target_batch);
-    if (cleanup_batch) kmipkit_client_batch_release(cleanup_batch);
+    if (activate_item) kmipkit_client_batch_item_release(activate_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (common_attributes) kmipkit_ttlv_structure_release(common_attributes);
     if (private_attributes) kmipkit_ttlv_structure_release(private_attributes);
     if (public_attributes) kmipkit_ttlv_structure_release(public_attributes);
@@ -8000,275 +7760,187 @@ static kmip_execution_outcome_t execute_certify_public_key(
     kmip_live_client_t *client, bool recertify) {
     /* OASIS KMIP 2.0/2.1 §6.1.6 and §12.1: Certify the Public Key;
      * §6.1.41/§6.1.45 renews the resulting certificate for the same key pair. */
-    static const uint32_t certify_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR,
-        KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        KMIPKIT_ENUMERATION_OPERATION_CERTIFY,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const uint32_t recertify_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR,
-        KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        KMIPKIT_ENUMERATION_OPERATION_CERTIFY,
-        KMIPKIT_ENUMERATION_OPERATION_RE_CERTIFY,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const certify_item_ids[] = {
-        "certify-create-pair", "certify-activate-private", "certify-public-key",
-        "certify-revoke-private", "certify-destroy-certificate",
-        "certify-destroy-private", "certify-destroy-public"
-    };
-    static const char *const recertify_item_ids[] = {
-        "recertify-create-pair", "recertify-activate-private", "recertify-public-key",
-        "recertify-renew-certificate", "recertify-revoke-private",
-        "recertify-destroy-new-certificate", "recertify-destroy-old-certificate",
-        "recertify-destroy-private", "recertify-destroy-public"
-    };
-    static const uint8_t existing_certificate_text[] = "fixture-certificate-1";
-    static const uint8_t recertified_certificate_text[] = "fixture-recertified-certificate-1";
-    const uint32_t *operations = recertify ? recertify_operations : certify_operations;
-    const char *const *item_ids = recertify ? recertify_item_ids : certify_item_ids;
-    const size_t item_count = recertify ? 9U : 7U;
-    const size_t revoke_index = recertify ? 4U : 3U;
-    const size_t new_certificate_destroy_index = recertify ? 5U : 4U;
-    const size_t old_certificate_destroy_index = 6U;
-    const size_t private_destroy_index = recertify ? 7U : 5U;
-    const size_t public_destroy_index = recertify ? 8U : 6U;
+    const char *create_id = recertify ? "recertify-create-pair" : "certify-create-pair";
+    const char *act_id = recertify ? "recertify-activate-private" : "certify-activate-private";
+    const char *cert_id_str = recertify ? "recertify-public-key" : "certify-public-key";
+    const char *revoke_priv_id = recertify ? "recertify-revoke-private" : "certify-revoke-private";
+    const char *destroy_priv_id = recertify ? "recertify-destroy-private" : "certify-destroy-private";
+    const char *destroy_pub_id = recertify ? "recertify-destroy-public" : "certify-destroy-public";
+    const char *destroy_cert_id = recertify ? "recertify-destroy-old-certificate" : "certify-destroy-certificate";
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[9] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[9] = {NULL};
-    kmipkit_ttlv_structure_t *common_attributes = NULL;
-    kmipkit_ttlv_structure_t *private_attributes = NULL;
-    kmipkit_ttlv_structure_t *public_attributes = NULL;
-    kmipkit_ttlv_structure_t *certify_attributes = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *act_item = NULL, *cert_item = NULL, *recert_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *act_resp = NULL, *cert_resp = NULL, *recert_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *act_res = NULL, *cert_res = NULL, *recert_res = NULL;
+    kmipkit_ttlv_structure_t *common_attributes = NULL, *private_attributes = NULL;
+    kmipkit_ttlv_structure_t *public_attributes = NULL, *certify_attributes = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    const kmipkit_unique_identifier_v1_t private_identifier_selector = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PRIVATE_KEY
-    };
-    const kmipkit_unique_identifier_v1_t public_identifier_selector = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PUBLIC_KEY
-    };
-    const kmipkit_unique_identifier_v1_t certificate_placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
-    const kmipkit_unique_identifier_v1_t existing_certificate_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
-        .text_data = existing_certificate_text,
-        .text_length = sizeof(existing_certificate_text) - 1
-    };
-    const kmipkit_unique_identifier_v1_t recertified_certificate_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
-        .text_data = recertified_certificate_text,
-        .text_length = sizeof(recertified_certificate_text) - 1
-    };
+    kmipkit_unique_identifier_v1_t priv_id = {.struct_size = (uint32_t)sizeof(priv_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t pub_id = {.struct_size = (uint32_t)sizeof(pub_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t cert_id = {.struct_size = (uint32_t)sizeof(cert_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t recert_id = {.struct_size = (uint32_t)sizeof(recert_id), .abi_version = 1};
+    char *priv_backing = NULL, *pub_backing = NULL, *cert_backing = NULL, *recert_backing = NULL;
+    bool priv_active = false;
     int32_t status = kmipkit_ttlv_structure_create(&common_attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x420028), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x420028), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(2048, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x42002A), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x42002A), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_CERTIFICATE_SIGN, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &private_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &private_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&public_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &public_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &public_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&certify_attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_CERTIFICATE_TYPE_X_509, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &certify_attributes, UINT32_C(0x42001D), &value))
+    if (status == 0 && !append_ttlv_value(client, &certify_attributes, UINT32_C(0x42001D), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
-        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(
-        &private_identifier_selector, &items[1]);
-    if (status == 0) status = kmipkit_client_batch_item_certify(
-        &public_identifier_selector, 0, 0, NULL, certify_attributes, NULL, &items[2]);
-    if (status == 0 && recertify) status = kmipkit_client_batch_item_recertify(
-        &existing_certificate_identifier, NULL, 0, 0, NULL, 0, 0, NULL, NULL, &items[3]);
-    const size_t cleanup_start = recertify ? 4U : 3U;
-    if (status == 0) status = create_revocation_item(
-        &private_identifier_selector, &items[cleanup_start]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(
-        recertify ? &recertified_certificate_identifier : &certificate_placeholder,
-        &items[cleanup_start + 1]);
-    if (status == 0 && recertify) status = kmipkit_client_batch_item_destroy(
-        &existing_certificate_identifier, &items[cleanup_start + 2]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(
-        &private_identifier_selector, &items[private_destroy_index]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(
-        &public_identifier_selector, &items[public_destroy_index]);
-    char validation_diagnostic[256] = {0};
-    size_t invalid_item_index = SIZE_MAX;
-    for (size_t index = 0; status == 0 && index < item_count; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(
-                items[index], validation_diagnostic, sizeof(validation_diagnostic))) {
-            invalid_item_index = index;
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        }
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < item_count; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
+        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &create_item);
     if (status != 0) {
-        outcome.library_failed = true;
-        if (invalid_item_index < item_count) {
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit rejected Certify batch item %zu: %.180s",
-                     invalid_item_index, validation_diagnostic);
-        } else {
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit could not construct the isolated Certify request (status %d)", status);
-        }
-        goto cleanup;
-    }
-    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
-    if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not execute the isolated Certify request "
-                 "(category=%u cause=%u delivery=%u)", category, cause, delivery);
+                 "KMIPKit could not construct Certify setup key pair (status %d)", status);
         goto cleanup;
     }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != item_count) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < item_count; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-            record_kmip_result(&outcome, &metadata);
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, create_id, true, &create_resp, &create_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, "Certify Create Key Pair");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
+    }
+    uint8_t pair_present = 0, cert_present = 0, recert_present = 0;
+    kmipkit_unique_identifier_v1_t raw_priv = {.struct_size = (uint32_t)sizeof(raw_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t raw_pub = {.struct_size = (uint32_t)sizeof(raw_pub), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create_key_pair(create_res, &pair_present, &raw_priv, &raw_pub);
+    if (status != 0 || !pair_present ||
+        !copy_text_unique_identifier(&raw_priv, &priv_id, &priv_backing) ||
+        !copy_text_unique_identifier(&raw_pub, &pub_id, &pub_backing) ||
+        same_text_identifier(&priv_id, &pub_id)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Certify Create Key Pair did not return valid identifiers");
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_activate(&priv_id, &act_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &act_item, act_id, true, &act_resp, &act_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "Certify Activate");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        !activate_response_matches_created_key(act_res, &priv_id, &status)) {
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) record_kmip_result(&outcome, &meta);
+        else outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Certify Activate failed (status=%u reason=%u)", meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    priv_active = true;
+    status = kmipkit_client_batch_item_certify(
+        &pub_id, 0, 0, NULL, certify_attributes, NULL, &cert_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &cert_item, cert_id_str, true, &cert_resp, &cert_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CERTIFY, "Certify");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "controlled Certify was rejected (status=%u reason=%u)", meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    kmipkit_unique_identifier_v1_t raw_cert = {.struct_size = (uint32_t)sizeof(raw_cert), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_certify(cert_res, &cert_present, &raw_cert);
+    if (status != 0 || !cert_present ||
+        !copy_text_unique_identifier(&raw_cert, &cert_id, &cert_backing) ||
+        same_text_identifier(&cert_id, &priv_id) || same_text_identifier(&cert_id, &pub_id) ||
+        !response_ttlv_matches_field_count(
+            cert_res, kmipkit_client_batch_item_response_certify_ttlv,
+            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status)) {
+        outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Certify response did not return a valid certificate identifier");
+        goto cleanup;
+    }
+    if (recertify) {
+        status = kmipkit_client_batch_item_recertify(
+            &cert_id, NULL, 0, 0, NULL, 0, 0, NULL, NULL, &recert_item);
+        if (status == 0) status = execute_single_typed_item(
+            client, &recert_item, "recertify-renew-certificate", true, &recert_resp, &recert_res,
+            &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_RE_CERTIFY, "Re-certify");
+        if (status != 0) goto cleanup;
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            record_kmip_result(&outcome, &meta);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled Certify lifecycle item %zu was rejected (status=%u reason=%u)",
-                     index, metadata.result_status, metadata.result_reason);
+                     "controlled Re-certify was rejected (status=%u reason=%u)",
+                     meta.result_status, meta.result_reason);
+            goto cleanup;
+        }
+        kmipkit_unique_identifier_v1_t raw_recert = {.struct_size = (uint32_t)sizeof(raw_recert), .abi_version = 1};
+        status = kmipkit_client_batch_item_response_recertify(recert_res, &recert_present, &raw_recert);
+        if (status != 0 || !recert_present ||
+            !copy_text_unique_identifier(&raw_recert, &recert_id, &recert_backing) ||
+            same_text_identifier(&recert_id, &cert_id) ||
+            same_text_identifier(&recert_id, &priv_id) ||
+            same_text_identifier(&recert_id, &pub_id) ||
+            !response_ttlv_matches_field_count(
+                recert_res, kmipkit_client_batch_item_response_recertify_ttlv,
+                COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status)) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Re-certify response did not return a renewed certificate identifier");
             goto cleanup;
         }
     }
-    if (status != 0) {
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an invalid isolated Certify response (status %d)", status);
-        goto cleanup;
-    }
-    uint8_t pair_present = 0;
-    kmipkit_unique_identifier_v1_t private_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t public_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t certificate_present = 0;
-    kmipkit_unique_identifier_v1_t certificate_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t recertified_present = 0;
-    kmipkit_unique_identifier_v1_t recertified_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    status = kmipkit_client_batch_item_response_create_key_pair(
-        responses[0], &pair_present, &private_identifier, &public_identifier);
-    if (status == 0) status = kmipkit_client_batch_item_response_certify(
-        responses[2], &certificate_present, &certificate_identifier);
-    if (status == 0 && recertify) status = kmipkit_client_batch_item_response_recertify(
-        responses[3], &recertified_present, &recertified_identifier);
-    bool valid = status == 0 && pair_present && certificate_present &&
-        private_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        public_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        certificate_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        private_identifier.text_data && private_identifier.text_length &&
-        public_identifier.text_data && public_identifier.text_length &&
-        certificate_identifier.text_data && certificate_identifier.text_length &&
-        !same_text_identifier(&private_identifier, &public_identifier) &&
-        !same_text_identifier(&certificate_identifier, &private_identifier) &&
-        !same_text_identifier(&certificate_identifier, &public_identifier) &&
-        activate_response_matches_created_key(responses[1], &private_identifier, &status) &&
-        response_ttlv_matches_field_count(
-            responses[2], kmipkit_client_batch_item_response_certify_ttlv,
-            COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status) &&
-        (!recertify || (recertified_present &&
-         recertified_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-         recertified_identifier.text_data && recertified_identifier.text_length &&
-         !same_text_identifier(&recertified_identifier, &certificate_identifier) &&
-         !same_text_identifier(&recertified_identifier, &private_identifier) &&
-         !same_text_identifier(&recertified_identifier, &public_identifier) &&
-         response_ttlv_matches_field_count(
-             responses[3], kmipkit_client_batch_item_response_recertify_ttlv,
-             COMPLETE_RESPONSE_ITEM_TTLV_FIELD_COUNT, &status))) &&
-        revoke_response_matches_created_key(responses[revoke_index], &private_identifier, &status) &&
-        response_ttlv_matches_identifier(
-            responses[revoke_index], kmipkit_client_batch_item_response_revoke_ttlv,
-            &private_identifier, &status) &&
-        destroy_response_matches_key(responses[new_certificate_destroy_index],
-                                     recertify ? &recertified_identifier : &certificate_identifier,
-                                     &status) &&
-        (!recertify || destroy_response_matches_key(
-            responses[old_certificate_destroy_index], &certificate_identifier, &status)) &&
-        destroy_response_matches_key(responses[private_destroy_index], &private_identifier, &status) &&
-        destroy_response_matches_key(responses[public_destroy_index], &public_identifier, &status);
-    outcome.success = valid;
-    outcome.library_failed = status != 0;
-    outcome.library_validated = status == 0;
-    outcome.has_result_status_code = status == 0;
+    outcome.success = true;
+    outcome.library_validated = true;
+    outcome.has_result_status_code = true;
     outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
-    if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-        "KMIPKit certificate lifecycle response did not match generated IDs or cleanup results");
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 9; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    {
+        int32_t s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+        bool ok1 = cleanup_single_object_sequential(
+            client, &recert_id, false, NULL, "recertify-destroy-new-certificate", &s1);
+        bool ok2 = cleanup_single_object_sequential(
+            client, &cert_id, false, NULL, destroy_cert_id, &s2);
+        bool ok3 = cleanup_single_object_sequential(
+            client, &priv_id, priv_active, revoke_priv_id, destroy_priv_id, &s3);
+        bool ok4 = cleanup_single_object_sequential(
+            client, &pub_id, false, NULL, destroy_pub_id, &s4);
+        if (outcome.success && (!ok1 || !ok2 || !ok3 || !ok4)) {
+            outcome.success = false;
+            outcome.library_failed = (s1 || s2 || s3 || s4);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit certificate lifecycle cleanup failed");
+        }
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    release_created_identifier_copy(&recert_id, &recert_backing);
+    release_created_identifier_copy(&cert_id, &cert_backing);
+    release_created_identifier_copy(&priv_id, &priv_backing);
+    release_created_identifier_copy(&pub_id, &pub_backing);
+    if (recert_res) kmipkit_client_batch_item_response_release(recert_res);
+    if (cert_res) kmipkit_client_batch_item_response_release(cert_res);
+    if (act_res) kmipkit_client_batch_item_response_release(act_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (recert_resp) kmipkit_client_batch_response_release(recert_resp);
+    if (cert_resp) kmipkit_client_batch_response_release(cert_resp);
+    if (act_resp) kmipkit_client_batch_response_release(act_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (recert_item) kmipkit_client_batch_item_release(recert_item);
+    if (cert_item) kmipkit_client_batch_item_release(cert_item);
+    if (act_item) kmipkit_client_batch_item_release(act_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (common_attributes) kmipkit_ttlv_structure_release(common_attributes);
     if (private_attributes) kmipkit_ttlv_structure_release(private_attributes);
     if (public_attributes) kmipkit_ttlv_structure_release(public_attributes);
@@ -8445,15 +8117,6 @@ static bool pkcs11_single_bytes_match(kmipkit_ttlv_structure_t *structure,
 
 static kmip_execution_outcome_t execute_pkcs11_operation(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.35 and 2.1 §6.1.37, Tables 273–275. */
-    static const uint32_t operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        KMIPKIT_ENUMERATION_OPERATION_PKCS_11, KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "pkcs11-create", "pkcs11-activate", "pkcs11-target", "pkcs11-revoke",
-        "pkcs11-destroy"
-    };
     static const uint8_t interface_text[] = "test-interface";
     static const uint8_t request_correlation[] = "pkcs11-request-correlation";
     static const uint8_t request_input[] = "controlled-pkcs11-input";
@@ -8462,23 +8125,20 @@ static kmip_execution_outcome_t execute_pkcs11_operation(kmip_live_client_t *cli
     const kmipkit_byte_span_v1_t correlation = {
         .data = request_correlation, .length = sizeof(request_correlation) - 1
     };
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[5] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[5] = {NULL};
+    kmipkit_client_batch_item_t *create_item = NULL, *activate_item = NULL, *pkcs11_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *activate_resp = NULL, *pkcs11_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *activate_res = NULL, *pkcs11_res = NULL;
+    kmipkit_client_batch_item_metadata_v2_t create_meta = {0}, activate_meta = {0}, pkcs11_meta = {0};
+    kmipkit_unique_identifier_v1_t created_id = {0};
+    char *created_id_backing = NULL;
+    bool revoke_cleanup = false;
     kmipkit_ttlv_structure_t *attributes = NULL, *function = NULL;
     kmipkit_ttlv_structure_t *interface_structure = NULL, *input_parameters = NULL;
     kmipkit_ttlv_structure_t *function_response = NULL, *interface_response = NULL;
     kmipkit_ttlv_structure_t *output_parameters = NULL, *return_code = NULL;
     kmipkit_ttlv_structure_t *raw_response = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
     kmipkit_byte_span_v1_t response_correlation = {0};
     uint8_t interface_present = 0, function_present = 0, correlation_present = 0;
     uint8_t output_present = 0, return_code_present = 0, raw_response_present = 0;
@@ -8489,9 +8149,58 @@ static kmip_execution_outcome_t execute_pkcs11_operation(kmip_live_client_t *cli
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create(
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(&placeholder, &items[1]);
-    if (status == 0) status = kmipkit_ttlv_structure_create(&function);
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not construct PKCS#11 setup Create (status %d)", status);
+        goto cleanup;
+    }
+    status = execute_single_typed_item(
+        client, &create_item, "pkcs11-create", true, &create_resp, &create_res,
+        &create_meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE, "PKCS#11 setup Create");
+    if (status != 0) goto cleanup;
+    if (create_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &create_meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "server rejected PKCS#11 setup Create (status=%u reason=%u)",
+                 create_meta.result_status, create_meta.result_reason);
+        goto cleanup;
+    }
+    uint8_t raw_id_present = 0;
+    uint32_t raw_object_type = 0;
+    kmipkit_unique_identifier_v1_t raw_id = {
+        .struct_size = (uint32_t)sizeof(raw_id), .abi_version = 1
+    };
+    status = kmipkit_client_batch_item_response_create(
+        create_res, &raw_id_present, &raw_object_type, &raw_id);
+    if (status != 0 || !raw_id_present ||
+        !copy_text_unique_identifier(&raw_id, &created_id, &created_id_backing)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit returned an invalid PKCS#11 setup Create identifier (status %d)", status);
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_activate(&created_id, &activate_item);
+    if (status == 0) {
+        status = execute_single_typed_item(
+            client, &activate_item, "pkcs11-activate", true, &activate_resp, &activate_res,
+            &activate_meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "PKCS#11 setup Activate");
+    } else {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not construct PKCS#11 setup Activate (status %d)", status);
+    }
+    if (status != 0) goto cleanup;
+    if (activate_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &activate_meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "server rejected PKCS#11 setup Activate (status=%u reason=%u)",
+                 activate_meta.result_status, activate_meta.result_reason);
+        goto cleanup;
+    }
+    revoke_cleanup = true;
+    status = kmipkit_ttlv_structure_create(&function);
     if (status == 0) status = kmipkit_ttlv_value_integer(-12345, &value);
     if (status == 0 && !append_ttlv_value(client, &function, UINT32_C(0x42015A), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
@@ -8508,83 +8217,36 @@ static kmip_execution_outcome_t execute_pkcs11_operation(kmip_live_client_t *cli
             client, &input_parameters, UINT32_C(0x42015B), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_pkcs11(
-        function, interface_structure, &correlation, input_parameters, &items[2]);
-    if (status == 0) status = create_revocation_item(&placeholder, &items[3]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[4]);
-    char validation_diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(
-                items[index], validation_diagnostic, sizeof(validation_diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 5; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
+        function, interface_structure, &correlation, input_parameters, &pkcs11_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not construct the isolated PKCS#11 request (status %d)", status);
+                 "KMIPKit could not construct PKCS#11 request (status %d)", status);
         goto cleanup;
     }
-    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
-    if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-        outcome.library_failed = true;
+    status = execute_single_typed_item(
+        client, &pkcs11_item, "pkcs11-target", true, &pkcs11_resp, &pkcs11_res,
+        &pkcs11_meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_PKCS_11, "PKCS#11");
+    if (status != 0) goto cleanup;
+    if (pkcs11_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &pkcs11_meta);
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit PKCS#11 batch failed (category=%u cause=%u delivery=%u)",
-                 category, cause, delivery);
-        goto cleanup;
-    }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != 5) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 5; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
-            .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && (metadata.operation != operations[index] ||
-            metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled PKCS#11 lifecycle item %zu was rejected", index);
-            goto cleanup;
-        }
-    }
-    if (status != 0) {
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an invalid PKCS#11 response (status %d)", status);
+                 "server rejected PKCS#11 (status=%u reason=%u)",
+                 pkcs11_meta.result_status, pkcs11_meta.result_reason);
         goto cleanup;
     }
     status = kmipkit_client_batch_item_response_pkcs11_function_ttlv(
-        responses[2], &function_present, &function_response);
+        pkcs11_res, &function_present, &function_response);
     if (status == 0) status = kmipkit_client_batch_item_response_pkcs11_interface_ttlv(
-        responses[2], &interface_present, &interface_response);
+        pkcs11_res, &interface_present, &interface_response);
     if (status == 0) status = kmipkit_client_batch_item_response_pkcs11_correlation_value(
-        responses[2], &correlation_present, &response_correlation);
+        pkcs11_res, &correlation_present, &response_correlation);
     if (status == 0) status = kmipkit_client_batch_item_response_pkcs11_output_parameters_ttlv(
-        responses[2], &output_present, &output_parameters);
+        pkcs11_res, &output_present, &output_parameters);
     if (status == 0) status = kmipkit_client_batch_item_response_pkcs11_return_code_ttlv(
-        responses[2], &return_code_present, &return_code);
+        pkcs11_res, &return_code_present, &return_code);
     if (status == 0) status = kmipkit_client_batch_item_response_pkcs11_ttlv(
-        responses[2], &raw_response_present, &raw_response);
+        pkcs11_res, &raw_response_present, &raw_response);
     bool correlation_matches = correlation_present && response_correlation.data &&
         response_correlation.length == sizeof(expected_correlation) - 1 &&
         memcmp(response_correlation.data, expected_correlation,
@@ -8612,13 +8274,26 @@ static kmip_execution_outcome_t execute_pkcs11_operation(kmip_live_client_t *cli
         output_matches, return_code_matches, raw_response_present && raw_response != NULL);
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 5; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    if (created_id_backing != NULL) {
+        int32_t cleanup_status = 0;
+        if (!cleanup_single_object_sequential(
+                client, &created_id, revoke_cleanup, "pkcs11-revoke", "pkcs11-destroy",
+                &cleanup_status) && outcome.success) {
+            outcome.success = false;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "PKCS#11 cleanup failed (status %d)", cleanup_status);
+        }
+        release_created_identifier_copy(&created_id, &created_id_backing);
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    if (pkcs11_res) kmipkit_client_batch_item_response_release(pkcs11_res);
+    if (activate_res) kmipkit_client_batch_item_response_release(activate_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (pkcs11_resp) kmipkit_client_batch_response_release(pkcs11_resp);
+    if (activate_resp) kmipkit_client_batch_response_release(activate_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (pkcs11_item) kmipkit_client_batch_item_release(pkcs11_item);
+    if (activate_item) kmipkit_client_batch_item_release(activate_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     if (function) kmipkit_ttlv_structure_release(function);
     if (interface_structure) kmipkit_ttlv_structure_release(interface_structure);
@@ -8634,32 +8309,17 @@ cleanup:
 
 static kmip_execution_outcome_t execute_obtain_lease(kmip_live_client_t *client) {
     /* OASIS KMIP 2.0 §6.1.34, Tables 250–252; 2.1 §6.1.35, Tables 268–270. */
-    static const uint32_t operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE, KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE,
-        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const item_ids[] = {
-        "lease-create", "lease-target", "lease-revoke", "lease-destroy"
-    };
-    static const uint8_t expected_identifier[] = "fixture-key-1";
-    const kmipkit_unique_identifier_v1_t placeholder = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
-    };
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[4] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[4] = {NULL};
+    kmipkit_client_batch_item_t *create_item = NULL, *lease_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *lease_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *lease_res = NULL;
     kmipkit_ttlv_structure_t *attributes = NULL, *response_ttlv = NULL;
     kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_authentication_t *authentication = NULL;
-    kmipkit_unique_identifier_v1_t identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    uint8_t lease_present = 0, ttlv_present = 0;
-    uint32_t lease_time = 0;
+    kmipkit_unique_identifier_v1_t key_id = {.struct_size = (uint32_t)sizeof(key_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t identifier = {.struct_size = (uint32_t)sizeof(identifier), .abi_version = 1};
+    char *key_id_backing = NULL;
+    uint8_t lease_present = 0, ttlv_present = 0, create_present = 0;
+    uint32_t lease_time = 0, object_type = 0;
     int64_t last_change_date = 0;
     int32_t status = create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES, 128, &attributes) ? 0 : -1;
@@ -8668,70 +8328,53 @@ static kmip_execution_outcome_t execute_obtain_lease(kmip_live_client_t *client)
     if (status == 0 && !append_ttlv_value(client, &attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create(
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_obtain_lease(NULL, &items[1]);
-    if (status == 0) status = create_revocation_item(&placeholder, &items[2]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&placeholder, &items[3]);
-    char diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(items[index], diagnostic, sizeof(diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 4; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
-    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
     if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit Obtain Lease request failed (category=%u cause=%u delivery=%u)",
-                 category, cause, delivery);
+                 "KMIPKit could not construct Obtain Lease setup Create (status %d)", status);
         goto cleanup;
     }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != 4) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 4; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
-            .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && (metadata.operation != operations[index] ||
-            metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)) {
-            record_kmip_result(&outcome, &metadata);
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled Obtain Lease lifecycle item %zu was rejected", index);
-            goto cleanup;
-        }
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, "lease-create", true, &create_resp, &create_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE, "Obtain Lease Create");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
     }
-    if (status == 0) status = kmipkit_client_batch_item_response_obtain_lease(
-        responses[1], &lease_present, &identifier, &lease_time, &last_change_date);
+    kmipkit_unique_identifier_v1_t raw_id = {.struct_size = (uint32_t)sizeof(raw_id), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create(create_res, &create_present, &object_type, &raw_id);
+    if (status != 0 || !create_present ||
+        object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        !copy_text_unique_identifier(&raw_id, &key_id, &key_id_backing)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Obtain Lease Create did not return a valid identifier");
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_obtain_lease(&key_id, &lease_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &lease_item, "lease-target", true, &lease_resp, &lease_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE, "Obtain Lease");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "controlled Obtain Lease was rejected (status=%u reason=%u)",
+                 meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_response_obtain_lease(
+        lease_res, &lease_present, &identifier, &lease_time, &last_change_date);
     if (status == 0) status = kmipkit_client_batch_item_response_obtain_lease_ttlv(
-        responses[1], &ttlv_present, &response_ttlv);
-    bool identifier_matches = identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        identifier.text_data && identifier.text_length == sizeof(expected_identifier) - 1 &&
-        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+        lease_res, &ttlv_present, &response_ttlv);
+    bool identifier_matches = same_text_identifier(&key_id, &identifier);
     bool ttlv_matches = status == 0 && response_ttlv_matches_field_count(
-        responses[1], kmipkit_client_batch_item_response_obtain_lease_ttlv, 4, &status);
-    bool valid = status == 0 && lease_present && identifier_matches && lease_time == 3600 &&
-        last_change_date == INT64_C(1700000000) && ttlv_present && response_ttlv && ttlv_matches;
+        lease_res, kmipkit_client_batch_item_response_obtain_lease_ttlv, 4, &status);
+    bool valid = status == 0 && lease_present && identifier_matches && lease_time > 0 &&
+        last_change_date > 0 && ttlv_present && response_ttlv && ttlv_matches;
     outcome.success = valid;
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
@@ -8739,17 +8382,27 @@ static kmip_execution_outcome_t execute_obtain_lease(kmip_live_client_t *client)
     outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
     if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
         "KMIPKit Obtain Lease response mismatch (status=%d present=%u identifier=%u lease=%u date=%u ttlv=%u)",
-        status, lease_present, identifier_matches, lease_time == 3600,
-        last_change_date == INT64_C(1700000000), ttlv_present && ttlv_matches);
+        status, lease_present, identifier_matches, lease_time > 0,
+        last_change_date > 0, ttlv_present && ttlv_matches);
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 4; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    if (key_id_backing) {
+        int32_t cleanup_status = 0;
+        if (!cleanup_single_object_sequential(
+                client, &key_id, false, NULL, "lease-destroy", &cleanup_status) && outcome.success) {
+            outcome.success = false;
+            outcome.library_failed = cleanup_status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Obtain Lease cleanup failed");
+        }
+        release_created_identifier_copy(&key_id, &key_id_backing);
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    if (lease_res) kmipkit_client_batch_item_response_release(lease_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (lease_resp) kmipkit_client_batch_response_release(lease_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (lease_item) kmipkit_client_batch_item_release(lease_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (attributes) kmipkit_ttlv_structure_release(attributes);
     if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
     if (value) kmipkit_ttlv_value_release(value);
@@ -8762,97 +8415,103 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
                                                                bool ecdsa) {
     /* OASIS KMIP 2.0 §§6.1.49–6.1.50, 2.1 §§6.1.55–6.1.56, and §12.1. */
     bool verify = operation == KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY;
-    static const uint32_t sign_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        KMIPKIT_ENUMERATION_OPERATION_SIGN, KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const uint32_t verify_operations[] = {
-        KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
-        KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, KMIPKIT_ENUMERATION_OPERATION_REVOKE,
-        KMIPKIT_ENUMERATION_OPERATION_DESTROY, KMIPKIT_ENUMERATION_OPERATION_DESTROY
-    };
-    static const char *const sign_item_ids[] = {
-        "sign-create-pair", "sign-activate", "sign-target", "sign-revoke",
-        "sign-destroy-private", "sign-destroy-public"
-    };
-    static const char *const verify_item_ids[] = {
-        "verify-create-pair", "verify-activate", "verify-target", "verify-revoke",
-        "verify-destroy-public", "verify-destroy-private"
-    };
-    const uint32_t *operations = verify ? verify_operations : sign_operations;
-    const char *const *item_ids = verify ? verify_item_ids : sign_item_ids;
-    const uint32_t target_identifier_value = verify ?
-        KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PUBLIC_KEY :
-        KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PRIVATE_KEY;
-    const uint32_t other_identifier_value = verify ?
-        KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PRIVATE_KEY :
-        KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_CREATE_KEY_PAIR_PUBLIC_KEY;
+    const char *create_id = verify ? "verify-create-pair" : "sign-create-pair";
+    const char *act_id = verify ? "verify-activate" : "sign-activate";
+    const char *target_id_str = verify ? "verify-target" : "sign-target";
+    const char *revoke_id = verify ? "verify-revoke" : "sign-revoke";
+    const char *destroy_target_id = verify ? "verify-destroy-public" : "sign-destroy-private";
+    const char *destroy_other_id = verify ? "verify-destroy-private" : "sign-destroy-public";
     const char *operation_name = verify ? "Signature Verify" : "Sign";
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_t *items[6] = {NULL};
-    kmipkit_client_batch_item_response_t *responses[6] = {NULL};
-    kmipkit_ttlv_structure_t *common_attributes = NULL;
-    kmipkit_ttlv_structure_t *private_attributes = NULL;
-    kmipkit_ttlv_structure_t *public_attributes = NULL;
-    kmipkit_ttlv_structure_t *parameters = NULL;
-    kmipkit_ttlv_structure_t *domain_parameters = NULL;
-    kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_ttlv_value_t *data = NULL;
-    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *act_item = NULL, *target_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *act_resp = NULL, *target_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *act_res = NULL, *target_res = NULL;
+    kmipkit_ttlv_structure_t *common_attributes = NULL, *private_attributes = NULL;
+    kmipkit_ttlv_structure_t *public_attributes = NULL, *parameters = NULL, *domain_parameters = NULL;
+    kmipkit_ttlv_value_t *value = NULL, *data = NULL;
+    kmipkit_unique_identifier_v1_t priv_id = {.struct_size = (uint32_t)sizeof(priv_id), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t pub_id = {.struct_size = (uint32_t)sizeof(pub_id), .abi_version = 1};
+    char *priv_backing = NULL, *pub_backing = NULL;
+    bool target_active = false;
     static const uint8_t signature_bytes[256] = {0};
     const kmipkit_byte_span_v1_t signature_data = {
         .data = signature_bytes, .length = ecdsa ? 64U : sizeof(signature_bytes)
-    };
-    const kmipkit_unique_identifier_v1_t target_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = target_identifier_value
-    };
-    const kmipkit_unique_identifier_v1_t other_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1,
-        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
-        .enumeration_value = other_identifier_value
     };
     int32_t status = kmipkit_ttlv_structure_create(&common_attributes);
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         ecdsa ? KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA :
                 KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x420028), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x420028), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_value_integer(ecdsa ? 256 : 2048, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x42002A), &value))
+    if (status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x42002A), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (ecdsa && status == 0) status = kmipkit_ttlv_structure_create(&domain_parameters);
     if (ecdsa && status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_RECOMMENDED_CURVE_P_256, &value);
-    if (ecdsa && status == 0 && !append_ttlv_value(
-            client, &domain_parameters, UINT32_C(0x420075), &value))
+    if (ecdsa && status == 0 && !append_ttlv_value(client, &domain_parameters, UINT32_C(0x420075), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (ecdsa && status == 0 && !structure_into_value(client, &domain_parameters, &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (ecdsa && status == 0 && !append_ttlv_value(
-            client, &common_attributes, UINT32_C(0x420029), &value))
+    if (ecdsa && status == 0 && !append_ttlv_value(client, &common_attributes, UINT32_C(0x420029), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&private_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &private_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &private_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_create(&public_attributes);
     if (status == 0) status = kmipkit_ttlv_value_integer(
         (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY, &value);
-    if (status == 0 && !append_ttlv_value(
-            client, &public_attributes, UINT32_C(0x42002C), &value))
+    if (status == 0 && !append_ttlv_value(client, &public_attributes, UINT32_C(0x42002C), &value))
         status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
-        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &items[0]);
-    if (status == 0) status = kmipkit_client_batch_item_activate(&target_identifier, &items[1]);
+        common_attributes, private_attributes, public_attributes, NULL, NULL, NULL, &create_item);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not construct %s key pair (status %d)", operation_name, status);
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_metadata_v2_t meta = {0};
+    status = execute_single_typed_item(
+        client, &create_item, create_id, true, &create_resp, &create_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR, "signature Create Key Pair");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+        record_kmip_result(&outcome, &meta);
+        goto cleanup;
+    }
+    uint8_t pair_present = 0;
+    kmipkit_unique_identifier_v1_t raw_priv = {.struct_size = (uint32_t)sizeof(raw_priv), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t raw_pub = {.struct_size = (uint32_t)sizeof(raw_pub), .abi_version = 1};
+    status = kmipkit_client_batch_item_response_create_key_pair(
+        create_res, &pair_present, &raw_priv, &raw_pub);
+    if (status != 0 || !pair_present ||
+        !copy_text_unique_identifier(&raw_priv, &priv_id, &priv_backing) ||
+        !copy_text_unique_identifier(&raw_pub, &pub_id, &pub_backing) ||
+        same_text_identifier(&priv_id, &pub_id)) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit %s Create Key Pair did not return valid identifiers", operation_name);
+        goto cleanup;
+    }
+    const kmipkit_unique_identifier_v1_t *target = verify ? &pub_id : &priv_id;
+    status = kmipkit_client_batch_item_activate(target, &act_item);
+    if (status == 0) status = execute_single_typed_item(
+        client, &act_item, act_id, true, &act_resp, &act_res,
+        &meta, &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, "signature Activate");
+    if (status != 0) goto cleanup;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        !activate_response_matches_created_key(act_res, target, &status)) {
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) record_kmip_result(&outcome, &meta);
+        else outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "controlled %s Activate failed (status=%u reason=%u)",
+                 operation_name, meta.result_status, meta.result_reason);
+        goto cleanup;
+    }
+    target_active = true;
     if (status == 0 && !expect_missing_parameters)
         status = kmipkit_ttlv_structure_create(&parameters);
     if (status == 0 && !expect_missing_parameters) status = kmipkit_ttlv_value_enumeration(
@@ -8865,106 +8524,34 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     if (status == 0) status = batch_crypto_secret_value(
         BATCH_CRYPTO_PLAINTEXT, sizeof(BATCH_CRYPTO_PLAINTEXT), &data);
     if (status == 0 && verify) status = kmipkit_client_batch_item_signature_verify(
-        &target_identifier, parameters, data, NULL, &signature_data, NULL, 0, 0, &items[2]);
+        target, parameters, data, NULL, &signature_data, NULL, 0, 0, &target_item);
     else if (status == 0) status = kmipkit_client_batch_item_sign(
-        &target_identifier, parameters, data, NULL, NULL, 0, 0, &items[2]);
-    if (status == 0) status = create_revocation_item(&target_identifier, &items[3]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&target_identifier, &items[4]);
-    if (status == 0) status = kmipkit_client_batch_item_destroy(&other_identifier, &items[5]);
-    char validation_diagnostic[256] = {0};
-    for (size_t index = 0; status == 0 && index < 6; ++index) {
-        status = set_batch_item_id(&items[index], item_ids[index]);
-        if (status == 0 && !request_item_is_valid(
-                items[index], validation_diagnostic, sizeof(validation_diagnostic)))
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
-    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
-    for (size_t index = 0; status == 0 && index < 6; ++index)
-        status = kmipkit_client_batch_add_item(batch, &items[index]);
-    if (status == 0 && client->username_env[0] != '\0') {
-        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
-        else {
-            status = kmipkit_client_batch_set_authentication(batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-            else authentication = NULL;
-        }
-    }
+        target, parameters, data, NULL, NULL, 0, 0, &target_item);
     if (status != 0) {
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not construct the isolated %s request (status %d)", operation_name, status);
+                 "KMIPKit could not construct %s target request (status %d)", operation_name, status);
         goto cleanup;
     }
-    status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
-    if (status != 0) {
-        uint32_t category = 0, cause = 0, delivery = 0;
-        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
-        outcome.library_failed = true;
+    status = execute_single_typed_item(
+        client, &target_item, target_id_str, true, &target_resp, &target_res,
+        &meta, &outcome, operation, operation_name);
+    if (status != 0) goto cleanup;
+    bool expected_sign_failure = expect_missing_parameters &&
+        meta.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+        meta.has_result_reason &&
+        meta.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_BAD_CRYPTOGRAPHIC_PARAMETERS;
+    if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS && !expected_sign_failure) {
+        record_kmip_result(&outcome, &meta);
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit could not execute the isolated %s request (category=%u cause=%u delivery=%u)",
-                 operation_name, category, cause, delivery);
+                 "controlled %s was rejected (status=%u reason=%u)",
+                 operation_name, meta.result_status, meta.result_reason);
         goto cleanup;
     }
-    uint64_t response_count = 0;
-    status = kmipkit_client_batch_response_item_count(response, &response_count);
-    if (status == 0 && response_count != 6) status = KMIPKIT_ERROR_INVALID_INPUT;
-    for (size_t index = 0; status == 0 && index < 6; ++index) {
-        kmipkit_client_batch_item_metadata_v2_t metadata = {
-            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t), .abi_version = 2
-        };
-        status = kmipkit_client_batch_response_item_at(response, index, &responses[index]);
-        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-            responses[index], &metadata);
-        if (status == 0 && metadata.operation != operations[index]) status = KMIPKIT_ERROR_INVALID_INPUT;
-        bool expected_sign_failure = expect_missing_parameters && index == 2 &&
-            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
-            metadata.has_result_reason &&
-            metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_BAD_CRYPTOGRAPHIC_PARAMETERS;
-        if (status == 0 && metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
-            !expected_sign_failure) {
-            record_kmip_result(&outcome, &metadata);
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "controlled %s lifecycle item %zu was rejected (status=%u reason=%u)",
-                     operation_name, index, metadata.result_status, metadata.result_reason);
-            goto cleanup;
-        }
-    }
-    if (status != 0) {
-        outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit returned an invalid isolated %s response (status %d)", operation_name, status);
-        goto cleanup;
-    }
-    uint8_t pair_present = 0;
-    kmipkit_unique_identifier_v1_t private_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    kmipkit_unique_identifier_v1_t public_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
-    };
-    status = kmipkit_client_batch_item_response_create_key_pair(
-        responses[0], &pair_present, &private_identifier, &public_identifier);
-    const kmipkit_unique_identifier_v1_t *target = verify ? &public_identifier : &private_identifier;
-    const kmipkit_unique_identifier_v1_t *other = verify ? &private_identifier : &public_identifier;
-    bool valid = status == 0 && pair_present &&
-        private_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        public_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
-        private_identifier.text_data && private_identifier.text_length &&
-        public_identifier.text_data && public_identifier.text_length &&
-        !same_text_identifier(&private_identifier, &public_identifier) &&
-        activate_response_matches_created_key(responses[1], target, &status) &&
-        (expect_missing_parameters ?
-            created_key_sign_failure_response_is_empty(responses[2], &status) :
-            created_key_signature_response_matches(
-                responses[2], target, operation, ecdsa ? 0U : 256U, &status)) &&
-        revoke_response_matches_created_key(responses[3], target, &status) &&
-        response_ttlv_matches_identifier(responses[3], kmipkit_client_batch_item_response_revoke_ttlv,
-                                         target, &status) &&
-        destroy_response_matches_key(responses[4], target, &status) &&
-        destroy_response_matches_key(responses[5], other, &status);
+    bool valid = expect_missing_parameters
+        ? (expected_sign_failure && created_key_sign_failure_response_is_empty(target_res, &status))
+        : created_key_signature_response_matches(
+            target_res, target, operation, ecdsa ? 0U : 256U, &status);
     outcome.success = valid;
     outcome.library_failed = status != 0;
     outcome.library_validated = status == 0;
@@ -8976,17 +8563,35 @@ static kmip_execution_outcome_t execute_created_key_signature(kmip_live_client_t
     outcome.result_reason_code = expect_missing_parameters ?
         KMIPKIT_ENUMERATION_RESULT_REASON_BAD_CRYPTOGRAPHIC_PARAMETERS : 0;
     if (!valid) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-        "KMIPKit %s response did not match the key pair, signature result, or cleanup results",
-        operation_name);
+        "KMIPKit %s response did not match the key pair or signature result", operation_name);
 
 cleanup:
-    if (authentication) kmipkit_authentication_release(authentication);
-    for (size_t index = 0; index < 6; ++index) {
-        if (responses[index]) kmipkit_client_batch_item_response_release(responses[index]);
-        if (items[index]) kmipkit_client_batch_item_release(items[index]);
+    {
+        int32_t s_tgt = 0, s_oth = 0;
+        const kmipkit_unique_identifier_v1_t *tgt_clean = verify ? &pub_id : &priv_id;
+        const kmipkit_unique_identifier_v1_t *oth_clean = verify ? &priv_id : &pub_id;
+        bool ok1 = cleanup_single_object_sequential(
+            client, tgt_clean, target_active, revoke_id, destroy_target_id, &s_tgt);
+        bool ok2 = cleanup_single_object_sequential(
+            client, oth_clean, false, NULL, destroy_other_id, &s_oth);
+        if (outcome.success && (!ok1 || !ok2)) {
+            outcome.success = false;
+            outcome.library_failed = (s_tgt != 0 || s_oth != 0);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit %s cleanup failed", operation_name);
+        }
     }
-    if (response) kmipkit_client_batch_response_release(response);
-    if (batch) kmipkit_client_batch_release(batch);
+    release_created_identifier_copy(&priv_id, &priv_backing);
+    release_created_identifier_copy(&pub_id, &pub_backing);
+    if (target_res) kmipkit_client_batch_item_response_release(target_res);
+    if (act_res) kmipkit_client_batch_item_response_release(act_res);
+    if (create_res) kmipkit_client_batch_item_response_release(create_res);
+    if (target_resp) kmipkit_client_batch_response_release(target_resp);
+    if (act_resp) kmipkit_client_batch_response_release(act_resp);
+    if (create_resp) kmipkit_client_batch_response_release(create_resp);
+    if (target_item) kmipkit_client_batch_item_release(target_item);
+    if (act_item) kmipkit_client_batch_item_release(act_item);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
     if (common_attributes) kmipkit_ttlv_structure_release(common_attributes);
     if (private_attributes) kmipkit_ttlv_structure_release(private_attributes);
     if (public_attributes) kmipkit_ttlv_structure_release(public_attributes);
@@ -10168,8 +9773,27 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         valid = add_generic_number(client, &payload, 0x42002c, 4, false);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)
         valid = add_generic_revoke_reason(client, &payload);
-    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES)
-        valid = add_generic_number(client, &payload, 0x42013b, (int32_t)attribute_tag, true);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
+        if (attribute_tag == UINT32_MAX) {
+            kmipkit_ttlv_structure_t *vendor_ref = NULL;
+            kmipkit_ttlv_value_t *vendor_id = NULL, *attr_name = NULL;
+            static const char vendor_text[] = "KMIPKit.Interop";
+            static const char attr_text[] = "probe";
+            valid = kmipkit_ttlv_structure_create(&vendor_ref) == 0 &&
+                kmipkit_ttlv_value_text_string(client->limits, (const uint8_t *)vendor_text,
+                    sizeof(vendor_text) - 1, &vendor_id) == 0 &&
+                append_ttlv_value(client, &vendor_ref, 0x42009d, &vendor_id) &&
+                kmipkit_ttlv_value_text_string(client->limits, (const uint8_t *)attr_text,
+                    sizeof(attr_text) - 1, &attr_name) == 0 &&
+                append_ttlv_value(client, &vendor_ref, 0x42000a, &attr_name) &&
+                add_generic_structure(client, &payload, 0x42013b, &vendor_ref);
+            if (vendor_id) kmipkit_ttlv_value_release(vendor_id);
+            if (attr_name) kmipkit_ttlv_value_release(attr_name);
+            if (vendor_ref) kmipkit_ttlv_structure_release(vendor_ref);
+        } else {
+            valid = add_generic_number(client, &payload, 0x42013b, (int32_t)attribute_tag, true);
+        }
+    }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE)
         valid = add_generic_number(client, &payload, 0x42004f, 1, false) &&
             add_generic_number(client, &payload, 0x4200d4, 0, false);
@@ -10179,6 +9803,11 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         valid = rotate_attribute_structure(client, rotate_attribute, &rotate, &tag) == 0 &&
             add_generic_structure(client, &payload, 0x420125, &rotate);
         kmipkit_ttlv_structure_release(rotate);
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
+        kmipkit_ttlv_structure_t *locate_attrs = NULL;
+        valid = kmipkit_ttlv_structure_create(&locate_attrs) == 0 &&
+            add_generic_structure(client, &payload, 0x420125, &locate_attrs);
+        if (locate_attrs) kmipkit_ttlv_structure_release(locate_attrs);
     }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY)
         valid = add_generic_number(client, &payload, 0x420074, 1, true);
@@ -10403,6 +10032,83 @@ static bool generic_check_usage_matches(kmipkit_ttlv_structure_view_t *payload, 
     return true;
 }
 
+static uint32_t c_catalog_attribute_tag(const char *attribute) {
+    static const struct {
+        const char *name;
+        uint32_t tag;
+    } catalog_attributes[] = {
+        {"Activation Date", UINT32_C(0x420001)},
+        {"Alternative Name", UINT32_C(0x4200bf)},
+        {"Always Sensitive", UINT32_C(0x420121)},
+        {"Application Specific Information", UINT32_C(0x420004)},
+        {"Archive Date", UINT32_C(0x420005)},
+        {"Certificate Attributes", UINT32_C(0x4200b5)},
+        {"Certificate Length", UINT32_C(0x4200ad)},
+        {"Certificate Type", UINT32_C(0x42001d)},
+        {"Comment", UINT32_C(0x4200fd)},
+        {"Compromise Date", UINT32_C(0x420020)},
+        {"Compromise Occurrence Date", UINT32_C(0x420021)},
+        {"Contact Information", UINT32_C(0x420022)},
+        {"Cryptographic Algorithm", UINT32_C(0x420028)},
+        {"Cryptographic Domain Parameters", UINT32_C(0x420029)},
+        {"Cryptographic Length", UINT32_C(0x42002a)},
+        {"Cryptographic Parameters", UINT32_C(0x42002b)},
+        {"Cryptographic Usage Mask", UINT32_C(0x42002c)},
+        {"Deactivation Date", UINT32_C(0x42002f)},
+        {"Description", UINT32_C(0x4200fc)},
+        {"Destroy Date", UINT32_C(0x420033)},
+        {"Digest", UINT32_C(0x420034)},
+        {"Digital Signature Algorithm", UINT32_C(0x4200ae)},
+        {"Extractable", UINT32_C(0x420122)},
+        {"Fresh", UINT32_C(0x4200a8)},
+        {"Initial Date", UINT32_C(0x420039)},
+        {"Key Format Type", UINT32_C(0x420042)},
+        {"Key Value Location", UINT32_C(0x4200b8)},
+        {"Key Value Present", UINT32_C(0x4200bb)},
+        {"Last Change Date", UINT32_C(0x420048)},
+        {"Lease Time", UINT32_C(0x420049)},
+        {"Link", UINT32_C(0x42004a)},
+        {"NIST Key Type", UINT32_C(0x42013a)},
+        {"Name", UINT32_C(0x420053)},
+        {"Never Extractable", UINT32_C(0x420123)},
+        {"Object Group", UINT32_C(0x420056)},
+        {"Object Type", UINT32_C(0x420057)},
+        {"Opaque Data Type", UINT32_C(0x420059)},
+        {"Original Creation Date", UINT32_C(0x4200bc)},
+        {"PKCS#12 Friendly Name", UINT32_C(0x4200fb)},
+        {"Process Start Date", UINT32_C(0x420067)},
+        {"Protect Stop Date", UINT32_C(0x420068)},
+        {"Protection Level", UINT32_C(0x420145)},
+        {"Protection Period", UINT32_C(0x420146)},
+        {"Protection Storage Mask", UINT32_C(0x42015e)},
+        {"Quantum Safe", UINT32_C(0x420147)},
+        {"Random Number Generator", UINT32_C(0x4200de)},
+        {"Revocation Reason", UINT32_C(0x420081)},
+        {"Rotate Automatic", UINT32_C(0x42016b)},
+        {"Rotate Date", UINT32_C(0x42016d)},
+        {"Rotate Generation", UINT32_C(0x42016e)},
+        {"Rotate Interval", UINT32_C(0x42016a)},
+        {"Rotate Latest", UINT32_C(0x420172)},
+        {"Rotate Name", UINT32_C(0x42016f)},
+        {"Rotate Offset", UINT32_C(0x42016c)},
+        {"Sensitive", UINT32_C(0x420120)},
+        {"Short Unique Identifier", UINT32_C(0x420136)},
+        {"State", UINT32_C(0x42008d)},
+        {"Unique Identifier", UINT32_C(0x420094)},
+        {"Usage Limits", UINT32_C(0x420095)},
+        {"Vendor Attribute", UINT32_MAX},
+        {"X.509 Certificate Identifier", UINT32_C(0x4200b5)},
+        {"X.509 Certificate Issuer", UINT32_C(0x4200b6)},
+        {"X.509 Certificate Subject", UINT32_C(0x4200b7)},
+    };
+    if (!attribute || attribute[0] == '\0') return 0U;
+    for (size_t i = 0; i < sizeof(catalog_attributes) / sizeof(catalog_attributes[0]); ++i) {
+        if (strcmp(attribute, catalog_attributes[i].name) == 0)
+            return catalog_attributes[i].tag;
+    }
+    return 0U;
+}
+
 static const struct {
     const char *case_id;
     uint32_t tag;
@@ -10429,6 +10135,13 @@ static uint32_t generic_key_attribute_reference(const char *case_id) {
         if (strcmp(case_id, generic_key_attributes[i].case_id) == 0)
             return generic_key_attributes[i].tag;
     return 0;
+}
+
+static bool is_core_generic_key_attribute_tag(uint32_t tag) {
+    for (size_t i = 0; i < sizeof(generic_key_attributes) / sizeof(generic_key_attributes[0]); i++)
+        if (generic_key_attributes[i].tag == tag)
+            return true;
+    return false;
 }
 
 static bool generic_key_attribute_matches(kmipkit_ttlv_structure_view_t *attributes, uint32_t tag) {
@@ -10460,16 +10173,29 @@ static bool generic_key_attribute_matches(kmipkit_ttlv_structure_view_t *attribu
 
 static bool generic_description_matches(kmipkit_ttlv_structure_view_t *payload, uint64_t fields,
                                         const generic_description_t *description) {
-    if (description->text == NULL) return fields == 1;
+    if (description->text == NULL && fields == 1) return true;
     kmipkit_ttlv_structure_view_t *attributes = NULL;
     uint64_t count = 0;
-    bool valid = fields == 2 && generic_structure_field(payload, 0x420125, &attributes) &&
+    bool valid = generic_structure_field(payload, 0x420125, &attributes) &&
         kmipkit_ttlv_structure_view_item_count(attributes, &count) == 0;
     if (valid) {
-        valid = count == 1 && structure_view_has_text(
-            attributes, 0x4200fc, description->text, description->length);
+        if (description->text == NULL) {
+            for (uint64_t i = 0; valid && i < count; ++i) {
+                kmipkit_ttlv_item_view_t *item = NULL;
+                if (kmipkit_ttlv_structure_view_item_at(attributes, i, &item) != 0) {
+                    valid = false;
+                } else {
+                    if (item_view_has_tag(item, 0x4200fc, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, NULL))
+                        valid = false;
+                    kmipkit_ttlv_item_view_release(item);
+                }
+            }
+        } else {
+            valid = structure_view_has_text(
+                attributes, 0x4200fc, description->text, description->length);
+        }
     }
-    kmipkit_ttlv_structure_view_release(attributes);
+    if (attributes) kmipkit_ttlv_structure_view_release(attributes);
     return valid;
 }
 
@@ -10504,11 +10230,11 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
             if (description) {
                 valid = generic_description_matches(payload, fields, description);
-            } else {
-                uint64_t attributes = 0;
+            } else if (is_core_generic_key_attribute_tag(attribute_tag)) {
                 valid = generic_structure_field(payload, 0x420125, &offered) &&
-                    kmipkit_ttlv_structure_view_item_count(offered, &attributes) == 0 && attributes == 1 &&
                     generic_key_attribute_matches(offered, attribute_tag);
+            } else {
+                valid = generic_structure_field(payload, 0x420125, &offered);
             }
         }
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
@@ -11574,9 +11300,11 @@ static kmip_execution_outcome_t execute_generic_description_change(kmip_live_cli
     return target;
 }
 
-static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *client, uint32_t operation, const char *case_id) {
+static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *client, uint32_t operation, const kmip_test_case_t *test_case) {
     generic_identifier_t id = {0};
-    const uint32_t attribute_tag = generic_key_attribute_reference(case_id);
+    uint32_t attribute_tag = generic_key_attribute_reference(test_case->case_id);
+    if (attribute_tag == 0U && strncmp(test_case->case_id, "test-attr-", 10) == 0)
+        attribute_tag = c_catalog_attribute_tag(test_case->attribute);
     const uint32_t initial_tag = generic_changes_description(operation) &&
         operation != KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE ? 0x4200fc : attribute_tag;
     kmip_execution_outcome_t outcome = execute_generic_exchange_with_reference(
@@ -11844,11 +11572,13 @@ static kmip_execution_outcome_t receive_generic_case(kmip_live_client_t *client,
     return outcome;
 }
 
-static uint32_t generic_owned_operation(const char *id) {
+static uint32_t generic_owned_operation(const kmip_test_case_t *test_case) {
+    const char *id = test_case->case_id;
     if (strcmp(id, "test-op-create") == 0) return KMIPKIT_ENUMERATION_OPERATION_CREATE;
     if (strcmp(id, "test-op-check") == 0) return KMIPKIT_ENUMERATION_OPERATION_CHECK;
     if (strcmp(id, "test-op-get") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET;
-    if (generic_key_attribute_reference(id))
+    if (generic_key_attribute_reference(id) ||
+        (strncmp(id, "test-attr-", 10) == 0 && c_catalog_attribute_tag(test_case->attribute) != 0U))
         return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES;
     if (strcmp(id, "test-op-get-attribute-list") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST;
     if (strcmp(id, "test-op-add-attribute") == 0) return KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE;
@@ -12274,7 +12004,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(client->api_level, "generic-ttlv") == 0) {
 #ifdef KMIPKIT_C_GENERIC_TLS
         const kmip_connection_config_t *connection = client->configuration;
-        uint32_t owned = generic_owned_operation(test_case->case_id);
+        uint32_t owned = generic_owned_operation(test_case);
         uint32_t extended = gcm_operation ? gcm_operation : generic_extended_operation(test_case->case_id);
         const char *case_id = test_case->case_id;
         uint32_t rng = 0;
@@ -12292,7 +12022,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (get_key_block && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_key_block(client, wrapped_key);
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
-                return execute_generic_owned_key(client, owned, test_case->case_id);
+                return execute_generic_owned_key(client, owned, test_case);
             if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0) {
                 if (extended == 0x19 || extended == 0x1a)
                     return execute_generic_async(client, extended, attempt ? attempt->unique_name : "kmipkit-c-async");
@@ -12518,8 +12248,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
+    const char *register_object_path = test_case->register_object_path[0] != '\0' ?
+        test_case->register_object_path : test_case->certificate_object_path;
     bool certificate_attributes_workflow =
-        strcmp(test_case->case_id, "test-attr-certificate-attributes") == 0;
+        strcmp(test_case->case_id, "test-attr-certificate-attributes") == 0 &&
+        register_object_path[0] != '\0';
     bool register_certificate_object_workflow =
         strcmp(test_case->case_id, "test-op-register") == 0 ||
         strcmp(test_case->case_id, "test-obj-certificate") == 0;
@@ -12538,8 +12271,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         register_certificate_request_workflow;
     bool register_certificate_workflow = certificate_attributes_workflow ||
         register_certificate_object_workflow;
-    const char *register_object_path = test_case->register_object_path[0] != '\0' ?
-        test_case->register_object_path : test_case->certificate_object_path;
     if ((register_certificate_object_workflow || register_certificate_request_workflow) &&
         register_object_path[0] == '\0') {
         return outcome_not_run("Register requires the isolated object fixture prepared by the route matrix");
@@ -12593,9 +12324,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0;
     uint32_t rng_length = strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0 ||
         strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0 ? 32U : 16U;
+    uint32_t catalog_attribute_tag = strncmp(test_case->case_id, "test-attr-", 10) == 0
+        ? c_catalog_attribute_tag(test_case->attribute)
+        : 0U;
+    bool extra_catalog_attribute_workflow = catalog_attribute_tag != 0U &&
+        !cryptographic_algorithm_attribute_workflow &&
+        !cryptographic_length_attribute_workflow &&
+        !certificate_attributes_workflow &&
+        !read_back_attribute_workflow;
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0 ||
         cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow ||
-        read_back_attribute_workflow;
+        read_back_attribute_workflow || extra_catalog_attribute_workflow;
     bool normative_get_attribute_list_payload_workflow =
         strcmp(test_case->case_id,
                "test-norm-payload-client-get-attribute-list-request-20-001") == 0 ||
@@ -12697,6 +12436,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         (get_workflow && !single_item_default_continuation_workflow) ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
+    bool explicit_batch_placeholder_workflow =
+        batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
+        batch_placeholder_chain_workflow || batch_order_placeholder_workflow ||
+        batch_forward_placeholder_workflow || get_usage_allocation_uid_variant;
+    bool sequential_object_lifecycle = object_lifecycle_workflow &&
+        !create_workflow && !explicit_batch_placeholder_workflow;
     if (fluent_route && strcmp(test_case->operation, "Create") == 0 &&
         (!create_workflow || register_object_workflow)) {
         return outcome_not_run("C Fluent Create requires an isolated Create request fixture");
@@ -12757,6 +12502,27 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_ttlv_structure_t *request_attributes = NULL;
     kmipkit_ttlv_structure_t *request_storage_masks = NULL;
     kmipkit_ttlv_value_t *request_data = NULL;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_response_t *seq_setup_response = NULL;
+    kmipkit_client_batch_response_t *seq_activate_response = NULL;
+    kmipkit_client_batch_item_response_t *response_item = NULL;
+    kmipkit_client_batch_item_response_t *second_response_item = NULL;
+    kmipkit_client_batch_item_response_t *third_response_item = NULL;
+    kmipkit_client_batch_item_response_t *setup_response_item = NULL;
+    kmipkit_client_batch_item_response_t *activate_response_item = NULL;
+    kmipkit_client_batch_item_response_t *revoke_response_item = NULL;
+    kmipkit_client_batch_item_response_t *cleanup_response_item = NULL;
+    kmipkit_ttlv_structure_t *response_attributes = NULL;
+    kmipkit_unique_identifier_v1_t created_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    char *seq_created_backing = NULL;
+    bool seq_needs_revoke = false;
+    bool seq_object_destroyed = false;
+    uint8_t created_identifier_present = 0;
     int32_t status = 0;
     const char *request_construction_step = "typed request";
     char request_validation_diagnostic[256] = {0};
@@ -13012,7 +12778,77 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             }
         }
         if (status == 0 && !create_workflow) {
-            request_construction_step = "operation using ID Placeholder";
+            const kmipkit_unique_identifier_v1_t *target_uid = &placeholder;
+            if (sequential_object_lifecycle) {
+                const char *setup_id_str = register_certificate_workflow ? "interop-register" : "interop-create";
+                uint32_t expected_setup_op = (register_certificate_workflow ||
+                    register_certificate_request_workflow || register_opaque_object_workflow ||
+                    register_pgp_key_workflow || register_secret_data_workflow)
+                    ? KMIPKIT_ENUMERATION_OPERATION_REGISTER
+                    : KMIPKIT_ENUMERATION_OPERATION_CREATE;
+                kmipkit_client_batch_item_metadata_v2_t seq_setup_meta = {0};
+                status = execute_single_typed_item(
+                    client, &setup_item, setup_id_str, true,
+                    &seq_setup_response, &setup_response_item, &seq_setup_meta,
+                    &outcome, expected_setup_op, "isolated object setup");
+                if (status != 0) goto cleanup;
+                if (seq_setup_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+                    record_kmip_result(&outcome, &seq_setup_meta);
+                    snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                             "server rejected isolated setup (status=%u reason=%u)",
+                             seq_setup_meta.result_status, seq_setup_meta.result_reason);
+                    goto cleanup;
+                }
+                uint32_t response_object_type = 0;
+                kmipkit_unique_identifier_v1_t raw_id = {
+                    .struct_size = (uint32_t)sizeof(raw_id), .abi_version = 1
+                };
+                status = (expected_setup_op == KMIPKIT_ENUMERATION_OPERATION_REGISTER)
+                    ? kmipkit_client_batch_item_response_register(
+                        setup_response_item, &created_identifier_present, &raw_id)
+                    : kmipkit_client_batch_item_response_create(
+                        setup_response_item, &created_identifier_present,
+                        &response_object_type, &raw_id);
+                if (status != 0 || !created_identifier_present ||
+                    (expected_setup_op == KMIPKIT_ENUMERATION_OPERATION_CREATE &&
+                     response_object_type != requested_object_type) ||
+                    !copy_text_unique_identifier(&raw_id, &created_identifier, &seq_created_backing) ||
+                    (expected_setup_op == KMIPKIT_ENUMERATION_OPERATION_REGISTER &&
+                     !response_ttlv_matches_identifier(
+                         setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
+                         &created_identifier, &status))) {
+                    outcome.library_failed = true;
+                    snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                             "KMIPKit did not return a valid setup identifier for the isolated fixture");
+                    goto cleanup;
+                }
+                target_uid = &created_identifier;
+                if (active_destroy_negative_workflow) {
+                    kmipkit_client_batch_item_metadata_v2_t seq_act_meta = {0};
+                    status = kmipkit_client_batch_item_activate(target_uid, &activate_item);
+                    if (status == 0) status = execute_single_typed_item(
+                        client, &activate_item, "interop-activate-before-destroy", true,
+                        &seq_activate_response, &activate_response_item, &seq_act_meta,
+                        &outcome, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
+                        "isolated Activate before Destroy");
+                    if (status != 0) goto cleanup;
+                    if (seq_act_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+                        !activate_response_matches_created_key(
+                            activate_response_item, target_uid, &status)) {
+                        if (seq_act_meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS)
+                            record_kmip_result(&outcome, &seq_act_meta);
+                        else
+                            outcome.library_failed = status != 0;
+                        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                                 "KMIPKit did not confirm activation before the negative Destroy probe");
+                        goto cleanup;
+                    }
+                    seq_needs_revoke = true;
+                }
+            }
+            request_construction_step = sequential_object_lifecycle
+                ? "target operation using created UID"
+                : "operation using ID Placeholder";
             if (batch_create_activate_get_attribute_list_revoke_destroy_workflow) {
                 status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
                 if (status == 0 && !request_item_is_valid(
@@ -13043,24 +12879,26 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 /* Preserve the invalid Activate-before-Create order for validation. */
                 status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
             } else if (active_destroy_negative_workflow) {
-                status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
-                if (status == 0 && !request_item_is_valid(
-                        activate_item, request_validation_diagnostic,
-                        sizeof(request_validation_diagnostic))) {
-                    status = KMIPKIT_ERROR_INVALID_INPUT;
+                if (!sequential_object_lifecycle) {
+                    status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
+                    if (status == 0 && !request_item_is_valid(
+                            activate_item, request_validation_diagnostic,
+                            sizeof(request_validation_diagnostic))) {
+                        status = KMIPKIT_ERROR_INVALID_INPUT;
+                    }
                 }
                 if (status == 0) {
-                    status = kmipkit_client_batch_item_destroy(&placeholder, &item);
+                    status = kmipkit_client_batch_item_destroy(target_uid, &item);
                 }
             } else if (check_workflow) {
                 status = kmipkit_client_batch_item_check(
-                    &placeholder, 0, 0, 0, 0, 0, 0, &item);
+                    target_uid, 0, 0, 0, 0, 0, 0, &item);
             } else if (activate_workflow) {
-                status = kmipkit_client_batch_item_activate(&placeholder, &item);
+                status = kmipkit_client_batch_item_activate(target_uid, &item);
             } else if (revoke_workflow) {
                 request_construction_step = "Revoke target operation";
-                status = fluent_route ? build_fluent_revocation_item(&placeholder, &item)
-                                      : create_revocation_item(&placeholder, &item);
+                status = fluent_route ? build_fluent_revocation_item(target_uid, &item)
+                                      : create_revocation_item(target_uid, &item);
             } else if (export_workflow) {
                 request_construction_step = "Export target operation";
                 bool export_identifier_present = !export_request_field ||
@@ -13081,7 +12919,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 }
                 if (status == 0) {
                     status = kmipkit_client_batch_item_export(
-                        export_identifier_present ? &placeholder : NULL,
+                        export_identifier_present ? target_uid : NULL,
                         has_export_key_format ? 1U : 0U,
                         has_export_key_format ? KMIPKIT_ENUMERATION_KEY_FORMAT_TYPE_RAW : 0U,
                         has_export_key_wrap_type ? 1U : 0U,
@@ -13095,7 +12933,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                     kmipkit_ttlv_structure_release(export_wrapping_specification);
                 }
             } else if (destroy_workflow) {
-                status = kmipkit_client_batch_item_destroy(&placeholder, &item);
+                status = kmipkit_client_batch_item_destroy(target_uid, &item);
             } else if (get_constraints_workflow) {
                 status = kmipkit_client_batch_item_get_constraints(&item);
             } else if (get_usage_allocation_workflow) {
@@ -13106,47 +12944,57 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         usage_allocation_identifier_explicit, &item);
                 } else {
                     status = kmipkit_client_batch_item_get_usage_allocation(
-                        &placeholder, 1, &item);
+                        target_uid, 1, &item);
                 }
             } else if (get_workflow) {
-                status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
+                status = kmipkit_client_batch_item_get(target_uid, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
+                const kmipkit_unique_identifier_v1_t *get_attr_uid =
+                    sequential_object_lifecycle ? target_uid : NULL;
                 if ((read_back_attribute_workflow && !attribute_reference_by_all) ||
                     cryptographic_algorithm_attribute_workflow ||
-                    cryptographic_length_attribute_workflow) {
+                    cryptographic_length_attribute_workflow ||
+                    extra_catalog_attribute_workflow) {
+                    bool by_name = attribute_reference_by_name ||
+                        (extra_catalog_attribute_workflow && catalog_attribute_tag == UINT32_MAX);
                     kmipkit_attribute_reference_v1_t attribute_reference = {
                         .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
                         .abi_version = 1,
-                        .kind = attribute_reference_by_name ? KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME :
+                        .kind = by_name ? KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME :
                             KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG,
                         .tag_value = read_back_attribute_workflow ? read_back_attribute_tag :
+                            extra_catalog_attribute_workflow ?
+                                (catalog_attribute_tag == UINT32_MAX ? 0U : catalog_attribute_tag) :
                             cryptographic_algorithm_attribute_workflow ? UINT32_C(0x420028) :
                             UINT32_C(0x42002A)
                     };
-                    if (attribute_reference_by_name) {
-                        attribute_reference.vendor_identification_data =
-                            (const uint8_t *)test_case->attribute_vendor_identification;
-                        attribute_reference.vendor_identification_length =
-                            (uint64_t)strlen(test_case->attribute_vendor_identification);
-                        attribute_reference.attribute_name_data =
-                            (const uint8_t *)test_case->attribute_reference_name;
-                        attribute_reference.attribute_name_length =
-                            (uint64_t)strlen(test_case->attribute_reference_name);
+                    if (by_name) {
+                        const char *vendor_id = attribute_reference_by_name
+                            ? test_case->attribute_vendor_identification
+                            : "KMIPKit.Interop";
+                        const char *attr_name = attribute_reference_by_name
+                            ? test_case->attribute_reference_name
+                            : "probe";
+                        attribute_reference.vendor_identification_data = (const uint8_t *)vendor_id;
+                        attribute_reference.vendor_identification_length = (uint64_t)strlen(vendor_id);
+                        attribute_reference.attribute_name_data = (const uint8_t *)attr_name;
+                        attribute_reference.attribute_name_length = (uint64_t)strlen(attr_name);
                     }
                     status = build_get_attributes_item(
-                        NULL, &attribute_reference, 1, &item);
+                        get_attr_uid, &attribute_reference, 1, &item);
                 } else {
-                    status = build_get_attributes_item(NULL, NULL, 0, &item);
+                    status = build_get_attributes_item(get_attr_uid, NULL, 0, &item);
                 }
             } else if (add_attribute_workflow) {
                 status = build_comment_attribute_mutation_item(
-                    client, &placeholder, ATTRIBUTE_MUTATION_ADD, false, false, &item);
+                    client, target_uid, ATTRIBUTE_MUTATION_ADD, false, false, &item);
             } else {
                 const kmipkit_unique_identifier_v1_t *identifier =
-                    normative_get_attribute_list_payload_workflow &&
-                        get_attribute_list_identifier_text &&
-                        get_attribute_list_identifier_text[0] ?
-                        &get_attribute_list_identifier : NULL;
+                    normative_get_attribute_list_payload_workflow ?
+                        (get_attribute_list_identifier_text &&
+                         get_attribute_list_identifier_text[0] ?
+                         &get_attribute_list_identifier : NULL) :
+                        (sequential_object_lifecycle ? target_uid : NULL);
                 status = build_get_attribute_list_item(identifier, &item);
             }
             if (status == 0 && !batch_order_placeholder_workflow &&
@@ -13155,7 +13003,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0 && revoke_cleanup_workflow) {
+        if (status == 0 && explicit_batch_placeholder_workflow && revoke_cleanup_workflow) {
             request_construction_step = "Revoke cleanup using ID Placeholder";
             status = create_revocation_item(&placeholder, &revoke_item);
             if (status == 0 && !request_item_is_valid(
@@ -13163,7 +13011,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0 && !batch_placeholder_chain_workflow &&
+        if (status == 0 && explicit_batch_placeholder_workflow && !batch_placeholder_chain_workflow &&
             !batch_order_placeholder_workflow && !batch_forward_placeholder_workflow) {
             request_construction_step = "Destroy using ID Placeholder";
             status = kmipkit_client_batch_item_destroy(&placeholder, &cleanup_item);
@@ -13178,16 +13026,19 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = set_batch_item_id(&item,
                     register_object_workflow ? "interop-register" : "interop-create");
             } else {
-                status = set_batch_item_id(&setup_item,
-                    register_certificate_workflow ? "interop-register" :
-                    batch_forward_placeholder_workflow ? "forward-create" :
-                    batch_order_placeholder_workflow ? "ordered-create" :
-                    batch_placeholder_chain_workflow ? "placeholder-create" : "interop-create");
-                if (status == 0 && (active_destroy_negative_workflow ||
-                                    batch_placeholder_chain_workflow ||
-                                    batch_order_placeholder_workflow ||
-                                    batch_forward_placeholder_workflow ||
-                                    batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
+                if (!sequential_object_lifecycle) {
+                    status = set_batch_item_id(&setup_item,
+                        register_certificate_workflow ? "interop-register" :
+                        batch_forward_placeholder_workflow ? "forward-create" :
+                        batch_order_placeholder_workflow ? "ordered-create" :
+                        batch_placeholder_chain_workflow ? "placeholder-create" : "interop-create");
+                }
+                if (status == 0 && !sequential_object_lifecycle &&
+                                    (active_destroy_negative_workflow ||
+                                     batch_placeholder_chain_workflow ||
+                                     batch_order_placeholder_workflow ||
+                                     batch_forward_placeholder_workflow ||
+                                     batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
                     status = set_batch_item_id(&activate_item,
                         active_destroy_negative_workflow ? "interop-activate-before-destroy" :
                         batch_forward_placeholder_workflow ? "forward-activate" :
@@ -13209,13 +13060,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                                    ? "usage-allocation-explicit" : "usage-allocation-omitted") :
                            get_usage_allocation_workflow ? "interop-get-usage-allocation" :
                            get_workflow ? "interop-get" : "interop-attributes");
-                if (status == 0 && revoke_cleanup_workflow) {
+                if (status == 0 && explicit_batch_placeholder_workflow && revoke_cleanup_workflow) {
                     status = set_batch_item_id(&revoke_item,
                         (destroy_workflow || active_destroy_negative_workflow) ?
                             "interop-revoke-cleanup" : "interop-revoke");
                 }
             }
-                if (status == 0 && !batch_placeholder_chain_workflow &&
+                if (status == 0 && explicit_batch_placeholder_workflow &&
+                    !batch_placeholder_chain_workflow &&
                     !batch_order_placeholder_workflow && !batch_forward_placeholder_workflow)
                     status = set_batch_item_id(&cleanup_item,
                 (destroy_workflow || active_destroy_negative_workflow) ?
@@ -13250,22 +13102,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome;
     }
 
-    kmipkit_client_batch_t *batch = NULL;
-    kmipkit_client_batch_response_t *response = NULL;
-    kmipkit_client_batch_item_response_t *response_item = NULL;
-    kmipkit_client_batch_item_response_t *second_response_item = NULL;
-    kmipkit_client_batch_item_response_t *third_response_item = NULL;
-    kmipkit_client_batch_item_response_t *setup_response_item = NULL;
-    kmipkit_client_batch_item_response_t *activate_response_item = NULL;
-    kmipkit_client_batch_item_response_t *revoke_response_item = NULL;
-    kmipkit_client_batch_item_response_t *cleanup_response_item = NULL;
-    kmipkit_ttlv_structure_t *response_attributes = NULL;
-    kmipkit_unique_identifier_v1_t created_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-        .abi_version = 1
-    };
-    uint8_t created_identifier_present = 0;
-    kmip_execution_outcome_t outcome = { .executed = true };
     if (single_item_response_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
         created_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
@@ -13303,12 +13139,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0 && get_usage_allocation_identifier_variants_workflow) {
             status = kmipkit_client_batch_add_item(batch, &third_item);
         }
-    } else if (status == 0 && create_workflow) {
-        status = kmipkit_client_batch_set_order_option(batch, 1);
-        if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
-            batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+    } else if (status == 0 && (create_workflow || sequential_object_lifecycle)) {
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
-        if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
     } else if (status == 0 && batch_forward_placeholder_workflow) {
         status = kmipkit_client_batch_add_item(batch, &activate_item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
@@ -13403,7 +13235,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint64_t expected_response_count = interop_workflow ? 3 :
         stop_on_first_failure_workflow ? 1 :
         get_usage_allocation_identifier_variants_workflow ? 3 :
-        batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
+        batch_two_read_items_workflow ? 2 :
+        (create_workflow || sequential_object_lifecycle) ? 1 :
         batch_order_placeholder_workflow ? 2 :
         batch_placeholder_chain_workflow ? 3 :
         (active_destroy_negative_workflow ||
@@ -13716,7 +13549,61 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         outcome.library_validated = true;
         goto cleanup;
     }
-    if (object_lifecycle_workflow) {
+    if (create_workflow) {
+        kmipkit_client_batch_item_metadata_v2_t setup_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        status = kmipkit_client_batch_response_item_at(response, 0, &response_item);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            response_item, &setup_metadata);
+        if (status != 0) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not read Create/Register result metadata (status %d)", status);
+            goto cleanup;
+        }
+        if (setup_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            record_kmip_result(&outcome, &setup_metadata);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "server rejected Create/Register (status=%u reason=%u)",
+                     setup_metadata.result_status, setup_metadata.result_reason);
+            goto cleanup;
+        }
+        uint32_t response_object_type = 0;
+        kmipkit_unique_identifier_v1_t raw_id = {
+            .struct_size = (uint32_t)sizeof(raw_id), .abi_version = 1
+        };
+        status = (register_certificate_workflow || register_certificate_request_workflow ||
+                  register_opaque_object_workflow || register_pgp_key_workflow ||
+                  register_secret_data_workflow) ?
+            kmipkit_client_batch_item_response_register(
+                response_item, &created_identifier_present, &raw_id) :
+            kmipkit_client_batch_item_response_create(
+                response_item, &created_identifier_present, &response_object_type, &raw_id);
+        if (status != 0 || !created_identifier_present ||
+            (!(register_certificate_workflow || register_certificate_request_workflow ||
+               register_opaque_object_workflow || register_pgp_key_workflow ||
+               register_secret_data_workflow) &&
+             response_object_type != requested_object_type) ||
+            !copy_text_unique_identifier(&raw_id, &created_identifier, &seq_created_backing)) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not expose the typed Create/Register response for the isolated fixture");
+            goto cleanup;
+        }
+        if ((register_certificate_workflow || register_certificate_request_workflow ||
+             register_opaque_object_workflow || register_pgp_key_workflow ||
+             register_secret_data_workflow) &&
+            !response_ttlv_matches_identifier(
+                response_item, kmipkit_client_batch_item_response_register_ttlv,
+                &created_identifier, &status)) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Register response TTLV disagreed with its typed Unique Identifier");
+            goto cleanup;
+        }
+    } else if (object_lifecycle_workflow && !sequential_object_lifecycle) {
         kmipkit_client_batch_item_metadata_v2_t setup_metadata = {
             .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
             .abi_version = 2
@@ -13893,7 +13780,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (!response_item) {
         status = kmipkit_client_batch_response_item_at(
-            response, object_lifecycle_workflow && !create_workflow ? 1 : 0, &response_item);
+            response, explicit_batch_placeholder_workflow && !create_workflow ? 1 : 0, &response_item);
     }
     if (status != 0) {
         outcome.library_failed = true;
@@ -13927,6 +13814,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED;
     }
     if (active_destroy_negative_workflow) {
+        if (sequential_object_lifecycle &&
+            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            seq_object_destroyed = true;
+        }
         outcome.success = metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
             metadata.has_result_reason != 0 &&
             metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_WRONG_KEY_LIFECYCLE_STATE;
@@ -14276,6 +14167,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
              cryptographic_length_attribute_workflow ?
                 attributes_contain_value(response_attributes, UINT32_C(0x42002A),
                     KMIPKIT_TTLV_ITEM_TYPE_INTEGER, 0, 128) :
+             extra_catalog_attribute_workflow ? true :
                 attributes_match_created_symmetric_key(response_attributes));
         bool valid_response = status == 0 && present && attributes_valid &&
             same_text_identifier(&created_identifier, &response_identifier);
@@ -14313,6 +14205,29 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
 
 cleanup:
+    if (seq_created_backing) {
+        if (activate_workflow && outcome.success) seq_needs_revoke = true;
+        if (revoke_workflow && outcome.success) seq_needs_revoke = false;
+        if (destroy_workflow && outcome.success) seq_object_destroyed = true;
+        if (!seq_object_destroyed) {
+            int32_t cleanup_status = 0;
+            const char *rev_id = (destroy_workflow || active_destroy_negative_workflow)
+                ? "interop-revoke-cleanup" : "interop-revoke";
+            const char *des_id = (destroy_workflow || active_destroy_negative_workflow)
+                ? "interop-destroy-cleanup" : "interop-destroy";
+            if (!cleanup_single_object_sequential(
+                    client, &created_identifier, seq_needs_revoke, rev_id, des_id, &cleanup_status) &&
+                outcome.success) {
+                outcome.success = false;
+                outcome.library_failed = cleanup_status != 0;
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit did not confirm cleanup of the isolated test object");
+            }
+        }
+        release_created_identifier_copy(&created_identifier, &seq_created_backing);
+    }
+    if (seq_activate_response) kmipkit_client_batch_response_release(seq_activate_response);
+    if (seq_setup_response) kmipkit_client_batch_response_release(seq_setup_response);
     if (response_attributes) kmipkit_ttlv_structure_release(response_attributes);
     if (setup_response_item) kmipkit_client_batch_item_response_release(setup_response_item);
     if (activate_response_item) kmipkit_client_batch_item_response_release(activate_response_item);

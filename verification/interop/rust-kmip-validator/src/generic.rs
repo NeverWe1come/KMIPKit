@@ -148,6 +148,7 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
             "2.0" | "2.1",
         ) => Some(GET),
         (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
+        (id, "2.0" | "2.1") if is_extra_attribute_case(case, id) => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
         ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
         ("test-op-get-usage-allocation", "2.0" | "2.1") => Some(GET_USAGE_ALLOCATION),
@@ -575,52 +576,92 @@ fn key_attribute_reference(case_id: &str) -> Option<u32> {
     }
 }
 
+fn is_extra_attribute_case(case: &Case, id: &str) -> bool {
+    id.starts_with("test-attr-")
+        && case.requires["attribute"].as_str().is_some_and(|name| {
+            name == "Vendor Attribute"
+                || name == "Certificate Attributes"
+                || crate::adapters::local::attribute_tag(name).is_some()
+        })
+}
+
 fn get_attributes(
     case: &Case,
     connection: &Connection,
     version: ProtocolVersion,
     id: &str,
 ) -> ExchangeResult {
-    let Some(tag) = key_attribute_reference(&case.case_id) else {
-        return Err("no direct-tag attribute recipe");
+    if let Some(tag) = key_attribute_reference(&case.case_id) {
+        return exchange_with_reference(
+            connection,
+            version,
+            GET_ATTRIBUTES,
+            Some(id),
+            tag,
+            |batch| {
+                Ok(text_identifier(batch).as_deref() == Some(id)
+                    && has_field(batch, 0x0042_0125, |value| {
+                        let ValueView::Structure(attrs) = value else {
+                            return false;
+                        };
+                        let mut matches = attrs.children().iter().filter(|item| item.tag().raw() == tag);
+                        let Some(attribute) = matches.next() else {
+                            return false;
+                        };
+                        matches.next().is_none()
+                            && attribute.with_value(|value| {
+                                if matches!(tag, 0x0042_0022 | 0x0042_00fc | 0x0042_00fd) {
+                                    return matches!(value, ValueView::TextString(text) if text == TEXT_ATTRIBUTE_FIXTURE);
+                                }
+                                matches!(
+                                    (tag, value),
+                                    (0x0042_0028, ValueView::Enumeration(3))
+                                        | (0x0042_002a, ValueView::Integer(256))
+                                        | (0x0042_002c, ValueView::Integer(4))
+                                        | (0x0042_0057, ValueView::Enumeration(2))
+                                        | (0x0042_008d, ValueView::Enumeration(1))
+                                        | (
+                                            0x0042_0120 | 0x0042_0121 | 0x0042_0123,
+                                            ValueView::Boolean(true)
+                                        )
+                                        | (0x0042_0122, ValueView::Boolean(false))
+                                )
+                            })
+                    }))
+            },
+        );
+    }
+    let name = case.requires["attribute"]
+        .as_str()
+        .ok_or("no direct-tag attribute recipe")?;
+    let fields = if name == "Vendor Attribute" {
+        vec![
+            item(0x0042_0094, Value::text_string(id.to_owned()))?,
+            node(
+                0x0042_013b,
+                vec![
+                    item(0x0042_009d, Value::text_string("KMIPKit.Interop".to_owned()))?,
+                    item(0x0042_000a, Value::text_string("probe".to_owned()))?,
+                ],
+            )?,
+        ]
+    } else if name == "Certificate Attributes" {
+        vec![
+            item(0x0042_0094, Value::text_string(id.to_owned()))?,
+            item(0x0042_013b, Value::enumeration(0x0042_00b5))?,
+            item(0x0042_013b, Value::enumeration(0x0042_00b6))?,
+        ]
+    } else {
+        let tag = crate::adapters::local::attribute_tag(name)
+            .ok_or("no direct-tag attribute recipe")?;
+        vec![
+            item(0x0042_0094, Value::text_string(id.to_owned()))?,
+            item(0x0042_013b, Value::enumeration(tag))?,
+        ]
     };
-    exchange_with_reference(
-        connection,
-        version,
-        GET_ATTRIBUTES,
-        Some(id),
-        tag,
-        |batch| {
-            Ok(text_identifier(batch).as_deref() == Some(id)
-                && has_field(batch, 0x0042_0125, |value| {
-                    let ValueView::Structure(attrs) = value else {
-                        return false;
-                    };
-                    let [attribute] = attrs.children() else {
-                        return false;
-                    };
-                    attribute.tag().raw() == tag
-                        && attribute.with_value(|value| {
-                            if matches!(tag, 0x0042_0022 | 0x0042_00fc | 0x0042_00fd) {
-                                return matches!(value, ValueView::TextString(text) if text == TEXT_ATTRIBUTE_FIXTURE);
-                            }
-                            matches!(
-                                (tag, value),
-                                (0x0042_0028, ValueView::Enumeration(3))
-                                    | (0x0042_002a, ValueView::Integer(256))
-                                    | (0x0042_002c, ValueView::Integer(4))
-                                    | (0x0042_0057, ValueView::Enumeration(2))
-                                    | (0x0042_008d, ValueView::Enumeration(1))
-                                    | (
-                                        0x0042_0120 | 0x0042_0121 | 0x0042_0123,
-                                        ValueView::Boolean(true)
-                                    )
-                                    | (0x0042_0122, ValueView::Boolean(false))
-                            )
-                        })
-                }))
-        },
-    )
+    exchange_payload(connection, version, GET_ATTRIBUTES, fields, |batch| {
+        Ok(text_identifier(batch).as_deref() == Some(id))
+    })
 }
 
 fn mutate_description(
@@ -677,25 +718,45 @@ fn description_wrapper(tag: u32, text: &str) -> Result<Item> {
 
 fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>) -> bool {
     let Some(expected) = expected else {
-        return batch
-            .with_response_payload(|payload| payload.children().len() == 1)
+        let has_attrs = batch
+            .with_response_payload(|payload| {
+                payload
+                    .children()
+                    .iter()
+                    .any(|item| item.tag().raw() == 0x0042_0125)
+            })
             .unwrap_or(false);
-    };
-    batch
-        .with_response_payload(|payload| payload.children().len() == 2)
-        .unwrap_or(false)
-        && has_field(batch, 0x0042_0125, |value| {
+        if !has_attrs {
+            return batch
+                .with_response_payload(|payload| payload.children().len() == 1)
+                .unwrap_or(false);
+        }
+        return has_field(batch, 0x0042_0125, |value| {
             let ValueView::Structure(attributes) = value else {
                 return false;
             };
-            let [description] = attributes.children() else {
-                return false;
-            };
-            description.tag().raw() == DESCRIPTION
-                && description.with_value(
-                    |value| matches!(value, ValueView::TextString(text) if text == expected),
-                )
-        })
+            attributes
+                .children()
+                .iter()
+                .all(|item| item.tag().raw() != DESCRIPTION)
+        });
+    };
+    has_field(batch, 0x0042_0125, |value| {
+        let ValueView::Structure(attributes) = value else {
+            return false;
+        };
+        let mut matches = attributes
+            .children()
+            .iter()
+            .filter(|item| item.tag().raw() == DESCRIPTION);
+        let Some(description) = matches.next() else {
+            return false;
+        };
+        matches.next().is_none()
+            && description.with_value(
+                |value| matches!(value, ValueView::TextString(text) if text == expected),
+            )
+    })
 }
 
 fn archive_and_recover(

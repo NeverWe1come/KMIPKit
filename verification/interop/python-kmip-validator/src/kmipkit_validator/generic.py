@@ -55,6 +55,71 @@ KEY_ATTRIBUTES = {
 }
 
 
+EXTRA_ATTRIBUTE_TAGS = {
+    "Activation Date": 0x420001,
+    "Alternative Name": 0x4200BF,
+    "Always Sensitive": 0x420121,
+    "Application Specific Information": 0x420004,
+    "Archive Date": 0x420005,
+    "Certificate Length": 0x4200AD,
+    "Certificate Type": 0x42001D,
+    "Comment": 0x4200FD,
+    "Compromise Date": 0x420020,
+    "Compromise Occurrence Date": 0x420021,
+    "Contact Information": 0x420022,
+    "Cryptographic Algorithm": 0x420028,
+    "Cryptographic Domain Parameters": 0x420029,
+    "Cryptographic Length": 0x42002A,
+    "Cryptographic Parameters": 0x42002B,
+    "Cryptographic Usage Mask": 0x42002C,
+    "Deactivation Date": 0x42002F,
+    "Description": 0x4200FC,
+    "Destroy Date": 0x420033,
+    "Digest": 0x420034,
+    "Digital Signature Algorithm": 0x4200AE,
+    "Extractable": 0x420122,
+    "Fresh": 0x4200A8,
+    "Initial Date": 0x420039,
+    "Key Format Type": 0x420042,
+    "Key Value Location": 0x4200B8,
+    "Key Value Present": 0x4200BB,
+    "Last Change Date": 0x420048,
+    "Lease Time": 0x420049,
+    "Link": 0x42004A,
+    "Name": 0x420053,
+    "Never Extractable": 0x420123,
+    "NIST Key Type": 0x42013A,
+    "Object Group": 0x420056,
+    "Object Type": 0x420057,
+    "Opaque Data Type": 0x420059,
+    "Original Creation Date": 0x4200BC,
+    "PKCS#12 Friendly Name": 0x4200FB,
+    "Process Start Date": 0x420067,
+    "Protect Stop Date": 0x420068,
+    "Protection Level": 0x420145,
+    "Protection Period": 0x420146,
+    "Protection Storage Mask": 0x42015E,
+    "Quantum Safe": 0x420147,
+    "Random Number Generator": 0x4200DE,
+    "Revocation Reason": 0x420081,
+    "Rotate Automatic": 0x42016B,
+    "Rotate Date": 0x42016D,
+    "Rotate Generation": 0x42016E,
+    "Rotate Interval": 0x42016A,
+    "Rotate Latest": 0x420172,
+    "Rotate Name": 0x42016F,
+    "Rotate Offset": 0x42016C,
+    "Sensitive": 0x420120,
+    "Short Unique Identifier": 0x420136,
+    "State": 0x42008D,
+    "Unique Identifier": 0x420094,
+    "Usage Limits": 0x420095,
+    "X.509 Certificate Identifier": 0x4200B5,
+    "X.509 Certificate Issuer": 0x4200B6,
+    "X.509 Certificate Subject": 0x4200B7,
+}
+
+
 def _operation(case, version):
     if version not in {"2.0", "2.1"}:
         return None
@@ -62,6 +127,10 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
+    if case["case_id"].startswith("test-attr-"):
+        attr_name = case.get("requires", {}).get("attribute")
+        if attr_name in EXTRA_ATTRIBUTE_TAGS or attr_name in {"Certificate Attributes", "Vendor Attribute"}:
+            return GET_ATTRIBUTES
     if case["operation"] == "Get" and (
         case.get("requires", {}).get("key_block_shape") in {"wrapped", "transparent"}
         or case.get("requires", {}).get("key_material_format") in {"10", "11", "20", "21"}
@@ -197,7 +266,7 @@ def run(driver, case):
     if operation == GET and "key_block_shape" in case["requires"]:
         return _run_key_block(driver, case["requires"]["key_block_shape"] == "wrapped")
     if operation in OWNED_KEY_OPERATIONS:
-        return _run_owned_key(driver, operation, case["case_id"])
+        return _run_owned_key(driver, operation, case)
     if operation == 0x18 and "query_function" in case.get("requires", {}):
         return _query_field(driver, case["requires"])
     if operation in {POLL, CANCEL}:
@@ -471,8 +540,10 @@ def _failure(diagnostic, status="failed"):
             "server_compatibility": "unknown", "parity": "not_compared", "diagnostic": diagnostic}
 
 
-def _run_owned_key(driver, operation, case_id):
-    reference = KEY_ATTRIBUTES[case_id][0] if operation == GET_ATTRIBUTES else None
+def _run_owned_key(driver, operation, case):
+    case_id = case["case_id"]
+    attr_name = case.get("requires", {}).get("attribute")
+    reference = KEY_ATTRIBUTES[case_id][0] if (operation == GET_ATTRIBUTES and case_id in KEY_ATTRIBUTES) else None
     if operation in (MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE):
         reference = DESCRIPTION
     created = _checked_exchange(driver, CREATE, attribute_reference=reference)
@@ -502,12 +573,28 @@ def _run_owned_key(driver, operation, case_id):
             and _has_field(payload, 0x420048, "DateTime"),
         )
     if created["status"] == "passed" and operation == GET_ATTRIBUTES:
-        tag, kind, expected = KEY_ATTRIBUTES[case_id]
-        target = _checked_exchange(
-            driver, GET_ATTRIBUTES, identifier,
-            lambda payload: same_id(payload) and _has_key_attribute(payload, tag, kind, expected),
-            attribute_reference=tag,
-        )
+        if case_id in KEY_ATTRIBUTES:
+            tag, kind, expected = KEY_ATTRIBUTES[case_id]
+            target = _checked_exchange(
+                driver, GET_ATTRIBUTES, identifier,
+                lambda payload: same_id(payload) and _has_key_attribute(payload, tag, kind, expected),
+                attribute_reference=tag,
+            )
+        else:
+            item, node = driver._item, driver._structure_item
+            if attr_name == "Vendor Attribute":
+                refs = [node(0x42013B, [
+                    item(0x42009D, "text", "KMIPKit.Interop"),
+                    item(0x42000A, "text", "probe"),
+                ])]
+            elif attr_name == "Certificate Attributes":
+                refs = [item(0x42013B, "enumeration", 0x4200B5), item(0x42013B, "enumeration", 0x4200B6)]
+            else:
+                refs = [item(0x42013B, "enumeration", EXTRA_ATTRIBUTE_TAGS[attr_name])]
+            target = _checked_exchange(
+                driver, GET_ATTRIBUTES, identifier, same_id,
+                custom_payload=[item(0x420094, "text", identifier), *refs],
+            )
     if created["status"] == "passed" and operation == GET_ATTRIBUTE_LIST:
         target = _checked_exchange(
             driver, GET_ATTRIBUTE_LIST, identifier,
@@ -572,8 +659,21 @@ def _description_matches(payload, expected):
 
     count = ttlv.ttlv_structure_view_item_count(payload)
     if expected is None:
-        return count == 1
-    return count == 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
+        if count < 1:
+            return False
+        if not _has_field(payload, 0x420125, "Structure"):
+            return True
+        for field in _fields(payload):
+            with ttlv.ttlv_item_view_tag(field) as tag:
+                if ttlv.tag_value(tag) != 0x420125:
+                    continue
+                with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as attrs:
+                    for attr in _fields(attrs):
+                        with ttlv.ttlv_item_view_tag(attr) as attr_tag:
+                            if ttlv.tag_value(attr_tag) == DESCRIPTION:
+                                return False
+        return True
+    return count >= 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
 
 
 def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None,
@@ -775,24 +875,30 @@ def _has_key_attribute(payload, tag_code, kind, expected):
 
     if not _has_field(payload, 0x420125, "Structure"):
         return False
+    read_value = {
+        "Boolean": ttlv.ttlv_value_view_boolean,
+        "Integer": ttlv.ttlv_value_view_integer,
+        "TextString": ttlv.ttlv_value_view_bytes,
+    }.get(kind)
     for field in _fields(payload):
         with ttlv.ttlv_item_view_tag(field) as tag:
             if ttlv.tag_value(tag) != 0x420125:
                 continue
             with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as attrs:
-                if ttlv.ttlv_structure_view_item_count(attrs) != 1:
-                    return False
                 if kind == "Enumeration":
                     return _has_field(attrs, tag_code, kind, expected)
-                if not _has_field(attrs, tag_code, kind):
-                    return False
-                with ttlv.ttlv_structure_view_item_at(attrs, 0) as attr, ttlv.ttlv_item_view_value(attr) as value:
-                    read_value = {
-                        "Boolean": ttlv.ttlv_value_view_boolean,
-                        "Integer": ttlv.ttlv_value_view_integer,
-                        "TextString": ttlv.ttlv_value_view_bytes,
-                    }[kind]
-                    return read_value(value) == expected
+                found = False
+                for attr in _fields(attrs):
+                    with ttlv.ttlv_item_view_tag(attr) as attr_tag:
+                        if ttlv.tag_value(attr_tag) != tag_code:
+                            continue
+                        if found or ttlv.ttlv_item_view_type(attr) != getattr(ttlv.ItemType, kind):
+                            return False
+                        with ttlv.ttlv_item_view_value(attr) as attr_value:
+                            if read_value(attr_value) != expected:
+                                return False
+                        found = True
+                return found
     return False
 
 

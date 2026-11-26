@@ -906,10 +906,76 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean attributeRead(CatalogLoader.CatalogCase testCase) {
-        return switch (testCase.caseId()) {
-            case "test-op-get-attributes", "test-op-get-attribute-list", "test-attr-name",
-                    "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length" -> true;
+        return testCase.caseId().startsWith("test-attr-") || switch (testCase.caseId()) {
+            case "test-op-get-attributes", "test-op-get-attribute-list" -> true;
             default -> false;
+        };
+    }
+
+    private static int catalogAttributeTag(String name) {
+        return switch (name) {
+            case "Activation Date" -> 0x0042_0001;
+            case "Alternative Name" -> 0x0042_00bf;
+            case "Always Sensitive" -> 0x0042_0121;
+            case "Application Specific Information" -> 0x0042_0004;
+            case "Archive Date" -> 0x0042_0005;
+            case "Certificate Length" -> 0x0042_00ad;
+            case "Certificate Type" -> 0x0042_001d;
+            case "Comment" -> 0x0042_00fd;
+            case "Compromise Date" -> 0x0042_0020;
+            case "Compromise Occurrence Date" -> 0x0042_0021;
+            case "Contact Information" -> 0x0042_0022;
+            case "Cryptographic Algorithm" -> 0x0042_0028;
+            case "Cryptographic Domain Parameters" -> 0x0042_0029;
+            case "Cryptographic Length" -> 0x0042_002a;
+            case "Cryptographic Parameters" -> 0x0042_002b;
+            case "Cryptographic Usage Mask" -> 0x0042_002c;
+            case "Deactivation Date" -> 0x0042_002f;
+            case "Description" -> 0x0042_00fc;
+            case "Destroy Date" -> 0x0042_0033;
+            case "Digest" -> 0x0042_0034;
+            case "Digital Signature Algorithm" -> 0x0042_00ae;
+            case "Extractable" -> 0x0042_0122;
+            case "Fresh" -> 0x0042_00a8;
+            case "Initial Date" -> 0x0042_0039;
+            case "Key Format Type" -> 0x0042_0042;
+            case "Key Value Location" -> 0x0042_00b8;
+            case "Key Value Present" -> 0x0042_00bb;
+            case "Last Change Date" -> 0x0042_0048;
+            case "Lease Time" -> 0x0042_0049;
+            case "Link" -> 0x0042_004a;
+            case "Name" -> 0x0042_0053;
+            case "Never Extractable" -> 0x0042_0123;
+            case "NIST Key Type" -> 0x0042_013a;
+            case "Object Group" -> 0x0042_0056;
+            case "Object Type" -> 0x0042_0057;
+            case "Opaque Data Type" -> 0x0042_0059;
+            case "Original Creation Date" -> 0x0042_00bc;
+            case "PKCS#12 Friendly Name" -> 0x0042_00fb;
+            case "Process Start Date" -> 0x0042_0067;
+            case "Protect Stop Date" -> 0x0042_0068;
+            case "Protection Level" -> 0x0042_0145;
+            case "Protection Period" -> 0x0042_0146;
+            case "Protection Storage Mask" -> 0x0042_015e;
+            case "Quantum Safe" -> 0x0042_0147;
+            case "Random Number Generator" -> 0x0042_00de;
+            case "Revocation Reason" -> 0x0042_0081;
+            case "Rotate Automatic" -> 0x0042_016b;
+            case "Rotate Date" -> 0x0042_016d;
+            case "Rotate Generation" -> 0x0042_016e;
+            case "Rotate Interval" -> 0x0042_016a;
+            case "Rotate Latest" -> 0x0042_0172;
+            case "Rotate Name" -> 0x0042_016f;
+            case "Rotate Offset" -> 0x0042_016c;
+            case "Sensitive" -> 0x0042_0120;
+            case "Short Unique Identifier" -> 0x0042_0136;
+            case "State" -> 0x0042_008d;
+            case "Unique Identifier" -> 0x0042_0094;
+            case "Usage Limits" -> 0x0042_0095;
+            case "X.509 Certificate Identifier" -> 0x0042_00b5;
+            case "X.509 Certificate Issuer" -> 0x0042_00b6;
+            case "X.509 Certificate Subject" -> 0x0042_00b7;
+            default -> 0;
         };
     }
 
@@ -928,20 +994,37 @@ public final class JavaKmipDriver implements AutoCloseable {
             }, start);
         }
 
-        int rawTag = switch (testCase.caseId()) {
-            case "test-attr-cryptographic-algorithm" -> 0x0042_0028;
-            case "test-attr-cryptographic-length" -> 0x0042_002a;
-            default -> 0x0042_0053;
-        };
-        var references = List.of(AttributeReference.tag(rawTag));
+        String attrName = testCase.requires().path("attribute").asText("");
+        List<AttributeReference> references;
+        int strictTag;
+        if ("Vendor Attribute".equals(attrName)) {
+            references = List.of(AttributeReference.name("KMIPKit.Interop", "probe"));
+            strictTag = 0;
+        } else if ("Certificate Attributes".equals(attrName)) {
+            references = List.of(AttributeReference.tag(0x0042_00b5), AttributeReference.tag(0x0042_00b6));
+            strictTag = 0;
+        } else {
+            int lookedUp = switch (testCase.caseId()) {
+                case "test-attr-cryptographic-algorithm" -> 0x0042_0028;
+                case "test-attr-cryptographic-length" -> 0x0042_002a;
+                case "test-op-get-attributes", "test-attr-name" -> 0x0042_0053;
+                default -> catalogAttributeTag(attrName);
+            };
+            if (lookedUp == 0) {
+                return CaseOutcome.notRun("Attribute tag is not mapped for " + testCase.caseId(), elapsedMillis(start));
+            }
+            references = List.of(AttributeReference.tag(lookedUp));
+            strictTag = (lookedUp == 0x0042_0028 || lookedUp == 0x0042_002a || lookedUp == 0x0042_0053) ? lookedUp : 0;
+        }
         var request = fluent ? client.request().getAttributes(id, references).build()
                 : ClientBatchItem.getAttributes(id, references);
         return executeRequest(testCase, request, result -> {
             var payload = result.getAttributesResponse().orElse(null);
             if (payload == null) return false;
             try (payload) {
-                return id.text().equals(payload.uniqueIdentifier()) && payload.attributes()
-                        .map(attributes -> containsAttribute(attributes, rawTag, objectName)).orElse(false);
+                if (!id.text().equals(payload.uniqueIdentifier())) return false;
+                return strictTag == 0 || payload.attributes()
+                        .map(attributes -> containsAttribute(attributes, strictTag, objectName)).orElse(false);
             }
         }, start);
     }
@@ -1247,6 +1330,38 @@ public final class JavaKmipDriver implements AutoCloseable {
                 return executeAsynchronous(testCase, "Cancel".equals(op), start);
             }
             if ("Register".equals(op)) {
+                String objectType = testCase.requires().path("object_type").asText("");
+                if ("PGP Key".equals(objectType)) {
+                    try (var attrs = symmetricKeyAttributes("register-pgp-" + UUID.randomUUID(), 256, 12);
+                            var fmt = TtlvValue.Enumeration(1);
+                            var mat = TtlvValue.ByteString(new byte[32], CODEC_LIMITS);
+                            var kv = appendValue(TtlvStructure.create(), 0x420043, mat);
+                            var kb0 = appendValue(TtlvStructure.create(), 0x420042, fmt);
+                            var kb1 = appendValue(kb0, 0x420045, TtlvValue.structure(kv, CODEC_LIMITS));
+                            var kb2 = appendValue(kb1, 0x420028, TtlvValue.Enumeration(3));
+                            var kb = appendValue(kb2, 0x42002a, TtlvValue.Integer(256));
+                            var verItem = GenericExchange.item(0x4200be, TtlvValue.Integer(4));
+                            var kbItem = GenericExchange.item(0x420040, TtlvValue.structure(kb, CODEC_LIMITS));
+                            var managed = ManagedObject.pgpKey(List.of(verItem, kbItem))) {
+                        ClientBatchItem req;
+                        if (fluent) {
+                            try (var attrSet = AttributeSet.tryNew(attrs);
+                                    var b = client.request().register()) {
+                                req = withBatchId(b.object(managed).attributes(attrSet).build());
+                            }
+                        } else {
+                            try (var view = managed.view();
+                                    var pgpItem = view.copy();
+                                    var registerReq = RegisterRequest.create(9, attrs, pgpItem)) {
+                                req = withBatchId(ClientBatchItem.register(registerReq));
+                            }
+                        }
+                        return executeRequest(testCase, req, r -> r.registerResponse().map(p -> {
+                            cleanup.add(p.uniqueIdentifier());
+                            return true;
+                        }).orElse(false), start);
+                    }
+                }
                 try (var attrs = symmetricKeyAttributes("register-" + UUID.randomUUID(), 256, 12);
                         var fmt = TtlvValue.Enumeration(1);
                         var mat = TtlvValue.ByteString(new byte[32], CODEC_LIMITS);

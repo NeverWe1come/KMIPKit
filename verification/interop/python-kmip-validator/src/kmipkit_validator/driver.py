@@ -402,6 +402,7 @@ class PythonKmipDriver:
     def _build_fluent_item(
         self, case: dict[str, Any], identifier: Any, *, name: str,
         data: bytes = b"A" * 16, auxiliary: bytes | None = None,
+        related_identifiers: list[Any] | None = None,
     ) -> Any:
         from kmipkit import attribute_operations
         from kmipkit.fluent import Request
@@ -555,6 +556,19 @@ class PythonKmipDriver:
             return request.destroy(identifier).build()
         if operation == "Revoke":
             return request.revoke(identifier, 1).build()
+        if operation == "Join Split Key":
+            split_identifiers = related_identifiers or [identifier, identifier]
+            if len(split_identifiers) < 2:
+                raise LocalRecipeUnavailable("Create Split Key did not return two part identifiers")
+            references = [self._extensions.SplitKeyReference(value, 2) for value in split_identifiers[:2]]
+            attrs = self._fixture_attributes(name)
+            try:
+                with request.join_split_key() as builder:
+                    return builder.object_type(2).references(references).attributes(attrs).build()
+            finally:
+                attrs.close()
+                for reference in references:
+                    reference.close()
         builders = {
             "Activate": request.activate, "Archive": request.archive, "Recover": request.recover,
             "Re-key": request.rekey, "Re-key Key Pair": request.rekey_key_pair,
@@ -1404,7 +1418,7 @@ class PythonKmipDriver:
             attrs = ttlv.ttlv_structure_create()
             object_item = self._structure_item(
                 0x0042_005B,
-                [self._item(0x0042_0059, "enumeration", 1), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
+                [self._item(0x0042_0059, "enumeration", 0x8000_0001), self._item(0x0042_005A, "bytes", b"KMIPKit dedicated opaque fixture")],
             )
             raw_object_type = 8
         elif object_type in {"PGP Key", "Secret Data"}:
@@ -1490,7 +1504,8 @@ class PythonKmipDriver:
         attrs = self._fixture_attributes(name)
         try:
             if operation == "Discover Versions":
-                return extension.client_batch_item_discover_versions()
+                ver = tuple(int(p) for p in self._connection["protocol_version"].split("."))
+                return extension.client_batch_item_discover_versions([ver])
             if operation == "Ping":
                 return extension.client_batch_item_ping()
             if operation == "Query":
@@ -2448,7 +2463,9 @@ class PythonKmipDriver:
                     )
             else:
                 if self._api_level == "fluent":
-                    target = self._build_fluent_item(test_case, target_identifier, name=unique_name)
+                    target = self._build_fluent_item(
+                        test_case, target_identifier, name=unique_name, related_identifiers=identifiers
+                    )
                 elif self._api_level == "high-level":
                     target = self._build_high_level_item(test_case, target_identifier, name=unique_name)
                     built_high_level = True
