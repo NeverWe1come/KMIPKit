@@ -62,7 +62,10 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
-    if case["operation"] == "Get" and case.get("requires", {}).get("key_block_shape") in {"wrapped", "transparent"}:
+    if case["operation"] == "Get" and (
+        case.get("requires", {}).get("key_block_shape") in {"wrapped", "transparent"}
+        or case.get("requires", {}).get("key_material_format") in {"10", "11", "20", "21"}
+    ):
         return GET
     if case["operation"] == "Query" and "query_function" in case.get("requires", {}):
         return 0x18
@@ -189,6 +192,8 @@ def run(driver, case):
         raise ValueError("no generic exchange recipe")
     if operation == 0x08 and "rotate_attribute_ttlv" in case.get("requires", {}):
         return _locate_rotate_attribute(driver, case)
+    if operation == GET and "key_material_format" in case["requires"]:
+        return _run_asymmetric_key(driver, int(case["requires"]["key_material_format"]))
     if operation == GET and "key_block_shape" in case["requires"]:
         return _run_key_block(driver, case["requires"]["key_block_shape"] == "wrapped")
     if operation in OWNED_KEY_OPERATIONS:
@@ -234,7 +239,7 @@ def wrapping_specification_fields(driver, identifier):
     ]
 
 
-def key_block_matches(object_wrapper, wrapping_id):
+def key_block_matches(object_wrapper, wrapping_id, format_code=7):
     from kmipkit import ttlv
 
     with ExitStack() as stack:
@@ -247,24 +252,39 @@ def key_block_matches(object_wrapper, wrapping_id):
                 return stack.enter_context(ttlv.ttlv_value_view_structure(value))
             raise ValueError("Get did not return the expected Key Block structure")
 
-        def byte_length(parent, wanted):
+        def byte_length(parent, wanted, item_type=ttlv.ItemType.ByteString):
             for member in _fields(parent):
                 with ttlv.ttlv_item_view_tag(member) as tag:
-                    if ttlv.tag_value(tag) != wanted or ttlv.ttlv_item_view_type(member) != ttlv.ItemType.ByteString:
+                    if ttlv.tag_value(tag) != wanted or ttlv.ttlv_item_view_type(member) != item_type:
                         continue
                 with ttlv.ttlv_item_view_value(member) as value:
                     return ttlv.ttlv_value_view_byte_length(value)
             return 0
 
         try:
-            block = structure(structure(object_wrapper, 0x42008F), 0x420040)
-            if not (_has_field(block, 0x420028, "Enumeration", 3) and _has_field(block, 0x42002A, "Integer", 256)):
+            asymmetric = format_code != 7
+            ec = format_code in {20, 21}
+            object_tag = 0x42008F if not asymmetric else 0x420064 if format_code in {10, 20} else 0x42006D
+            algorithms = (6, 14, 26) if ec else (4,) if asymmetric else (3,)
+            bits = 2048 if asymmetric and not ec else 256
+            block = structure(structure(object_wrapper, object_tag), 0x420040)
+            if not (any(_has_field(block, 0x420028, "Enumeration", algorithm) for algorithm in algorithms)
+                    and _has_field(block, 0x42002A, "Integer", bits)):
                 return False
             if wrapping_id is None:
+                if not _has_field(block, 0x420042, "Enumeration", format_code) or _has_field(block, 0x420046, "Structure"):
+                    return False
                 material = structure(structure(block, 0x420045), 0x420043)
-                return (_has_field(block, 0x420042, "Enumeration", 7)
-                        and not _has_field(block, 0x420046, "Structure")
-                        and byte_length(material, 0x42003F) == 32)
+                if format_code == 7:
+                    return byte_length(material, 0x42003F) == 32
+                if ec:
+                    if not _has_field(material, 0x420075, "Enumeration", 7):
+                        return False
+                    return (0 < byte_length(material, 0x42002E, ttlv.ItemType.BigInteger) <= 40
+                            if format_code == 20 else byte_length(material, 0x420072) == 65)
+                exponent = 0x420063 if format_code == 10 else 0x42006C
+                return (byte_length(material, 0x420052, ttlv.ItemType.BigInteger) in {256, 264}
+                        and byte_length(material, exponent, ttlv.ItemType.BigInteger) > 0)
             wrapping = structure(block, 0x420046)
             return (byte_length(block, 0x420045) == 40
                     and _has_field(wrapping, 0x42009E, "Enumeration", 1)
@@ -328,6 +348,49 @@ def _run_key_block(driver, wrapped):
             if cleanup["status"] != "passed":
                 target.update(_failure("Cleanup Destroy failed for a Key Block fixture."))
     return target
+
+
+def pair_key_attributes(driver, format_code):
+    item, node = driver._item, driver._structure_item
+    ec = format_code in {20, 21}
+    common = [item(0x420028, "enumeration", 26 if ec else 4), item(0x42002A, "integer", 256 if ec else 2048)]
+    if ec:
+        common.append(node(0x420029, [item(0x420075, "enumeration", 7)]))
+    return (common, [item(0x42002C, "integer", 1), item(0x420122, "boolean", True)],
+            [item(0x42002C, "integer", 2), item(0x420122, "boolean", True)])
+
+
+def _run_asymmetric_key(driver, format_code):
+    item, node = driver._item, driver._structure_item
+    common, private, public = pair_key_attributes(driver, format_code)
+    owned = []
+
+    def collect(payload):
+        owned.extend((_field_text(payload, 0x420066), _field_text(payload, 0x42006F)))
+        return all(owned) and owned[0] != owned[1]
+
+    created = _checked_exchange(
+        driver, CREATE_KEY_PAIR, expected=collect,
+        custom_payload=[node(0x420126, common), node(0x420127, private), node(0x420128, public)],
+    )
+    outcome = _failure("The prerequisite Create Key Pair request failed.", "not_run")
+    try:
+        if created["status"] == "passed":
+            public_key = format_code in {11, 21}
+            identifier = owned[int(public_key)]
+            object_type = 3 if public_key else 4
+            outcome = _checked_exchange(
+                driver, GET, custom_payload=[item(0x420094, "text", identifier),
+                                             item(0x420042, "enumeration", format_code)],
+                expected=lambda p: _text_identifier(p) == identifier and _has_field(p, 0x420057, "Enumeration", object_type)
+                and key_block_matches(p, None, format_code),
+            )
+    finally:
+        for key in dict.fromkeys(key for key in owned if key is not None):
+            cleanup = _checked_exchange(driver, DESTROY, key, lambda p, key=key: _text_identifier(p) == key)
+            if cleanup["status"] != "passed":
+                outcome.update(_failure("Cleanup Destroy failed for a Key Block fixture."))
+    return outcome
 
 
 def _async_target(driver, operation, correlation):

@@ -1610,7 +1610,7 @@ class PythonKmipDriver:
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
         query_field: int | None = None,
-        key_block: tuple[Any, Any | None] | None = None,
+        key_block: tuple[Any, Any | None, int] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1704,12 +1704,13 @@ class PythonKmipDriver:
                 if key_block is not None and success:
                     from .generic import key_block_matches
 
-                    identifier, wrapping_key = key_block
+                    identifier, wrapping_key, format_code = key_block
+                    object_type = 2 if format_code == 7 else 3 if format_code in {11, 21} else 4
                     get = observed.get_response()
                     with ttlv.ttlv_structure_view(get.object) if get and get.object else nullcontext() as object_view:
-                        verified = (get is not None and get.object_type_raw == 2 and get.unique_identifier == identifier
+                        verified = (get is not None and get.object_type_raw == object_type and get.unique_identifier == identifier
                                     and object_view is not None
-                                    and key_block_matches(object_view, None if wrapping_key is None else wrapping_key.text))
+                                    and key_block_matches(object_view, None if wrapping_key is None else wrapping_key.text, format_code))
                     if not verified:
                         result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
                                       diagnostic="Get did not return the expected Key Block")
@@ -2009,6 +2010,40 @@ class PythonKmipDriver:
     def _fixture_name(test_case: dict[str, Any]) -> str:
         return f"kmipkit-python-{test_case['case_id']}-{uuid.uuid4()}"
 
+    def _execute_asymmetric_key(self, format_code: int) -> dict[str, Any]:
+        from .generic import pair_key_attributes
+
+        common, private, public = pair_key_attributes(self, format_code)
+        with (self._structure(common) as common_attributes,
+              self._structure(private) as private_attributes,
+              self._structure(public) as public_attributes):
+            with self._extensions.client_batch_item_create_key_pair(
+                common_attributes=common_attributes, private_key_attributes=private_attributes,
+                public_key_attributes=public_attributes,
+            ) as request:
+                created = self._exchange(request)
+        owned = created.get("_identifiers", ())
+        outcome = self._blocked_prerequisite("Create Key Pair did not return both owned identifiers")
+        try:
+            if created["status"] == "passed" and len(owned) == 2 and owned[0] != owned[1]:
+                identifier = owned[int(format_code in {11, 21})]
+                if self._api_level == "fluent":
+                    with self._client.request().get_request() as builder:
+                        request = builder.unique_identifier(identifier).key_format_type(format_code).build()
+                else:
+                    request = self._extensions.client_batch_item_get(identifier, key_format_type=format_code)
+                with request:
+                    result = self._exchange(request, key_block=(identifier, None, format_code))
+                outcome = {key: value for key, value in result.items() if not key.startswith("_")}
+        finally:
+            for identifier in reversed(owned):
+                with self._extensions.client_batch_item_destroy(identifier) as destroy:
+                    cleanup = self._exchange(destroy)
+                if cleanup["status"] != "passed":
+                    outcome.update(status="failed", library_correctness="not_checked", server_compatibility="unknown",
+                                   diagnostic="Cleanup Destroy failed for an asymmetric key fixture")
+        return outcome
+
     def _execute_key_block(self, wrapped: bool) -> dict[str, Any]:
         from .generic import key_block_attributes, wrapping_specification_fields
 
@@ -2053,7 +2088,7 @@ class PythonKmipDriver:
                         identifier, key_format_type=None if wrapped else 7, key_wrapping_specification=spec,
                     )
                 with request:
-                    result = self._exchange(request, key_block=(identifier, wrapping))
+                    result = self._exchange(request, key_block=(identifier, wrapping, 7))
                     outcome = {key: value for key, value in result.items() if not key.startswith("_")}
             return outcome
         finally:
@@ -2075,6 +2110,9 @@ class PythonKmipDriver:
             return self._run_multipart_hash(test_case)
         unique_name = self._fixture_name(test_case)
         key_block_shape = test_case["requires"].get("key_block_shape")
+        key_material_format = test_case["requires"].get("key_material_format")
+        if operation == "Get" and key_material_format in {"10", "11", "20", "21"}:
+            return self._execute_asymmetric_key(int(key_material_format))
         if operation == "Get" and key_block_shape in {"wrapped", "transparent"}:
             return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":

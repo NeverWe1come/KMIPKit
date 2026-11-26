@@ -114,6 +114,7 @@ final class GenericExchange {
         if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
         if (JavaKmipDriver.rotateLocateCase(testCase)) return LOCATE;
         if ("Query".equals(testCase.operation()) && testCase.requires().has("query_function")) return QUERY;
+        if (JavaKmipDriver.asymmetricFormat(testCase) != 0) return GET;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
             case "test-op-create-key-pair" -> CREATE_KEY_PAIR;
@@ -171,6 +172,8 @@ final class GenericExchange {
         int operation = operation(testCase, connection);
         if (operation == QUERY && testCase.requires().has("query_function"))
             return queryField(testCase, connection, minor, start);
+        if (operation == GET && JavaKmipDriver.asymmetricFormat(testCase) != 0)
+            return runAsymmetricKey(connection, minor, JavaKmipDriver.asymmetricFormat(testCase), start);
         if (operation == GET && testCase.requires().has("key_block_shape"))
             return runKeyBlock(connection, minor, "wrapped".equals(testCase.requires().path("key_block_shape").asText()), start);
         int attributeTag = keyAttributeReference(testCase.caseId());
@@ -316,6 +319,45 @@ final class GenericExchange {
                 : JavaKmipDriver.CaseOutcome.failed("Cleanup Destroy failed for the isolated key.", elapsed(start));
     }
 
+    private static JavaKmipDriver.CaseOutcome runAsymmetricKey(ConnectionConfig connection,
+            int minor, int format, long start) {
+        var ids = new java.util.ArrayList<byte[]>();
+        boolean ec = format >= 20;
+        try (var algorithm = item(0x420028, TtlvValue.Enumeration(ec ? 26 : 4));
+                var length = item(0x42002a, TtlvValue.Integer(ec ? 256 : 2048));
+                var curve = item(0x420075, TtlvValue.Enumeration(7));
+                var domain = structureItem(0x420029, curve);
+                var common = ec ? structureItem(0x420126, algorithm, length, domain)
+                        : structureItem(0x420126, algorithm, length);
+                var sign = item(0x42002c, TtlvValue.Integer(1));
+                var verify = item(0x42002c, TtlvValue.Integer(2));
+                var privateExtractable = item(0x420122, TtlvValue.Boolean(true));
+                var publicExtractable = item(0x420122, TtlvValue.Boolean(true));
+                var privateAttributes = structureItem(0x420127, sign, privateExtractable);
+                var publicAttributes = structureItem(0x420128, verify, publicExtractable);
+                var payload = structureItem(0x420079, common, privateAttributes, publicAttributes)) {
+            var created = executePayload(connection, CREATE_KEY_PAIR, minor, payload, result -> {
+                ids.add(fieldText(result, 0x420066));
+                ids.add(fieldText(result, 0x42006f));
+                return ids.get(0) != null && ids.get(1) != null && !Arrays.equals(ids.get(0), ids.get(1));
+            }, start);
+            if (!"passed".equals(created.status()))
+                return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create Key Pair failed.", elapsed(start));
+            boolean publicKey = format == 11 || format == 21;
+            int objectType = publicKey ? 3 : 4;
+            byte[] id = ids.get(publicKey ? 1 : 0);
+            try (var uid = item(0x420094, TtlvValue.TextString(id, LIMITS));
+                    var selected = item(0x420042, TtlvValue.Enumeration(format));
+                    var get = structureItem(0x420079, uid, selected)) {
+                return executePayload(connection, GET, minor, get, result ->
+                        Arrays.equals(id, textIdentifier(result)) && hasField(result, 0x420057, TtlvItemType.Enumeration, objectType)
+                                && keyBlockMatches(result, null, format), start);
+            }
+        } finally {
+            destroyAll(connection, minor, ids, start);
+        }
+    }
+
     private static JavaKmipDriver.CaseOutcome runKeyBlock(ConnectionConfig connection,
             int minor, boolean wrapped, long start) {
         var keys = new java.util.ArrayList<byte[]>();
@@ -367,15 +409,25 @@ final class GenericExchange {
     }
 
     static boolean keyBlockMatches(TtlvStructureView wrapper, byte[] wrappingIdentifier) {
-        return withStructure(wrapper, 0x42008f, symmetric ->
-                withStructure(symmetric, 0x420040, keyBlock -> {
-                    if (!hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, 3)
-                            || !hasField(keyBlock, 0x42002a, TtlvItemType.Integer, 256)) return false;
+        return keyBlockMatches(wrapper, wrappingIdentifier, 7);
+    }
+
+    static boolean keyBlockMatches(TtlvStructureView wrapper, byte[] wrappingIdentifier, int format) {
+        boolean ec = format >= 20;
+        int objectTag = format == 7 ? 0x42008f : format == 11 || format == 21 ? 0x42006d : 0x420064;
+        int bits = format == 10 || format == 11 ? 2048 : 256;
+        return withStructure(wrapper, objectTag, object ->
+                withStructure(object, 0x420040, keyBlock -> {
+                    boolean algorithm = ec ? hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, 26)
+                            || hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, 14)
+                            || hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, 6)
+                            : hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, format == 7 ? 3 : 4);
+                    if (!algorithm || !hasField(keyBlock, 0x42002a, TtlvItemType.Integer, bits)) return false;
                     if (wrappingIdentifier == null) {
-                        return hasField(keyBlock, 0x420042, TtlvItemType.Enumeration, 7)
+                        return hasField(keyBlock, 0x420042, TtlvItemType.Enumeration, format)
                                 && !hasField(keyBlock, 0x420046, TtlvItemType.Structure, 0)
                                 && withStructure(keyBlock, 0x420045, keyValue ->
-                                        withStructure(keyValue, 0x420043, material -> hasByteLength(material, 0x42003f, 32)));
+                                        withStructure(keyValue, 0x420043, material -> materialMatches(material, format)));
                     }
                     return hasByteLength(keyBlock, 0x420045, 40)
                             && withStructure(keyBlock, 0x420046, data ->
@@ -384,6 +436,18 @@ final class GenericExchange {
                                     && withStructure(data, 0x420036, key ->
                                             Arrays.equals(wrappingIdentifier, fieldText(key, 0x420094))));
                 }));
+    }
+
+    private static boolean materialMatches(TtlvStructureView material, int format) {
+        if (format == 7) return hasByteLength(material, 0x42003f, 32);
+        if (format >= 20) {
+            if (!hasField(material, 0x420075, TtlvItemType.Enumeration, 7)) return false;
+            long scalar = fieldLength(material, 0x42002e, TtlvItemType.BigInteger);
+            return format == 20 ? scalar > 0 && scalar <= 40 : hasByteLength(material, 0x420072, 65);
+        }
+        long modulus = fieldLength(material, 0x420052, TtlvItemType.BigInteger);
+        return (modulus == 256 || modulus == 264)
+                && fieldLength(material, format == 10 ? 0x420063 : 0x42006c, TtlvItemType.BigInteger) > 0;
     }
 
     private static boolean withStructure(TtlvStructureView parent, int wanted,
@@ -400,15 +464,19 @@ final class GenericExchange {
     }
 
     private static boolean hasByteLength(TtlvStructureView parent, int wanted, int length) {
+        return fieldLength(parent, wanted, TtlvItemType.ByteString) == length;
+    }
+
+    private static long fieldLength(TtlvStructureView parent, int wanted, TtlvItemType type) {
         for (long index = 0; index < parent.itemCount(); ++index) {
             try (var item = parent.itemAt(index); var tag = item.tag()) {
-                if (tag.raw() != wanted || item.itemType() != TtlvItemType.ByteString) continue;
+                if (tag.raw() != wanted || item.itemType() != type) continue;
                 try (var value = item.value()) {
-                    return value.byteLength() == length;
+                    return value.byteLength();
                 }
             }
         }
-        return false;
+        return 0;
     }
 
     private record HashFrame(int index, byte[] chunk, byte[] correlation) { }

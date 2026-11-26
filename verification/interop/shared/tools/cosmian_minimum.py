@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction, with_cases
 from verification.interop.shared.tools.matrix.generator import LANGUAGES
+from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES, authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import TRANSPARENT_KEY, WRAPPED_KEY, key_block_cases
 from verification.interop.shared.tools.table_query_fields import query_cases
@@ -129,6 +130,7 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     contextual_operations = [
         *authenticated_encryption_cases(version, candidates),
         *key_block_cases(version, candidates["test-op-get"]),
+        *asymmetric_key_cases(version, candidates["test-op-get"]),
     ]
     candidates.update({case["case_id"]: case for case in contextual_operations})
     normative_by_target = defaultdict(set)
@@ -180,8 +182,11 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
             ids.update(case_id for case_id in FIELD_EXCHANGES.get(name, ()) if case_id in candidates)
         if kind == "base_object":
             ids.update(case_id for case_id, case in candidates.items() if case["requires"].get("base_object") == name)
-        if kind == "transparent_key" and name == "Symmetric Key":
-            ids.add(TRANSPARENT_KEY)
+        if kind == "transparent_key":
+            if name == "Symmetric Key":
+                ids.add(TRANSPARENT_KEY)
+            ids.update(case_id for case_id, case in candidates.items()
+                       if case["requires"].get("transparent_key") == name)
         if kind == "message":
             ids.update(case["case_id"] for case in catalog["test_cases"]
                        if case["case_id"] == "test-op-query")

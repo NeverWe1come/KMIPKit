@@ -202,6 +202,13 @@ Type was also specified. The published table marks Key Value as
 unimplemented, so the campaign records the successful result as a
 difference from the table.
 
+Cosmian 5.29.0 also returns transparent RSA and EC private and public key
+material through Get. The probes validate the requested format and the
+returned components. In its transparent RSA private material, Cosmian
+returns Private Exponent before Public Exponent, following the order in
+both standards. With the corrected typed Key Material reader, Rust
+validates that order through the typed, Fluent and direct client routes.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its

@@ -17,6 +17,7 @@ import time
 import unittest
 
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
+from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
 from verification.interop.shared.tools.table_query_fields import query_cases
@@ -584,11 +585,13 @@ class DirectTagValidatorTests(unittest.TestCase):
     def key_block_get(self, language, minor, route, invalid):
         target_id = b"target-key-block-fixture"
         wrapping_id = b"wrapping-key-block-fixture"
+        private_id = b"private-key-block-fixture"
+        public_id = b"public-key-block-fixture"
         with tempfile.TemporaryDirectory(prefix="kmipkit-key-block-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
             base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-get")
-            cases = list(key_block_cases(f"2.{minor}", base))
+            cases = [*key_block_cases(f"2.{minor}", base), *asymmetric_key_cases(f"2.{minor}", base)]
             selection = work / "catalog.json"
             selection.write_text(json.dumps(with_cases(catalog, cases)))
             profile = work / "profile.json"
@@ -666,6 +669,43 @@ class DirectTagValidatorTests(unittest.TestCase):
                                           number(0x42002A, 2, 256), *wrapping)
                         return number(0x420057, 5, 2), wire_item(0x420094, 7, target_id), structure(0x42008F, block)
 
+                    def pair_payload(request, format_code):
+                        ec = format_code in {20, 21}
+                        common = only(request, 0x420126, 1)
+                        self.assertEqual(only(common, 0x420028, 5), struct.pack(">I", 26 if ec else 4))
+                        self.assertEqual(only(common, 0x42002A, 2), struct.pack(">I", 256 if ec else 2048))
+                        if ec:
+                            domain = only(common, 0x420029, 1)
+                            self.assertEqual(only(domain, 0x420075, 5), struct.pack(">I", 7))
+                        for tag, usage in ((0x420127, 1), (0x420128, 2)):
+                            attributes = only(request, tag, 1)
+                            self.assertEqual(only(attributes, 0x42002C, 2), struct.pack(">I", usage))
+                            self.assertEqual(only(attributes, 0x420122, 6), struct.pack(">Q", 1))
+                        return wire_item(0x420066, 7, private_id), wire_item(0x42006F, 7, public_id)
+
+                    def asymmetric_payload(request, format_code):
+                        ec = format_code in {20, 21}
+                        public = format_code in {11, 21}
+                        key_id = public_id if public else private_id
+                        self.assertEqual(only(request, 0x420094, 7), key_id)
+                        self.assertEqual(only(request, 0x420042, 5), struct.pack(">I", format_code))
+                        if ec:
+                            component = (wire_item(0x420072, 8, b"\x04" + bytes(64)) if public
+                                         else wire_item(0x42002E, 4, bytes(31) + b"\x01"))
+                            fields = [number(0x420075, 5, 10 if invalid else 7), component]
+                        else:
+                            exponent = wire_item(0x42006C if public else 0x420063, 4, bytes(7) + b"\x03")
+                            fields = [wire_item(0x420052, 4, b"\x01" + bytes(247 if invalid else 255)), exponent]
+                            if not public:
+                                fields.append(wire_item(0x42006C, 4, bytes(7) + b"\x03"))
+                        value = structure(0x420045, structure(0x420043, *fields))
+                        block = structure(0x420040, number(0x420042, 5, format_code), value,
+                                          number(0x420028, 5, 14 if ec else 4),
+                                          number(0x42002A, 2, 256 if ec else 2048))
+                        return (number(0x420057, 5, 3 if public else 4),
+                                wire_item(0x420094, 7, key_id),
+                                structure(0x42006D if public else 0x420064, block))
+
                     def clean_payload(operation, request, outstanding, revoke_pending):
                         key = only(request, 0x420094, 7)
                         self.assertIn(key, outstanding)
@@ -678,16 +718,23 @@ class DirectTagValidatorTests(unittest.TestCase):
 
                     try:
                         for case in cases:
-                            wrapped = case["requires"]["key_block_shape"] == "wrapped"
-                            receive("Create data key", {1}, lambda _, request: create_payload(request, target_id, 12))
-                            if wrapped:
-                                receive("Create wrapping key", {1}, lambda _, request: create_payload(request, wrapping_id, 48))
-                                receive("Activate wrapping key", {0x12}, lambda _, request: activate_payload(request))
-                            receive("Get", {0x0A}, lambda _, request: get_payload(request, wrapped))
-                            outstanding = {target_id, wrapping_id} if wrapped else {target_id}
-                            revoke_pending = {wrapping_id} if wrapped else set()
+                            requires = case["requires"]
+                            if "key_material_format" in requires:
+                                format_code = int(requires["key_material_format"])
+                                receive("Create Key Pair", {2}, lambda _, request: pair_payload(request, format_code))
+                                receive("Get", {0x0A}, lambda _, request: asymmetric_payload(request, format_code))
+                                outstanding, revoke_pending = {private_id, public_id}, set()
+                            else:
+                                wrapped = requires["key_block_shape"] == "wrapped"
+                                receive("Create data key", {1}, lambda _, request: create_payload(request, target_id, 12))
+                                if wrapped:
+                                    receive("Create wrapping key", {1}, lambda _, request: create_payload(request, wrapping_id, 48))
+                                    receive("Activate wrapping key", {0x12}, lambda _, request: activate_payload(request))
+                                receive("Get", {0x0A}, lambda _, request: get_payload(request, wrapped))
+                                outstanding = {target_id, wrapping_id} if wrapped else {target_id}
+                                revoke_pending = {wrapping_id} if wrapped else set()
                             # Older teardown helpers also revoke the pre-active fixture before destroying it.
-                            for _ in range(4 if wrapped else 2):
+                            for _ in range(2 * len(outstanding)):
                                 if not outstanding:
                                     break
                                 receive("Clean up", {0x13, 0x14},

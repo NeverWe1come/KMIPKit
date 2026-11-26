@@ -135,6 +135,12 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-certify", "2.0" | "2.1") => Some(CERTIFY),
         ("test-op-re-certify", "2.0" | "2.1") => Some(RE_CERTIFY),
         ("test-op-check", "2.0" | "2.1") => Some(CHECK),
+        (_, "2.0" | "2.1")
+            if case.operation == "Get"
+                && crate::key_block::asymmetric_format(&case.requires).is_some() =>
+        {
+            Some(GET)
+        }
         (
             "test-op-get"
             | "test-op-get-wrapped-symmetric-key"
@@ -214,6 +220,11 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     let start = std::time::Instant::now();
     let version = ProtocolVersion::from_raw(2, i32::from(connection.protocol_version == "2.1"));
     let mut result = match operation(case, connection) {
+        Some(GET) if crate::key_block::asymmetric_format(&case.requires).is_some() => {
+            let format = crate::key_block::asymmetric_format(&case.requires)
+                .expect("selector checked the format");
+            get_asymmetric_key(case, connection, version, format)
+        }
         Some(GET) if case.requires["key_block_shape"].is_string() => {
             get_key_block(case, connection, version)
         }
@@ -421,6 +432,68 @@ fn run_owned_key(
     }
 }
 
+fn get_asymmetric_key(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+    format: u32,
+) -> CaseResult {
+    let mut owned = Vec::new();
+    let result = (|| {
+        let [common, private, public] = crate::key_block::pair_attributes(format)?;
+        let create = exchange_payload(
+            connection,
+            version,
+            CREATE_KEY_PAIR,
+            vec![
+                node(0x0042_0126, common)?,
+                node(0x0042_0127, private)?,
+                node(0x0042_0128, public)?,
+            ],
+            |batch| {
+                owned = [
+                    field_text(batch, 0x0042_0066),
+                    field_text(batch, 0x0042_006f),
+                ]
+                .into_iter()
+                .flatten()
+                .collect();
+                Ok(owned.len() == 2 && owned[0] != owned[1])
+            },
+        )?;
+        if create != (0, None) {
+            return Err("prerequisite Create Key Pair failed");
+        }
+        let public = matches!(format, 11 | 21);
+        let object_type = if public { 3 } else { 4 };
+        let identifier = owned
+            .get(usize::from(public))
+            .ok_or("missing created key identifier")?;
+        let fields = vec![
+            item(0x0042_0094, Value::text_string(identifier.clone()))?,
+            item(0x0042_0042, Value::enumeration(format))?,
+        ];
+        exchange_payload(connection, version, GET, fields, |batch| {
+            let transparent = batch
+                .with_response_payload(|payload| {
+                    crate::key_block::key_block(&payload, object_type)
+                        .as_ref()
+                        .and_then(crate::key_block::shape)
+                })
+                .flatten();
+            Ok(text_identifier(batch).as_ref() == Some(identifier)
+                && has_field(
+                    batch,
+                    0x0042_0057,
+                    |value| matches!(value, ValueView::Enumeration(raw) if *raw == object_type),
+                )
+                && transparent == Some(crate::key_block::KeyBlockShape::Transparent(format)))
+        })
+    })();
+    destroy_ids(connection, version, &owned);
+    outcome(case, result)
+}
+
 fn get_key_block(case: &Case, connection: &Connection, version: ProtocolVersion) -> CaseResult {
     let mut cleanup = Vec::new();
     let result = (|| {
@@ -451,12 +524,12 @@ fn get_key_block(case: &Case, connection: &Connection, version: ProtocolVersion)
             crate::key_block::KeyBlockShape::Wrapped(wrapper)
         } else {
             request_fields.push(item(0x0042_0042, Value::enumeration(7))?);
-            crate::key_block::KeyBlockShape::Transparent
+            crate::key_block::KeyBlockShape::Transparent(7)
         };
         exchange_payload(connection, version, GET, request_fields, |batch| {
             let shape = batch
                 .with_response_payload(|payload| {
-                    crate::key_block::symmetric_key_block(&payload)
+                    crate::key_block::key_block(&payload, 2)
                         .as_ref()
                         .and_then(crate::key_block::shape)
                 })

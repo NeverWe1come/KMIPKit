@@ -10,6 +10,7 @@ from verification.interop.shared.tools.cosmian_minimum import (
     ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence, write_json,
 )
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
+from verification.interop.shared.tools.table_asymmetric_key_exchanges import FORMATS
 from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES
 from verification.interop.shared.tools.table_key_block_exchanges import TRANSPARENT_KEY, WRAPPED_KEY
 from verification.interop.shared.tools.run_all import (
@@ -24,12 +25,14 @@ class CosmianMinimumTests(unittest.TestCase):
         schema_dir = ROOT / "verification/interop/shared/schemas"
         validator = Draft202012Validator(json.loads((schema_dir / "test-catalog.schema.json").read_text()))
         reports = {}
+        case_maps = {}
         for version in ("2.0", "2.1"):
             catalog, report = build_selection(ROOT, version)
             validator.validate(catalog)
             self.assertEqual(snapshot["source"], report["source"])
             self.assertEqual(version, report["protocol_version"])
             cases = {case["case_id"]: case for case in catalog["test_cases"]}
+            case_maps[version] = cases
             self.assertEqual(len(cases), len(catalog["test_cases"]))
             self.assertTrue(all(case["execution"]["protocol_versions"] == [version] for case in cases.values()))
             self.assertEqual(
@@ -78,6 +81,13 @@ class CosmianMinimumTests(unittest.TestCase):
                 self.assertIn("rust", {item["language"] for item in row["obligations"]
                                        if item["api_level"] == "high-level"})
             self.assertIn(TRANSPARENT_KEY, reports[version]["transparent_key", "Symmetric Key"]["server_cases"])
+            for name, format_code in FORMATS.items():
+                row = reports[version]["transparent_key", name]
+                case_id = f"test-op-get-transparent-{'-'.join(name.lower().split())}"
+                self.assertIn(case_id, row["server_cases"])
+                self.assertTrue(any(case_id in item.get("case_ids", ()) for item in row["obligations"]
+                                    if (item["language"], item["api_level"]) == ("rust", "high-level")))
+                self.assertEqual(str(format_code), case_maps[version][case_id]["requires"]["key_material_format"])
             for name in ("Server Information", "Extension Information", "RNG Parameters",
                          "Validation Information", "Profile Information", "Capability Information"):
                 case_id = f"test-query-{'-'.join(name.lower().split())}"

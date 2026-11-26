@@ -143,6 +143,11 @@ impl Attempt<'_> {
             Some("multipart_streaming") => return self.multipart(case),
             _ => {}
         }
+        if case.operation == "Get"
+            && let Some(format) = crate::key_block::asymmetric_format(&case.requires)
+        {
+            return self.get_asymmetric_key(format);
+        }
         if case.operation == "Get" && case.requires["key_block_shape"].is_string() {
             return self.get_key_block(case.requires["key_block_shape"] == "wrapped");
         }

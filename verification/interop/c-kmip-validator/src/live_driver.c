@@ -9439,6 +9439,14 @@ static bool key_block_case(const char *case_id) {
         strcmp(case_id, "test-op-get-wrapped-symmetric-key") == 0;
 }
 
+static uint32_t asymmetric_key_format(const char *case_id) {
+    if (strcmp(case_id, "test-op-get-transparent-rsa-private-key") == 0) return 10;
+    if (strcmp(case_id, "test-op-get-transparent-rsa-public-key") == 0) return 11;
+    if (strcmp(case_id, "test-op-get-transparent-ec-private-key") == 0) return 20;
+    if (strcmp(case_id, "test-op-get-transparent-ec-public-key") == 0) return 21;
+    return 0;
+}
+
 static bool append_key_block_number(kmip_live_client_t *client, kmipkit_ttlv_structure_t **fields,
     uint32_t tag, uint32_t actual, bool enumeration) {
     kmipkit_ttlv_value_t *value = NULL;
@@ -9509,12 +9517,41 @@ static bool key_block_bytes_match(kmipkit_ttlv_structure_view_t *fields, uint32_
     return valid;
 }
 
-static bool symmetric_key_block_matches(kmipkit_ttlv_structure_view_t *object,
-    const uint8_t *wrapper, uint64_t wrapper_length) {
+static uint64_t key_block_integer_length(kmipkit_ttlv_structure_view_t *fields, uint32_t tag) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint64_t length = 0;
+    if (structure_view_find_value(fields, tag, KMIPKIT_TTLV_ITEM_TYPE_BIG_INTEGER, &value))
+        (void)kmipkit_ttlv_value_view_byte_length(value, &length);
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return length;
+}
+
+static bool key_block_material_matches(kmipkit_ttlv_structure_view_t *fields, uint32_t format) {
+    if (format == 7) return key_block_bytes_match(fields, 0x42003f, NULL, 32);
+    if (format >= 20) {
+        if (!key_block_number_is(fields, 0x420075, 7, true)) return false;
+        if (format == 21) return key_block_bytes_match(fields, 0x420072, NULL, 65);
+        uint64_t scalar = key_block_integer_length(fields, 0x42002e);
+        return scalar > 0 && scalar <= 40;
+    }
+    uint64_t modulus = key_block_integer_length(fields, 0x420052);
+    return (modulus == 256 || modulus == 264) &&
+        key_block_integer_length(fields, format == 10 ? 0x420063 : 0x42006c) != 0;
+}
+
+static bool fixture_key_block_matches(kmipkit_ttlv_structure_view_t *object,
+    const uint8_t *wrapper, uint64_t wrapper_length, uint32_t format) {
     kmipkit_ttlv_structure_view_t *symmetric = NULL, *block = NULL, *value = NULL, *nested = NULL;
-    bool valid = key_block_structure(object, 0x42008f, &symmetric) &&
+    bool public_key = format == 11 || format == 21;
+    uint32_t tag = format == 7 ? 0x42008f : public_key ? 0x42006d : 0x420064;
+    uint32_t bits = format == 10 || format == 11 ? 2048 : 256;
+    bool valid = key_block_structure(object, tag, &symmetric) &&
         key_block_structure(symmetric, 0x420040, &block) &&
-        key_block_number_is(block, 0x420028, 3, true) && key_block_number_is(block, 0x42002a, 256, false);
+        key_block_number_is(block, 0x42002a, bits, false);
+    if (valid) valid = format >= 20
+        ? key_block_number_is(block, 0x420028, 26, true) || key_block_number_is(block, 0x420028, 14, true)
+            || key_block_number_is(block, 0x420028, 6, true)
+        : key_block_number_is(block, 0x420028, format == 7 ? 3 : 4, true);
     if (valid && wrapper) {
         valid = key_block_bytes_match(block, 0x420045, NULL, 40) &&
             key_block_structure(block, 0x420046, &value) &&
@@ -9524,8 +9561,8 @@ static bool symmetric_key_block_matches(kmipkit_ttlv_structure_view_t *object,
     } else if (valid) {
         kmipkit_ttlv_structure_view_t *wrapping = NULL;
         valid = !key_block_structure(block, 0x420046, &wrapping) &&
-            key_block_number_is(block, 0x420042, 7, true) && key_block_structure(block, 0x420045, &value) &&
-            key_block_structure(value, 0x420043, &nested) && key_block_bytes_match(nested, 0x42003f, NULL, 32);
+            key_block_number_is(block, 0x420042, format, true) && key_block_structure(block, 0x420045, &value) &&
+            key_block_structure(value, 0x420043, &nested) && key_block_material_matches(nested, format);
         if (wrapping) kmipkit_ttlv_structure_view_release(wrapping);
     }
     if (nested) kmipkit_ttlv_structure_view_release(nested);
@@ -9614,7 +9651,7 @@ static kmip_execution_outcome_t execute_typed_key_block(kmip_live_client_t *clie
             result, &present, &payload_present, &object_type, &returned, &object) == 0 &&
             present && payload_present && object_type == 2 && same_text_identifier(&id, &returned) &&
             kmipkit_ttlv_structure_view(object, &view) == 0 &&
-            symmetric_key_block_matches(view, wrapper.text_data, wrapper.text_length);
+            fixture_key_block_matches(view, wrapper.text_data, wrapper.text_length, 7);
         if (!out.success) snprintf(out.result_reason, sizeof(out.result_reason), "Get returned an unexpected Key Block.");
     }
 
@@ -9633,6 +9670,78 @@ cleanup:
     if (wrapping) kmipkit_client_batch_item_response_release(wrapping);
     if (owned) kmipkit_client_batch_item_response_release(owned);
     return out;
+}
+
+static bool asymmetric_key_attributes(kmip_live_client_t *client, uint32_t format,
+    kmipkit_ttlv_structure_t *attributes[3]) {
+    bool ec = format >= 20;
+    kmipkit_ttlv_structure_t *domain = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    bool valid = create_cryptographic_key_attributes(client, ec ? 26 : 4, ec ? 256 : 2048, &attributes[0]);
+    if (valid && ec) valid = kmipkit_ttlv_structure_create(&domain) == 0 &&
+        append_key_block_number(client, &domain, 0x420075, 7, true) &&
+        structure_into_value(client, &domain, &value) &&
+        append_ttlv_value(client, &attributes[0], 0x420029, &value);
+    for (size_t index = 1; valid && index < 3; ++index) {
+        valid = kmipkit_ttlv_structure_create(&attributes[index]) == 0 &&
+            append_key_block_number(client, &attributes[index], 0x42002c, (uint32_t)index, false) &&
+            kmipkit_ttlv_value_boolean(1, &value) == 0 &&
+            append_ttlv_value(client, &attributes[index], 0x420122, &value);
+    }
+    if (domain) kmipkit_ttlv_structure_release(domain);
+    if (value) kmipkit_ttlv_value_release(value);
+    return valid;
+}
+
+static kmip_execution_outcome_t execute_typed_asymmetric_key(kmip_live_client_t *client, uint32_t format) {
+    kmipkit_ttlv_structure_t *attributes[3] = {NULL}, *object = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_item_response_t *created = NULL, *response = NULL;
+    kmipkit_unique_identifier_v1_t private_id = {.struct_size = sizeof(private_id), .abi_version = 1},
+        public_id = {.struct_size = sizeof(public_id), .abi_version = 1},
+        returned = {.struct_size = sizeof(returned), .abi_version = 1};
+    uint8_t present = 0, payload_present = 0;
+    uint32_t object_type = 0;
+    bool public_key = format == 11 || format == 21;
+    const kmipkit_unique_identifier_v1_t *target = public_key ? &public_id : &private_id;
+    kmip_execution_outcome_t outcome = outcome_not_run("The prerequisite Create Key Pair failed.");
+    if (!asymmetric_key_attributes(client, format, attributes) ||
+        kmipkit_client_batch_item_create_key_pair(attributes[0], attributes[1], attributes[2],
+            NULL, NULL, NULL, &request) != 0 ||
+        !execute_typed_single_item(client, &request, 2, &created).success ||
+        kmipkit_client_batch_item_response_create_key_pair(created, &present, &private_id, &public_id) != 0 ||
+        !present || !private_id.text_data || !private_id.text_length || !public_id.text_data ||
+        !public_id.text_length || same_text_identifier(&private_id, &public_id))
+        goto cleanup;
+    outcome = outcome_not_run("Could not construct the transparent key Get request.");
+    if (kmipkit_client_batch_item_get(target, 1, format, 0, 0, 0, 0, NULL, &request) != 0) goto cleanup;
+    outcome = execute_typed_single_item(client, &request, 0x0a, &response);
+    if (outcome.success) {
+        outcome.success = kmipkit_client_batch_item_response_get(
+            response, &present, &payload_present, &object_type, &returned, &object) == 0 &&
+            present && payload_present && object_type == (public_key ? 3U : 4U) &&
+            same_text_identifier(target, &returned) && kmipkit_ttlv_structure_view(object, &view) == 0 &&
+            fixture_key_block_matches(view, NULL, 0, format);
+        if (!outcome.success) snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                                       "Get returned unexpected transparent key material.");
+    }
+
+cleanup:
+    if (request) kmipkit_client_batch_item_release(request);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (object) kmipkit_ttlv_structure_release(object);
+    if (response) kmipkit_client_batch_item_response_release(response);
+    bool cleanup_private = cleanup_typed_key_block(client, &private_id, false);
+    bool cleanup_public = cleanup_typed_key_block(client, &public_id, false);
+    if (!cleanup_private || !cleanup_public) {
+        outcome.success = false;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Could not destroy an asymmetric fixture key.");
+    }
+    if (created) kmipkit_client_batch_item_response_release(created);
+    for (size_t index = 0; index < 3; ++index)
+        if (attributes[index]) kmipkit_ttlv_structure_release(attributes[index]);
+    return outcome;
 }
 
 static int32_t build_typed_gcm_request(kmip_live_client_t *client, bool fluent,
@@ -10974,7 +11083,7 @@ static bool generic_key_block_response(kmipkit_ttlv_structure_view_t *payload, v
     const char *wrapping_key = context->count == 2 ? context->ids[1] : NULL;
     return key_block_number_is(payload, 0x420057, 2, true) &&
         key_block_bytes_match(payload, 0x420094, (const uint8_t *)context->ids[0], strlen(context->ids[0])) &&
-        symmetric_key_block_matches(payload, (const uint8_t *)wrapping_key, wrapping_key ? strlen(wrapping_key) : 0);
+        fixture_key_block_matches(payload, (const uint8_t *)wrapping_key, wrapping_key ? strlen(wrapping_key) : 0, 7);
 }
 
 static bool create_generic_key_block_fixture(kmip_live_client_t *client, uint32_t mask,
@@ -11014,6 +11123,49 @@ cleanup:
     if (spec) kmipkit_ttlv_structure_release(spec);
     generic_ext_cleanup(client, &context);
     return out;
+}
+
+typedef struct {
+    const char *identifier;
+    uint32_t format;
+    uint32_t object_type;
+} generic_asymmetric_material_t;
+
+static bool generic_asymmetric_material(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    const generic_asymmetric_material_t *context = raw;
+    return key_block_number_is(payload, 0x420057, context->object_type, true) &&
+        key_block_bytes_match(payload, 0x420094, (const uint8_t *)context->identifier, strlen(context->identifier)) &&
+        fixture_key_block_matches(payload, NULL, 0, context->format);
+}
+
+static kmip_execution_outcome_t execute_generic_asymmetric_key(kmip_live_client_t *client, uint32_t format) {
+    kmipkit_ttlv_structure_t *attrs[3] = {NULL}, *payload = make_ttlv_struct();
+    generic_ext_ctx_t keys = {0};
+    bool public_key = format == 11 || format == 21;
+    generic_asymmetric_material_t proof = {
+        .identifier = keys.ids[public_key ? 1 : 0], .format = format, .object_type = public_key ? 3 : 4
+    };
+    kmip_execution_outcome_t outcome = outcome_not_run("The prerequisite Create Key Pair failed.");
+    if (!payload || !asymmetric_key_attributes(client, format, attrs)) goto cleanup;
+    for (uint32_t index = 0; index < 3; ++index) {
+        if (!move_ttlv_struct(client, &payload, 0x420126 + index, &attrs[index])) goto cleanup;
+    }
+    kmip_execution_outcome_t created = execute_generic_custom(client, 2, payload, check_ext_key_pair, &keys);
+    payload = NULL;
+    if (!created.success || keys.count != 2 || strcmp(keys.ids[0], keys.ids[1]) == 0) goto cleanup;
+    outcome = outcome_not_run("Could not construct the transparent key Get request.");
+    payload = make_ttlv_struct();
+    if (!payload || !append_ttlv_text(client, &payload, 0x420094, proof.identifier) ||
+        !append_ttlv_enum(client, &payload, 0x420042, format)) goto cleanup;
+    outcome = execute_generic_custom(client, 0x0a, payload, generic_asymmetric_material, &proof);
+    payload = NULL;
+
+cleanup:
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    for (size_t index = 0; index < 3; ++index)
+        if (attrs[index]) kmipkit_ttlv_structure_release(attrs[index]);
+    generic_ext_cleanup(client, &keys);
+    return outcome;
 }
 
 static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op,
@@ -12006,6 +12158,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             "the C binding exposes no high-level client route for this case");
     }
     bool get_key_block = key_block_case(test_case->case_id);
+    uint32_t key_material_format = asymmetric_key_format(test_case->case_id);
     bool wrapped_key = strcmp(test_case->case_id, "test-op-get-wrapped-symmetric-key") == 0;
     uint32_t gcm_operation = gcm_case_operation(test_case->case_id);
     bool gcm_invalid_tag = strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-gcm-invalid-tag") == 0;
@@ -12032,6 +12185,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->mode, "server_exchange") == 0 &&
         strcmp(client->api_level, "generic-ttlv") != 0) {
+        if (client->protocol_major == 2 && key_material_format && strcmp(test_case->mutation, "mutating") == 0)
+            return execute_typed_asymmetric_key(client, key_material_format);
         if (client->protocol_major == 2 && get_key_block && strcmp(test_case->mutation, "mutating") == 0)
             return execute_typed_key_block(client, wrapped_key);
         if (client->protocol_major == 2 && gcm_operation && strcmp(test_case->mutation, "mutating") == 0)
@@ -12124,7 +12279,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             !connection->username_env[0] && !connection->password_env[0] &&
             strcmp(test_case->mode, "server_exchange") == 0 &&
-            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash || get_key_block) && client->allow_mutations))) {
+            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash || get_key_block || key_material_format) && client->allow_mutations))) {
+            if (key_material_format && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
+                return execute_generic_asymmetric_key(client, key_material_format);
             if (get_key_block && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_key_block(client, wrapped_key);
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)

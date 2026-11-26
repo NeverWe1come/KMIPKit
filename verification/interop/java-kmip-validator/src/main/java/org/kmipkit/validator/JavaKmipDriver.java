@@ -86,6 +86,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if (asymmetricFormat(testCase) != 0) {
+            return executeAsymmetricKey(testCase, asymmetricFormat(testCase), start);
+        }
         if (keyBlockCase(testCase)) {
             return executeKeyBlock(testCase, start);
         }
@@ -414,12 +417,21 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static int asymmetricFormat(CatalogLoader.CatalogCase testCase) {
+        if (!"Get".equals(testCase.operation())) return 0;
+        int format = testCase.requires().path("key_material_format").asInt(0);
+        return switch (format) {
+            case 10, 11, 20, 21 -> format;
+            default -> 0;
+        };
+    }
+
     static boolean keyBlockCase(CatalogLoader.CatalogCase testCase) {
         return "Get".equals(testCase.operation()) && testCase.requires().has("key_block_shape");
     }
 
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
-        return keyBlockCase(testCase) || attributeRead(testCase) || typedOnlyKeyProbe(testCase)
+        return asymmetricFormat(testCase) != 0 || keyBlockCase(testCase) || attributeRead(testCase) || typedOnlyKeyProbe(testCase)
                 || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
                 "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
     }
@@ -430,6 +442,48 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     static boolean registerOpaqueCase(CatalogLoader.CatalogCase testCase) {
         return "test-obj-opaque-object".equals(testCase.caseId());
+    }
+
+    private CaseOutcome executeAsymmetricKey(CatalogLoader.CatalogCase testCase, int format, long start) {
+        boolean ec = format >= 20;
+        var ids = new ArrayList<UniqueIdentifier>();
+        try (var algorithm = appendValue(TtlvStructure.create(), 0x420028, TtlvValue.Enumeration(ec ? 26 : 4));
+                var length = appendValue(algorithm, 0x42002a, TtlvValue.Integer(ec ? 256 : 2048));
+                var curve = appendValue(TtlvStructure.create(), 0x420075, TtlvValue.Enumeration(7));
+                var common = ec ? appendValue(length, 0x420029, TtlvValue.structure(curve, CODEC_LIMITS)) : length.copy();
+                var sign = appendValue(TtlvStructure.create(), 0x42002c, TtlvValue.Integer(1));
+                var verify = appendValue(TtlvStructure.create(), 0x42002c, TtlvValue.Integer(2));
+                var privateAttributes = appendValue(sign, 0x420122, TtlvValue.Boolean(true));
+                var publicAttributes = appendValue(verify, 0x420122, TtlvValue.Boolean(true))) {
+            var created = executeRequest(testCase, withBatchId(ClientBatchItem.createKeyPair(
+                    common, privateAttributes, publicAttributes, null, null, null)),
+                    response -> response.createKeyPairResponse().map(pair -> {
+                        ids.add(pair.privateKeyUniqueIdentifier());
+                        ids.add(pair.publicKeyUniqueIdentifier());
+                        return !sameIdentifier(ids.get(0), ids.get(1));
+                    }).orElse(false), start);
+            if (!"passed".equals(created.status()))
+                return CaseOutcome.notRun("The prerequisite Create Key Pair failed.", elapsedMillis(start));
+            boolean publicKey = format == 11 || format == 21;
+            var target = ids.get(publicKey ? 1 : 0);
+            ClientBatchItem request;
+            if ("fluent".equals(connection.apiLevel())) {
+                try (var builder = client.request().get()) {
+                    request = builder.uniqueIdentifier(target).keyFormatType(format).build();
+                }
+            } else {
+                request = ClientBatchItem.get(target, (long) format, null, null, null);
+            }
+            return executeRequest(testCase, withBatchId(request), response -> response.getResponse().map(get -> {
+                try (get; var object = get.object().map(TtlvStructure::view).orElse(null)) {
+                    return get.objectTypeRaw().orElse(-1) == (publicKey ? 3 : 4) && object != null
+                            && get.uniqueIdentifier().filter(id -> sameIdentifier(target, id)).isPresent()
+                            && GenericExchange.keyBlockMatches(object, null, format);
+                }
+            }).orElse(false), start);
+        } finally {
+            for (var key : ids) executeRequest(testCase, withBatchId(ClientBatchItem.destroy(key)), ignored -> true, start);
+        }
     }
 
     private CaseOutcome executeKeyBlock(CatalogLoader.CatalogCase testCase, long start) {
