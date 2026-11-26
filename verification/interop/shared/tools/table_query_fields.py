@@ -32,3 +32,23 @@ def query_cases(version, base):
             },
         )
         yield case
+
+
+def nonce_case(version, base):
+    case = deepcopy(base)
+    case.update(
+        case_id="test-query-attestation-nonce",
+        description=f"Request attestation capabilities and validate the server's Nonce under KMIP {version}.",
+        requires={"base_object": "Nonce", "controlled_expected_status": "Success"},
+        isolation_recipe={
+            "unique_name_prefix": "kmipkit-query-attestation-nonce", "setup_steps": [],
+            "target_step": "Execute Query Attestation Types with an attestation-capable header", "teardown_steps": [],
+        },
+        execution={
+            "mode": "server_exchange", "protocol_versions": [version], "mutation": "read_only",
+            "status": "planned", "steps": ["execute_query", "verify_response"],
+            "assertions": ["request_indicates_attestation_capability", "request_queries_attestation_types",
+                           "response_contains_nonempty_nonce_id_and_value"],
+        },
+    )
+    return case

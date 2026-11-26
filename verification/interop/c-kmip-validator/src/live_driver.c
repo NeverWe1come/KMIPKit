@@ -10568,9 +10568,42 @@ typedef struct {
     size_t size;
 } generic_correlation_t;
 
+static bool generic_nonce_valid(kmipkit_response_header_view_t *header) {
+    kmipkit_ttlv_structure_t *owned = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL, *nonce = NULL;
+    uint64_t count = 0;
+    bool valid = kmipkit_response_header_view_ttlv(header, &owned) == 0 &&
+        kmipkit_ttlv_structure_view(owned, &view) == 0 &&
+        generic_structure_field(view, 0x4200C8, &nonce) &&
+        kmipkit_ttlv_structure_view_item_count(nonce, &count) == 0 && count == 2;
+    for (uint64_t index = 0; valid && index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint64_t size = 0;
+        valid = kmipkit_ttlv_structure_view_item_at(nonce, index, &field) == 0 &&
+            item_view_has_tag(field, UINT32_C(0x4200C9) + (uint32_t)index,
+                              KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value) &&
+            kmipkit_ttlv_value_view_byte_length(value, &size) == 0 && size != 0;
+        if (value) kmipkit_ttlv_value_view_release(value);
+        if (field) kmipkit_ttlv_item_view_release(field);
+    }
+    if (nonce) kmipkit_ttlv_structure_view_release(nonce);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (owned) kmipkit_ttlv_structure_release(owned);
+    return valid;
+}
+
+static bool append_attestation_capable(kmip_live_client_t *client, kmipkit_ttlv_structure_t **header) {
+    kmipkit_ttlv_value_t *value = NULL;
+    bool appended = kmipkit_ttlv_value_boolean(1, &value) == 0 &&
+        append_ttlv_value(client, header, 0x4200D3, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return appended;
+}
+
 static kmip_execution_outcome_t execute_generic_custom_with_pending(
     kmip_live_client_t *client, uint32_t operation, kmipkit_ttlv_structure_t *payload_body,
-    generic_payload_check_fn check_fn, void *ctx, generic_correlation_t *pending) {
+    generic_payload_check_fn check_fn, void *ctx, generic_correlation_t *pending, bool expect_nonce) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_ttlv_structure_t *ver = make_ttlv_struct();
     kmipkit_ttlv_structure_t *hdr = make_ttlv_struct();
@@ -10581,6 +10614,7 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
         append_ttlv_int(client, &ver, 0x42006b, client->protocol_minor) &&
         move_ttlv_struct(client, &hdr, 0x420069, &ver) &&
         (!pending || operation != 1 || append_ttlv_enum(client, &hdr, 0x420007, 1)) &&
+        (!expect_nonce || append_attestation_capable(client, &hdr)) &&
         append_ttlv_int(client, &hdr, 0x42000d, 1) &&
         append_ttlv_enum(client, &batch, 0x42005c, operation) &&
         move_ttlv_struct(client, &batch, 0x420079, &payload_body) &&
@@ -10638,7 +10672,7 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
             record_kmip_result(&outcome, &meta);
             if (outcome.success) {
                 ok = !has_reason && generic_structure_field(bview, 0x42007c, &pview) &&
-                    (!check_fn || check_fn(pview, ctx));
+                    (!check_fn || check_fn(pview, ctx)) && (!expect_nonce || generic_nonce_valid(rhdr));
             } else if (status == 2 && (pending || operation == 0x19)) {
                 const bool has_payload = generic_structure_field(bview, 0x42007c, &pview);
                 uint64_t count = 0;
@@ -10666,7 +10700,10 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
         outcome.success = false;
         outcome.library_validated = false;
         outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Generic TTLV exchange or validation failed.");
+        const char *diagnostic = expect_nonce && outcome.has_result_status_code && outcome.result_status_code == 0
+            ? "Generic Query did not return a usable Nonce."
+            : "Generic TTLV exchange or validation failed.";
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "%s", diagnostic);
     }
     if (wire) OPENSSL_cleanse(wire, capacity);
     free(wire);
@@ -10680,7 +10717,7 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
 static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *client, uint32_t operation,
                                                        kmipkit_ttlv_structure_t *payload_body,
                                                        generic_payload_check_fn check_fn, void *ctx) {
-    return execute_generic_custom_with_pending(client, operation, payload_body, check_fn, ctx, NULL);
+    return execute_generic_custom_with_pending(client, operation, payload_body, check_fn, ctx, NULL, false);
 }
 
 typedef struct {
@@ -11263,7 +11300,7 @@ static kmip_execution_outcome_t execute_generic_async_target(
     }
     return execute_generic_custom_with_pending(
         client, operation, body, operation == 0x19 ? check_generic_async_cancel : check_generic_async_create,
-        operation == 0x19 ? (void *)current : (void *)owned, operation == 0x1a ? next : NULL);
+        operation == 0x19 ? (void *)current : (void *)owned, operation == 0x1a ? next : NULL, false);
 }
 
 static kmip_execution_outcome_t execute_generic_async(
@@ -11294,7 +11331,7 @@ static kmip_execution_outcome_t execute_generic_async(
     generic_correlation_t current = {0}, next = {0};
     generic_ext_ctx_t owned = {0};
     const kmip_execution_outcome_t setup = execute_generic_custom_with_pending(
-        client, 1, body, check_generic_async_create, &owned, &current);
+        client, 1, body, check_generic_async_create, &owned, &current, false);
     kmip_execution_outcome_t result = outcome_not_run("The prerequisite Create returned no Pending correlation.");
     if (setup.library_validated && current.size != 0) {
         for (unsigned poll = 0; poll < 16; ++poll) {
@@ -11327,6 +11364,16 @@ static bool check_generic_query_field(kmipkit_ttlv_structure_view_t *payload, vo
         kmipkit_ttlv_structure_view_item_count(field, &members) == 0 && members > 0;
     if (field) kmipkit_ttlv_structure_view_release(field);
     return valid;
+}
+
+static kmip_execution_outcome_t execute_generic_nonce_query(kmip_live_client_t *client) {
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct();
+    if (!payload || !append_ttlv_enum(client, &payload, 0x420074, 7)) {
+        if (payload) kmipkit_ttlv_structure_release(payload);
+        return generic_cleanup_failure("Could not build Query Attestation Types.");
+    }
+    return execute_generic_custom_with_pending(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, payload,
+                                                NULL, NULL, NULL, true);
 }
 
 static kmip_execution_outcome_t execute_generic_query_field(
@@ -11963,6 +12010,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 #endif
         return outcome_not_run("server-initiated exchange requires a supported API, --listen and a peer trigger");
     }
+    if (strcmp(test_case->case_id, "test-query-attestation-nonce") == 0 &&
+        strcmp(client->api_level, "generic-ttlv") != 0)
+        return outcome_not_run("the selected public request route cannot supply the attestation header");
     if (strcmp(client->api_level, "high-level") == 0) {
         const bool discover = strcmp(test_case->case_id, "test-op-discover-versions") == 0;
         const bool query = strcmp(test_case->operation, "Query") == 0 &&
@@ -12123,6 +12173,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
+            if (strcmp(test_case->case_id, "test-query-attestation-nonce") == 0)
+                return execute_generic_nonce_query(client);
             if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
                 return execute_generic_query_field(client, test_case);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)

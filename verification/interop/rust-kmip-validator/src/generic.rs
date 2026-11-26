@@ -5,8 +5,8 @@ use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
     CancelResponse, DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse,
-    PollResponse, ProtocolVersion, ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
-    SecretBytes,
+    PollResponse, ProtocolVersion, ResponseBatchItemView, ResponseHeaderView, ResponseMessage,
+    RngRetrieveResponse, SecretBytes,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
@@ -122,6 +122,7 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
+        ("test-query-attestation-nonce", "2.0" | "2.1") => Some(0x18),
         (_, "2.0" | "2.1")
             if case.operation == "Query" && case.requires["query_function"].is_string() =>
         {
@@ -237,6 +238,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         }
         Some(0x08) if case.requires["rotate_attribute_ttlv"].is_string() => {
             locate_rotate_attribute(case, connection, version)
+        }
+        Some(0x18) if case.case_id == "test-query-attestation-nonce" => {
+            query_attestation_nonce(case, connection, version)
         }
         Some(0x18) if case.requires["query_function"].is_string() => {
             outcome(case, query_field(connection, version, case))
@@ -1041,6 +1045,55 @@ fn exchange_payload(
     payload_fields: Vec<Item>,
     check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
 ) -> ExchangeResult {
+    exchange_with_header(
+        connection,
+        version,
+        operation,
+        payload_fields,
+        None,
+        |item, _| check(item),
+    )
+}
+
+fn query_attestation_nonce(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+) -> CaseResult {
+    let mut valid_nonce = false;
+    let result = item(0x0042_0074, Value::enumeration(7)).and_then(|function| {
+        exchange_with_header(
+            connection, version, 0x18, vec![function],
+            Some(item(0x0042_00d3, Value::boolean(true))?),
+            |_, header| {
+                valid_nonce = header.with_nonce(|nonce| {
+                    let fields = nonce.children();
+                    fields.len() == 2 && fields.iter().enumerate().all(|(index, field)| {
+                        field.tag().raw() == [0x0042_00c9, 0x0042_00ca][index]
+                            && field.with_value(|value| matches!(value, ValueView::ByteString(bytes) if !bytes.is_empty()))
+                    })
+                }).unwrap_or(false);
+                Ok(true)
+            },
+        )
+    });
+    let mut observed = outcome(case, result);
+    if !valid_nonce && observed.result_status_code == Some(0) {
+        observed.status = "failed";
+        observed.server_compatibility = "unknown";
+        "generic Query did not return a usable Nonce".clone_into(&mut observed.diagnostic);
+    }
+    observed
+}
+
+fn exchange_with_header(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    payload_fields: Vec<Item>,
+    optional_header_field: Option<Item>,
+    check: impl FnOnce(ResponseBatchItemView<'_>, ResponseHeaderView<'_>) -> Result<bool>,
+) -> ExchangeResult {
     let protocol = node(
         0x0042_0069,
         vec![
@@ -1051,13 +1104,13 @@ fn exchange_payload(
             )?,
         ],
     )?;
+    let mut header = vec![protocol];
+    header.extend(optional_header_field);
+    header.push(item(0x0042_000d, Value::integer(1))?);
     let request = node(
         0x0042_0078,
         vec![
-            node(
-                0x0042_0077,
-                vec![protocol, item(0x0042_000d, Value::integer(1))?],
-            )?,
+            node(0x0042_0077, header)?,
             node(
                 0x0042_000f,
                 vec![
@@ -1086,7 +1139,7 @@ fn check_response(
     wire: &[u8],
     operation: u32,
     version: ProtocolVersion,
-    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+    check: impl FnOnce(ResponseBatchItemView<'_>, ResponseHeaderView<'_>) -> Result<bool>,
 ) -> ExchangeResult {
     let root = codec::decode(wire).map_err(|_| "generic response failed TTLV decoding")?;
     if root.tag().raw() != 0x0042_007b {
@@ -1114,7 +1167,9 @@ fn check_response(
         .result_status()
         .ok_or("response status missing")?
         .raw();
-    if (status == 0 || (status == 2 && matches!(operation, POLL | CANCEL))) && !check(batch)? {
+    if (status == 0 || (status == 2 && matches!(operation, POLL | CANCEL)))
+        && !check(batch, response.header())?
+    {
         return Err("generic response payload did not satisfy the case");
     }
     Ok((

@@ -20,7 +20,7 @@ from verification.interop.shared.tools.operation_catalog import build_catalog, d
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
-from verification.interop.shared.tools.table_query_fields import query_cases
+from verification.interop.shared.tools.table_query_fields import nonce_case, query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -491,13 +491,26 @@ class DirectTagValidatorTests(unittest.TestCase):
                         with self.subTest(language=language, minor=minor, route=route, valid=valid):
                             if not available:
                                 self.skipTest(f"Installed {language} validator required")
-                            self.discover_versions_exchange(language, minor, route, valid)
+                            self.header_fixture_exchange(language, minor, route, valid)
 
-    def discover_versions_exchange(self, language, minor, route, valid):
-        with tempfile.TemporaryDirectory(prefix="kmipkit-discover-versions-") as dirname:
+    def test_attestation_nonce_checks_response_header(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for variant in ("valid", "absent", "wrong-type"):
+                    with self.subTest(language=language, minor=minor, variant=variant):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.header_fixture_exchange(language, minor, "generic-ttlv", variant == "valid",
+                                                     nonce=variant)
+
+    def header_fixture_exchange(self, language, minor, route, valid, *, nonce=None):
+        with tempfile.TemporaryDirectory(prefix="kmipkit-typed-header-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
-            case, = [case for case in catalog["test_cases"] if case["case_id"] == "test-op-discover-versions"]
+            source_id = "test-op-query" if nonce else "test-op-discover-versions"
+            case = next(case for case in catalog["test_cases"] if case["case_id"] == source_id)
+            if nonce:
+                case = nonce_case(f"2.{minor}", case)
             catalog_path = work / "catalog.json"
             catalog_path.write_text(json.dumps(with_cases(catalog, [case])))
             profile = work / "profile.json"
@@ -519,23 +532,36 @@ class DirectTagValidatorTests(unittest.TestCase):
                 command += ["--catalog", str(catalog_path), "--connection", str(connection)]
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
                     try:
-                        raw, _ = self.accept_request(listener, process, "Discover Versions")
+                        raw, _ = self.accept_request(listener, process, case["operation"])
                         raw.settimeout(5)
                         with raw, tls.wrap_socket(raw, server_side=True) as peer:
                             request = only(read_message(peer), 0x420078, 1)
                             header = only(request, 0x420077, 1)
                             self.assertEqual(only(header, 0x420069, 1), parse_items(version(minor))[0][2])
                             batch = only(request, 0x42000F, 1)
-                            self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", 0x1E))
-                            self.assertEqual(only(batch, 0x420079, 1), parse_items(version(minor)))
+                            operation = 0x18 if nonce else 0x1E
+                            self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
+                            extra_header = []
+                            if nonce:
+                                self.assertEqual(only(header, 0x4200D3, 6), struct.pack(">Q", 1))
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(number(0x420074, 5, 7)))
+                                if nonce != "absent":
+                                    extra_header.append(structure(
+                                        0x4200C8,
+                                        wire_item(0x4200C9, 8, b"nonce-id"),
+                                        wire_item(0x4200CA, 8 if valid else 7, b"nonce-value"),
+                                    ))
+                                payload = number(0x4200C7, 5, 1)
+                            else:
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(version(minor)))
+                                payload = version(minor if valid else 1 - minor)
                             batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
                             peer.sendall(structure(
                                 0x42007B,
                                 structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
-                                          number(0x42000D, 2, 1)),
-                                structure(0x42000F, number(0x42005C, 5, 0x1E), *batch_ids,
-                                          number(0x42007F, 5, 0),
-                                          structure(0x42007C, version(minor if valid else 1 - minor))),
+                                          *extra_header, number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, operation), *batch_ids,
+                                          number(0x42007F, 5, 0), structure(0x42007C, payload)),
                             ))
                         _, stderr = process.communicate(timeout=15)
                         self.assertEqual(process.returncode == 0, valid, stderr.decode(errors="replace"))
@@ -549,7 +575,8 @@ class DirectTagValidatorTests(unittest.TestCase):
                 self.assertEqual(observed["result_status_code"], 0)
                 if route == "high-level":
                     self.assertEqual(observed["actual_api_level"], route)
-                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-discover-versions")
+                fixture = "attestation-nonce" if nonce else "discover-versions"
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{fixture}")
 
     def test_authenticated_encryption_round_trip_and_invalid_tag(self):
         for language, available in installed_validators():

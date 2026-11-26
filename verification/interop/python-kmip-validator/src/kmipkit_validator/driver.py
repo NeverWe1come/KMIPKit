@@ -272,7 +272,7 @@ class PythonKmipDriver:
 
     @classmethod
     def supports(cls, case: dict[str, Any], api_level: str) -> bool:
-        if case["execution"]["mode"] != "server_exchange":
+        if case["execution"]["mode"] != "server_exchange" or case["case_id"] == "test-query-attestation-nonce":
             return False
         workflow = case.get("requires", {}).get("workflow_type")
         if workflow == "multipart_streaming":

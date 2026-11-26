@@ -142,7 +142,7 @@ final class GenericExchange {
             case "test-op-poll" -> POLL;
             case "test-op-re-key-key-pair" -> RE_KEY_KEY_PAIR;
             case "test-op-locate" -> LOCATE;
-            case "test-op-query" -> QUERY;
+            case "test-op-query", "test-query-attestation-nonce" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
             case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
@@ -170,6 +170,11 @@ final class GenericExchange {
         if (JavaKmipDriver.multipartHash(testCase)) return multipartHash(connection, minor, start);
         if (JavaKmipDriver.rotateLocateCase(testCase)) return locateRotateAttribute(testCase, connection, minor, start);
         int operation = operation(testCase, connection);
+        if ("test-query-attestation-nonce".equals(testCase.caseId())) {
+            try (var payload = structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(7)))) {
+                return executePayload(connection, QUERY, minor, payload, response -> true, start, null, true);
+            }
+        }
         if (operation == QUERY && testCase.requires().has("query_function"))
             return queryField(testCase, connection, minor, start);
         if (operation == GET && JavaKmipDriver.asymmetricFormat(testCase) != 0)
@@ -1055,6 +1060,11 @@ final class GenericExchange {
 
     private static JavaKmipDriver.CaseOutcome check(byte[] wire, int operation, int minor, long start,
             Predicate<TtlvStructureView> expected, AtomicReference<byte[]> pending) {
+        return check(wire, operation, minor, start, expected, pending, false);
+    }
+
+    private static JavaKmipDriver.CaseOutcome check(byte[] wire, int operation, int minor, long start,
+            Predicate<TtlvStructureView> expected, AtomicReference<byte[]> pending, boolean expectNonce) {
         try (var root = TtlvCodec.decode(wire); var view = root.view();
                 var tag = view.tag(); var value = view.value()) {
             if (tag.raw() != 0x42007b) throw new IllegalArgumentException("Wrong response root");
@@ -1072,7 +1082,8 @@ final class GenericExchange {
                     }
                     Long reason = batch.resultReason().isPresent() ? batch.resultReason().getAsLong() : null;
                     double duration = elapsed(start);
-                    if (status == 0 && reason == null && batch.withResponsePayload(expected::test).orElse(false)) {
+                    if (status == 0 && reason == null && batch.withResponsePayload(expected::test).orElse(false)
+                            && (!expectNonce || header.withNonce(GenericExchange::nonceFieldsPresent).orElse(false))) {
                         return JavaKmipDriver.CaseOutcome.passed(duration, status, null);
                     }
                     if (status == 2 && reason == null && pending != null) {
@@ -1095,10 +1106,24 @@ final class GenericExchange {
                             return JavaKmipDriver.CaseOutcome.policyRestricted(duration, status, reason);
                         }
                     }
-                    return JavaKmipDriver.CaseOutcome.failed("Generic response did not satisfy the case.", duration, status, reason);
+                    String diagnostic = expectNonce && status == 0
+                            ? "Generic Query did not return a usable Nonce."
+                            : "Generic response did not satisfy the case.";
+                    return JavaKmipDriver.CaseOutcome.failed(diagnostic, duration, status, reason);
                 }
             }
         }
+    }
+
+    private static boolean nonceFieldsPresent(TtlvStructureView nonce) {
+        if (nonce.itemCount() != 2) return false;
+        for (int index = 0; index < 2; index++) {
+            try (var field = nonce.itemAt(index); var tag = field.tag(); var value = field.value()) {
+                if (tag.raw() != 0x4200C9 + index || field.itemType() != TtlvItemType.ByteString
+                        || value.byteLength() == 0) return false;
+            }
+        }
+        return true;
     }
 
     private static boolean matches(TtlvStructureView payload, int operation, int minor) {
@@ -1251,11 +1276,19 @@ final class GenericExchange {
     private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
             TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start,
             AtomicReference<byte[]> pending) {
+        return executePayload(connection, operation, minor, customPayload, expected, start, pending, false);
+    }
+
+    private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
+            TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start,
+            AtomicReference<byte[]> pending, boolean expectNonce) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
-                var header = pending != null && operation == CREATE
-                        ? structureItem(0x420077, version, item(0x420007, TtlvValue.Enumeration(1)), count)
-                        : structureItem(0x420077, version, count);
+                var header = expectNonce
+                        ? structureItem(0x420077, version, item(0x4200D3, TtlvValue.Boolean(true)), count)
+                        : pending != null && operation == CREATE
+                                ? structureItem(0x420077, version, item(0x420007, TtlvValue.Enumeration(1)), count)
+                                : structureItem(0x420077, version, count);
                 var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
                 var batch = structureItem(0x42000f, identifier, customPayload);
                 var req = structureItem(0x420078, header, batch);
@@ -1264,7 +1297,7 @@ final class GenericExchange {
             try {
                 byte[] wire = exchange(connection, request);
                 try {
-                    return check(wire, operation, minor, start, expected, pending);
+                    return check(wire, operation, minor, start, expected, pending, expectNonce);
                 } finally {
                     Arrays.fill(wire, (byte) 0);
                 }

@@ -197,7 +197,10 @@ C, Java, Python and Rust. The controlled TLS peer tests all six selected
 Query functions through the same routes and also returns an incorrect
 type to verify rejection. Cosmian returned empty successful payloads
 for four of the six functions. Query RNGs returned Operation Failed
-with Invalid Field.
+with Invalid Field. Query Attestation Types with the Attestation Capable
+Indicator returned Success without a Nonce on all four generic TTLV
+consumers in KMIP 2.0 and 2.1. The controlled TLS peer tests a valid Nonce,
+an omitted Nonce, and an invalid Nonce Value type.
 
 In both protocol versions, a Get with Key Format Type
 `TransparentSymmetricKey` returned 32 bytes inside a structured Key Value.

@@ -52,6 +52,13 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             )
         });
     }
+    if case.case_id == "test-query-attestation-nonce" && connection.api_level != "generic-ttlv" {
+        return Some(CaseResult::non_run(
+            case,
+            "not_run",
+            "the selected public request route cannot supply the attestation header".to_owned(),
+        ));
+    }
     if connection.api_level == "generic-ttlv"
         && case.execution.mode != "local_model"
         && !crate::generic::supports(case, connection)
