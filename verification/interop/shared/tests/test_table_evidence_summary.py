@@ -42,11 +42,13 @@ class TableEvidenceSummaryTests(unittest.TestCase):
                 "case_results": [{**success, "scope": "controlled"}, {**success, "scope": "live"}]}
         row = {"server_cases": [case_id], "obligations": [cell]}
         catalog = {"test_cases": [{"case_id": case_id, "requires": {"controlled_expected_status": "Success"}}]}
-        summarize({"protocol_version": "2.1", "rows": [row]}, catalog)
+        summary = summarize({"protocol_version": "2.1", "rows": [row]}, catalog)
+        self.assertTrue(summary["completion"]["evidence_complete"])
+        self.assertFalse(summary["completion"]["complete"])
         self.assertEqual({"matched": [case_id], "missing": []}, cell["expected_case_outcomes"]["controlled"])
         self.assertEqual({"matched": [], "missing": [case_id]}, cell["expected_case_outcomes"]["live"])
 
-        self.assertEqual("missing_matching_provider_evidence", cell["completion_status"])
+        self.assertEqual("provider_behavior_differs", cell["completion_status"])
 
     def test_completion_requires_evidence_for_the_selected_route(self):
         archive = {"case_id": "archive", "status": "server_unsupported", "library_correctness": "passed",
@@ -57,7 +59,7 @@ class TableEvidenceSummaryTests(unittest.TestCase):
         inventory = {"protocol_version": "2.0", "rows": [{"server_cases": ["archive"],
                                                          "obligations": [cell, missing]}]}
         catalog = {"test_cases": [{"case_id": "archive", "requires": {}}]}
-        self.assertEqual({"complete": False, "cells_by_status": {
+        self.assertEqual({"complete": False, "evidence_complete": False, "cells_by_status": {
             "complete": 1, "missing_controlled_evidence": 1,
         }}, summarize(inventory, catalog)["completion"])
         self.assertTrue(summarize(inventory, catalog, {"rust"})["completion"]["complete"])

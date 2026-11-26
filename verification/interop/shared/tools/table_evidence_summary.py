@@ -134,7 +134,14 @@ def completion_status(row, cell, required_cases, local):
     if controlled["missing"] or not controlled["matched"]:
         return "missing_controlled_evidence"
     if live["missing"] or not live["matched"]:
-        return "missing_matching_provider_evidence"
+        observed_at_provider = {
+            result["case_id"] for result in cell.get("case_results", ())
+            if result["scope"] == "live" and result["status"] != "not_run"
+            and result.get("result_status_code") is not None
+        }
+        if live["missing"] and set(live["missing"]) <= observed_at_provider:
+            return "provider_behavior_differs"
+        return "missing_provider_evidence"
     return "complete"
 
 
@@ -172,8 +179,11 @@ def summarize(inventory, catalog, languages=None):
     return {
         "protocol_version": inventory["protocol_version"],
         "rows": len(inventory["rows"]),
-        "completion": {"complete": bool(completeness) and set(completeness) == {"complete"},
-                       "cells_by_status": dict(completeness)},
+        "completion": {
+            "complete": bool(completeness) and set(completeness) == {"complete"},
+            "evidence_complete": bool(completeness) and set(completeness) <= {"complete", "provider_behavior_differs"},
+            "cells_by_status": dict(completeness),
+        },
         "routes": [{"language": language, "api_level": api, **values}
                    for (language, api), values in sorted(counts.items())],
     }

@@ -118,7 +118,10 @@ fingerprint. Replace the example fingerprint with the calculated value.
 Build and install the four validators first. Pass one connection file for
 each version and route. `--enable-mutations` opts in to the recipes that
 create and remove test objects. `--require-complete` writes missing recipes
-and case evidence to `completion.json`.
+and case evidence to `completion.json`. The table campaign also writes
+`cosmian-table-summary.json` from the imported controlled and live results.
+It counts cells with observed provider differences separately from cells
+that still need an exchange, a version boundary test, or a provider fixture.
 
 ```bash
 python3 verification/interop/shared/tools/run_all.py --all-operations --cosmian-minimum \
@@ -188,10 +191,13 @@ operation methods. They check additional authenticated data in the request,
 a 16-byte tag in the Encrypt response, plaintext recovery with that tag,
 and `Cryptographic Failure` after changing one byte of the tag.
 
-With the KMIPKit library built from `8373c9245`, the 5.29.0 deployment
-returned Server Information through all available Query routes, including
-the typed routes. Four other functions still returned empty successful
-payloads. Query RNGs returned Operation Failed with Invalid Field.
+The 5.29.0 deployment returned Server Information in KMIP 2.0 and 2.1
+through generic TTLV, the typed API, Fluent and the high-level client in
+C, Java, Python and Rust. The controlled TLS peer tests all six selected
+Query functions through the same routes and also returns an incorrect
+type to verify rejection. Cosmian returned empty successful payloads
+for four of the six functions. Query RNGs returned Operation Failed
+with Invalid Field.
 
 In both protocol versions, a Get with Key Format Type
 `TransparentSymmetricKey` returned 32 bytes inside a structured Key Value.
