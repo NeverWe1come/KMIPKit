@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction, with_cases
 from verification.interop.shared.tools.matrix.generator import LANGUAGES
+from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ALLOWED_VERSIONS = ("2.0", "2.1")
 SUPPORT_TABLE = Path("verification/interop/shared/catalog/cosmian-kmip2x-support.json")
@@ -113,6 +114,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     catalog, normative_cases = build_normative_catalog(root, version)
     targets = catalog["normative_targets"]
     candidates = {case["case_id"]: case for case in catalog["test_cases"]}
+    rotate_by_attribute = dict(rotate_cases(root, version, candidates["test-op-locate"]))
+    candidates.update({case["case_id"]: case for case in rotate_by_attribute.values()})
     normative_by_target = defaultdict(set)
     used = set()
     for case in normative_cases:
@@ -134,10 +137,13 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
                 if entry[other_version] != "supported":
                     raise ValueError(f"{name} has no documented KMIP version boundary")
                 boundary = {"kind": "introduced", "version": other_version}
+            boundary_case = rotate_by_attribute.get(name) if kind == "attribute" else None
+            boundary_cases = [boundary_case["case_id"]] if boundary_case is not None else []
+            used.update(boundary_cases)
             rows.append({
                 "kind": kind, "name": name, "declared_support": status, "normative_targets": [],
                 "server_cases": [], "local_cases": [], "disposition": "version_boundary_required",
-                "version_boundary": boundary,
+                "version_boundary": boundary, "boundary_cases": boundary_cases,
             })
             continue
         if kind == "base_object" and not matched:
@@ -153,7 +159,7 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
                        and direction(case) == operation_direction(name))
         if kind in {"managed_object", "attribute"}:
             key = "object_type" if kind == "managed_object" else "attribute"
-            ids.update(case["case_id"] for case in catalog["test_cases"] if normal(case["requires"].get(key, "")) in names)
+            ids.update(case["case_id"] for case in candidates.values() if normal(case["requires"].get(key, "")) in names)
         if kind in {"base_object", "attribute"}:
             ids.update(case_id for case_id in FIELD_EXCHANGES.get(name, ()) if case_id in candidates)
         if kind == "message":
@@ -241,7 +247,7 @@ def with_execution_evidence(inventory, catalog, catalog_runs):
                                         for result in unassigned_local.get(case_id, [])]
         for obligation in row["obligations"]:
             route = by_route[obligation["language"], obligation["api_level"]]
-            selected = obligation.get("case_ids", row["server_cases"])
+            selected = obligation.get("case_ids", row["server_cases"] + row.get("boundary_cases", []))
             results = [result for case_id in selected for result in route.get(case_id, [])]
             if obligation["api_level"] == "high-level":
                 obligation["unverified_route_results"] = [

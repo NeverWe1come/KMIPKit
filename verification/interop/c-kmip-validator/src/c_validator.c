@@ -282,6 +282,8 @@ bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_
             load_optional_requires(&document, requires, "attribute_response_fields",
                                    test_case->attribute_response_fields,
                                    sizeof(test_case->attribute_response_fields)) &&
+            load_optional_requires(&document, requires, "rotate_attribute_ttlv",
+                                   test_case->rotate_attribute_ttlv, sizeof(test_case->rotate_attribute_ttlv)) &&
             load_optional_requires(&document, requires, "certificate_object_path",
                                    test_case->certificate_object_path,
                                    sizeof(test_case->certificate_object_path)) &&

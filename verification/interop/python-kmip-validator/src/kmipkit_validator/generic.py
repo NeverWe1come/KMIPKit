@@ -60,6 +60,8 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
+    if case["operation"] == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {}):
+        return 0x08
     return {"test-op-create": CREATE, "test-op-create-key-pair": CREATE_KEY_PAIR,
             "test-op-register": REGISTER, "test-op-re-key": RE_KEY,
             "test-op-derive-key": DERIVE_KEY, "test-op-certify": CERTIFY,
@@ -177,6 +179,8 @@ def run(driver, case):
     operation = _operation(case, driver._connection["protocol_version"])
     if operation is None:
         raise ValueError("no generic exchange recipe")
+    if operation == 0x08 and "rotate_attribute_ttlv" in case.get("requires", {}):
+        return _locate_rotate_attribute(driver, case)
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case["case_id"])
     if operation in EXTENDED_OPERATIONS:
@@ -184,6 +188,20 @@ def run(driver, case):
     if case["case_id"] == "test-multipart-hash-sha256":
         return _multipart_hash(driver)
     return _execute(driver, operation)
+
+
+def _locate_rotate_attribute(driver, case):
+    from kmipkit.protocol import VersionGate
+
+    with driver._rotate_locate_attributes(case) as attributes:
+        if case["requires"].get("expected_status") == "NotSent":
+            tag = int(case["requires"]["rotate_attribute_ttlv"][:6], 16)
+            minor = int(driver._connection["protocol_version"][-1])
+            if VersionGate.validate_tag(2, minor, tag):
+                return _failure("Unexpected Rotate tag admission at the version boundary.")
+            return {"status": "passed", "library_correctness": "passed", "server_compatibility": "unknown",
+                    "parity": "not_compared", "diagnostic": "Rotate tag rejected before transport."}
+        return _execute(driver, 0x08, locate_attributes=attributes)
 
 
 def _multipart_hash(driver):
@@ -331,7 +349,8 @@ def _description_matches(payload, expected):
     return count == 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
 
 
-def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None, custom_payload=None):
+def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None,
+             custom_payload=None, locate_attributes=None):
     from kmipkit import messages, ttlv
 
     connection = driver._connection
@@ -367,6 +386,8 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
             payload_fields.append(node(0x420081, [item(0x420082, "enumeration", 6)]))
     elif operation == 0x08:
         payload_fields = [item(0x42004F, "integer", 1), item(0x4200D4, "integer", 0)]
+        if locate_attributes is not None:
+            payload_fields.append(item(0x420125, "structure", locate_attributes))
     elif operation == 0x18:
         payload_fields = [item(0x420074, "enumeration", 1)]
     elif operation == 0x1E:

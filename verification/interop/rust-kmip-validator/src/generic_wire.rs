@@ -62,3 +62,19 @@ pub(crate) fn encode(item: &Item, output: &mut Vec<u8>) -> Result<(), &'static s
     output.resize(output.len().next_multiple_of(8), 0);
     Ok(())
 }
+
+pub(crate) fn decode_hex(input: &str) -> Result<Vec<u8>, &'static str> {
+    if !input.len().is_multiple_of(2) {
+        return Err("fixture hex length is not even");
+    }
+    (0..input.len())
+        .step_by(2)
+        .map(|index| {
+            u8::from_str_radix(
+                input.get(index..index + 2).ok_or("invalid fixture hex")?,
+                16,
+            )
+            .map_err(|_| "invalid fixture hex")
+        })
+        .collect()
+}

@@ -1,5 +1,6 @@
 package org.kmipkit.validator;
 
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.SecretText;
@@ -26,6 +27,7 @@ import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
@@ -105,8 +107,12 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
-        return Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
+        return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
                 .contains(testCase.caseId());
+    }
+
+    static boolean rotateLocateCase(CatalogLoader.CatalogCase testCase) {
+        return "Locate".equals(testCase.operation()) && testCase.requires().path("rotate_attribute_ttlv").isTextual();
     }
 
     static boolean multipartHash(CatalogLoader.CatalogCase testCase) {
@@ -188,6 +194,15 @@ public final class JavaKmipDriver implements AutoCloseable {
                 }, start);
             }
 
+            if (rotateLocateCase(testCase)) {
+                var request = withBatchId(locateRotateRequest(testCase, fluent));
+                if ("NotSent".equals(testCase.requires().path("expected_status").asText())) {
+                    return executeRotateBoundary(request, start);
+                }
+                return executeRequest(testCase, request, result ->
+                        result.locateResponse().map(payload -> payload.uniqueIdentifiers().size() <= 1).orElse(false),
+                        start);
+            }
             return executeRequest(testCase, withBatchId(locateRequest(fluent)), result ->
                     result.locateResponse().map(payload -> payload.locatedItems().orElse(0) == 0
                             && payload.uniqueIdentifiers().isEmpty()).orElse(false), start);
@@ -256,18 +271,62 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static TtlvItem rotateAttribute(CatalogLoader.CatalogCase testCase) {
+        byte[] wire = HexFormat.of().parseHex(testCase.requires().path("rotate_attribute_ttlv").asText());
+        var attribute = TtlvCodec.decode(wire);
+        try (var view = attribute.view(); var tag = view.tag()) {
+            long rawTag = tag.raw();
+            if (!(rawTag >= 0x42016a && rawTag <= 0x42016f || rawTag == 0x420172)) {
+                throw new IllegalArgumentException("Rotate fixture has an unexpected tag");
+            }
+            return attribute;
+        } catch (RuntimeException exception) {
+            attribute.close();
+            throw exception;
+        }
+    }
+
+    private ClientBatchItem locateRotateRequest(CatalogLoader.CatalogCase testCase, boolean fluent) {
+        try (var attr = rotateAttribute(testCase); var empty = TtlvStructure.create();
+                var source = TtlvStructure.withItem(empty, attr, CODEC_LIMITS)) {
+            return locateRequest(source, fluent);
+        }
+    }
+
+    @SuppressWarnings("try")
+    private CaseOutcome executeRotateBoundary(ClientBatchItem request, long start) {
+        try (request; var batch = ClientBatch.create()) {
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (var ignored = client.execute(batch, CODEC_LIMITS)) {
+                return CaseOutcome.failed("Locate with the Rotate attribute was sent under KMIP 2.0.", elapsedMillis(start));
+            }
+        } catch (ClientOperationException exception) {
+            if (exception.deliveryStateCode() == 1 && exception.categoryCode() == 1 && exception.causeCode() == 1) {
+                return CaseOutcome.localModelPassed(elapsedMillis(start));
+            }
+            return exchangeFailure(exception, start);
+        }
+    }
+
     private ClientBatchItem locateRequest(boolean fluent) {
         // Description is a Text String in all three versions.
         byte[] isolatedDescription = ("kmipkit-locate-" + UUID.randomUUID()).getBytes(StandardCharsets.US_ASCII);
         try (var source = appendOwnedValue(TtlvStructure.create(), 0x0042_00fc,
                 TtlvValue.TextString(isolatedDescription, CODEC_LIMITS))) {
-            if (fluent) {
-                try (var attributes = AttributeSet.tryNew(source); var builder = client.request().locate(attributes)) {
-                    return builder.maximumItems(1).offsetItems(0).build();
-                }
-            }
-            return ClientBatchItem.locate(1, 0, null, null, source);
+            return locateRequest(source, fluent);
         }
+    }
+
+    private ClientBatchItem locateRequest(TtlvStructure source, boolean fluent) {
+        if (fluent) {
+            try (var attributes = AttributeSet.tryNew(source); var builder = client.request().locate(attributes)) {
+                return builder.maximumItems(1).offsetItems(0).build();
+            }
+        }
+        return ClientBatchItem.locate(1, 0, null, null, source);
     }
 
     private CaseOutcome executeRequest(CatalogLoader.CatalogCase testCase, ClientBatchItem request,

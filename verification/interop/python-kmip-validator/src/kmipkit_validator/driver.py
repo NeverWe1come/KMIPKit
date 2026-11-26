@@ -384,6 +384,16 @@ class PythonKmipDriver:
         ]) as common:
             return self._extensions.client_batch_item_create_key_pair(common_attributes=common)
 
+    def _rotate_locate_attributes(self, case: dict[str, Any]) -> Any:
+        from kmipkit import ttlv
+
+        wire = bytes.fromhex(case["requires"]["rotate_attribute_ttlv"])
+        tag = int.from_bytes(wire[:3], "big")
+        if tag not in {0x42016A, 0x42016B, 0x42016C, 0x42016D, 0x42016E, 0x42016F, 0x420172}:
+            raise LocalRecipeUnavailable("Rotate fixture has an unexpected tag")
+        with ttlv.ttlv_decode(wire) as attribute:
+            return self._structure([attribute])
+
     def _build_fluent_item(
         self, case: dict[str, Any], identifier: Any, *, name: str,
         data: bytes = b"A" * 16, auxiliary: bytes | None = None,
@@ -438,11 +448,15 @@ class PythonKmipDriver:
                     builder.signature_data(auxiliary or bytes(256))
                 return builder.build()
         if operation in {"Create", "Locate"}:
-            with self._fixture_attributes(name) as source, attribute_operations.AttributeSet.try_new(source) as attrs:
+            rotate = operation == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {})
+            fixture = self._rotate_locate_attributes(case) if rotate else self._fixture_attributes(name)
+            with fixture as source, attribute_operations.AttributeSet.try_new(source) as attrs:
                 if operation == "Create":
                     with request.create() as builder:
                         return builder.object_type(2).attributes(attrs).build()
                 with request.locate(attrs) as builder:
+                    if rotate:
+                        builder.offset_items(0)
                     return builder.maximum_items(1).build()
         if operation in {"Add Attribute", "Set Attribute", "Delete Attribute"}:
             if identifier is None or identifier.kind != self._extensions.UniqueIdentifierKind.TEXT_STRING:
@@ -1363,6 +1377,9 @@ class PythonKmipDriver:
             if operation == "Get Attribute List":
                 return extension.client_batch_item_get_attribute_list(identifier)
             if operation == "Locate":
+                if "rotate_attribute_ttlv" in case.get("requires", {}):
+                    with self._rotate_locate_attributes(case) as rotate:
+                        return extension.client_batch_item_locate(rotate, maximum_items=1, offset_items=0)
                 return extension.client_batch_item_locate(attrs, maximum_items=1)
             if operation == "Get":
                 return extension.client_batch_item_get(identifier)
@@ -1543,7 +1560,7 @@ class PythonKmipDriver:
 
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
-        verify_hash: bool = False,
+        verify_hash: bool = False, verify_locate: bool = False,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1616,6 +1633,12 @@ class PythonKmipDriver:
                         with payload.response_ttlv:
                             result["_bytes"] = payload.data
                             result["_hash_correlation"] = payload.correlation_value
+                if success and verify_locate:
+                    payload = observed.locate_response()
+                    if payload is None or len(payload.unique_identifiers) > 1 or (
+                        payload.located_items is not None and payload.located_items < len(payload.unique_identifiers)
+                    ):
+                        raise ValueError("Locate returned an invalid bounded result")
                 if verify_query:
                     if observed.operation != protocol_values.Operation.QUERY:
                         raise ValueError("Query response operation does not match the request")
@@ -1767,7 +1790,8 @@ class PythonKmipDriver:
                     response.close()
             else:
                 identifier = self._extensions.UniqueIdentifier.text_string("kmipkit-version-boundary")
-                with self._build_item(test_case, identifier, name="kmipkit-version-boundary") as item:
+                build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+                with build(test_case, identifier, name="kmipkit-version-boundary") as item:
                     self._exchange(item)
         except errors.ClientExecutionError as error:
             rejected_before_transport = error.delivery is errors.DeliveryState.NOT_SENT
@@ -1913,6 +1937,11 @@ class PythonKmipDriver:
         unique_name = f"kmipkit-python-{case_id}-{uuid.uuid4()}"
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
+        if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
+            build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
+            with build(test_case, None, name=unique_name) as item:
+                outcome = self._exchange(item, verify_locate=True)
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation in {"Poll", "Process", "Cancel", "Query Asynchronous Requests"} or test_case.get("requires", {}).get("workflow_type") == "async_poll":
             return self._run_async_case(test_case, unique_name)
         identifiers: list[Any] = []

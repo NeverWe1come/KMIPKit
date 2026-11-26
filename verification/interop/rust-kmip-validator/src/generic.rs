@@ -148,6 +148,11 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-poll", "2.0" | "2.1") => Some(POLL),
         ("test-op-re-key-key-pair", "2.0" | "2.1") => Some(RE_KEY_KEY_PAIR),
         ("test-op-locate", "2.0" | "2.1") => Some(0x08),
+        (_, "2.0" | "2.1")
+            if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() =>
+        {
+            Some(0x08)
+        }
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
         ("test-op-rng-retrieve" | "test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
@@ -193,6 +198,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         Some(operation) if is_extended_mutating_op(operation) => {
             run_extended_operation(case, connection, version, operation)
         }
+        Some(0x08) if case.requires["rotate_attribute_ttlv"].is_string() => {
+            locate_rotate_attribute(case, connection, version)
+        }
         Some(0x27) if case.case_id == "test-multipart-hash-sha256" => {
             outcome(case, multipart_hash(connection, version))
         }
@@ -206,6 +214,42 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     };
     result.duration_ms = start.elapsed().as_secs_f64() * 1000.0;
     result
+}
+
+fn locate_rotate_attribute(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+) -> CaseResult {
+    let Ok(Some(attribute)) = crate::adapters::rotate_attribute(case) else {
+        return outcome(case, Err("invalid Rotate fixture"));
+    };
+    let allowed = kmipkit::VersionGate::validate_tag(version, attribute.tag().raw()).is_ok();
+    if case.requires["expected_status"] == "NotSent" {
+        let status = if allowed { "failed" } else { "passed" };
+        let mut result = CaseResult::non_run(
+            case,
+            status,
+            "checked the Rotate tag version before transport".to_owned(),
+        );
+        result.library_correctness = status;
+        return result;
+    }
+    let fields = (|| {
+        Ok(vec![
+            item(0x0042_004f, Value::integer(1))?,
+            item(0x0042_00d4, Value::integer(0))?,
+            node(0x0042_0125, vec![attribute])?,
+        ])
+    })();
+    outcome(
+        case,
+        fields.and_then(|fields| {
+            exchange_payload(connection, version, 0x08, fields, |batch| {
+                check_probe(batch, 0x08, version)
+            })
+        }),
+    )
 }
 
 type ExchangeResult = Result<(u32, Option<u32>)>;

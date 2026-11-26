@@ -9263,6 +9263,37 @@ static int32_t build_fluent_locate(kmipkit_ttlv_structure_t *attributes,
     return status;
 }
 
+static int32_t rotate_attribute_structure(kmip_live_client_t *client, const char *hex,
+                                          kmipkit_ttlv_structure_t **output, uint32_t *tag) {
+    uint8_t wire[256];
+    const size_t length = strlen(hex);
+    if (length < 16 || length > 2 * sizeof(wire) || length % 2 != 0) return KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t index = 0; index < length / 2; ++index) {
+        unsigned int value = 0;
+        const char digits[] = {hex[2 * index], hex[2 * index + 1], '\0'};
+        if (strspn(digits, "0123456789abcdefABCDEF") != 2 || sscanf(digits, "%2x", &value) != 1)
+            return KMIPKIT_ERROR_INVALID_INPUT;
+        wire[index] = (uint8_t)value;
+    }
+    *tag = ((uint32_t)wire[0] << 16) | ((uint32_t)wire[1] << 8) | wire[2];
+    if (!(0x42016a <= *tag && *tag <= 0x42016f) && *tag != 0x420172)
+        return KMIPKIT_ERROR_INVALID_INPUT;
+
+    kmipkit_ttlv_item_t *item = NULL;
+    kmipkit_ttlv_structure_t *empty = NULL;
+    kmipkit_ttlv_decode_error_v1_t error = {.struct_size = sizeof(error), .abi_version = 1};
+    int32_t status = kmipkit_ttlv_decode(wire, length / 2, &error, &item);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&empty);
+    if (status == 0) {
+        status = kmipkit_ttlv_structure_with_item(empty, item, client->limits, output);
+        empty = NULL;
+        item = NULL;
+    }
+    kmipkit_ttlv_item_release(item);
+    kmipkit_ttlv_structure_release(empty);
+    return status;
+}
+
 static int32_t build_bounded_locate(kmip_live_client_t *client, bool fluent,
                                     kmipkit_client_batch_item_t **out) {
     kmipkit_ttlv_structure_t *attributes = NULL;
@@ -9314,7 +9345,7 @@ static bool query_response_has_operations(kmipkit_client_batch_item_response_t *
 }
 
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
-    kmip_live_client_t *client, uint32_t operation, bool fluent) {
+    kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_client_batch_item_t *request = NULL;
     kmipkit_client_batch_t *batch = NULL;
@@ -9330,7 +9361,18 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
         status = build_hash_request(client, fluent, &request);
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
-        status = build_bounded_locate(client, fluent, &request);
+        if (rotate_attribute) {
+            kmipkit_ttlv_structure_t *attributes = NULL;
+            uint32_t raw_tag = 0;
+            status = rotate_attribute_structure(client, rotate_attribute, &attributes, &raw_tag);
+            if (status == 0) {
+                status = fluent ? build_fluent_locate(attributes, 1, true, &request)
+                    : kmipkit_client_batch_item_locate(1, 1, 1, 0, 0, 0, 0, 0, attributes, &request);
+            }
+            kmipkit_ttlv_structure_release(attributes);
+        } else {
+            status = build_bounded_locate(client, fluent, &request);
+        }
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
         const uint32_t function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
         status = kmipkit_client_batch_item_query(&function, 1, 0, NULL, 0, &request);
@@ -9346,7 +9388,21 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         }
     }
     if (status == 0) status = kmipkit_client_batch_add_item(batch, &request);
-    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status == 0) {
+        status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+        if (rotate_attribute && client->protocol_major == 2 && client->protocol_minor == 0) {
+            int32_t last_status = 0;
+            uint32_t category = 0, cause = 0, delivery = 0;
+            if (status != 0) (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+            outcome.success = status != 0 && category == 1 && cause == 1 && delivery == 1;
+            outcome.library_validated = outcome.success;
+            outcome.library_failed = !outcome.success;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason), "%s", outcome.success
+                ? "KMIPKit rejected the Rotate attribute before transport"
+                : "Locate with the Rotate attribute was not rejected before transport");
+            goto cleanup;
+        }
+    }
     if (status == 0) status = kmipkit_client_batch_response_item_at(response, 0, &item);
     if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(item, &metadata);
     if (status != 0 || metadata.operation != operation) {
@@ -9375,6 +9431,7 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
                                            "target response did not match its typed payload");
         }
     }
+cleanup:
     if (item) kmipkit_client_batch_item_response_release(item);
     if (response) kmipkit_client_batch_response_release(response);
     if (batch) kmipkit_client_batch_release(batch);
@@ -9540,7 +9597,7 @@ static bool add_generic_rng_seed(kmip_live_client_t *client, kmipkit_ttlv_struct
 
 static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t operation,
                                              const generic_identifier_t *identifier, uint32_t attribute_tag,
-                                             const generic_hash_frame_t *frame) {
+                                             const generic_hash_frame_t *frame, const char *rotate_attribute) {
     kmipkit_ttlv_structure_t *root = NULL, *header = NULL, *batch = NULL, *payload = NULL;
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_raw_tag_t *raw = NULL;
@@ -9575,6 +9632,13 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE)
         valid = add_generic_number(client, &payload, 0x42004f, 1, false) &&
             add_generic_number(client, &payload, 0x4200d4, 0, false);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE && rotate_attribute) {
+        kmipkit_ttlv_structure_t *rotate = NULL;
+        uint32_t tag = 0;
+        valid = rotate_attribute_structure(client, rotate_attribute, &rotate, &tag) == 0 &&
+            add_generic_structure(client, &payload, 0x420125, &rotate);
+        kmipkit_ttlv_structure_release(rotate);
+    }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY)
         valid = add_generic_number(client, &payload, 0x420074, 1, true);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS)
@@ -9999,9 +10063,10 @@ static bool read_generic_response(kmip_live_client_t *client, const uint8_t *wir
 static kmip_execution_outcome_t execute_generic_frame(kmip_live_client_t *client, uint32_t operation,
                                                      const generic_identifier_t *id, generic_identifier_t *created,
                                                      uint32_t attribute_tag, generic_hash_frame_t *frame,
-                                  const generic_description_t *description) {
+                                                     const generic_description_t *description,
+                                                     const char *rotate_attribute) {
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_ttlv_item_t *request = generic_request(client, operation, id, attribute_tag, frame);
+    kmipkit_ttlv_item_t *request = generic_request(client, operation, id, attribute_tag, frame, rotate_attribute);
     kmipkit_ttlv_item_view_t *view = NULL;
     size_t capacity = 512;
     if (id) capacity += (size_t)id->size;
@@ -10029,7 +10094,7 @@ static kmip_execution_outcome_t execute_generic_frame(kmip_live_client_t *client
 static kmip_execution_outcome_t execute_generic_exchange_with_reference(kmip_live_client_t *client, uint32_t operation,
                                                           const generic_identifier_t *id, generic_identifier_t *created,
                                                           uint32_t attribute_tag) {
-    return execute_generic_frame(client, operation, id, created, attribute_tag, NULL, NULL);
+    return execute_generic_frame(client, operation, id, created, attribute_tag, NULL, NULL, NULL);
 }
 
 typedef bool (*generic_payload_check_fn)(kmipkit_ttlv_structure_view_t *payload, void *ctx);
@@ -10609,7 +10674,7 @@ static kmip_execution_outcome_t execute_generic_multipart_hash(kmip_live_client_
     for (frame.stage = 0; frame.stage < 3; ++frame.stage) {
         frame.input = chunks[frame.stage];
         frame.input_length = lengths[frame.stage];
-        outcome = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_HASH, NULL, NULL, 0, &frame, NULL);
+        outcome = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_HASH, NULL, NULL, 0, &frame, NULL, NULL);
         if (!outcome.success) break;
     }
     if (frame.correlation) OPENSSL_cleanse(frame.correlation, frame.correlation_length);
@@ -10632,12 +10697,26 @@ static kmip_execution_outcome_t generic_cleanup_failure(const char *message) {
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_generic_rotate_locate(kmip_live_client_t *client, const char *rotate) {
+    if (client->protocol_minor == 1)
+        return execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, NULL, NULL,
+                                     0, NULL, NULL, rotate);
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    uint32_t tag = 0;
+    if (rotate_attribute_structure(client, rotate, &attributes, &tag) != 0)
+        return generic_cleanup_failure("Could not construct the Rotate attribute fixture.");
+    kmipkit_ttlv_structure_release(attributes);
+    if (kmipkit_version_gate_validate_tag(2, 0, tag) == 0)
+        return generic_cleanup_failure("The Rotate tag was accepted under KMIP 2.0.");
+    return (kmip_execution_outcome_t){.executed = true, .success = true, .library_validated = true};
+}
+
 static kmip_execution_outcome_t execute_generic_description_change(kmip_live_client_t *client, uint32_t operation,
                                                                   const generic_identifier_t *id) {
     const generic_description_t *initial = operation == KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE
         ? &description_absent : &description_initial;
     kmip_execution_outcome_t before = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
-        id, NULL, 0x4200fc, NULL, initial);
+        id, NULL, 0x4200fc, NULL, initial, NULL);
     if (!before.success) return generic_cleanup_failure("Could not read the initial Description.");
 
     kmip_execution_outcome_t target = execute_generic_exchange(client, operation, id, NULL);
@@ -10645,7 +10724,7 @@ static kmip_execution_outcome_t execute_generic_description_change(kmip_live_cli
         const generic_description_t *expected = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
             ? &description_absent : &description_changed;
         kmip_execution_outcome_t after = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
-            id, NULL, 0x4200fc, NULL, expected);
+            id, NULL, 0x4200fc, NULL, expected, NULL);
         if (!after.success) return generic_cleanup_failure("Could not verify the Description after mutation.");
     }
     return target;
@@ -11052,6 +11131,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             "the C binding exposes no high-level client route for this case");
     }
     bool fluent_route = strcmp(client->api_level, "fluent") == 0;
+    const char *rotate = test_case->rotate_attribute_ttlv[0] && strcmp(test_case->operation, "Locate") == 0
+        ? test_case->rotate_attribute_ttlv : NULL;
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
     bool locate_workflow = strcmp(test_case->case_id, "test-op-locate") == 0;
@@ -11062,7 +11143,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool multipart_hash = strcmp(test_case->case_id, "test-multipart-hash-sha256") == 0;
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        !hash_workflow && !locate_workflow && !create_key_pair_workflow &&
+        !hash_workflow && !locate_workflow && !rotate && !create_key_pair_workflow &&
         strcmp(test_case->case_id, "test-op-revoke") != 0 && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-20-002") != 0 &&
         strcmp(test_case->case_id, "test-norm-payload-client-add-attribute-request-21-002") != 0 &&
@@ -11077,16 +11158,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (strcmp(test_case->mutation, "mutating") != 0)
                 return outcome_not_run("outbound role exchange requires a mutating fixture");
             return execute_single_versioned_diagnostic(
-                client, KMIPKIT_ENUMERATION_OPERATION_SET_ENDPOINT_ROLE, false);
+                client, KMIPKIT_ENUMERATION_OPERATION_SET_ENDPOINT_ROLE, false, NULL);
         }
         if (client->protocol_major == 3 && strcmp(test_case->operation, "Ping") == 0)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_PING, fluent_route);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_PING, fluent_route, NULL);
         if (hash_workflow)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route);
-        if (draft_locate)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route, NULL);
+        if (draft_locate || rotate)
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate);
         if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL);
     }
     if (client->protocol_major == 3)
         return outcome_not_run("C recipe requires a KMIP 3.0 request and response fixture");
@@ -11168,6 +11249,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
+            if (rotate)
+                return execute_generic_rotate_locate(client, rotate);
             if (locate_workflow)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE);
             if (multipart_hash)

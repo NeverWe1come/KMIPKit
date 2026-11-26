@@ -412,7 +412,7 @@ def main() -> None:
                     if args.require_complete and not (args.operation or args.case):
                         unmapped = [
                             {"kind": row["kind"], "name": row["name"], "reason": row["disposition"]}
-                            for row in scope["rows"] if not row["server_cases"]
+                            for row in scope["rows"] if not (row["server_cases"] or row.get("boundary_cases"))
                         ]
                         if unmapped:
                             gaps = True

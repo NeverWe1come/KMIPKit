@@ -34,6 +34,7 @@ typedef struct {
     char attribute_response_tag[16];
     char attribute_response_type[8];
     char attribute_response_fields[KMIP_MAX_NAME_LEN];
+    char rotate_attribute_ttlv[513];
     char certificate_object_path[KMIP_MAX_NAME_LEN];
     char register_object_path[KMIP_MAX_NAME_LEN];
     char category[KMIP_MAX_NAME_LEN];

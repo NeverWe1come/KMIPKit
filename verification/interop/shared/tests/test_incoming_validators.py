@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import select
 from pathlib import Path
 import socket
 import ssl
@@ -16,6 +17,7 @@ import time
 import unittest
 
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
+from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ROOT = Path(__file__).resolve().parents[4]
 INTEROP = ROOT / "verification/interop"
@@ -198,6 +200,81 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.owned_key_exchange(language, minor, case_id, 11,
                                                     attribute=(tag, kind, value), invalid=invalid)
+
+    def test_rotate_attributes_cross_the_version_boundary_through_each_api(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for api in ("generic-ttlv", "typed-protocol", "fluent"):
+                    with self.subTest(language=language, minor=minor, api=api):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.exchange_rotate_attributes(language, minor, api)
+
+    def exchange_rotate_attributes(self, language, minor, api):
+        protocol_version = f"2.{minor}"
+        catalog = version_catalog(protocol_version)
+        base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-locate")
+        cases = [case for _, case in rotate_cases(ROOT, protocol_version, base)]
+        self.assertEqual(7, len(cases))
+        expected = [parse_items(bytes.fromhex(case["requires"]["rotate_attribute_ttlv"])) for case in cases]
+        with tempfile.TemporaryDirectory(prefix="kmipkit-rotate-boundary-") as dirname:
+            work = Path(dirname)
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
+                                           "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(15)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = api
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    try:
+                        if minor == 1:
+                            for _ in cases:
+                                raw, _ = self.accept_request(listener, process, "Locate with Rotate attribute")
+                                raw.settimeout(5)
+                                with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                                    request = only(read_message(peer), 0x420078, 1)
+                                    batch = only(request, 0x42000F, 1)
+                                    self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", 8))
+                                    payload = only(batch, 0x420079, 1)
+                                    self.assertEqual(only(payload, 0x42004F, 2), struct.pack(">i", 1))
+                                    self.assertEqual(only(payload, 0x4200D4, 2), struct.pack(">i", 0))
+                                    expected.remove(only(payload, 0x420125, 1))
+                                    batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                                    peer.sendall(structure(
+                                        0x42007B,
+                                        structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                                  number(0x42000D, 2, 1)),
+                                        structure(0x42000F, number(0x42005C, 5, 8), *batch_ids,
+                                                  number(0x42007F, 5, 0), structure(0x42007C, number(0x4200D5, 2, 0))),
+                                    ))
+                            self.assertFalse(expected)
+                        stdout, stderr = process.communicate(timeout=25)
+                        self.assertEqual(process.returncode, 0, (stdout + stderr).decode(errors="replace"))
+                        self.assertFalse(select.select([listener], [], [], 0)[0], "unexpected additional connection")
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            evidence = json.loads(report.read_text())
+            self.assertEqual(api, evidence["execution"]["api_level"])
+            self.assertEqual({case["case_id"] for case in cases}, {case["case_id"] for case in evidence["cases"]})
+            for case in evidence["cases"]:
+                self.assertEqual(("passed", "passed"), (case["status"], case["library_correctness"]))
+                self.assertEqual(0 if minor == 1 else None, case.get("result_status_code"))
+            save_evidence(report, catalog_path, f"{language}-{protocol_version}-{api}-rotate-boundary")
 
     def test_archive_unsupported_response_preserves_cleanup(self):
         for language, available in installed_validators():

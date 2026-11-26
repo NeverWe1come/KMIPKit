@@ -85,6 +85,18 @@ pub(crate) fn attributes(
     .map_err(|_| "invalid explicit key attributes")
 }
 
+pub(crate) fn rotate_attribute(case: &Case) -> Result<Option<kmipkit::ttlv::Item>> {
+    let Some(hex) = case.requires["rotate_attribute_ttlv"].as_str() else {
+        return Ok(None);
+    };
+    let wire = crate::generic_wire::decode_hex(hex)?;
+    let item = kmipkit::ttlv::codec::decode(&wire).map_err(|_| "invalid Rotate fixture")?;
+    match item.tag().raw() {
+        0x0042_016a..=0x0042_016f | 0x0042_0172 => Ok(Some(item)),
+        _ => Err("Rotate fixture has an unexpected tag"),
+    }
+}
+
 pub(crate) fn create(name: &str, version: &str) -> Result<ClientRequest> {
     Ok(ClientRequest::Create(CreateRequest::new(
         ObjectType::from_raw(2),
@@ -267,9 +279,16 @@ pub(crate) fn request(
         "Get Attribute List" => {
             ClientRequest::GetAttributeList(GetAttributeListRequest::new(id_text))
         }
-        "Locate" => ClientRequest::Locate(
-            LocateRequest::new(attributes(name, 3, 256, version)?).with_maximum_items(1),
-        ),
+        "Locate" => {
+            let request = if let Some(rotate) = rotate_attribute(case)? {
+                let search = AttributeSet::try_new(vec![rotate])
+                    .map_err(|_| "invalid Rotate fixture attribute")?;
+                LocateRequest::new(search).with_offset_items(0)
+            } else {
+                LocateRequest::new(attributes(name, 3, 256, version)?)
+            };
+            ClientRequest::Locate(request.with_maximum_items(1))
+        }
         "Check" => ClientRequest::Check(
             CheckRequest::new()
                 .with_unique_identifier(id()?)

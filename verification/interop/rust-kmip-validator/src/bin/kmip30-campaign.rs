@@ -9,6 +9,7 @@ mod table_managed_objects;
 mod table_typed_attributes;
 
 use clap::{Parser, ValueEnum};
+use generic_wire::decode_hex;
 use kmipkit::protocol::named_values_generated::values::enumeration::{
     key_format_type, object_type,
 };
@@ -236,22 +237,6 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
-}
-
-fn decode_hex(input: &str) -> Result<Vec<u8>, &'static str> {
-    if !input.len().is_multiple_of(2) {
-        return Err("fixture hex length is not even");
-    }
-    (0..input.len())
-        .step_by(2)
-        .map(|index| {
-            u8::from_str_radix(
-                input.get(index..index + 2).ok_or("invalid fixture hex")?,
-                16,
-            )
-            .map_err(|_| "invalid fixture hex")
-        })
-        .collect()
 }
 
 fn key_material_verdict(

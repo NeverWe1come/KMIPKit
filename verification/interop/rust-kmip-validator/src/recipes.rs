@@ -180,6 +180,22 @@ impl Attempt<'_> {
             }
             _ => {}
         }
+        if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() {
+            let request =
+                adapters::request(case, None, &self.name, &self.connection.protocol_version)?;
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let response = self.exchange(request)?;
+            if response.status == 0 && response.identifiers.len() > 1 {
+                return Err(Failure::Assertion(
+                    "Locate returned more identifiers than requested",
+                ));
+            }
+            return Ok(response);
+        }
         let mut identifier = None;
         let needs_object = ![
             "Discover Versions",

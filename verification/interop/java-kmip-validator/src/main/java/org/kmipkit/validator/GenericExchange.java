@@ -2,6 +2,7 @@ package org.kmipkit.validator;
 
 import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.KmipValues;
+import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
@@ -110,6 +111,7 @@ final class GenericExchange {
         String version = connection.protocolVersion();
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
         if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
+        if (JavaKmipDriver.rotateLocateCase(testCase)) return LOCATE;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
             case "test-op-create-key-pair" -> CREATE_KEY_PAIR;
@@ -162,6 +164,7 @@ final class GenericExchange {
         long start = System.nanoTime();
         int minor = "2.1".equals(connection.protocolVersion()) ? 1 : 0;
         if (JavaKmipDriver.multipartHash(testCase)) return multipartHash(connection, minor, start);
+        if (JavaKmipDriver.rotateLocateCase(testCase)) return locateRotateAttribute(testCase, connection, minor, start);
         int operation = operation(testCase, connection);
         int attributeTag = keyAttributeReference(testCase.caseId());
         if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
@@ -326,7 +329,13 @@ final class GenericExchange {
 
     private static JavaKmipDriver.CaseOutcome execute(ConnectionConfig connection, int operation, int minor,
             byte[] identifier, int attributeTag, HashFrame frame, Predicate<TtlvStructureView> expected, long start) {
-        try (var request = request(operation, minor, identifier, attributeTag, frame); var view = request.view()) {
+        return executeConstructed(connection, operation, minor,
+                () -> request(operation, minor, identifier, attributeTag, frame, null), expected, start);
+    }
+
+    private static JavaKmipDriver.CaseOutcome executeConstructed(ConnectionConfig connection, int operation, int minor,
+            java.util.function.Supplier<TtlvItem> builder, Predicate<TtlvStructureView> expected, long start) {
+        try (var request = builder.get(); var view = request.view()) {
             byte[] wire = exchange(connection, encode(view));
             try {
                 return check(wire, operation, minor, start, expected);
@@ -336,6 +345,23 @@ final class GenericExchange {
         } catch (GeneralSecurityException | IOException | RuntimeException error) {
             return JavaKmipDriver.CaseOutcome.failed("Generic TTLV exchange or validation failed ("
                     + error.getClass().getSimpleName() + ").", elapsed(start));
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome locateRotateAttribute(CatalogLoader.CatalogCase testCase,
+            ConnectionConfig connection, int minor, long start) {
+        try (var attribute = JavaKmipDriver.rotateAttribute(testCase)) {
+            if ("NotSent".equals(testCase.requires().path("expected_status").asText())) {
+                try (var view = attribute.view(); var tag = view.tag()) {
+                    return VersionGate.validateTag(2, minor, tag.raw())
+                            ? JavaKmipDriver.CaseOutcome.failed("The Rotate tag was accepted under KMIP 2.0.", elapsed(start))
+                            : JavaKmipDriver.CaseOutcome.localModelPassed(elapsed(start));
+                }
+            }
+            return executeConstructed(connection, LOCATE, minor,
+                    () -> request(LOCATE, minor, null, 0, null, attribute), GenericExchange::matchesLocate, start);
+        } catch (RuntimeException exception) {
+            return JavaKmipDriver.CaseOutcome.failed("Invalid Rotate attribute fixture.", elapsed(start));
         }
     }
 
@@ -378,7 +404,8 @@ final class GenericExchange {
         return false;
     }
 
-    private static TtlvItem request(int operation, int minor, byte[] objectId, int attributeTag, HashFrame frame) {
+    private static TtlvItem request(int operation, int minor, byte[] objectId, int attributeTag,
+            HashFrame frame, TtlvItem rotate) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
                 var header = structureItem(0x420077, version, count);
@@ -396,8 +423,7 @@ final class GenericExchange {
                     case REVOKE -> revokePayload(objectId);
                     case GET, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)));
-                    case LOCATE -> structureItem(0x420079, item(0x42004f, TtlvValue.Integer(1)),
-                            item(0x4200d4, TtlvValue.Integer(0)));
+                    case LOCATE -> locatePayload(rotate);
                     case QUERY -> structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)));
                     case DISCOVER_VERSIONS -> structureItem(0x420079, version(minor));
                     case RNG_RETRIEVE -> structureItem(0x420079, item(0x4200c4, TtlvValue.Integer(32)));
@@ -409,6 +435,16 @@ final class GenericExchange {
                 };
                 var batch = structureItem(0x42000f, identifier, payload)) {
             return structureItem(0x420078, header, batch);
+        }
+    }
+
+    private static TtlvItem locatePayload(TtlvItem rotate) {
+        try (var maximum = item(0x42004f, TtlvValue.Integer(1));
+                var offset = item(0x4200d4, TtlvValue.Integer(0))) {
+            if (rotate == null) return structureItem(0x420079, maximum, offset);
+            try (var attributes = structureItem(0x420125, rotate)) {
+                return structureItem(0x420079, maximum, offset, attributes);
+            }
         }
     }
 
