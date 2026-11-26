@@ -4,8 +4,9 @@ use super::{Attempt, Failure, parameters, plain};
 use crate::driver::Observed;
 use crate::models::Case;
 use kmipkit::protocol::{
-    DecryptRequest, EncryptRequest, HashRequest, MacRequest, MacVerifyRequest, OperationData,
-    SecretBytes, SignRequest, SignatureVerifyRequest, UniqueIdentifier,
+    CryptographicParametersBuilder, DecryptRequest, EncryptRequest, HashRequest, MacRequest,
+    MacVerifyRequest, OperationData, SecretBytes, SignRequest, SignatureVerifyRequest,
+    UniqueIdentifier,
 };
 use kmipkit::{Client, ClientRequest};
 use sha2::{Digest, Sha256};
@@ -107,6 +108,9 @@ impl Attempt<'_> {
     }
 
     pub(super) fn crypto(&mut self, case: &Case) -> Result<Observed, Failure> {
+        if case.requires["block_cipher_mode"] == "GCM" {
+            return self.authenticated_encryption(case);
+        }
         let algorithm = case.requires["algorithm"].as_str().unwrap_or("AES");
         let bits = case.requires["key_length"]
             .as_i64()
@@ -157,6 +161,105 @@ impl Attempt<'_> {
             check_response(operation, &target, &response)?;
         }
         Ok(response)
+    }
+
+    fn authenticated_encryption(&mut self, case: &Case) -> Result<Observed, Failure> {
+        let (id, _) = self.key("AES", 256, true)?;
+        let request = self.gcm_request(&id, plain(), None)?;
+        let response = if case.operation == "Encrypt" {
+            self.exchange(request)?
+        } else {
+            self.setup(request)?
+        };
+        if response.status != 0 {
+            return Ok(response);
+        }
+        check_response("Encrypt", &id, &response)?;
+        let mut tag = response
+            .authentication_tag
+            .as_ref()
+            .filter(|value| value.with_bytes(|bytes| bytes.len() == 16))
+            .ok_or(Failure::Assertion(
+                "Encrypt omitted the 16-byte AES-GCM tag",
+            ))?
+            .with_bytes(<[u8]>::to_vec);
+        if case.operation == "Encrypt" {
+            return Ok(response);
+        }
+        let ciphertext = response
+            .bytes
+            .ok_or(Failure::Prerequisite("Encrypt omitted ciphertext"))?;
+        if case.requires["expected_status"] == "OperationFailed" {
+            tag[0] ^= 1;
+        }
+        let request = self.gcm_request(&id, OperationData::ByteString(ciphertext), Some(tag))?;
+        let response = self.exchange(request)?;
+        if response.status == 0 {
+            check_response("Decrypt", &id, &response)?;
+        }
+        Ok(response)
+    }
+
+    fn gcm_request(
+        &mut self,
+        identifier: &UniqueIdentifier,
+        data: OperationData,
+        tag: Option<Vec<u8>>,
+    ) -> Result<ClientRequest, Failure> {
+        const AAD: &[u8] = b"kmipkit authenticated data";
+        let parameters = CryptographicParametersBuilder::new()
+            .with_block_cipher_mode(9)
+            .with_padding_method(1)
+            .with_iv_length(96)
+            .with_tag_length(16)
+            .build()
+            .map_err(|_| Failure::Assertion("AES-GCM parameters are invalid"))?
+            .into_ttlv();
+        let iv = vec![0; 12];
+        if self.connection.api_level == "fluent" {
+            let request = self.client.request();
+            let invalid = |_| Failure::Assertion("Fluent AES-GCM rejected the case inputs");
+            return if let Some(tag) = tag {
+                request
+                    .decrypt()
+                    .unique_identifier(identifier.clone())
+                    .cryptographic_parameters_structure(parameters)
+                    .data_value(data)
+                    .iv_counter_nonce(iv)
+                    .authenticated_encryption_additional_data(AAD.to_vec())
+                    .authenticated_encryption_tag(tag)
+                    .build()
+                    .map(ClientRequest::Decrypt)
+                    .map_err(invalid)
+            } else {
+                request
+                    .encrypt()
+                    .unique_identifier(identifier.clone())
+                    .cryptographic_parameters_structure(parameters)
+                    .data_value(data)
+                    .iv_counter_nonce(iv)
+                    .authenticated_encryption_additional_data(AAD.to_vec())
+                    .build()
+                    .map(ClientRequest::Encrypt)
+                    .map_err(invalid)
+            };
+        }
+        Ok(if let Some(tag) = tag {
+            ClientRequest::Decrypt(
+                DecryptRequest::new(Some(identifier.clone()), Some(data))
+                    .with_cryptographic_parameters(parameters)
+                    .with_iv_counter_nonce(SecretBytes::new(iv))
+                    .with_authenticated_encryption_additional_data(SecretBytes::new(AAD.to_vec()))
+                    .with_authenticated_encryption_tag(SecretBytes::new(tag)),
+            )
+        } else {
+            ClientRequest::Encrypt(
+                EncryptRequest::new(Some(identifier.clone()), Some(data))
+                    .with_cryptographic_parameters(parameters)
+                    .with_iv_counter_nonce(SecretBytes::new(iv))
+                    .with_authenticated_encryption_additional_data(SecretBytes::new(AAD.to_vec())),
+            )
+        })
     }
 
     fn crypto_request(

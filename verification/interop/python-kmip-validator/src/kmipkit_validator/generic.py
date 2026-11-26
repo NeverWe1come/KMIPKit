@@ -65,6 +65,8 @@ def _operation(case, version):
         return 0x18
     if case["operation"] == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {}):
         return 0x08
+    if case.get("requires", {}).get("block_cipher_mode") == "GCM":
+        return {"Encrypt": ENCRYPT, "Decrypt": DECRYPT}.get(case["operation"])
     return {"test-op-create": CREATE, "test-op-create-key-pair": CREATE_KEY_PAIR,
             "test-op-register": REGISTER, "test-op-re-key": RE_KEY,
             "test-op-derive-key": DERIVE_KEY, "test-op-certify": CERTIFY,
@@ -191,7 +193,7 @@ def run(driver, case):
     if operation in {POLL, CANCEL}:
         return driver._run_async_case(case, driver._fixture_name(case), exchange=partial(_async_target, driver))
     if operation in EXTENDED_OPERATIONS:
-        return _run_extended(driver, operation)
+        return _run_extended(driver, operation, case["requires"])
     if case["case_id"] == "test-multipart-hash-sha256":
         return _multipart_hash(driver)
     return _execute(driver, operation)
@@ -720,7 +722,7 @@ def _destroy_all(driver, ids):
             _checked_exchange(driver, DESTROY, custom_payload=[item(0x420094, "text", obj_id)])
 
 
-def _run_extended(driver, operation):
+def _run_extended(driver, operation, requires):
     item, node = driver._item, driver._structure_item
     cleanup = []
 
@@ -880,30 +882,54 @@ def _run_extended(driver, operation):
             )
         if operation in (ENCRYPT, DECRYPT):
             key_id, res = create_aes(12)
+            gcm = requires.get("block_cipher_mode") == "GCM"
             if res["status"] != "passed":
-                return res
+                return _failure("The prerequisite Create request failed.", "not_run") if gcm else res
             act = _checked_exchange(driver, ACTIVATE, expected=lambda p, kid=key_id: _text_identifier(p) == kid,
                                     custom_payload=[item(0x420094, "text", key_id)])
             if act["status"] != "passed":
-                return act
-            iv, plaintext, cipher = b"\x01" * 16, b"0123456789abcdef", None
-            params = node(0x42002B, [item(0x420011, "enumeration", 1), item(0x42005F, "enumeration", 3)])
+                return _failure("The prerequisite Activate request failed.", "not_run") if gcm else act
+            iv = bytes(12) if gcm else b"\x01" * 16
+            plaintext = b"A" * 16 if gcm else b"0123456789abcdef"
+            aad = b"kmipkit authenticated data"
+            cipher, tag = None, None
+
+            def fields(data):
+                parameters = [item(0x420011, "enumeration", 9 if gcm else 1),
+                              item(0x42005F, "enumeration", 1 if gcm else 3)]
+                if gcm:
+                    parameters += [item(0x4200CD, "integer", 96), item(0x4200CE, "integer", 16)]
+                result = [item(0x420094, "text", key_id), node(0x42002B, parameters),
+                          item(0x4200C2, "bytes", data), item(0x42003D, "bytes", iv)]
+                if gcm:
+                    result.append(item(0x4200FE, "bytes", aad))
+                return result
+
             def check_enc(payload):
-                nonlocal cipher
+                nonlocal cipher, tag
                 cipher = _field_bytes(payload, 0x4200C2)
+                if gcm:
+                    tag = _field_bytes(payload, 0x4200FF)
+                    return (_text_identifier(payload) == key_id and cipher is not None
+                            and len(cipher) == len(plaintext) and tag is not None and len(tag) == 16)
                 return _text_identifier(payload) == key_id and cipher is not None
-            enc_res = _checked_exchange(driver, ENCRYPT, expected=check_enc, custom_payload=[
-                item(0x420094, "text", key_id), params, item(0x4200C2, "bytes", plaintext),
-                item(0x42003D, "bytes", iv),
-            ])
-            if operation == ENCRYPT or enc_res["status"] != "passed":
+
+            enc_res = _checked_exchange(driver, ENCRYPT, expected=check_enc, custom_payload=fields(plaintext))
+            if operation == ENCRYPT:
                 return enc_res
+            if enc_res["status"] != "passed":
+                return _failure("The prerequisite Encrypt request failed.", "not_run") if gcm else enc_res
+            decrypt_fields = fields(cipher)
+            invalid_tag = gcm and requires.get("expected_status") == "OperationFailed"
+            if gcm:
+                if invalid_tag:
+                    tag = bytes([tag[0] ^ 1]) + tag[1:]
+                decrypt_fields.append(item(0x4200FF, "bytes", tag))
             return _checked_exchange(
                 driver, DECRYPT,
-                expected=lambda p: _text_identifier(p) == key_id and _field_bytes(p, 0x4200C2) == plaintext,
-                custom_payload=[item(0x420094, "text", key_id),
-                                node(0x42002B, [item(0x420011, "enumeration", 1), item(0x42005F, "enumeration", 3)]),
-                                item(0x4200C2, "bytes", cipher), item(0x42003D, "bytes", iv)],
+                expected=lambda p: not invalid_tag and _text_identifier(p) == key_id
+                and _field_bytes(p, 0x4200C2) == plaintext,
+                custom_payload=decrypt_fields,
             )
         if operation in (MAC, MAC_VERIFY):
             mk_res = _checked_exchange(driver, CREATE, custom_payload=[

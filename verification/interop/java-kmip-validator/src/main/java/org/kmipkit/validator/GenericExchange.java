@@ -146,8 +146,9 @@ final class GenericExchange {
             case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
             case "test-op-hash", "test-crypto-hash-sha_256-0", "test-multipart-hash-sha256" -> HASH;
-            case "test-op-encrypt", "test-crypto-encrypt-aes-256-cbc" -> ENCRYPT;
-            case "test-op-decrypt", "test-crypto-decrypt-aes-256-cbc" -> DECRYPT;
+            case "test-op-encrypt", "test-crypto-encrypt-aes-256-cbc", "test-crypto-encrypt-aes-256-gcm" -> ENCRYPT;
+            case "test-op-decrypt", "test-crypto-decrypt-aes-256-cbc", "test-crypto-decrypt-aes-256-gcm",
+                    "test-crypto-decrypt-aes-256-gcm-invalid-tag" -> DECRYPT;
             case "test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-sign-ecdsa-256-p_256" -> SIGN;
             case "test-op-signature-verify", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5",
                     "test-crypto-signature-verify-ecdsa-256-p_256" -> SIGNATURE_VERIFY;
@@ -172,7 +173,7 @@ final class GenericExchange {
             return queryField(testCase, connection, minor, start);
         int attributeTag = keyAttributeReference(testCase.caseId());
         if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
-        if (usesExtendedOp(operation)) return runExtended(connection, operation, minor, start);
+        if (usesExtendedOp(operation)) return runExtended(testCase, connection, operation, minor, start);
         return execute(connection, operation, minor, null, payload -> matches(payload, operation, minor), start);
     }
 
@@ -1151,7 +1152,8 @@ final class GenericExchange {
         return result;
     }
 
-    private static JavaKmipDriver.CaseOutcome runExtended(ConnectionConfig connection, int operation,
+    private static JavaKmipDriver.CaseOutcome runExtended(CatalogLoader.CatalogCase testCase,
+            ConnectionConfig connection, int operation,
             int minor, long start) {
         var cleanup = new java.util.ArrayList<byte[]>();
         try {
@@ -1168,6 +1170,10 @@ final class GenericExchange {
                 return runExtendedCert(connection, operation, minor, cleanup, start);
             }
             if (operation == ENCRYPT || operation == DECRYPT) {
+                if ("GCM".equals(testCase.requires().path("block_cipher_mode").asText())) {
+                    boolean invalid = "OperationFailed".equals(testCase.requires().path("expected_status").asText());
+                    return runExtendedGcm(connection, operation, minor, cleanup, start, invalid);
+                }
                 return runExtendedEncrypt(connection, operation, minor, cleanup, start);
             }
             if (operation == MAC || operation == MAC_VERIFY) {
@@ -1435,6 +1441,67 @@ final class GenericExchange {
                 var payload = structureItem(0x420079, uid, params, data, ivItem)) {
             return executePayload(connection, DECRYPT, minor, payload,
                     p -> Arrays.equals(keyId, textIdentifier(p)) && Arrays.equals(plaintext, fieldBytes(p, 0x4200c2)), start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedGcm(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start, boolean invalidTag) {
+        var keyRef = new AtomicReference<byte[]>();
+        var keyRes = createAesKey(connection, minor, 12, false, cleanup, keyRef, start);
+        if (!"passed".equals(keyRes.status())) {
+            return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create request failed.", elapsed(start));
+        }
+        byte[] keyId = keyRef.get();
+        var act = execute(connection, ACTIVATE, minor, keyId, p -> Arrays.equals(keyId, textIdentifier(p)), start);
+        if (!"passed".equals(act.status())) {
+            return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Activate request failed.", elapsed(start));
+        }
+        byte[] plain = "AAAAAAAAAAAAAAAA".getBytes(StandardCharsets.US_ASCII);
+        var cipherRef = new AtomicReference<byte[]>();
+        var tagRef = new AtomicReference<byte[]>();
+        try (var payload = gcmPayload(keyId, plain, null)) {
+            var enc = executePayload(connection, ENCRYPT, minor, payload, p -> {
+                byte[] ciphertext = fieldBytes(p, 0x4200c2);
+                byte[] tag = fieldBytes(p, 0x4200ff);
+                cipherRef.set(ciphertext);
+                tagRef.set(tag);
+                return Arrays.equals(keyId, textIdentifier(p)) && ciphertext != null && ciphertext.length == plain.length
+                        && tag != null && tag.length == 16;
+            }, start);
+            if (operation == ENCRYPT) return enc;
+            if (!"passed".equals(enc.status())) {
+                return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Encrypt request failed.", elapsed(start));
+            }
+        }
+        byte[] tag = tagRef.get();
+        if (invalidTag) tag[0] ^= 1;
+        try (var payload = gcmPayload(keyId, cipherRef.get(), tag)) {
+            var result = executePayload(connection, DECRYPT, minor, payload,
+                    p -> !invalidTag && Arrays.equals(keyId, textIdentifier(p))
+                            && Arrays.equals(plain, fieldBytes(p, 0x4200c2)), start);
+            if (invalidTag && Long.valueOf(1).equals(result.resultStatusCode())
+                    && Long.valueOf(10).equals(result.resultReasonCode())) {
+                return JavaKmipDriver.CaseOutcome.passed(elapsed(start), 1L, 10L);
+            }
+            return result;
+        }
+    }
+
+    private static TtlvItem gcmPayload(byte[] identifier, byte[] data, byte[] tag) {
+        byte[] aad = "kmipkit authenticated data".getBytes(StandardCharsets.US_ASCII);
+        try (var uid = item(0x420094, TtlvValue.TextString(identifier, LIMITS));
+                var mode = item(0x420011, TtlvValue.Enumeration(9));
+                var padding = item(0x42005f, TtlvValue.Enumeration(1));
+                var ivLength = item(0x4200cd, TtlvValue.Integer(96));
+                var tagLength = item(0x4200ce, TtlvValue.Integer(16));
+                var params = structureItem(0x42002b, mode, padding, ivLength, tagLength);
+                var contents = item(0x4200c2, TtlvValue.ByteString(data, LIMITS));
+                var iv = item(0x42003d, TtlvValue.ByteString(new byte[12], LIMITS));
+                var additional = item(0x4200fe, TtlvValue.ByteString(aad, LIMITS))) {
+            if (tag == null) return structureItem(0x420079, uid, params, contents, iv, additional);
+            try (var authTag = item(0x4200ff, TtlvValue.ByteString(tag, LIMITS))) {
+                return structureItem(0x420079, uid, params, contents, iv, additional, authTag);
+            }
         }
     }
 

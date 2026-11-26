@@ -179,6 +179,7 @@ pub(crate) fn observed_result(case: &Case, status: u32, reason: Option<u32>) -> 
     let accepted_negative_reason = match case.case_id.as_str() {
         "test-neg-encrypt-preactive-key" => matches!(reason, Some(7 | 10)),
         "test-neg-destroy-active-without-revoke" => reason == Some(0x43),
+        "test-crypto-decrypt-aes-256-gcm-invalid-tag" => reason == Some(0x0a),
         _ => false,
     };
     let (outcome, server) = if status == 1 && matches!(reason, Some(5 | 8)) {

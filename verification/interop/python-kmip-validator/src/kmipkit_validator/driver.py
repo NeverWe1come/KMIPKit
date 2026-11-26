@@ -441,7 +441,12 @@ class PythonKmipDriver:
                 if operation != "Hash" and identifier is not None:
                     builder.unique_identifier(identifier)
                 if operation in {"Encrypt", "Decrypt"}:
-                    builder.iv_counter_nonce(bytes(16))
+                    gcm = case.get("requires", {}).get("block_cipher_mode") == "GCM"
+                    builder.iv_counter_nonce(bytes(12 if gcm else 16))
+                    if gcm:
+                        builder.authenticated_encryption_additional_data(b"kmipkit authenticated data")
+                        if operation == "Decrypt":
+                            builder.authenticated_encryption_tag(auxiliary)
                 if operation == "MAC Verify":
                     builder.mac_data(auxiliary or bytes(32))
                 if operation == "Signature Verify":
@@ -1173,7 +1178,9 @@ class PythonKmipDriver:
 
         algorithm = case.get("requires", {}).get("algorithm", "AES")
         builder = CryptographicParameters.builder()
-        if operation in {"Encrypt", "Decrypt"}:
+        if operation in {"Encrypt", "Decrypt"} and case.get("requires", {}).get("block_cipher_mode") == "GCM":
+            builder.cryptographic_algorithm(3).block_cipher_mode(9).padding_method(1).iv_length(96).tag_length(16)
+        elif operation in {"Encrypt", "Decrypt"}:
             # The catalog's AES-CBC recipes use CBC with PKCS5 padding.
             builder.cryptographic_algorithm(3).block_cipher_mode(1).padding_method(3)
         elif operation in {"MAC", "MAC Verify"}:
@@ -1513,10 +1520,18 @@ class PythonKmipDriver:
             if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"}:
                 with ttlv.codec_limits_defaults() as limits:
                     payload = ttlv.ttlv_value_byte_string(data, limits)
-                    if operation == "Encrypt":
-                        return extension.client_batch_item_encrypt(identifier, params, payload, bytes(16))
-                    if operation == "Decrypt":
-                        return extension.client_batch_item_decrypt(identifier, params, payload, bytes(16))
+                    if operation in {"Encrypt", "Decrypt"}:
+                        gcm = case.get("requires", {}).get("block_cipher_mode") == "GCM"
+                        iv = bytes(12 if gcm else 16)
+                        aad = b"kmipkit authenticated data" if gcm else None
+                        if operation == "Encrypt":
+                            return extension.client_batch_item_encrypt(
+                                identifier, params, payload, iv, authenticated_encryption_additional_data=aad,
+                            )
+                        return extension.client_batch_item_decrypt(
+                            identifier, params, payload, iv, auxiliary if gcm else None,
+                            authenticated_encryption_additional_data=aad,
+                        )
                     if operation == "MAC":
                         return extension.client_batch_item_mac(identifier, params, payload)
                     if operation == "MAC Verify":
@@ -1647,6 +1662,8 @@ class PythonKmipDriver:
                         ) if payload is not None),
                     ) if value is not None],
                     "_bytes": None if verify_hash else self._response_bytes(observed),
+                    "_auth_tag": (observed.encrypt_response.authenticated_encryption_tag
+                                  if observed.encrypt_response is not None else None),
                     "_ticket_ttlv": (
                         observed.login_response.ticket_ttlv
                         if observed.login_response is not None
@@ -2003,6 +2020,7 @@ class PythonKmipDriver:
         algorithm_name = test_case.get("requires", {}).get("algorithm", "AES")
         algorithm = {"AES": 3, "RSA": 4, "ECDSA": 6, "HMAC_SHA256": 9}.get(algorithm_name, 3)
         bits = int(test_case.get("requires", {}).get("key_length", 256))
+        gcm = test_case.get("requires", {}).get("block_cipher_mode") == "GCM"
         outcome: dict[str, Any] | None = None
         activated_ids: list[Any] = []
         try:
@@ -2136,16 +2154,29 @@ class PythonKmipDriver:
                     for reference in references:
                         reference.close()
             elif operation == "Decrypt":
-                encrypted = self._exchange(self._build_item(test_case | {"operation": "Encrypt"}, target_identifier, name=unique_name))
-                if encrypted["status"] != "passed" or encrypted.get("_bytes") is None:
+                source = test_case | {"operation": "Encrypt"}
+                with self._build_item(source, target_identifier, name=unique_name) as request:
+                    encrypted = self._exchange(request)
+                data = encrypted.get("_bytes")
+                tag = encrypted.get("_auth_tag") if gcm else None
+                if encrypted["status"] != "passed" or data is None:
+                    if gcm:
+                        outcome = self._blocked_prerequisite("server did not complete the Encrypt setup")
+                        return outcome
                     return encrypted
+                if gcm:
+                    if len(data) != 16 or not tag or len(tag) != 16:
+                        outcome = self._blocked_prerequisite("Encrypt setup omitted the AES-GCM data or tag")
+                        return outcome
+                    if test_case["requires"].get("expected_status") == "OperationFailed":
+                        tag = bytes([tag[0] ^ 1]) + tag[1:]
                 if self._api_level == "fluent":
                     target = self._build_fluent_item(
-                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"]
+                        test_case, target_identifier, name=unique_name, data=data, auxiliary=tag,
                     )
                 else:
                     target = self._build_item(
-                        test_case, target_identifier, name=unique_name, data=encrypted["_bytes"],
+                        test_case, target_identifier, name=unique_name, data=data, auxiliary=tag,
                         related_identifiers=identifiers,
                     )
             elif operation in {"MAC Verify", "Signature Verify"}:
@@ -2186,8 +2217,15 @@ class PythonKmipDriver:
                 for identifier in result.get("_identifiers", []):
                     if identifier not in identifiers:
                         identifiers.append(identifier)
-            if operation == "Decrypt" and result["status"] == "passed" and result.get("_bytes") != b"A" * 16:
+            if operation == "Decrypt" and result["status"] == "passed" and (
+                result.get("_bytes") != b"A" * 16
+                or gcm and test_case["requires"].get("expected_status") == "OperationFailed"
+            ):
                 result.update(status="failed", library_correctness="failed", server_compatibility="unknown")
+            if operation == "Encrypt" and gcm and result["status"] == "passed":
+                if len(result.get("_bytes") or b"") != 16 or len(result.get("_auth_tag") or b"") != 16:
+                    result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                                  diagnostic="Encrypt omitted the AES-GCM ciphertext or authentication tag")
             outcome = result
             if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)

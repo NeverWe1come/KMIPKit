@@ -9377,6 +9377,198 @@ static bool query_response_has_structure(kmipkit_client_batch_item_response_t *i
     return valid && *status == 0 && members > 0;
 }
 
+static const uint8_t gcm_plaintext[16] = {
+    'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+};
+static const uint8_t gcm_iv[12] = {0};
+static const uint8_t gcm_aad[] = "kmipkit authenticated data";
+
+static uint32_t gcm_case_operation(const char *case_id) {
+    if (strcmp(case_id, "test-crypto-encrypt-aes-256-gcm") == 0)
+        return KMIPKIT_ENUMERATION_OPERATION_ENCRYPT;
+    if (strcmp(case_id, "test-crypto-decrypt-aes-256-gcm") == 0 ||
+        strcmp(case_id, "test-crypto-decrypt-aes-256-gcm-invalid-tag") == 0)
+        return KMIPKIT_ENUMERATION_OPERATION_DECRYPT;
+    return 0;
+}
+
+static void check_gcm_negative_result(kmip_execution_outcome_t *outcome) {
+    outcome->success = outcome->library_validated && outcome->has_result_status_code &&
+        outcome->result_status_code == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+        outcome->has_result_reason_code &&
+        outcome->result_reason_code == KMIPKIT_ENUMERATION_RESULT_REASON_CRYPTOGRAPHIC_FAILURE;
+}
+
+static kmip_execution_outcome_t typed_gcm_exchange(
+    kmip_live_client_t *client, kmipkit_client_batch_item_t **request, uint32_t operation,
+    kmipkit_client_batch_item_response_t **item) {
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_client_batch_item_metadata_v2_t metadata = {
+        .struct_size = sizeof(metadata), .abi_version = 2,
+    };
+    int32_t status = kmipkit_client_batch_create(&batch);
+    if (status == 0 && client->username_env[0]) {
+        if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+        else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status == 0) authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, request);
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    uint64_t count = 0;
+    if (status == 0) status = kmipkit_client_batch_response_item_count(response, &count);
+    if (status == 0 && count == 1) status = kmipkit_client_batch_response_item_at(response, 0, item);
+    if (status == 0 && *item) status = kmipkit_client_batch_item_response_metadata_v2(*item, &metadata);
+    if (status == 0 && metadata.operation == operation) record_kmip_result(&outcome, &metadata);
+    else {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid AES-GCM exchange response.");
+    }
+    if (authentication) kmipkit_authentication_release(authentication);
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    return outcome;
+}
+
+static int32_t build_typed_gcm_request(kmip_live_client_t *client, bool fluent,
+    const kmipkit_unique_identifier_v1_t *identifier, const kmipkit_byte_span_v1_t *input,
+    const kmipkit_byte_span_v1_t *tag, kmipkit_client_batch_item_t **request) {
+    const kmipkit_byte_span_v1_t iv = {.data = gcm_iv, .length = sizeof(gcm_iv)};
+    const kmipkit_byte_span_v1_t aad = {.data = gcm_aad, .length = sizeof(gcm_aad) - 1};
+    const kmipkit_cryptographic_parameters_fields_v1_t fields = {
+        .struct_size = sizeof(fields), .abi_version = 1,
+        .block_cipher_mode_present = 1, .block_cipher_mode = 9,
+        .padding_method_present = 1, .padding_method = 1,
+        .iv_length_present = 1, .iv_length = 96,
+        .tag_length_present = 1, .tag_length = 16,
+    };
+    kmipkit_cryptographic_parameters_t *typed = NULL;
+    kmipkit_ttlv_structure_t *parameters = NULL;
+    kmipkit_ttlv_value_t *data = NULL;
+    kmipkit_crypto_operation_builder_t *builder = NULL;
+    int32_t status = kmipkit_cryptographic_parameters_from_fields_v1(&fields, &typed);
+    if (fluent) {
+        if (status == 0) status = tag ? kmipkit_decrypt_builder_create(&builder) :
+                                       kmipkit_encrypt_builder_create(&builder);
+        if (status == 0) status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, identifier);
+        if (status == 0) status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(builder, typed);
+        if (status == 0) status = kmipkit_crypto_operation_builder_set_data(builder, input);
+        if (status == 0) status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &iv);
+        if (status == 0) status = kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(builder, &aad);
+        if (status == 0 && tag) status = kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(builder, tag);
+        if (status == 0) status = kmipkit_crypto_operation_builder_build_batch_item(builder, request);
+    } else {
+        if (status == 0) {
+            status = kmipkit_cryptographic_parameters_into_ttlv(typed, &parameters);
+            typed = NULL;
+        }
+        if (status == 0) status = kmipkit_ttlv_value_byte_string(client->limits, input->data, input->length, &data);
+        if (status == 0) status = tag
+            ? kmipkit_client_batch_item_decrypt(identifier, parameters, data, &iv, tag, NULL, 0, 0, &aad, request)
+            : kmipkit_client_batch_item_encrypt(identifier, parameters, data, &iv, NULL, 0, 0, &aad, request);
+    }
+    if (builder) kmipkit_crypto_operation_builder_release(builder);
+    if (typed) kmipkit_cryptographic_parameters_release(typed);
+    if (parameters) kmipkit_ttlv_structure_release(parameters);
+    if (data) kmipkit_ttlv_value_release(data);
+    return status;
+}
+
+static kmip_execution_outcome_t execute_typed_gcm(
+    kmip_live_client_t *client, uint32_t operation, bool fluent, bool invalid_tag) {
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_value_t *mask = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_item_response_t *created = NULL, *response = NULL, *encrypted = NULL;
+    kmipkit_unique_identifier_v1_t key = {.struct_size = sizeof(key), .abi_version = 1};
+    kmipkit_unique_identifier_v1_t returned = {.struct_size = sizeof(returned), .abi_version = 1};
+    uint32_t object_type = 0;
+    uint8_t present = 0, has_data = 0, has_iv = 0, has_correlation = 0, has_tag = 0;
+    kmipkit_byte_span_v1_t data = {0}, iv = {0}, correlation = {0}, tag = {0};
+    uint8_t changed_tag[16] = {0};
+    const kmipkit_byte_span_v1_t plain = {.data = gcm_plaintext, .length = sizeof(gcm_plaintext)};
+    kmip_execution_outcome_t outcome = outcome_not_run("The prerequisite Create request failed.");
+    if (!create_cryptographic_key_attributes(client, 3, 256, &attributes) ||
+        kmipkit_ttlv_value_integer(12, &mask) != 0 ||
+        !append_ttlv_value(client, &attributes, 0x42002c, &mask) ||
+        kmipkit_client_batch_item_create(2, attributes, NULL, &request) != 0)
+        goto cleanup;
+    if (!typed_gcm_exchange(client, &request, 1, &created).success ||
+        kmipkit_client_batch_item_response_create(created, &present, &object_type, &key) != 0 ||
+        !present || object_type != 2 || !key.text_data || !key.text_length)
+        goto cleanup;
+    outcome = outcome_not_run("The prerequisite Activate request failed.");
+    if (kmipkit_client_batch_item_activate(&key, &request) != 0 ||
+        !typed_gcm_exchange(client, &request, 0x12, &response).success ||
+        kmipkit_client_batch_item_response_activate(response, &present, &returned) != 0 ||
+        !present || !same_text_identifier(&key, &returned))
+        goto cleanup;
+    kmipkit_client_batch_item_response_release(response);
+    response = NULL;
+
+    outcome = outcome_not_run("Could not construct the AES-GCM Encrypt request.");
+    if (build_typed_gcm_request(client, fluent, &key, &plain, NULL, &request) != 0) goto cleanup;
+    outcome = typed_gcm_exchange(client, &request, 0x1f, &encrypted);
+    if (outcome.success) {
+        outcome.success = kmipkit_client_batch_item_response_encrypt(
+            encrypted, &present, &returned, &has_data, &data, &has_iv, &iv,
+            &has_correlation, &correlation, &has_tag, &tag) == 0 &&
+            present && same_text_identifier(&key, &returned) && has_data &&
+            data.data && data.length == sizeof(gcm_plaintext) &&
+            has_tag && tag.data && tag.length == sizeof(changed_tag);
+    }
+    if (operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT) goto cleanup;
+    if (!outcome.success) {
+        outcome = outcome_not_run("The prerequisite Encrypt request failed.");
+        goto cleanup;
+    }
+    if (invalid_tag) {
+        memcpy(changed_tag, tag.data, sizeof(changed_tag));
+        changed_tag[0] ^= 1;
+        tag.data = changed_tag;
+    }
+    outcome = outcome_not_run("Could not construct the AES-GCM Decrypt request.");
+    if (build_typed_gcm_request(client, fluent, &key, &data, &tag, &request) != 0) goto cleanup;
+    outcome = typed_gcm_exchange(client, &request, 0x20, &response);
+    if (invalid_tag) check_gcm_negative_result(&outcome);
+    else if (outcome.success) {
+        outcome.success = kmipkit_client_batch_item_response_decrypt(
+            response, &present, &returned, &has_data, &data, &has_correlation, &correlation) == 0 &&
+            present && same_text_identifier(&key, &returned) && has_data && data.data &&
+            data.length == sizeof(gcm_plaintext) && memcmp(data.data, gcm_plaintext, data.length) == 0;
+    }
+
+cleanup:
+    if (request) kmipkit_client_batch_item_release(request);
+    if (key.text_data && key.text_length) {
+        request = NULL;
+        kmipkit_client_batch_item_response_t *cleanup_response = NULL;
+        if (create_revocation_item(&key, &request) == 0)
+            (void)typed_gcm_exchange(client, &request, 0x13, &cleanup_response);
+        if (request) kmipkit_client_batch_item_release(request);
+        if (cleanup_response) kmipkit_client_batch_item_response_release(cleanup_response);
+        request = NULL;
+        cleanup_response = NULL;
+        if (kmipkit_client_batch_item_destroy(&key, &request) == 0 &&
+            !typed_gcm_exchange(client, &request, 0x14, &cleanup_response).success) {
+            outcome.success = false;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Could not destroy the AES-GCM fixture.");
+        }
+        if (request) kmipkit_client_batch_item_release(request);
+        if (cleanup_response) kmipkit_client_batch_item_response_release(cleanup_response);
+    }
+    if (response) kmipkit_client_batch_item_response_release(response);
+    if (encrypted) kmipkit_client_batch_item_response_release(encrypted);
+    if (created) kmipkit_client_batch_item_response_release(created);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (mask) kmipkit_ttlv_value_release(mask);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute,
     const kmip_test_case_t *query_field) {
@@ -10509,7 +10701,75 @@ static uint32_t generic_extended_operation(const char *id) {
     return 0;
 }
 
-static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op) {
+typedef struct {
+    generic_ext_ctx_t *key;
+    uint8_t tag[16];
+} generic_gcm_response_t;
+
+static bool check_generic_gcm_encrypt(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    generic_gcm_response_t *response = context;
+    size_t tag_size = 0;
+    return check_ext_data(payload, response->key) && response->key->bytes_len == sizeof(gcm_plaintext) &&
+        generic_extract_bytes(payload, 0x4200ff, response->tag, sizeof(response->tag), &tag_size) &&
+        tag_size == sizeof(response->tag);
+}
+
+static bool check_generic_gcm_unexpected_success(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    (void)payload;
+    (void)context;
+    return false;
+}
+
+static kmipkit_ttlv_structure_t *generic_gcm_payload(kmip_live_client_t *client, const char *identifier,
+    const uint8_t *data, const uint8_t *tag) {
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct(), *parameters = make_ttlv_struct();
+    bool valid = payload && parameters && append_ttlv_enum(client, &parameters, 0x420011, 9) &&
+        append_ttlv_enum(client, &parameters, 0x42005f, 1) &&
+        append_ttlv_int(client, &parameters, 0x4200cd, 96) &&
+        append_ttlv_int(client, &parameters, 0x4200ce, 16) &&
+        append_ttlv_text(client, &payload, 0x420094, identifier) &&
+        move_ttlv_struct(client, &payload, 0x42002b, &parameters) &&
+        append_ttlv_bytes(client, &payload, 0x4200c2, data, sizeof(gcm_plaintext)) &&
+        append_ttlv_bytes(client, &payload, 0x42003d, gcm_iv, sizeof(gcm_iv)) &&
+        append_ttlv_bytes(client, &payload, 0x4200fe, gcm_aad, sizeof(gcm_aad) - 1) &&
+        (!tag || append_ttlv_bytes(client, &payload, 0x4200ff, tag, 16));
+    if (parameters) kmipkit_ttlv_structure_release(parameters);
+    if (!valid && payload) kmipkit_ttlv_structure_release(payload);
+    return valid ? payload : NULL;
+}
+
+static kmip_execution_outcome_t execute_generic_gcm(kmip_live_client_t *client, uint32_t operation,
+    generic_ext_ctx_t *key, bool invalid_tag) {
+    if (!generic_ext_id_op(client, 0x12, key->ids[0]).success)
+        return outcome_not_run("The prerequisite Activate request failed.");
+    generic_gcm_response_t response = {.key = key};
+    kmipkit_ttlv_structure_t *payload = generic_gcm_payload(client, key->ids[0], gcm_plaintext, NULL);
+    if (!payload) return outcome_not_run("Could not construct the AES-GCM Encrypt request.");
+    kmip_execution_outcome_t outcome =
+        execute_generic_custom(client, 0x1f, payload, check_generic_gcm_encrypt, &response);
+    if (operation == KMIPKIT_ENUMERATION_OPERATION_DECRYPT) {
+        if (!outcome.success) {
+            outcome = outcome_not_run("The prerequisite Encrypt request failed.");
+        } else {
+            if (invalid_tag) response.tag[0] ^= 1;
+            payload = generic_gcm_payload(client, key->ids[0], key->bytes, response.tag);
+            if (!payload) {
+                outcome = outcome_not_run("Could not construct the AES-GCM Decrypt request.");
+            } else {
+                key->expected_bytes = gcm_plaintext;
+                key->expected_bytes_len = sizeof(gcm_plaintext);
+                outcome = execute_generic_custom(client, 0x20, payload,
+                    invalid_tag ? check_generic_gcm_unexpected_success : check_ext_decrypt, key);
+                if (invalid_tag) check_gcm_negative_result(&outcome);
+            }
+        }
+    }
+    OPENSSL_cleanse(response.tag, sizeof(response.tag));
+    return outcome;
+}
+
+static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op,
+    bool gcm, bool invalid_tag) {
     generic_ext_ctx_t ctx = {0};
     kmip_execution_outcome_t out = {.executed = true};
     if (op == 0x03 || op == 0x2a) {
@@ -10617,8 +10877,17 @@ static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *cli
     if (op == 0x2b) append_ttlv_bool(client, &attrs, 0x420122, true);
     append_ttlv_struct(client, &kp, 0x420125, attrs);
     out = execute_generic_custom(client, 0x01, kp, check_ext_single_id, &ctx);
-    if (!out.success) { generic_ext_cleanup(client, &ctx); return out; }
+    if (!out.success) {
+        generic_ext_cleanup(client, &ctx);
+        return gcm ? outcome_not_run("The prerequisite Create request failed.") : out;
+    }
     ctx.expected_id = ctx.ids[0];
+    if (gcm) {
+        out = execute_generic_gcm(client, op, &ctx, invalid_tag);
+        generic_ext_cleanup(client, &ctx);
+        OPENSSL_cleanse(ctx.bytes, sizeof(ctx.bytes));
+        return out;
+    }
     if (op == 0x04) {
         kmipkit_ttlv_structure_t *p = make_ttlv_struct();
         append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
@@ -11488,6 +11757,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the C binding exposes no high-level client route for this case");
     }
+    uint32_t gcm_operation = gcm_case_operation(test_case->case_id);
+    bool gcm_invalid_tag = strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-gcm-invalid-tag") == 0;
     bool fluent_route = strcmp(client->api_level, "fluent") == 0;
     const char *rotate = test_case->rotate_attribute_ttlv[0] && strcmp(test_case->operation, "Locate") == 0
         ? test_case->rotate_attribute_ttlv : NULL;
@@ -11499,7 +11770,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-obj-public-key") == 0;
     bool draft_locate = client->protocol_major == 3 && locate_workflow;
     bool multipart_hash = strcmp(test_case->case_id, "test-multipart-hash-sha256") == 0;
-    if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash &&
+    if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash && !gcm_operation &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
         !hash_workflow && !locate_workflow && !rotate && !create_key_pair_workflow &&
         strcmp(test_case->case_id, "test-op-revoke") != 0 && strcmp(test_case->case_id, "test-op-add-attribute") != 0 &&
@@ -11511,6 +11782,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->mode, "server_exchange") == 0 &&
         strcmp(client->api_level, "generic-ttlv") != 0) {
+        if (client->protocol_major == 2 && gcm_operation && strcmp(test_case->mutation, "mutating") == 0)
+            return execute_typed_gcm(client, gcm_operation, fluent_route, gcm_invalid_tag);
         if (strcmp(test_case->operation, "Set Endpoint Role") == 0 &&
             strcmp(test_case->workflow_type, "client_to_server") == 0) {
             if (strcmp(test_case->mutation, "mutating") != 0)
@@ -11588,7 +11861,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 #ifdef KMIPKIT_C_GENERIC_TLS
         const kmip_connection_config_t *connection = client->configuration;
         uint32_t owned = generic_owned_operation(test_case->case_id);
-        uint32_t extended = generic_extended_operation(test_case->case_id);
+        uint32_t extended = gcm_operation ? gcm_operation : generic_extended_operation(test_case->case_id);
         const char *case_id = test_case->case_id;
         uint32_t rng = 0;
         if (strcmp(case_id, "test-crypto-rng-retrieve-rng-32") == 0 || strcmp(case_id, "test-op-rng-retrieve") == 0)
@@ -11605,7 +11878,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0) {
                 if (extended == 0x19 || extended == 0x1a)
                     return execute_generic_async(client, extended, attempt ? attempt->unique_name : "kmipkit-c-async");
-                return execute_generic_extended(client, extended);
+                return execute_generic_extended(client, extended, gcm_operation != 0, gcm_invalid_tag);
             }
             if (rng)
                 return execute_generic_probe(client, rng);

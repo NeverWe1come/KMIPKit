@@ -167,8 +167,19 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
             "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256",
             "2.0" | "2.1",
         ) => Some(0x27),
-        ("test-op-encrypt" | "test-crypto-encrypt-aes-256-cbc", "2.0" | "2.1") => Some(ENCRYPT),
-        ("test-op-decrypt" | "test-crypto-decrypt-aes-256-cbc", "2.0" | "2.1") => Some(DECRYPT),
+        (
+            "test-op-encrypt"
+            | "test-crypto-encrypt-aes-256-cbc"
+            | "test-crypto-encrypt-aes-256-gcm",
+            "2.0" | "2.1",
+        ) => Some(ENCRYPT),
+        (
+            "test-op-decrypt"
+            | "test-crypto-decrypt-aes-256-cbc"
+            | "test-crypto-decrypt-aes-256-gcm"
+            | "test-crypto-decrypt-aes-256-gcm-invalid-tag",
+            "2.0" | "2.1",
+        ) => Some(DECRYPT),
         (
             "test-op-sign"
             | "test-crypto-sign-rsa-2048-pkcs1_v1_5"
@@ -942,6 +953,7 @@ pub(crate) fn asynchronous(
         identifiers,
         correlation,
         bytes: None,
+        authentication_tag: None,
         validity: None,
         ticket: None,
     })
@@ -1160,7 +1172,7 @@ fn run_extended_operation(
     } else {
         outcome(
             case,
-            run_extended_inner(connection, version, operation, &mut cleanup),
+            run_extended_inner(case, connection, version, operation, &mut cleanup),
         )
     };
     destroy_ids(connection, version, &cleanup);
@@ -1168,6 +1180,7 @@ fn run_extended_operation(
 }
 
 fn run_extended_inner(
+    case: &Case,
     connection: &Connection,
     version: ProtocolVersion,
     operation: u32,
@@ -1181,7 +1194,7 @@ fn run_extended_inner(
         RE_KEY | EXPORT | GET_USAGE_ALLOCATION | DERIVE_KEY | CREATE_SPLIT_KEY | JOIN_SPLIT_KEY => {
             extended_sym_ops(connection, version, operation, cleanup)
         }
-        ENCRYPT | DECRYPT => extended_encrypt_ops(connection, version, operation, cleanup),
+        ENCRYPT | DECRYPT => extended_encrypt_ops(case, connection, version, operation, cleanup),
         MAC | MAC_VERIFY => extended_mac_ops(connection, version, operation, cleanup),
         SIGN | SIGNATURE_VERIFY => extended_sign_ops(connection, version, operation, cleanup),
         _ => Err("unsupported extended generic operation"),
@@ -1472,56 +1485,100 @@ fn extended_cert_ops(
 }
 
 fn extended_encrypt_ops(
+    case: &Case,
     connection: &Connection,
     version: ProtocolVersion,
     operation: u32,
     cleanup: &mut Vec<String>,
 ) -> ExchangeResult {
+    let gcm = case.requires["block_cipher_mode"] == "GCM";
     let (key_id, key_res) = create_aes_key(connection, version, 12, false)?;
     if !key_id.is_empty() {
         cleanup.push(key_id.clone());
     }
     if key_res != Ok((0, None)) {
-        return key_res;
+        return if gcm {
+            Err("prerequisite Create failed")
+        } else {
+            key_res
+        };
     }
     let act = exchange(connection, version, ACTIVATE, Some(&key_id), |_| Ok(true))?;
     if act != (0, None) {
-        return Ok(act);
+        return if gcm {
+            Err("prerequisite Activate failed")
+        } else {
+            Ok(act)
+        };
     }
-    let iv = vec![0x01; 16];
-    let plaintext = b"0123456789abcdef".to_vec();
-    let enc_fields = vec![
-        item(0x0042_0094, Value::text_string(key_id.clone()))?,
-        node(
-            0x0042_002b,
-            vec![
-                item(0x0042_0011, Value::enumeration(1))?,
-                item(0x0042_005f, Value::enumeration(3))?,
-            ],
-        )?,
-        item(0x0042_00c2, Value::byte_string(plaintext.clone()))?,
-        item(0x0042_003d, Value::byte_string(iv.clone()))?,
-    ];
+
+    let iv = if gcm { vec![0; 12] } else { vec![1; 16] };
+    let plaintext = if gcm {
+        b"AAAAAAAAAAAAAAAA"
+    } else {
+        b"0123456789abcdef"
+    };
+    let fields = |data: Vec<u8>| {
+        let mut parameters = vec![
+            item(0x0042_0011, Value::enumeration(if gcm { 9 } else { 1 }))?,
+            item(0x0042_005f, Value::enumeration(if gcm { 1 } else { 3 }))?,
+        ];
+        if gcm {
+            parameters.extend([
+                item(0x0042_00cd, Value::integer(96))?,
+                item(0x0042_00ce, Value::integer(16))?,
+            ]);
+        }
+        let mut result = vec![
+            item(0x0042_0094, Value::text_string(key_id.clone()))?,
+            node(0x0042_002b, parameters)?,
+            item(0x0042_00c2, Value::byte_string(data))?,
+            item(0x0042_003d, Value::byte_string(iv.clone()))?,
+        ];
+        if gcm {
+            result.push(item(
+                0x0042_00fe,
+                Value::byte_string(b"kmipkit authenticated data".to_vec()),
+            )?);
+        }
+        Ok::<_, &'static str>(result)
+    };
     let mut cipher = None;
-    let enc_res = exchange_payload(connection, version, ENCRYPT, enc_fields, |batch| {
-        cipher = field_bytes(batch, 0x0042_00c2);
-        Ok(text_identifier(batch).as_deref() == Some(key_id.as_str()) && cipher.is_some())
-    });
-    if operation == ENCRYPT || enc_res != Ok((0, None)) {
+    let mut tag = None;
+    let enc_res = exchange_payload(
+        connection,
+        version,
+        ENCRYPT,
+        fields(plaintext.to_vec())?,
+        |batch| {
+            cipher = field_bytes(batch, 0x0042_00c2);
+            if gcm {
+                tag = field_bytes(batch, 0x0042_00ff);
+            }
+            Ok(text_identifier(batch).as_deref() == Some(key_id.as_str())
+                && cipher
+                    .as_ref()
+                    .is_some_and(|data| !gcm || data.len() == plaintext.len())
+                && (!gcm || tag.as_ref().is_some_and(|data| data.len() == 16)))
+        },
+    );
+    if operation == ENCRYPT {
         return enc_res;
     }
-    let dec_fields = vec![
-        item(0x0042_0094, Value::text_string(key_id.clone()))?,
-        node(
-            0x0042_002b,
-            vec![
-                item(0x0042_0011, Value::enumeration(1))?,
-                item(0x0042_005f, Value::enumeration(3))?,
-            ],
-        )?,
-        item(0x0042_00c2, Value::byte_string(cipher.unwrap_or_default()))?,
-        item(0x0042_003d, Value::byte_string(iv))?,
-    ];
+    if enc_res != Ok((0, None)) {
+        return if gcm {
+            Err("prerequisite Encrypt failed")
+        } else {
+            enc_res
+        };
+    }
+    let mut dec_fields = fields(cipher.ok_or("missing ciphertext")?)?;
+    if let Some(mut tag) = tag {
+        if case.requires["expected_status"] == "OperationFailed" {
+            tag[0] ^= 1;
+        }
+        dec_fields.push(item(0x0042_00ff, Value::byte_string(tag))?);
+    }
     exchange_payload(connection, version, DECRYPT, dec_fields, |batch| {
         Ok(text_identifier(batch).as_deref() == Some(key_id.as_str())
             && field_bytes(batch, 0x0042_00c2).as_deref() == Some(plaintext.as_slice()))

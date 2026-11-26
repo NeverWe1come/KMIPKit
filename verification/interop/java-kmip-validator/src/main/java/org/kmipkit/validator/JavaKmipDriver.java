@@ -1340,6 +1340,8 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private CaseOutcome executeExtendedEncryptGroup(CatalogLoader.CatalogCase testCase, String op,
             boolean fluent, List<UniqueIdentifier> cleanup, long start) {
+        boolean gcm = "GCM".equals(testCase.requires().path("block_cipher_mode").asText());
+        boolean invalidTag = gcm && "OperationFailed".equals(testCase.requires().path("expected_status").asText());
         var keyRef = new AtomicReference<UniqueIdentifier>();
         try (var attrs = symmetricKeyAttributes("enc-" + UUID.randomUUID(), 256, 12)) {
             var cRes = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attrs, null)), r -> r.createResponse().map(p -> {
@@ -1347,42 +1349,74 @@ public final class JavaKmipDriver implements AutoCloseable {
                 cleanup.add(p.uniqueIdentifier());
                 return true;
             }).orElse(false), start);
-            if (!"passed".equals(cRes.status())) return cRes;
+            if (!"passed".equals(cRes.status()) || keyRef.get() == null)
+                return gcm ? CaseOutcome.notRun("The prerequisite Create request failed.", elapsedMillis(start)) : cRes;
             var act = executeRequest(testCase, withBatchId(ClientBatchItem.activate(keyRef.get())), r -> true, start);
-            if (!"passed".equals(act.status())) return act;
-            byte[] iv = new byte[16];
-            Arrays.fill(iv, (byte) 0x01);
-            byte[] pt = "0123456789abcdef".getBytes(StandardCharsets.US_ASCII);
+            if (!"passed".equals(act.status()) || !Long.valueOf(0).equals(act.resultStatusCode()))
+                return gcm ? CaseOutcome.notRun("The prerequisite Activate request failed.", elapsedMillis(start)) : act;
+            byte[] iv = new byte[gcm ? 12 : 16];
+            if (!gcm) Arrays.fill(iv, (byte) 0x01);
+            byte[] pt = (gcm ? "AAAAAAAAAAAAAAAA" : "0123456789abcdef").getBytes(StandardCharsets.US_ASCII);
+            byte[] aad = gcm ? "kmipkit authenticated data".getBytes(StandardCharsets.US_ASCII) : null;
             var cipherRef = new AtomicReference<byte[]>();
-            try (var p0 = appendValue(TtlvStructure.create(), 0x420011, TtlvValue.Enumeration(1));
-                    var params = appendValue(p0, 0x42005f, TtlvValue.Enumeration(3));
+            var tagRef = new AtomicReference<byte[]>();
+            try (var params = encryptionParameters(gcm);
                     var ptVal = TtlvValue.ByteString(pt, CODEC_LIMITS)) {
                 ClientBatchItem encReq;
                 if (fluent) {
                     try (var b = client.request().encrypt()) {
-                        encReq = withBatchId(b.uniqueIdentifier(keyRef.get())
-                                .cryptographicParametersStructure(params).data(pt).ivCounterNonce(iv).build());
+                        b.uniqueIdentifier(keyRef.get()).cryptographicParametersStructure(params).data(pt).ivCounterNonce(iv);
+                        if (gcm) b.authenticatedEncryptionAdditionalData(aad);
+                        encReq = withBatchId(b.build());
                     }
                 } else {
-                    encReq = withBatchId(ClientBatchItem.encrypt(keyRef.get(), params, ptVal, iv, null, null, null, null));
+                    encReq = withBatchId(ClientBatchItem.encrypt(keyRef.get(), params, ptVal, iv, null, null, null, aad));
                 }
                 var encRes = executeRequest(testCase, encReq, r -> r.encryptResponse().map(p -> {
-                    cipherRef.set(p.data().orElse(null));
-                    return cipherRef.get() != null && cipherRef.get().length > 0;
+                    try (p) {
+                        byte[] ciphertext = p.data().orElse(null);
+                        cipherRef.set(ciphertext);
+                        if (!gcm) return ciphertext != null && ciphertext.length > 0;
+                        byte[] tag = p.authenticatedEncryptionTag().orElse(null);
+                        tagRef.set(tag);
+                        return sameIdentifier(keyRef.get(), p.uniqueIdentifier()) && ciphertext != null
+                                && ciphertext.length == pt.length && tag != null && tag.length == 16;
+                    }
                 }).orElse(false), start);
-                if ("Encrypt".equals(op) || !"passed".equals(encRes.status())) return encRes;
+                if ("Encrypt".equals(op)) return encRes;
+                if (!"passed".equals(encRes.status()) || cipherRef.get() == null)
+                    return gcm ? CaseOutcome.notRun("The prerequisite Encrypt request failed.", elapsedMillis(start)) : encRes;
+                byte[] tag = tagRef.get();
+                if (invalidTag) tag[0] ^= 1;
                 ClientBatchItem decReq;
                 if (fluent) {
                     try (var b = client.request().decrypt()) {
-                        decReq = withBatchId(b.uniqueIdentifier(keyRef.get())
-                                .cryptographicParametersStructure(params).data(cipherRef.get()).ivCounterNonce(iv).build());
+                        b.uniqueIdentifier(keyRef.get()).cryptographicParametersStructure(params)
+                                .data(cipherRef.get()).ivCounterNonce(iv);
+                        if (gcm) b.authenticatedEncryptionAdditionalData(aad).authenticatedEncryptionTag(tag);
+                        decReq = withBatchId(b.build());
                     }
                 } else {
                     try (var cv = TtlvValue.ByteString(cipherRef.get(), CODEC_LIMITS)) {
-                        decReq = withBatchId(ClientBatchItem.decrypt(keyRef.get(), params, cv, iv, null, null, null, null, null));
+                        decReq = withBatchId(ClientBatchItem.decrypt(keyRef.get(), params, cv, iv, tag, null, null, null, aad));
                     }
                 }
-                return executeRequest(testCase, decReq, r -> r.decryptResponse().map(p -> Arrays.equals(pt, p.data().orElse(null))).orElse(false), start);
+                return executeRequest(testCase, decReq, r -> r.decryptResponse().map(p -> {
+                    try (p) {
+                        return !invalidTag && (!gcm || sameIdentifier(keyRef.get(), p.uniqueIdentifier()))
+                                && Arrays.equals(pt, p.data().orElse(null));
+                    }
+                }).orElse(false), start);
+            }
+        }
+    }
+
+    private static TtlvStructure encryptionParameters(boolean gcm) {
+        try (var mode = appendValue(TtlvStructure.create(), 0x420011, TtlvValue.Enumeration(gcm ? 9 : 1))) {
+            var padding = appendValue(mode, 0x42005f, TtlvValue.Enumeration(gcm ? 1 : 3));
+            if (!gcm) return padding;
+            try (padding; var ivLength = appendValue(padding, 0x4200cd, TtlvValue.Integer(96))) {
+                return appendValue(ivLength, 0x4200ce, TtlvValue.Integer(16));
             }
         }
     }

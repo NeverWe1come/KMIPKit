@@ -17,6 +17,7 @@ import time
 import unittest
 
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
+from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_query_fields import query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
@@ -460,6 +461,109 @@ class DirectTagValidatorTests(unittest.TestCase):
             if not invalid:
                 label = "query-fields" if fields else "query-operations"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{label}")
+
+    def test_authenticated_encryption_round_trip_and_invalid_tag(self):
+        for language, available in installed_validators():
+            routes = ("generic-ttlv", "typed-protocol", "fluent")
+            if language == "rust":
+                routes += ("high-level",)
+            for minor in (0, 1):
+                for route in routes:
+                    with self.subTest(language=language, minor=minor, route=route):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.authenticated_encryption(language, minor, route)
+
+    def authenticated_encryption(self, language, minor, route):
+        identifier = wire_item(0x420094, 7, b"gcm-fixture-key")
+        plaintext, ciphertext = b"A" * 16, b"C" * 16
+        auth_tag = b"T" * 16
+        with tempfile.TemporaryDirectory(prefix="kmipkit-gcm-") as dirname:
+            work = Path(dirname)
+            catalog = version_catalog(f"2.{minor}")
+            by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+            cases = list(authenticated_encryption_cases(f"2.{minor}", by_id))
+            selection = work / "catalog.json"
+            selection.write_text(json.dumps(with_cases(catalog, cases)))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
+                                           "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(8)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(selection), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    try:
+                        for case in cases:
+                            decrypt = case["operation"] == "Decrypt"
+                            invalid = case["requires"].get("expected_status") == "OperationFailed"
+                            for operation in (1, 0x12, 0x1F, *((0x20,) if decrypt else ()), 0x13, 0x14):
+                                raw, _ = self.accept_request(listener, process, f"AES-GCM operation {operation}")
+                                raw.settimeout(5)
+                                with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                                    batch = only(only(read_message(peer), 0x420078, 1), 0x42000F, 1)
+                                    self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
+                                    request = only(batch, 0x420079, 1)
+                                    fields = [identifier]
+                                    if operation == 1:
+                                        attributes = only(request, 0x420125, 1)
+                                        self.assertEqual(only(attributes, 0x420028, 5), struct.pack(">I", 3))
+                                        self.assertEqual(only(attributes, 0x42002A, 2), struct.pack(">I", 256))
+                                        fields.insert(0, number(0x420057, 5, 2))
+                                    else:
+                                        self.assertEqual(only(request, 0x420094, 7), b"gcm-fixture-key")
+                                    if operation in (0x1F, 0x20):
+                                        params = only(request, 0x42002B, 1)
+                                        self.assertEqual(only(params, 0x420011, 5), struct.pack(">I", 9))
+                                        self.assertEqual(only(params, 0x4200CD, 2), struct.pack(">I", 96))
+                                        self.assertEqual(only(params, 0x4200CE, 2), struct.pack(">I", 16))
+                                        self.assertEqual(only(request, 0x42003D, 8), bytes(12))
+                                        self.assertEqual(only(request, 0x4200FE, 8), b"kmipkit authenticated data")
+                                        self.assertEqual(only(request, 0x4200C2, 8), ciphertext if operation == 0x20 else plaintext)
+                                        if operation == 0x20:
+                                            sent = bytes([auth_tag[0] ^ 1]) + auth_tag[1:] if invalid else auth_tag
+                                            self.assertEqual(only(request, 0x4200FF, 8), sent)
+                                            fields.append(wire_item(0x4200C2, 8, plaintext))
+                                        else:
+                                            fields.extend((wire_item(0x4200C2, 8, ciphertext), wire_item(0x4200FF, 8, auth_tag)))
+                                    ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                                    result = ([number(0x42007F, 5, 1), number(0x42007E, 5, 10)]
+                                              if operation == 0x20 and invalid else
+                                              [number(0x42007F, 5, 0), structure(0x42007C, *fields)])
+                                    peer.sendall(structure(
+                                        0x42007B,
+                                        structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                                  number(0x42000D, 2, 1)),
+                                        structure(0x42000F, number(0x42005C, 5, operation), *ids, *result),
+                                    ))
+                        _, stderr = process.communicate(timeout=12)
+                        self.assertEqual(process.returncode, 0, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            results = json.loads(report.read_text())["cases"]
+            self.assertEqual(len(results), len(cases))
+            for result, case in zip(results, cases):
+                self.assertEqual(result["case_id"], case["case_id"])
+                self.assertEqual(result["status"], "passed")
+                invalid = case["requires"].get("expected_status") == "OperationFailed"
+                self.assertEqual(result["result_status_code"], 1 if invalid else 0)
+                if invalid:
+                    self.assertEqual(result["result_reason_code"], 10)
+                if route == "high-level":
+                    self.assertEqual(result["actual_api_level"], route)
+            save_evidence(report, selection, f"{language}-2.{minor}-{route}-authenticated-encryption")
 
     def test_obtain_lease_validates_result_and_cleans_up(self):
         for language, available in installed_validators():

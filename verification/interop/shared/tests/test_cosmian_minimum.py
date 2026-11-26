@@ -10,6 +10,7 @@ from verification.interop.shared.tools.cosmian_minimum import (
     ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
 )
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
+from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES
 from verification.interop.shared.tools.run_all import (
     Listener, build_command_for_language, incomplete_case_ids, table_operation_expectations,
 )
@@ -59,6 +60,12 @@ class CosmianMinimumTests(unittest.TestCase):
         for version in ("2.0", "2.1"):
             for name in ("Data", "Correlation Value", "Init Indicator", "Final Indicator"):
                 self.assertIn("test-multipart-hash-sha256", reports[version]["base_object", name]["server_cases"])
+            for field in ("Authenticated Encryption Additional Data", "Authenticated Encryption Tag"):
+                row = reports[version]["base_object", field]
+                self.assertLessEqual(set(AAD_CASES), set(row["server_cases"]))
+                high_level = next(route for route in row["obligations"] if route["api_level"] == "high-level")
+                self.assertEqual("rust", high_level["language"])
+                self.assertLessEqual(set(AAD_CASES), set(high_level["case_ids"]))
             for name in ("Server Information", "Extension Information", "RNG Parameters",
                          "Validation Information", "Profile Information", "Capability Information"):
                 case_id = f"test-query-{'-'.join(name.lower().split())}"

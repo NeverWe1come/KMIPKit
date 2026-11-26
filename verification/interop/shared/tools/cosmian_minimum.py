@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction, with_cases
 from verification.interop.shared.tools.matrix.generator import LANGUAGES
+from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES, authenticated_encryption_cases
 from verification.interop.shared.tools.table_query_fields import query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
@@ -40,6 +41,8 @@ KINDS = {
 }
 # These workflow recipes assert or supply the listed base field within a real exchange.
 FIELD_EXCHANGES = {
+    "Authenticated Encryption Additional Data": AAD_CASES,
+    "Authenticated Encryption Tag": AAD_CASES,
     "Data": ("test-op-hash", "test-multipart-hash-sha256"),
     "Data Length": ("test-crypto-rng-retrieve-rng-32",),
     "Signature Data": ("test-crypto-sign-rsa-2048-pkcs1_v1_5",
@@ -118,6 +121,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     rotate_by_attribute = dict(rotate_cases(root, version, candidates["test-op-locate"]))
     candidates.update({case["case_id"]: case for case in rotate_by_attribute.values()})
     candidates.update({case["case_id"]: case for case in query_cases(version, candidates["test-op-query"])})
+    encryption_cases = list(authenticated_encryption_cases(version, candidates))
+    candidates.update({case["case_id"]: case for case in encryption_cases})
     normative_by_target = defaultdict(set)
     used = set()
     for case in normative_cases:
@@ -159,6 +164,7 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
             ids.update(case["case_id"] for case in catalog["test_cases"]
                        if case["category"] in SERVER_SCOPE and normal(case["operation"]) in names
                        and direction(case) == operation_direction(name))
+            ids.update(case["case_id"] for case in encryption_cases if normal(case["operation"]) in names)
         if kind in {"managed_object", "attribute"}:
             key = "object_type" if kind == "managed_object" else "attribute"
             ids.update(case["case_id"] for case in candidates.values() if normal(case["requires"].get(key, "")) in names)

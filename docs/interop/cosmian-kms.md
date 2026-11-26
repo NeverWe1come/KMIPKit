@@ -180,6 +180,14 @@ Rotate Name because its TTLV parser did not recognize Rotate Name Value
 (`0x420170`). The resulting Invalid Message response omitted Operation.
 All 13 routes reported the exchange as failed.
 
+A second loopback deployment used Cosmian KMS 5.29.0
+(`sha256:a5592576c17854868c8abe6536b0ab89c49f31eb978c2778d2ee471330e083c8`).
+The AES-256-GCM recipes passed in KMIP 2.0 and 2.1 through generic TTLV,
+typed protocol and Fluent in all four languages, plus the direct Rust
+operation methods. They check additional authenticated data in the request,
+a 16-byte tag in the Encrypt response, plaintext recovery with that tag,
+and `Cryptographic Failure` after changing one byte of the tag.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its
