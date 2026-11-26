@@ -464,11 +464,9 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_discover_versions_checks_the_explicit_offer(self):
         for language, available in installed_validators():
-            routes = {
-                "c": ("typed-protocol", "high-level"),
-                "java": ("typed-protocol", "fluent", "high-level"),
-                "python": ("typed-protocol", "fluent", "high-level"),
-            }.get(language, ())
+            if language == "rust":
+                continue
+            routes = ("typed-protocol", "fluent", "high-level")
             for minor in (0, 1):
                 for route in routes:
                     for valid in (True, False):

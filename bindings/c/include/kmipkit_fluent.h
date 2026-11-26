@@ -12,6 +12,7 @@ extern "C" {
 
 typedef struct kmipkit_ping_builder_t kmipkit_ping_builder_t;
 typedef struct kmipkit_query_builder_t kmipkit_query_builder_t;
+typedef struct kmipkit_discover_versions_builder_t kmipkit_discover_versions_builder_t;
 typedef struct kmipkit_create_builder_t kmipkit_create_builder_t;
 typedef struct kmipkit_create_credential_object_t kmipkit_create_credential_object_t;
 typedef struct kmipkit_kmip30_operation_builder_t kmipkit_kmip30_operation_builder_t;
@@ -115,6 +116,11 @@ int32_t kmipkit_query_builder_create(kmipkit_query_builder_t **out_builder);
 int32_t kmipkit_query_builder_add_function(kmipkit_query_builder_t *builder, uint32_t function);
 int32_t kmipkit_query_builder_build_batch_item(kmipkit_query_builder_t *builder, kmipkit_client_batch_item_t **out_item);
 void kmipkit_query_builder_release(kmipkit_query_builder_t *builder);
+
+int32_t kmipkit_discover_versions_builder_create(kmipkit_discover_versions_builder_t **out_builder);
+int32_t kmipkit_discover_versions_builder_add_version(kmipkit_discover_versions_builder_t *builder, int32_t major, int32_t minor);
+int32_t kmipkit_discover_versions_builder_build_batch_item(kmipkit_discover_versions_builder_t *builder, kmipkit_client_batch_item_t **out_item);
+void kmipkit_discover_versions_builder_release(kmipkit_discover_versions_builder_t *builder);
 
 /* Direct single-item fluent/high-level execution helpers. */
 int32_t kmipkit_client_execute_item_v1(kmipkit_client_t * client, kmipkit_client_batch_item_t ** inout_item, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);

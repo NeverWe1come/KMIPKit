@@ -8849,6 +8849,16 @@ static int32_t build_fluent_query(uint32_t function, kmipkit_client_batch_item_t
     return status;
 }
 
+static int32_t build_fluent_discover_versions(
+    kmipkit_protocol_version_v1_t offered, kmipkit_client_batch_item_t **out) {
+    kmipkit_discover_versions_builder_t *builder = NULL;
+    int32_t status = kmipkit_discover_versions_builder_create(&builder);
+    if (status == 0) status = kmipkit_discover_versions_builder_add_version(builder, offered.major, offered.minor);
+    if (status == 0) status = kmipkit_discover_versions_builder_build_batch_item(builder, out);
+    kmipkit_discover_versions_builder_release(builder);
+    return status;
+}
+
 static int32_t build_hash_request(kmip_live_client_t *client, bool fluent,
                                   kmipkit_client_batch_item_t **out) {
     static const uint8_t input[] = {0x61, 0x62, 0x63};
@@ -11986,7 +11996,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("the C Fluent Query builder cannot set Object Groups");
     if (fluent_route && strcmp(test_case->mode, "local_model") != 0 && !multipart_hash && !gcm_operation &&
         strcmp(test_case->operation, "Create") != 0 && strcmp(test_case->operation, "Ping") != 0 &&
-        strcmp(test_case->operation, "Query") != 0 &&
+        strcmp(test_case->operation, "Discover Versions") != 0 && strcmp(test_case->operation, "Query") != 0 &&
         strcmp(test_case->operation, "RNG Retrieve") != 0 && strcmp(test_case->operation, "RNG Seed") != 0 &&
         strcmp(test_case->operation, "Get") != 0 && strcmp(test_case->operation, "Destroy") != 0 &&
         strcmp(test_case->operation, "Activate") != 0 && strcmp(test_case->operation, "Archive") != 0 &&
@@ -12624,7 +12634,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else if (strcmp(test_case->operation, "Discover Versions") == 0) {
         const kmipkit_protocol_version_v1_t offered = {.major = client->protocol_major,
                                                      .minor = client->protocol_minor};
-        status = kmipkit_client_batch_item_discover_versions_with_versions(&offered, 1, &item);
+        status = fluent_route ? build_fluent_discover_versions(offered, &item)
+            : kmipkit_client_batch_item_discover_versions_with_versions(&offered, 1, &item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
         status = fluent_route ? build_fluent_ping(&item) : kmipkit_client_batch_item_ping(&item);
     } else if (strcmp(test_case->operation, "Locate") == 0) {

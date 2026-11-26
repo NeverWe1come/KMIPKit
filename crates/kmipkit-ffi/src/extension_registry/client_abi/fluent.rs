@@ -2,6 +2,7 @@
 
 use super::super::{CreateBuilderState, PingBuilderState};
 use super::*;
+use crate::kmipkit_discover_versions_builder_t;
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, Attribute, AttributeSet, CreateKeyPairRequest, CreateRequest,
@@ -3852,6 +3853,83 @@ pub unsafe extern "C" fn kmipkit_client_execute_item_v1(
     })
 }
 
+const MAX_DISCOVER_VERSIONS: usize = 1024;
+
+/// Creates a reusable Discover Versions builder. Without explicit offers, it uses KMIP 2.1.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_create(
+    out_builder: *mut *mut kmipkit_discover_versions_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::DiscoverVersionsBuilder,
+            HandleValue::DiscoverVersionsBuilder(Mutex::new(Vec::new())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Appends a supported protocol version in preference order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_add_version(
+    builder: *mut kmipkit_discover_versions_builder_t,
+    major: i32,
+    minor: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::DiscoverVersionsBuilder));
+        let HandleValue::DiscoverVersionsBuilder(versions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        if !version.is_catalogued() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let mut versions = try_ffi!(versions.lock().map_err(|_| ERROR_INTERNAL));
+        if versions.len() >= MAX_DISCOVER_VERSIONS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        try_ffi!(versions.try_reserve(1).map_err(|_| ERROR_RESOURCE_LIMIT));
+        versions.push(version);
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Discover Versions batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_build_batch_item(
+    builder: *mut kmipkit_discover_versions_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = try_ffi!(reference_handle(builder, Kind::DiscoverVersionsBuilder));
+        let HandleValue::DiscoverVersionsBuilder(versions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let versions = try_ffi!(versions.lock().map_err(|_| ERROR_INTERNAL));
+        let request = if versions.is_empty() {
+            kmipkit_protocol::DiscoverVersionsRequest::new()
+        } else {
+            try_ffi!(
+                kmipkit_protocol::DiscoverVersionsRequest::with_versions(versions.clone())
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            )
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::DiscoverVersions(request)));
+        SUCCESS
+    })
+}
+
+/// Releases the opaque Discover Versions builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_release(
+    builder: *mut kmipkit_discover_versions_builder_t,
+) {
+    ffi_entrypoint(|| release(builder, Kind::DiscoverVersionsBuilder));
+}
+
 /// High-level direct Discover Versions helper offering `versions` (or default 2.1 when empty).
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_discover_versions_v1(
@@ -3869,7 +3947,7 @@ pub extern "C" fn kmipkit_client_discover_versions_v1(
                 return record_ffi_error(ERROR_INVALID_INPUT);
             }
             let count = try_ffi!(usize::try_from(version_count).map_err(|_| ERROR_INVALID_INPUT));
-            if count > 1024 {
+            if count > MAX_DISCOVER_VERSIONS {
                 return record_ffi_error(ERROR_RESOURCE_LIMIT);
             }
             // SAFETY: caller guarantees `versions` points to `count` initialized entries.
