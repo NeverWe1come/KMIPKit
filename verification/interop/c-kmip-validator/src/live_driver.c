@@ -11213,6 +11213,189 @@ static kmip_execution_outcome_t receive_typed_case(kmip_live_client_t *client, c
     return outcome;
 }
 
+typedef struct {
+    uint8_t correlation[512];
+    uint64_t correlation_length;
+    uint8_t identifier[256];
+    uint64_t identifier_length;
+} typed_async_fixture_t;
+
+static bool copy_async_token(typed_async_fixture_t *fixture, kmipkit_byte_span_v1_t span) {
+    if (!span.data || !span.length || span.length > sizeof(fixture->correlation)) return false;
+    memcpy(fixture->correlation, span.data, (size_t)span.length);
+    fixture->correlation_length = span.length;
+    return true;
+}
+
+static int32_t begin_typed_async_fixture(kmip_live_client_t *client, const char *fixture_name,
+                                         typed_async_fixture_t *fixture) {
+    kmipkit_ttlv_structure_t *attributes = NULL, *name = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_response_t *item = NULL;
+    kmipkit_client_batch_item_metadata_v2_t metadata = {
+        .struct_size = sizeof(metadata), .abi_version = 2,
+    };
+    kmipkit_unique_identifier_v1_t id = {
+        .struct_size = sizeof(id), .abi_version = 1,
+    };
+    uint64_t count = 0;
+    uint8_t present = 0;
+    uint32_t object_type = 0;
+    kmipkit_byte_span_v1_t token = {0};
+    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_create(&name);
+    if (status == 0) status = kmipkit_ttlv_value_text_string(
+        client->limits, (const uint8_t *)fixture_name, (uint64_t)strlen(fixture_name), &value);
+    if (status == 0 && !append_ttlv_value(client, &name, 0x420055, &value)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(1, &value);
+    if (status == 0 && !append_ttlv_value(client, &name, 0x420054, &value)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0 && (!structure_into_value(client, &name, &value) ||
+        !append_ttlv_value(client, &attributes, 0x420053, &value))) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_item_create(2, attributes, NULL, &request);
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(batch, 1);
+    if (status == 0) status = set_async_seed_authentication(client, batch);
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &request);
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status == 0) status = kmipkit_client_batch_response_item_count(response, &count);
+    if (status == 0 && count != 1) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_client_batch_response_item_at(response, 0, &item);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(item, &metadata);
+    if (status == 0 && metadata.operation != 1) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0 && metadata.result_status == 2) {
+        status = kmipkit_client_batch_item_response_pending_correlation_value(item, &present, &token);
+        if (status == 0 && (!present || !copy_async_token(fixture, token))) status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0 && metadata.result_status == 0) {
+        status = kmipkit_client_batch_item_response_create(item, &present, &object_type, &id);
+        if (status == 0 && present && id.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+                id.text_data && id.text_length > 0 && id.text_length <= sizeof(fixture->identifier)) {
+            memcpy(fixture->identifier, id.text_data, (size_t)id.text_length);
+            fixture->identifier_length = id.text_length;
+        }
+        if (status == 0 && (!fixture->identifier_length || object_type != 2)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (item) kmipkit_client_batch_item_response_release(item);
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (request) kmipkit_client_batch_item_release(request);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (name) kmipkit_ttlv_structure_release(name);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    return status;
+}
+
+static bool read_typed_poll_identifier(kmipkit_client_async_operation_outcome_t *outcome,
+                                      typed_async_fixture_t *fixture) {
+    kmipkit_ttlv_structure_t *body = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    kmipkit_ttlv_item_view_t *field = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint64_t count = 0, length = 0;
+    uint8_t present = 0;
+    bool passed = kmipkit_client_async_operation_outcome_response_payload_ttlv(outcome, &present, &body) == 0 &&
+        present && kmipkit_ttlv_structure_view(body, &view) == 0 &&
+        kmipkit_ttlv_structure_view_item_count(view, &count) == 0 && count == 2 &&
+        kmipkit_ttlv_structure_view_item_at(view, 1, &field) == 0 &&
+        item_view_has_tag(field, 0x420094, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &value) &&
+        kmipkit_ttlv_value_view_byte_length(value, &length) == 0 &&
+        length > 0 && length <= sizeof(fixture->identifier);
+    for (uint64_t i = 0; passed && i < length; ++i)
+        passed = kmipkit_ttlv_value_view_byte_at(value, i, &fixture->identifier[i]) == 0;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    if (field) kmipkit_ttlv_item_view_release(field);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (passed) {
+        passed = poll_create_payload_matches_identifier(body, fixture->identifier, length);
+        if (passed) fixture->identifier_length = length;
+    }
+    if (body) kmipkit_ttlv_structure_release(body);
+    return passed;
+}
+
+static kmip_execution_outcome_t typed_async_target(kmip_live_client_t *client,
+    uint32_t operation, typed_async_fixture_t *fixture, bool *pending) {
+    kmipkit_client_async_operation_outcome_t *response = NULL;
+    kmipkit_client_async_operation_metadata_v1_t metadata = {
+        .struct_size = sizeof(metadata), .abi_version = 1,
+    };
+    kmipkit_client_async_operation_response_v1_t details = {
+        .struct_size = sizeof(details), .abi_version = 1,
+    };
+    kmip_execution_outcome_t result = {.executed = true};
+    uint8_t present = 0;
+    const bool cancel = operation == KMIPKIT_ENUMERATION_OPERATION_CANCEL;
+    int32_t status = cancel
+        ? kmipkit_client_execute_cancel(client->client, fixture->correlation, fixture->correlation_length,
+                                        client->limits, &response)
+        : kmipkit_client_execute_poll(client->client, fixture->correlation, fixture->correlation_length,
+                                      client->limits, &response);
+    if (status == 0) status = kmipkit_client_async_operation_outcome_metadata_v1(response, &metadata);
+    if (status == 0) status = cancel
+        ? kmipkit_client_async_operation_outcome_cancel_response_v1(response, &present, &details)
+        : kmipkit_client_async_operation_outcome_poll_response_v1(response, &present, &details);
+    bool valid = status == 0 && present && details.operation == operation && metadata.operation == operation;
+    *pending = valid && !cancel && details.is_pending;
+    if (*pending) valid = copy_async_token(fixture, details.asynchronous_correlation_value);
+    if (valid && details.result_status == 0) {
+        if (cancel) {
+            valid = details.has_cancellation_result && details.cancellation_result >= 1 &&
+                details.cancellation_result <= 5;
+        } else {
+            valid = read_typed_poll_identifier(response, fixture);
+        }
+    }
+    if (valid) {
+        const kmipkit_client_batch_item_metadata_v2_t observed = {
+            .result_status = metadata.result_status, .has_result_reason = metadata.has_result_reason,
+            .result_reason = metadata.result_reason,
+        };
+        record_kmip_result(&result, &observed);
+    } else {
+        result.library_failed = true;
+        snprintf(result.result_reason, sizeof(result.result_reason), "Typed asynchronous target response was invalid.");
+        *pending = false;
+    }
+    if (response) kmipkit_client_async_operation_outcome_release(response);
+    return result;
+}
+
+static kmip_execution_outcome_t execute_typed_async_fixture(
+    kmip_live_client_t *client, uint32_t operation, const char *name) {
+    typed_async_fixture_t fixture = {0};
+    const int32_t status = begin_typed_async_fixture(client, name, &fixture);
+    kmip_execution_outcome_t result = outcome_not_run("The prerequisite Create returned no Pending correlation.");
+    if (status == 0 && fixture.correlation_length != 0) {
+        for (unsigned poll = 0; poll < 16; ++poll) {
+            bool pending = false;
+            result = typed_async_target(client, operation, &fixture, &pending);
+            if (!pending) break;
+            if (poll == 15) {
+                const kmip_execution_outcome_t cleanup = typed_async_target(
+                    client, KMIPKIT_ENUMERATION_OPERATION_CANCEL, &fixture, &pending);
+                result = outcome_not_run("The server remained Pending after the bounded Poll sequence.");
+                if (!cleanup.success) {
+                    result.executed = true;
+                    result.library_failed = true;
+                    snprintf(result.result_reason, sizeof(result.result_reason),
+                             "Could not cancel the fixture after the bounded Poll sequence.");
+                }
+            }
+        }
+    }
+    if (fixture.identifier_length > 0 &&
+        destroy_async_query_created_key(client, fixture.identifier, fixture.identifier_length) != 0) {
+        result = (kmip_execution_outcome_t){.executed = true, .library_failed = true};
+        snprintf(result.result_reason, sizeof(result.result_reason), "Could not destroy the asynchronous Create fixture.");
+    }
+    volatile uint8_t *token = fixture.correlation;
+    for (size_t i = 0; i < sizeof(fixture.correlation); ++i) token[i] = 0;
+    return result;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -11394,8 +11577,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (multipart_hash) {
         return execute_multipart_hash_route(client, fluent_route);
     }
-    if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
-        strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
+    if (strcmp(test_case->case_id, "test-op-cancel") == 0 || strcmp(test_case->case_id, "test-op-poll") == 0) {
+        uint32_t operation = strcmp(test_case->case_id, "test-op-cancel") == 0
+            ? KMIPKIT_ENUMERATION_OPERATION_CANCEL : KMIPKIT_ENUMERATION_OPERATION_POLL;
+        return execute_typed_async_fixture(client, operation, attempt ? attempt->unique_name : "kmipkit-c-async");
+    }
+    if (strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
         return execute_cancel_route(client, test_case->cancellation_result);
     }
     if (strcmp(test_case->case_id, "test-async-indicator-mandatory-pending") == 0) {
@@ -11437,9 +11624,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->case_id,
                "test-async-poll-repeated-pending-to-success") == 0) {
-        return execute_async_poll_repeated_pending_route(client);
-    }
-    if (strcmp(test_case->case_id, "test-op-poll") == 0) {
         return execute_async_poll_repeated_pending_route(client);
     }
     if (strcmp(test_case->case_id,

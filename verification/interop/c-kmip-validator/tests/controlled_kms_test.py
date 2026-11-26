@@ -2212,11 +2212,12 @@ def main() -> int:
                 raise AssertionError("unexecuted cases must include a sanitized reason")
         if run.stderr:
             print(run.stderr, file=sys.stderr)
-    verify_generic_extended_operations(binary, openssl, repository)
+    verify_extended_operations(binary, openssl, repository, "generic-ttlv")
+    verify_extended_operations(binary, openssl, repository, "typed-protocol")
     return 0
 
 
-def verify_generic_extended_operations(binary, openssl, repository):
+def verify_extended_operations(binary, openssl, repository, api_level):
     extended_cases = [
         "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
         "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
@@ -2225,6 +2226,8 @@ def verify_generic_extended_operations(binary, openssl, repository):
         "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
         "test-op-import", "test-op-export",
     ]
+    if api_level == "typed-protocol":
+        extended_cases = ["test-op-poll", "test-op-cancel"]
     catalog = json.loads((repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
     cases_by_id = {c["case_id"]: c for c in catalog["test_cases"]}
     sym_key = tlv(0x42008f, 1, tlv(0x420040, 1, enumeration(0x420042, 1)
@@ -2250,7 +2253,7 @@ def verify_generic_extended_operations(binary, openssl, repository):
                         "server_id": "extended-generic-peer", "server_configuration_fingerprint": "b" * 64,
                         "server_product": "controlled peer", "server_version": "fixture",
                         "protocol_version": version, "transport": "raw_tls", "encoding": "TTLV",
-                        "api_level": "generic-ttlv",
+                        "api_level": api_level,
                         "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": listener.getsockname()[1]}},
                         "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
                                 "client_key_path": str(client_key), "server_name_override": "localhost"},
@@ -2342,14 +2345,14 @@ def verify_generic_extended_operations(binary, openssl, repository):
                         finally:
                             _, stderr = process.communicate(timeout=10)
                         if process.returncode != 0:
-                            raise AssertionError(f"C generic extended {version} {case_id} failed: {stderr.decode()}")
+                            raise AssertionError(f"C {api_level} extended {version} {case_id} failed: {stderr.decode()}")
                     report = json.loads(output.read_text())
                     if case_id == "test-op-cancel":
                         assert observed_operations == [1, 0x19], observed_operations
                     if case_id == "test-op-poll":
                         assert observed_operations == [1, 0x1a, 0x1a, 0x14], observed_operations
                     if report["cases"][0]["status"] != "passed":
-                        raise AssertionError(f"C generic extended {version} {case_id} status={report['cases'][0]}")
+                        raise AssertionError(f"C {api_level} extended {version} {case_id} status={report['cases'][0]}")
 
 
 if __name__ == "__main__":
