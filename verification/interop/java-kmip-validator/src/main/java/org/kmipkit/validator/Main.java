@@ -127,13 +127,17 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
+                        && !GenericIncoming.isIncoming(testCase)
                         && supportsRoute(testCase, connection)
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute && !"generic-ttlv".equals(connection.apiLevel()) ? JavaKmipDriver.connect(connection) : null;
-        try (var incoming = GenericIncoming.open(connection, options.values())) {
+        boolean nativeIncoming = TypedIncoming.supportsConnection(connection) && options.values().containsKey("--listen");
+        try (var incoming = nativeIncoming ? null : GenericIncoming.open(connection, options.values());
+                var typedIncoming = nativeIncoming ? TypedIncoming.open(connection, options.values()) : null) {
             for (CatalogLoader.CatalogCase testCase : applicable) {
-                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver, incoming);
+                JavaKmipDriver.CaseOutcome outcome = executeCase(
+                        testCase, connection, enableMutations, driver, incoming, typedIncoming);
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
@@ -160,7 +164,8 @@ public final class Main {
     }
 
     private static JavaKmipDriver.CaseOutcome executeCase(CatalogLoader.CatalogCase testCase,
-            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver, GenericIncoming incoming) {
+            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver, GenericIncoming incoming,
+            TypedIncoming typedIncoming) {
         long start = System.nanoTime();
         if ("not_applicable".equals(testCase.execution().status())) {
             return JavaKmipDriver.CaseOutcome.notRun("Catalog case is not applicable: "
@@ -192,6 +197,11 @@ public final class Main {
                         "not_compared", elapsedMillis(start), null, null,
                         "State-changing operation was withheld locally; configuration and --enable-mutations are required.");
             }
+        }
+        if (TypedIncoming.supports(testCase, connection)) {
+            return typedIncoming == null
+                    ? JavaKmipDriver.CaseOutcome.notRun("Incoming exchange requires --listen and a peer trigger.", elapsedMillis(start))
+                    : typedIncoming.exchange(testCase);
         }
         if (GenericIncoming.supports(testCase, connection)) {
             return incoming == null
@@ -238,6 +248,7 @@ public final class Main {
         if ("generic-ttlv".equals(apiLevel)) {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
         }
+        if (TypedIncoming.supports(testCase, connection)) return true;
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)
                 || "fluent".equals(apiLevel) && JavaKmipDriver.supportsFluent(testCase));
     }
@@ -259,7 +270,7 @@ public final class Main {
         output.println("KMIPKit Java interoperability validator");
         output.println("Usage: <plan|preflight|run> --connection FILE [--catalog FILE]");
         output.println("Run also accepts --case ID --artifact-manifest FILE --output-dir DIR --enable-mutations.");
-        output.println("Generic incoming cases accept --listen ADDRESS:PORT --listener-cert FILE --listener-key FILE --listener-ready-file FILE.");
+        output.println("Incoming cases accept --listen ADDRESS:PORT --listener-cert FILE --listener-key FILE --listener-ready-file FILE.");
         output.println("plan and preflight do not resolve DNS or open sockets.");
     }
 

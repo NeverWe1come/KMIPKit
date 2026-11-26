@@ -165,6 +165,15 @@ class DirectTagValidatorTests(unittest.TestCase):
                             self.skipTest(f"Installed {language} validator required")
                         self.exchange(language, minor, invalid)
 
+    def test_each_installed_validator_receives_notify_and_put_through_typed_listener(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for invalid in (False, True):
+                    with self.subTest(language=language, minor=minor, invalid=invalid):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.exchange(language, minor, invalid, api="typed-protocol")
+
     def test_isolated_key_attributes_use_their_own_tag_and_expected_value(self):
         for language, available in installed_validators():
             for minor in (0, 1):
@@ -382,18 +391,21 @@ class DirectTagValidatorTests(unittest.TestCase):
                 result = "unsupported" if unsupported else "success"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{case_id}-{result}")
 
-    def exchange(self, language, minor, invalid):
+    def exchange(self, language, minor, invalid, *, api="generic-ttlv"):
         protocol_version = f"2.{minor}"
         catalog = version_catalog(protocol_version)
         cases = [case for case in catalog["test_cases"] if direction(case) == "server_to_client"
-                 and (not invalid or case["operation"] == "Put")]
-        self.assertEqual(len(cases), 1 if invalid else 5)
+                 and (not invalid or case["operation"] == "Put")
+                 and (api == "generic-ttlv" or case["operation"] in {"Notify", "Put"})]
+        self.assertEqual(len(cases), 1 if invalid else 5 if api == "generic-ttlv" else 2)
         with tempfile.TemporaryDirectory(prefix="kmipkit-incoming-") as dirname:
             work = Path(dirname)
             catalog_path = work / "catalog.json"
             catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
             connection = work / "connection.json"
-            connection.write_text(json.dumps(connection_config(minor, 1, incoming=True)))
+            config = connection_config(minor, 1, incoming=True)
+            config["api_level"] = api
+            connection.write_text(json.dumps(config))
             profile = work / "profile.json"
             profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"}, "operations": {}}))
             ready = work / "ready"
@@ -412,7 +424,7 @@ class DirectTagValidatorTests(unittest.TestCase):
                     tls.load_verify_locations(cafile=PKI / "server-cert.pem")
                     tls.load_cert_chain(PKI / "client-cert.pem", PKI / "client-key.pem")
                     for case in cases:
-                        self.trigger(tls, peer, case["operation"], minor, invalid)
+                        self.trigger(tls, peer, case["operation"], minor, invalid, api)
                     _, stderr = process.communicate(timeout=15)
                     self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
                 finally:
@@ -420,14 +432,16 @@ class DirectTagValidatorTests(unittest.TestCase):
                         process.terminate()
                         process.communicate(timeout=5)
             results = json.loads(report.read_text())
-            self.assertEqual(results["execution"]["api_level"], "generic-ttlv")
+            self.assertEqual(results["execution"]["api_level"], api)
             self.assertEqual([case["case_id"] for case in results["cases"]], [case["case_id"] for case in cases])
             for evidence in results["cases"]:
                 self.assertEqual(evidence["status"], "failed" if invalid else "passed")
-                self.assertEqual(evidence["result_status_code"], int(invalid))
-                self.assertEqual(evidence.get("result_reason_code"), 7 if invalid else None)
+                status = None if invalid and api == "typed-protocol" else int(invalid)
+                reason = 7 if invalid and api == "generic-ttlv" else None
+                self.assertEqual(evidence.get("result_status_code"), status)
+                self.assertEqual(evidence.get("result_reason_code"), reason)
             if not invalid:
-                save_evidence(report, catalog_path, f"{language}-2.{minor}-incoming")
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{api}-incoming")
 
     def wait_for_listener(self, process, ready):
         deadline = time.monotonic() + 10
@@ -439,25 +453,31 @@ class DirectTagValidatorTests(unittest.TestCase):
         _, stderr = process.communicate(timeout=5)
         self.fail(f"Listener did not become ready: {stderr.decode(errors='replace')}")
 
-    def trigger(self, context, peer, name, minor, invalid):
+    def trigger(self, context, peer, name, minor, invalid, api):
         operation = OPERATIONS[name]
         payload = offered_payload(name, minor, invalid)
-        packet = structure(
-            0x420078,
-            structure(0x420077, version(minor), wire_item(0x420105, 7, b"test-correlation"), number(0x42000D, 2, 1)),
-            structure(0x42000F, number(0x42005C, 5, operation), wire_item(0x420093, 8, b"test-item"),
-                      structure(0x420079, *payload)),
-        )
+        header_fields = [version(minor)]
+        batch_fields = [number(0x42005C, 5, operation)]
+        if api == "generic-ttlv":
+            header_fields.append(wire_item(0x420105, 7, b"test-correlation"))
+            batch_fields.append(wire_item(0x420093, 8, b"test-item"))
+        header_fields.append(number(0x42000D, 2, 1))
+        batch_fields.append(structure(0x420079, *payload))
+        packet = structure(0x420078, structure(0x420077, *header_fields), structure(0x42000F, *batch_fields))
         with socket.create_connection(peer, timeout=5) as tcp, context.wrap_socket(tcp, server_hostname="localhost") as channel:
             channel.sendall(packet)
+            if invalid and api == "typed-protocol":
+                self.assertEqual(channel.recv(1), b"")
+                return
             response = only(read_message(channel), 0x42007B, 1)
         header = only(response, 0x42007A, 1)
         batch = only(response, 0x42000F, 1)
         self.assertEqual(only(header, 0x420069, 1), only(parse_items(version(minor)), 0x420069, 1))
         self.assertEqual(len(only(header, 0x420092, 9)), 8)
-        self.assertEqual(only(header, 0x420105, 7), b"test-correlation")
         self.assertEqual(only(header, 0x42000D, 2), struct.pack(">I", 1))
-        self.assertEqual(only(batch, 0x420093, 8), b"test-item")
+        if api == "generic-ttlv":
+            self.assertEqual(only(header, 0x420105, 7), b"test-correlation")
+            self.assertEqual(only(batch, 0x420093, 8), b"test-item")
         self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
         self.assertEqual(only(batch, 0x42007F, 5), struct.pack(">I", int(invalid)))
         if invalid:
@@ -473,7 +493,7 @@ class DirectTagValidatorTests(unittest.TestCase):
             self.assertEqual(only(result, 0x420088, 1), [])
         elif name == "Set Endpoint Role":
             self.assertEqual(only(only(batch, 0x42007C, 1), 0x420151, 5), struct.pack(">I", 1))
-        else:
+        elif api == "generic-ttlv" or any(tag == 0x42007C for tag, _, _ in batch):
             self.assertEqual(only(batch, 0x42007C, 1), [])
 
     def command(self, language, profile, report):

@@ -430,7 +430,7 @@ def main() -> None:
                 version = configuration["protocol_version"]
                 if args.all_operations:
                     catalog_path = operation_catalogs[version]
-                if (listener and version in {"2.0", "2.1"} and configuration["api_level"] == "generic-ttlv"
+                if (listener and version in {"2.0", "2.1"} and configuration["api_level"] in {"generic-ttlv", "typed-protocol"}
                         and configuration["transport"] == "raw_tls" and configuration["encoding"] == "TTLV"):
                     active_listener = listener
             destination = out_dir if len(connections) == 1 else out_dir / f"connection-{index}"

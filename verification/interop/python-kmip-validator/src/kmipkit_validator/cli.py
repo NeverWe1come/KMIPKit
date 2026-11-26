@@ -376,8 +376,20 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         if args.listen is None and (args.listener_cert or args.listener_key or args.listener_ready_file):
             parser.error("listener certificate, key and readiness options require --listen")
+        publish_ready = None
+        if args.listener_ready_file is not None:
+            output_dir = args.output_dir.resolve()
+            ready_file = args.listener_ready_file
+            if ready_file.parent.resolve() != output_dir or ready_file.name in ("", ".", ".."):
+                parser.error("--listener-ready-file must be directly inside --output-dir")
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            def publish_ready(address):
+                with (output_dir / ready_file.name).open("x", encoding="utf-8") as output:
+                    output.write(address)
+
         with incoming.bind(connection, args.listen, args.listener_cert, args.listener_key,
-                           args.listener_ready_file) as listener:
+                           publish_ready) as listener:
             results = _run(
                 connection, connection_bytes, catalog, catalog_bytes,
                 artifact, profile, args.enable_mutations, listener,

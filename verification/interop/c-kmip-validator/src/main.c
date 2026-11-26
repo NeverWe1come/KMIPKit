@@ -29,7 +29,7 @@ static void print_usage(const char *program) {
             "  %s run --connection <path> [--capabilities <path>] [--catalog <path>] "
             "[--output <json>] [--output-markdown <md>] [--output-html <html>] "
             "[--allow-mutations] [--case <id>]\n"
-            "  Generic incoming options: --listen ADDRESS:PORT --listener-cert FILE "
+            "  Incoming options: --listen ADDRESS:PORT --listener-cert FILE "
             "--listener-key FILE --listener-ready-file FILE\n",
             program, program, program);
 }
@@ -313,16 +313,22 @@ int main(int argc, char **argv) {
             return 2;
         }
         if (listen) {
+            const char *certificate = listener_cert ? listener_cert : connection.client_cert_path;
+            const char *key = listener_key ? listener_key : connection.client_key_path;
+            bool bound = false;
+            if (live_client.protocol_major == 2 && strcmp(connection.transport, "raw_tls") == 0 &&
+                strcmp(connection.encoding, "TTLV") == 0) {
+                if (strcmp(connection.api_level, "typed-protocol") == 0)
+                    bound = kmip_live_bind_typed_listener(&live_client, listen, certificate, key, listener_ready);
 #ifdef KMIPKIT_C_GENERIC_TLS
-            if (live_client.protocol_major == 2 && strcmp(connection.api_level, "generic-ttlv") == 0 &&
-                strcmp(connection.transport, "raw_tls") == 0 && strcmp(connection.encoding, "TTLV") == 0) {
-                live_client.incoming = kmip_generic_tls_listen(&connection, listen,
-                    listener_cert ? listener_cert : connection.client_cert_path,
-                    listener_key ? listener_key : connection.client_key_path, listener_ready);
-            }
+                if (strcmp(connection.api_level, "generic-ttlv") == 0) {
+                    live_client.incoming = kmip_generic_tls_listen(&connection, listen, certificate, key, listener_ready);
+                    bound = live_client.incoming != NULL;
+                }
 #endif
-            if (!live_client.incoming) {
-                fprintf(stderr, "Generic listener could not bind with the selected KMIP 2.x raw TLS settings.\n");
+            }
+            if (!bound) {
+                fprintf(stderr, "Incoming listener could not bind with the selected KMIP 2.x raw TLS settings.\n");
                 kmip_live_client_close(&live_client);
                 free(applicable);
                 free(cases);

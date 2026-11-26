@@ -365,5 +365,6 @@ obligation sharing an identifier with an existing baseline case receives a
 To include incoming operations in a coordinated run, pass
 `--listen`, `--listener-cert` and `--listener-key` to `run_all.py`.
 Each validator publishes its bound address in `listener-address.txt` in
-its result directory for the peer trigger on KMIP 2.x raw TLS connections
-using generic TTLV.
+its result directory for the peer trigger on KMIP 2.x raw TLS connections.
+For `Notify` and `Put`, select `typed-protocol` to exercise the installed
+listener and dispatcher or `generic-ttlv` to exercise the tag constructors.

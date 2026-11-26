@@ -1516,11 +1516,65 @@ bool kmip_live_client_open(const kmip_connection_config_t *configuration,
     return true;
 }
 
+bool kmip_live_bind_typed_listener(kmip_live_client_t *client, const char *address,
+                                   const char *certificate, const char *key, const char *ready_path) {
+    const char *separator = strrchr(address, ':');
+    if (!separator || separator == address || !separator[1]) return false;
+    const char *port_text = separator + 1;
+    if (strspn(port_text, "0123456789") != strlen(port_text)) return false;
+    unsigned long port = strtoul(port_text, NULL, 10);
+    if (port > UINT16_MAX) return false;
+    char host[64];
+    size_t length = (size_t)(separator - address);
+    if (address[0] == '[' && length > 2 && address[length - 1] == ']') {
+        ++address;
+        length -= 2;
+    }
+    if (length >= sizeof(host)) return false;
+    memcpy(host, address, length);
+    host[length] = '\0';
+    const bool ipv6 = strchr(host, ':') != NULL;
+    if (strspn(host, ipv6 ? "0123456789abcdefABCDEF:." : "0123456789.") != length) return false;
+
+    const kmip_connection_config_t *connection = client->configuration;
+    const kmipkit_transport_input_v1_t cert = {
+        .source_kind = KMIPKIT_TRANSPORT_SOURCE_FILE, .encoding = KMIPKIT_TRANSPORT_ENCODING_PEM,
+        .data = borrowed_span(certificate),
+    };
+    const kmipkit_transport_input_v1_t trust = {
+        .source_kind = KMIPKIT_TRANSPORT_SOURCE_FILE, .encoding = KMIPKIT_TRANSPORT_ENCODING_PEM,
+        .data = borrowed_span(connection->ca_cert_path),
+    };
+    const kmipkit_listener_transport_config_v1_t config = {
+        .struct_size = sizeof(config), .abi_version = 1,
+        .bind_host = borrowed_span(host), .bind_port = (uint16_t)port,
+        .server_certificates = &cert, .server_certificate_count = 1,
+        .server_private_key = {
+            .source_kind = KMIPKIT_TRANSPORT_SOURCE_FILE, .encoding = KMIPKIT_TRANSPORT_ENCODING_PEM,
+            .data = borrowed_span(key),
+        },
+        .trust_certificates = &trust, .trust_certificate_count = 1,
+        .read_timeout = bounded_timeout(connection->read_timeout_seconds),
+        .write_timeout = bounded_timeout(connection->read_timeout_seconds),
+        .max_request_bytes = KMIP_MAX_REQUEST_BYTES,
+    };
+    if (kmipkit_client_listener_bind_raw_tls(&config, &client->typed_incoming) != 0) return false;
+    if (!ready_path) return true;
+
+    uint16_t bound_port = 0;
+    if (kmipkit_client_listener_get_port(client->typed_incoming, &bound_port) != 0) return false;
+    FILE *ready = fopen(ready_path, "wx");
+    if (!ready) return false;
+    bool written = fprintf(ready, ipv6 ? "[%s]:%u" : "%s:%u", host, (unsigned)bound_port) > 0;
+    return fclose(ready) == 0 && written;
+}
+
 void kmip_live_client_close(kmip_live_client_t *client) {
     if (!client) return;
 #ifdef KMIPKIT_C_GENERIC_TLS
     kmip_generic_tls_listener_close(client->incoming);
 #endif
+    kmipkit_client_listener_release(client->typed_incoming);
     if (client->limits) kmipkit_codec_limits_release(client->limits);
     if (client->client) kmipkit_client_release(client->client);
     memset(client, 0, sizeof(*client));
@@ -10209,6 +10263,90 @@ static uint32_t generic_owned_operation(const char *id) {
 }
 #endif
 
+static uint32_t typed_listener_result(kmipkit_s2c_operation_result_v1_t *result, bool valid) {
+    *result = (kmipkit_s2c_operation_result_v1_t) {
+        .struct_size = sizeof(*result), .abi_version = 1,
+        .result_status = valid ? 0U : 1U, .has_result_reason = valid ? 0U : 1U,
+        .result_reason = valid ? 0U : 7U,
+    };
+    return result->result_status;
+}
+
+static uint32_t typed_listener_notify(
+    void *context, const kmipkit_server_request_item_view_v1_t *item,
+    const uint8_t *uid, uint64_t uid_length, const uint8_t *attributes, uint64_t attributes_length,
+    kmipkit_s2c_operation_result_v1_t *result
+) {
+    (void)item;
+    (void)attributes;
+    (void)attributes_length;
+    *(bool *)context = true;
+    return typed_listener_result(result, uid != NULL && uid_length != 0);
+}
+
+static uint32_t typed_listener_put(
+    void *context, const kmipkit_server_request_item_view_v1_t *item, uint32_t function,
+    const uint8_t *uid, uint64_t uid_length, const uint8_t *replaced, uint64_t replaced_length,
+    const uint8_t *object, uint64_t object_length, const uint8_t *attributes, uint64_t attributes_length,
+    kmipkit_s2c_operation_result_v1_t *result
+) {
+    (void)item;
+    (void)attributes;
+    (void)attributes_length;
+    *(bool *)context = true;
+    return typed_listener_result(result, uid != NULL && uid_length != 0 &&
+        (function == 1 || (function == 2 && replaced != NULL && replaced_length != 0)) &&
+        object != NULL && object_length >= 8 && object[3] == KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE);
+}
+
+static kmip_execution_outcome_t receive_typed_case(kmip_live_client_t *client, const char *operation) {
+    uint32_t target;
+    if (strcmp(operation, "Notify") == 0) target = KMIPKIT_ENUMERATION_OPERATION_NOTIFY;
+    else if (strcmp(operation, "Put") == 0) target = KMIPKIT_ENUMERATION_OPERATION_PUT;
+    else return outcome_not_run("no typed C incoming recipe for this operation");
+
+    const uint64_t timeout = UINT64_C(1000) * client->configuration->read_timeout_seconds;
+    kmipkit_client_listener_connection_t *connection = NULL;
+    if (kmipkit_client_listener_accept(client->typed_incoming, timeout, &connection) != 0)
+        return outcome_not_run("incoming peer unavailable");
+
+    bool invoked = false;
+    const kmipkit_server_request_handler_v3_t handler = {
+        .struct_size = sizeof(handler), .abi_version = 3, .user_data = &invoked,
+        .handle_notify = typed_listener_notify, .handle_put = typed_listener_put,
+    };
+    kmipkit_incoming_server_batch_t *batch = NULL;
+    kmipkit_server_request_dispatcher_t *dispatcher = NULL;
+    kmipkit_response_message_t *response = NULL;
+    kmipkit_response_batch_item_view_t *item = NULL;
+    uint32_t major = 0, minor = 0, count = 0, actual = 0, status = 0;
+    uint8_t has_status = 0;
+    bool sent = kmipkit_client_listener_connection_recv_batch(connection, client->limits, timeout, &batch) == 0 &&
+        kmipkit_incoming_server_batch_protocol_version(batch, &major, &minor) == 0 &&
+        major == (uint32_t)client->protocol_major && minor == (uint32_t)client->protocol_minor &&
+        kmipkit_incoming_server_batch_item_count(batch, &count) == 0 && count == 1 &&
+        kmipkit_incoming_server_batch_item_operation(batch, 0, &actual) == 0 && actual == target &&
+        kmipkit_server_request_dispatcher_create(&dispatcher) == 0 &&
+        kmipkit_server_request_dispatcher_dispatch_v3(dispatcher, batch, &handler, &response) == 0 && invoked &&
+        kmipkit_response_message_batch_item_at(response, 0, &item) == 0 &&
+        kmipkit_response_batch_item_view_result_status(item, &has_status, &status) == 0 && has_status &&
+        kmipkit_client_listener_connection_send_response(connection, response, timeout) == 0;
+    kmipkit_response_batch_item_release(item);
+    kmipkit_response_message_release(response);
+    kmipkit_server_request_dispatcher_release(dispatcher);
+    kmipkit_incoming_server_batch_release(batch);
+    kmipkit_client_listener_connection_release(connection);
+    const bool succeeded = sent && status == 0;
+    kmip_execution_outcome_t outcome = {
+        .executed = true, .success = succeeded, .library_validated = succeeded,
+        .has_result_status_code = sent, .result_status_code = status,
+        .has_result_reason_code = sent && status == 1, .result_reason_code = 7,
+    };
+    if (!succeeded)
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Typed incoming validation or response delivery failed");
+    return outcome;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -10224,6 +10362,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome;
     }
     if (strcmp(test_case->workflow_type, "server_to_client") == 0) {
+        if (client->typed_incoming) return receive_typed_case(client, test_case->operation);
 #ifdef KMIPKIT_C_GENERIC_TLS
         if (client->incoming) return receive_generic_case(client, test_case->operation);
 #endif
