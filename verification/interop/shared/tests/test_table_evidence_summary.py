@@ -9,13 +9,15 @@ class TableEvidenceSummaryTests(unittest.TestCase):
                       "library_correctness": "passed", "result_status_code": 1, "result_reason_code": 5}
         live = {**controlled, "scope": "live", "status": "passed", "result_status_code": 0,
                 "result_reason_code": None}
-        generic = {"language": "rust", "api_level": "generic-ttlv", "case_results": [
+        generic = {"language": "rust", "api_level": "generic-ttlv",
+                   "expectation": "verify_unsupported_response", "case_results": [
             controlled, live, {**live, "scope": "live", "status": "not_run"},
         ], "oasis_fixture_results": [{"checks": {"request": "passed", "response": "failed"}}]}
-        fluent = {"language": "rust", "api_level": "fluent", "case_results": [
+        fluent = {"language": "rust", "api_level": "fluent", "expectation": "verify_unsupported_response",
+                  "case_results": [
             {**controlled, "status": "not_run", "library_correctness": "not_checked"},
         ]}
-        inventory = {"protocol_version": "2.1", "rows": [{"obligations": [generic, fluent]}]}
+        inventory = {"protocol_version": "2.1", "rows": [{"server_cases": ["archive"], "obligations": [generic, fluent]}]}
         summary = summarize(inventory, {"test_cases": [{"case_id": "archive", "requires": {}}]})
         self.assertEqual({"local": {"passed": 1, "failed": 1},
                           "controlled": {"unsupported": 1}, "live": {"success": 1}}, generic["evidence_summary"])
@@ -24,3 +26,9 @@ class TableEvidenceSummaryTests(unittest.TestCase):
         self.assertEqual((0, 1), (first["live_cells"], second["live_cells"]))
         self.assertEqual((1, 0), (first["no_evidence"], second["no_evidence"]))
         self.assertEqual((0, 1), (first["failed_cells"], second["failed_cells"]))
+        self.assertEqual({"controlled": {"matched": ["archive"], "missing": []},
+                          "live": {"matched": [], "missing": ["archive"]}}, generic["expected_case_outcomes"])
+        self.assertEqual((0, 1), (first["controlled_expected_cases_met_cells"],
+                                 second["controlled_expected_cases_met_cells"]))
+        self.assertEqual((0, 0), (first["live_expected_cases_met_cells"],
+                                 second["live_expected_cases_met_cells"]))

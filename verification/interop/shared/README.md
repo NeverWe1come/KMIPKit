@@ -119,9 +119,12 @@ fixture. Pass `--table-managed-objects-report` to import the
 
 The campaign writes `cosmian-table-summary.json` with counts by version,
 language and API. The per-cell `evidence_summary` records local fixture
-checks, controlled outcomes and live outcomes. A route count means that at
-least one check of that scope produced evidence. Review the individual
-cell's cases and expected outcomes to establish full coverage.
+checks, controlled outcomes and live outcomes. Each cell also lists the
+server cases with matching and missing expected outcomes. A route can have
+observations without matching the table's expectation. The live expected-case counts
+exclude version rejections performed before sending. These counts
+cover selected workflows and leave local fixtures and vendor observations
+visible in their own fields.
 
 ## Campaign plans and evidence reports
 

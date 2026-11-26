@@ -27,31 +27,67 @@ def local_checks(row, obligation):
         yield from result["checks"].values()
 
 
-def observed_scope(obligation, scope, recipe_by_id):
-    counts = Counter()
-    for record in obligation.get("case_results", ()):
-        if record["scope"] != scope or record["status"] == "not_run":
+def observation_kind(record, recipe):
+    if record["status"] == "not_run":
+        return None
+    if record.get("library_correctness") != "passed":
+        return "failed" if record["status"] == "failed" else "incomplete"
+
+    status, code, reason = record["status"], record.get("result_status_code"), record.get("result_reason_code")
+    required_status = recipe["requires"].get("expected_status")
+    if required_status == "NotSent" and status == "passed" and code is None:
+        return "boundary"
+    if required_status == "OperationFailed" and status == "passed" and code == 1:
+        reasons = recipe["requires"].get("expected_result_reasons", ())
+        return "negative" if not reasons or reason in reasons else "incomplete"
+    if status == "server_unsupported" and code == 1 and reason in {5, 8}:
+        return "unsupported"
+    if status == "passed" and (code == 0 or (
+        code is None and recipe["requires"].get("workflow_type") == "server_to_client"
+    )):
+        return "success"
+    return "incomplete"
+
+
+def required_observation(expectation, recipe):
+    required_status = recipe["requires"].get("expected_status")
+    if required_status == "NotSent":
+        return "boundary"
+    if required_status == "OperationFailed":
+        return "negative"
+    return {
+        "verify_result": "success",
+        "verify_unsupported_response": "unsupported",
+    }.get(expectation)
+
+
+def summarize_cases(row, cell, recipes):
+    selected = cell.get("case_ids", row.get("server_cases", []) + row.get("boundary_cases", []))
+    requirements = {
+        case_id: required_observation(cell["expectation"], recipes[case_id]) for case_id in selected
+    }
+    observations = {"controlled": Counter(), "live": Counter()}
+    matching = {"controlled": set(), "live": set()}
+    for record in cell.get("case_results", ()):
+        scope, case_id = record["scope"], record["case_id"]
+        if scope not in observations:
             continue
-        if record.get("library_correctness") == "passed":
-            recipe = recipe_by_id[record["case_id"]]
-            status, code, reason = record["status"], record.get("result_status_code"), record.get("result_reason_code")
-            required_status = recipe["requires"].get("expected_status")
-            if required_status == "NotSent" and status == "passed" and code is None:
-                counts["boundary"] += 1
-            elif required_status == "OperationFailed" and status == "passed" and code == 1:
-                reasons = recipe["requires"].get("expected_result_reasons", ())
-                counts["negative" if not reasons or reason in reasons else "incomplete"] += 1
-            elif status == "server_unsupported" and code == 1 and reason in {5, 8}:
-                counts["unsupported"] += 1
-            elif status == "passed" and (code == 0 or (
-                code is None and recipe["requires"].get("workflow_type") == "server_to_client"
-            )):
-                counts["success"] += 1
-            else:
-                counts["incomplete"] += 1
-        else:
-            counts["failed" if record["status"] == "failed" else "incomplete"] += 1
-    return dict(counts)
+        observed = observation_kind(record, recipes[case_id])
+        if observed is None:
+            continue
+        observations[scope][observed] += 1
+        if observed == requirements.get(case_id):
+            matching[scope].add(case_id)
+    case_results = {}
+    for scope, matched in matching.items():
+        required = {case_id for case_id, expected in requirements.items() if expected is not None}
+        if scope == "live":
+            required = {case_id for case_id in required if requirements[case_id] != "boundary"}
+        case_results[scope] = {
+            "matched": sorted(required & matched),
+            "missing": sorted(required - matched),
+        }
+    return observations, case_results
 
 
 def summarize(inventory, catalog):
@@ -61,10 +97,11 @@ def summarize(inventory, catalog):
     for row in inventory["rows"]:
         for cell in row["obligations"]:
             local = Counter(local_checks(row, cell))
-            controlled = observed_scope(cell, "controlled", recipes)
-            live = observed_scope(cell, "live", recipes)
+            observations, required_cases = summarize_cases(row, cell, recipes)
+            controlled, live = observations["controlled"], observations["live"]
+            cell["expected_case_outcomes"] = required_cases
             cell["evidence_summary"] = {
-                "local": dict(local), "controlled": controlled, "live": live,
+                "local": dict(local), "controlled": dict(controlled), "live": dict(live),
             }
             evidence = (*local.keys(), *controlled.keys(), *live.keys())
             aggregate = counts[cell["language"], cell["api_level"]]
@@ -73,6 +110,8 @@ def summarize(inventory, catalog):
             result_kinds = {"boundary", "negative", "unsupported", "success"}
             aggregate["controlled_cells"] += bool(result_kinds & controlled.keys())
             aggregate["live_cells"] += bool(result_kinds & live.keys())
+            for scope, entries in required_cases.items():
+                aggregate[f"{scope}_expected_cases_met_cells"] += bool(entries["matched"]) and not entries["missing"]
             aggregate["no_evidence"] += not evidence
             aggregate["failed_cells"] += "failed" in evidence or "rejected" in local
     return {

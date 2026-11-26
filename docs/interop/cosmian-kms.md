@@ -197,6 +197,12 @@ with the two legacy named extensions fail to load for Destroy.
 
 ```bash
 KMIPKIT_COSMIAN_EXTENSION_TEST_CONFIG=/path/to/extension-connection.json \
+  KMIPKIT_COSMIAN_EXTENSION_TEST_REPORT=/path/to/cosmian-extensions.json \
   python3 -m unittest discover -s verification/interop/shared/tests \
   -p test_cosmian_attribute_extensions.py -v
 ```
+
+Pass `--table-vendor-extensions-report /path/to/cosmian-extensions.json` to
+`campaign.py --cosmian-minimum` to attach the observations to the three KMIP
+2.1 rows. They show how the provider's HTTPS JSON endpoint behaved. The
+binding-specific cells still require evidence from their own API routes.
