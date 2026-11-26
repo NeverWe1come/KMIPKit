@@ -16,7 +16,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
 from verification.interop.shared.tools.oasis_ttlv import WireValues, encode
-from verification.interop.shared.tools.table_ttlv import ALLOWED_VERSIONS, KEY_FORMATS, field, structure
+from verification.interop.shared.tools.table_ttlv import ALLOWED_VERSIONS, KEY_FORMATS, LEGACY_VALUES, field, structure
 from verification.interop.shared.tools.cosmian_minimum import normal
 
 SYMBOLS = {
@@ -27,7 +27,20 @@ SYMBOLS = {
 }
 
 
+def material_fixture(names, version, name, format_code, scenario, values, expected):
+    material = structure("KeyMaterial", *(field(*item) for item in values))
+    wire, _ = encode(material, names)
+    children = [encode(child, names)[0].hex() for child in material]
+    return {
+        "protocol_version": version, "name": name,
+        "fixture": f"key-material-{normal(name)}-{scenario}",
+        "fixture_sha256": hashlib.sha256(wire).hexdigest(),
+        "format": format_code, "scenario": scenario, "expected": expected,
+    }, " ".join((str(format_code), wire.hex(), *children))
+
+
 def vectors(root, versions=ALLOWED_VERSIONS):
+    ec_fields = {row[0]: row[-1] for row in KEY_FORMATS if row[0].startswith("EC ")}
     for version in versions:
         names = WireValues(root, version, [])
         for name, _, _, _, _, fields in KEY_FORMATS:
@@ -39,16 +52,15 @@ def vectors(root, versions=ALLOWED_VERSIONS):
                 ("wrong-type", (*fields[:-1], (tag, "TextString", "wrong-type"))),
                 ("duplicate-field", (*fields, fields[0])),
             ):
-                material = structure("KeyMaterial", *(field(*item) for item in values))
-                wire, _ = encode(material, names)
-                children = [encode(child, names)[0].hex() for child in material]
-                yield {
-                    "protocol_version": version, "name": name,
-                    "fixture": f"key-material-{normal(name)}-{scenario}",
-                    "fixture_sha256": hashlib.sha256(wire).hexdigest(),
-                    "format": format_code, "scenario": scenario,
-                    "expected": "passed" if scenario == "complete" else "rejected",
-                }, " ".join((str(format_code), wire.hex(), *children))
+                expected = "passed" if scenario == "complete" else "rejected"
+                yield material_fixture(names, version, name, format_code, scenario, values, expected)
+        for name, (family, format_code) in LEGACY_VALUES.items():
+            if family != "key-format":
+                continue
+            fields = ec_fields[f"EC {name.split(' ', 1)[1]}"]
+            # Reserved codes retain raw material. Assigned EC formats require the missing field.
+            yield material_fixture(names, version, name, format_code, "reserved-format", fields, "passed")
+            yield material_fixture(names, version, name, format_code, "reserved-format-incomplete", fields[:-1], "passed")
 
 
 def validate_provenance(artifact, expected_commit=None):
