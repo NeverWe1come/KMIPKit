@@ -12,9 +12,17 @@ pub(crate) fn check(
     expected: &[u8],
 ) -> (&'static str, &'static str) {
     let object_type = ObjectType::from_raw(code);
-    let construct = rebuild(code, fields.view().children()).map_or("not-applicable", |value| {
-        verdict(value, object_type, expected)
-    });
+    let construct = if code == 6 {
+        let unknown = item
+            .try_clone()
+            .map_err(|_| ManagedObjectError::TtlvModelLimit)
+            .and_then(|item| ManagedObject::unknown(object_type, item));
+        verdict(unknown, object_type, expected)
+    } else {
+        rebuild(code, fields.view().children()).map_or("not-applicable", |value| {
+            verdict(value, object_type, expected)
+        })
+    };
     let read = verdict(
         ManagedObject::try_from_item(object_type, item),
         object_type,

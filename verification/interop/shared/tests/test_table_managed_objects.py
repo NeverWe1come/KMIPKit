@@ -12,10 +12,13 @@ class ManagedObjectTableFixtureTests(unittest.TestCase):
         for version in ("2.0", "2.1"):
             _, inventory = build_selection(ROOT, version)
             fixtures = [case for case, _ in vectors(ROOT, (version,))]
-            self.assertEqual(56, len(fixtures))
+            self.assertEqual(57, len(fixtures))
             objects = [row for row in inventory["rows"] if row["kind"] == "managed_object"]
             self.assertEqual({row["name"] for row in objects if row["declared_support"] == "supported"},
-                             {case["name"] for case in fixtures})
+                             {case["name"] for case in fixtures if case["scenario"] != "reserved-object-type"})
+            reserved, = [case for case in fixtures if case["scenario"] == "reserved-object-type"]
+            self.assertEqual(("Template", 6), (reserved["name"], reserved["object_type"]))
+            self.assertEqual({"construct": "rejected", "read": "passed"}, expected_checks(reserved, "c"))
 
     def test_import_binds_constructor_and_negative_read_to_typed_cells(self):
         _, inventory = build_selection(ROOT, "2.0")

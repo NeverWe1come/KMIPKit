@@ -55,10 +55,21 @@ def vectors(root, versions=ALLOWED_VERSIONS):
                     "object_type": object_type, "scenario": scenario,
                     "expected": "passed" if scenario == "complete" else "rejected",
                 }, " ".join((str(object_type), wire.hex(), *children))
+        # The generic boundary suite checks the reserved Template tag itself.
+        # Use a valid vendor tag here to isolate the reserved Object Type.
+        names.tags["opaquevendorobject"] = 0x540090
+        wire, _ = encode(structure("OpaqueVendorObject"), names)
+        yield {
+            "protocol_version": version, "name": "Template", "model": "ManagedObject",
+            "fixture": "object-template-reserved", "fixture_sha256": hashlib.sha256(wire).hexdigest(),
+            "object_type": 6, "scenario": "reserved-object-type", "expected": "passed",
+        }, f"6 {wire.hex()}"
 
 
 def expected_checks(case, language):
     expected = case["expected"]
+    if case["scenario"] == "reserved-object-type":
+        return {"construct": "passed" if language == "rust" else "rejected", "read": expected}
     construct = "not-applicable" if language == "rust" and expected == "rejected" else expected
     return {"construct": construct, "read": expected}
 
@@ -90,10 +101,13 @@ def attach_evidence(root, inventory, paths, languages, expected_commit):
                 validate_checks(checks, constructor_inapplicable=language == "rust")
                 obligation = next(item for item in rows[record["name"]]["obligations"]
                                   if (item["language"], item["api_level"]) == (language, "typed-protocol"))
+                constructor_symbol = constructor.format(fixture["model"])
+                if language == "rust" and fixture["scenario"] == "reserved-object-type":
+                    constructor_symbol = "kmipkit::protocol::ManagedObject::unknown"
                 obligation.setdefault("local_managed_object_results", []).append({
                     **fixture, **artifact, "scope": "local", "checks": checks,
                     "expected_checks": expected_checks(fixture, language),
-                    "public_api": {"construct": constructor.format(fixture["model"]), "read": reader},
+                    "public_api": {"construct": constructor_symbol, "read": reader},
                 })
 
 
