@@ -417,6 +417,7 @@ def main():
                 ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
             )
 
+            from verification.interop.shared.tools.table_evidence_summary import summarize as summarize_table_evidence
             from verification.interop.shared.tools.table_key_material import attach_key_material_evidence
             from verification.interop.shared.tools.table_managed_objects import (
                 attach_evidence as attach_managed_object_evidence,
@@ -426,6 +427,7 @@ def main():
                 attach_evidence as attach_typed_attribute_evidence,
             )
 
+            table_summaries = []
             for version in ALLOWED_VERSIONS:
                 if version in (args.version or VERSIONS):
                     selection, inventory = build_selection(ROOT, version)
@@ -443,9 +445,13 @@ def main():
                     if args.table_managed_objects_report:
                         attach_managed_object_evidence(ROOT, inventory, args.table_managed_objects_report,
                                                        languages, args.library_commit)
+                    table_summaries.append(summarize_table_evidence(inventory, selection))
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )
+            (args.output_dir / "cosmian-table-summary.json").write_text(
+                json.dumps(table_summaries, indent=2) + "\n", encoding="utf-8",
+            )
         write_report(args.output_dir, result, catalog_runs)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")

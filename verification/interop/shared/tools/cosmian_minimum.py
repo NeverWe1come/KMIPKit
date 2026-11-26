@@ -227,6 +227,9 @@ def with_execution_evidence(inventory, catalog, catalog_runs):
                 "library_commit": execution["library_commit"],
                 "artifact_sha256": execution["artifact_sha256"],
             }
+            if run["scope"] == "live":
+                result["server"] = deepcopy(run.get("server"))
+
             if case.get("mode") == "local_model":
                 # The catalog's local checks can run independently of the chosen connection API.
                 unassigned_local[case_id].append({**result, "language": run["language"], "scope": "local"})

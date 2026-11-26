@@ -117,6 +117,12 @@ duplicate, and mistyped fields. The typed readers validate every negative
 fixture. Pass `--table-managed-objects-report` to import the
 `table-managed-objects.json` CI artifacts.
 
+The campaign writes `cosmian-table-summary.json` with counts by version,
+language and API. The per-cell `evidence_summary` records local fixture
+checks, controlled outcomes and live outcomes. A route count means that at
+least one check of that scope produced evidence. Review the individual
+cell's cases and expected outcomes to establish full coverage.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated
