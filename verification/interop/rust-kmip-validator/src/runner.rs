@@ -100,8 +100,6 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string();
     let mut output = match result {
         Ok(observed) => {
-            // Shape metadata is inspected in memory; payload bytes never enter reports.
-            let _shape = observed.payload_tags;
             let mut result = observed_result(case, observed.status, observed.reason);
             if connection.api_level == "generic-ttlv" {
                 "generic TTLV asynchronous target request and response validated"

@@ -113,6 +113,7 @@ final class GenericExchange {
         if (!"2.0".equals(version) && !"2.1".equals(version)) return 0;
         if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
         if (JavaKmipDriver.rotateLocateCase(testCase)) return LOCATE;
+        if ("Query".equals(testCase.operation()) && testCase.requires().has("query_function")) return QUERY;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
             case "test-op-create-key-pair" -> CREATE_KEY_PAIR;
@@ -167,10 +168,37 @@ final class GenericExchange {
         if (JavaKmipDriver.multipartHash(testCase)) return multipartHash(connection, minor, start);
         if (JavaKmipDriver.rotateLocateCase(testCase)) return locateRotateAttribute(testCase, connection, minor, start);
         int operation = operation(testCase, connection);
+        if (operation == QUERY && testCase.requires().has("query_function"))
+            return queryField(testCase, connection, minor, start);
         int attributeTag = keyAttributeReference(testCase.caseId());
         if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
         if (usesExtendedOp(operation)) return runExtended(connection, operation, minor, start);
         return execute(connection, operation, minor, null, payload -> matches(payload, operation, minor), start);
+    }
+
+    private static JavaKmipDriver.CaseOutcome queryField(CatalogLoader.CatalogCase testCase,
+            ConnectionConfig connection, int minor, long start) {
+        int function = testCase.requires().path("query_function").asInt(-1);
+        int resultTag = testCase.requires().path("query_result_tag").asInt(-1);
+        if (function < 0 || resultTag < 0)
+            return JavaKmipDriver.CaseOutcome.failed("Invalid Query field fixture.", elapsed(start));
+        try (var payload = structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(function)))) {
+            return executePayload(connection, QUERY, minor, payload,
+                    result -> hasQueryStructure(result, resultTag), start);
+        }
+    }
+
+    static boolean hasQueryStructure(TtlvStructureView payload, int resultTag) {
+        for (long index = 0; index < payload.itemCount(); index++) {
+            try (var child = payload.itemAt(index); var tag = child.tag()) {
+                if (tag.raw() == resultTag && child.itemType() == TtlvItemType.Structure) {
+                    try (var value = child.value(); var structure = value.structure()) {
+                        if (structure.itemCount() > 0) return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static int keyAttributeReference(String caseId) {

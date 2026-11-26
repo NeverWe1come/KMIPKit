@@ -1561,6 +1561,7 @@ class PythonKmipDriver:
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
+        query_field: int | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1633,7 +1634,7 @@ class PythonKmipDriver:
                         with payload.response_ttlv:
                             result["_bytes"] = payload.data
                             result["_hash_correlation"] = payload.correlation_value
-                if verify_query:
+                if verify_query or query_field is not None:
                     if observed.operation != protocol_values.Operation.QUERY:
                         raise ValueError("Query response operation does not match the request")
                     if success:
@@ -1643,6 +1644,12 @@ class PythonKmipDriver:
                         with query:
                             # Exercise both decoded code lists without reporting any server data.
                             _ = query.operations, query.object_types
+                            if query_field is not None:
+                                from .generic import _has_query_structure
+
+                                with query.raw_view() as fields:
+                                    if not _has_query_structure(fields, query_field):
+                                        raise ValueError("Query did not return the requested nonempty structure")
                 locate_response = observed.locate_response()
                 if success and verify_locate and (locate_response is None or (
                     len(locate_response.unique_identifiers) > 1 or (
@@ -1947,6 +1954,11 @@ class PythonKmipDriver:
         unique_name = self._fixture_name(test_case)
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
+        if operation == "Query" and "query_function" in test_case.get("requires", {}):
+            parameters = test_case["requires"]
+            with self._extensions.client_batch_item_query([int(parameters["query_function"])]) as item:
+                outcome = self._exchange(item, query_field=int(parameters["query_result_tag"]))
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
             build = self._build_fluent_item if self._api_level == "fluent" else self._build_item
             with build(test_case, None, name=unique_name) as item:

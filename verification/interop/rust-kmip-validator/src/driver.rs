@@ -160,7 +160,7 @@ pub(crate) struct Observed {
     pub status: u32,
     pub used_high_level: bool,
     pub reason: Option<u32>,
-    pub payload_tags: Vec<u32>,
+    pub nonempty_structure_tags: Vec<u32>,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
@@ -179,10 +179,15 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
     let mut validity = None;
     let mut ticket = None;
     let mut correlation = None;
-    let mut payload_tags = Vec::new();
+    let mut nonempty_structure_tags = Vec::new();
     if let Some(raw) = response.raw() {
         for value in raw.children() {
-            payload_tags.push(value.tag().raw());
+            if value
+                .as_structure()
+                .is_some_and(|fields| !fields.children().is_empty())
+            {
+                nonempty_structure_tags.push(value.tag().raw());
+            }
             if [0x0042_0094, 0x0042_0066, 0x0042_006f].contains(&value.tag().raw()) {
                 identifier = value.with_value(|v| match v {
                     ValueView::TextString(v) => Some(
@@ -240,7 +245,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         status: result.status().raw(),
         used_high_level: false,
         reason: result.reason().map(kmipkit::ResultReason::raw),
-        payload_tags,
+        nonempty_structure_tags,
         identifier,
         identifiers,
         correlation,
@@ -645,7 +650,7 @@ pub(crate) fn asynchronous(
         status: response.result().status().raw(),
         used_high_level: false,
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
-        payload_tags: Vec::new(),
+        nonempty_structure_tags: Vec::new(),
         identifier: None,
         identifiers: response
             .poll_response()

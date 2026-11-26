@@ -61,6 +61,8 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
+    if case["operation"] == "Query" and "query_function" in case.get("requires", {}):
+        return 0x18
     if case["operation"] == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {}):
         return 0x08
     return {"test-op-create": CREATE, "test-op-create-key-pair": CREATE_KEY_PAIR,
@@ -184,6 +186,8 @@ def run(driver, case):
         return _locate_rotate_attribute(driver, case)
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case["case_id"])
+    if operation == 0x18 and "query_function" in case.get("requires", {}):
+        return _query_field(driver, case["requires"])
     if operation in {POLL, CANCEL}:
         return driver._run_async_case(case, driver._fixture_name(case), exchange=partial(_async_target, driver))
     if operation in EXTENDED_OPERATIONS:
@@ -191,6 +195,26 @@ def run(driver, case):
     if case["case_id"] == "test-multipart-hash-sha256":
         return _multipart_hash(driver)
     return _execute(driver, operation)
+
+
+def _has_query_structure(payload, tag):
+    from kmipkit import ttlv
+
+    for member in _fields(payload):
+        with ttlv.ttlv_item_view_tag(member) as member_tag:
+            if ttlv.tag_value(member_tag) != tag or ttlv.ttlv_item_view_type(member) != ttlv.ItemType.Structure:
+                continue
+            with ttlv.ttlv_item_view_value(member) as value, ttlv.ttlv_value_view_structure(value) as structure:
+                if ttlv.ttlv_structure_view_item_count(structure) > 0:
+                    return True
+    return False
+
+
+def _query_field(driver, requires):
+    tag = int(requires["query_result_tag"])
+    return _checked_exchange(driver, 0x18, expected=lambda payload: _has_query_structure(payload, tag), custom_payload=[
+        driver._item(0x420074, "enumeration", int(requires["query_function"])),
+    ])
 
 
 def _async_target(driver, operation, correlation):

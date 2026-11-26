@@ -9344,8 +9344,42 @@ static bool query_response_has_operations(kmipkit_client_batch_item_response_t *
     return operation_found && query_response_ttlv_matches_field_count(item, field_count, status);
 }
 
+static bool parse_query_field_fixture(const kmip_test_case_t *test_case,
+                                      uint32_t *function, uint32_t *tag) {
+    char suffix = 0;
+    unsigned parsed_function = 0, parsed_tag = 0;
+    if (sscanf(test_case->query_function, "%u%c", &parsed_function, &suffix) != 1 ||
+        sscanf(test_case->query_result_tag, "%u%c", &parsed_tag, &suffix) != 1 ||
+        parsed_function == 0 || parsed_function > 0x0e || parsed_tag > 0xffffff)
+        return false;
+    *function = parsed_function;
+    *tag = parsed_tag;
+    return true;
+}
+
+static bool query_response_has_structure(kmipkit_client_batch_item_response_t *item,
+                                         uint32_t tag, int32_t *status) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL, *field = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint64_t members = 0;
+    *status = kmipkit_client_batch_item_response_query_ttlv(item, &present, &payload);
+    if (*status == 0 && present) *status = kmipkit_ttlv_structure_view(payload, &view);
+    bool valid = *status == 0 && view &&
+        structure_view_find_value(view, tag, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value);
+    if (valid) *status = kmipkit_ttlv_value_view_structure(value, &field);
+    if (*status == 0 && field) *status = kmipkit_ttlv_structure_view_item_count(field, &members);
+    if (field) kmipkit_ttlv_structure_view_release(field);
+    if (value) kmipkit_ttlv_value_view_release(value);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    return valid && *status == 0 && members > 0;
+}
+
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
-    kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute) {
+    kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute,
+    const kmip_test_case_t *query_field) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_client_batch_item_t *request = NULL;
     kmipkit_client_batch_t *batch = NULL;
@@ -9356,6 +9390,11 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         .struct_size = (uint32_t)sizeof(metadata), .abi_version = 2
     };
     int32_t status;
+    uint32_t query_function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS, query_tag = 0;
+    if (query_field && !parse_query_field_fixture(query_field, &query_function, &query_tag)) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid Query field fixture.");
+        return outcome;
+    }
     if (operation == KMIPKIT_ENUMERATION_OPERATION_PING) {
         status = fluent ? build_fluent_ping(&request) : kmipkit_client_batch_item_ping(&request);
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
@@ -9374,8 +9413,7 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
             status = build_bounded_locate(client, fluent, &request);
         }
     } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
-        const uint32_t function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
-        status = kmipkit_client_batch_item_query(&function, 1, 0, NULL, 0, &request);
+        status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &request);
     } else {
         status = kmipkit_client_batch_item_set_endpoint_role(1, NULL, 0, &request);
     }
@@ -9419,7 +9457,8 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
                 present = bounded_locate_response(item, &status);
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
-                present = query_response_has_operations(item, &status);
+                present = query_field ? query_response_has_structure(item, query_tag, &status)
+                    : query_response_has_operations(item, &status);
             } else {
                 uint32_t role = 0;
                 kmipkit_byte_span_v1_t vendor = {0};
@@ -10805,6 +10844,30 @@ static kmip_execution_outcome_t execute_generic_async(
     return result;
 }
 
+static bool check_generic_query_field(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    const uint32_t result_tag = *(const uint32_t *)context;
+    kmipkit_ttlv_structure_view_t *field = NULL;
+    uint64_t members = 0;
+    const bool valid = generic_structure_field(payload, result_tag, &field) &&
+        kmipkit_ttlv_structure_view_item_count(field, &members) == 0 && members > 0;
+    if (field) kmipkit_ttlv_structure_view_release(field);
+    return valid;
+}
+
+static kmip_execution_outcome_t execute_generic_query_field(
+    kmip_live_client_t *client, const kmip_test_case_t *test_case) {
+    uint32_t function = 0, tag = 0;
+    if (!parse_query_field_fixture(test_case, &function, &tag))
+        return generic_cleanup_failure("Invalid Query field fixture.");
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct();
+    if (!payload || !append_ttlv_enum(client, &payload, 0x420074, function)) {
+        if (payload) kmipkit_ttlv_structure_release(payload);
+        return generic_cleanup_failure("Could not build the Query field fixture.");
+    }
+    return execute_generic_custom(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, payload,
+                                  check_generic_query_field, &tag);
+}
+
 static kmip_execution_outcome_t execute_generic_rotate_locate(kmip_live_client_t *client, const char *rotate) {
     if (client->protocol_minor == 1)
         return execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, NULL, NULL,
@@ -11449,16 +11512,19 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (strcmp(test_case->mutation, "mutating") != 0)
                 return outcome_not_run("outbound role exchange requires a mutating fixture");
             return execute_single_versioned_diagnostic(
-                client, KMIPKIT_ENUMERATION_OPERATION_SET_ENDPOINT_ROLE, false, NULL);
+                client, KMIPKIT_ENUMERATION_OPERATION_SET_ENDPOINT_ROLE, false, NULL, NULL);
         }
         if (client->protocol_major == 3 && strcmp(test_case->operation, "Ping") == 0)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_PING, fluent_route, NULL);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_PING, fluent_route, NULL, NULL);
         if (hash_workflow)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route, NULL);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route, NULL, NULL);
         if (draft_locate || rotate)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate, NULL);
+        if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
+            return execute_single_versioned_diagnostic(
+                client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL, test_case);
         if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
-            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL);
+            return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_QUERY, false, NULL, NULL);
     }
     if (client->protocol_major == 3)
         return outcome_not_run("C recipe requires a KMIP 3.0 request and response fixture");
@@ -11541,6 +11607,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
+            if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
+                return execute_generic_query_field(client, test_case);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
             if (rotate)

@@ -86,6 +86,17 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if (queryFieldCase(testCase)) {
+            int function = testCase.requires().path("query_function").asInt(-1);
+            int tag = testCase.requires().path("query_result_tag").asInt(-1);
+            if (function < 0 || tag < 0) return CaseOutcome.failed("Invalid Query field fixture.", elapsedMillis(start));
+            return executeRequest(testCase, withBatchId(ClientBatchItem.query(new int[]{function}, null)), result ->
+                    result.typedQueryResponse().filter(query -> {
+                        try (query; var payload = query.rawView()) {
+                            return GenericExchange.hasQueryStructure(payload, tag);
+                        }
+                    }).isPresent(), start);
+        }
         if (registerOpaqueCase(testCase)) {
             return executeRegisterOpaque(testCase, start);
         }
@@ -113,7 +124,12 @@ public final class JavaKmipDriver implements AutoCloseable {
         return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
     }
 
+    static boolean queryFieldCase(CatalogLoader.CatalogCase testCase) {
+        return "Query".equals(testCase.operation()) && testCase.requires().has("query_function");
+    }
+
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
+        if (queryFieldCase(testCase)) return true;
         return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
                 .contains(testCase.caseId());
     }
@@ -150,7 +166,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("server_to_client".equals(wf) || "async_poll".equals(wf) || "batch_id_placeholder".equals(wf)) {
             return false;
         }
-        return !typedOnlyKeyProbe(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
+        return !typedOnlyKeyProbe(testCase) && !queryFieldCase(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
                 || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || EXTENDED_FLUENT_OPERATIONS.contains(testCase.operation())
                 || Set.of("Create", "Ping").contains(testCase.operation()));

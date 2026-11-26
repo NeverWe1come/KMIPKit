@@ -180,6 +180,26 @@ impl Attempt<'_> {
             }
             _ => {}
         }
+        if case.operation == "Query" && case.requires["query_function"].is_string() {
+            let tag = case.requires["query_result_tag"]
+                .as_str()
+                .and_then(|value| value.parse::<u32>().ok())
+                .ok_or(Failure::Assertion("invalid Query field fixture"))?;
+            let request =
+                adapters::request(case, None, &self.name, &self.connection.protocol_version)?;
+            let request = if self.connection.api_level == "fluent" {
+                crate::fluent::build(self.client, request).map_err(Failure::Assertion)?
+            } else {
+                request
+            };
+            let response = self.exchange(request)?;
+            if response.status == 0 && !response.nonempty_structure_tags.contains(&tag) {
+                return Err(Failure::Assertion(
+                    "Query did not return the requested nonempty structure",
+                ));
+            }
+            return Ok(response);
+        }
         if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() {
             let request =
                 adapters::request(case, None, &self.name, &self.connection.protocol_version)?;

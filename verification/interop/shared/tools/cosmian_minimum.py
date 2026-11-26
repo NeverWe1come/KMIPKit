@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction, with_cases
 from verification.interop.shared.tools.matrix.generator import LANGUAGES
+from verification.interop.shared.tools.table_query_fields import query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ALLOWED_VERSIONS = ("2.0", "2.1")
@@ -116,6 +117,7 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
     candidates = {case["case_id"]: case for case in catalog["test_cases"]}
     rotate_by_attribute = dict(rotate_cases(root, version, candidates["test-op-locate"]))
     candidates.update({case["case_id"]: case for case in rotate_by_attribute.values()})
+    candidates.update({case["case_id"]: case for case in query_cases(version, candidates["test-op-query"])})
     normative_by_target = defaultdict(set)
     used = set()
     for case in normative_cases:
@@ -162,6 +164,8 @@ def build_selection(root: Path, version: str) -> tuple[dict, dict]:
             ids.update(case["case_id"] for case in candidates.values() if normal(case["requires"].get(key, "")) in names)
         if kind in {"base_object", "attribute"}:
             ids.update(case_id for case_id in FIELD_EXCHANGES.get(name, ()) if case_id in candidates)
+        if kind == "base_object":
+            ids.update(case_id for case_id, case in candidates.items() if case["requires"].get("base_object") == name)
         if kind == "message":
             ids.update(case["case_id"] for case in catalog["test_cases"]
                        if case["case_id"] == "test-op-query")

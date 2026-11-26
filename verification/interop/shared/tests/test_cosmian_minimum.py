@@ -59,6 +59,16 @@ class CosmianMinimumTests(unittest.TestCase):
         for version in ("2.0", "2.1"):
             for name in ("Data", "Correlation Value", "Init Indicator", "Final Indicator"):
                 self.assertIn("test-multipart-hash-sha256", reports[version]["base_object", name]["server_cases"])
+            for name in ("Server Information", "Extension Information", "RNG Parameters",
+                         "Validation Information", "Profile Information", "Capability Information"):
+                case_id = f"test-query-{'-'.join(name.lower().split())}"
+                row = reports[version]["base_object", name]
+                self.assertIn(case_id, row["server_cases"])
+                self.assertNotIn(case_id, reports[version]["operation", "Query"]["server_cases"])
+                self.assertIn(case_id, next(
+                    route["case_ids"] for route in row["obligations"]
+                    if route["language"] == "rust" and route["api_level"] == "high-level"
+                ))
             for name in ("Lease Time", "Last Change Date"):
                 self.assertIn("test-op-obtain-lease", reports[version]["attribute", name]["server_cases"])
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])

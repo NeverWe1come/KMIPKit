@@ -156,11 +156,20 @@ pub(crate) fn request(
             )
         }
         "Ping" => ClientRequest::ping(),
-        "Query" => ClientRequest::Query(QueryRequest::new([
-            QueryFunction::OPERATIONS,
-            QueryFunction::OBJECTS,
-            QueryFunction::CAPABILITIES,
-        ])),
+        "Query" => {
+            let functions = if let Some(value) = case.requires["query_function"].as_str() {
+                vec![QueryFunction::from_raw(
+                    value.parse().map_err(|_| "invalid Query function")?,
+                )]
+            } else {
+                vec![
+                    QueryFunction::OPERATIONS,
+                    QueryFunction::OBJECTS,
+                    QueryFunction::CAPABILITIES,
+                ]
+            };
+            ClientRequest::Query(QueryRequest::new(functions))
+        }
         "Delegated Login" => ClientRequest::DelegatedLogin(
             DelegatedLoginRequest::new(structure(0x0042_014d, Vec::new())?).with_request_count(1),
         ),

@@ -137,6 +137,15 @@ required by the KMIP 2.0 and 2.1 structured Query response tables. The
 generic probe records the returned operations and the typed validation
 reports the missing field. [KMIP 2.0 §6.1.37](https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html) · [KMIP 2.1 §6.1.39](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html)
 
+Individual Query probes selected Server Information, Extension Information,
+RNG Parameters, Validation Information, Profile Information and Capability
+Information. In both versions Cosmian returned a populated Server
+Information structure and omitted Protection Storage Masks. All four
+generic TTLV routes verified the Server Information structure. The typed
+routes rejected that response. Each of the other five functions returned
+Success with an empty Response Payload. Those replies did not verify the
+requested structure or demonstrate a KMIP unsupported result.
+
 In the binary TTLV tests, `Set Attribute` and `Modify Attribute` changed
 `Description` on an isolated object and returned the new value on readback.
 For an object without `Description`, Cosmian returned an empty `Attributes`

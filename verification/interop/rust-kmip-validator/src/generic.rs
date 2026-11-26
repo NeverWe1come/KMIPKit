@@ -122,6 +122,11 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
+        (_, "2.0" | "2.1")
+            if case.operation == "Query" && case.requires["query_function"].is_string() =>
+        {
+            Some(0x18)
+        }
         ("test-op-create", "2.0" | "2.1") => Some(CREATE),
         ("test-op-create-key-pair", "2.0" | "2.1") => Some(CREATE_KEY_PAIR),
         ("test-op-register", "2.0" | "2.1") => Some(REGISTER),
@@ -202,6 +207,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         Some(0x08) if case.requires["rotate_attribute_ttlv"].is_string() => {
             locate_rotate_attribute(case, connection, version)
         }
+        Some(0x18) if case.requires["query_function"].is_string() => {
+            outcome(case, query_field(connection, version, case))
+        }
         Some(0x27) if case.case_id == "test-multipart-hash-sha256" => {
             outcome(case, multipart_hash(connection, version))
         }
@@ -215,6 +223,25 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     };
     result.duration_ms = start.elapsed().as_secs_f64() * 1000.0;
     result
+}
+
+fn query_field(connection: &Connection, version: ProtocolVersion, case: &Case) -> ExchangeResult {
+    let number = |key: &str| {
+        case.requires[key]
+            .as_str()
+            .and_then(|value| value.parse::<u32>().ok())
+            .ok_or("invalid Query field fixture")
+    };
+    let function = number("query_function")?;
+    let tag = number("query_result_tag")?;
+    let payload = vec![item(0x0042_0074, Value::enumeration(function))?];
+    exchange_payload(connection, version, 0x18, payload, |batch| {
+        Ok(has_field(
+            batch,
+            tag,
+            |value| matches!(value, ValueView::Structure(structure) if !structure.children().is_empty()),
+        ))
+    })
 }
 
 fn locate_rotate_attribute(
@@ -905,7 +932,7 @@ pub(crate) fn asynchronous(
         status,
         reason,
         used_high_level: false,
-        payload_tags: Vec::new(),
+        nonempty_structure_tags: Vec::new(),
         identifier: None,
         identifiers,
         correlation,
