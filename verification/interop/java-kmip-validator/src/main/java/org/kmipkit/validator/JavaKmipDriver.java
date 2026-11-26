@@ -1082,7 +1082,10 @@ public final class JavaKmipDriver implements AutoCloseable {
                 cleanup.add(p.publicKeyUniqueIdentifier());
                 return true;
             }).orElse(false), start);
-            if ("Create Key Pair".equals(op) || !"passed".equals(kpRes.status())) return kpRes;
+            if ("Create Key Pair".equals(op)) return kpRes;
+            if (!"passed".equals(kpRes.status())) {
+                return CaseOutcome.notRun("The prerequisite Create Key Pair request failed.", elapsedMillis(start));
+            }
             if ("Re-key Key Pair".equals(op)) {
                 ClientBatchItem rkReq;
                 if (fluent) {

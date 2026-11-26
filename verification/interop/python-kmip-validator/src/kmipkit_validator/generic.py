@@ -789,7 +789,7 @@ def _run_extended(driver, operation):
         if operation in (CERTIFY, RE_CERTIFY, VALIDATE):
             _, pub_id, res = create_rsa_pair()
             if res["status"] != "passed":
-                return res
+                return _failure("The prerequisite Create Key Pair request failed.", "not_run")
             cert_id = None
             def check_cert(payload):
                 nonlocal cert_id

@@ -10489,7 +10489,10 @@ static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *cli
         append_ttlv_struct(client, &p, 0x420127, pr);
         append_ttlv_struct(client, &p, 0x420128, pu);
         out = execute_generic_custom(client, 0x02, p, check_ext_key_pair, &ctx);
-        if (op == 0x02 || !out.success) { generic_ext_cleanup(client, &ctx); return out; }
+        if (op == 0x02 || !out.success) {
+            generic_ext_cleanup(client, &ctx);
+            return op == 0x02 ? out : outcome_not_run("The prerequisite Create Key Pair request failed.");
+        }
         if (op == 0x1d) {
             kmipkit_ttlv_structure_t *rk = make_ttlv_struct();
             append_ttlv_text(client, &rk, 0x420066, ctx.ids[0]);

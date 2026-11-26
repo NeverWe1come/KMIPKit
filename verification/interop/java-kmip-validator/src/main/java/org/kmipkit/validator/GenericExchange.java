@@ -1144,7 +1144,9 @@ final class GenericExchange {
         var priv = new AtomicReference<byte[]>();
         var pub = new AtomicReference<byte[]>();
         var kp = createRsaPair(connection, minor, cleanup, priv, pub, start);
-        if (!"passed".equals(kp.status())) return kp;
+        if (!"passed".equals(kp.status())) {
+            return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create Key Pair request failed.", elapsed(start));
+        }
         var certRef = new AtomicReference<byte[]>();
         JavaKmipDriver.CaseOutcome certRes;
         try (var uid = item(0x420094, TtlvValue.TextString(pub.get(), LIMITS));

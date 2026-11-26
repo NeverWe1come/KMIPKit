@@ -1333,8 +1333,8 @@ fn extended_cert_ops(
     if !pub_id.is_empty() {
         cleanup.push(pub_id.clone());
     }
-    if kp_res != Ok((0, None)) {
-        return kp_res;
+    if kp_res? != (0, None) {
+        return Err("the prerequisite Create Key Pair request failed");
     }
     let certify_fields = vec![
         item(0x0042_0094, Value::text_string(pub_id))?,

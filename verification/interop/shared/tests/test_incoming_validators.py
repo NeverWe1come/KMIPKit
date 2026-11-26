@@ -281,6 +281,73 @@ class DirectTagValidatorTests(unittest.TestCase):
                     self.assertEqual(api, case.get("actual_api_level"))
             save_evidence(report, catalog_path, f"{language}-{protocol_version}-{api}-rotate-boundary")
 
+    def test_certificate_workflows_do_not_report_prerequisite_failure_as_target_evidence(self):
+        for language, available in installed_validators():
+            routes = ("generic-ttlv", "typed-protocol") if language == "java" else ("generic-ttlv",)
+            for minor in (0, 1):
+                for api in routes:
+                    with self.subTest(language=language, minor=minor, api=api):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.reject_certificate_prerequisite(language, minor, api)
+
+    def reject_certificate_prerequisite(self, language, minor, api):
+        catalog = version_catalog(f"2.{minor}")
+        names = {"test-op-certify", "test-op-re-certify", "test-op-validate"}
+        cases = [case for case in catalog["test_cases"] if case["case_id"] in names]
+        self.assertEqual(len(names), len(cases))
+        tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        tls.minimum_version = ssl.TLSVersion.TLSv1_3
+        tls.verify_mode = ssl.CERT_REQUIRED
+        tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+        tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+        with tempfile.TemporaryDirectory(prefix="kmipkit-certificate-prerequisite-") as dirname:
+            work = Path(dirname)
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
+                                           "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(15)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = api
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    try:
+                        for _ in cases:
+                            raw, _ = self.accept_request(listener, process, "Create Key Pair prerequisite")
+                            raw.settimeout(5)
+                            with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                                request = only(read_message(peer), 0x420078, 1)
+                                batch = only(request, 0x42000F, 1)
+                                self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", 2))
+                                batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                                peer.sendall(structure(
+                                    0x42007B,
+                                    structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                              number(0x42000D, 2, 1)),
+                                    structure(0x42000F, number(0x42005C, 5, 2), *batch_ids,
+                                              number(0x42007F, 5, 1), number(0x42007E, 5, 5)),
+                                ))
+                        stdout, stderr = process.communicate(timeout=25)
+                        self.assertTrue(report.is_file(), (stdout + stderr).decode(errors="replace"))
+                        self.assertFalse(select.select([listener], [], [], 0)[0], "target was sent after failed setup")
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            evidence = json.loads(report.read_text())["cases"]
+            self.assertEqual(names, {case["case_id"] for case in evidence})
+            for case in evidence:
+                self.assertIn(case["status"], {"not_run", "failed"})
+                self.assertIsNone(case.get("result_status_code"))
+                self.assertIsNone(case.get("result_reason_code"))
+
     def test_archive_unsupported_response_preserves_cleanup(self):
         for language, available in installed_validators():
             for minor in (0, 1):
