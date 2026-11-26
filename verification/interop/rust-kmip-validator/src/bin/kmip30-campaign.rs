@@ -3,6 +3,8 @@
 
 #[path = "../generic_wire.rs"]
 mod generic_wire;
+#[path = "../table_typed_attributes.rs"]
+mod table_typed_attributes;
 
 use clap::{Parser, ValueEnum};
 use kmipkit::protocol::named_values_generated::values::enumeration::{
@@ -208,6 +210,13 @@ fn main() -> ExitCode {
     }
     if mode.as_deref() == Some("--inspect-table-key-material") {
         return if inspect_key_material().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
+    if mode.as_deref() == Some("--inspect-table-typed-attributes") {
+        return if table_typed_attributes::inspect().is_ok() {
             ExitCode::SUCCESS
         } else {
             ExitCode::FAILURE

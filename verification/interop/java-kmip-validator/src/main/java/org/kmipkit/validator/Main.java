@@ -44,6 +44,9 @@ public final class Main {
             if (args.length == 1 && "--inspect-table-key-material".equals(args[0])) {
                 return DraftCampaign.inspectKeyMaterial(Path.of(DEFAULT_MANIFEST));
             }
+            if (args.length == 1 && "--inspect-table-typed-attributes".equals(args[0])) {
+                return DraftCampaign.inspectTypedAttributes(Path.of(DEFAULT_MANIFEST));
+            }
             if (args.length == 1 && "--inspect-table-version".equals(args[0])) {
                 return DraftCampaign.inspectVersion(Path.of(DEFAULT_MANIFEST));
             }

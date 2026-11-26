@@ -149,6 +149,8 @@ def main():
         return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
     if sys.argv[1:] == ["--inspect-table-key-material"]:
         return inspect_key_material()
+    if sys.argv[1:] == ["--inspect-table-typed-attributes"]:
+        return inspect_typed_attributes()
     if sys.argv[1:] == ["--inspect-table-version"]:
         return inspect_version()
     parser = argparse.ArgumentParser(description=__doc__)
@@ -247,6 +249,37 @@ def inspect_key_material():
             print(json.dumps({
                 "construct": verify(lambda: KeyMaterial.from_fields(format_code, fields), format_code, expected),
                 "read": verify(lambda: KeyMaterial.from_item(format_code, item), format_code, expected),
+            }))
+    return 0
+
+
+def inspect_typed_attributes():
+    from kmipkit import errors, ttlv
+    from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
+    from .generic import _encode
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+    attributes = {attribute.tag: attribute for attribute in StandardAttribute}
+
+    def verify(make, expected):
+        try:
+            typed = make()
+        except errors.InvalidInputError:
+            return "rejected"
+        with typed, typed.view() as view:
+            return "passed" if _encode(view) == expected else "failed"
+
+    for line in sys.stdin:
+        raw_tag, input_hex, expected_hex = line.split()
+        attribute = attributes[int(raw_tag)]
+        expected = bytes.fromhex(expected_hex)
+        with ttlv.ttlv_decode(bytes.fromhex(input_hex)) as item, item.value_copy() as value:
+            print(json.dumps({
+                "construct": verify(lambda: TypedAttribute.create(attribute, value), expected),
+                "read": verify(lambda: TypedAttribute.from_item(attribute, item), expected),
             }))
     return 0
 

@@ -7,7 +7,10 @@ import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.InvalidInputException;
 import org.kmipkit.ttlv.KeyMaterial;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvItem;
@@ -138,6 +141,43 @@ final class DraftCampaign {
             try (var item = result.intoItem(); var view = item.view()) {
                 return actualFormat == format && Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
             }
+        }
+    }
+
+    static int inspectTypedAttributes(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        var attributes = new java.util.HashMap<Integer, StandardAttribute>();
+        for (var attribute : StandardAttribute.values()) {
+            attributes.put(attribute.tag(), attribute);
+        }
+        var hex = HexFormat.of();
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ");
+                var attribute = java.util.Objects.requireNonNull(attributes.get(Integer.parseInt(parts[0])));
+                byte[] expected = hex.parseHex(parts[2]);
+                try (var item = TtlvCodec.decode(hex.parseHex(parts[1])); var value = item.valueCopy()) {
+                    String constructed = typedAttributeVerdict(() -> TypedAttribute.create(attribute, value), expected);
+                    String read = typedAttributeVerdict(() -> TypedAttribute.fromItem(attribute, item), expected);
+                    System.out.println(JSON.writeValueAsString(Map.of("construct", constructed, "read", read)));
+                }
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    private static String typedAttributeVerdict(java.util.function.Supplier<TypedAttribute> api, byte[] expected) {
+        TypedAttribute result;
+        try {
+            result = api.get();
+        } catch (InvalidInputException rejected) {
+            return "rejected";
+        }
+        try (result; var view = result.view()) {
+            return Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
         }
     }
 

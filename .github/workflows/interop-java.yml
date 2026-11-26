@@ -115,6 +115,9 @@ jobs:
           python3 verification/interop/shared/tools/table_key_material.py \
             --runner java verification/interop/java-kmip-validator/tools/run_draft_campaign.sh \
             --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-key-material.json"
+          python3 verification/interop/shared/tools/table_typed_attributes.py \
+            --runner java verification/interop/java-kmip-validator/tools/run_draft_campaign.sh \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-typed-attributes.json"
 
       - name: Upload KMIP 2.x table evidence
         if: always()

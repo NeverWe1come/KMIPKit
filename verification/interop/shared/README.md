@@ -102,6 +102,15 @@ the complete output and reject missing, duplicate, and mistyped material
 fields. Pass `--table-key-material-report` to import these checks into the
 typed-protocol cells.
 
+CI also publishes `table-typed-attributes.json` for 54 direct typed
+attributes in KMIP 2.0 and 61 in KMIP 2.1. The tests compare the complete
+encoded value, reject a mismatched tag on read, and exercise wrong TTLV
+types where the constructor accepts a generic Value. Rust's constructor
+takes the marker's native value type and its reader rejects mistyped items.
+Pass `--table-typed-attributes-report` to attach these local results to the
+typed-protocol cells. Certificate Attributes and Protection Storage Masks
+use their dedicated certificate and operation contexts.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated

@@ -362,6 +362,8 @@ def main():
                         help="Import local table fixture results with --cosmian-minimum")
     parser.add_argument("--table-key-material-report", type=Path, action="append", default=[],
                         help="Import local typed Key Material evidence with --cosmian-minimum")
+    parser.add_argument("--table-typed-attributes-report", type=Path, action="append", default=[],
+                        help="Import local typed attribute evidence with --cosmian-minimum")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -369,7 +371,8 @@ def main():
     try:
         if len(runners) != len(args.runner) or not set(runners).issubset(languages) or not set(languages).issubset(LANGUAGES):
             raise ValueError("give one runner per selected, supported language")
-        if (args.table_ttlv_report or args.table_key_material_report) and not args.cosmian_minimum:
+        table_reports = (args.table_ttlv_report, args.table_key_material_report, args.table_typed_attributes_report)
+        if any(table_reports) and not args.cosmian_minimum:
             raise ValueError("table evidence reports require --cosmian-minimum")
         if args.connection and not runners:
             raise ValueError("--connection requires a runner")
@@ -413,6 +416,9 @@ def main():
 
             from verification.interop.shared.tools.table_key_material import attach_key_material_evidence
             from verification.interop.shared.tools.table_ttlv import attach_fixture_evidence
+            from verification.interop.shared.tools.table_typed_attributes import (
+                attach_evidence as attach_typed_attribute_evidence,
+            )
 
             for version in ALLOWED_VERSIONS:
                 if version in (args.version or VERSIONS):
@@ -425,6 +431,9 @@ def main():
                     if args.table_key_material_report:
                         attach_key_material_evidence(ROOT, inventory, args.table_key_material_report,
                                                      languages, args.library_commit)
+                    if args.table_typed_attributes_report:
+                        attach_typed_attribute_evidence(ROOT, inventory, args.table_typed_attributes_report,
+                                                        languages, args.library_commit)
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )

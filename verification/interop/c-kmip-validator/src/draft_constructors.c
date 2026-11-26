@@ -311,9 +311,11 @@ static int32_t decode_fixture_item(const char *hex, kmipkit_ttlv_item_t **item) 
     return kmipkit_ttlv_decode(wire, length / 2, &error, item);
 }
 
-static const char *key_material_verdict(int32_t status, kmipkit_ttlv_item_t *item,
+static const char *fixture_verdict(int32_t status, kmipkit_ttlv_item_t *item,
                                         const uint8_t *expected, size_t length) {
-    if (status == KMIPKIT_ERROR_INVALID_INPUT || status == KMIPKIT_ERROR_INVALID_SCHEMA)
+    if (status == KMIPKIT_ERROR_INVALID_INPUT || status == KMIPKIT_ERROR_INVALID_SCHEMA ||
+        status == KMIPKIT_ERROR_TYPED_ATTRIBUTE_TAG_MISMATCH ||
+        status == KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH)
         return "rejected";
     if (status != 0) return "failed";
 
@@ -354,8 +356,8 @@ static bool inspect_key_material_line(char *line) {
         int32_t construction = kmipkit_key_material_from_fields(format, fields, count, &constructed);
         int32_t decoding = kmipkit_key_material_from_item(format, input, &read);
         printf("{\"construct\":\"%s\",\"read\":\"%s\"}\n",
-               key_material_verdict(construction, constructed, expected, length / 2),
-               key_material_verdict(decoding, read, expected, length / 2));
+               fixture_verdict(construction, constructed, expected, length / 2),
+               fixture_verdict(decoding, read, expected, length / 2));
     }
     kmipkit_ttlv_item_release(read);
     kmipkit_ttlv_item_release(constructed);
@@ -370,6 +372,49 @@ static int inspect_key_material(void) {
            KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
     while (fgets(line, sizeof line, stdin)) {
         if (strchr(line, '\n') == NULL || !inspect_key_material_line(line)) return EXIT_FAILURE;
+    }
+    return !ferror(stdin) && !ferror(stdout) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static bool inspect_typed_attribute_line(char *line) {
+    const char *tag_text = strtok(line, " \n");
+    const char *input_hex = strtok(NULL, " \n");
+    const char *expected_hex = strtok(NULL, " \n");
+    uint32_t tag;
+    char suffix;
+    if (tag_text == NULL || input_hex == NULL || expected_hex == NULL ||
+        sscanf(tag_text, "%" SCNu32 "%c", &tag, &suffix) != 1)
+        return false;
+
+    uint8_t expected[KEY_FIXTURE_LIMIT];
+    size_t length = strlen(expected_hex);
+    if (length > sizeof(expected) * 2 || !decode_hex(expected_hex, length, expected))
+        return false;
+
+    kmipkit_ttlv_item_t *input = NULL, *constructed = NULL, *read = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    bool ok = decode_fixture_item(input_hex, &input) == 0 &&
+              kmipkit_ttlv_item_value_copy(input, &value) == 0;
+    if (ok) {
+        int32_t construction = kmipkit_typed_attribute_from_value(tag, value, &constructed);
+        int32_t decoding = kmipkit_typed_attribute_from_item(tag, input, &read);
+        printf("{\"construct\":\"%s\",\"read\":\"%s\"}\n",
+               fixture_verdict(construction, constructed, expected, length / 2),
+               fixture_verdict(decoding, read, expected, length / 2));
+    }
+    kmipkit_ttlv_value_release(value);
+    kmipkit_ttlv_item_release(read);
+    kmipkit_ttlv_item_release(constructed);
+    kmipkit_ttlv_item_release(input);
+    return ok;
+}
+
+static int inspect_typed_attributes(void) {
+    char line[4 * KEY_FIXTURE_LIMIT + 128];
+    printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
+           KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
+    while (fgets(line, sizeof line, stdin)) {
+        if (strchr(line, '\n') == NULL || !inspect_typed_attribute_line(line)) return EXIT_FAILURE;
     }
     return !ferror(stdin) && !ferror(stdout) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -409,6 +454,9 @@ int main(int argc, char **argv) {
     }
     if (argc == 2 && strcmp(argv[1], "--inspect-table-key-material") == 0) {
         return inspect_key_material();
+    }
+    if (argc == 2 && strcmp(argv[1], "--inspect-table-typed-attributes") == 0) {
+        return inspect_typed_attributes();
     }
     if (argc == 2 && strcmp(argv[1], "--inspect-table-version") == 0) {
         return inspect_version();
