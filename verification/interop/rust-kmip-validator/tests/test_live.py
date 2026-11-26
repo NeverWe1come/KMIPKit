@@ -883,6 +883,7 @@ class LiveContract(unittest.TestCase):
             cases = [case for case in cases if case["operation"] == "Put"]
             payloads, operations = [[ttlv(0x420094, 7, "missing-put-function")]], [0x1c]
         errors = []
+        replies = []
         def send():
             try:
                 deadline = time.monotonic() + 10
@@ -907,30 +908,33 @@ class LiveContract(unittest.TestCase):
                             batch.append(ttlv(0x420079, 1, payload))
                             channel.sendall(ttlv(0x420078, 1, [ttlv(0x420077, 1, fields),
                                 ttlv(0x42000f, 1, batch)]))
-                            reply = parse(receive(channel))
-                            self.assertEqual((find(reply, 0x42005c), find(reply, 0x42007f),
-                                              find(reply, 0x42006a), find(reply, 0x42006b)),
-                                             (operation, int(invalid_put), major, minor))
-                            if api == "generic-ttlv":
-                                self.assertEqual(find(reply, 0x420105), "test-correlation")
-                                self.assertEqual(find(reply, 0x420093), b"fixture-batch")
-                                self.assertEqual(find(reply, 0x42000d), 1)
-                            if invalid_put:
-                                self.assertEqual(find(reply, 0x42007e), 7)
-                                self.assertIsNone(find(reply, 0x42007c))
-                            elif operation == 0x18:
-                                response_payload = find(reply, 0x42007c)
-                                self.assertEqual([value for tag, _, value in response_payload if tag == 0x42005c],
-                                                 [0x1e, 0x1b, 0x1c, 0x18, 0x32])
-                            elif operation == 0x32:
-                                self.assertEqual(find(reply, 0x420151), 1)
-            except Exception as error:
+                            replies.append(parse(receive(channel)))
+            except (OSError, ValueError) as error:
                 errors.append(str(error))
         thread = threading.Thread(target=send)
         thread.start()
         _, report = self.command(self.connection(version=version, api=api, mutations=True), cases, "--listen", "127.0.0.1:0", "--listener-cert", str(self.pki / "server.crt"), "--listener-key", str(self.pki / "server.key"), "--listener-ready-file", str(work))
         thread.join(timeout=10)
         self.assertFalse(errors, (errors, report))
+        self.assertFalse(thread.is_alive(), "fixture did not finish reading replies")
+        self.assertEqual(len(replies), len(operations))
+        for operation, reply in zip(operations, replies):
+            self.assertEqual((find(reply, 0x42005c), find(reply, 0x42007f),
+                              find(reply, 0x42006a), find(reply, 0x42006b)),
+                             (operation, int(invalid_put), major, minor))
+            if api == "generic-ttlv":
+                self.assertEqual(find(reply, 0x420105), "test-correlation")
+                self.assertEqual(find(reply, 0x420093), b"fixture-batch")
+                self.assertEqual(find(reply, 0x42000d), 1)
+            if invalid_put:
+                self.assertEqual(find(reply, 0x42007e), 7)
+                self.assertIsNone(find(reply, 0x42007c))
+            elif operation == 0x18:
+                response_payload = find(reply, 0x42007c)
+                self.assertEqual([value for tag, _, value in response_payload if tag == 0x42005c],
+                                 [0x1e, 0x1b, 0x1c, 0x18, 0x32])
+            elif operation == 0x32:
+                self.assertEqual(find(reply, 0x420151), 1)
         if invalid_put:
             self.assertEqual(report["summary"]["failed"], 1, report["cases"])
             self.assertEqual(report["cases"][0]["result_reason_code"], 7)

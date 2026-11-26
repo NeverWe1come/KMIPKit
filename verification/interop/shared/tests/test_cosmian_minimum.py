@@ -7,7 +7,7 @@ from jsonschema import Draft202012Validator
 
 from verification.interop.shared.tools.catalog_reports import recipe_digest
 from verification.interop.shared.tools.cosmian_minimum import (
-    ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
+    ROOT, attach_oasis_operation_evidence, build_selection, with_execution_evidence, write_json,
 )
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
 from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES
@@ -93,6 +93,25 @@ class CosmianMinimumTests(unittest.TestCase):
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])
         self.assertTrue(reports["2.1"]["transparent_key", "RSA Private Key"]["normative_targets"])
         self.assertEqual(reports["2.1"]["attribute", "Attribute Index"]["disposition"], "vendor_fixture_required")
+
+    def test_report_writer_only_creates_new_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            report = path / "report.json"
+            write_json(report, {"result": "observed"})
+            with self.assertRaises(FileExistsError):
+                write_json(report, {"result": "changed"})
+            self.assertEqual({"result": "observed"}, json.loads(report.read_text()))
+            with self.assertRaises(ValueError):
+                write_json(path / "..", {})
+            alias = path / "alias.json"
+            try:
+                alias.symlink_to(report)
+            except OSError:
+                self.skipTest("Symlink creation is unavailable")
+            with self.assertRaises(FileExistsError):
+                write_json(alias, {"result": "changed"})
+            self.assertEqual({"result": "observed"}, json.loads(report.read_text()))
 
     def test_table_completion_requires_the_declared_operation_result(self):
         catalog, inventory = build_selection(ROOT, "2.1")

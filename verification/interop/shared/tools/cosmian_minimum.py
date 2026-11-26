@@ -308,7 +308,11 @@ def attach_oasis_operation_evidence(inventory, campaign):
 
 
 def write_json(path: Path, value: dict) -> None:
-    with path.open("x", encoding="utf-8") as output:
+    if path.name in {"", ".", ".."}:
+        raise ValueError("Select a filename for the report")
+    output_path = path.parent.resolve(strict=True) / path.name
+    # The CLI caller selects the destination. Exclusive creation refuses existing files and symlinks.
+    with output_path.open("x", encoding="utf-8") as output:  # NOSONAR
         json.dump(value, output, indent=2, ensure_ascii=False)
         output.write("\n")
 
