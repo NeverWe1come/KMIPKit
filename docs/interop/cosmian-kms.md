@@ -136,3 +136,33 @@ versions. The response omitted the Protection Storage Masks field marked
 required by the KMIP 2.0 and 2.1 structured Query response tables. The
 generic probe records the returned operations and the typed validation
 reports the missing field. [KMIP 2.0 §6.1.37](https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html) · [KMIP 2.1 §6.1.39](https://docs.oasis-open.org/kmip/kmip-spec/v2.1/os/kmip-spec-v2.1-os.html)
+
+## 6. Cosmian attribute extensions
+
+The pinned image acknowledges the following `SetAttribute` requests at its
+KMIP 2.1 HTTPS JSON TTLV endpoint.
+
+| JSON attribute | Representation | Observed result after a successful write |
+|---|---|---|
+| `AttributeIndex` | Integer | `GetAttributes` and `Destroy` return HTTP 422 with an unknown-tag diagnostic. |
+| `Critical` | Boolean | `GetAttributes` and `Destroy` return HTTP 422 with an unknown-tag diagnostic. |
+| `ObjectGroupMember` | Enumeration, `Group_Member_Fresh` or `Group_Member_Default` | `GetAttributes` succeeds and omits the field. `Destroy` succeeds. |
+
+The observations apply to the provider's JSON attribute context. The
+standard enumerated `Object Group Member` field in a Locate request is
+tested separately. The provider's published [KMIP support table](https://docs.cosmian.com/key_management_system/kmip_support/support.html)
+lists these three attributes under extensions.
+
+To reproduce on a disposable instance, add
+`--publish 127.0.0.1:8443:9998` to the Docker options in section 3.
+Use `{"https": {"url": "https://localhost:8443/kmip/2_1"}}` as
+`endpoints` in a copy of the configuration from section 4. The tests also
+verify rejection of an incorrect type or enumeration for each extension.
+Discard the instance's temporary filesystem after the test because objects
+with the two legacy named extensions fail to load for Destroy.
+
+```bash
+KMIPKIT_COSMIAN_EXTENSION_TEST_CONFIG=/path/to/extension-connection.json \
+  python3 -m unittest discover -s verification/interop/shared/tests \
+  -p test_cosmian_attribute_extensions.py -v
+```
