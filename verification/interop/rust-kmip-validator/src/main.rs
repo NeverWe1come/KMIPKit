@@ -7,6 +7,7 @@ mod fluent;
 mod generic;
 mod generic_wire;
 mod incoming;
+mod key_block;
 mod models;
 mod query_campaign;
 mod recipes;

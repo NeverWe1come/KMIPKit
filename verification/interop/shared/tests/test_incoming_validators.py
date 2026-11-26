@@ -18,6 +18,7 @@ import unittest
 
 from verification.interop.shared.tools.operation_catalog import build_catalog, direction, with_cases
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
+from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
 from verification.interop.shared.tools.table_query_fields import query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
@@ -564,6 +565,148 @@ class DirectTagValidatorTests(unittest.TestCase):
                 if route == "high-level":
                     self.assertEqual(result["actual_api_level"], route)
             save_evidence(report, selection, f"{language}-2.{minor}-{route}-authenticated-encryption")
+
+    def test_key_block_get_checks_wrapping_and_transparent_material(self):
+        for language, available in installed_validators():
+            routes = ("generic-ttlv", "typed-protocol")
+            if language != "c":
+                routes += ("fluent",)
+            if language == "rust":
+                routes += ("high-level",)
+            for minor in (0, 1):
+                for route in routes:
+                    for invalid in (False, True):
+                        with self.subTest(language=language, minor=minor, route=route, invalid=invalid):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.key_block_get(language, minor, route, invalid)
+
+    def key_block_get(self, language, minor, route, invalid):
+        target_id = b"target-key-block-fixture"
+        wrapping_id = b"wrapping-key-block-fixture"
+        with tempfile.TemporaryDirectory(prefix="kmipkit-key-block-") as dirname:
+            work = Path(dirname)
+            catalog = version_catalog(f"2.{minor}")
+            base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-get")
+            cases = list(key_block_cases(f"2.{minor}", base))
+            selection = work / "catalog.json"
+            selection.write_text(json.dumps(with_cases(catalog, cases)))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"},
+                                           "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(7)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(selection), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    def receive(stage, expect, build_payload):
+                        raw, _ = self.accept_request(listener, process, stage)
+                        raw.settimeout(5)
+                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                            batch = only(only(read_message(peer), 0x420078, 1), 0x42000F, 1)
+                            operation = int.from_bytes(only(batch, 0x42005C, 5), "big")
+                            self.assertIn(operation, expect)
+                            request = only(batch, 0x420079, 1)
+                            payload = build_payload(operation, request)
+                            ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                            peer.sendall(structure(
+                                0x42007B,
+                                structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                          number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, operation), *ids,
+                                          number(0x42007F, 5, 0), structure(0x42007C, *payload)),
+                            ))
+
+                    def create_payload(request, key, usage_mask):
+                        self.assertEqual(only(request, 0x420057, 5), struct.pack(">I", 2))
+                        attributes = only(request, 0x420125, 1)
+                        self.assertEqual(only(attributes, 0x420028, 5), struct.pack(">I", 3))
+                        self.assertEqual(only(attributes, 0x42002A, 2), struct.pack(">I", 256))
+                        self.assertEqual(only(attributes, 0x42002C, 2), struct.pack(">I", usage_mask))
+                        self.assertEqual(only(attributes, 0x420122, 6), struct.pack(">Q", 1))
+                        return number(0x420057, 5, 2), wire_item(0x420094, 7, key)
+
+                    def activate_payload(request):
+                        self.assertEqual(only(request, 0x420094, 7), wrapping_id)
+                        return (wire_item(0x420094, 7, wrapping_id),)
+
+                    def get_payload(request, wrapped):
+                        self.assertEqual(only(request, 0x420094, 7), target_id)
+                        encoding = number(0x4200A3, 5, 1)
+                        wrapping_method = number(0x42009E, 5, 1)
+                        wrapping = []
+                        if wrapped:
+                            self.assertFalse(any(tag == 0x420042 for tag, _, _ in request))
+                            spec = only(request, 0x420047, 1)
+                            self.assertEqual(only(spec, 0x42009E, 5), struct.pack(">I", 1))
+                            self.assertEqual(only(spec, 0x4200A3, 5), struct.pack(">I", 1))
+                            key_info = only(spec, 0x420036, 1)
+                            self.assertEqual(only(key_info, 0x420094, 7), wrapping_id)
+                            parameters = only(key_info, 0x42002B, 1)
+                            self.assertEqual(only(parameters, 0x420011, 5), struct.pack(">I", 12))
+                            value = wire_item(0x420045, 8, bytes(40))
+                            wrapper = b"foreign-key-block-fixture" if invalid else wrapping_id
+                            wrapping = [structure(0x420046, wrapping_method,
+                                                  structure(0x420036, wire_item(0x420094, 7, wrapper)), encoding)]
+                        else:
+                            self.assertEqual(only(request, 0x420042, 5), struct.pack(">I", 7))
+                            self.assertFalse(any(tag == 0x420047 for tag, _, _ in request))
+                            value = structure(0x420045, structure(0x420043, wire_item(0x42003F, 8, bytes(31 if invalid else 32))))
+                        block = structure(0x420040, number(0x420042, 5, 7), value, number(0x420028, 5, 3),
+                                          number(0x42002A, 2, 256), *wrapping)
+                        return number(0x420057, 5, 2), wire_item(0x420094, 7, target_id), structure(0x42008F, block)
+
+                    def clean_payload(operation, request, outstanding, revoke_pending):
+                        key = only(request, 0x420094, 7)
+                        self.assertIn(key, outstanding)
+                        if operation == 0x14:
+                            self.assertNotIn(key, revoke_pending)
+                            outstanding.remove(key)
+                        else:
+                            revoke_pending.discard(key)
+                        return (wire_item(0x420094, 7, key),)
+
+                    try:
+                        for case in cases:
+                            wrapped = case["requires"]["key_block_shape"] == "wrapped"
+                            receive("Create data key", {1}, lambda _, request: create_payload(request, target_id, 12))
+                            if wrapped:
+                                receive("Create wrapping key", {1}, lambda _, request: create_payload(request, wrapping_id, 48))
+                                receive("Activate wrapping key", {0x12}, lambda _, request: activate_payload(request))
+                            receive("Get", {0x0A}, lambda _, request: get_payload(request, wrapped))
+                            outstanding = {target_id, wrapping_id} if wrapped else {target_id}
+                            revoke_pending = {wrapping_id} if wrapped else set()
+                            # Older teardown helpers also revoke the pre-active fixture before destroying it.
+                            for _ in range(4 if wrapped else 2):
+                                if not outstanding:
+                                    break
+                                receive("Clean up", {0x13, 0x14},
+                                        lambda operation, request: clean_payload(operation, request, outstanding, revoke_pending))
+                            self.assertFalse(outstanding)
+                        _, stderr = process.communicate(timeout=12)
+                        self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            results = json.loads(report.read_text())["cases"]
+            self.assertEqual({case["case_id"] for case in cases}, {result["case_id"] for result in results})
+            for result in results:
+                self.assertEqual(result["status"], "failed" if invalid else "passed")
+                if not invalid and route == "high-level":
+                    self.assertEqual(result["actual_api_level"], route)
+            if not invalid:
+                save_evidence(report, selection, f"{language}-2.{minor}-{route}-key-block")
 
     def test_obtain_lease_validates_result_and_cleans_up(self):
         for language, available in installed_validators():

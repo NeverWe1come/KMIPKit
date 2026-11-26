@@ -32,3 +32,17 @@ class TableEvidenceSummaryTests(unittest.TestCase):
                                  second["controlled_expected_cases_met_cells"]))
         self.assertEqual((0, 0), (first["live_expected_cases_met_cells"],
                                  second["live_expected_cases_met_cells"]))
+
+
+    def test_controlled_success_does_not_confirm_provider_support_expectation(self):
+        case_id = "returned-key-value"
+        success = {"case_id": case_id, "status": "passed", "library_correctness": "passed",
+                   "result_status_code": 0}
+        cell = {"language": "rust", "api_level": "typed-protocol",
+                "expectation": "verify_unsupported_response",
+                "case_results": [{**success, "scope": "controlled"}, {**success, "scope": "live"}]}
+        row = {"server_cases": [case_id], "obligations": [cell]}
+        catalog = {"test_cases": [{"case_id": case_id, "requires": {"controlled_expected_status": "Success"}}]}
+        summarize({"protocol_version": "2.1", "rows": [row]}, catalog)
+        self.assertEqual({"matched": [case_id], "missing": []}, cell["expected_case_outcomes"]["controlled"])
+        self.assertEqual({"matched": [], "missing": [case_id]}, cell["expected_case_outcomes"]["live"])

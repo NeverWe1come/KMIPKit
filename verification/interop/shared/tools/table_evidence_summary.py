@@ -49,8 +49,11 @@ def observation_kind(record, recipe):
     return "incomplete"
 
 
-def required_observation(expectation, recipe):
-    required_status = recipe["requires"].get("expected_status")
+def required_observation(expectation, recipe, scope):
+    requirements = recipe["requires"]
+    if scope == "controlled" and requirements.get("controlled_expected_status") == "Success":
+        return "success"
+    required_status = requirements.get("expected_status")
     if required_status == "NotSent":
         return "boundary"
     if required_status == "OperationFailed":
@@ -63,10 +66,12 @@ def required_observation(expectation, recipe):
 
 def summarize_cases(row, cell, recipes):
     selected = cell.get("case_ids", row.get("server_cases", []) + row.get("boundary_cases", []))
-    requirements = {
-        case_id: required_observation(cell["expectation"], recipes[case_id]) for case_id in selected
-    }
     observations = {"controlled": Counter(), "live": Counter()}
+    requirements = {
+        scope: {case_id: required_observation(cell["expectation"], recipes[case_id], scope)
+                for case_id in selected}
+        for scope in observations
+    }
     matching = {"controlled": set(), "live": set()}
     for record in cell.get("case_results", ()):
         scope, case_id = record["scope"], record["case_id"]
@@ -76,13 +81,12 @@ def summarize_cases(row, cell, recipes):
         if observed is None:
             continue
         observations[scope][observed] += 1
-        if observed == requirements.get(case_id):
+        if observed == requirements[scope].get(case_id):
             matching[scope].add(case_id)
     case_results = {}
     for scope, matched in matching.items():
-        required = {case_id for case_id, expected in requirements.items() if expected is not None}
-        if scope == "live":
-            required = {case_id for case_id in required if requirements[case_id] != "boundary"}
+        required = {case_id for case_id, expected in requirements[scope].items()
+                    if expected is not None and (scope != "live" or expected != "boundary")}
         case_results[scope] = {
             "matched": sorted(required & matched),
             "missing": sorted(required - matched),

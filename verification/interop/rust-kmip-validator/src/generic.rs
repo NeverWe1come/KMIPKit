@@ -135,7 +135,12 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-certify", "2.0" | "2.1") => Some(CERTIFY),
         ("test-op-re-certify", "2.0" | "2.1") => Some(RE_CERTIFY),
         ("test-op-check", "2.0" | "2.1") => Some(CHECK),
-        ("test-op-get", "2.0" | "2.1") => Some(GET),
+        (
+            "test-op-get"
+            | "test-op-get-wrapped-symmetric-key"
+            | "test-op-get-transparent-symmetric-key",
+            "2.0" | "2.1",
+        ) => Some(GET),
         (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
         ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
@@ -209,6 +214,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     let start = std::time::Instant::now();
     let version = ProtocolVersion::from_raw(2, i32::from(connection.protocol_version == "2.1"));
     let mut result = match operation(case, connection) {
+        Some(GET) if case.requires["key_block_shape"].is_string() => {
+            get_key_block(case, connection, version)
+        }
         Some(operation) if uses_owned_key(operation) => {
             run_owned_key(case, connection, version, operation)
         }
@@ -411,6 +419,57 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn get_key_block(case: &Case, connection: &Connection, version: ProtocolVersion) -> CaseResult {
+    let mut cleanup = Vec::new();
+    let result = (|| {
+        let mut create = |mask| -> Result<String> {
+            let (identifier, observed) = create_aes_key(connection, version, mask, true)?;
+            if !identifier.is_empty() {
+                cleanup.push(identifier.clone());
+            }
+            if observed != Ok((0, None)) || identifier.is_empty() {
+                return Err("prerequisite Create did not return an owned AES fixture");
+            }
+            Ok(identifier)
+        };
+        let id = create(12)?;
+        let mut request_fields = vec![item(0x0042_0094, Value::text_string(id.clone()))?];
+        let expected = if case.requires["key_block_shape"] == "wrapped" {
+            let wrapper = create(48)?;
+            let active = exchange(connection, version, ACTIVATE, Some(&wrapper), |batch| {
+                Ok(text_identifier(batch).as_ref() == Some(&wrapper))
+            })?;
+            if active != (0, None) {
+                return Err("prerequisite Activate failed for the wrapping key");
+            }
+            request_fields.push(node(
+                0x0042_0047,
+                crate::key_block::wrapping_fields(&wrapper)?,
+            )?);
+            crate::key_block::KeyBlockShape::Wrapped(wrapper)
+        } else {
+            request_fields.push(item(0x0042_0042, Value::enumeration(7))?);
+            crate::key_block::KeyBlockShape::Transparent
+        };
+        exchange_payload(connection, version, GET, request_fields, |batch| {
+            let shape = batch
+                .with_response_payload(|payload| {
+                    crate::key_block::symmetric_key_block(&payload)
+                        .as_ref()
+                        .and_then(crate::key_block::shape)
+                })
+                .flatten();
+            Ok(shape.as_ref() == Some(&expected)
+                && text_identifier(batch).as_ref() == Some(&id)
+                && has_field(batch, 0x0042_0057, |value| {
+                    matches!(value, ValueView::Enumeration(2))
+                }))
+        })
+    })();
+    destroy_ids(connection, version, &cleanup);
+    outcome(case, result)
 }
 
 fn get_key(connection: &Connection, version: ProtocolVersion, id: &str) -> ExchangeResult {
@@ -954,6 +1013,7 @@ pub(crate) fn asynchronous(
         correlation,
         bytes: None,
         authentication_tag: None,
+        key_block_shape: None,
         validity: None,
         ticket: None,
     })
@@ -1700,6 +1760,6 @@ fn extended_sign_ops(
     )
 }
 
-fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
+pub(crate) fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
     item(tag, Value::structure(structure(tag, children)?))
 }

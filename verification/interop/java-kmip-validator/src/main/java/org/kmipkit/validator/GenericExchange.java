@@ -123,7 +123,7 @@ final class GenericExchange {
             case "test-op-certify" -> CERTIFY;
             case "test-op-re-certify" -> RE_CERTIFY;
             case "test-op-check" -> CHECK;
-            case "test-op-get" -> GET;
+            case "test-op-get", "test-op-get-transparent-symmetric-key", "test-op-get-wrapped-symmetric-key" -> GET;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
             case "test-op-add-attribute" -> ADD_ATTRIBUTE;
             case "test-op-modify-attribute" -> MODIFY_ATTRIBUTE;
@@ -171,6 +171,8 @@ final class GenericExchange {
         int operation = operation(testCase, connection);
         if (operation == QUERY && testCase.requires().has("query_function"))
             return queryField(testCase, connection, minor, start);
+        if (operation == GET && testCase.requires().has("key_block_shape"))
+            return runKeyBlock(connection, minor, "wrapped".equals(testCase.requires().path("key_block_shape").asText()), start);
         int attributeTag = keyAttributeReference(testCase.caseId());
         if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
         if (usesExtendedOp(operation)) return runExtended(testCase, connection, operation, minor, start);
@@ -312,6 +314,101 @@ final class GenericExchange {
         var cleanup = execute(connection, DESTROY, minor, id, sameId, start);
         return "passed".equals(cleanup.status()) ? target
                 : JavaKmipDriver.CaseOutcome.failed("Cleanup Destroy failed for the isolated key.", elapsed(start));
+    }
+
+    private static JavaKmipDriver.CaseOutcome runKeyBlock(ConnectionConfig connection,
+            int minor, boolean wrapped, long start) {
+        var keys = new java.util.ArrayList<byte[]>();
+        var id = new AtomicReference<byte[]>();
+        var wrappingId = new AtomicReference<byte[]>();
+        try {
+            var created = createAesKey(connection, minor, 12, true, keys, id, start);
+            if (!"passed".equals(created.status()))
+                return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create request failed.", elapsed(start));
+            if (wrapped) {
+                var wrapping = createAesKey(connection, minor, 48, true, keys, wrappingId, start);
+                if (!"passed".equals(wrapping.status()))
+                    return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Create request failed.", elapsed(start));
+                var activated = execute(connection, ACTIVATE, minor, wrappingId.get(),
+                        payload -> Arrays.equals(wrappingId.get(), textIdentifier(payload)), start);
+                if (!"passed".equals(activated.status()))
+                    return JavaKmipDriver.CaseOutcome.notRun("The prerequisite Activate request failed.", elapsed(start));
+            }
+            try (var target = item(0x420094, TtlvValue.TextString(id.get(), LIMITS));
+                    var selector = wrapped ? keyWrappingSpecification(wrappingId.get())
+                            : item(0x420042, TtlvValue.Enumeration(7));
+                    var payload = structureItem(0x420079, target, selector)) {
+                return executePayload(connection, GET, minor, payload,
+                        p -> Arrays.equals(id.get(), textIdentifier(p))
+                                && hasField(p, 0x420057, TtlvItemType.Enumeration, 2)
+                                && keyBlockMatches(p, wrappingId.get()), start);
+            }
+        } finally {
+            destroyAll(connection, minor, keys, start);
+        }
+    }
+
+    private static TtlvItem keyWrappingSpecification(byte[] wrappingId) {
+        try (var wrappingMethod = item(0x42009e, TtlvValue.Enumeration(1));
+                var uid = item(0x420094, TtlvValue.TextString(wrappingId, LIMITS));
+                var mode = item(0x420011, TtlvValue.Enumeration(12));
+                var params = structureItem(0x42002b, mode);
+                var encryptionKey = structureItem(0x420036, uid, params);
+                var encoding = item(0x4200a3, TtlvValue.Enumeration(1))) {
+            return structureItem(0x420047, wrappingMethod, encryptionKey, encoding);
+        }
+    }
+
+    static TtlvStructure keyWrappingFields(byte[] wrappingId) {
+        try (var spec = keyWrappingSpecification(wrappingId);
+                var view = spec.view(); var value = view.value(); var fields = value.structure()) {
+            return copyStructure(fields);
+        }
+    }
+
+    static boolean keyBlockMatches(TtlvStructureView wrapper, byte[] wrappingIdentifier) {
+        return withStructure(wrapper, 0x42008f, symmetric ->
+                withStructure(symmetric, 0x420040, keyBlock -> {
+                    if (!hasField(keyBlock, 0x420028, TtlvItemType.Enumeration, 3)
+                            || !hasField(keyBlock, 0x42002a, TtlvItemType.Integer, 256)) return false;
+                    if (wrappingIdentifier == null) {
+                        return hasField(keyBlock, 0x420042, TtlvItemType.Enumeration, 7)
+                                && !hasField(keyBlock, 0x420046, TtlvItemType.Structure, 0)
+                                && withStructure(keyBlock, 0x420045, keyValue ->
+                                        withStructure(keyValue, 0x420043, material -> hasByteLength(material, 0x42003f, 32)));
+                    }
+                    return hasByteLength(keyBlock, 0x420045, 40)
+                            && withStructure(keyBlock, 0x420046, data ->
+                                    hasField(data, 0x42009e, TtlvItemType.Enumeration, 1)
+                                    && hasField(data, 0x4200a3, TtlvItemType.Enumeration, 1)
+                                    && withStructure(data, 0x420036, key ->
+                                            Arrays.equals(wrappingIdentifier, fieldText(key, 0x420094))));
+                }));
+    }
+
+    private static boolean withStructure(TtlvStructureView parent, int wanted,
+            Predicate<TtlvStructureView> verify) {
+        for (long index = 0; index < parent.itemCount(); ++index) {
+            try (var item = parent.itemAt(index); var tag = item.tag()) {
+                if (tag.raw() != wanted || item.itemType() != TtlvItemType.Structure) continue;
+                try (var value = item.value(); var fields = value.structure()) {
+                    return verify.test(fields);
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasByteLength(TtlvStructureView parent, int wanted, int length) {
+        for (long index = 0; index < parent.itemCount(); ++index) {
+            try (var item = parent.itemAt(index); var tag = item.tag()) {
+                if (tag.raw() != wanted || item.itemType() != TtlvItemType.ByteString) continue;
+                try (var value = item.value()) {
+                    return value.byteLength() == length;
+                }
+            }
+        }
+        return false;
     }
 
     private record HashFrame(int index, byte[] chunk, byte[] correlation) { }

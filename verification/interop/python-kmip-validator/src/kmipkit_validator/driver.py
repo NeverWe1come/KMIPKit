@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
+
 import hashlib
 import re
 import uuid
@@ -1608,6 +1610,7 @@ class PythonKmipDriver:
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
         query_field: int | None = None,
+        key_block: tuple[Any, Any | None] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
@@ -1698,6 +1701,18 @@ class PythonKmipDriver:
                                 with query.raw_view() as fields:
                                     if not _has_query_structure(fields, query_field):
                                         raise ValueError("Query did not return the requested nonempty structure")
+                if key_block is not None and success:
+                    from .generic import key_block_matches
+
+                    identifier, wrapping_key = key_block
+                    get = observed.get_response()
+                    with ttlv.ttlv_structure_view(get.object) if get and get.object else nullcontext() as object_view:
+                        verified = (get is not None and get.object_type_raw == 2 and get.unique_identifier == identifier
+                                    and object_view is not None
+                                    and key_block_matches(object_view, None if wrapping_key is None else wrapping_key.text))
+                    if not verified:
+                        result.update(status="failed", library_correctness="failed", server_compatibility="unknown",
+                                      diagnostic="Get did not return the expected Key Block")
                 locate_response = observed.locate_response()
                 if success and verify_locate and (locate_response is None or (
                     len(locate_response.unique_identifiers) > 1 or (
@@ -1994,12 +2009,74 @@ class PythonKmipDriver:
     def _fixture_name(test_case: dict[str, Any]) -> str:
         return f"kmipkit-python-{test_case['case_id']}-{uuid.uuid4()}"
 
+    def _execute_key_block(self, wrapped: bool) -> dict[str, Any]:
+        from .generic import key_block_attributes, wrapping_specification_fields
+
+        owned = []
+        active = None
+
+        def create(for_wrapping):
+            with self._structure(key_block_attributes(self, for_wrapping)) as attributes:
+                result = self._exchange(self._extensions.client_batch_item_create(2, attributes))
+            identifiers = result.get("_identifiers", [])
+            owned.extend(identifiers)
+            if result["status"] == "passed" and len(identifiers) == 1:
+                return identifiers[0]
+            return None
+
+        outcome = self._blocked_prerequisite("Create did not return an owned AES fixture")
+        try:
+            identifier = create(False)
+            if identifier is None:
+                return outcome
+            wrapping = create(True) if wrapped else None
+            if wrapped:
+                if wrapping is None:
+                    return outcome
+                activated = self._exchange(self._extensions.client_batch_item_activate(wrapping))
+                if activated["status"] != "passed" or wrapping not in activated.get("_identifiers", ()):
+                    outcome = self._blocked_prerequisite("Activate did not confirm the wrapping key")
+                    return outcome
+                active = wrapping
+            spec = self._structure(wrapping_specification_fields(self, wrapping.text)) if wrapped else None
+            with spec or nullcontext():
+                if self._api_level == "fluent":
+                    with self._client.request().get_request() as builder:
+                        builder.unique_identifier(identifier)
+                        if spec is None:
+                            builder.key_format_type(7)
+                        else:
+                            builder.key_wrapping_specification(spec)
+                        request = builder.build()
+                else:
+                    request = self._extensions.client_batch_item_get(
+                        identifier, key_format_type=None if wrapped else 7, key_wrapping_specification=spec,
+                    )
+                with request:
+                    result = self._exchange(request, key_block=(identifier, wrapping))
+                    outcome = {key: value for key, value in result.items() if not key.startswith("_")}
+            return outcome
+        finally:
+            if active is not None:
+                revoke_case = {"operation": "Revoke", "requires": {}}
+                with self._build_item(revoke_case, active, name="kmipkit-key-block") as revoke:
+                    self._exchange(revoke)
+            for identifier in reversed(owned):
+                with self._extensions.client_batch_item_destroy(identifier) as destroy:
+                    cleanup = self._exchange(destroy)
+                if cleanup["status"] != "passed":
+                    outcome.update(status="failed", library_correctness="not_checked", server_compatibility="unknown",
+                                   diagnostic="Cleanup Destroy failed for a Key Block fixture")
+
     def execute_case(self, test_case: dict[str, Any]) -> dict[str, Any]:
         case_id = test_case["case_id"]
         operation = test_case["operation"]
         if case_id == "test-multipart-hash-sha256":
             return self._run_multipart_hash(test_case)
         unique_name = self._fixture_name(test_case)
+        key_block_shape = test_case["requires"].get("key_block_shape")
+        if operation == "Get" and key_block_shape in {"wrapped", "transparent"}:
+            return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
         if operation == "Query" and "query_function" in test_case.get("requires", {}):

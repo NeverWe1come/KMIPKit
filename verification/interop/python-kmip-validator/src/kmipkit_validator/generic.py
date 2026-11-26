@@ -1,5 +1,6 @@
 """KMIP 2.x exchanges built from generic tags using standard Python TLS."""
 
+from contextlib import ExitStack
 import hashlib
 from functools import partial
 import socket
@@ -61,6 +62,8 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
+    if case["operation"] == "Get" and case.get("requires", {}).get("key_block_shape") in {"wrapped", "transparent"}:
+        return GET
     if case["operation"] == "Query" and "query_function" in case.get("requires", {}):
         return 0x18
     if case["operation"] == "Locate" and "rotate_attribute_ttlv" in case.get("requires", {}):
@@ -186,6 +189,8 @@ def run(driver, case):
         raise ValueError("no generic exchange recipe")
     if operation == 0x08 and "rotate_attribute_ttlv" in case.get("requires", {}):
         return _locate_rotate_attribute(driver, case)
+    if operation == GET and "key_block_shape" in case["requires"]:
+        return _run_key_block(driver, case["requires"]["key_block_shape"] == "wrapped")
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case["case_id"])
     if operation == 0x18 and "query_function" in case.get("requires", {}):
@@ -217,6 +222,112 @@ def _query_field(driver, requires):
     return _checked_exchange(driver, 0x18, expected=lambda payload: _has_query_structure(payload, tag), custom_payload=[
         driver._item(0x420074, "enumeration", int(requires["query_function"])),
     ])
+
+
+def wrapping_specification_fields(driver, identifier):
+    item, node = driver._item, driver._structure_item
+    return [
+        item(0x42009E, "enumeration", 1),
+        node(0x420036, [item(0x420094, "text", identifier),
+                        node(0x42002B, [item(0x420011, "enumeration", 12)])]),
+        item(0x4200A3, "enumeration", 1),
+    ]
+
+
+def key_block_matches(object_wrapper, wrapping_id):
+    from kmipkit import ttlv
+
+    with ExitStack() as stack:
+        def structure(parent, wanted):
+            for member in _fields(parent):
+                with ttlv.ttlv_item_view_tag(member) as tag:
+                    if ttlv.tag_value(tag) != wanted or ttlv.ttlv_item_view_type(member) != ttlv.ItemType.Structure:
+                        continue
+                value = stack.enter_context(ttlv.ttlv_item_view_value(member))
+                return stack.enter_context(ttlv.ttlv_value_view_structure(value))
+            raise ValueError("Get did not return the expected Key Block structure")
+
+        def byte_length(parent, wanted):
+            for member in _fields(parent):
+                with ttlv.ttlv_item_view_tag(member) as tag:
+                    if ttlv.tag_value(tag) != wanted or ttlv.ttlv_item_view_type(member) != ttlv.ItemType.ByteString:
+                        continue
+                with ttlv.ttlv_item_view_value(member) as value:
+                    return ttlv.ttlv_value_view_byte_length(value)
+            return 0
+
+        try:
+            block = structure(structure(object_wrapper, 0x42008F), 0x420040)
+            if not (_has_field(block, 0x420028, "Enumeration", 3) and _has_field(block, 0x42002A, "Integer", 256)):
+                return False
+            if wrapping_id is None:
+                material = structure(structure(block, 0x420045), 0x420043)
+                return (_has_field(block, 0x420042, "Enumeration", 7)
+                        and not _has_field(block, 0x420046, "Structure")
+                        and byte_length(material, 0x42003F) == 32)
+            wrapping = structure(block, 0x420046)
+            return (byte_length(block, 0x420045) == 40
+                    and _has_field(wrapping, 0x42009E, "Enumeration", 1)
+                    and _has_field(wrapping, 0x4200A3, "Enumeration", 1)
+                    and _field_text(structure(wrapping, 0x420036), 0x420094) == wrapping_id)
+        except ValueError:
+            return False
+
+
+def key_block_attributes(driver, wrapping):
+    item = driver._item
+    return [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
+            item(0x42002C, "integer", 48 if wrapping else 12),
+            item(0x420122, "boolean", True)]
+
+
+def _run_key_block(driver, wrapped):
+    item, node = driver._item, driver._structure_item
+    owned = []
+    wrapping_id = None
+    active = False
+
+    def create(wrapping):
+        data = [item(0x420057, "enumeration", 2), node(0x420125, key_block_attributes(driver, wrapping))]
+        result = _checked_exchange(driver, CREATE, custom_payload=data)
+        identifier = result.pop("created_identifier", None)
+        if identifier:
+            owned.append(identifier)
+        return identifier if result["status"] == "passed" else None
+
+    def same_id(payload, identifier):
+        return _text_identifier(payload) == identifier
+
+    target = _failure("The prerequisite Create request failed.", "not_run")
+    try:
+        identifier = create(False)
+        if identifier is None:
+            return target
+        if wrapped:
+            wrapping_id = create(True)
+            if wrapping_id is None:
+                return target
+            activation = _checked_exchange(driver, ACTIVATE, wrapping_id, lambda p: same_id(p, wrapping_id))
+            if activation["status"] != "passed":
+                return _failure("The prerequisite Activate request failed.", "not_run")
+            active = True
+        fields = [item(0x420094, "text", identifier)]
+        if wrapped:
+            fields.append(node(0x420047, wrapping_specification_fields(driver, wrapping_id)))
+        else:
+            fields.append(item(0x420042, "enumeration", 7))
+        target = _checked_exchange(
+            driver, GET, expected=lambda p: same_id(p, identifier) and _has_field(p, 0x420057, "Enumeration", 2)
+            and key_block_matches(p, wrapping_id), custom_payload=fields,
+        )
+    finally:
+        if active:
+            _checked_exchange(driver, REVOKE, wrapping_id, lambda p: same_id(p, wrapping_id))
+        for key in reversed(owned):
+            cleanup = _checked_exchange(driver, DESTROY, key, lambda p, key=key: same_id(p, key))
+            if cleanup["status"] != "passed":
+                target.update(_failure("Cleanup Destroy failed for a Key Block fixture."))
+    return target
 
 
 def _async_target(driver, operation, correlation):
@@ -545,7 +656,7 @@ def _text_identifier(payload):
     return result
 
 
-def _has_field(payload, wanted, kind, enumeration=None):
+def _has_field(payload, wanted, kind, expected=None):
     from kmipkit import ttlv
 
     found = False
@@ -555,9 +666,13 @@ def _has_field(payload, wanted, kind, enumeration=None):
                 continue
             if found or ttlv.ttlv_item_view_type(field) != getattr(ttlv.ItemType, kind):
                 return False
-            if enumeration is not None:
+            if expected is not None:
                 with ttlv.ttlv_item_view_value(field) as value:
-                    if ttlv.ttlv_value_view_enumeration(value) != enumeration:
+                    if kind == "Integer":
+                        actual = ttlv.ttlv_value_view_integer(value)
+                    else:
+                        actual = ttlv.ttlv_value_view_enumeration(value)
+                    if actual != expected:
                         return False
             found = True
     return found

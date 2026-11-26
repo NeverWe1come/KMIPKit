@@ -9399,7 +9399,7 @@ static void check_gcm_negative_result(kmip_execution_outcome_t *outcome) {
         outcome->result_reason_code == KMIPKIT_ENUMERATION_RESULT_REASON_CRYPTOGRAPHIC_FAILURE;
 }
 
-static kmip_execution_outcome_t typed_gcm_exchange(
+static kmip_execution_outcome_t execute_typed_single_item(
     kmip_live_client_t *client, kmipkit_client_batch_item_t **request, uint32_t operation,
     kmipkit_client_batch_item_response_t **item) {
     kmip_execution_outcome_t outcome = {.executed = true};
@@ -9426,12 +9426,213 @@ static kmip_execution_outcome_t typed_gcm_exchange(
     if (status == 0 && metadata.operation == operation) record_kmip_result(&outcome, &metadata);
     else {
         outcome.library_failed = true;
-        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid AES-GCM exchange response.");
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid single-item exchange response.");
     }
     if (authentication) kmipkit_authentication_release(authentication);
     if (response) kmipkit_client_batch_response_release(response);
     if (batch) kmipkit_client_batch_release(batch);
     return outcome;
+}
+
+static bool key_block_case(const char *case_id) {
+    return strcmp(case_id, "test-op-get-transparent-symmetric-key") == 0 ||
+        strcmp(case_id, "test-op-get-wrapped-symmetric-key") == 0;
+}
+
+static bool append_key_block_number(kmip_live_client_t *client, kmipkit_ttlv_structure_t **fields,
+    uint32_t tag, uint32_t actual, bool enumeration) {
+    kmipkit_ttlv_value_t *value = NULL;
+    int32_t status = enumeration ? kmipkit_ttlv_value_enumeration(actual, &value)
+                                 : kmipkit_ttlv_value_integer((int32_t)actual, &value);
+    bool appended = status == 0 && append_ttlv_value(client, fields, tag, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return appended;
+}
+
+static bool create_get_wrapping_spec(kmip_live_client_t *client,
+    const uint8_t *identifier, uint64_t length, kmipkit_ttlv_structure_t **out) {
+    kmipkit_ttlv_structure_t *spec = NULL, *key = NULL, *parameters = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    bool valid = identifier && length &&
+        kmipkit_ttlv_structure_create(&spec) == 0 && kmipkit_ttlv_structure_create(&key) == 0 &&
+        kmipkit_ttlv_structure_create(&parameters) == 0 &&
+        append_key_block_number(client, &spec, 0x42009e, 1, true) &&
+        kmipkit_ttlv_value_text_string(client->limits, identifier, length, &value) == 0 &&
+        append_ttlv_value(client, &key, 0x420094, &value) &&
+        append_key_block_number(client, &parameters, 0x420011, 12, true) &&
+        structure_into_value(client, &parameters, &value) && append_ttlv_value(client, &key, 0x42002b, &value) &&
+        structure_into_value(client, &key, &value) && append_ttlv_value(client, &spec, 0x420036, &value) &&
+        append_key_block_number(client, &spec, 0x4200a3, 1, true);
+    if (parameters) kmipkit_ttlv_structure_release(parameters);
+    if (key) kmipkit_ttlv_structure_release(key);
+    if (value) kmipkit_ttlv_value_release(value);
+    if (!valid && spec) kmipkit_ttlv_structure_release(spec);
+    *out = valid ? spec : NULL;
+    return valid;
+}
+
+static bool key_block_structure(kmipkit_ttlv_structure_view_t *fields, uint32_t tag,
+    kmipkit_ttlv_structure_view_t **out) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    bool valid = structure_view_find_value(fields, tag, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value) &&
+        kmipkit_ttlv_value_view_structure(value, out) == 0;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return valid;
+}
+
+static bool key_block_number_is(kmipkit_ttlv_structure_view_t *fields, uint32_t tag,
+    uint32_t expected, bool enumeration) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint32_t actual_enum = 0;
+    int32_t actual_int = 0;
+    bool valid = structure_view_find_value(fields, tag,
+        enumeration ? KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION : KMIPKIT_TTLV_ITEM_TYPE_INTEGER, &value);
+    if (valid) valid = enumeration
+        ? kmipkit_ttlv_value_view_enumeration(value, &actual_enum) == 0 && actual_enum == expected
+        : kmipkit_ttlv_value_view_integer(value, &actual_int) == 0 && actual_int == (int32_t)expected;
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return valid;
+}
+
+static bool key_block_bytes_match(kmipkit_ttlv_structure_view_t *fields, uint32_t tag,
+    const uint8_t *expected, uint64_t length) {
+    kmipkit_ttlv_value_view_t *view = NULL;
+    uint64_t actual_length = 0;
+    bool valid = structure_view_find_value(fields, tag,
+        expected ? KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING : KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &view) &&
+        kmipkit_ttlv_value_view_byte_length(view, &actual_length) == 0 && actual_length == length;
+    for (uint64_t index = 0; valid && expected && index < length; ++index) {
+        uint8_t byte = 0;
+        valid = kmipkit_ttlv_value_view_byte_at(view, index, &byte) == 0 && byte == expected[index];
+    }
+    if (view) kmipkit_ttlv_value_view_release(view);
+    return valid;
+}
+
+static bool symmetric_key_block_matches(kmipkit_ttlv_structure_view_t *object,
+    const uint8_t *wrapper, uint64_t wrapper_length) {
+    kmipkit_ttlv_structure_view_t *symmetric = NULL, *block = NULL, *value = NULL, *nested = NULL;
+    bool valid = key_block_structure(object, 0x42008f, &symmetric) &&
+        key_block_structure(symmetric, 0x420040, &block) &&
+        key_block_number_is(block, 0x420028, 3, true) && key_block_number_is(block, 0x42002a, 256, false);
+    if (valid && wrapper) {
+        valid = key_block_bytes_match(block, 0x420045, NULL, 40) &&
+            key_block_structure(block, 0x420046, &value) &&
+            key_block_number_is(value, 0x42009e, 1, true) && key_block_number_is(value, 0x4200a3, 1, true) &&
+            key_block_structure(value, 0x420036, &nested) &&
+            key_block_bytes_match(nested, 0x420094, wrapper, wrapper_length);
+    } else if (valid) {
+        kmipkit_ttlv_structure_view_t *wrapping = NULL;
+        valid = !key_block_structure(block, 0x420046, &wrapping) &&
+            key_block_number_is(block, 0x420042, 7, true) && key_block_structure(block, 0x420045, &value) &&
+            key_block_structure(value, 0x420043, &nested) && key_block_bytes_match(nested, 0x42003f, NULL, 32);
+        if (wrapping) kmipkit_ttlv_structure_view_release(wrapping);
+    }
+    if (nested) kmipkit_ttlv_structure_view_release(nested);
+    if (value) kmipkit_ttlv_structure_view_release(value);
+    if (block) kmipkit_ttlv_structure_view_release(block);
+    if (symmetric) kmipkit_ttlv_structure_view_release(symmetric);
+    return valid;
+}
+
+static bool make_key_block_attributes(kmip_live_client_t *client, uint32_t mask,
+    kmipkit_ttlv_structure_t **attributes) {
+    kmipkit_ttlv_value_t *value = NULL;
+    bool valid = create_cryptographic_key_attributes(client, 3, 256, attributes) &&
+        append_key_block_number(client, attributes, 0x42002c, mask, false) &&
+        kmipkit_ttlv_value_boolean(1, &value) == 0 &&
+        append_ttlv_value(client, attributes, 0x420122, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return valid;
+}
+
+static bool create_typed_key_block_fixture(kmip_live_client_t *client, uint32_t mask,
+    kmipkit_unique_identifier_v1_t *id, kmipkit_client_batch_item_response_t **created) {
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    uint32_t object_type = 0;
+    uint8_t present = 0;
+    bool valid = make_key_block_attributes(client, mask, &attributes) &&
+        kmipkit_client_batch_item_create(2, attributes, NULL, &request) == 0 &&
+        execute_typed_single_item(client, &request, 1, created).success &&
+        kmipkit_client_batch_item_response_create(*created, &present, &object_type, id) == 0 &&
+        present && object_type == 2 && id->text_data && id->text_length;
+    if (request) kmipkit_client_batch_item_release(request);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    return valid;
+}
+
+static bool cleanup_typed_key_block(kmip_live_client_t *client,
+    const kmipkit_unique_identifier_v1_t *id, bool active) {
+    if (!id->text_data || !id->text_length) return true;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_item_response_t *response = NULL;
+    if (active && create_revocation_item(id, &request) == 0)
+        (void)execute_typed_single_item(client, &request, 0x13, &response);
+    if (request) kmipkit_client_batch_item_release(request);
+    if (response) kmipkit_client_batch_item_response_release(response);
+    request = NULL;
+    response = NULL;
+    bool destroyed = kmipkit_client_batch_item_destroy(id, &request) == 0 &&
+        execute_typed_single_item(client, &request, 0x14, &response).success;
+    if (request) kmipkit_client_batch_item_release(request);
+    if (response) kmipkit_client_batch_item_response_release(response);
+    return destroyed;
+}
+
+static kmip_execution_outcome_t execute_typed_key_block(kmip_live_client_t *client, bool wrapped) {
+    kmipkit_client_batch_item_response_t *owned = NULL, *wrapping = NULL, *result = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_ttlv_structure_t *spec = NULL, *object = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    kmipkit_unique_identifier_v1_t id = {.struct_size = sizeof(id), .abi_version = 1},
+        wrapper = {.struct_size = sizeof(wrapper), .abi_version = 1},
+        returned = {.struct_size = sizeof(returned), .abi_version = 1};
+    uint8_t present = 0, payload_present = 0;
+    uint32_t object_type = 0;
+    bool active = false;
+    kmip_execution_outcome_t out = outcome_not_run("The prerequisite Create request failed.");
+    if (!create_typed_key_block_fixture(client, 12, &id, &owned) ||
+        (wrapped && !create_typed_key_block_fixture(client, 48, &wrapper, &wrapping))) goto cleanup;
+    if (wrapped) {
+        out = outcome_not_run("The prerequisite Activate request failed.");
+        if (kmipkit_client_batch_item_activate(&wrapper, &request) != 0) goto cleanup;
+        kmip_execution_outcome_t activation = execute_typed_single_item(client, &request, 0x12, &result);
+        active = activation.success;
+        if (!active || kmipkit_client_batch_item_response_activate(result, &present, &returned) != 0 ||
+            !present || !same_text_identifier(&wrapper, &returned)) goto cleanup;
+        kmipkit_client_batch_item_response_release(result);
+        result = NULL;
+        if (!create_get_wrapping_spec(client, wrapper.text_data, wrapper.text_length, &spec)) goto cleanup;
+    }
+    out = outcome_not_run("Could not construct the Key Block Get request.");
+    if (kmipkit_client_batch_item_get(&id, wrapped ? 0 : 1, wrapped ? 0 : 7, 0, 0, 0, 0, spec, &request) != 0)
+        goto cleanup;
+    out = execute_typed_single_item(client, &request, 0x0a, &result);
+    if (out.success) {
+        out.success = kmipkit_client_batch_item_response_get(
+            result, &present, &payload_present, &object_type, &returned, &object) == 0 &&
+            present && payload_present && object_type == 2 && same_text_identifier(&id, &returned) &&
+            kmipkit_ttlv_structure_view(object, &view) == 0 &&
+            symmetric_key_block_matches(view, wrapper.text_data, wrapper.text_length);
+        if (!out.success) snprintf(out.result_reason, sizeof(out.result_reason), "Get returned an unexpected Key Block.");
+    }
+
+cleanup:
+    if (request) kmipkit_client_batch_item_release(request);
+    if (spec) kmipkit_ttlv_structure_release(spec);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (object) kmipkit_ttlv_structure_release(object);
+    if (result) kmipkit_client_batch_item_response_release(result);
+    bool wrapping_destroyed = cleanup_typed_key_block(client, &wrapper, active);
+    bool target_destroyed = cleanup_typed_key_block(client, &id, false);
+    if (!wrapping_destroyed || !target_destroyed) {
+        out.success = false;
+        snprintf(out.result_reason, sizeof(out.result_reason), "Could not destroy a Key Block fixture.");
+    }
+    if (wrapping) kmipkit_client_batch_item_response_release(wrapping);
+    if (owned) kmipkit_client_batch_item_response_release(owned);
+    return out;
 }
 
 static int32_t build_typed_gcm_request(kmip_live_client_t *client, bool fluent,
@@ -9497,13 +9698,13 @@ static kmip_execution_outcome_t execute_typed_gcm(
         !append_ttlv_value(client, &attributes, 0x42002c, &mask) ||
         kmipkit_client_batch_item_create(2, attributes, NULL, &request) != 0)
         goto cleanup;
-    if (!typed_gcm_exchange(client, &request, 1, &created).success ||
+    if (!execute_typed_single_item(client, &request, 1, &created).success ||
         kmipkit_client_batch_item_response_create(created, &present, &object_type, &key) != 0 ||
         !present || object_type != 2 || !key.text_data || !key.text_length)
         goto cleanup;
     outcome = outcome_not_run("The prerequisite Activate request failed.");
     if (kmipkit_client_batch_item_activate(&key, &request) != 0 ||
-        !typed_gcm_exchange(client, &request, 0x12, &response).success ||
+        !execute_typed_single_item(client, &request, 0x12, &response).success ||
         kmipkit_client_batch_item_response_activate(response, &present, &returned) != 0 ||
         !present || !same_text_identifier(&key, &returned))
         goto cleanup;
@@ -9512,7 +9713,7 @@ static kmip_execution_outcome_t execute_typed_gcm(
 
     outcome = outcome_not_run("Could not construct the AES-GCM Encrypt request.");
     if (build_typed_gcm_request(client, fluent, &key, &plain, NULL, &request) != 0) goto cleanup;
-    outcome = typed_gcm_exchange(client, &request, 0x1f, &encrypted);
+    outcome = execute_typed_single_item(client, &request, 0x1f, &encrypted);
     if (outcome.success) {
         outcome.success = kmipkit_client_batch_item_response_encrypt(
             encrypted, &present, &returned, &has_data, &data, &has_iv, &iv,
@@ -9533,7 +9734,7 @@ static kmip_execution_outcome_t execute_typed_gcm(
     }
     outcome = outcome_not_run("Could not construct the AES-GCM Decrypt request.");
     if (build_typed_gcm_request(client, fluent, &key, &data, &tag, &request) != 0) goto cleanup;
-    outcome = typed_gcm_exchange(client, &request, 0x20, &response);
+    outcome = execute_typed_single_item(client, &request, 0x20, &response);
     if (invalid_tag) check_gcm_negative_result(&outcome);
     else if (outcome.success) {
         outcome.success = kmipkit_client_batch_item_response_decrypt(
@@ -9548,13 +9749,13 @@ cleanup:
         request = NULL;
         kmipkit_client_batch_item_response_t *cleanup_response = NULL;
         if (create_revocation_item(&key, &request) == 0)
-            (void)typed_gcm_exchange(client, &request, 0x13, &cleanup_response);
+            (void)execute_typed_single_item(client, &request, 0x13, &cleanup_response);
         if (request) kmipkit_client_batch_item_release(request);
         if (cleanup_response) kmipkit_client_batch_item_response_release(cleanup_response);
         request = NULL;
         cleanup_response = NULL;
         if (kmipkit_client_batch_item_destroy(&key, &request) == 0 &&
-            !typed_gcm_exchange(client, &request, 0x14, &cleanup_response).success) {
+            !execute_typed_single_item(client, &request, 0x14, &cleanup_response).success) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Could not destroy the AES-GCM fixture.");
         }
@@ -10768,6 +10969,53 @@ static kmip_execution_outcome_t execute_generic_gcm(kmip_live_client_t *client, 
     return outcome;
 }
 
+static bool generic_key_block_response(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    const generic_ext_ctx_t *context = raw;
+    const char *wrapping_key = context->count == 2 ? context->ids[1] : NULL;
+    return key_block_number_is(payload, 0x420057, 2, true) &&
+        key_block_bytes_match(payload, 0x420094, (const uint8_t *)context->ids[0], strlen(context->ids[0])) &&
+        symmetric_key_block_matches(payload, (const uint8_t *)wrapping_key, wrapping_key ? strlen(wrapping_key) : 0);
+}
+
+static bool create_generic_key_block_fixture(kmip_live_client_t *client, uint32_t mask,
+    generic_ext_ctx_t *context) {
+    kmipkit_ttlv_structure_t *attrs = NULL, *payload = make_ttlv_struct();
+    bool built = payload && make_key_block_attributes(client, mask, &attrs) &&
+        append_ttlv_enum(client, &payload, 0x420057, 2) &&
+        move_ttlv_struct(client, &payload, 0x420125, &attrs);
+    if (attrs) kmipkit_ttlv_structure_release(attrs);
+    if (built) return execute_generic_custom(client, 1, payload, check_ext_single_id, context).success;
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    return false;
+}
+
+static kmip_execution_outcome_t execute_generic_key_block(kmip_live_client_t *client, bool wrapped) {
+    generic_ext_ctx_t context = {0};
+    kmipkit_ttlv_structure_t *payload = NULL, *spec = NULL;
+    kmip_execution_outcome_t out = outcome_not_run("The prerequisite Create request failed.");
+    if (!create_generic_key_block_fixture(client, 12, &context) ||
+        (wrapped && !create_generic_key_block_fixture(client, 48, &context))) goto cleanup;
+    if (wrapped) {
+        out = outcome_not_run("The prerequisite Activate request failed.");
+        if (!generic_ext_id_op(client, 0x12, context.ids[1]).success) goto cleanup;
+    }
+    out = outcome_not_run("Could not construct the Key Block Get request.");
+    payload = make_ttlv_struct();
+    if (!payload || !append_ttlv_text(client, &payload, 0x420094, context.ids[0])) goto cleanup;
+    if (wrapped) {
+        if (!create_get_wrapping_spec(client, (const uint8_t *)context.ids[1], strlen(context.ids[1]), &spec) ||
+            !move_ttlv_struct(client, &payload, 0x420047, &spec)) goto cleanup;
+    } else if (!append_ttlv_enum(client, &payload, 0x420042, 7)) goto cleanup;
+    out = execute_generic_custom(client, 0x0a, payload, generic_key_block_response, &context);
+    payload = NULL;
+
+cleanup:
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (spec) kmipkit_ttlv_structure_release(spec);
+    generic_ext_cleanup(client, &context);
+    return out;
+}
+
 static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op,
     bool gcm, bool invalid_tag) {
     generic_ext_ctx_t ctx = {0};
@@ -11757,6 +12005,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the C binding exposes no high-level client route for this case");
     }
+    bool get_key_block = key_block_case(test_case->case_id);
+    bool wrapped_key = strcmp(test_case->case_id, "test-op-get-wrapped-symmetric-key") == 0;
     uint32_t gcm_operation = gcm_case_operation(test_case->case_id);
     bool gcm_invalid_tag = strcmp(test_case->case_id, "test-crypto-decrypt-aes-256-gcm-invalid-tag") == 0;
     bool fluent_route = strcmp(client->api_level, "fluent") == 0;
@@ -11782,6 +12032,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->mode, "server_exchange") == 0 &&
         strcmp(client->api_level, "generic-ttlv") != 0) {
+        if (client->protocol_major == 2 && get_key_block && strcmp(test_case->mutation, "mutating") == 0)
+            return execute_typed_key_block(client, wrapped_key);
         if (client->protocol_major == 2 && gcm_operation && strcmp(test_case->mutation, "mutating") == 0)
             return execute_typed_gcm(client, gcm_operation, fluent_route, gcm_invalid_tag);
         if (strcmp(test_case->operation, "Set Endpoint Role") == 0 &&
@@ -11872,7 +12124,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             !connection->username_env[0] && !connection->password_env[0] &&
             strcmp(test_case->mode, "server_exchange") == 0 &&
-            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash) && client->allow_mutations))) {
+            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash || get_key_block) && client->allow_mutations))) {
+            if (get_key_block && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
+                return execute_generic_key_block(client, wrapped_key);
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_owned_key(client, owned, test_case->case_id);
             if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0) {

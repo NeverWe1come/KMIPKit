@@ -19,7 +19,8 @@ def query_cases(version, base):
         case.update(
             case_id=case_id,
             description=f"Query the provider for {name} and read the returned structure under KMIP {version}.",
-            requires={"base_object": name, "query_function": str(function), "query_result_tag": str(tag)},
+            requires={"base_object": name, "query_function": str(function), "query_result_tag": str(tag),
+                      "controlled_expected_status": "Success"},
             isolation_recipe={
                 "unique_name_prefix": f"kmipkit-{case_id}", "setup_steps": [],
                 "target_step": f"Execute Query for {name}", "teardown_steps": [],

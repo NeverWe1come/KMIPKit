@@ -11,6 +11,7 @@ from verification.interop.shared.tools.cosmian_minimum import (
 )
 from verification.interop.shared.tools.operation_catalog import build_normative_catalog, direction
 from verification.interop.shared.tools.table_authenticated_encryption import AAD_CASES
+from verification.interop.shared.tools.table_key_block_exchanges import TRANSPARENT_KEY, WRAPPED_KEY
 from verification.interop.shared.tools.run_all import (
     Listener, build_command_for_language, incomplete_case_ids, table_operation_expectations,
 )
@@ -66,6 +67,17 @@ class CosmianMinimumTests(unittest.TestCase):
                 high_level = next(route for route in row["obligations"] if route["api_level"] == "high-level")
                 self.assertEqual("rust", high_level["language"])
                 self.assertLessEqual(set(AAD_CASES), set(high_level["case_ids"]))
+            for field, case_ids in (
+                ("Key Block", {TRANSPARENT_KEY, WRAPPED_KEY}),
+                ("Key Value", {TRANSPARENT_KEY, WRAPPED_KEY}),
+                ("Key Wrapping Specification", {WRAPPED_KEY}),
+                ("Key Wrapping Data", {WRAPPED_KEY}),
+            ):
+                row = reports[version]["base_object", field]
+                self.assertLessEqual(case_ids, set(row["server_cases"]))
+                self.assertIn("rust", {item["language"] for item in row["obligations"]
+                                       if item["api_level"] == "high-level"})
+            self.assertIn(TRANSPARENT_KEY, reports[version]["transparent_key", "Symmetric Key"]["server_cases"])
             for name in ("Server Information", "Extension Information", "RNG Parameters",
                          "Validation Information", "Profile Information", "Capability Information"):
                 case_id = f"test-query-{'-'.join(name.lower().split())}"

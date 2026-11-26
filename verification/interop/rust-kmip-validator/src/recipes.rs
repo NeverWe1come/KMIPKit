@@ -13,6 +13,7 @@ use kmipkit::{Client, ClientRequest};
 
 mod crypto;
 mod draft;
+mod key_block;
 pub(crate) use crypto::OPERATIONS as CRYPTO_OPERATIONS;
 
 pub(crate) enum Failure {
@@ -141,6 +142,9 @@ impl Attempt<'_> {
             Some("batch_id_placeholder") => return self.batch(case),
             Some("multipart_streaming") => return self.multipart(case),
             _ => {}
+        }
+        if case.operation == "Get" && case.requires["key_block_shape"].is_string() {
+            return self.get_key_block(case.requires["key_block_shape"] == "wrapped");
         }
         if draft::supports(&case.operation) {
             return self.run_draft(case);

@@ -86,6 +86,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if (keyBlockCase(testCase)) {
+            return executeKeyBlock(testCase, start);
+        }
         if (queryFieldCase(testCase)) {
             int function = testCase.requires().path("query_function").asInt(-1);
             int tag = testCase.requires().path("query_result_tag").asInt(-1);
@@ -411,8 +414,12 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static boolean keyBlockCase(CatalogLoader.CatalogCase testCase) {
+        return "Get".equals(testCase.operation()) && testCase.requires().has("key_block_shape");
+    }
+
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
-        return attributeRead(testCase) || typedOnlyKeyProbe(testCase)
+        return keyBlockCase(testCase) || attributeRead(testCase) || typedOnlyKeyProbe(testCase)
                 || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
                 "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
     }
@@ -423,6 +430,66 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     static boolean registerOpaqueCase(CatalogLoader.CatalogCase testCase) {
         return "test-obj-opaque-object".equals(testCase.caseId());
+    }
+
+    private CaseOutcome executeKeyBlock(CatalogLoader.CatalogCase testCase, long start) {
+        boolean wrapped = "wrapped".equals(testCase.requires().path("key_block_shape").asText());
+        var keys = new ArrayList<UniqueIdentifier>();
+        UniqueIdentifier active = null;
+        try {
+            UniqueIdentifier target = createExtractableFixture(testCase, 12, keys, start);
+            if (target == null) return CaseOutcome.notRun("The prerequisite Create request failed.", elapsedMillis(start));
+            UniqueIdentifier wrappingKey = wrapped ? createExtractableFixture(testCase, 48, keys, start) : null;
+            if (wrapped) {
+                if (wrappingKey == null)
+                    return CaseOutcome.notRun("The prerequisite Create request failed.", elapsedMillis(start));
+                var activation = executeRequest(testCase, withBatchId(ClientBatchItem.activate(wrappingKey)),
+                        item -> item.activateResponse().map(payload -> sameIdentifier(wrappingKey, payload.uniqueIdentifier()))
+                                .orElse(false), start);
+                if (!"passed".equals(activation.status()))
+                    return CaseOutcome.notRun("The prerequisite Activate request failed.", elapsedMillis(start));
+                active = wrappingKey;
+            }
+            byte[] wrappingIdentifier = wrapped ? wrappingKey.nativeText() : null;
+            try (var specification = wrapped ? GenericExchange.keyWrappingFields(wrappingIdentifier) : null) {
+                ClientBatchItem request;
+                if ("fluent".equals(connection.apiLevel())) {
+                    try (var builder = client.request().get()) {
+                        builder.uniqueIdentifier(target);
+                        if (specification == null) builder.keyFormatType(7);
+                        else builder.keyWrappingSpecification(specification);
+                        request = builder.build();
+                    }
+                } else {
+                    request = ClientBatchItem.get(target, wrapped ? null : 7L, null, null, specification);
+                }
+                return executeRequest(testCase, withBatchId(request), observed -> observed.getResponse().map(get -> {
+                    try (get; var objectView = get.object().map(TtlvStructure::view).orElse(null)) {
+                        return get.objectTypeRaw().orElse(-1) == 2 && objectView != null
+                                && get.uniqueIdentifier().filter(id -> sameIdentifier(target, id)).isPresent()
+                                && GenericExchange.keyBlockMatches(objectView, wrappingIdentifier);
+                    }
+                }).orElse(false), start);
+            }
+        } finally {
+            if (active != null) executeRequest(testCase, withBatchId(revokeRequest(active, false)), ignored -> true, start);
+            for (var key : keys)
+                executeRequest(testCase, withBatchId(ClientBatchItem.destroy(key)), ignored -> true, start);
+        }
+    }
+
+    private UniqueIdentifier createExtractableFixture(CatalogLoader.CatalogCase testCase, int usageMask,
+            List<UniqueIdentifier> keys, long start) {
+        var id = new AtomicReference<UniqueIdentifier>();
+        try (var attributes = symmetricKeyAttributes("key-block-" + UUID.randomUUID(), 256, usageMask)) {
+            var result = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attributes, null)),
+                    response -> response.createResponse().map(payload -> {
+                        keys.add(payload.uniqueIdentifier());
+                        id.set(payload.uniqueIdentifier());
+                        return payload.objectType() == 2;
+                    }).orElse(false), start);
+            return "passed".equals(result.status()) ? id.get() : null;
+        }
     }
 
     private CaseOutcome executeRegisterOpaque(CatalogLoader.CatalogCase testCase, long start) {

@@ -166,6 +166,7 @@ pub(crate) struct Observed {
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
     pub authentication_tag: Option<kmipkit::protocol::SecretBytes>,
+    pub key_block_shape: Option<crate::key_block::KeyBlockShape>,
     pub validity: Option<u32>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
 }
@@ -256,6 +257,16 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
             .encrypt_response()
             .and_then(|value| value.authenticated_encryption_tag())
             .map(|value| kmipkit::protocol::SecretBytes::new(value.with_bytes(<[u8]>::to_vec))),
+        key_block_shape: response
+            .outcome()
+            .get_response()
+            .and_then(|result| result.key_block()?.ok())
+            .and_then(|block| {
+                block
+                    .with_raw(|raw| crate::key_block::shape(&raw))
+                    .ok()
+                    .flatten()
+            }),
         validity,
         ticket,
     }
@@ -666,6 +677,7 @@ pub(crate) fn asynchronous(
             .collect(),
         bytes: None,
         authentication_tag: None,
+        key_block_shape: None,
         validity: None,
         ticket: None,
         correlation: response.with_asynchronous_correlation_value(|value| {

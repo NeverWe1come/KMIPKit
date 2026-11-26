@@ -188,6 +188,20 @@ operation methods. They check additional authenticated data in the request,
 a 16-byte tag in the Encrypt response, plaintext recovery with that tag,
 and `Cryptographic Failure` after changing one byte of the tag.
 
+With the KMIPKit library built from `8373c9245`, the 5.29.0 deployment
+returned Server Information through all available Query routes, including
+the typed routes. Four other functions still returned empty successful
+payloads. Query RNGs returned Operation Failed with Invalid Field.
+
+In both protocol versions, a Get with Key Format Type
+`TransparentSymmetricKey` returned 32 bytes inside a structured Key Value.
+A separate Get using Key Wrapping Specification without Key Format Type
+returned a 40-byte wrapped Key Value and Key Wrapping Data naming the
+wrapping key. Cosmian rejected Get with the same wrapper when Key Format
+Type was also specified. The published table marks Key Value as
+unimplemented, so the campaign records the successful result as a
+difference from the table.
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its
