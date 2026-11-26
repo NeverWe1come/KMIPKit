@@ -379,12 +379,23 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.query_operations(language, minor, fields=True, invalid=invalid, route=route)
 
-    def query_operations(self, language, minor, *, fields=False, invalid=False, route="generic-ttlv"):
+    def test_generic_c_query_retains_failure_without_operation(self):
+        validators = dict(installed_validators())
+        if not validators.get("c"):
+            self.skipTest("Installed C validator required")
+        for minor in (0, 1):
+            with self.subTest(minor=minor):
+                self.query_operations("c", minor, fields=True, operation_omitted=True)
+
+    def query_operations(self, language, minor, *, fields=False, invalid=False, route="generic-ttlv",
+                         operation_omitted=False):
         with tempfile.TemporaryDirectory(prefix="kmipkit-query-operations-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
             query = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-query")
             cases = list(query_cases(f"2.{minor}", query)) if fields else [query]
+            if operation_omitted:
+                cases = [case for case in cases if case["case_id"] == "test-query-rng-parameters"]
             catalog_path = work / "catalog.json"
             catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
             members = {
@@ -437,15 +448,20 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 else:
                                     returned = number(0x42005C, 5, 1)
                                 batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                                if operation_omitted:
+                                    result_fields = [number(0x42007F, 5, 1), number(0x42007E, 5, 4)]
+                                else:
+                                    result_fields = [number(0x42005C, 5, 0x18), *batch_ids,
+                                                     number(0x42007F, 5, 0), structure(0x42007C, returned)]
                                 peer.sendall(structure(
                                     0x42007B,
                                     structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
                                               number(0x42000D, 2, 1)),
-                                    structure(0x42000F, number(0x42005C, 5, 0x18), *batch_ids,
-                                              number(0x42007F, 5, 0), structure(0x42007C, returned)),
+                                    structure(0x42000F, *result_fields),
                                 ))
                         _, stderr = process.communicate(timeout=15)
-                        self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
+                        self.assertEqual(process.returncode != 0, invalid or operation_omitted,
+                                         stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
                             process.terminate()
@@ -453,12 +469,14 @@ class DirectTagValidatorTests(unittest.TestCase):
             results = json.loads(report.read_text())["cases"]
             self.assertEqual({result["case_id"] for result in results}, {case["case_id"] for case in cases})
             for result in results:
-                self.assertEqual(result["status"], "failed" if invalid else "passed")
-                if not invalid:
+                self.assertEqual(result["status"], "failed" if invalid or operation_omitted else "passed")
+                if operation_omitted:
+                    self.assertEqual((result["result_status_code"], result["result_reason_code"]), (1, 4))
+                elif not invalid:
                     self.assertEqual(result["result_status_code"], 0)
                     if route == "high-level":
                         self.assertEqual(result["actual_api_level"], route)
-            if not invalid:
+            if not invalid and not operation_omitted:
                 label = "query-fields" if fields else "query-operations"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{label}")
 

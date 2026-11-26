@@ -10613,7 +10613,7 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
         kmipkit_protocol_version_v1_t pver = {0};
         uint32_t actual_op = 0, status = 0, reason = 0;
         uint64_t bcount = 0;
-        uint8_t present = 0;
+        uint8_t present = 0, has_operation = 0;
         ok = kmipkit_ttlv_decode(response, response_size, &err, &root) == 0 &&
             kmipkit_ttlv_item_view_from_item(root, &riv) == 0 &&
             item_view_has_tag(riv, 0x42007b, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &rvv) &&
@@ -10625,9 +10625,9 @@ static kmip_execution_outcome_t execute_generic_custom_with_pending(
             pver.major == 2 && pver.minor == client->protocol_minor &&
             kmipkit_response_message_batch_item_count(rmsg, &bcount) == 0 && bcount == 1 &&
             kmipkit_response_message_batch_item_at(rmsg, 0, &rbatch) == 0 &&
-            kmipkit_response_batch_item_view_operation(rbatch, &present, &actual_op) == 0 &&
-            present && actual_op == operation &&
+            kmipkit_response_batch_item_view_operation(rbatch, &has_operation, &actual_op) == 0 &&
             kmipkit_response_batch_item_view_result_status(rbatch, &present, &status) == 0 && present &&
+            (has_operation ? actual_op == operation : status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED) &&
             kmipkit_response_batch_item_view_ttlv(rbatch, &bttlv) == 0 &&
             kmipkit_ttlv_structure_view(bttlv, &bview) == 0;
         if (ok) {
