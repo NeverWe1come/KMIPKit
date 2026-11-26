@@ -346,6 +346,7 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual(payload, [
                                     (0x42004F, 2, struct.pack(">i", 1)),
                                     (0x4200D4, 2, struct.pack(">i", 0)),
+                                    (0x420125, 1, b""),
                                 ])
                             elif hashing:
                                 self.assertEqual(find_value(payload, 0x420038), struct.pack(">I", 6))

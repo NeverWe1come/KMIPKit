@@ -5956,8 +5956,40 @@ impl Client {
         if let Some(mutation_policy) = mutation_policy {
             mutation_policy?;
         }
-        let (response_message, wire_response, response_delivery_state) =
+        let (mut response_message, wire_response, response_delivery_state) =
             self.exchange_operation(request_message, limits, request_options)?;
+        if response_message.header().protocol_version() == options.protocol_version
+            && let [request_identity] = request_identities.as_slice()
+        {
+            let normalize_operation = {
+                let mut response_items = response_message.batch_items();
+                matches!(
+                    (response_items.next(), response_items.next()),
+                    (Some(item), None)
+                        if item.operation().is_none()
+                            && item.result_status()
+                                == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+                            && item.result_reason().is_some()
+                )
+            };
+            if normalize_operation {
+                response_message = response_message
+                    .with_single_failed_operation(
+                        request_identity.operation,
+                        request_identity.unique_batch_item_id.as_deref(),
+                    )
+                    .map_err(|error| {
+                        ClientError::protocol(
+                            ProtocolError::new(
+                                ProtocolErrorKind::MalformedMessage,
+                                ProtocolCauseCategory::InvalidValue,
+                                error,
+                            ),
+                            response_delivery_state,
+                        )
+                    })?;
+            }
+        }
         let profile_response = if profiles.is_some() {
             Some(
                 clone_response_message(&response_message)
@@ -5966,24 +5998,6 @@ impl Client {
         } else {
             None
         };
-
-        if response_message.header().protocol_version() == options.protocol_version {
-            let mut response_items = response_message.batch_items();
-            if let (Some(item), None) = (response_items.next(), response_items.next())
-                && item.operation().is_none()
-                && item.result_status()
-                    == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
-            {
-                let status = ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED);
-                let result_message = item
-                    .with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned()));
-                if let Ok(result) =
-                    KmipOperationResult::new(status, item.result_reason(), result_message)
-                {
-                    return Err(ClientError::ServerResult(result));
-                }
-            }
-        }
 
         let validated_response = validate_response(
             &request_identities,

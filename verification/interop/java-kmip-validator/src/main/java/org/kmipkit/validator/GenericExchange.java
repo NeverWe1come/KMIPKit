@@ -677,24 +677,103 @@ final class GenericExchange {
 
     private static PrivateKey readKey(Path path) throws IOException, GeneralSecurityException {
         String pem = Files.readString(path).strip();
-        String start = "-----BEGIN PRIVATE KEY-----";
-        String end = "-----END PRIVATE KEY-----";
-        if (!pem.startsWith(start) || !pem.endsWith(end)) {
-            throw new InvalidKeySpecException("A PKCS#8 PEM client key is required");
-        }
-        byte[] bytes = Base64.getMimeDecoder().decode(pem.substring(start.length(), pem.length() - end.length()));
+        byte[] decoded = null;
+        byte[] pkcs8 = null;
         try {
+            if (pem.contains("-----BEGIN PRIVATE KEY-----")) {
+                decoded = decodePemBlock(pem, "PRIVATE KEY");
+                pkcs8 = decoded;
+            } else if (pem.contains("-----BEGIN RSA PRIVATE KEY-----")) {
+                decoded = decodePemBlock(pem, "RSA PRIVATE KEY");
+                byte[] algId = derTlv(0x30, concat(
+                        new byte[] {0x06, 0x09, 0x2a, (byte) 0x86, 0x48, (byte) 0x86, (byte) 0xf7, 0x0d, 0x01, 0x01, 0x01},
+                        new byte[] {0x05, 0x00}));
+                pkcs8 = derTlv(0x30, concat(new byte[] {0x02, 0x01, 0x00}, algId, derTlv(0x04, decoded)));
+            } else if (pem.contains("-----BEGIN EC PRIVATE KEY-----")) {
+                decoded = decodePemBlock(pem, "EC PRIVATE KEY");
+                byte[] curveOidTlv = extractSec1NamedCurveOid(decoded);
+                byte[] ecOid = new byte[] {0x06, 0x07, 0x2a, (byte) 0x86, 0x48, (byte) 0xce, 0x3d, 0x02, 0x01};
+                byte[] algId = derTlv(0x30, curveOidTlv != null ? concat(ecOid, curveOidTlv) : ecOid);
+                pkcs8 = derTlv(0x30, concat(new byte[] {0x02, 0x01, 0x00}, algId, derTlv(0x04, decoded)));
+            } else {
+                throw new InvalidKeySpecException("Unsupported PEM client key format");
+            }
             for (String algorithm : new String[] {"RSA", "EC", "Ed25519", "Ed448"}) {
                 try {
-                    return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(bytes));
+                    return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(pkcs8));
                 } catch (InvalidKeySpecException ignored) {
                     // Try the next available key type.
                 }
             }
             throw new InvalidKeySpecException("Client key type is unsupported");
         } finally {
-            Arrays.fill(bytes, (byte) 0);
+            if (decoded != null) Arrays.fill(decoded, (byte) 0);
+            if (pkcs8 != null) Arrays.fill(pkcs8, (byte) 0);
         }
+    }
+
+    private static byte[] decodePemBlock(String pem, String label) throws InvalidKeySpecException {
+        String start = "-----BEGIN " + label + "-----";
+        String end = "-----END " + label + "-----";
+        int s = pem.indexOf(start);
+        int e = pem.indexOf(end, s + start.length());
+        if (s < 0 || e < 0) throw new InvalidKeySpecException("Malformed PEM " + label + " block");
+        return Base64.getMimeDecoder().decode(pem.substring(s + start.length(), e));
+    }
+
+    private static byte[] extractSec1NamedCurveOid(byte[] sec1) throws InvalidKeySpecException {
+        int[] offset = {0};
+        if (sec1.length < 2 || sec1[offset[0]++] != 0x30) throw new InvalidKeySpecException("Invalid SEC1 EC key");
+        int seqLen = readDerLength(sec1, offset);
+        int end = Math.min(sec1.length, offset[0] + seqLen);
+        while (offset[0] < end) {
+            int tag = sec1[offset[0]++] & 0xff;
+            int len = readDerLength(sec1, offset);
+            if (offset[0] + len > end) break;
+            if (tag == 0xa0 && len >= 2 && sec1[offset[0]] == 0x06) {
+                return Arrays.copyOfRange(sec1, offset[0], offset[0] + len);
+            }
+            offset[0] += len;
+        }
+        return null;
+    }
+
+    private static int readDerLength(byte[] der, int[] offset) throws InvalidKeySpecException {
+        if (offset[0] >= der.length) throw new InvalidKeySpecException("Truncated DER length");
+        int first = der[offset[0]++] & 0xff;
+        if ((first & 0x80) == 0) return first;
+        int numBytes = first & 0x7f;
+        if (numBytes == 0 || numBytes > 4 || offset[0] + numBytes > der.length) {
+            throw new InvalidKeySpecException("Invalid DER length");
+        }
+        int len = 0;
+        for (int i = 0; i < numBytes; i++) {
+            len = (len << 8) | (der[offset[0]++] & 0xff);
+        }
+        return len;
+    }
+
+    private static byte[] derTlv(int tag, byte[] content) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream(content.length + 6);
+        out.write(tag);
+        int len = content.length;
+        if (len < 0x80) {
+            out.write(len);
+        } else {
+            int n = (32 - Integer.numberOfLeadingZeros(len) + 7) / 8;
+            out.write(0x80 | n);
+            for (int shift = (n - 1) * 8; shift >= 0; shift -= 8) {
+                out.write((len >>> shift) & 0xff);
+            }
+        }
+        out.write(content);
+        return out.toByteArray();
+    }
+
+    private static byte[] concat(byte[]... parts) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (byte[] p : parts) out.write(p);
+        return out.toByteArray();
     }
 
     static TtlvStructure copyStructure(TtlvStructureView view) {

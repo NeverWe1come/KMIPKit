@@ -648,7 +648,8 @@ class ControlledTlsPeerTest {
         int minor = Integer.parseInt(version.substring(2));
         byte[] offered = structure(0x420069, item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minor)));
         byte[] requestPayload = switch (operation) {
-            case 8 -> structure(0x420079, item(0x42004f, 2, intBytes(1)), item(0x4200d4, 2, intBytes(0)));
+            case 8 -> structure(0x420079, item(0x42004f, 2, intBytes(1)), item(0x4200d4, 2, intBytes(0)),
+                    structure(0x420125));
             case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
             case 30 -> structure(0x420079, offered);
             case 37 -> structure(0x420079, item(0x4200c4, 2, intBytes(32)));

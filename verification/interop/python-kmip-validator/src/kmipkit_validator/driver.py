@@ -1213,9 +1213,25 @@ class PythonKmipDriver:
     def _register_fixture(self, case: dict[str, Any], name: str) -> tuple[int, Any, Any]:
         from kmipkit import ttlv
 
-        object_type = case.get("requires", {}).get("object_type", "Opaque Object")
+        default_type = "Symmetric Key" if case.get("case_id") == "test-op-register" else "Opaque Object"
+        object_type = case.get("requires", {}).get("object_type", default_type)
         fixture_root = Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures"
-        if object_type == "Certificate":
+        if object_type == "Symmetric Key":
+            key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+            key_value = self._structure_item(0x0042_0045, [key_material])
+            key_block = self._structure_item(
+                0x0042_0040,
+                [
+                    self._item(0x0042_0042, "enumeration", 1),
+                    key_value,
+                    self._item(0x0042_0028, "enumeration", 3),
+                    self._item(0x0042_002A, "integer", 256),
+                ],
+            )
+            object_item = self._structure_item(0x0042_008F, [key_block])
+            attrs = self._fixture_attributes(name)
+            raw_object_type = 2
+        elif object_type == "Certificate":
             cert = (fixture_root / "certificate.der").read_bytes()
             attrs = self._structure(
                 [
@@ -1361,20 +1377,23 @@ class PythonKmipDriver:
             if operation == "Create Split Key":
                 return extension.client_batch_item_create_split_key(2, 2, 2, 1, attrs)
             if operation == "Import":
-                attrs.close()
-                attrs = ttlv.ttlv_structure_create()
-                opaque = self._structure_item(
-                    0x0042_005B,
+                key_material = self._item(0x0042_0043, "bytes", bytes([0x41] * 32))
+                key_value = self._structure_item(0x0042_0045, [key_material])
+                key_block = self._structure_item(
+                    0x0042_0040,
                     [
-                        self._item(0x0042_0059, "enumeration", 1),
-                        self._item(0x0042_005A, "bytes", b"KMIPKit dedicated import fixture"),
+                        self._item(0x0042_0042, "enumeration", 1),
+                        key_value,
+                        self._item(0x0042_0028, "enumeration", 3),
+                        self._item(0x0042_002A, "integer", 256),
                     ],
                 )
-                any_object = self._structure([opaque])
+                sym_key = self._structure_item(0x0042_008F, [key_block])
+                any_object = self._structure([sym_key])
                 try:
                     return extension.client_batch_item_import(
                         extensions.UniqueIdentifier.text_string(name),
-                        8,
+                        2,
                         attrs,
                         any_object,
                         replace_existing=False,

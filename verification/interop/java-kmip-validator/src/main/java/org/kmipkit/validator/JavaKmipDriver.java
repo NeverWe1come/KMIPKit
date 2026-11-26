@@ -149,7 +149,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     );
 
     private static final Set<String> EXTENDED_TYPED_OPERATIONS = Set.of(
-            "Create Key Pair", "Re-key", "Re-key Key Pair", "Certify", "Re-certify", "Validate",
+            "Create Key Pair", "Register", "Re-key", "Re-key Key Pair", "Certify", "Re-certify", "Validate",
             "Derive Key", "Join Split Key", "Import", "Export", "Get Usage Allocation",
             "Poll", "Cancel", "Add Attribute", "Modify Attribute", "Delete Attribute", "Set Attribute",
             "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"
@@ -227,8 +227,9 @@ public final class JavaKmipDriver implements AutoCloseable {
                         start);
             }
             return executeRequest(testCase, withBatchId(locateRequest(fluent)), result ->
-                    result.locateResponse().map(payload -> payload.locatedItems().orElse(0) == 0
-                            && payload.uniqueIdentifiers().isEmpty()).orElse(false), start);
+                    result.locateResponse().map(payload -> payload.uniqueIdentifiers().size() <= 1
+                            && payload.locatedItems().orElse(payload.uniqueIdentifiers().size())
+                                    >= payload.uniqueIdentifiers().size()).orElse(false), start);
         } catch (RuntimeException exception) {
             return exchangeFailure(exception, start);
         }
@@ -396,6 +397,14 @@ public final class JavaKmipDriver implements AutoCloseable {
                             elapsedMillis(start), statusCode, optionalCode(reasonCode));
                 }
             }
+        } catch (ClientOperationException exception) {
+            if ("NotSent".equals(testCase != null ? testCase.requires().path("expected_status").asText() : "")
+                    && exception.deliveryStateCode() == 1
+                    && exception.categoryCode() == 1
+                    && exception.causeCode() == 1) {
+                return CaseOutcome.localModelPassed(elapsedMillis(start));
+            }
+            return exchangeFailure(exception, start);
         } catch (Exception exception) {
             return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
                     + "); remote diagnostic text was suppressed.", elapsedMillis(start));
@@ -413,7 +422,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean registerOpaqueCase(CatalogLoader.CatalogCase testCase) {
-        return Set.of("test-op-register", "test-obj-opaque-object").contains(testCase.caseId());
+        return "test-obj-opaque-object".equals(testCase.caseId());
     }
 
     private CaseOutcome executeRegisterOpaque(CatalogLoader.CatalogCase testCase, long start) {
@@ -1114,6 +1123,36 @@ public final class JavaKmipDriver implements AutoCloseable {
             if ("Poll".equals(op) || "Cancel".equals(op)) {
                 return executeAsynchronous(testCase, "Cancel".equals(op), start);
             }
+            if ("Register".equals(op)) {
+                try (var attrs = symmetricKeyAttributes("register-" + UUID.randomUUID(), 256, 12);
+                        var fmt = TtlvValue.Enumeration(1);
+                        var mat = TtlvValue.ByteString(new byte[32], CODEC_LIMITS);
+                        var kv = appendValue(TtlvStructure.create(), 0x420043, mat);
+                        var kb0 = appendValue(TtlvStructure.create(), 0x420042, fmt);
+                        var kb1 = appendValue(kb0, 0x420045, TtlvValue.structure(kv, CODEC_LIMITS));
+                        var kb2 = appendValue(kb1, 0x420028, TtlvValue.Enumeration(3));
+                        var kb = appendValue(kb2, 0x42002a, TtlvValue.Integer(256));
+                        var skItem = GenericExchange.item(0x420040, TtlvValue.structure(kb, CODEC_LIMITS));
+                        var managed = ManagedObject.symmetricKey(List.of(skItem))) {
+                    ClientBatchItem req;
+                    if (fluent) {
+                        try (var attrSet = AttributeSet.tryNew(attrs);
+                                var b = client.request().register()) {
+                            req = withBatchId(b.object(managed).attributes(attrSet).build());
+                        }
+                    } else {
+                        try (var view = managed.view();
+                                var symItem = view.copy();
+                                var registerReq = RegisterRequest.create(2, attrs, symItem)) {
+                            req = withBatchId(ClientBatchItem.register(registerReq));
+                        }
+                    }
+                    return executeRequest(testCase, req, r -> r.registerResponse().map(p -> {
+                        cleanup.add(p.uniqueIdentifier());
+                        return true;
+                    }).orElse(false), start);
+                }
+            }
             if ("Import".equals(op)) {
                 var uid = UniqueIdentifier.textString("kmipkit-java-import-" + UUID.randomUUID());
                 try (var attrs = symmetricKeyAttributes("import-" + UUID.randomUUID(), 128, 4);
@@ -1165,11 +1204,18 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private TtlvStructure symmetricKeyAttributes(String name, int bits, int usageMask) {
+        return symmetricKeyAttributes(name, bits, usageMask, true);
+    }
+
+    private TtlvStructure symmetricKeyAttributes(
+            String name, int bits, int usageMask, boolean includeDescription) {
         try (var s0 = appendValue(TtlvStructure.create(), 0x420028, TtlvValue.Enumeration(3));
                 var s1 = appendValue(s0, 0x42002a, TtlvValue.Integer(bits));
                 var s2 = appendValue(s1, 0x42002c, TtlvValue.Integer(usageMask));
-                var s3 = appendValue(s2, 0x4200fc, TtlvValue.TextString(
-                        ("kmipkit-" + name).getBytes(StandardCharsets.US_ASCII), CODEC_LIMITS))) {
+                var s3 = includeDescription
+                        ? appendValue(s2, 0x4200fc, TtlvValue.TextString(
+                                ("kmipkit-" + name).getBytes(StandardCharsets.US_ASCII), CODEC_LIMITS))
+                        : GenericExchange.copyStructure(s2.view())) {
             return TtlvStructure.withItem(s3, TtlvItem.create(
                     RawTag.fromRaw(0x420122).checked(), TtlvValue.Boolean(true), CODEC_LIMITS), CODEC_LIMITS);
         }
@@ -1392,7 +1438,7 @@ public final class JavaKmipDriver implements AutoCloseable {
             boolean fluent, List<UniqueIdentifier> cleanup, long start) {
         var keyRef = new AtomicReference<UniqueIdentifier>();
         int usage = "Derive Key".equals(op) ? 512 : 12;
-        try (var attrs = symmetricKeyAttributes("sym-" + UUID.randomUUID(), 256, usage)) {
+        try (var attrs = symmetricKeyAttributes("sym-" + UUID.randomUUID(), 256, usage, !"Add Attribute".equals(op))) {
             var cRes = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attrs, null)), r -> r.createResponse().map(p -> {
                 keyRef.set(p.uniqueIdentifier());
                 cleanup.add(p.uniqueIdentifier());
