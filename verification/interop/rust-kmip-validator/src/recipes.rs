@@ -312,17 +312,51 @@ impl Attempt<'_> {
                 "asynchronous setup returned no result",
             ))?;
         self.own(&response);
-        let correlation = response.correlation.take().ok_or(Failure::Prerequisite(
+        let mut correlation = response.correlation.take().ok_or(Failure::Prerequisite(
             "server did not return the required Pending correlation; asynchronous target not sent",
         ))?;
-        if operation != "Cancel" {
+        let mut exchange = |operation: &str, token: &[u8]| {
+            if self.connection.api_level == "generic-ttlv" {
+                crate::generic::asynchronous(self.connection, operation, token)
+                    .map_err(Failure::Assertion)
+            } else {
+                driver::asynchronous(self.client, self.connection, operation, token)
+                    .map_err(Failure::Library)
+            }
+        };
+        if operation != "Poll" {
+            if operation != "Cancel" {
+                self.pending
+                    .push(correlation.with_bytes(|v| SecretBytes::new(v.to_vec())));
+            }
+            return correlation.with_bytes(|value| exchange(operation, value));
+        }
+        for _ in 0..16 {
+            self.pending.clear();
             self.pending
                 .push(correlation.with_bytes(|v| SecretBytes::new(v.to_vec())));
+            let mut observed = correlation.with_bytes(|value| exchange("Poll", value))?;
+            if observed.status != 2 {
+                if observed.status == 0 {
+                    if observed.identifiers.len() != 1 {
+                        return Err(Failure::Assertion(
+                            "completed Poll did not return the owned Create identifier",
+                        ));
+                    }
+                    self.pending.clear();
+                    self.own(&observed);
+                }
+                return Ok(observed);
+            }
+            correlation = observed.correlation.take().ok_or(Failure::Assertion(
+                "Pending Poll response omitted its correlation value",
+            ))?;
         }
-        let result = correlation.with_bytes(|bytes| {
-            driver::asynchronous(self.client, self.connection, operation, bytes)
-        })?;
-        Ok(result)
+        self.pending.clear();
+        self.pending.push(correlation);
+        Err(Failure::Prerequisite(
+            "server remained Pending after the bounded Poll sequence",
+        ))
     }
     fn join(&mut self) -> std::result::Result<Observed, Failure> {
         let request = ClientRequest::CreateSplitKey(CreateSplitKeyRequest::new(

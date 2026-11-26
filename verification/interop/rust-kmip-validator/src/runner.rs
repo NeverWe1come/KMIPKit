@@ -89,7 +89,9 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         result.library_correctness = if passed { "passed" } else { "failed" };
         return result;
     }
-    if connection.api_level == "generic-ttlv" {
+    if connection.api_level == "generic-ttlv"
+        && !matches!(case.operation.as_str(), "Poll" | "Cancel")
+    {
         return crate::generic::run(case, connection);
     }
     let start = std::time::Instant::now();
@@ -101,6 +103,10 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
             // Shape metadata is inspected in memory; payload bytes never enter reports.
             let _shape = observed.payload_tags;
             let mut result = observed_result(case, observed.status, observed.reason);
+            if connection.api_level == "generic-ttlv" {
+                "generic TTLV asynchronous target request and response validated"
+                    .clone_into(&mut result.diagnostic);
+            }
             if connection.api_level == "high-level" {
                 result.actual_api_level = Some(if observed.used_high_level {
                     "high-level"

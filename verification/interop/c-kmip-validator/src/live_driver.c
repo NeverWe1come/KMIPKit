@@ -10142,13 +10142,18 @@ static bool append_ttlv_bytes(kmip_live_client_t *client, kmipkit_ttlv_structure
         append_ttlv_value(client, s, tag, &v);
 }
 
+static bool move_ttlv_struct(kmip_live_client_t *client, kmipkit_ttlv_structure_t **parent, uint32_t tag,
+                             kmipkit_ttlv_structure_t **child) {
+    kmipkit_ttlv_value_t *value = NULL;
+    bool appended = *child && structure_into_value(client, child, &value) &&
+        append_ttlv_value(client, parent, tag, &value);
+    if (value) kmipkit_ttlv_value_release(value);
+    return appended;
+}
+
 static bool append_ttlv_struct(kmip_live_client_t *client, kmipkit_ttlv_structure_t **parent, uint32_t tag,
                                kmipkit_ttlv_structure_t *child) {
-    kmipkit_ttlv_value_t *v = NULL;
-    bool ok = child && kmipkit_ttlv_value_structure(child, client->limits, &v) == 0 &&
-        append_ttlv_value(client, parent, tag, &v);
-    if (!ok && child) kmipkit_ttlv_structure_release(child);
-    return ok;
+    return move_ttlv_struct(client, parent, tag, &child);
 }
 
 static kmipkit_ttlv_item_t *wrap_ttlv_root(kmip_live_client_t *client, uint32_t tag, kmipkit_ttlv_structure_t *body) {
@@ -10215,9 +10220,14 @@ static bool generic_extract_bytes(kmipkit_ttlv_structure_view_t *payload, uint32
     return false;
 }
 
-static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *client, uint32_t operation,
-                                                       kmipkit_ttlv_structure_t *payload_body,
-                                                       generic_payload_check_fn check_fn, void *ctx) {
+typedef struct {
+    uint8_t bytes[512];
+    size_t size;
+} generic_correlation_t;
+
+static kmip_execution_outcome_t execute_generic_custom_with_pending(
+    kmip_live_client_t *client, uint32_t operation, kmipkit_ttlv_structure_t *payload_body,
+    generic_payload_check_fn check_fn, void *ctx, generic_correlation_t *pending) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_ttlv_structure_t *ver = make_ttlv_struct();
     kmipkit_ttlv_structure_t *hdr = make_ttlv_struct();
@@ -10226,12 +10236,13 @@ static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *clien
     bool built = ver && hdr && batch && msg &&
         append_ttlv_int(client, &ver, 0x42006a, 2) &&
         append_ttlv_int(client, &ver, 0x42006b, client->protocol_minor) &&
-        append_ttlv_struct(client, &hdr, 0x420069, ver) && (ver = NULL, true) &&
+        move_ttlv_struct(client, &hdr, 0x420069, &ver) &&
+        (!pending || operation != 1 || append_ttlv_enum(client, &hdr, 0x420007, 1)) &&
         append_ttlv_int(client, &hdr, 0x42000d, 1) &&
         append_ttlv_enum(client, &batch, 0x42005c, operation) &&
-        append_ttlv_struct(client, &batch, 0x420079, payload_body) && (payload_body = NULL, true) &&
-        append_ttlv_struct(client, &msg, 0x420077, hdr) && (hdr = NULL, true) &&
-        append_ttlv_struct(client, &msg, 0x42000f, batch) && (batch = NULL, true);
+        move_ttlv_struct(client, &batch, 0x420079, &payload_body) &&
+        move_ttlv_struct(client, &msg, 0x420077, &hdr) &&
+        move_ttlv_struct(client, &msg, 0x42000f, &batch);
     if (ver) kmipkit_ttlv_structure_release(ver);
     if (hdr) kmipkit_ttlv_structure_release(hdr);
     if (batch) kmipkit_ttlv_structure_release(batch);
@@ -10285,6 +10296,15 @@ static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *clien
             if (outcome.success) {
                 ok = !has_reason && generic_structure_field(bview, 0x42007c, &pview) &&
                     (!check_fn || check_fn(pview, ctx));
+            } else if (status == 2 && (pending || operation == 0x19)) {
+                const bool has_payload = generic_structure_field(bview, 0x42007c, &pview);
+                uint64_t count = 0;
+                ok = pending && !has_reason &&
+                    ((operation == 1 && has_payload &&
+                      kmipkit_ttlv_structure_view_item_count(pview, &count) == 0 && count == 0) ||
+                     (operation == 0x1a && !has_payload)) &&
+                    generic_extract_bytes(bview, 0x420006, pending->bytes, sizeof(pending->bytes), &pending->size) &&
+                    pending->size != 0;
             }
         }
         if (pview) kmipkit_ttlv_structure_view_release(pview);
@@ -10305,12 +10325,19 @@ static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *clien
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Generic TTLV exchange or validation failed.");
     }
+    if (wire) OPENSSL_cleanse(wire, capacity);
     free(wire);
     if (response) OPENSSL_cleanse(response, response_size);
     free(response);
     if (view) kmipkit_ttlv_item_view_release(view);
     if (request) kmipkit_ttlv_item_release(request);
     return outcome;
+}
+
+static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *client, uint32_t operation,
+                                                       kmipkit_ttlv_structure_t *payload_body,
+                                                       generic_payload_check_fn check_fn, void *ctx) {
+    return execute_generic_custom_with_pending(client, operation, payload_body, check_fn, ctx, NULL);
 }
 
 typedef struct {
@@ -10382,7 +10409,6 @@ static bool check_ext_bytes_field(kmipkit_ttlv_structure_view_t *payload, void *
         generic_extract_bytes(payload, tag, ctx->bytes, sizeof(ctx->bytes), &ctx->bytes_len);
 }
 
-static bool check_ext_corr(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x420006); }
 static bool check_ext_data(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c2); }
 static bool check_ext_mac(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c6); }
 static bool check_ext_sig(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c3); }
@@ -10447,12 +10473,6 @@ static uint32_t generic_extended_operation(const char *id) {
 static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op) {
     generic_ext_ctx_t ctx = {0};
     kmip_execution_outcome_t out = {.executed = true};
-    if (op == 0x19 || op == 0x1a) {
-        static const uint8_t corr[6] = {1, 2, 3, 4, 5, 6};
-        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
-        append_ttlv_bytes(client, &p, 0x420006, corr, sizeof(corr));
-        return execute_generic_custom(client, op, p, check_ext_corr, &ctx);
-    }
     if (op == 0x03 || op == 0x2a) {
         static const uint8_t key16[16] = {0x11};
         kmipkit_ttlv_structure_t *p = make_ttlv_struct();
@@ -10698,6 +10718,91 @@ static kmip_execution_outcome_t generic_cleanup_failure(const char *message) {
     kmip_execution_outcome_t outcome = {.executed = true, .library_failed = true};
     snprintf(outcome.result_reason, sizeof(outcome.result_reason), "%s", message);
     return outcome;
+}
+
+static bool check_generic_async_cancel(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    const generic_correlation_t *expected = context;
+    generic_correlation_t observed = {0};
+    uint64_t fields = 0;
+    uint32_t result = 0;
+    bool valid = kmipkit_ttlv_structure_view_item_count(payload, &fields) == 0 && fields == 2 &&
+        generic_enum_field(payload, 0x420012, &result) && result >= 1 && result <= 5 &&
+        generic_extract_bytes(payload, 0x420006, observed.bytes, sizeof(observed.bytes), &observed.size) &&
+        observed.size == expected->size && CRYPTO_memcmp(observed.bytes, expected->bytes, expected->size) == 0;
+    OPENSSL_cleanse(&observed, sizeof(observed));
+    return valid;
+}
+
+static bool check_generic_async_create(kmipkit_ttlv_structure_view_t *payload, void *context) {
+    uint32_t object_type = 0;
+    const bool owns_identifier = check_ext_single_id(payload, context);
+    return owns_identifier && generic_enum_field(payload, 0x420057, &object_type) && object_type == 2;
+}
+
+static kmip_execution_outcome_t execute_generic_async_target(
+    kmip_live_client_t *client, uint32_t operation, generic_correlation_t *current,
+    generic_correlation_t *next, generic_ext_ctx_t *owned) {
+    kmipkit_ttlv_structure_t *body = make_ttlv_struct();
+    if (!body || !append_ttlv_bytes(client, &body, 0x420006, current->bytes, current->size)) {
+        if (body) kmipkit_ttlv_structure_release(body);
+        return generic_cleanup_failure("Could not build the generic asynchronous target.");
+    }
+    return execute_generic_custom_with_pending(
+        client, operation, body, operation == 0x19 ? check_generic_async_cancel : check_generic_async_create,
+        operation == 0x19 ? (void *)current : (void *)owned, operation == 0x1a ? next : NULL);
+}
+
+static kmip_execution_outcome_t execute_generic_async(
+    kmip_live_client_t *client, uint32_t operation, const char *name) {
+    kmipkit_ttlv_structure_t *body = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *attributes = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *name_fields = make_ttlv_struct();
+    bool built = body && attributes && name_fields &&
+        append_ttlv_text(client, &name_fields, 0x420055, name) &&
+        append_ttlv_enum(client, &name_fields, 0x420054, 1);
+    if (built) {
+        built = move_ttlv_struct(client, &attributes, 0x420053, &name_fields);
+    }
+    built = built && append_ttlv_enum(client, &attributes, 0x420028, 3) &&
+        append_ttlv_int(client, &attributes, 0x42002a, 128) &&
+        append_ttlv_int(client, &attributes, 0x42002c, 4) &&
+        append_ttlv_enum(client, &body, 0x420057, 2);
+    if (built) {
+        built = move_ttlv_struct(client, &body, 0x420125, &attributes);
+    }
+    if (name_fields) kmipkit_ttlv_structure_release(name_fields);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    if (!built) {
+        if (body) kmipkit_ttlv_structure_release(body);
+        return generic_cleanup_failure("Could not build the generic asynchronous Create fixture.");
+    }
+
+    generic_correlation_t current = {0}, next = {0};
+    generic_ext_ctx_t owned = {0};
+    const kmip_execution_outcome_t setup = execute_generic_custom_with_pending(
+        client, 1, body, check_generic_async_create, &owned, &current);
+    kmip_execution_outcome_t result = outcome_not_run("The prerequisite Create returned no Pending correlation.");
+    if (setup.library_validated && current.size != 0) {
+        for (unsigned poll = 0; poll < 16; ++poll) {
+            result = execute_generic_async_target(client, operation, &current, &next, &owned);
+            if (next.size == 0 || result.library_failed) break;
+            current = next;
+            OPENSSL_cleanse(&next, sizeof(next));
+            if (poll == 15) {
+                const kmip_execution_outcome_t cleanup = execute_generic_async_target(
+                    client, 0x19, &current, NULL, &owned);
+                result = cleanup.success ? outcome_not_run("The server remained Pending after the bounded Poll sequence.")
+                    : generic_cleanup_failure("Could not cancel the fixture after the bounded Poll sequence.");
+            }
+        }
+    }
+    for (size_t i = 0; i < owned.count; ++i) {
+        kmip_execution_outcome_t cleanup = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_DESTROY, owned.ids[i]);
+        if (!cleanup.success) result = generic_cleanup_failure("Could not destroy the asynchronous Create fixture.");
+    }
+    OPENSSL_cleanse(&current, sizeof(current));
+    OPENSSL_cleanse(&next, sizeof(next));
+    return result;
 }
 
 static kmip_execution_outcome_t execute_generic_rotate_locate(kmip_live_client_t *client, const char *rotate) {
@@ -11244,8 +11349,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash) && client->allow_mutations))) {
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_owned_key(client, owned, test_case->case_id);
-            if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
+            if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0) {
+                if (extended == 0x19 || extended == 0x1a)
+                    return execute_generic_async(client, extended, attempt ? attempt->unique_name : "kmipkit-c-async");
                 return execute_generic_extended(client, extended);
+            }
             if (rng)
                 return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)

@@ -647,10 +647,41 @@ pub(crate) fn asynchronous(
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         payload_tags: Vec::new(),
         identifier: None,
-        identifiers: Vec::new(),
+        identifiers: response
+            .poll_response()
+            .and_then(|poll| poll.with_response_payload(|payload| poll_create_identifier(&payload)))
+            .flatten()
+            .into_iter()
+            .collect(),
         bytes: None,
         validity: None,
         ticket: None,
-        correlation: None,
+        correlation: response.with_asynchronous_correlation_value(|value| {
+            kmipkit::protocol::SecretBytes::new(value.to_vec())
+        }),
+    })
+}
+
+// Poll returns the original Create payload, rather than a new operation payload.
+pub(crate) fn poll_create_identifier(
+    payload: &kmipkit::ttlv::StructureView<'_>,
+) -> Option<kmipkit::protocol::UniqueIdentifier> {
+    use kmipkit::protocol::UniqueIdentifier;
+    use kmipkit::ttlv::ValueView;
+
+    let [object_type, identifier] = payload.children() else {
+        return None;
+    };
+    if object_type.tag().raw() != 0x0042_0057
+        || !object_type.with_value(|value| matches!(value, ValueView::Enumeration(2)))
+        || identifier.tag().raw() != 0x0042_0094
+    {
+        return None;
+    }
+    identifier.with_value(|value| match value {
+        ValueView::TextString(text) if !text.is_empty() => Some(UniqueIdentifier::from(text)),
+        ValueView::Enumeration(value) => Some(UniqueIdentifier::Enumeration(*value)),
+        ValueView::Integer(value) => Some(UniqueIdentifier::Integer(*value)),
+        _ => None,
     })
 }

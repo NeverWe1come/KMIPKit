@@ -76,12 +76,14 @@ def find(tree, tag):
     return None
 
 
-def response(operation, minor=1, status=1, reason=5, payload=None, message=None, *, major=2):
+def response(operation, minor=1, status=1, reason=5, payload=None, message=None, *, major=2, correlation=None):
     fields = [ttlv(0x42005c, 5, operation), ttlv(0x42007f, 5, status)]
     if reason is not None:
         fields.append(ttlv(0x42007e, 5, reason))
     if message:
         fields.append(ttlv(0x42007d, 7, message))
+    if correlation is not None:
+        fields.append(ttlv(0x420006, 8, correlation))
     if payload is not None:
         fields.append(ttlv(0x42007c, 1, payload))
     header = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)]),
@@ -935,11 +937,48 @@ class LiveContract(unittest.TestCase):
         else:
             self.assertEqual(report["summary"]["passed"], 5, report["cases"])
 
+    def test_async_targets_reuse_peer_correlation_and_clean_the_completed_object(self):
+        initial = b"peer-initial-token"
+        updated = b"peer-next-token"
+        owned = "async-owned-fixture"
+        cases = (("test-op-poll", 0x1a), ("test-op-cancel", 0x19))
+        for minor, api, (case_id, target) in product((0, 1), ("typed-protocol", "generic-ttlv"), cases):
+            with self.subTest(minor=minor, api=api, target=target):
+                operations = []
+
+                def answer(tree):
+                    op = find(tree, 0x42005c)
+                    operations.append(op)
+                    if op == 1:
+                        self.assertEqual(find(tree, 0x420007), 1)
+                        return response(op, minor, 2, None, [], correlation=initial)
+                    if op == 0x1a:
+                        submitted = find(tree, 0x420006)
+                        if submitted == initial:
+                            return response(op, minor, 2, None, correlation=updated)
+                        self.assertEqual(submitted, updated)
+                        return response(op, minor, 0, None, [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, owned)])
+                    if op == 0x19:
+                        self.assertEqual(find(tree, 0x420006), initial)
+                        return response(op, minor, 0, None, [ttlv(0x420006, 8, initial), ttlv(0x420012, 5, 1)])
+                    self.assertIn(op, (0x13, 0x14))
+                    self.assertEqual(find(tree, 0x420094), owned)
+                    return response(op, minor, 0, None, [ttlv(0x420094, 7, owned)])
+
+                with ControlledPeer(self.pki, answer) as peer:
+                    _, report = self.command(
+                        self.connection(peer.port, version=f"2.{minor}", api=api, mutations=True),
+                        self.rows(case_id),
+                    )
+                self.assertEqual("passed", report["cases"][0]["status"], report["cases"][0])
+                expected = [1, 0x1a, 0x1a, 0x13, 0x14] if target == 0x1a else [1, 0x19]
+                self.assertEqual(expected, operations)
+
     def test_generic_extended_operations_reach_peer_and_cleanup(self):
         cases = [
             "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
             "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
-            "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
             "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
             "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
             "test-op-import", "test-op-export",
@@ -978,8 +1017,6 @@ class LiveContract(unittest.TestCase):
                             fields = [ttlv(0x420094, 7, "recert-id")]
                         elif op in (0x17, 0x22, 0x24):
                             fields = [ttlv(0x42009b, 5, 1)]
-                        elif op in (0x19, 0x1a):
-                            fields = [ttlv(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")]
                         elif op == 0x1d:
                             fields = [ttlv(0x420066, 7, "new-priv"), ttlv(0x42006f, 7, "new-pub")]
                         elif op == 0x1f:

@@ -1,11 +1,12 @@
 //! KMIP 2.x exchanges constructed using public raw-tag models.
-use crate::driver::{item, structure, transport_config};
+use crate::driver::{Observed, item, structure, transport_config};
 use crate::generic_wire::encode;
 use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
-    DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse, ProtocolVersion,
-    ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
+    CancelResponse, DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse,
+    PollResponse, ProtocolVersion, ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
+    SecretBytes,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
@@ -858,13 +859,60 @@ fn check_response(
         .result_status()
         .ok_or("response status missing")?
         .raw();
-    if status == 0 && !check(batch)? {
-        return Err("generic success payload did not satisfy the case");
+    if (status == 0 || (status == 2 && matches!(operation, POLL | CANCEL))) && !check(batch)? {
+        return Err("generic response payload did not satisfy the case");
     }
     Ok((
         status,
         batch.result_reason().map(kmipkit::ResultReason::raw),
     ))
+}
+
+pub(crate) fn asynchronous(
+    connection: &Connection,
+    operation: &str,
+    token: &[u8],
+) -> Result<Observed> {
+    let code = if operation == "Poll" { POLL } else { CANCEL };
+    let version = ProtocolVersion::from_raw(2, i32::from(connection.protocol_version == "2.1"));
+    let fields = vec![item(0x0042_0006, Value::byte_string(token.to_vec()))?];
+    let mut correlation = None;
+    let mut identifiers = Vec::new();
+    let (status, reason) = exchange_payload(connection, version, code, fields, |batch| {
+        if code == CANCEL {
+            let cancel = CancelResponse::try_from_response_item(batch)
+                .map_err(|_| "invalid Cancel response")?;
+            return Ok(
+                cancel.with_asynchronous_correlation_value(|echo| echo == token) == Some(true),
+            );
+        }
+        let poll =
+            PollResponse::try_from_response_item(batch).map_err(|_| "invalid Poll response")?;
+        if poll.is_pending() {
+            correlation =
+                poll.with_asynchronous_correlation_value(|next| SecretBytes::new(next.to_vec()));
+            return Ok(correlation
+                .as_ref()
+                .is_some_and(|value| value.with_bytes(|bytes| !bytes.is_empty())));
+        }
+        identifiers.extend(
+            poll.with_response_payload(|payload| crate::driver::poll_create_identifier(&payload))
+                .flatten(),
+        );
+        Ok(!identifiers.is_empty())
+    })?;
+    Ok(Observed {
+        status,
+        reason,
+        used_high_level: false,
+        payload_tags: Vec::new(),
+        identifier: None,
+        identifiers,
+        correlation,
+        bytes: None,
+        validity: None,
+        ticket: None,
+    })
 }
 
 fn check_probe(
@@ -1094,15 +1142,6 @@ fn run_extended_inner(
     cleanup: &mut Vec<String>,
 ) -> ExchangeResult {
     match operation {
-        POLL | CANCEL => {
-            let fields = vec![item(
-                0x0042_0006,
-                Value::byte_string(vec![1, 2, 3, 4, 5, 6]),
-            )?];
-            exchange_payload(connection, version, operation, fields, |batch| {
-                Ok(field_bytes(batch, 0x0042_0006).is_some())
-            })
-        }
         REGISTER | IMPORT => extended_register_import(connection, version, operation, cleanup),
         CREATE_KEY_PAIR | RE_KEY_KEY_PAIR => {
             extended_key_pair_ops(connection, version, operation, cleanup)

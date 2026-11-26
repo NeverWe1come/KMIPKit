@@ -2265,6 +2265,10 @@ def verify_generic_extended_operations(binary, openssl, repository):
                                                       "statistics": {**catalog["statistics"], "total_cases": 1}}))
                     command = [str(binary), "run", "--connection", str(config), "--catalog", str(selection),
                                "--output", str(output), "--allow-mutations"]
+                    observed_operations = []
+                    initial = b"c-peer-initial-token"
+                    updated = b"c-peer-updated-token"
+                    asynchronous = case_id in {"test-op-poll", "test-op-cancel"}
                     with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
                                           stderr=subprocess.PIPE) as process:
                         try:
@@ -2277,6 +2281,14 @@ def verify_generic_extended_operations(binary, openssl, repository):
                                     stream.settimeout(5)
                                     request = read_message(stream)
                                     op = top_level_batch_operations(request)[0]
+                                    observed_operations.append(op)
+                                    if asynchronous and op == 1:
+                                        assert enumeration(0x420007, 1) in request
+                                        batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                    + enumeration(0x42007f, 2) + tlv(0x420006, 8, initial)
+                                                    + tlv(0x42007c, 1, b""))
+                                        stream.sendall(tlv(0x42007b, 1, header + batch))
+                                        continue
                                     if op == 1:
                                         fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key")
                                     elif op == 2:
@@ -2295,8 +2307,17 @@ def verify_generic_extended_operations(binary, openssl, repository):
                                         fields = tlv(0x420094, 7, b"recert-id")
                                     elif op in (0x17, 0x22, 0x24):
                                         fields = enumeration(0x42009b, 1)
-                                    elif op in (0x19, 0x1a):
-                                        fields = tlv(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")
+                                    elif op == 0x19:
+                                        assert tlv(0x420006, 8, initial) in request
+                                        fields = tlv(0x420006, 8, initial) + enumeration(0x420012, 1)
+                                    elif op == 0x1a:
+                                        if tlv(0x420006, 8, initial) in request:
+                                            batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                        + enumeration(0x42007f, 2) + tlv(0x420006, 8, updated))
+                                            stream.sendall(tlv(0x42007b, 1, header + batch))
+                                            continue
+                                        assert tlv(0x420006, 8, updated) in request
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key")
                                     elif op == 0x1d:
                                         fields = tlv(0x420066, 7, b"new-priv") + tlv(0x42006f, 7, b"new-pub")
                                     elif op == 0x1f:
@@ -2323,6 +2344,10 @@ def verify_generic_extended_operations(binary, openssl, repository):
                         if process.returncode != 0:
                             raise AssertionError(f"C generic extended {version} {case_id} failed: {stderr.decode()}")
                     report = json.loads(output.read_text())
+                    if case_id == "test-op-cancel":
+                        assert observed_operations == [1, 0x19], observed_operations
+                    if case_id == "test-op-poll":
+                        assert observed_operations == [1, 0x1a, 0x1a, 0x14], observed_operations
                     if report["cases"][0]["status"] != "passed":
                         raise AssertionError(f"C generic extended {version} {case_id} status={report['cases'][0]}")
 
