@@ -290,7 +290,7 @@ class ControlledExchangeTests(unittest.TestCase):
         from kmipkit_validator.cli import _plan, _run
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
-        selected = {"test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0", "test-crypto-rng-retrieve-rng-32"}
+        selected = {"test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0", "test-crypto-rng-retrieve-rng-32", "test-crypto-rng-seed-rng-32"}
         catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
         for version in ("2.0", "2.1"):
             minor = int(version[-1])
@@ -303,10 +303,11 @@ class ControlledExchangeTests(unittest.TestCase):
                         query = case_id == "test-op-query"
                         ping = case_id == "test-op-ping"
                         hashing = case_id == "test-crypto-hash-sha_256-0"
+                        rng_seed = case_id == "test-crypto-rng-seed-rng-32"
                         locate = case_id == "test-op-locate"
                         rng = case_id == "test-crypto-rng-retrieve-rng-32"
                         operation = {"test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
-                                     "test-crypto-hash-sha_256-0": 0x27, "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-ping": 0x3B}[case_id]
+                                     "test-crypto-hash-sha_256-0": 0x27, "test-crypto-rng-retrieve-rng-32": 0x25, "test-crypto-rng-seed-rng-32": 0x26, "test-op-ping": 0x3B}[case_id]
 
                         def reply(request):
                             tree = parse_children(request[8:])
@@ -315,6 +316,8 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual([], payload)
                             elif rng:
                                 self.assertEqual(payload, [(0x4200C4, 2, struct.pack(">i", 32))])
+                            elif rng_seed:
+                                self.assertEqual(payload, [(0x4200C2, 8, b"A" * 32)])
                             elif locate:
                                 self.assertEqual(payload, [
                                     (0x42004F, 2, struct.pack(">i", 1)),
@@ -329,10 +332,10 @@ class ControlledExchangeTests(unittest.TestCase):
                                 self.assertEqual(find_value(payload, 0x42006B), struct.pack(">i", minor))
                             if expected == "server_unsupported":
                                 return ping_response(request, 1, 5, protocol_minor=minor)
-                            reply_minor = 1 - minor if expected == "failed" and not (hashing or locate or rng) else minor
+                            reply_minor = 1 - minor if expected == "failed" and not (hashing or locate or rng or rng_seed) else minor
                             if ping:
                                 return ping_response(request, 0, None, protocol_minor=reply_minor)
-                            if not (query or hashing or locate or rng):
+                            if not (query or hashing or locate or rng or rng_seed):
                                 return discover_versions_response(request, 0, None, reply_minor, ((2, minor),))
                             protocol = structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
                                                  item(0x42006B, 2, struct.pack(">i", reply_minor)))
@@ -343,6 +346,8 @@ class ControlledExchangeTests(unittest.TestCase):
                                 if hashing else enumeration(0x42005C, 1))
                             if rng:
                                 returned = item(0x4200C2, 8, bytes(31 if expected == "failed" else 32))
+                            if rng_seed:
+                                returned = item(0x4200C4, 2, struct.pack(">i", 33 if expected == "failed" else 0))
                             if locate:
                                 returned = item(0x4200D5, 2, struct.pack(">i", 2)) + item(0x420094, 7, b"known-id")
                                 if expected == "failed":
@@ -363,12 +368,12 @@ class ControlledExchangeTests(unittest.TestCase):
                                     "client_key_path": str(PKI / "client-key.pem"),
                                     "server_name_override": "localhost",
                                 },
-                                "execution_policy": {"allow_mutations": rng, "probe_unsupported": True},
+                                "execution_policy": {"allow_mutations": rng or rng_seed, "probe_unsupported": True},
                             }
                             selection = {**catalog, "test_cases": [case]}
                             plan = _plan(connection, selection, b"{}")
                             self.assertTrue(plan["cases"][0]["route_available"])
-                            result, = _run(connection, b"{}", selection, b"{}", {}, None, rng)
+                            result, = _run(connection, b"{}", selection, b"{}", {}, None, rng or rng_seed)
                             self.assertEqual(expected, result["status"], result)
                         finally:
                             peer.close()

@@ -63,6 +63,8 @@ final class GenericExchange {
     private static final int QUERY = 0x18;
     private static final int DISCOVER_VERSIONS = 0x1e;
     private static final int RNG_RETRIEVE = 0x25;
+    private static final int RNG_SEED = 0x26;
+    private static final byte[] RNG_SEED_INPUT = "A".repeat(32).getBytes(StandardCharsets.US_ASCII);
     private static final int HASH = 0x27;
     private static final byte[] TEXT_ATTRIBUTE_FIXTURE = "kmipkit-attribute-fixture".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] HASH_INPUT = "abc".getBytes(StandardCharsets.US_ASCII);
@@ -76,7 +78,7 @@ final class GenericExchange {
         int operation = operation(testCase, connection);
         return "server_exchange".equals(testCase.execution().mode()) && operation != 0
                 && (usesOwnedKey(operation) ? "mutating".equals(testCase.execution().mutation())
-                        : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE
+                        : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE || operation == RNG_SEED
                             || JavaKmipDriver.multipartHash(testCase)))
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
                 && connection.usernamePassword() == null;
@@ -104,7 +106,8 @@ final class GenericExchange {
             case "test-op-locate" -> LOCATE;
             case "test-op-query" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
-            case "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
+            case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
+            case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
             case "test-op-hash", "test-crypto-hash-sha_256-0", "test-multipart-hash-sha256" -> HASH;
             case "test-op-ping" -> "2.1".equals(version) ? PING : 0;
             default -> 0;
@@ -353,6 +356,8 @@ final class GenericExchange {
                     case QUERY -> structureItem(0x420079, item(0x420074, TtlvValue.Enumeration(1)));
                     case DISCOVER_VERSIONS -> structureItem(0x420079, version(minor));
                     case RNG_RETRIEVE -> structureItem(0x420079, item(0x4200c4, TtlvValue.Integer(32)));
+                    case RNG_SEED -> structureItem(0x420079,
+                            item(0x4200c2, TtlvValue.ByteString(RNG_SEED_INPUT, LIMITS)));
                     case HASH -> hashPayload(frame);
                     case PING -> structureItem(0x420079);
                     default -> throw new IllegalArgumentException("Unsupported generic operation");
@@ -632,6 +637,14 @@ final class GenericExchange {
     private static boolean matches(TtlvStructureView payload, int operation, int minor) {
         if (operation == LOCATE) return matchesLocate(payload);
         if (operation == PING) return payload.itemCount() == 0;
+        if (operation == RNG_SEED) {
+            if (payload.itemCount() != 1) return false;
+            try (var field = payload.itemAt(0); var tag = field.tag(); var value = field.value()) {
+                if (tag.raw() != 0x4200c4 || field.itemType() != TtlvItemType.Integer) return false;
+                long length = value.integer();
+                return length >= 0 && length <= RNG_SEED_INPUT.length;
+            }
+        }
         if (operation == HASH || operation == RNG_RETRIEVE) {
             if (payload.itemCount() != 1) return false;
             try (var field = payload.itemAt(0); var tag = field.tag(); var value = field.value()) {

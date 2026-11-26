@@ -7,6 +7,7 @@ import struct
 
 
 HASH_INPUT = b"abc"
+RNG_SEED_INPUT = b"A" * 32
 CREATE, GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 1, 0x0A, 0x0B, 0x14, 0x15, 0x16
 CHECK = 0x09
 OBTAIN_LEASE = 0x10
@@ -49,7 +50,9 @@ def _operation(case, version):
     return {"test-op-create": CREATE, "test-op-check": CHECK, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
             "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY,
             "test-op-obtain-lease": OBTAIN_LEASE, "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
-            "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
+            "test-op-rng-retrieve": 0x25, "test-crypto-rng-retrieve-rng-32": 0x25,
+            "test-op-rng-seed": 0x26, "test-crypto-rng-seed-rng-32": 0x26,
+            "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
             "test-op-add-attribute": ADD_ATTRIBUTE, "test-op-modify-attribute": MODIFY_ATTRIBUTE,
             "test-op-delete-attribute": DELETE_ATTRIBUTE, "test-op-set-attribute": SET_ATTRIBUTE,
             "test-multipart-hash-sha256": 0x27}.get(case["case_id"])
@@ -61,7 +64,7 @@ def supports(case, connection):
     return (
         operation is not None
         and (mutation == "mutating" if operation in OWNED_KEY_OPERATIONS
-             else mutation == "read_only" or operation == 0x25
+             else mutation == "read_only" or operation in (0x25, 0x26)
              or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
@@ -333,6 +336,8 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         payload_fields = [protocol()]
     elif operation == 0x25:
         payload_fields = [item(0x4200C4, "integer", 32)]
+    elif operation == 0x26:
+        payload_fields = [item(0x4200C2, "bytes", RNG_SEED_INPUT)]
     elif operation == 0x27:
         stage, chunk, correlation = hash_frame if hash_frame is not None else (None, HASH_INPUT, None)
         payload_fields = [node(0x42002B, [item(0x420038, "enumeration", 6)]),
@@ -522,6 +527,12 @@ def _matches(payload, operation, protocol):
         return False
     if ttlv.ttlv_structure_view_item_count(payload) != 1:
         return False
+    if operation == 0x26:
+        with ttlv.ttlv_structure_view_item_at(payload, 0) as field:
+            with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:
+                return (ttlv.tag_value(tag) == 0x4200C4
+                        and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.Integer
+                        and 0 <= ttlv.ttlv_value_view_integer(value) <= len(RNG_SEED_INPUT))
     if operation in (0x25, 0x27):
         with ttlv.ttlv_structure_view_item_at(payload, 0) as field:
             with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:

@@ -378,11 +378,11 @@ class LiveContract(unittest.TestCase):
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_generic_tags_reach_the_peer_in_both_kmip_2_versions(self):
-        probes = [("2.0", 0x18), ("2.0", 0x1e), ("2.1", 0x18), ("2.1", 0x1e), ("2.1", 0x3b), ("2.0", 0x27), ("2.1", 0x27), ("2.0", 0x08), ("2.1", 0x08), ("2.0", 0x25), ("2.1", 0x25)]
+        probes = [("2.0", 0x18), ("2.0", 0x1e), ("2.1", 0x18), ("2.1", 0x1e), ("2.1", 0x3b), ("2.0", 0x27), ("2.1", 0x27), ("2.0", 0x08), ("2.1", 0x08), ("2.0", 0x25), ("2.1", 0x25), ("2.0", 0x26), ("2.1", 0x26)]
         for (version, operation), result in product(probes, ("passed", "server_unsupported", "failed")):
             with self.subTest(version=version, operation=operation, result=result):
                 minor = int(version[-1])
-                name = {0x08: "locate", 0x18: "query", 0x1e: "discover-versions", 0x25: "rng-retrieve", 0x27: "hash", 0x3b: "ping"}[operation]
+                name = {0x08: "locate", 0x18: "query", 0x1e: "discover-versions", 0x25: "rng-retrieve", 0x26: "rng-seed", 0x27: "hash", 0x3b: "ping"}[operation]
                 protocol = ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)])
                 query_function = ttlv(0x420074, 5, 1)
 
@@ -390,19 +390,21 @@ class LiveContract(unittest.TestCase):
                     expected = {
                         0x18: query_function, 0x1e: protocol, 0x3b: b"",
                         0x25: ttlv(0x4200c4, 2, 32),
+                        0x26: ttlv(0x4200c2, 8, b"A" * 32),
                         0x08: ttlv(0x42004f, 2, 1) + ttlv(0x4200d4, 2, 0),
                         0x27: ttlv(0x42002b, 1, [ttlv(0x420038, 5, 6)]) + ttlv(0x4200c2, 8, b"abc"),
                     }[operation]
                     self.assertEqual(find(tree, 0x420079), parse(expected))
                     if result == "server_unsupported":
                         return response(operation, minor)
-                    if result == "failed" and operation not in (0x08, 0x25, 0x27):
+                    if result == "failed" and operation not in (0x08, 0x25, 0x26, 0x27):
                         return response(operation, 1 - minor)
                     payload = {
                         0x18: [ttlv(0x42005c, 5, operation), ttlv(0x42015f, 1, [])],
                         0x1e: [protocol],
                         0x3b: [],
                         0x25: [ttlv(0x4200c2, 8, bytes(31 if result == "failed" else 32))],
+                        0x26: [ttlv(0x4200c4, 2, 33 if result == "failed" else 0)],
                         0x08: [ttlv(0x4200d5, 2, 2), ttlv(0x420094, 7, "known-id")]
                               + ([ttlv(0x420094, 7, "other-id")] if result == "failed" else []),
                         0x27: [ttlv(0x4200c2, 8, hashlib.sha256(
@@ -413,8 +415,9 @@ class LiveContract(unittest.TestCase):
 
                 with ControlledPeer(self.pki, reply) as peer:
                     _, report = self.command(
-                        self.connection(peer.port, version=version, api="generic-ttlv", mutations=operation == 0x25),
+                        self.connection(peer.port, version=version, api="generic-ttlv", mutations=operation in (0x25, 0x26)),
                         self.rows({0x25: "test-crypto-rng-retrieve-rng-32",
+                                   0x26: "test-crypto-rng-seed-rng-32",
                                    0x27: "test-crypto-hash-sha_256-0"}.get(operation, f"test-op-{name}"))
                     )
                     self.assertEqual(peer.operations, [operation])

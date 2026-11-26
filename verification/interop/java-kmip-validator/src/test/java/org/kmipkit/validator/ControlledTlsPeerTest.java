@@ -563,12 +563,15 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
-            "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59",
-            "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39",
-            "2.0,test-op-locate,8", "2.1,test-op-locate,8",
-            "2.0,test-crypto-rng-retrieve-rng-32,37", "2.1,test-crypto-rng-retrieve-rng-32,37"})
-    void genericTagsReachThePeerThroughMain(String version, String caseId, int operation) throws Exception {
+    @CsvSource({"2.0,test-op-query,24,generic-ttlv", "2.1,test-op-query,24,generic-ttlv",
+            "2.0,test-op-discover-versions,30,generic-ttlv", "2.1,test-op-discover-versions,30,generic-ttlv", "2.1,test-op-ping,59,generic-ttlv",
+            "2.0,test-crypto-hash-sha_256-0,39,generic-ttlv", "2.1,test-crypto-hash-sha_256-0,39,generic-ttlv",
+            "2.0,test-op-locate,8,generic-ttlv", "2.1,test-op-locate,8,generic-ttlv",
+            "2.0,test-crypto-rng-retrieve-rng-32,37,generic-ttlv", "2.1,test-crypto-rng-retrieve-rng-32,37,generic-ttlv",
+            "2.0,test-crypto-rng-seed-rng-32,38,generic-ttlv", "2.1,test-crypto-rng-seed-rng-32,38,generic-ttlv",
+            "2.0,test-crypto-rng-retrieve-rng-32,37,typed-protocol", "2.1,test-crypto-rng-retrieve-rng-32,37,typed-protocol",
+            "2.0,test-crypto-rng-seed-rng-32,38,typed-protocol", "2.1,test-crypto-rng-seed-rng-32,38,typed-protocol"})
+    void diagnosticRecipesReachThePeerThroughMain(String version, String caseId, int operation, String api) throws Exception {
         var source = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         var mapper = new ObjectMapper();
         var catalog = (ObjectNode) mapper.readTree(source.toFile());
@@ -585,6 +588,7 @@ class ControlledTlsPeerTest {
             case 24 -> structure(0x420079, item(0x420074, 5, intBytes(1)));
             case 30 -> structure(0x420079, offered);
             case 37 -> structure(0x420079, item(0x4200c4, 2, intBytes(32)));
+            case 38 -> structure(0x420079, item(0x4200c2, 8, "A".repeat(32).getBytes(StandardCharsets.US_ASCII)));
             case 39 -> structure(0x420079, structure(0x42002b, item(0x420038, 5, intBytes(6))),
                     item(0x4200c2, 8, new byte[] {97, 98, 99}));
             default -> structure(0x420079);
@@ -600,7 +604,7 @@ class ControlledTlsPeerTest {
             try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
                     certificate(clientPem))) {
                 var config = (ObjectNode) mapper.readTree(connectionJson(listener.getLocalPort(),
-                        serverPem, clientPem, fixture("client-key.pem"), operation == 37, "generic-ttlv"));
+                        serverPem, clientPem, fixture("client-key.pem"), operation == 37 || operation == 38, api));
                 Path connection = temporaryDirectory.resolve("generic-connection.json");
                 mapper.writeValue(connection.toFile(), config.put("protocol_version", version));
                 byte[] response;
@@ -610,6 +614,8 @@ class ControlledTlsPeerTest {
                     response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, digest));
                 } else if (operation == 37) {
                     response = legacyKeyResponse(minor, operation, item(0x4200c2, 8, new byte[validResponse ? 32 : 31]));
+                } else if (operation == 38) {
+                    response = legacyKeyResponse(minor, operation, item(0x4200c4, 2, intBytes(validResponse ? 0 : 33)));
                 } else if (operation == 8) {
                     byte[] total = item(0x4200d5, 2, intBytes(2));
                     byte[] identifier = item(0x420094, 7, "known-id".getBytes(StandardCharsets.US_ASCII));
@@ -628,7 +634,7 @@ class ControlledTlsPeerTest {
                     var args = new ArrayList<>(List.of("run", "--connection", connection.toString(),
                             "--catalog", catalogFile.toString(), "--artifact-manifest",
                             System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()));
-                    if (operation == 37) args.add("--enable-mutations");
+                    if (operation == 37 || operation == 38) args.add("--enable-mutations");
                     int exit = Main.execute(args.toArray(String[]::new), diagnostics, diagnostics);
                     assertEquals(validResponse ? 0 : 1, exit);
                 }

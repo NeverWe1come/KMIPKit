@@ -60,6 +60,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The driver checks the correlation and final digest across three exchanges.");
         }
+        if (JavaKmipDriver.typedRngCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver checks the returned byte count for a bounded RNG request.");
+        }
         if (JavaKmipDriver.readOnlyProbe(testCase)) {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The driver verifies the response to a bounded Locate or known-answer SHA-256 request.");

@@ -9527,6 +9527,17 @@ static bool add_generic_revoke_reason(kmip_live_client_t *client, kmipkit_ttlv_s
     return valid;
 }
 
+static const uint8_t generic_rng_seed_input[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+static bool add_generic_rng_seed(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload) {
+    kmipkit_ttlv_value_t *data = NULL;
+    bool valid = kmipkit_ttlv_value_byte_string(client->limits, generic_rng_seed_input,
+        sizeof(generic_rng_seed_input) - 1, &data) == 0 &&
+        append_ttlv_value(client, payload, 0x4200c2, &data);
+    kmipkit_ttlv_value_release(data);
+    return valid;
+}
+
 static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t operation,
                                              const generic_identifier_t *identifier, uint32_t attribute_tag,
                                              const generic_hash_frame_t *frame) {
@@ -9570,6 +9581,8 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
         valid = add_generic_version(client, &payload);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE)
         valid = add_generic_number(client, &payload, 0x4200c4, 32, false);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_SEED)
+        valid = add_generic_rng_seed(client, &payload);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH)
         valid = add_generic_hash_input(client, &payload, frame);
     valid = valid && add_generic_structure(client, &batch, 0x420079, &payload) &&
@@ -9899,6 +9912,14 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         valid = fields == 0;
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE) {
         valid = fields == 1 && generic_rng_matches(payload);
+    } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_RNG_SEED) {
+        kmipkit_ttlv_value_view_t *length_field = NULL;
+        int32_t length = 0;
+        valid = fields == 1 &&
+            structure_view_find_value(payload, 0x4200c4, KMIPKIT_TTLV_ITEM_TYPE_INTEGER, &length_field) &&
+            kmipkit_ttlv_value_view_integer(length_field, &length) == 0 &&
+            length >= 0 && (size_t)length < sizeof(generic_rng_seed_input);
+        kmipkit_ttlv_value_view_release(length_field);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
         valid = generic_hash_matches(payload, fields, frame);
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
@@ -10557,7 +10578,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 #ifdef KMIPKIT_C_GENERIC_TLS
         const kmip_connection_config_t *connection = client->configuration;
         uint32_t owned = generic_owned_operation(test_case->case_id);
-        bool rng = strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
+        const char *case_id = test_case->case_id;
+        uint32_t rng = 0;
+        if (strcmp(case_id, "test-crypto-rng-retrieve-rng-32") == 0 || strcmp(case_id, "test-op-rng-retrieve") == 0)
+            rng = KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE;
+        if (strcmp(case_id, "test-crypto-rng-seed-rng-32") == 0 || strcmp(case_id, "test-op-rng-seed") == 0)
+            rng = KMIPKIT_ENUMERATION_OPERATION_RNG_SEED;
         if (connection && client->protocol_major == 2 && client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             !connection->username_env[0] && !connection->password_env[0] &&
@@ -10566,7 +10592,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_owned_key(client, owned, test_case->case_id);
             if (rng)
-                return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_RNG_RETRIEVE);
+                return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
             if (strcmp(test_case->case_id, "test-op-discover-versions") == 0)

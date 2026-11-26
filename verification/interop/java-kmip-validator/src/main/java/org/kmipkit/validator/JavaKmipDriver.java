@@ -82,6 +82,9 @@ public final class JavaKmipDriver implements AutoCloseable {
         if (multipartHash(testCase)) {
             return executeMultipartHash(testCase, start);
         }
+        if (typedRngCase(testCase)) {
+            return executeRngCase(testCase, start);
+        }
         if (readOnlyProbe(testCase)) {
             return executeReadOnlyProbe(testCase, start);
         }
@@ -103,6 +106,37 @@ public final class JavaKmipDriver implements AutoCloseable {
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
         return createSplitKeyCase(testCase) || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || Set.of("Create", "Ping").contains(testCase.operation());
+    }
+
+    static boolean typedRngCase(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-rng-retrieve", "test-op-rng-seed",
+                "test-crypto-rng-retrieve-rng-32", "test-crypto-rng-seed-rng-32").contains(testCase.caseId());
+    }
+
+    private CaseOutcome executeRngCase(CatalogLoader.CatalogCase testCase, long start) {
+        int length = 32;
+        if ("RNG Seed".equals(testCase.operation())) {
+            var seed = "A".repeat(length).getBytes(StandardCharsets.US_ASCII);
+            return executeRequest(testCase, withBatchId(ClientBatchItem.rngSeed(seed)), result ->
+                    result.rngSeedResponse().filter(payload -> {
+                        try (payload) {
+                            int used = payload.dataLength().orElse(-1);
+                            return used >= 0 && used <= length;
+                        }
+                    }).isPresent(), start);
+        }
+        return executeRequest(testCase, withBatchId(ClientBatchItem.rngRetrieve(length)), result ->
+                result.rngRetrieveResponse().filter(payload -> {
+                    try (payload) {
+                        byte[] data = payload.data().orElse(null);
+                        if (data == null) return false;
+                        try {
+                            return data.length == length;
+                        } finally {
+                            Arrays.fill(data, (byte) 0);
+                        }
+                    }
+                }).isPresent(), start);
     }
 
     private CaseOutcome executeReadOnlyProbe(CatalogLoader.CatalogCase testCase, long start) {

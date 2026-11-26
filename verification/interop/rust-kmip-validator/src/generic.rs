@@ -13,6 +13,7 @@ use sha2::{Digest, Sha256};
 
 const TEXT_ATTRIBUTE_FIXTURE: &str = "kmipkit-attribute-fixture";
 const HASH_INPUT: &[u8] = b"abc";
+const RNG_SEED_INPUT: [u8; 32] = [b'A'; 32];
 const CREATE: u32 = 1;
 const CHECK: u32 = 9;
 const GET: u32 = 10;
@@ -64,7 +65,7 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
                 case.execution.mutation == "mutating"
             } else {
                 case.execution.mutation == "read_only"
-                    || operation == 0x25
+                    || matches!(operation, 0x25 | 0x26)
                     || case.case_id == "test-multipart-hash-sha256"
             }
         })
@@ -90,7 +91,8 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-locate", "2.0" | "2.1") => Some(0x08),
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
-        ("test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
+        ("test-op-rng-retrieve" | "test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
+        ("test-op-rng-seed" | "test-crypto-rng-seed-rng-32", "2.0" | "2.1") => Some(0x26),
         (
             "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256",
             "2.0" | "2.1",
@@ -642,6 +644,10 @@ fn exchange_with_reference(
         0x18 => vec![item(0x0042_0074, Value::enumeration(1))?],
         0x1e => vec![version_item()?],
         0x25 => vec![item(0x0042_00c4, Value::integer(32))?],
+        0x26 => vec![item(
+            0x0042_00c2,
+            Value::byte_string(RNG_SEED_INPUT.to_vec()),
+        )?],
         0x27 => hash_fields(HASH_INPUT)?,
         _ => Vec::new(),
     };
@@ -772,6 +778,13 @@ fn check_probe(
             .map_err(|_| "invalid RNG Retrieve response")?
             .data()
             .is_some_and(|data| data.with_bytes(|bytes| bytes.len() == 32))
+    } else if operation == 0x26 {
+        batch
+            .with_response_payload(|payload| payload.children().len() == 1)
+            .unwrap_or(false)
+            && has_field(batch, 0x0042_00c4, |value| {
+                matches!(value, ValueView::Integer(0..=32))
+            })
     } else if operation == 0x27 {
         let hash =
             HashResponse::try_from_response_item(batch).map_err(|_| "invalid Hash response")?;

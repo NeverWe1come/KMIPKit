@@ -636,6 +636,7 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             0x13: b"",
             0x18: enumeration(0x42005c, 0x18) + enumeration(0x42005c, 0x3b),
             0x25: tlv(0x4200c2, 8, bytes(31 if invalid_payload else 32)),
+            0x26: integer(0x4200c4, 33 if invalid_payload else 0),
             0x27: tlv(0x4200c2, 8, hashlib.sha256(b"wrong" if invalid_payload else b"abc").digest()),
             0x3b: b"",
         }[operation]
@@ -643,7 +644,7 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
             payload = integer(0x4200d5, 2) + tlv(0x420094, 7, b"known-id")
             if invalid_payload:
                 payload += tlv(0x420094, 7, b"second-id")
-        if generic_locate or (major < 3 and operation in (0x18, 0x1e, 0x25, 0x27, 0x3b)):
+        if generic_locate or (major < 3 and operation in (0x18, 0x1e, 0x25, 0x26, 0x27, 0x3b)):
             apis = ("generic-ttlv",)
         else:
             apis = ("typed-protocol",) if operation == 0x18 else ("typed-protocol", "fluent")
@@ -681,6 +682,8 @@ def versioned_operation(binary: Path, openssl: str, repository: Path, case_id: s
                             assert bytes.fromhex("42000d02") not in request
                         if operation == 0x25:
                             assert tlv(0x420079, 1, integer(0x4200c4, 32)) in request
+                        if operation == 0x26:
+                            assert tlv(0x420079, 1, tlv(0x4200c2, 8, b"A" * 32)) in request
                         if operation == 0x27:
                             assert enumeration(0x420038, 6) in request and tlv(0x4200c2, 8, b"abc") in request
                         if operation == 0x08:
@@ -864,6 +867,8 @@ def main() -> int:
         versioned_owned_key(binary, openssl, repository, protocol_version)
         for invalid in (False, True):
             versioned_operation(binary, openssl, repository, "test-crypto-rng-retrieve-rng-32", 0x25,
+                                protocol_version, invalid_payload=invalid)
+            versioned_operation(binary, openssl, repository, "test-crypto-rng-seed-rng-32", 0x26,
                                 protocol_version, invalid_payload=invalid)
             versioned_operation(binary, openssl, repository, "test-op-locate", 0x08, protocol_version,
                                 generic_locate=True, invalid_payload=invalid)
