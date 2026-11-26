@@ -671,6 +671,7 @@ class LiveContract(unittest.TestCase):
             "Modify Attribute", "Delete Attribute", "Get Usage Allocation", "RNG Retrieve",
             "Revoke", "Get", "Get Attributes", "Get Attribute List", "Locate", "Ping",
             "Get Constraints", "Activate", "Archive", "Recover", "Destroy",
+            "Check", "Obtain Lease", "RNG Seed", "Create Split Key", "Re-key", "Re-key Key Pair", "Register",
             "Hash", "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify",
         }
         for version in ("2.0", "2.1"):

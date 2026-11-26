@@ -1,7 +1,8 @@
 //! Construct the target of an existing recipe with the installed Fluent API.
 
 use crate::models::Case;
-use kmipkit::protocol::{AttributeSet, GetRequest};
+use kmipkit::protocol::{AttributeSet, GetRequest, OpaqueObjectContext, SecretBytes};
+use kmipkit::ttlv::ValueView;
 use kmipkit::{Client, ClientRequest};
 
 pub(crate) fn supports(case: &Case) -> bool {
@@ -28,6 +29,13 @@ pub(crate) fn supports(case: &Case) -> bool {
                     | "Delete Attribute"
                     | "Get Usage Allocation"
                     | "RNG Retrieve"
+                    | "RNG Seed"
+                    | "Check"
+                    | "Obtain Lease"
+                    | "Create Split Key"
+                    | "Re-key"
+                    | "Re-key Key Pair"
+                    | "Register"
                     | "Revoke"
                     | "Get"
                     | "Get Attributes"
@@ -97,8 +105,194 @@ pub(crate) fn build(
         | ClientRequest::GetUsageAllocation(_)
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::Revoke(_) => build_simple(client, &source),
+        ClientRequest::Check(_)
+        | ClientRequest::ObtainLease(_)
+        | ClientRequest::RngSeed(_)
+        | ClientRequest::Rekey(_)
+        | ClientRequest::RekeyKeyPair(_) => build_lifecycle(client, source),
+        ClientRequest::Register(_) | ClientRequest::CreateSplitKey(_) => {
+            build_managed(client, source)
+        }
         other => build_object(client, other),
     }
+}
+
+fn build_managed(
+    client: &mut Client,
+    source: ClientRequest,
+) -> Result<ClientRequest, &'static str> {
+    let request = client.request();
+    let invalid = |_| "Fluent builder rejected the managed object fixture";
+    Ok(match source {
+        ClientRequest::CreateSplitKey(source) => {
+            let mut builder = request
+                .create_split_key()
+                .object_type(source.object_type())
+                .method(source.split_key_method())
+                .parts(source.split_key_parts())
+                .threshold(source.split_key_threshold())
+                .attributes(attributes(source.attributes())?);
+            if let Some(id) = source.unique_identifier() {
+                builder = builder.unique_identifier(id.clone());
+            }
+            if let Some(prime) = source.prime_field_size() {
+                builder = builder.prime_field_size(prime.to_vec());
+            }
+            if let Some(masks) = source.protection_storage_masks() {
+                builder = builder.protection_storage_masks(
+                    masks
+                        .view()
+                        .try_clone()
+                        .map_err(|_| "protection masks copy failed")?,
+                );
+            }
+            ClientRequest::CreateSplitKey(builder.build().map_err(invalid)?)
+        }
+        ClientRequest::Register(source) => {
+            let object_type = source.object_type();
+            let mut builder = request
+                .register()
+                .object_item(
+                    object_type,
+                    source
+                        .object()
+                        .try_clone()
+                        .map_err(|_| "object copy failed")?,
+                )
+                .attributes(attributes(source.attributes())?);
+            if object_type.raw() == 8 {
+                // The catalog's Opaque Object fixture uses Generic context.
+                builder = builder.opaque_object_context(OpaqueObjectContext::Generic);
+            }
+            let payload = source
+                .into_ttlv_payload()
+                .map_err(|_| "Register fixture payload invalid")?;
+            if let Some(masks) = payload_structure(&payload, 0x0042_015f)? {
+                builder = builder.protection_storage_masks(masks);
+            }
+            ClientRequest::Register(
+                builder
+                    .build()
+                    .map_err(|_| "Fluent Register fixture rejected")?,
+            )
+        }
+        _ => return Err("no Fluent managed-object recipe"),
+    })
+}
+
+fn payload_structure(
+    payload: &kmipkit::ttlv::Structure,
+    tag: u32,
+) -> Result<Option<kmipkit::ttlv::Structure>, &'static str> {
+    payload
+        .view()
+        .children()
+        .iter()
+        .find(|field| field.tag().raw() == tag)
+        .map(|field| {
+            field.with_value(|value| match value {
+                ValueView::Structure(fields) => {
+                    fields.try_clone().map_err(|_| "fixture field copy failed")
+                }
+                _ => Err("fixture field has wrong structure type"),
+            })
+        })
+        .transpose()
+}
+
+fn build_lifecycle(
+    client: &mut Client,
+    source: ClientRequest,
+) -> Result<ClientRequest, &'static str> {
+    let request = client.request();
+    let invalid = |_| "Fluent builder rejected the lifecycle fixture";
+    Ok(match source {
+        ClientRequest::Check(source) => {
+            let mut builder = request.check();
+            if let Some(id) = source.unique_identifier() {
+                builder = builder.unique_identifier(id.clone());
+            }
+            let payload = source
+                .into_ttlv_payload()
+                .map_err(|_| "Check fixture payload invalid")?;
+            for field in payload.view().children() {
+                builder = field.with_value(|value| match (field.tag().raw(), value) {
+                    (0x0042_0094, _) => Ok(builder),
+                    (0x0042_0096, ValueView::LongInteger(count)) => {
+                        Ok(builder.usage_limits_count(*count))
+                    }
+                    (0x0042_002c, ValueView::Integer(mask)) => {
+                        Ok(builder.cryptographic_usage_mask(*mask))
+                    }
+                    (0x0042_0049, ValueView::Interval(lease)) => Ok(builder.lease_time(*lease)),
+                    _ => Err("unexpected Check fixture field"),
+                })?;
+            }
+            ClientRequest::Check(builder.build().map_err(invalid)?)
+        }
+        ClientRequest::ObtainLease(source) => {
+            let mut builder = request.obtain_lease();
+            if let Some(id) = source.unique_identifier() {
+                builder = builder.unique_identifier(id.clone());
+            }
+            ClientRequest::ObtainLease(builder.build().map_err(invalid)?)
+        }
+        ClientRequest::RngSeed(source) => {
+            let payload = source
+                .to_ttlv_payload()
+                .map_err(|_| "RNG Seed fixture payload invalid")?;
+            let view = payload.view();
+            let [data] = view.children() else {
+                return Err("RNG Seed fixture requires Data");
+            };
+            let data = data.with_value(|value| match value {
+                ValueView::ByteString(bytes) => Ok(SecretBytes::new(bytes.to_vec())),
+                _ => Err("RNG Seed fixture Data has wrong type"),
+            })?;
+            ClientRequest::RngSeed(request.rng_seed().data(data).build().map_err(invalid)?)
+        }
+        ClientRequest::Rekey(source) => {
+            let mut builder = request.rekey();
+            if let Some(id) = source.unique_identifier() {
+                builder = builder.unique_identifier(id.clone());
+            }
+            let payload = source
+                .into_ttlv_payload()
+                .map_err(|_| "Re-key fixture payload invalid")?;
+            if payload
+                .view()
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() != 0x0042_0094)
+            {
+                return Err(
+                    "Re-key fixture has additional fields without an equivalent Fluent recipe",
+                );
+            }
+            ClientRequest::Rekey(builder.build_request().map_err(invalid)?)
+        }
+        ClientRequest::RekeyKeyPair(source) => {
+            let mut builder = request.rekey_key_pair();
+            if let Some(id) = source.private_key_unique_identifier() {
+                builder = builder.private_key_unique_identifier(id.clone());
+            }
+            let payload = source
+                .into_ttlv_payload()
+                .map_err(|_| "Re-key Key Pair fixture payload invalid")?;
+            if payload
+                .view()
+                .children()
+                .iter()
+                .any(|field| field.tag().raw() != 0x0042_0066)
+            {
+                return Err(
+                    "Re-key Key Pair fixture has additional fields without an equivalent Fluent recipe",
+                );
+            }
+            ClientRequest::RekeyKeyPair(builder.build_request().map_err(invalid)?)
+        }
+        _ => return Err("no Fluent lifecycle recipe"),
+    })
 }
 
 fn build_object(client: &mut Client, source: ClientRequest) -> Result<ClientRequest, &'static str> {
