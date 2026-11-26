@@ -415,6 +415,7 @@ def main():
         )
         if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
             raise ValueError("catalog evidence does not match the requested library commit")
+        table_summaries = []
         if args.cosmian_minimum:
             from verification.interop.shared.tools.cosmian_minimum import (
                 ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
@@ -432,7 +433,6 @@ def main():
 
             from verification.interop.shared.tools.table_vendor_extensions import attach_evidence as attach_vendor_evidence
 
-            table_summaries = []
             for version in ALLOWED_VERSIONS:
                 if version in (args.version or VERSIONS):
                     selection, inventory = build_selection(ROOT, version)
@@ -452,7 +452,7 @@ def main():
                                                        languages, args.library_commit)
                     if args.table_vendor_extensions_report:
                         attach_vendor_evidence(ROOT, inventory, args.table_vendor_extensions_report)
-                    table_summaries.append(summarize_table_evidence(inventory, selection))
+                    table_summaries.append(summarize_table_evidence(inventory, selection, languages))
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )
@@ -462,9 +462,17 @@ def main():
         write_report(args.output_dir, result, catalog_runs)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")
-    print(json.dumps({k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}, indent=2))
+    console_summary = {k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}
+    if table_summaries:
+        console_summary["table_completion"] = {
+            summary["protocol_version"]: summary["completion"] for summary in table_summaries
+        }
+    print(json.dumps(console_summary, indent=2))
     if failures or result["parity"].get("mismatched") or (
-        args.require_complete and not coverage_complete(result, tuple(args.version or VERSIONS))
+        args.require_complete and (
+            not coverage_complete(result, tuple(args.version or VERSIONS))
+            or any(not summary["completion"]["complete"] for summary in table_summaries)
+        )
     ):
         return 1
     return 0
