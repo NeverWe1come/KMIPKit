@@ -470,7 +470,11 @@ final class GenericExchange {
     private static TtlvItem locatePayload(TtlvItem rotate) {
         try (var maximum = item(0x42004f, TtlvValue.Integer(1));
                 var offset = item(0x4200d4, TtlvValue.Integer(0))) {
-            if (rotate == null) return structureItem(0x420079, maximum, offset);
+            if (rotate == null) {
+                try (var attributes = structureItem(0x420125)) {
+                    return structureItem(0x420079, maximum, offset, attributes);
+                }
+            }
             try (var attributes = structureItem(0x420125, rotate)) {
                 return structureItem(0x420079, maximum, offset, attributes);
             }
@@ -726,8 +730,11 @@ final class GenericExchange {
                     throw new IllegalArgumentException("Response does not match request version and count");
                 }
                 try (var batch = response.batchItemAt(0)) {
-                    if (batch.operation().orElse(-1) != operation) throw new IllegalArgumentException("Wrong response operation");
                     long status = batch.resultStatus().orElseThrow();
+                    long opVal = batch.operation().orElse(-1);
+                    if (opVal != operation && !(batch.operation().isEmpty() && status == 1)) {
+                        throw new IllegalArgumentException("Wrong response operation");
+                    }
                     Long reason = batch.resultReason().isPresent() ? batch.resultReason().getAsLong() : null;
                     double duration = elapsed(start);
                     if (status == 0 && reason == null && batch.withResponsePayload(expected::test).orElse(false)) {
@@ -1410,9 +1417,11 @@ final class GenericExchange {
         var sigRef = new AtomicReference<byte[]>();
         JavaKmipDriver.CaseOutcome signRes;
         try (var uid = item(0x420094, TtlvValue.TextString(priv.get(), LIMITS));
+                var alg = item(0x420028, TtlvValue.Enumeration(4));
                 var ha = item(0x420038, TtlvValue.Enumeration(6));
                 var pad = item(0x42005f, TtlvValue.Enumeration(8));
-                var params = structureItem(0x42002b, ha, pad);
+                var dsa = item(0x4200ae, TtlvValue.Enumeration(5));
+                var params = structureItem(0x42002b, alg, ha, pad, dsa);
                 var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
                 var payload = structureItem(0x420079, uid, params, data)) {
             signRes = executePayload(connection, SIGN, minor, payload, p -> {
@@ -1423,9 +1432,11 @@ final class GenericExchange {
         }
         if (operation == SIGN || !"passed".equals(signRes.status())) return signRes;
         try (var uid = item(0x420094, TtlvValue.TextString(pub.get(), LIMITS));
+                var alg = item(0x420028, TtlvValue.Enumeration(4));
                 var ha = item(0x420038, TtlvValue.Enumeration(6));
                 var pad = item(0x42005f, TtlvValue.Enumeration(8));
-                var params = structureItem(0x42002b, ha, pad);
+                var dsa = item(0x4200ae, TtlvValue.Enumeration(5));
+                var params = structureItem(0x42002b, alg, ha, pad, dsa);
                 var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
                 var sigData = item(0x4200c3, TtlvValue.ByteString(sigRef.get(), LIMITS));
                 var payload = structureItem(0x420079, uid, params, data, sigData)) {

@@ -796,6 +796,7 @@ fn exchange_with_reference(
         0x08 => vec![
             item(0x0042_004f, Value::integer(1))?,
             item(0x0042_00d4, Value::integer(0))?,
+            node(0x0042_0125, vec![])?,
         ],
         0x18 => vec![item(0x0042_0074, Value::enumeration(1))?],
         0x1e => vec![version_item()?],
@@ -880,7 +881,11 @@ fn check_response(
     }
     let batch = items
         .next()
-        .filter(|item| item.operation() == Some(operation))
+        .filter(|item| {
+            item.operation() == Some(operation)
+                || (item.operation().is_none()
+                    && item.result_status().map(kmipkit::ResultStatus::raw) == Some(1))
+        })
         .ok_or("response operation differs from the request")?;
     let status = batch
         .result_status()
@@ -1595,8 +1600,10 @@ fn extended_sign_ops(
         node(
             0x0042_002b,
             vec![
+                item(0x0042_0028, Value::enumeration(4))?,
                 item(0x0042_0038, Value::enumeration(6))?,
                 item(0x0042_005f, Value::enumeration(8))?,
+                item(0x0042_00ae, Value::enumeration(5))?,
             ],
         )?,
         item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
@@ -1614,8 +1621,10 @@ fn extended_sign_ops(
         node(
             0x0042_002b,
             vec![
+                item(0x0042_0028, Value::enumeration(4))?,
                 item(0x0042_0038, Value::enumeration(6))?,
                 item(0x0042_005f, Value::enumeration(8))?,
+                item(0x0042_00ae, Value::enumeration(5))?,
             ],
         )?,
         item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,

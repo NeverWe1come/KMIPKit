@@ -10578,8 +10578,10 @@ static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *cli
                 static const uint8_t msg[3] = {'a', 'b', 'c'};
                 kmipkit_ttlv_structure_t *sp = make_ttlv_struct();
                 kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+                append_ttlv_enum(client, &cp, 0x420028, 4);
                 append_ttlv_enum(client, &cp, 0x420038, 6);
                 append_ttlv_enum(client, &cp, 0x42005f, 8);
+                append_ttlv_enum(client, &cp, 0x4200ae, 5);
                 append_ttlv_text(client, &sp, 0x420094, ctx.ids[0]);
                 append_ttlv_struct(client, &sp, 0x42002b, cp);
                 append_ttlv_bytes(client, &sp, 0x4200c2, msg, sizeof(msg));
@@ -10588,8 +10590,10 @@ static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *cli
                 if (op == 0x22 && out.success) {
                     kmipkit_ttlv_structure_t *vp = make_ttlv_struct();
                     kmipkit_ttlv_structure_t *cp2 = make_ttlv_struct();
+                    append_ttlv_enum(client, &cp2, 0x420028, 4);
                     append_ttlv_enum(client, &cp2, 0x420038, 6);
                     append_ttlv_enum(client, &cp2, 0x42005f, 8);
+                    append_ttlv_enum(client, &cp2, 0x4200ae, 5);
                     append_ttlv_text(client, &vp, 0x420094, ctx.ids[1]);
                     append_ttlv_struct(client, &vp, 0x42002b, cp2);
                     append_ttlv_bytes(client, &vp, 0x4200c2, msg, sizeof(msg));

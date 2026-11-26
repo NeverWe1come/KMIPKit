@@ -439,6 +439,8 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         payload_fields = [item(0x42004F, "integer", 1), item(0x4200D4, "integer", 0)]
         if locate_attributes is not None:
             payload_fields.append(item(0x420125, "structure", locate_attributes))
+        else:
+            payload_fields.append(node(0x420125, []))
     elif operation == 0x18:
         payload_fields = [item(0x420074, "enumeration", 1)]
     elif operation == 0x1E:
@@ -480,7 +482,9 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
             if (version.major, version.minor) != (2, minor) or response.batch_item_count != 1:
                 raise ValueError("generic response version or batch count mismatch")
             with response.batch_item_at(0) as batch:
-                if batch.operation != operation:
+                if batch.operation != operation and not (
+                    batch.operation is None and batch.result_status == 1
+                ):
                     raise ValueError("generic response operation mismatch")
                 status, reason = batch.result_status, batch.result_reason
                 if status == 2 and operation in {POLL, CANCEL}:
@@ -950,7 +954,12 @@ def _run_extended(driver, operation):
                 return _text_identifier(payload) == priv_id and sig is not None
             sign_res = _checked_exchange(driver, SIGN, expected=check_sign, custom_payload=[
                 item(0x420094, "text", priv_id),
-                node(0x42002B, [item(0x420038, "enumeration", 6), item(0x42005F, "enumeration", 8)]),
+                node(0x42002B, [
+                    item(0x420028, "enumeration", 4),
+                    item(0x420038, "enumeration", 6),
+                    item(0x42005F, "enumeration", 8),
+                    item(0x4200AE, "enumeration", 5),
+                ]),
                 item(0x4200C2, "bytes", HASH_INPUT),
             ])
             if operation == SIGN or sign_res["status"] != "passed":
@@ -959,7 +968,12 @@ def _run_extended(driver, operation):
                 driver, SIGNATURE_VERIFY,
                 expected=lambda p: _has_field(p, 0x42009B, "Enumeration", 1),
                 custom_payload=[item(0x420094, "text", pub_id),
-                                node(0x42002B, [item(0x420038, "enumeration", 6), item(0x42005F, "enumeration", 8)]),
+                                node(0x42002B, [
+                                    item(0x420028, "enumeration", 4),
+                                    item(0x420038, "enumeration", 6),
+                                    item(0x42005F, "enumeration", 8),
+                                    item(0x4200AE, "enumeration", 5),
+                                ]),
                                 item(0x4200C2, "bytes", HASH_INPUT), item(0x4200C3, "bytes", sig)],
             )
         return _failure("Unsupported extended generic operation.")

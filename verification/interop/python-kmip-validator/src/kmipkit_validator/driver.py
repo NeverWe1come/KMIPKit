@@ -1158,7 +1158,7 @@ class PythonKmipDriver:
             cls._item(
                 0x0042_002C,
                 "integer",
-                0x20 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
+                0x03 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
             ),
             name_value,
         ]
@@ -1177,9 +1177,14 @@ class PythonKmipDriver:
             # The catalog's AES-CBC recipes use CBC with PKCS5 padding.
             builder.cryptographic_algorithm(3).block_cipher_mode(1).padding_method(3)
         elif operation in {"MAC", "MAC Verify"}:
-            builder.cryptographic_algorithm(9)
+            builder.hashing_algorithm(6)
         elif operation in {"Sign", "Signature Verify"}:
-            builder.cryptographic_algorithm({"RSA": 4, "ECDSA": 6}.get(algorithm, 4))
+            alg_code = {"RSA": 4, "ECDSA": 6}.get(algorithm, 4)
+            builder.cryptographic_algorithm(alg_code).hashing_algorithm(6)
+            if alg_code == 4:
+                builder.padding_method(8).digital_signature_algorithm(5)
+            else:
+                builder.digital_signature_algorithm(14)
         elif operation == "Hash":
             builder.hashing_algorithm(6)
         return builder.build().into_ttlv()
@@ -1284,8 +1289,15 @@ class PythonKmipDriver:
             if fluent_request is not None:
                 with (attribute_operations.AttributeSet.try_new(attributes) as values,
                       fluent_request.register(object_item, object_type) as builder):
+                    if object_type == 8:
+                        builder.opaque_object_context(self._extensions.OpaqueObjectContext.GENERIC)
                     return builder.attributes(values).build()
-            with self._extensions.RegisterRequest.create(object_type, attributes, object_item) as request:
+            request = self._extensions.RegisterRequest.create(object_type, attributes, object_item)
+            if object_type == 8:
+                request = request.with_opaque_object_context(
+                    self._extensions.OpaqueObjectContext.GENERIC
+                )
+            with request:
                 return self._extensions.client_batch_item_register(request)
 
     def _build_item(
@@ -1973,7 +1985,7 @@ class PythonKmipDriver:
         algorithm = {"AES": 3, "RSA": 4, "ECDSA": 6, "HMAC_SHA256": 9}.get(algorithm_name, 3)
         bits = int(test_case.get("requires", {}).get("key_length", 256))
         outcome: dict[str, Any] | None = None
-        activation_attempted = False
+        activated_ids: list[Any] = []
         try:
             if setup_required:
                 attributes = self._fixture_attributes(
@@ -2006,16 +2018,18 @@ class PythonKmipDriver:
                 if operation in {"Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"} and case_id != "test-neg-encrypt-preactive-key":
                     for key_identifier in created_ids:
                         activated = self._exchange(self._extensions.client_batch_item_activate(key_identifier))
+                        if activated.get("result_status_code") in (None, 0):
+                            activated_ids.append(key_identifier)
                         if activated["status"] != "passed":
                             outcome = self._blocked_prerequisite("server did not activate the owned key fixture")
                             return outcome
                 if operation == "Signature Verify" and len(created_ids) > 1:
                     target_identifier = created_ids[1]
             if operation == "Revoke":
-                activation_attempted = True
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated.get("result_status_code") in (None, 0):
+                    activated_ids.append(target_identifier)
                 if activated["status"] != "passed":
-                    activation_attempted = activated.get("result_status_code") in (None, 0)
                     outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
                     return outcome
                 if target_identifier not in activated.get("_identifiers", ()):
@@ -2025,6 +2039,8 @@ class PythonKmipDriver:
                     return outcome
             if operation in {"Deactivate", "Obliterate"}:
                 activated = self._exchange(self._extensions.client_batch_item_activate(target_identifier))
+                if activated.get("result_status_code") in (None, 0):
+                    activated_ids.append(target_identifier)
                 if activated["status"] != "passed":
                     outcome = self._blocked_prerequisite("server rejected activation of the owned fixture")
                     return outcome
@@ -2115,7 +2131,8 @@ class PythonKmipDriver:
                     )
             elif operation in {"MAC Verify", "Signature Verify"}:
                 source_case = test_case | {"operation": "MAC" if operation == "MAC Verify" else "Sign"}
-                signature = self._exchange(self._build_item(source_case, target_identifier, name=unique_name))
+                sign_identifier = identifiers[0] if operation == "Signature Verify" and identifiers else target_identifier
+                signature = self._exchange(self._build_item(source_case, sign_identifier, name=unique_name))
                 if signature["status"] != "passed" or signature.get("_bytes") is None:
                     return signature
                 if self._api_level == "fluent":
@@ -2135,8 +2152,11 @@ class PythonKmipDriver:
                     built_high_level = True
                 else:
                     target = self._build_item(test_case, target_identifier, name=unique_name, related_identifiers=identifiers)
-            activation_attempted = operation == "Activate"
             result = self._exchange(target)
+            if operation == "Activate" and result.get("result_status_code") in (None, 0) and target_identifier is not None:
+                activated_ids.append(target_identifier)
+            if operation == "Revoke" and result["status"] == "passed" and target_identifier in activated_ids:
+                activated_ids.remove(target_identifier)
             if built_high_level:
                 result["actual_api_level"] = "high-level"
             if (operation in {"Activate", "Revoke"} and result["status"] == "passed"
@@ -2153,12 +2173,12 @@ class PythonKmipDriver:
             if operation in {"Destroy", "Obliterate"} and result["status"] == "passed" and target_identifier in identifiers:
                 identifiers.remove(target_identifier)
         finally:
-            if activation_attempted and (outcome is None or outcome.get("result_status_code") in (None, 0)):
+            for active_id in reversed(activated_ids):
                 try:
-                    with self._build_item(test_case | {"operation": "Revoke"}, target_identifier, name=unique_name) as revoke:
+                    with self._build_item(test_case | {"operation": "Revoke"}, active_id, name=unique_name) as revoke:
                         cleanup = self._exchange(revoke)
                     revoked = (cleanup["status"] == "passed"
-                               and target_identifier in cleanup.get("_identifiers", ()))
+                               and active_id in cleanup.get("_identifiers", ()))
                 except Exception:
                     revoked = False
                 if not revoked and outcome is not None:

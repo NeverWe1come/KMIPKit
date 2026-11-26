@@ -5,7 +5,7 @@ use std::{error::Error, fmt};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
 
 use crate::{
-    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind, ProtocolVersion,
+    KmipOperationResult, ProtocolCauseCategory, ProtocolError, ProtocolErrorKind,
     ResponseBatchItemView, ResultMessage, ResultValidationError,
 };
 
@@ -435,10 +435,7 @@ impl QueryResponse {
         }
 
         let parsed = item
-            .with_response_payload(|payload| {
-                let legacy_masks_required = item.protocol_version() != ProtocolVersion::V3_0;
-                parse_response_payload(&payload, legacy_masks_required)
-            })
+            .with_response_payload(|payload| parse_response_payload(&payload, false))
             .ok_or(QueryError::MissingResponsePayload)??;
         Ok(Self {
             result,

@@ -870,7 +870,7 @@ fn query_response_accepts_empty_protection_storage_masks_list() {
 }
 
 #[test]
-fn query_response_rejects_missing_required_protection_storage_masks_in_structured_form() {
+fn query_response_accepts_omitted_protection_storage_masks_for_interop() {
     let message = response_message(
         QUERY_OPERATION,
         0,
@@ -881,7 +881,9 @@ fn query_response_rejects_missing_required_protection_storage_masks_in_structure
             Value::enumeration(1),
         )])),
     );
-    assert!(QueryResponse::try_from_response_item(response_item(&message)).is_err());
+    let response = QueryResponse::try_from_response_item(response_item(&message))
+        .expect("real KMIP 2.x servers may omit Protection Storage Masks");
+    assert_eq!(response.response_fields().len(), 1);
 }
 
 #[test]

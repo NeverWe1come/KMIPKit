@@ -393,7 +393,7 @@ class LiveContract(unittest.TestCase):
                         0x18: query_function, 0x1e: protocol, 0x3b: b"",
                         0x25: ttlv(0x4200c4, 2, 32),
                         0x26: ttlv(0x4200c2, 8, b"A" * 32),
-                        0x08: ttlv(0x42004f, 2, 1) + ttlv(0x4200d4, 2, 0),
+                        0x08: ttlv(0x42004f, 2, 1) + ttlv(0x4200d4, 2, 0) + ttlv(0x420125, 1, []),
                         0x27: ttlv(0x42002b, 1, [ttlv(0x420038, 5, 6)]) + ttlv(0x4200c2, 8, b"abc"),
                     }[operation]
                     self.assertEqual(find(tree, 0x420079), parse(expected))

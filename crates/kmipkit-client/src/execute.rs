@@ -5967,6 +5967,24 @@ impl Client {
             None
         };
 
+        if response_message.header().protocol_version() == options.protocol_version {
+            let mut response_items = response_message.batch_items();
+            if let (Some(item), None) = (response_items.next(), response_items.next())
+                && item.operation().is_none()
+                && item.result_status()
+                    == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+            {
+                let status = ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED);
+                let result_message = item
+                    .with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned()));
+                if let Ok(result) =
+                    KmipOperationResult::new(status, item.result_reason(), result_message)
+                {
+                    return Err(ClientError::ServerResult(result));
+                }
+            }
+        }
+
         let validated_response = validate_response(
             &request_identities,
             &options,
@@ -10411,6 +10429,26 @@ fn validate_async_response(
     }
 
     let response_items = response.batch_items().collect::<Vec<_>>();
+    if let [item] = response_items.as_slice()
+        && item.operation().is_none()
+        && item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+    {
+        let status = ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED);
+        let result_message = item
+            .with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned()));
+        if let Ok(result) = KmipOperationResult::new(status, item.result_reason(), result_message)
+        {
+            let extensions = preserve_response_extensions(*item, registry, limits)?;
+            return Ok(ClientOperationOutcome {
+                operation: kind,
+                result,
+                response,
+                wire_response,
+                cancellation_result: None,
+                extensions,
+            });
+        }
+    }
     let requests = [BatchIdentity {
         operation,
         unique_batch_item_id: None,

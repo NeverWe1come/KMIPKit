@@ -158,7 +158,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
                     case,
                     "failed",
                     format!(
-                        "local {:?}; delivery={:?}; request not retried",
+                        "local {:?} ({error}); delivery={:?}; request not retried",
                         error.category(),
                         error.delivery_state()
                     ),
