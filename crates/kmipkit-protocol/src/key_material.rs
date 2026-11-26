@@ -230,8 +230,8 @@ transparent_key!(
     TransparentRsaPrivateKey,
     &[
         (MODULUS, ItemType::BigInteger, true),
-        (PUBLIC_EXPONENT, ItemType::BigInteger, false),
         (PRIVATE_EXPONENT, ItemType::BigInteger, false),
+        (PUBLIC_EXPONENT, ItemType::BigInteger, false),
         (P, ItemType::BigInteger, false),
         (Q, ItemType::BigInteger, false),
         (PRIME_EXPONENT_P, ItemType::BigInteger, false),
@@ -357,11 +357,11 @@ impl TransparentRsaPrivateKey {
             return Err(ManagedObjectError::InvalidFieldCombination);
         }
         let mut fields = vec![big(MODULUS, std::mem::take(&mut *modulus))?];
-        if let Some(mut value) = public_exponent.take() {
-            fields.push(big(PUBLIC_EXPONENT, std::mem::take(&mut *value))?);
-        }
         if let Some(mut value) = private_exponent.take() {
             fields.push(big(PRIVATE_EXPONENT, std::mem::take(&mut *value))?);
+        }
+        if let Some(mut value) = public_exponent.take() {
+            fields.push(big(PUBLIC_EXPONENT, std::mem::take(&mut *value))?);
         }
         if let Some(mut value) = p.take() {
             fields.push(big(P, std::mem::take(&mut *value))?);
