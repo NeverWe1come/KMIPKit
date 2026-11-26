@@ -9459,6 +9459,40 @@ typedef struct {
 } generic_identifier_t;
 
 static const uint8_t generic_text_attribute_fixture[] = "kmipkit-attribute-fixture";
+static const uint8_t generic_changed_description[] = "kmipkit-changed-description";
+
+typedef struct {
+    const uint8_t *text;
+    size_t length;
+} generic_description_t;
+
+static const generic_description_t description_initial = {
+    generic_text_attribute_fixture, sizeof(generic_text_attribute_fixture) - 1
+};
+static const generic_description_t description_changed = {
+    generic_changed_description, sizeof(generic_changed_description) - 1
+};
+static const generic_description_t description_absent = {0};
+
+static bool generic_changes_description(uint32_t operation) {
+    return operation == KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE ||
+        operation == KMIPKIT_ENUMERATION_OPERATION_MODIFY_ATTRIBUTE ||
+        operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE ||
+        operation == KMIPKIT_ENUMERATION_OPERATION_SET_ATTRIBUTE;
+}
+
+static bool add_generic_description(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload,
+                                    uint32_t wrapper, const generic_description_t *description) {
+    kmipkit_ttlv_structure_t *fields = NULL;
+    kmipkit_ttlv_value_t *text = NULL;
+    bool valid = kmipkit_ttlv_structure_create(&fields) == 0 &&
+        kmipkit_ttlv_value_text_string(client->limits, description->text, description->length, &text) == 0 &&
+        append_ttlv_value(client, &fields, 0x4200fc, &text) &&
+        add_generic_structure(client, payload, wrapper, &fields);
+    kmipkit_ttlv_value_release(text);
+    kmipkit_ttlv_structure_release(fields);
+    return valid;
+}
 
 static bool add_generic_create_fields(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload,
                                       uint32_t attribute_tag) {
@@ -9514,6 +9548,13 @@ static kmipkit_ttlv_item_t *generic_request(kmip_live_client_t *client, uint32_t
     if (valid && identifier)
         valid = kmipkit_ttlv_value_text_string(client->limits, identifier->data, identifier->size, &value) == 0 &&
             append_ttlv_value(client, &payload, 0x420094, &value);
+    if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_MODIFY_ATTRIBUTE)
+        valid = add_generic_description(client, &payload, 0x42013c, &description_initial);
+    if (valid && generic_changes_description(operation)) {
+        valid = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
+            ? add_generic_number(client, &payload, 0x42013b, 0x4200fc, true)
+            : add_generic_description(client, &payload, 0x42013d, &description_changed);
+    }
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_CHECK)
         valid = add_generic_number(client, &payload, 0x42002c, 4, false);
     if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_REVOKE)
@@ -9799,9 +9840,25 @@ static bool generic_key_attribute_matches(kmipkit_ttlv_structure_view_t *attribu
     return false;
 }
 
+static bool generic_description_matches(kmipkit_ttlv_structure_view_t *payload, uint64_t fields,
+                                        const generic_description_t *description) {
+    if (description->text == NULL) return fields == 1;
+    kmipkit_ttlv_structure_view_t *attributes = NULL;
+    uint64_t count = 0;
+    bool valid = fields == 2 && generic_structure_field(payload, 0x420125, &attributes) &&
+        kmipkit_ttlv_structure_view_item_count(attributes, &count) == 0;
+    if (valid) {
+        valid = count == 1 && structure_view_has_text(
+            attributes, 0x4200fc, description->text, description->length);
+    }
+    kmipkit_ttlv_structure_view_release(attributes);
+    return valid;
+}
+
 static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t operation, int32_t minor,
                                   const generic_identifier_t *expected, generic_identifier_t *created,
-                                  uint32_t attribute_tag, generic_hash_frame_t *frame) {
+                                  uint32_t attribute_tag, generic_hash_frame_t *frame,
+                                  const generic_description_t *description) {
     kmipkit_ttlv_structure_view_t *payload = NULL, *offered = NULL;
     uint64_t fields = 0, version_fields = 0;
     uint32_t advertised_operation = 0;
@@ -9827,10 +9884,14 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST)
             valid = generic_has_length_reference(payload, fields);
         if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES) {
-            uint64_t attributes = 0;
-            valid = generic_structure_field(payload, 0x420125, &offered) &&
-                kmipkit_ttlv_structure_view_item_count(offered, &attributes) == 0 && attributes == 1 &&
-                generic_key_attribute_matches(offered, attribute_tag);
+            if (description) {
+                valid = generic_description_matches(payload, fields, description);
+            } else {
+                uint64_t attributes = 0;
+                valid = generic_structure_field(payload, 0x420125, &offered) &&
+                    kmipkit_ttlv_structure_view_item_count(offered, &attributes) == 0 && attributes == 1 &&
+                    generic_key_attribute_matches(offered, attribute_tag);
+            }
         }
     } else if (valid && operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
         valid = generic_locate_matches(payload, fields);
@@ -9855,7 +9916,8 @@ static bool check_generic_payload(kmipkit_ttlv_structure_view_t *batch, uint32_t
 static bool read_generic_response(kmip_live_client_t *client, const uint8_t *wire, size_t size,
                                   uint32_t operation, kmip_execution_outcome_t *outcome,
                                   const generic_identifier_t *expected, generic_identifier_t *created,
-                                  uint32_t attribute_tag, generic_hash_frame_t *frame) {
+                                  uint32_t attribute_tag, generic_hash_frame_t *frame,
+                                  const generic_description_t *description) {
     kmipkit_ttlv_decode_error_v1_t error = {.struct_size = sizeof(error), .abi_version = 1};
     kmipkit_ttlv_item_t *root = NULL;
     kmipkit_ttlv_item_view_t *item = NULL;
@@ -9897,7 +9959,7 @@ static bool read_generic_response(kmip_live_client_t *client, const uint8_t *wir
         };
         record_kmip_result(outcome, &metadata);
         if (outcome->success) {
-            valid = !has_reason && check_generic_payload(batch_view, operation, client->protocol_minor, expected, created, attribute_tag, frame);
+            valid = !has_reason && check_generic_payload(batch_view, operation, client->protocol_minor, expected, created, attribute_tag, frame, description);
         }
     }
     if (batch_view) kmipkit_ttlv_structure_view_release(batch_view);
@@ -9915,7 +9977,8 @@ static bool read_generic_response(kmip_live_client_t *client, const uint8_t *wir
 
 static kmip_execution_outcome_t execute_generic_frame(kmip_live_client_t *client, uint32_t operation,
                                                      const generic_identifier_t *id, generic_identifier_t *created,
-                                                     uint32_t attribute_tag, generic_hash_frame_t *frame) {
+                                                     uint32_t attribute_tag, generic_hash_frame_t *frame,
+                                  const generic_description_t *description) {
     kmip_execution_outcome_t outcome = {.executed = true};
     kmipkit_ttlv_item_t *request = generic_request(client, operation, id, attribute_tag, frame);
     kmipkit_ttlv_item_view_t *view = NULL;
@@ -9928,7 +9991,7 @@ static kmip_execution_outcome_t execute_generic_frame(kmip_live_client_t *client
         encode_generic_item(view, wire, capacity, &request_size) && request_size <= KMIP_MAX_REQUEST_BYTES &&
         kmip_generic_tls_exchange(client->configuration, wire, request_size, KMIP_MAX_REQUEST_BYTES,
                                   &response, &response_size) &&
-        read_generic_response(client, response, response_size, operation, &outcome, id, created, attribute_tag, frame);
+        read_generic_response(client, response, response_size, operation, &outcome, id, created, attribute_tag, frame, description);
     if (!valid) {
         outcome.success = false;
         outcome.library_validated = false;
@@ -9945,7 +10008,7 @@ static kmip_execution_outcome_t execute_generic_frame(kmip_live_client_t *client
 static kmip_execution_outcome_t execute_generic_exchange_with_reference(kmip_live_client_t *client, uint32_t operation,
                                                           const generic_identifier_t *id, generic_identifier_t *created,
                                                           uint32_t attribute_tag) {
-    return execute_generic_frame(client, operation, id, created, attribute_tag, NULL);
+    return execute_generic_frame(client, operation, id, created, attribute_tag, NULL, NULL);
 }
 
 static kmip_execution_outcome_t execute_generic_multipart_hash(kmip_live_client_t *client) {
@@ -9957,7 +10020,7 @@ static kmip_execution_outcome_t execute_generic_multipart_hash(kmip_live_client_
     for (frame.stage = 0; frame.stage < 3; ++frame.stage) {
         frame.input = chunks[frame.stage];
         frame.input_length = lengths[frame.stage];
-        outcome = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_HASH, NULL, NULL, 0, &frame);
+        outcome = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_HASH, NULL, NULL, 0, &frame, NULL);
         if (!outcome.success) break;
     }
     if (frame.correlation) OPENSSL_cleanse(frame.correlation, frame.correlation_length);
@@ -9980,11 +10043,32 @@ static kmip_execution_outcome_t generic_cleanup_failure(const char *message) {
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_generic_description_change(kmip_live_client_t *client, uint32_t operation,
+                                                                  const generic_identifier_t *id) {
+    const generic_description_t *initial = operation == KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE
+        ? &description_absent : &description_initial;
+    kmip_execution_outcome_t before = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
+        id, NULL, 0x4200fc, NULL, initial);
+    if (!before.success) return generic_cleanup_failure("Could not read the initial Description.");
+
+    kmip_execution_outcome_t target = execute_generic_exchange(client, operation, id, NULL);
+    if (target.success) {
+        const generic_description_t *expected = operation == KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE
+            ? &description_absent : &description_changed;
+        kmip_execution_outcome_t after = execute_generic_frame(client, KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES,
+            id, NULL, 0x4200fc, NULL, expected);
+        if (!after.success) return generic_cleanup_failure("Could not verify the Description after mutation.");
+    }
+    return target;
+}
+
 static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *client, uint32_t operation, const char *case_id) {
     generic_identifier_t id = {0};
     const uint32_t attribute_tag = generic_key_attribute_reference(case_id);
+    const uint32_t initial_tag = generic_changes_description(operation) &&
+        operation != KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE ? 0x4200fc : attribute_tag;
     kmip_execution_outcome_t outcome = execute_generic_exchange_with_reference(
-        client, KMIPKIT_ENUMERATION_OPERATION_CREATE, NULL, &id, attribute_tag);
+        client, KMIPKIT_ENUMERATION_OPERATION_CREATE, NULL, &id, initial_tag);
     if (!id.data) {
         if (operation != KMIPKIT_ENUMERATION_OPERATION_CREATE && (outcome.server_unsupported || outcome.policy_restricted))
             return outcome_not_run("server rejected isolated Create setup");
@@ -10019,6 +10103,8 @@ static kmip_execution_outcome_t execute_generic_owned_key(kmip_live_client_t *cl
             outcome = outcome_not_run("server rejected isolated Activate setup");
         }
     }
+    if (outcome.success && generic_changes_description(operation))
+        outcome = execute_generic_description_change(client, operation, &id);
     if (outcome.success && (operation == KMIPKIT_ENUMERATION_OPERATION_ARCHIVE || operation == KMIPKIT_ENUMERATION_OPERATION_RECOVER)) {
         outcome = execute_generic_exchange(client, KMIPKIT_ENUMERATION_OPERATION_ARCHIVE, &id, NULL);
         if (outcome.has_result_status_code && outcome.result_status_code == 0) {
@@ -10253,6 +10339,10 @@ static uint32_t generic_owned_operation(const char *id) {
     if (generic_key_attribute_reference(id))
         return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTES;
     if (strcmp(id, "test-op-get-attribute-list") == 0) return KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST;
+    if (strcmp(id, "test-op-add-attribute") == 0) return KMIPKIT_ENUMERATION_OPERATION_ADD_ATTRIBUTE;
+    if (strcmp(id, "test-op-modify-attribute") == 0) return KMIPKIT_ENUMERATION_OPERATION_MODIFY_ATTRIBUTE;
+    if (strcmp(id, "test-op-delete-attribute") == 0) return KMIPKIT_ENUMERATION_OPERATION_DELETE_ATTRIBUTE;
+    if (strcmp(id, "test-op-set-attribute") == 0) return KMIPKIT_ENUMERATION_OPERATION_SET_ATTRIBUTE;
     if (strcmp(id, "test-op-obtain-lease") == 0) return KMIPKIT_ENUMERATION_OPERATION_OBTAIN_LEASE;
     if (strcmp(id, "test-op-activate") == 0) return KMIPKIT_ENUMERATION_OPERATION_ACTIVATE;
     if (strcmp(id, "test-op-revoke") == 0) return KMIPKIT_ENUMERATION_OPERATION_REVOKE;

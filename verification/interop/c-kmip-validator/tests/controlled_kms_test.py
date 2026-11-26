@@ -740,6 +740,12 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
     operations = {"create": (1, 20), "get": (1, 10, 20), "destroy": (1, 20), "get-attributes": (1, 11, 20),
                   "get-attribute-list": (1, 12, 20), "activate": (1, 18, 19, 20), "check": (1, 18, 9, 19, 20),
                   "revoke": (1, 18, 19, 20), "archive": (1, 21, 22, 20), "recover": (1, 21, 22, 20)}
+    mutations = {"add-attribute": 0x0d, "modify-attribute": 0x0e,
+                 "delete-attribute": 0x0f, "set-attribute": 0x31}
+    operations.update({name: (1, 11, code, 11, 20) for name, code in mutations.items()})
+    initial_description = tlv(0x4200fc, 7, b"kmipkit-attribute-fixture")
+    changed_description = tlv(0x4200fc, 7, b"kmipkit-changed-description")
+    description_reference = enumeration(0x42013b, 0x4200fc)
     with tempfile.TemporaryDirectory(prefix="kmip-c-owned-") as temporary:
         directory = Path(temporary)
         ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -756,7 +762,8 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
         header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
                      + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
         for target, exchanges in operations.items():
-            for valid in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check") else (True,)):
+            for valid in ((True, False) if target in {"get", "get-attributes", "get-attribute-list", "activate", "revoke", "check", *mutations} else (True,)):
+                description = b"" if target == "add-attribute" else initial_description
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
@@ -792,17 +799,30 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                     fields = owned_id
                                     if operation == 1:
                                         assert enumeration(0x420028, 3) in request and integer(0x42002a, 256) in request
+                                        if target in mutations:
+                                            assert (initial_description in request) == (target != "add-attribute")
                                         fields = object_type + owned_id
                                     else:
                                         assert owned_id in request
-                                        if operation not in (9, 11, 19):
+                                        if operation not in (9, 11, 19, *mutations.values()):
                                             assert tlv(0x420079, 1, owned_id) in request
                                     if operation == 10:
                                         returned_id = owned_id if valid else tlv(0x420094, 7, b"foreign-key")
                                         fields = object_type + returned_id + symmetric_key
-                                    if operation == 11:
+                                    if operation == 11 and target in mutations:
+                                        assert tlv(0x420079, 1, owned_id + description_reference) in request
+                                        if description:
+                                            fields += tlv(0x420125, 1, description)
+                                    elif operation == 11:
                                         assert tlv(0x420079, 1, owned_id + enumeration(0x42013b, 0x42002a)) in request
                                         fields += tlv(0x420125, 1, integer(0x42002a, 256 if valid else 128))
+                                    if operation == mutations.get(target):
+                                        selector = tlv(0x42013c, 1, initial_description) if target == "modify-attribute" else b""
+                                        replacement = (description_reference if target == "delete-attribute"
+                                                       else tlv(0x42013d, 1, changed_description))
+                                        assert tlv(0x420079, 1, owned_id + selector + replacement) in request
+                                        if valid:
+                                            description = b"" if target == "delete-attribute" else changed_description
                                     if operation == 12:
                                         fields += enumeration(0x42013b, 0x420028)
                                         if valid:

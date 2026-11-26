@@ -587,6 +587,51 @@ class LiveContract(unittest.TestCase):
                         observations.append((peer.request_trees[index], peer.response_trees[index]))
                     self.assertEqual(*observations)
 
+    def test_generic_attribute_mutations_verify_the_value_and_cleanup(self):
+        operations = {"add": 0x0d, "modify": 0x0e, "delete": 0x0f, "set": 0x31}
+        initial = "kmipkit-attribute-fixture"
+        changed = "kmipkit-changed-description"
+        for minor in (0, 1):
+            for name, target in operations.items():
+                for persist in (True, False):
+                    with self.subTest(minor=minor, operation=name, persist=persist):
+                        description = None if name == "add" else initial
+
+                        def reply(tree):
+                            nonlocal description
+                            operation = find(tree, 0x42005c)
+                            payload = [ttlv(0x420094, 7, "fixture-key")]
+                            if operation == 1:
+                                self.assertEqual(description, find(tree, 0x4200fc))
+                                payload.insert(0, ttlv(0x420057, 5, 2))
+                            elif operation == 0x0b:
+                                self.assertEqual(0x4200fc, find(tree, 0x42013b))
+                                if description is not None:
+                                    payload.append(ttlv(0x420125, 1, [ttlv(0x4200fc, 7, description)]))
+                            elif operation == target:
+                                current = find(tree, 0x42013c)
+                                new = find(tree, 0x42013d)
+                                self.assertEqual(initial if name == "modify" else None, find(current or [], 0x4200fc))
+                                if name == "delete":
+                                    self.assertEqual(0x4200fc, find(tree, 0x42013b))
+                                    self.assertIsNone(new)
+                                else:
+                                    self.assertEqual(changed, find(new or [], 0x4200fc))
+                                if persist:
+                                    description = None if name == "delete" else changed
+                            else:
+                                self.assertEqual(0x14, operation)
+                            return response(operation, minor=minor, status=0, reason=None, payload=payload)
+
+                        case_id = f"test-op-{name}-attribute"
+                        with ControlledPeer(self.pki, reply) as peer:
+                            _, report = self.command(
+                                self.connection(peer.port, version=f"2.{minor}", api="generic-ttlv", mutations=True),
+                                self.rows(case_id),
+                            )
+                        self.assertEqual([1, 0x0b, target, 0x0b, 0x14], peer.operations)
+                        self.assertEqual("passed" if persist else "failed", report["cases"][0]["status"])
+
     def test_native_server_query_parity_across_apis_encodings_and_versions(self):
         normalized = []
         for version in ("2.0", "2.1"):

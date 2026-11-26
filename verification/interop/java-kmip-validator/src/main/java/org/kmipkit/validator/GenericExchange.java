@@ -47,6 +47,12 @@ final class GenericExchange {
     private static final int GET = 0x0a;
     private static final int GET_ATTRIBUTES = 0x0b;
     private static final int GET_ATTRIBUTE_LIST = 0x0c;
+    private static final int ADD_ATTRIBUTE = 0x0d;
+    private static final int MODIFY_ATTRIBUTE = 0x0e;
+    private static final int DELETE_ATTRIBUTE = 0x0f;
+    private static final int SET_ATTRIBUTE = 0x31;
+    private static final int DESCRIPTION = 0x4200fc;
+    private static final byte[] CHANGED_DESCRIPTION = "kmipkit-changed-description".getBytes(StandardCharsets.US_ASCII);
     private static final int OBTAIN_LEASE = 0x10;
     private static final int ACTIVATE = 0x12;
     private static final int REVOKE = 0x13;
@@ -85,6 +91,10 @@ final class GenericExchange {
             case "test-op-check" -> CHECK;
             case "test-op-get" -> GET;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
+            case "test-op-add-attribute" -> ADD_ATTRIBUTE;
+            case "test-op-modify-attribute" -> MODIFY_ATTRIBUTE;
+            case "test-op-delete-attribute" -> DELETE_ATTRIBUTE;
+            case "test-op-set-attribute" -> SET_ATTRIBUTE;
             case "test-op-obtain-lease" -> OBTAIN_LEASE;
             case "test-op-activate" -> ACTIVATE;
             case "test-op-revoke" -> REVOKE;
@@ -131,15 +141,22 @@ final class GenericExchange {
 
     private static boolean usesOwnedKey(int operation) {
         return switch (operation) {
-            case CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
-            default -> false;
+            case CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE,
+                    ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER -> true;
+            default -> changesDescription(operation);
         };
+    }
+
+    private static boolean changesDescription(int operation) {
+        return operation == ADD_ATTRIBUTE || operation == MODIFY_ATTRIBUTE
+                || operation == DELETE_ATTRIBUTE || operation == SET_ATTRIBUTE;
     }
 
     private static JavaKmipDriver.CaseOutcome runOwnedKey(ConnectionConfig connection, int operation,
             int minor, int attributeTag, long start) {
         var createdId = new AtomicReference<byte[]>();
-        var create = execute(connection, CREATE, minor, null, attributeTag, payload -> {
+        int initialTag = changesDescription(operation) && operation != ADD_ATTRIBUTE ? DESCRIPTION : attributeTag;
+        var create = execute(connection, CREATE, minor, null, initialTag, payload -> {
             byte[] id = textIdentifier(payload);
             createdId.set(id);
             return id != null && hasField(payload, 0x420057, TtlvItemType.Enumeration, 2);
@@ -191,6 +208,9 @@ final class GenericExchange {
             } else if (operation != ACTIVATE) {
                 target = JavaKmipDriver.CaseOutcome.notRun("Server rejected isolated Activate setup.", elapsed(start));
             }
+        }
+        if ("passed".equals(create.status()) && changesDescription(operation)) {
+            target = changeDescription(connection, operation, minor, id, sameId, start);
         }
         if ("passed".equals(create.status()) && (operation == ARCHIVE || operation == RECOVER)) {
             var archive = execute(connection, ARCHIVE, minor, id, sameId, start);
@@ -271,6 +291,45 @@ final class GenericExchange {
         }
     }
 
+    private static JavaKmipDriver.CaseOutcome changeDescription(ConnectionConfig connection, int operation,
+            int minor, byte[] id, Predicate<TtlvStructureView> sameId, long start) {
+        byte[] initial = operation == ADD_ATTRIBUTE ? null : TEXT_ATTRIBUTE_FIXTURE;
+        var before = execute(connection, GET_ATTRIBUTES, minor, id, DESCRIPTION,
+                payload -> sameId.test(payload) && descriptionMatches(payload, initial), start);
+        if (!"passed".equals(before.status())) {
+            return JavaKmipDriver.CaseOutcome.failed("Could not read the initial Description.", elapsed(start));
+        }
+        var target = execute(connection, operation, minor, id, sameId, start);
+        if ("passed".equals(target.status())) {
+            byte[] expected = operation == DELETE_ATTRIBUTE ? null : CHANGED_DESCRIPTION;
+            var after = execute(connection, GET_ATTRIBUTES, minor, id, DESCRIPTION,
+                    payload -> sameId.test(payload) && descriptionMatches(payload, expected), start);
+            if (!"passed".equals(after.status())) {
+                return JavaKmipDriver.CaseOutcome.failed("Could not verify the Description after mutation.", elapsed(start));
+            }
+        }
+        return target;
+    }
+
+    private static boolean descriptionMatches(TtlvStructureView payload, byte[] expected) {
+        if (expected == null) return payload.itemCount() == 1;
+        if (payload.itemCount() != 2) return false;
+        for (long index = 0; index < payload.itemCount(); index++) {
+            try (var field = payload.itemAt(index); var tag = field.tag()) {
+                if (tag.raw() != 0x420125) continue;
+                if (field.itemType() != TtlvItemType.Structure) return false;
+                try (var value = field.value(); var attributes = value.structure()) {
+                    if (attributes.itemCount() != 1) return false;
+                    try (var attr = attributes.itemAt(0); var attrTag = attr.tag(); var text = attr.value()) {
+                        return attrTag.raw() == DESCRIPTION && attr.itemType() == TtlvItemType.TextString
+                                && Arrays.equals(expected, text.bytes());
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private static TtlvItem request(int operation, int minor, byte[] objectId, int attributeTag, HashFrame frame) {
         try (var version = version(minor);
                 var count = item(0x42000d, TtlvValue.Integer(1));
@@ -284,6 +343,8 @@ final class GenericExchange {
                     case GET_ATTRIBUTES -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)),
                             item(0x42013b, TtlvValue.Enumeration(attributeTag)));
+                    case ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE ->
+                            descriptionPayload(operation, objectId);
                     case REVOKE -> revokePayload(objectId);
                     case GET, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, DESTROY, ARCHIVE, RECOVER -> structureItem(0x420079,
                             item(0x420094, TtlvValue.TextString(objectId, LIMITS)));
@@ -298,6 +359,26 @@ final class GenericExchange {
                 };
                 var batch = structureItem(0x42000f, identifier, payload)) {
             return structureItem(0x420078, header, batch);
+        }
+    }
+
+    private static TtlvItem descriptionPayload(int operation, byte[] objectId) {
+        try (var id = item(0x420094, TtlvValue.TextString(objectId, LIMITS))) {
+            if (operation == DELETE_ATTRIBUTE) {
+                try (var reference = item(0x42013b, TtlvValue.Enumeration(DESCRIPTION))) {
+                    return structureItem(0x420079, id, reference);
+                }
+            }
+            try (var replacement = structureItem(0x42013d,
+                    item(DESCRIPTION, TtlvValue.TextString(CHANGED_DESCRIPTION, LIMITS)))) {
+                if (operation == MODIFY_ATTRIBUTE) {
+                    try (var current = structureItem(0x42013c,
+                            item(DESCRIPTION, TtlvValue.TextString(TEXT_ATTRIBUTE_FIXTURE, LIMITS)))) {
+                        return structureItem(0x420079, id, current, replacement);
+                    }
+                }
+                return structureItem(0x420079, id, replacement);
+            }
         }
     }
 

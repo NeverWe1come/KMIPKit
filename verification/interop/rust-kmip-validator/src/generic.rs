@@ -18,12 +18,25 @@ const CHECK: u32 = 9;
 const GET: u32 = 10;
 const GET_ATTRIBUTES: u32 = 11;
 const GET_ATTRIBUTE_LIST: u32 = 12;
+const ADD_ATTRIBUTE: u32 = 13;
+const MODIFY_ATTRIBUTE: u32 = 14;
+const DELETE_ATTRIBUTE: u32 = 15;
 const OBTAIN_LEASE: u32 = 16;
 const ACTIVATE: u32 = 18;
 const REVOKE: u32 = 19;
 const DESTROY: u32 = 20;
 const ARCHIVE: u32 = 21;
 const RECOVER: u32 = 22;
+const SET_ATTRIBUTE: u32 = 0x31;
+const DESCRIPTION: u32 = 0x0042_00fc;
+const CHANGED_DESCRIPTION: &str = "kmipkit-changed-description";
+
+fn changes_description(operation: u32) -> bool {
+    matches!(
+        operation,
+        ADD_ATTRIBUTE | MODIFY_ATTRIBUTE | DELETE_ATTRIBUTE | SET_ATTRIBUTE
+    )
+}
 
 fn uses_owned_key(operation: u32) -> bool {
     matches!(
@@ -39,7 +52,7 @@ fn uses_owned_key(operation: u32) -> bool {
             | DESTROY
             | ARCHIVE
             | RECOVER
-    )
+    ) || changes_description(operation)
 }
 
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
@@ -65,6 +78,10 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
         ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
+        ("test-op-add-attribute", "2.0" | "2.1") => Some(ADD_ATTRIBUTE),
+        ("test-op-modify-attribute", "2.0" | "2.1") => Some(MODIFY_ATTRIBUTE),
+        ("test-op-delete-attribute", "2.0" | "2.1") => Some(DELETE_ATTRIBUTE),
+        ("test-op-set-attribute", "2.0" | "2.1") => Some(SET_ATTRIBUTE),
         ("test-op-activate", "2.0" | "2.1") => Some(ACTIVATE),
         ("test-op-revoke", "2.0" | "2.1") => Some(REVOKE),
         ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
@@ -125,7 +142,11 @@ fn run_owned_key(
     operation: u32,
 ) -> CaseResult {
     let mut identifier = None;
-    let create_reference = key_attribute_reference(&case.case_id).unwrap_or_default();
+    let create_reference = if changes_description(operation) && operation != ADD_ATTRIBUTE {
+        DESCRIPTION
+    } else {
+        key_attribute_reference(&case.case_id).unwrap_or_default()
+    };
     let create = exchange_with_reference(
         connection,
         version,
@@ -169,16 +190,7 @@ fn run_owned_key(
     let mut result = outcome(case, create);
     if create == Ok((0, None)) {
         if operation == GET {
-            result = outcome(
-                case,
-                exchange(connection, version, GET, Some(&id), |batch| {
-                    Ok(same_id(batch)?
-                        && has_field(batch, 0x0042_0057, |v| {
-                            matches!(v, ValueView::Enumeration(2))
-                        })
-                        && has_field(batch, 0x0042_008f, |v| matches!(v, ValueView::Structure(_))))
-                }),
-            );
+            result = outcome(case, get_key(connection, version, &id));
         }
         if operation == OBTAIN_LEASE {
             result = outcome(
@@ -215,6 +227,12 @@ fn run_owned_key(
                 }),
             );
         }
+        if changes_description(operation) {
+            result = outcome(
+                case,
+                mutate_description(connection, version, operation, &id),
+            );
+        }
         if matches!(operation, ARCHIVE | RECOVER) {
             result = archive_and_recover(case, operation, connection, version, &id);
         }
@@ -224,6 +242,18 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn get_key(connection: &Connection, version: ProtocolVersion, id: &str) -> ExchangeResult {
+    exchange(connection, version, GET, Some(id), |batch| {
+        Ok(text_identifier(batch).as_deref() == Some(id)
+            && has_field(batch, 0x0042_0057, |value| {
+                matches!(value, ValueView::Enumeration(2))
+            })
+            && has_field(batch, 0x0042_008f, |value| {
+                matches!(value, ValueView::Structure(_))
+            }))
+    })
 }
 
 fn key_attribute_reference(case_id: &str) -> Option<u32> {
@@ -290,6 +320,81 @@ fn get_attributes(
                 }))
         },
     )
+}
+
+fn mutate_description(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    id: &str,
+) -> ExchangeResult {
+    let read = |expected| {
+        exchange_with_reference(
+            connection,
+            version,
+            GET_ATTRIBUTES,
+            Some(id),
+            DESCRIPTION,
+            |batch| {
+                Ok(text_identifier(batch).as_deref() == Some(id)
+                    && description_matches(batch, expected))
+            },
+        )
+    };
+    let initial = (operation != ADD_ATTRIBUTE).then_some(TEXT_ATTRIBUTE_FIXTURE);
+    if read(initial)? != (0, None) {
+        return Err("could not read the initial Description");
+    }
+
+    let mut fields = vec![item(0x0042_0094, Value::text_string(id.to_owned()))?];
+    if operation == MODIFY_ATTRIBUTE {
+        fields.push(description_wrapper(0x0042_013c, TEXT_ATTRIBUTE_FIXTURE)?);
+    }
+    if operation == DELETE_ATTRIBUTE {
+        fields.push(item(0x0042_013b, Value::enumeration(DESCRIPTION))?);
+    } else {
+        fields.push(description_wrapper(0x0042_013d, CHANGED_DESCRIPTION)?);
+    }
+    let observed = exchange_payload(connection, version, operation, fields, |batch| {
+        Ok(text_identifier(batch).as_deref() == Some(id))
+    })?;
+    if observed == (0, None) {
+        let expected = (operation != DELETE_ATTRIBUTE).then_some(CHANGED_DESCRIPTION);
+        if read(expected)? != (0, None) {
+            return Err("could not verify the Description after mutation");
+        }
+    }
+    Ok(observed)
+}
+
+fn description_wrapper(tag: u32, text: &str) -> Result<Item> {
+    node(
+        tag,
+        vec![item(DESCRIPTION, Value::text_string(text.to_owned()))?],
+    )
+}
+
+fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>) -> bool {
+    let Some(expected) = expected else {
+        return batch
+            .with_response_payload(|payload| payload.children().len() == 1)
+            .unwrap_or(false);
+    };
+    batch
+        .with_response_payload(|payload| payload.children().len() == 2)
+        .unwrap_or(false)
+        && has_field(batch, 0x0042_0125, |value| {
+            let ValueView::Structure(attributes) = value else {
+                return false;
+            };
+            let [description] = attributes.children() else {
+                return false;
+            };
+            description.tag().raw() == DESCRIPTION
+                && description.with_value(
+                    |value| matches!(value, ValueView::TextString(text) if text == expected),
+                )
+        })
 }
 
 fn archive_and_recover(

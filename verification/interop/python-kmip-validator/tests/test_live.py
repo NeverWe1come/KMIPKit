@@ -349,19 +349,25 @@ class ControlledExchangeTests(unittest.TestCase):
         routes = {"create": [1, 20], "destroy": [1, 20], "get": [1, 10, 20], "get-attributes": [1, 11, 20],
                   "check": [1, 18, 9, 19, 20], "activate": [1, 18, 19, 20], "revoke": [1, 18, 19, 20],
                   "get-attribute-list": [1, 12, 20], "archive": [1, 21, 22, 20], "recover": [1, 21, 22, 20]}
+        mutations = {"add-attribute": 0x0D, "modify-attribute": 0x0E,
+                     "delete-attribute": 0x0F, "set-attribute": 0x31}
+        routes.update({name: [1, 11, code, 11, 20] for name, code in mutations.items()})
         combinations = [("generic-ttlv", target, operations) for target, operations in routes.items()]
         combinations += [(api, target, routes[target]) for api in ("typed-protocol", "fluent")
                          for target in ("activate", "revoke")]
         for version in ("2.0", "2.1"):
             for api, target, operations in combinations:
-                for valid_get in ((True, False) if target in ("get", "get-attributes", "get-attribute-list", "activate", "revoke", "check")
+                for valid_get in ((True, False) if target in {"get", "get-attributes", "get-attribute-list", "activate", "revoke", "check", *mutations}
                                   and (target != "revoke" or api == "generic-ttlv") else (True,)):
                     with self.subTest(version=version, api=api, target=target, valid_get=valid_get):
                         minor = int(version[-1])
                         owned_id = b"owned-key-id"
                         seen = []
+                        description = None if target == "add-attribute" else b"kmipkit-attribute-fixture"
+                        updated = b"kmipkit-changed-description"
 
                         def answer(request):
+                            nonlocal description
                             tree = parse_children(request[8:])
                             operation = int.from_bytes(find_value(tree, 0x42005C), "big")
                             seen.append(operation)
@@ -370,6 +376,8 @@ class ControlledExchangeTests(unittest.TestCase):
                             if operation == 1:
                                 self.assertEqual(find_value(payload, 0x420028), struct.pack(">I", 3))
                                 self.assertEqual(find_value(payload, 0x42002A), struct.pack(">i", 256))
+                                if target in mutations:
+                                    self.assertEqual(description, find_value(payload, 0x4200FC))
                                 fields = enumeration(0x420057, 2) + fields
                             else:
                                 self.assertEqual(find_value(payload, 0x420094), owned_id)
@@ -380,7 +388,25 @@ class ControlledExchangeTests(unittest.TestCase):
                                     enumeration(0x420028, 3), item(0x42002A, 2, struct.pack(">i", 256))))
                                 fields = (enumeration(0x420057, 2)
                                           + item(0x420094, 7, owned_id if valid_get else b"foreign-key-id") + key)
-                            if operation == 11:
+                            if target in mutations and operation == 11:
+                                self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x4200FC))
+                                if description is not None:
+                                    fields += structure(0x420125, item(0x4200FC, 7, description))
+                            if operation == mutations.get(target):
+                                current = find_value(payload, 0x42013C)
+                                new = find_value(payload, 0x42013D)
+                                if target == "modify-attribute":
+                                    self.assertEqual([(0x4200FC, 7, description)], parse_children(current))
+                                else:
+                                    self.assertIsNone(current)
+                                if target == "delete-attribute":
+                                    self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x4200FC))
+                                    self.assertIsNone(new)
+                                else:
+                                    self.assertEqual([(0x4200FC, 7, updated)], parse_children(new))
+                                if valid_get:
+                                    description = None if target == "delete-attribute" else updated
+                            if operation == 11 and target not in mutations:
                                 self.assertEqual(find_value(payload, 0x42013B), struct.pack(">I", 0x42002A))
                                 fields += structure(0x420125, item(0x42002A, 2, struct.pack(">i", 256 if valid_get else 128)))
                             if operation == 12:

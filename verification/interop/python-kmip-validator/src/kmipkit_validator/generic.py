@@ -11,10 +11,17 @@ CREATE, GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 1, 0x0A, 0x0B, 0x14, 0x
 CHECK = 0x09
 OBTAIN_LEASE = 0x10
 GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE = 0x0C, 0x12, 0x13
-OWNED_KEY_OPERATIONS = {CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE, ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER}
+ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE = 0x0D, 0x0E, 0x0F, 0x31
+DESCRIPTION = 0x4200FC
+DESCRIPTION_MUTATIONS = {ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE}
+OWNED_KEY_OPERATIONS = {
+    CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE,
+    ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER,
+} | DESCRIPTION_MUTATIONS
 
 
 TEXT_ATTRIBUTE_FIXTURE = b"kmipkit-attribute-fixture"
+CHANGED_DESCRIPTION = b"kmipkit-changed-description"
 KEY_ATTRIBUTES = {
     "test-attr-contact-information": (0x420022, "TextString", TEXT_ATTRIBUTE_FIXTURE),
     "test-attr-description": (0x4200FC, "TextString", TEXT_ATTRIBUTE_FIXTURE),
@@ -43,6 +50,8 @@ def _operation(case, version):
             "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY,
             "test-op-obtain-lease": OBTAIN_LEASE, "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
             "test-crypto-rng-retrieve-rng-32": 0x25, "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
+            "test-op-add-attribute": ADD_ATTRIBUTE, "test-op-modify-attribute": MODIFY_ATTRIBUTE,
+            "test-op-delete-attribute": DELETE_ATTRIBUTE, "test-op-set-attribute": SET_ATTRIBUTE,
             "test-multipart-hash-sha256": 0x27}.get(case["case_id"])
 
 
@@ -181,6 +190,8 @@ def _failure(diagnostic, status="failed"):
 
 def _run_owned_key(driver, operation, case_id):
     reference = KEY_ATTRIBUTES[case_id][0] if operation == GET_ATTRIBUTES else None
+    if operation in (MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE):
+        reference = DESCRIPTION
     created = _checked_exchange(driver, CREATE, attribute_reference=reference)
     identifier = created.pop("created_identifier", None)
     if identifier is None:
@@ -234,6 +245,8 @@ def _run_owned_key(driver, operation, case_id):
                     target = _failure("Cleanup Revoke failed for the activated key.")
         elif operation != ACTIVATE:
             target = _failure("Server rejected isolated Activate setup.", "not_run")
+    if created["status"] == "passed" and operation in DESCRIPTION_MUTATIONS:
+        target = _mutate_description(driver, operation, identifier)
     if created["status"] == "passed" and operation in (ARCHIVE, RECOVER):
         archive = _checked_exchange(driver, ARCHIVE, identifier, same_id)
         target = archive
@@ -248,6 +261,36 @@ def _run_owned_key(driver, operation, case_id):
             target = _failure("Server rejected Archive setup.", "not_run")
     cleanup = _checked_exchange(driver, DESTROY, identifier, same_id)
     return target if cleanup["status"] == "passed" else _failure("Cleanup Destroy failed for the isolated key.")
+
+
+def _mutate_description(driver, operation, identifier):
+    def same_id(payload):
+        return _text_identifier(payload) == identifier
+
+    def read(expected):
+        return _checked_exchange(
+            driver, GET_ATTRIBUTES, identifier,
+            lambda payload: same_id(payload) and _description_matches(payload, expected),
+            attribute_reference=DESCRIPTION,
+        )
+
+    initial = None if operation == ADD_ATTRIBUTE else TEXT_ATTRIBUTE_FIXTURE
+    if read(initial)["status"] != "passed":
+        return _failure("Could not read the initial Description.")
+    target = _checked_exchange(driver, operation, identifier, same_id)
+    expected = None if operation == DELETE_ATTRIBUTE else CHANGED_DESCRIPTION
+    if target["status"] == "passed" and read(expected)["status"] != "passed":
+        return _failure("Could not verify the Description after mutation.")
+    return target
+
+
+def _description_matches(payload, expected):
+    from kmipkit import ttlv
+
+    count = ttlv.ttlv_structure_view_item_count(payload)
+    if expected is None:
+        return count == 1
+    return count == 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
 
 
 def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None):
@@ -272,6 +315,12 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
         payload_fields = [item(0x420094, "text", identifier)]
         if operation == GET_ATTRIBUTES:
             payload_fields.append(item(0x42013B, "enumeration", attribute_reference))
+        if operation == MODIFY_ATTRIBUTE:
+            payload_fields.append(node(0x42013C, [item(DESCRIPTION, "text", TEXT_ATTRIBUTE_FIXTURE.decode("ascii"))]))
+        if operation == DELETE_ATTRIBUTE:
+            payload_fields.append(item(0x42013B, "enumeration", DESCRIPTION))
+        if operation in (ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, SET_ATTRIBUTE):
+            payload_fields.append(node(0x42013D, [item(DESCRIPTION, "text", CHANGED_DESCRIPTION.decode("ascii"))]))
         if operation == CHECK:
             payload_fields.append(item(0x42002C, "integer", 4))
         if operation == REVOKE:
