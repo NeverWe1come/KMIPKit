@@ -95,6 +95,9 @@ public final class JavaKmipDriver implements AutoCloseable {
         if (readOnlyProbe(testCase)) {
             return executeReadOnlyProbe(testCase, start);
         }
+        if (extendedTypedCase(testCase)) {
+            return executeExtended(testCase, start);
+        }
         ClientBatchItem request = "fluent".equals(connection.apiLevel()) && "Ping".equals(testCase.operation())
                 ? withBatchId(client.request().ping().build())
                 : TypedRequestFactory.create(testCase.operation(), !isDraft());
@@ -110,9 +113,33 @@ public final class JavaKmipDriver implements AutoCloseable {
         return "test-multipart-hash-sha256".equals(testCase.caseId());
     }
 
+    private static final Set<String> EXTENDED_FLUENT_OPERATIONS = Set.of(
+            "Create Key Pair", "Register", "Re-key", "Re-key Key Pair", "Re-certify",
+            "Add Attribute", "Set Attribute", "Delete Attribute",
+            "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"
+    );
+
+    private static final Set<String> EXTENDED_TYPED_OPERATIONS = Set.of(
+            "Create Key Pair", "Re-key", "Re-key Key Pair", "Certify", "Re-certify", "Validate",
+            "Derive Key", "Join Split Key", "Import", "Export", "Get Usage Allocation",
+            "Poll", "Cancel", "Add Attribute", "Modify Attribute", "Delete Attribute", "Set Attribute",
+            "Encrypt", "Decrypt", "MAC", "MAC Verify", "Sign", "Signature Verify"
+    );
+
+    static boolean extendedTypedCase(CatalogLoader.CatalogCase testCase) {
+        String wf = testCase.requires().path("workflow_type").asText();
+        return !"server_to_client".equals(wf) && !"batch_id_placeholder".equals(wf)
+                && EXTENDED_TYPED_OPERATIONS.contains(testCase.operation());
+    }
+
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
+        String wf = testCase.requires().path("workflow_type").asText();
+        if ("server_to_client".equals(wf) || "async_poll".equals(wf) || "batch_id_placeholder".equals(wf)) {
+            return false;
+        }
         return !typedOnlyKeyProbe(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
                 || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
+                || EXTENDED_FLUENT_OPERATIONS.contains(testCase.operation())
                 || Set.of("Create", "Ping").contains(testCase.operation()));
     }
 
@@ -895,6 +922,393 @@ public final class JavaKmipDriver implements AutoCloseable {
                 TtlvValue.structure(valueStructure, CODEC_LIMITS));
         Credential credential = Credential.fromTtlv(credentialStructure);
         return Authentication.create(List.of(credential));
+    }
+
+    private CaseOutcome executeExtended(CatalogLoader.CatalogCase testCase, long start) {
+        String op = testCase.operation();
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        var cleanup = new ArrayList<UniqueIdentifier>();
+        try {
+            if ("Poll".equals(op)) {
+                try (var req = org.kmipkit.extensions.PollRequest.create(new byte[]{1, 2, 3, 4, 5, 6})) {
+                    return executeRequest(testCase, withBatchId(ClientBatchItem.poll(req)), r -> true, start);
+                }
+            }
+            if ("Cancel".equals(op)) {
+                try (var req = org.kmipkit.extensions.CancelRequest.create(new byte[]{1, 2, 3, 4, 5, 6})) {
+                    return executeRequest(testCase, withBatchId(ClientBatchItem.cancel(req)), r -> true, start);
+                }
+            }
+            if ("Import".equals(op)) {
+                var uid = UniqueIdentifier.textString("kmipkit-java-import-" + UUID.randomUUID());
+                try (var attrs = symmetricKeyAttributes("import-" + UUID.randomUUID(), 128, 4);
+                        var fmt = TtlvValue.Enumeration(1);
+                        var mat = TtlvValue.ByteString(new byte[16], CODEC_LIMITS);
+                        var kv = appendValue(TtlvStructure.create(), 0x420043, mat);
+                        var kb0 = appendValue(TtlvStructure.create(), 0x420042, fmt);
+                        var kb = appendValue(kb0, 0x420045, TtlvValue.structure(kv, CODEC_LIMITS));
+                        var sym = appendValue(TtlvStructure.create(), 0x420040, TtlvValue.structure(kb, CODEC_LIMITS));
+                        var sk = appendValue(TtlvStructure.create(), 0x42008f, TtlvValue.structure(sym, CODEC_LIMITS))) {
+                    var req = withBatchId(ClientBatchItem.importObject(uid, 2L, false, null, attrs, sk));
+                    return executeRequest(testCase, req, r -> r.importResponse().map(p -> {
+                        cleanup.add(p.uniqueIdentifier());
+                        return true;
+                    }).orElse(false), start);
+                }
+            }
+            if ("Create Key Pair".equals(op) || "Re-key Key Pair".equals(op)
+                    || "Certify".equals(op) || "Re-certify".equals(op) || "Validate".equals(op)
+                    || "Sign".equals(op) || "Signature Verify".equals(op)) {
+                return executeExtendedKeyPairGroup(testCase, op, fluent, cleanup, start);
+            }
+            if ("Encrypt".equals(op) || "Decrypt".equals(op)) {
+                return executeExtendedEncryptGroup(testCase, op, fluent, cleanup, start);
+            }
+            if ("MAC".equals(op) || "MAC Verify".equals(op)) {
+                return executeExtendedMacGroup(testCase, op, fluent, cleanup, start);
+            }
+            return executeExtendedSymGroup(testCase, op, fluent, cleanup, start);
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
+        } finally {
+            for (UniqueIdentifier id : cleanup) {
+                try {
+                    revokeAndDestroy(id, start);
+                } catch (RuntimeException ignored) { }
+            }
+        }
+    }
+
+    private void revokeAndDestroy(UniqueIdentifier id, long start) {
+        try (var reason = RevocationReason.create(6, "cleanup");
+                var req = RevokeRequest.create(id, reason, null)) {
+            executeRequest(null, withBatchId(ClientBatchItem.revoke(req)), r -> true, start);
+        } catch (RuntimeException ignored) { }
+        try {
+            executeRequest(null, withBatchId(ClientBatchItem.destroy(id)), r -> true, start);
+        } catch (RuntimeException ignored) { }
+    }
+
+    private TtlvStructure symmetricKeyAttributes(String name, int bits, int usageMask) {
+        try (var s0 = appendValue(TtlvStructure.create(), 0x420028, TtlvValue.Enumeration(3));
+                var s1 = appendValue(s0, 0x42002a, TtlvValue.Integer(bits));
+                var s2 = appendValue(s1, 0x42002c, TtlvValue.Integer(usageMask));
+                var s3 = appendValue(s2, 0x4200fc, TtlvValue.TextString(
+                        ("kmipkit-" + name).getBytes(StandardCharsets.US_ASCII), CODEC_LIMITS))) {
+            return TtlvStructure.withItem(s3, TtlvItem.create(
+                    RawTag.fromRaw(0x420122).checked(), TtlvValue.Boolean(true), CODEC_LIMITS), CODEC_LIMITS);
+        }
+    }
+
+    private CaseOutcome executeExtendedKeyPairGroup(CatalogLoader.CatalogCase testCase, String op,
+            boolean fluent, List<UniqueIdentifier> cleanup, long start) {
+        var privRef = new AtomicReference<UniqueIdentifier>();
+        var pubRef = new AtomicReference<UniqueIdentifier>();
+        try (var common0 = appendValue(TtlvStructure.create(), 0x420028, TtlvValue.Enumeration(4));
+                var common = appendValue(common0, 0x42002a, TtlvValue.Integer(2048));
+                var privA = appendValue(TtlvStructure.create(), 0x42002c, TtlvValue.Integer(1));
+                var pubA = appendValue(TtlvStructure.create(), 0x42002c, TtlvValue.Integer(2))) {
+            ClientBatchItem kpReq;
+            if (fluent) {
+                try (var b = client.request().createKeyPair()) {
+                    kpReq = withBatchId(b.algorithm(4).length(2048).privateUsageMask(1).publicUsageMask(2).build());
+                }
+            } else {
+                kpReq = withBatchId(ClientBatchItem.createKeyPair(common, privA, pubA, null, null, null));
+            }
+            var kpRes = executeRequest(testCase, kpReq, r -> r.createKeyPairResponse().map(p -> {
+                privRef.set(p.privateKeyUniqueIdentifier());
+                pubRef.set(p.publicKeyUniqueIdentifier());
+                cleanup.add(p.privateKeyUniqueIdentifier());
+                cleanup.add(p.publicKeyUniqueIdentifier());
+                return true;
+            }).orElse(false), start);
+            if ("Create Key Pair".equals(op) || !"passed".equals(kpRes.status())) return kpRes;
+            if ("Re-key Key Pair".equals(op)) {
+                ClientBatchItem rkReq;
+                if (fluent) {
+                    try (var b = client.request().rekeyKeyPair()) {
+                        rkReq = withBatchId(b.privateKeyUniqueIdentifier(privRef.get()).offset(3600L).build());
+                    }
+                } else {
+                    rkReq = withBatchId(ClientBatchItem.rekeyKeyPair(privRef.get(), 3600L, null, null, null, null, null, null));
+                }
+                return executeRequest(testCase, rkReq, r -> r.rekeyKeyPairResponse().map(p -> {
+                    cleanup.add(p.privateKeyUniqueIdentifier());
+                    cleanup.add(p.publicKeyUniqueIdentifier());
+                    return true;
+                }).orElse(false), start);
+            }
+            if ("Certify".equals(op) || "Re-certify".equals(op) || "Validate".equals(op)) {
+                var certRef = new AtomicReference<UniqueIdentifier>();
+                var certRes = executeRequest(testCase,
+                        withBatchId(ClientBatchItem.certify(pubRef.get(), 2L, new byte[]{0x30, 0x00}, null, null)),
+                        r -> r.certifyResponse().map(p -> {
+                            certRef.set(p.uniqueIdentifier());
+                            cleanup.add(p.uniqueIdentifier());
+                            return true;
+                        }).orElse(false), start);
+                if ("Certify".equals(op) || !"passed".equals(certRes.status())) return certRes;
+                if ("Re-certify".equals(op)) {
+                    ClientBatchItem rcReq;
+                    if (fluent) {
+                        try (var b = client.request().recertify()) {
+                            rcReq = withBatchId(b.uniqueIdentifier(certRef.get()).build());
+                        }
+                    } else {
+                        rcReq = withBatchId(ClientBatchItem.recertify(certRef.get(), null, null, null, null, null, null));
+                    }
+                    return executeRequest(testCase, rcReq, r -> r.recertifyResponse().map(p -> {
+                        cleanup.add(p.uniqueIdentifier());
+                        return true;
+                    }).orElse(false), start);
+                }
+                return executeRequest(testCase,
+                        withBatchId(ClientBatchItem.validate(List.of(), List.of(certRef.get()), null)),
+                        r -> r.validateResponse().isPresent(), start);
+            }
+            var act1 = executeRequest(testCase, withBatchId(ClientBatchItem.activate(privRef.get())), r -> true, start);
+            if (!"passed".equals(act1.status())) return act1;
+            var act2 = executeRequest(testCase, withBatchId(ClientBatchItem.activate(pubRef.get())), r -> true, start);
+            if (!"passed".equals(act2.status())) return act2;
+            var sigRef = new AtomicReference<byte[]>();
+            try (var p0 = appendValue(TtlvStructure.create(), 0x42005f, TtlvValue.Enumeration(8));
+                    var params = appendValue(p0, 0x420038, TtlvValue.Enumeration(6));
+                    var dataVal = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                ClientBatchItem signReq;
+                if (fluent) {
+                    try (var b = client.request().sign()) {
+                        signReq = withBatchId(b.uniqueIdentifier(privRef.get())
+                                .cryptographicParametersStructure(params).data(HASH_INPUT).build());
+                    }
+                } else {
+                    signReq = withBatchId(ClientBatchItem.sign(privRef.get(), params, dataVal, null, null, null, null));
+                }
+                var signRes = executeRequest(testCase, signReq, r -> r.signResponse().map(p -> {
+                    sigRef.set(p.signatureData().orElse(null));
+                    return sigRef.get() != null && sigRef.get().length > 0;
+                }).orElse(false), start);
+                if ("Sign".equals(op) || !"passed".equals(signRes.status())) return signRes;
+                ClientBatchItem verReq;
+                if (fluent) {
+                    try (var b = client.request().signatureVerify()) {
+                        verReq = withBatchId(b.uniqueIdentifier(pubRef.get())
+                                .cryptographicParametersStructure(params).data(HASH_INPUT).signatureData(sigRef.get()).build());
+                    }
+                } else {
+                    try (var dv = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                        verReq = withBatchId(ClientBatchItem.signatureVerify(
+                                pubRef.get(), params, dv, null, sigRef.get(), null, null, null));
+                    }
+                }
+                return executeRequest(testCase, verReq, r -> r.signatureVerifyResponse().isPresent(), start);
+            }
+        }
+    }
+
+    private CaseOutcome executeExtendedEncryptGroup(CatalogLoader.CatalogCase testCase, String op,
+            boolean fluent, List<UniqueIdentifier> cleanup, long start) {
+        var keyRef = new AtomicReference<UniqueIdentifier>();
+        try (var attrs = symmetricKeyAttributes("enc-" + UUID.randomUUID(), 256, 12)) {
+            var cRes = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attrs, null)), r -> r.createResponse().map(p -> {
+                keyRef.set(p.uniqueIdentifier());
+                cleanup.add(p.uniqueIdentifier());
+                return true;
+            }).orElse(false), start);
+            if (!"passed".equals(cRes.status())) return cRes;
+            var act = executeRequest(testCase, withBatchId(ClientBatchItem.activate(keyRef.get())), r -> true, start);
+            if (!"passed".equals(act.status())) return act;
+            byte[] iv = new byte[16];
+            Arrays.fill(iv, (byte) 0x01);
+            byte[] pt = "0123456789abcdef".getBytes(StandardCharsets.US_ASCII);
+            var cipherRef = new AtomicReference<byte[]>();
+            try (var p0 = appendValue(TtlvStructure.create(), 0x420011, TtlvValue.Enumeration(1));
+                    var params = appendValue(p0, 0x42005f, TtlvValue.Enumeration(3));
+                    var ptVal = TtlvValue.ByteString(pt, CODEC_LIMITS)) {
+                ClientBatchItem encReq;
+                if (fluent) {
+                    try (var b = client.request().encrypt()) {
+                        encReq = withBatchId(b.uniqueIdentifier(keyRef.get())
+                                .cryptographicParametersStructure(params).data(pt).ivCounterNonce(iv).build());
+                    }
+                } else {
+                    encReq = withBatchId(ClientBatchItem.encrypt(keyRef.get(), params, ptVal, iv, null, null, null, null));
+                }
+                var encRes = executeRequest(testCase, encReq, r -> r.encryptResponse().map(p -> {
+                    cipherRef.set(p.data().orElse(null));
+                    return cipherRef.get() != null && cipherRef.get().length > 0;
+                }).orElse(false), start);
+                if ("Encrypt".equals(op) || !"passed".equals(encRes.status())) return encRes;
+                ClientBatchItem decReq;
+                if (fluent) {
+                    try (var b = client.request().decrypt()) {
+                        decReq = withBatchId(b.uniqueIdentifier(keyRef.get())
+                                .cryptographicParametersStructure(params).data(cipherRef.get()).ivCounterNonce(iv).build());
+                    }
+                } else {
+                    try (var cv = TtlvValue.ByteString(cipherRef.get(), CODEC_LIMITS)) {
+                        decReq = withBatchId(ClientBatchItem.decrypt(keyRef.get(), params, cv, iv, null, null, null, null, null));
+                    }
+                }
+                return executeRequest(testCase, decReq, r -> r.decryptResponse().map(p -> Arrays.equals(pt, p.data().orElse(null))).orElse(false), start);
+            }
+        }
+    }
+
+    private CaseOutcome executeExtendedMacGroup(CatalogLoader.CatalogCase testCase, String op,
+            boolean fluent, List<UniqueIdentifier> cleanup, long start) {
+        var keyRef = new AtomicReference<UniqueIdentifier>();
+        try (var s0 = appendValue(TtlvStructure.create(), 0x420028, TtlvValue.Enumeration(9));
+                var s1 = appendValue(s0, 0x42002a, TtlvValue.Integer(256));
+                var attrs = appendValue(s1, 0x42002c, TtlvValue.Integer(384))) {
+            var cRes = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attrs, null)), r -> r.createResponse().map(p -> {
+                keyRef.set(p.uniqueIdentifier());
+                cleanup.add(p.uniqueIdentifier());
+                return true;
+            }).orElse(false), start);
+            if (!"passed".equals(cRes.status())) return cRes;
+            var act = executeRequest(testCase, withBatchId(ClientBatchItem.activate(keyRef.get())), r -> true, start);
+            if (!"passed".equals(act.status())) return act;
+            var tagRef = new AtomicReference<byte[]>();
+            try (var params = appendValue(TtlvStructure.create(), 0x420038, TtlvValue.Enumeration(6));
+                    var dv = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                ClientBatchItem macReq;
+                if (fluent) {
+                    try (var b = client.request().mac()) {
+                        macReq = withBatchId(b.uniqueIdentifier(keyRef.get())
+                                .cryptographicParametersStructure(params).data(HASH_INPUT).build());
+                    }
+                } else {
+                    macReq = withBatchId(ClientBatchItem.mac(keyRef.get(), params, dv, null, null, null));
+                }
+                var macRes = executeRequest(testCase, macReq, r -> r.macResponse().map(p -> {
+                    tagRef.set(p.macData().orElse(null));
+                    return tagRef.get() != null && tagRef.get().length > 0;
+                }).orElse(false), start);
+                if ("MAC".equals(op) || !"passed".equals(macRes.status())) return macRes;
+                ClientBatchItem verReq;
+                if (fluent) {
+                    try (var b = client.request().macVerify()) {
+                        verReq = withBatchId(b.uniqueIdentifier(keyRef.get())
+                                .cryptographicParametersStructure(params).data(HASH_INPUT).macData(tagRef.get()).build());
+                    }
+                } else {
+                    try (var dv2 = TtlvValue.ByteString(HASH_INPUT, CODEC_LIMITS)) {
+                        verReq = withBatchId(ClientBatchItem.macVerify(keyRef.get(), params, dv2, tagRef.get(), null, null, null));
+                    }
+                }
+                return executeRequest(testCase, verReq, r -> r.macVerifyResponse().isPresent(), start);
+            }
+        }
+    }
+
+    private CaseOutcome executeExtendedSymGroup(CatalogLoader.CatalogCase testCase, String op,
+            boolean fluent, List<UniqueIdentifier> cleanup, long start) {
+        var keyRef = new AtomicReference<UniqueIdentifier>();
+        int usage = "Derive Key".equals(op) ? 512 : 12;
+        try (var attrs = symmetricKeyAttributes("sym-" + UUID.randomUUID(), 256, usage)) {
+            var cRes = executeRequest(testCase, withBatchId(ClientBatchItem.create(2L, attrs, null)), r -> r.createResponse().map(p -> {
+                keyRef.set(p.uniqueIdentifier());
+                cleanup.add(p.uniqueIdentifier());
+                return true;
+            }).orElse(false), start);
+            if (!"passed".equals(cRes.status())) return cRes;
+            UniqueIdentifier keyId = keyRef.get();
+            if ("Re-key".equals(op)) {
+                ClientBatchItem rkReq;
+                if (fluent) {
+                    try (var b = client.request().rekey()) {
+                        rkReq = withBatchId(b.uniqueIdentifier(keyId).offset(3600L).build());
+                    }
+                } else {
+                    rkReq = withBatchId(ClientBatchItem.rekey(keyId, 3600L, null, null));
+                }
+                return executeRequest(testCase, rkReq, r -> r.rekeyResponse().map(p -> {
+                    cleanup.add(p.uniqueIdentifier());
+                    return true;
+                }).orElse(false), start);
+            }
+            if ("Export".equals(op)) {
+                return executeRequest(testCase, withBatchId(ClientBatchItem.export(keyId, 1L, null, null, null)),
+                        r -> r.exportResponse().isPresent(), start);
+            }
+            if ("Get Usage Allocation".equals(op)) {
+                return executeRequest(testCase, withBatchId(ClientBatchItem.getUsageAllocation(keyId, 32L)),
+                        r -> r.getUsageAllocationResponse().isPresent(), start);
+            }
+            if ("Derive Key".equals(op)) {
+                executeRequest(testCase, withBatchId(ClientBatchItem.activate(keyId)), r -> true, start);
+                try (var cp = appendValue(TtlvStructure.create(), 0x420038, TtlvValue.Enumeration(6));
+                        var dp = appendValue(TtlvStructure.create(), 0x42002b, TtlvValue.structure(cp, CODEC_LIMITS));
+                        var da = symmetricKeyAttributes("derived-" + UUID.randomUUID(), 128, 4)) {
+                    return executeRequest(testCase,
+                            withBatchId(ClientBatchItem.deriveKey(2L, List.of(keyId), 2L, dp, da)),
+                            r -> r.deriveKeyResponse().map(p -> {
+                                cleanup.add(p.uniqueIdentifier());
+                                return true;
+                            }).orElse(false), start);
+                }
+            }
+            if ("Join Split Key".equals(op)) {
+                var parts = new ArrayList<UniqueIdentifier>();
+                var splitRes = executeRequest(testCase,
+                        withBatchId(ClientBatchItem.createSplitKey(2L, keyId, 2, 2, 1L, null, attrs, null)),
+                        r -> r.createSplitKeyUniqueIdentifiers().map(list -> {
+                            parts.addAll(list);
+                            cleanup.addAll(list);
+                            return parts.size() == 2;
+                        }).orElse(false), start);
+                if (!"passed".equals(splitRes.status())) return splitRes;
+                var refs = List.of(
+                        new org.kmipkit.extensions.SplitKeyReference(parts.get(0), 2L),
+                        new org.kmipkit.extensions.SplitKeyReference(parts.get(1), 2L));
+                return executeRequest(testCase, withBatchId(ClientBatchItem.joinSplitKey(2L, refs, null, attrs, null)),
+                        r -> r.joinSplitKeyResponse().map(p -> {
+                            cleanup.add(p.uniqueIdentifier());
+                            return true;
+                        }).orElse(false), start);
+            }
+            try (var attrVal = TtlvValue.TextString("kmipkit-attr".getBytes(StandardCharsets.US_ASCII), CODEC_LIMITS);
+                    var attrItem = TtlvItem.create(RawTag.fromRaw(0x4200fc).checked(), attrVal, CODEC_LIMITS);
+                    var newVal = TtlvValue.TextString("kmipkit-changed".getBytes(StandardCharsets.US_ASCII), CODEC_LIMITS);
+                    var newItem = TtlvItem.create(RawTag.fromRaw(0x4200fc).checked(), newVal, CODEC_LIMITS)) {
+                if ("Add Attribute".equals(op)) {
+                    ClientBatchItem req;
+                    if (fluent) {
+                        try (var b = client.request().addAttribute()) {
+                            req = withBatchId(b.uniqueIdentifier(keyId.text()).attributeItem(newItem).build());
+                        }
+                    } else {
+                        req = withBatchId(ClientBatchItem.addAttribute(keyId, newItem));
+                    }
+                    return executeRequest(testCase, req, r -> r.addAttributeResponse().isPresent(), start);
+                }
+                if ("Modify Attribute".equals(op)) {
+                    return executeRequest(testCase, withBatchId(ClientBatchItem.modifyAttribute(keyId, attrItem, newItem)),
+                            r -> r.modifyAttributeResponse().isPresent(), start);
+                }
+                if ("Delete Attribute".equals(op)) {
+                    ClientBatchItem req;
+                    if (fluent) {
+                        try (var b = client.request().deleteAttribute()) {
+                            req = withBatchId(b.uniqueIdentifier(keyId.text()).attributeReference(AttributeReference.tag(0x4200fc)).build());
+                        }
+                    } else {
+                        req = withBatchId(ClientBatchItem.deleteAttribute(keyId, null, AttributeReference.tag(0x4200fc)));
+                    }
+                    return executeRequest(testCase, req, r -> r.deleteAttributeResponse().isPresent(), start);
+                }
+                ClientBatchItem req;
+                if (fluent) {
+                    try (var b = client.request().setAttribute()) {
+                        req = withBatchId(b.uniqueIdentifier(keyId.text()).attributeItem(newItem).build());
+                    }
+                } else {
+                    req = withBatchId(ClientBatchItem.setAttribute(keyId, newItem));
+                }
+                return executeRequest(testCase, req, r -> r.setAttributeResponse().isPresent(), start);
+            }
+        }
     }
 
     private static TtlvStructure appendSecret(TtlvStructure structure, int rawTag, String secret) {

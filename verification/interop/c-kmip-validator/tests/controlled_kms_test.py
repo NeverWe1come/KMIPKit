@@ -770,7 +770,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
-                    listener.settimeout(5)
+                    listener.settimeout(0.05)
                     connection = {
                         "server_id": "owned-key-peer", "server_configuration_fingerprint": "b" * 64,
                         "server_product": "controlled peer", "server_version": "fixture",
@@ -2212,7 +2212,117 @@ def main() -> int:
                 raise AssertionError("unexecuted cases must include a sanitized reason")
         if run.stderr:
             print(run.stderr, file=sys.stderr)
+    verify_generic_extended_operations(binary, openssl, repository)
     return 0
+
+
+def verify_generic_extended_operations(binary, openssl, repository):
+    extended_cases = [
+        "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+        "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+        "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+        "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+        "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+        "test-op-import", "test-op-export",
+    ]
+    catalog = json.loads((repository / "verification/interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
+    cases_by_id = {c["case_id"]: c for c in catalog["test_cases"]}
+    sym_key = tlv(0x42008f, 1, tlv(0x420040, 1, enumeration(0x420042, 1)
+                        + tlv(0x420045, 1, tlv(0x420043, 8, bytes(16)))))
+    for version in ("2.0", "2.1"):
+        minor = int(version[-1])
+        header = tlv(0x42007a, 1, tlv(0x420069, 1, integer(0x42006a, 2) + integer(0x42006b, minor))
+                     + tlv(0x420092, 9, (1).to_bytes(8, "big")) + integer(0x42000d, 1))
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            ca, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_3
+            context.load_cert_chain(server_cert, server_key)
+            context.load_verify_locations(ca)
+            context.verify_mode = ssl.CERT_REQUIRED
+            for case_id in extended_cases:
+                with socket.socket() as listener:
+                    listener.bind(("127.0.0.1", 0))
+                    listener.listen()
+                    listener.settimeout(0.05)
+                    connection = {
+                        "server_id": "extended-generic-peer", "server_configuration_fingerprint": "b" * 64,
+                        "server_product": "controlled peer", "server_version": "fixture",
+                        "protocol_version": version, "transport": "raw_tls", "encoding": "TTLV",
+                        "api_level": "generic-ttlv",
+                        "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": listener.getsockname()[1]}},
+                        "tls": {"ca_cert_path": str(ca), "client_cert_path": str(client_cert),
+                                "client_key_path": str(client_key), "server_name_override": "localhost"},
+                        "environment": {"kind": "dedicated_test", "dedicated_test_environment_confirmed": True},
+                        "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                    }
+                    config = directory / "connection.json"
+                    selection = directory / "catalog.json"
+                    output = directory / f"{case_id}.json"
+                    config.write_text(json.dumps(connection))
+                    selection.write_text(json.dumps({**catalog, "test_cases": [cases_by_id[case_id]],
+                                                      "statistics": {**catalog["statistics"], "total_cases": 1}}))
+                    command = [str(binary), "run", "--connection", str(config), "--catalog", str(selection),
+                               "--output", str(output), "--allow-mutations"]
+                    with subprocess.Popen(command, cwd=repository, stdout=subprocess.DEVNULL,
+                                          stderr=subprocess.PIPE) as process:
+                        try:
+                            while process.poll() is None:
+                                try:
+                                    raw, _ = listener.accept()
+                                except socket.timeout:
+                                    continue
+                                with context.wrap_socket(raw, server_side=True) as stream:
+                                    stream.settimeout(5)
+                                    request = read_message(stream)
+                                    op = top_level_batch_operations(request)[0]
+                                    if op == 1:
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key")
+                                    elif op == 2:
+                                        fields = tlv(0x420066, 7, b"priv-key") + tlv(0x42006f, 7, b"pub-key")
+                                    elif op in (3, 0x2a):
+                                        fields = tlv(0x420094, 7, b"reg-key")
+                                    elif op == 4:
+                                        fields = tlv(0x420094, 7, b"rekey-key")
+                                    elif op == 5:
+                                        fields = tlv(0x420094, 7, b"derived-key")
+                                    elif op == 6:
+                                        fields = tlv(0x420094, 7, b"cert-id")
+                                    elif op == 7:
+                                        fields = tlv(0x420094, 7, b"recert-id")
+                                    elif op in (0x17, 0x22, 0x24):
+                                        fields = enumeration(0x42009b, 1)
+                                    elif op in (0x19, 0x1a):
+                                        fields = tlv(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")
+                                    elif op == 0x1d:
+                                        fields = tlv(0x420066, 7, b"new-priv") + tlv(0x42006f, 7, b"new-pub")
+                                    elif op == 0x1f:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c2, 8, b"cipher")
+                                    elif op == 0x20:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c2, 8, b"0123456789abcdef")
+                                    elif op == 0x21:
+                                        fields = tlv(0x420094, 7, b"priv-key") + tlv(0x4200c3, 8, b"sig")
+                                    elif op == 0x23:
+                                        fields = tlv(0x420094, 7, b"owned-key") + tlv(0x4200c6, 8, b"mac")
+                                    elif op == 0x28:
+                                        fields = tlv(0x420094, 7, b"split-1") + tlv(0x420094, 7, b"split-2")
+                                    elif op == 0x29:
+                                        fields = tlv(0x420094, 7, b"joined-key")
+                                    elif op == 0x2b:
+                                        fields = enumeration(0x420057, 2) + tlv(0x420094, 7, b"owned-key") + sym_key
+                                    else:
+                                        fields = tlv(0x420094, 7, b"owned-key")
+                                    batch = tlv(0x42000f, 1, enumeration(0x42005c, op)
+                                                + enumeration(0x42007f, 0) + tlv(0x42007c, 1, fields))
+                                    stream.sendall(tlv(0x42007b, 1, header + batch))
+                        finally:
+                            _, stderr = process.communicate(timeout=10)
+                        if process.returncode != 0:
+                            raise AssertionError(f"C generic extended {version} {case_id} failed: {stderr.decode()}")
+                    report = json.loads(output.read_text())
+                    if report["cases"][0]["status"] != "passed":
+                        raise AssertionError(f"C generic extended {version} {case_id} status={report['cases'][0]}")
 
 
 if __name__ == "__main__":

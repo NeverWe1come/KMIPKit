@@ -10032,6 +10032,572 @@ static kmip_execution_outcome_t execute_generic_exchange_with_reference(kmip_liv
     return execute_generic_frame(client, operation, id, created, attribute_tag, NULL, NULL);
 }
 
+typedef bool (*generic_payload_check_fn)(kmipkit_ttlv_structure_view_t *payload, void *ctx);
+
+static kmipkit_ttlv_structure_t *make_ttlv_struct(void) {
+    kmipkit_ttlv_structure_t *s = NULL;
+    return kmipkit_ttlv_structure_create(&s) == 0 ? s : NULL;
+}
+
+static bool append_ttlv_enum(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, uint32_t val) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_enumeration(val, &v) == 0 && append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_int(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, int32_t val) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_integer(val, &v) == 0 && append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_long(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, int64_t val) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_long_integer(val, &v) == 0 && append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_bool(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, bool val) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_boolean(val ? 1 : 0, &v) == 0 && append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_interval(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, uint32_t val) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_interval(val, &v) == 0 && append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_text(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag, const char *text) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_text_string(client->limits, (const uint8_t *)text, (uint64_t)strlen(text), &v) == 0 &&
+        append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_bytes(kmip_live_client_t *client, kmipkit_ttlv_structure_t **s, uint32_t tag,
+                              const uint8_t *data, size_t len) {
+    kmipkit_ttlv_value_t *v = NULL;
+    return kmipkit_ttlv_value_byte_string(client->limits, data, (uint64_t)len, &v) == 0 &&
+        append_ttlv_value(client, s, tag, &v);
+}
+
+static bool append_ttlv_struct(kmip_live_client_t *client, kmipkit_ttlv_structure_t **parent, uint32_t tag,
+                               kmipkit_ttlv_structure_t *child) {
+    kmipkit_ttlv_value_t *v = NULL;
+    bool ok = child && kmipkit_ttlv_value_structure(child, client->limits, &v) == 0 &&
+        append_ttlv_value(client, parent, tag, &v);
+    if (!ok && child) kmipkit_ttlv_structure_release(child);
+    return ok;
+}
+
+static kmipkit_ttlv_item_t *wrap_ttlv_root(kmip_live_client_t *client, uint32_t tag, kmipkit_ttlv_structure_t *body) {
+    kmipkit_raw_tag_t *raw = NULL;
+    kmipkit_tag_t *t = NULL;
+    kmipkit_ttlv_value_t *v = NULL;
+    kmipkit_ttlv_item_t *item = NULL;
+    if (body && kmipkit_ttlv_raw_tag_create(tag, &raw) == 0 &&
+        kmipkit_ttlv_raw_tag_try_checked(raw, &t) == 0 &&
+        kmipkit_ttlv_value_structure(body, client->limits, &v) == 0) {
+        if (kmipkit_ttlv_item_create(t, v, client->limits, &item) != 0) item = NULL;
+    } else if (body) {
+        kmipkit_ttlv_structure_release(body);
+    }
+    if (t) kmipkit_tag_release(t);
+    if (raw) kmipkit_raw_tag_release(raw);
+    return item;
+}
+
+static bool generic_extract_value_bytes(kmipkit_ttlv_value_view_t *val, uint8_t *out, size_t cap, size_t *out_len) {
+    uint64_t len = 0;
+    if (kmipkit_ttlv_value_view_byte_length(val, &len) != 0 || len == 0 || len > cap) return false;
+    for (uint64_t i = 0; i < len; i++) {
+        if (kmipkit_ttlv_value_view_byte_at(val, i, &out[i]) != 0) return false;
+    }
+    *out_len = (size_t)len;
+    return true;
+}
+
+static bool generic_extract_text(kmipkit_ttlv_structure_view_t *payload, uint32_t wanted_tag, char *out, size_t cap) {
+    uint64_t count = 0;
+    if (kmipkit_ttlv_structure_view_item_count(payload, &count) != 0) return false;
+    for (uint64_t i = 0; i < count; i++) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *val = NULL;
+        size_t len = 0;
+        bool match = kmipkit_ttlv_structure_view_item_at(payload, i, &field) == 0 &&
+            item_view_has_tag(field, wanted_tag, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &val) &&
+            generic_extract_value_bytes(val, (uint8_t *)out, cap - 1, &len);
+        if (val) kmipkit_ttlv_value_view_release(val);
+        if (field) kmipkit_ttlv_item_view_release(field);
+        if (match) {
+            out[len] = '\0';
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool generic_extract_bytes(kmipkit_ttlv_structure_view_t *payload, uint32_t wanted_tag,
+                                  uint8_t *out, size_t cap, size_t *out_len) {
+    uint64_t count = 0;
+    if (kmipkit_ttlv_structure_view_item_count(payload, &count) != 0) return false;
+    for (uint64_t i = 0; i < count; i++) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *val = NULL;
+        bool match = kmipkit_ttlv_structure_view_item_at(payload, i, &field) == 0 &&
+            item_view_has_tag(field, wanted_tag, KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &val) &&
+            generic_extract_value_bytes(val, out, cap, out_len);
+        if (val) kmipkit_ttlv_value_view_release(val);
+        if (field) kmipkit_ttlv_item_view_release(field);
+        if (match) return true;
+    }
+    return false;
+}
+
+static kmip_execution_outcome_t execute_generic_custom(kmip_live_client_t *client, uint32_t operation,
+                                                       kmipkit_ttlv_structure_t *payload_body,
+                                                       generic_payload_check_fn check_fn, void *ctx) {
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_ttlv_structure_t *ver = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *hdr = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *batch = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *msg = make_ttlv_struct();
+    bool built = ver && hdr && batch && msg &&
+        append_ttlv_int(client, &ver, 0x42006a, 2) &&
+        append_ttlv_int(client, &ver, 0x42006b, client->protocol_minor) &&
+        append_ttlv_struct(client, &hdr, 0x420069, ver) && (ver = NULL, true) &&
+        append_ttlv_int(client, &hdr, 0x42000d, 1) &&
+        append_ttlv_enum(client, &batch, 0x42005c, operation) &&
+        append_ttlv_struct(client, &batch, 0x420079, payload_body) && (payload_body = NULL, true) &&
+        append_ttlv_struct(client, &msg, 0x420077, hdr) && (hdr = NULL, true) &&
+        append_ttlv_struct(client, &msg, 0x42000f, batch) && (batch = NULL, true);
+    if (ver) kmipkit_ttlv_structure_release(ver);
+    if (hdr) kmipkit_ttlv_structure_release(hdr);
+    if (batch) kmipkit_ttlv_structure_release(batch);
+    if (payload_body) kmipkit_ttlv_structure_release(payload_body);
+    kmipkit_ttlv_item_t *request = built ? wrap_ttlv_root(client, 0x420078, msg) : (kmipkit_ttlv_structure_release(msg), NULL);
+    kmipkit_ttlv_item_view_t *view = NULL;
+    size_t capacity = 2048;
+    uint8_t *wire = malloc(capacity), *response = NULL;
+    size_t request_size = 0, response_size = 0;
+    bool ok = wire && request && kmipkit_ttlv_item_view_from_item(request, &view) == 0 &&
+        encode_generic_item(view, wire, capacity, &request_size) && request_size <= KMIP_MAX_REQUEST_BYTES &&
+        kmip_generic_tls_exchange(client->configuration, wire, request_size, KMIP_MAX_REQUEST_BYTES,
+                                  &response, &response_size);
+    if (ok) {
+        kmipkit_ttlv_decode_error_v1_t err = {.struct_size = sizeof(err), .abi_version = 1};
+        kmipkit_ttlv_item_t *root = NULL;
+        kmipkit_ttlv_item_view_t *riv = NULL;
+        kmipkit_ttlv_value_view_t *rvv = NULL;
+        kmipkit_ttlv_structure_view_t *rsv = NULL, *bview = NULL, *pview = NULL;
+        kmipkit_ttlv_structure_t *copy = NULL, *bttlv = NULL;
+        kmipkit_message_validation_error_t *merr = NULL;
+        kmipkit_response_message_t *rmsg = NULL;
+        kmipkit_response_header_view_t *rhdr = NULL;
+        kmipkit_response_batch_item_view_t *rbatch = NULL;
+        kmipkit_protocol_version_v1_t pver = {0};
+        uint32_t actual_op = 0, status = 0, reason = 0;
+        uint64_t bcount = 0;
+        uint8_t present = 0;
+        ok = kmipkit_ttlv_decode(response, response_size, &err, &root) == 0 &&
+            kmipkit_ttlv_item_view_from_item(root, &riv) == 0 &&
+            item_view_has_tag(riv, 0x42007b, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &rvv) &&
+            kmipkit_ttlv_value_view_structure(rvv, &rsv) == 0 &&
+            (copy = copy_generic_structure(rsv, client->limits)) != NULL &&
+            kmipkit_response_message_from_ttlv(copy, &rmsg, &merr) == 0 &&
+            kmipkit_response_message_header(rmsg, &rhdr) == 0 &&
+            kmipkit_response_header_view_protocol_version(rhdr, &pver) == 0 &&
+            pver.major == 2 && pver.minor == client->protocol_minor &&
+            kmipkit_response_message_batch_item_count(rmsg, &bcount) == 0 && bcount == 1 &&
+            kmipkit_response_message_batch_item_at(rmsg, 0, &rbatch) == 0 &&
+            kmipkit_response_batch_item_view_operation(rbatch, &present, &actual_op) == 0 &&
+            present && actual_op == operation &&
+            kmipkit_response_batch_item_view_result_status(rbatch, &present, &status) == 0 && present &&
+            kmipkit_response_batch_item_view_ttlv(rbatch, &bttlv) == 0 &&
+            kmipkit_ttlv_structure_view(bttlv, &bview) == 0;
+        if (ok) {
+            bool has_reason = generic_enum_field(bview, 0x42007e, &reason);
+            kmipkit_client_batch_item_metadata_v2_t meta = {
+                .result_status = status, .has_result_reason = has_reason, .result_reason = reason,
+            };
+            record_kmip_result(&outcome, &meta);
+            if (outcome.success) {
+                ok = !has_reason && generic_structure_field(bview, 0x42007c, &pview) &&
+                    (!check_fn || check_fn(pview, ctx));
+            }
+        }
+        if (pview) kmipkit_ttlv_structure_view_release(pview);
+        if (bview) kmipkit_ttlv_structure_view_release(bview);
+        if (bttlv) kmipkit_ttlv_structure_release(bttlv);
+        if (rbatch) kmipkit_response_batch_item_release(rbatch);
+        if (rhdr) kmipkit_response_header_view_release(rhdr);
+        if (rmsg) kmipkit_response_message_release(rmsg);
+        if (merr) kmipkit_message_validation_error_release(merr);
+        if (rsv) kmipkit_ttlv_structure_view_release(rsv);
+        if (rvv) kmipkit_ttlv_value_view_release(rvv);
+        if (riv) kmipkit_ttlv_item_view_release(riv);
+        if (root) kmipkit_ttlv_item_release(root);
+    }
+    if (!ok) {
+        outcome.success = false;
+        outcome.library_validated = false;
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Generic TTLV exchange or validation failed.");
+    }
+    free(wire);
+    if (response) OPENSSL_cleanse(response, response_size);
+    free(response);
+    if (view) kmipkit_ttlv_item_view_release(view);
+    if (request) kmipkit_ttlv_item_release(request);
+    return outcome;
+}
+
+typedef struct {
+    char ids[4][256];
+    size_t count;
+    uint8_t bytes[512];
+    size_t bytes_len;
+    const char *expected_id;
+    const uint8_t *expected_bytes;
+    size_t expected_bytes_len;
+} generic_ext_ctx_t;
+
+static bool check_ext_single_id(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    generic_ext_ctx_t *ctx = raw;
+    if (ctx->count < 4 && generic_extract_text(payload, 0x420094, ctx->ids[ctx->count], sizeof(ctx->ids[0]))) {
+        if (ctx->expected_id && strcmp(ctx->ids[ctx->count], ctx->expected_id) == 0) return false;
+        ctx->count++;
+        return true;
+    }
+    return false;
+}
+
+static bool check_ext_same_id(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    generic_ext_ctx_t *ctx = raw;
+    char buf[256] = {0};
+    return generic_extract_text(payload, 0x420094, buf, sizeof(buf)) && strcmp(buf, ctx->expected_id) == 0;
+}
+
+static bool check_ext_export(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    kmipkit_ttlv_structure_view_t *sk = NULL;
+    bool ok = check_ext_same_id(payload, raw) && generic_structure_field(payload, 0x42008f, &sk);
+    if (sk) kmipkit_ttlv_structure_view_release(sk);
+    return ok;
+}
+
+static bool check_ext_key_pair(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    generic_ext_ctx_t *ctx = raw;
+    return ctx->count + 2 <= 4 &&
+        generic_extract_text(payload, 0x420066, ctx->ids[ctx->count], sizeof(ctx->ids[0])) &&
+        generic_extract_text(payload, 0x42006f, ctx->ids[ctx->count + 1], sizeof(ctx->ids[0])) &&
+        (ctx->count += 2, true);
+}
+
+static bool check_ext_split_parts(kmipkit_ttlv_structure_view_t *payload, void *raw) {
+    generic_ext_ctx_t *ctx = raw;
+    uint64_t count = 0;
+    if (kmipkit_ttlv_structure_view_item_count(payload, &count) != 0) return false;
+    size_t found = 0;
+    for (uint64_t i = 0; i < count && ctx->count < 4; i++) {
+        kmipkit_ttlv_item_view_t *f = NULL;
+        kmipkit_ttlv_value_view_t *v = NULL;
+        size_t len = 0;
+        if (kmipkit_ttlv_structure_view_item_at(payload, i, &f) == 0 &&
+            item_view_has_tag(f, 0x420094, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &v) &&
+            generic_extract_value_bytes(v, (uint8_t *)ctx->ids[ctx->count], 255, &len)) {
+            ctx->ids[ctx->count][len] = '\0';
+            ctx->count++;
+            found++;
+        }
+        if (v) kmipkit_ttlv_value_view_release(v);
+        if (f) kmipkit_ttlv_item_view_release(f);
+    }
+    return found == 2;
+}
+
+static bool check_ext_bytes_field(kmipkit_ttlv_structure_view_t *payload, void *raw, uint32_t tag) {
+    generic_ext_ctx_t *ctx = raw;
+    return (!ctx->expected_id || check_ext_same_id(payload, raw)) &&
+        generic_extract_bytes(payload, tag, ctx->bytes, sizeof(ctx->bytes), &ctx->bytes_len);
+}
+
+static bool check_ext_corr(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x420006); }
+static bool check_ext_data(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c2); }
+static bool check_ext_mac(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c6); }
+static bool check_ext_sig(kmipkit_ttlv_structure_view_t *p, void *ctx) { return check_ext_bytes_field(p, ctx, 0x4200c3); }
+
+static bool check_ext_decrypt(kmipkit_ttlv_structure_view_t *p, void *raw) {
+    generic_ext_ctx_t *ctx = raw;
+    return check_ext_data(p, raw) && ctx->bytes_len == ctx->expected_bytes_len &&
+        memcmp(ctx->bytes, ctx->expected_bytes, ctx->expected_bytes_len) == 0;
+}
+
+static bool check_ext_valid(kmipkit_ttlv_structure_view_t *p, void *raw) {
+    (void)raw;
+    uint32_t v = 0;
+    return generic_enum_field(p, 0x42009b, &v) && v == 1;
+}
+
+static kmip_execution_outcome_t generic_ext_id_op(kmip_live_client_t *client, uint32_t op, const char *uid) {
+    kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+    append_ttlv_text(client, &p, 0x420094, uid);
+    if (op == KMIPKIT_ENUMERATION_OPERATION_REVOKE) {
+        kmipkit_ttlv_structure_t *rr = make_ttlv_struct();
+        append_ttlv_enum(client, &rr, 0x420082, 6);
+        append_ttlv_struct(client, &p, 0x420081, rr);
+    }
+    return execute_generic_custom(client, op, p, NULL, NULL);
+}
+
+static void generic_ext_cleanup(kmip_live_client_t *client, const generic_ext_ctx_t *ctx) {
+    for (size_t i = 0; i < ctx->count; i++) {
+        generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_REVOKE, ctx->ids[i]);
+        generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_DESTROY, ctx->ids[i]);
+    }
+}
+
+static uint32_t generic_extended_operation(const char *id) {
+    if (strcmp(id, "test-op-create-key-pair") == 0) return 0x02;
+    if (strcmp(id, "test-op-register") == 0) return 0x03;
+    if (strcmp(id, "test-op-re-key") == 0) return 0x04;
+    if (strcmp(id, "test-op-derive-key") == 0) return 0x05;
+    if (strcmp(id, "test-op-certify") == 0) return 0x06;
+    if (strcmp(id, "test-op-re-certify") == 0) return 0x07;
+    if (strcmp(id, "test-op-get-usage-allocation") == 0) return 0x11;
+    if (strcmp(id, "test-op-validate") == 0) return 0x17;
+    if (strcmp(id, "test-op-cancel") == 0) return 0x19;
+    if (strcmp(id, "test-op-poll") == 0) return 0x1a;
+    if (strcmp(id, "test-op-re-key-key-pair") == 0) return 0x1d;
+    if (strcmp(id, "test-op-encrypt") == 0 || strcmp(id, "test-crypto-encrypt-aes-256-cbc") == 0) return 0x1f;
+    if (strcmp(id, "test-op-decrypt") == 0 || strcmp(id, "test-crypto-decrypt-aes-256-cbc") == 0) return 0x20;
+    if (strcmp(id, "test-op-sign") == 0 || strcmp(id, "test-crypto-sign-rsa-2048-pkcs1_v1_5") == 0 ||
+        strcmp(id, "test-crypto-sign-ecdsa-256-p_256") == 0) return 0x21;
+    if (strcmp(id, "test-op-signature-verify") == 0 || strcmp(id, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5") == 0 ||
+        strcmp(id, "test-crypto-signature-verify-ecdsa-256-p_256") == 0) return 0x22;
+    if (strcmp(id, "test-op-mac") == 0 || strcmp(id, "test-crypto-mac-hmac_sha256-256") == 0) return 0x23;
+    if (strcmp(id, "test-op-mac-verify") == 0 || strcmp(id, "test-crypto-mac-verify-hmac_sha256-256") == 0) return 0x24;
+    if (strcmp(id, "test-op-create-split-key") == 0) return 0x28;
+    if (strcmp(id, "test-op-join-split-key") == 0) return 0x29;
+    if (strcmp(id, "test-op-import") == 0) return 0x2a;
+    if (strcmp(id, "test-op-export") == 0) return 0x2b;
+    return 0;
+}
+
+static kmip_execution_outcome_t execute_generic_extended(kmip_live_client_t *client, uint32_t op) {
+    generic_ext_ctx_t ctx = {0};
+    kmip_execution_outcome_t out = {.executed = true};
+    if (op == 0x19 || op == 0x1a) {
+        static const uint8_t corr[6] = {1, 2, 3, 4, 5, 6};
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        append_ttlv_bytes(client, &p, 0x420006, corr, sizeof(corr));
+        return execute_generic_custom(client, op, p, check_ext_corr, &ctx);
+    }
+    if (op == 0x03 || op == 0x2a) {
+        static const uint8_t key16[16] = {0x11};
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *attrs = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *kv = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *kb = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *sk = make_ttlv_struct();
+        if (op == 0x2a) append_ttlv_text(client, &p, 0x420094, "kmipkit-generic-import");
+        append_ttlv_enum(client, &p, 0x420057, 2);
+        if (op == 0x2a) append_ttlv_bool(client, &p, 0x420124, false);
+        append_ttlv_enum(client, &attrs, 0x420028, 3);
+        append_ttlv_int(client, &attrs, 0x42002a, 128);
+        append_ttlv_int(client, &attrs, 0x42002c, 4);
+        append_ttlv_struct(client, &p, 0x420125, attrs);
+        append_ttlv_bytes(client, &kv, 0x420043, key16, sizeof(key16));
+        append_ttlv_enum(client, &kb, 0x420042, 1);
+        append_ttlv_struct(client, &kb, 0x420045, kv);
+        append_ttlv_struct(client, &sk, 0x420040, kb);
+        append_ttlv_struct(client, &p, 0x42008f, sk);
+        out = execute_generic_custom(client, op, p, check_ext_single_id, &ctx);
+        generic_ext_cleanup(client, &ctx);
+        return out;
+    }
+    if (op == 0x02 || op == 0x1d || op == 0x06 || op == 0x07 || op == 0x17 || op == 0x21 || op == 0x22) {
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *c = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *pr = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *pu = make_ttlv_struct();
+        append_ttlv_enum(client, &c, 0x420028, 4);
+        append_ttlv_int(client, &c, 0x42002a, 2048);
+        append_ttlv_int(client, &pr, 0x42002c, 1);
+        append_ttlv_int(client, &pu, 0x42002c, 2);
+        append_ttlv_struct(client, &p, 0x420126, c);
+        append_ttlv_struct(client, &p, 0x420127, pr);
+        append_ttlv_struct(client, &p, 0x420128, pu);
+        out = execute_generic_custom(client, 0x02, p, check_ext_key_pair, &ctx);
+        if (op == 0x02 || !out.success) { generic_ext_cleanup(client, &ctx); return out; }
+        if (op == 0x1d) {
+            kmipkit_ttlv_structure_t *rk = make_ttlv_struct();
+            append_ttlv_text(client, &rk, 0x420066, ctx.ids[0]);
+            append_ttlv_interval(client, &rk, 0x420058, 3600);
+            out = execute_generic_custom(client, 0x1d, rk, check_ext_key_pair, &ctx);
+        } else if (op == 0x06 || op == 0x07 || op == 0x17) {
+            static const uint8_t csr[2] = {0x30, 0x00};
+            kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+            append_ttlv_text(client, &cp, 0x420094, ctx.ids[1]);
+            append_ttlv_enum(client, &cp, 0x420019, 2);
+            append_ttlv_bytes(client, &cp, 0x420018, csr, sizeof(csr));
+            out = execute_generic_custom(client, 0x06, cp, check_ext_single_id, &ctx);
+            if (op != 0x06 && out.success) {
+                kmipkit_ttlv_structure_t *vp = make_ttlv_struct();
+                append_ttlv_text(client, &vp, 0x420094, ctx.ids[2]);
+                out = execute_generic_custom(client, op, vp, op == 0x07 ? check_ext_single_id : check_ext_valid, &ctx);
+            }
+        } else {
+            out = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[0]);
+            if (out.success) out = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[1]);
+            if (out.success) {
+                static const uint8_t msg[3] = {'a', 'b', 'c'};
+                kmipkit_ttlv_structure_t *sp = make_ttlv_struct();
+                kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+                append_ttlv_enum(client, &cp, 0x420038, 6);
+                append_ttlv_enum(client, &cp, 0x42005f, 8);
+                append_ttlv_text(client, &sp, 0x420094, ctx.ids[0]);
+                append_ttlv_struct(client, &sp, 0x42002b, cp);
+                append_ttlv_bytes(client, &sp, 0x4200c2, msg, sizeof(msg));
+                ctx.expected_id = ctx.ids[0];
+                out = execute_generic_custom(client, 0x21, sp, check_ext_sig, &ctx);
+                if (op == 0x22 && out.success) {
+                    kmipkit_ttlv_structure_t *vp = make_ttlv_struct();
+                    kmipkit_ttlv_structure_t *cp2 = make_ttlv_struct();
+                    append_ttlv_enum(client, &cp2, 0x420038, 6);
+                    append_ttlv_enum(client, &cp2, 0x42005f, 8);
+                    append_ttlv_text(client, &vp, 0x420094, ctx.ids[1]);
+                    append_ttlv_struct(client, &vp, 0x42002b, cp2);
+                    append_ttlv_bytes(client, &vp, 0x4200c2, msg, sizeof(msg));
+                    append_ttlv_bytes(client, &vp, 0x4200c3, ctx.bytes, ctx.bytes_len);
+                    out = execute_generic_custom(client, 0x22, vp, check_ext_valid, &ctx);
+                }
+            }
+        }
+        generic_ext_cleanup(client, &ctx);
+        return out;
+    }
+    /* Symmetric key setup (AES-256 or HMAC-SHA256) */
+    uint32_t alg = (op == 0x23 || op == 0x24) ? 9 : 3;
+    int32_t mask = (op == 0x23 || op == 0x24) ? 384 : (op == 0x05 ? 512 : 12);
+    kmipkit_ttlv_structure_t *kp = make_ttlv_struct();
+    kmipkit_ttlv_structure_t *attrs = make_ttlv_struct();
+    append_ttlv_enum(client, &kp, 0x420057, 2);
+    append_ttlv_enum(client, &attrs, 0x420028, alg);
+    append_ttlv_int(client, &attrs, 0x42002a, 256);
+    append_ttlv_int(client, &attrs, 0x42002c, mask);
+    if (op == 0x2b) append_ttlv_bool(client, &attrs, 0x420122, true);
+    append_ttlv_struct(client, &kp, 0x420125, attrs);
+    out = execute_generic_custom(client, 0x01, kp, check_ext_single_id, &ctx);
+    if (!out.success) { generic_ext_cleanup(client, &ctx); return out; }
+    ctx.expected_id = ctx.ids[0];
+    if (op == 0x04) {
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
+        append_ttlv_interval(client, &p, 0x420058, 3600);
+        out = execute_generic_custom(client, 0x04, p, check_ext_single_id, &ctx);
+    } else if (op == 0x2b) {
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
+        append_ttlv_enum(client, &p, 0x420042, 1);
+        out = execute_generic_custom(client, 0x2b, p, check_ext_export, &ctx);
+    } else if (op == 0x11) {
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
+        append_ttlv_long(client, &p, 0x420096, 32);
+        out = execute_generic_custom(client, 0x11, p, check_ext_same_id, &ctx);
+    } else if (op == 0x05) {
+        generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[0]);
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *dp = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *da = make_ttlv_struct();
+        append_ttlv_enum(client, &dp, 0x420038, 6);
+        append_ttlv_enum(client, &da, 0x420028, 3);
+        append_ttlv_int(client, &da, 0x42002a, 128);
+        append_ttlv_int(client, &da, 0x42002c, 4);
+        append_ttlv_enum(client, &p, 0x420057, 2);
+        append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
+        append_ttlv_enum(client, &p, 0x420031, 2);
+        append_ttlv_struct(client, &p, 0x420032, dp);
+        append_ttlv_struct(client, &p, 0x420125, da);
+        ctx.expected_id = NULL;
+        out = execute_generic_custom(client, 0x05, p, check_ext_single_id, &ctx);
+    } else if (op == 0x28 || op == 0x29) {
+        kmipkit_ttlv_structure_t *p = make_ttlv_struct();
+        kmipkit_ttlv_structure_t *sa = make_ttlv_struct();
+        append_ttlv_enum(client, &sa, 0x420028, 3);
+        append_ttlv_int(client, &sa, 0x42002a, 256);
+        append_ttlv_int(client, &sa, 0x42002c, 12);
+        append_ttlv_enum(client, &p, 0x420057, 2);
+        append_ttlv_text(client, &p, 0x420094, ctx.ids[0]);
+        append_ttlv_int(client, &p, 0x42008b, 2);
+        append_ttlv_int(client, &p, 0x42008c, 2);
+        append_ttlv_enum(client, &p, 0x42008a, 1);
+        append_ttlv_struct(client, &p, 0x420125, sa);
+        out = execute_generic_custom(client, 0x28, p, check_ext_split_parts, &ctx);
+        if (op == 0x29 && out.success) {
+            kmipkit_ttlv_structure_t *jp = make_ttlv_struct();
+            kmipkit_ttlv_structure_t *ja = make_ttlv_struct();
+            append_ttlv_enum(client, &ja, 0x420028, 3);
+            append_ttlv_int(client, &ja, 0x42002a, 256);
+            append_ttlv_int(client, &ja, 0x42002c, 12);
+            append_ttlv_enum(client, &jp, 0x420057, 2);
+            append_ttlv_text(client, &jp, 0x420094, ctx.ids[1]);
+            append_ttlv_text(client, &jp, 0x420094, ctx.ids[2]);
+            append_ttlv_struct(client, &jp, 0x420125, ja);
+            ctx.expected_id = NULL;
+            out = execute_generic_custom(client, 0x29, jp, check_ext_single_id, &ctx);
+        }
+    } else if (op == 0x1f || op == 0x20) {
+        out = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[0]);
+        if (out.success) {
+            static const uint8_t iv[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+            static const uint8_t pt[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+            kmipkit_ttlv_structure_t *ep = make_ttlv_struct();
+            kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+            append_ttlv_enum(client, &cp, 0x420011, 1);
+            append_ttlv_enum(client, &cp, 0x42005f, 3);
+            append_ttlv_text(client, &ep, 0x420094, ctx.ids[0]);
+            append_ttlv_struct(client, &ep, 0x42002b, cp);
+            append_ttlv_bytes(client, &ep, 0x4200c2, pt, sizeof(pt));
+            append_ttlv_bytes(client, &ep, 0x42003d, iv, sizeof(iv));
+            out = execute_generic_custom(client, 0x1f, ep, check_ext_data, &ctx);
+            if (op == 0x20 && out.success) {
+                kmipkit_ttlv_structure_t *dp = make_ttlv_struct();
+                kmipkit_ttlv_structure_t *cp2 = make_ttlv_struct();
+                append_ttlv_enum(client, &cp2, 0x420011, 1);
+                append_ttlv_enum(client, &cp2, 0x42005f, 3);
+                append_ttlv_text(client, &dp, 0x420094, ctx.ids[0]);
+                append_ttlv_struct(client, &dp, 0x42002b, cp2);
+                append_ttlv_bytes(client, &dp, 0x4200c2, ctx.bytes, ctx.bytes_len);
+                append_ttlv_bytes(client, &dp, 0x42003d, iv, sizeof(iv));
+                ctx.expected_bytes = pt;
+                ctx.expected_bytes_len = sizeof(pt);
+                out = execute_generic_custom(client, 0x20, dp, check_ext_decrypt, &ctx);
+            }
+        }
+    } else if (op == 0x23 || op == 0x24) {
+        out = generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE, ctx.ids[0]);
+        if (out.success) {
+            static const uint8_t msg[3] = {'a', 'b', 'c'};
+            kmipkit_ttlv_structure_t *mp = make_ttlv_struct();
+            kmipkit_ttlv_structure_t *cp = make_ttlv_struct();
+            append_ttlv_enum(client, &cp, 0x420038, 6);
+            append_ttlv_text(client, &mp, 0x420094, ctx.ids[0]);
+            append_ttlv_struct(client, &mp, 0x42002b, cp);
+            append_ttlv_bytes(client, &mp, 0x4200c2, msg, sizeof(msg));
+            out = execute_generic_custom(client, 0x23, mp, check_ext_mac, &ctx);
+            if (op == 0x24 && out.success) {
+                kmipkit_ttlv_structure_t *vp = make_ttlv_struct();
+                kmipkit_ttlv_structure_t *cp2 = make_ttlv_struct();
+                append_ttlv_enum(client, &cp2, 0x420038, 6);
+                append_ttlv_text(client, &vp, 0x420094, ctx.ids[0]);
+                append_ttlv_struct(client, &vp, 0x42002b, cp2);
+                append_ttlv_bytes(client, &vp, 0x4200c2, msg, sizeof(msg));
+                append_ttlv_bytes(client, &vp, 0x4200c6, ctx.bytes, ctx.bytes_len);
+                out = execute_generic_custom(client, 0x24, vp, check_ext_valid, &ctx);
+            }
+        }
+    }
+    generic_ext_cleanup(client, &ctx);
+    return out;
+}
+
 static kmip_execution_outcome_t execute_generic_multipart_hash(kmip_live_client_t *client) {
     static const uint8_t first[] = "KMIP ", update[] = "Hash", last[] = "!";
     const uint8_t *chunks[] = {first, update, last};
@@ -10578,6 +11144,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 #ifdef KMIPKIT_C_GENERIC_TLS
         const kmip_connection_config_t *connection = client->configuration;
         uint32_t owned = generic_owned_operation(test_case->case_id);
+        uint32_t extended = generic_extended_operation(test_case->case_id);
         const char *case_id = test_case->case_id;
         uint32_t rng = 0;
         if (strcmp(case_id, "test-crypto-rng-retrieve-rng-32") == 0 || strcmp(case_id, "test-op-rng-retrieve") == 0)
@@ -10588,9 +11155,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             has_tls_material(connection) && strcmp(connection->transport, "raw_tls") == 0 &&
             !connection->username_env[0] && !connection->password_env[0] &&
             strcmp(test_case->mode, "server_exchange") == 0 &&
-            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || multipart_hash) && client->allow_mutations))) {
+            (strcmp(test_case->mutation, "read_only") == 0 || ((rng || owned || extended || multipart_hash) && client->allow_mutations))) {
             if (owned && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
                 return execute_generic_owned_key(client, owned, test_case->case_id);
+            if (extended && client->allow_mutations && strcmp(test_case->mutation, "mutating") == 0)
+                return execute_generic_extended(client, extended);
             if (rng)
                 return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)

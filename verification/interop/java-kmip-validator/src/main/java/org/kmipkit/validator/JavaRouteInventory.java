@@ -72,6 +72,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
                     "The driver verifies the response to a bounded Locate or known-answer SHA-256 request.");
         }
+        if (JavaKmipDriver.extendedTypedCase(testCase)) {
+            return new Route(testCase.operation(), Status.EXECUTABLE_TYPED,
+                    "The driver executes the operation through the public Java typed or fluent route.");
+        }
         return routeFor(testCase.operation());
     }
 

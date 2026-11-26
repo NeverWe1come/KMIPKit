@@ -268,6 +268,18 @@ class ControlledExchangeTests(unittest.TestCase):
             "test-obj-secret-data": Operation.REGISTER,
             "test-op-re-certify": Operation.RE_CERTIFY,
         }
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             for case_id, operation in cases.items():
                 with self.subTest(version=version, case_id=case_id):
@@ -292,6 +304,18 @@ class ControlledExchangeTests(unittest.TestCase):
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
         selected = {"test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-ping", "test-crypto-hash-sha_256-0", "test-crypto-rng-retrieve-rng-32", "test-crypto-rng-seed-rng-32"}
         catalog["test_cases"] = [case for case in catalog["test_cases"] if case["case_id"] in selected]
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             minor = int(version[-1])
             for case in catalog["test_cases"]:
@@ -392,6 +416,18 @@ class ControlledExchangeTests(unittest.TestCase):
         combinations = [("generic-ttlv", target, operations) for target, operations in routes.items()]
         combinations += [(api, target, routes[target]) for api in ("typed-protocol", "fluent")
                          for target in ("activate", "revoke")]
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             for api, target, operations in combinations:
                 for valid_get in ((True, False) if target in {"get", "get-attributes", "get-attribute-list", "activate", "revoke", "check", *mutations}
@@ -542,6 +578,18 @@ class ControlledExchangeTests(unittest.TestCase):
         from kmipkit import protocol_values
 
         catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
         for version in ("2.0", "2.1"):
             cases = [
                 case["case_id"] for case in catalog["test_cases"]
@@ -718,6 +766,114 @@ class ControlledExchangeTests(unittest.TestCase):
         self.assertEqual("passed", observed["status"])
         self.assertEqual("passed", observed["library_correctness"])
         self.assertEqual([], peer.requests)
+
+    def test_generic_extended_operations_reach_peer_and_cleanup(self):
+        from kmipkit_validator.cli import _run
+
+        extended = [
+            "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+            "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+            "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+            "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+            "test-op-import", "test-op-export",
+        ]
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        by_id = {c["case_id"]: c for c in catalog["test_cases"]}
+        sym_key = structure(0x42008F, structure(0x420040, enumeration(0x420042, 1),
+                            structure(0x420045, item(0x420043, 8, bytes(16)))))
+        expected_connections = {
+            "test-op-poll": 1, "test-op-cancel": 1,
+            "test-op-register": 3, "test-op-import": 3,
+            "test-op-export": 4, "test-op-get-usage-allocation": 4,
+            "test-op-create-key-pair": 5, "test-crypto-encrypt-aes-256-cbc": 5, "test-crypto-mac-hmac_sha256-256": 5,
+            "test-op-re-key": 6, "test-crypto-decrypt-aes-256-cbc": 6, "test-crypto-mac-verify-hmac_sha256-256": 6,
+            "test-op-derive-key": 7,
+            "test-op-create-split-key": 8, "test-op-certify": 8, "test-crypto-sign-rsa-2048-pkcs1_v1_5": 8,
+            "test-op-validate": 9, "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": 9,
+            "test-op-re-key-key-pair": 10,
+            "test-op-join-split-key": 11, "test-op-re-certify": 11,
+        }
+        for version in ("2.0", "2.1"):
+            minor = int(version[-1])
+            header = structure(
+                0x42007A,
+                structure(0x420069, item(0x42006A, 2, struct.pack(">i", 2)),
+                          item(0x42006B, 2, struct.pack(">i", minor))),
+                item(0x420092, 9, (1).to_bytes(8, "big")),
+                item(0x42000D, 2, struct.pack(">i", 1)),
+            )
+            for case_id in extended:
+                with self.subTest(version=version, case_id=case_id):
+                    def reply(request):
+                        tree = parse_children(request[8:])
+                        op = int.from_bytes(find_value(tree, 0x42005C), "big")
+                        req_payload = find_value(tree, 0x420079)
+                        req_id = find_value(parse_children(req_payload), 0x420094) if req_payload else None
+                        if op == 1:
+                            fields = enumeration(0x420057, 2) + item(0x420094, 7, b"owned-key")
+                        elif op == 2:
+                            fields = item(0x420066, 7, b"priv-key") + item(0x42006F, 7, b"pub-key")
+                        elif op in (3, 0x2A):
+                            fields = item(0x420094, 7, b"reg-key")
+                        elif op == 4:
+                            fields = item(0x420094, 7, b"rekey-key")
+                        elif op == 5:
+                            fields = item(0x420094, 7, b"derived-key")
+                        elif op == 6:
+                            fields = item(0x420094, 7, b"cert-id")
+                        elif op == 7:
+                            fields = item(0x420094, 7, b"recert-id")
+                        elif op in (0x17, 0x22, 0x24):
+                            fields = enumeration(0x42009B, 1)
+                        elif op in (0x19, 0x1A):
+                            fields = item(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")
+                        elif op == 0x1D:
+                            fields = item(0x420066, 7, b"new-priv") + item(0x42006F, 7, b"new-pub")
+                        elif op == 0x1F:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C2, 8, b"cipher")
+                        elif op == 0x20:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C2, 8, b"0123456789abcdef")
+                        elif op == 0x21:
+                            fields = item(0x420094, 7, b"priv-key") + item(0x4200C3, 8, b"sig")
+                        elif op == 0x23:
+                            fields = item(0x420094, 7, b"owned-key") + item(0x4200C6, 8, b"mac")
+                        elif op == 0x28:
+                            fields = item(0x420094, 7, b"split-1") + item(0x420094, 7, b"split-2")
+                        elif op == 0x29:
+                            fields = item(0x420094, 7, b"joined-key")
+                        elif op == 0x2B:
+                            fields = enumeration(0x420057, 2) + item(0x420094, 7, b"owned-key") + sym_key
+                        else:
+                            fields = item(0x420094, 7, req_id or b"owned-key")
+                        batch = structure(0x42000F, enumeration(0x42005C, op),
+                                          enumeration(0x42007F, 0), structure(0x42007C, fields))
+                        return structure(0x42007B, header, batch)
+
+                    peer = ControlledTlsPeer(
+                        response_factory=reply,
+                        protocol_version=version,
+                        connection_count=expected_connections[case_id],
+                    )
+                    try:
+                        connection = {
+                            "server_id": "generic-ext-loopback", "protocol_version": version,
+                            "transport": "raw_tls", "encoding": "TTLV", "api_level": "generic-ttlv",
+                            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+                            "tls": {
+                                "ca_cert_path": str(PKI / "server-cert.pem"),
+                                "client_cert_path": str(PKI / "client-cert.pem"),
+                                "client_key_path": str(PKI / "client-key.pem"),
+                                "server_name_override": "localhost",
+                            },
+                            "execution_policy": {"allow_mutations": True, "probe_unsupported": True},
+                        }
+                        selection = {**catalog, "test_cases": [by_id[case_id]]}
+                        result, = _run(connection, b"{}", selection, b"{}", {}, None, True)
+                        self.assertEqual("passed", result["status"], result)
+                    finally:
+                        peer.close()
+                    self.assertTrue(peer.requests)
 
 
 if __name__ == "__main__":

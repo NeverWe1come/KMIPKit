@@ -24,7 +24,12 @@ class TableTtlvTests(unittest.TestCase):
                 for kind in ("managed_object", "transparent_key", "base_object", "attribute"):
                     applicable = {row["name"] for row in inventory["rows"] if row["kind"] == kind
                                   and row["declared_support"] not in {"not_applicable", "vendor_extension"}}
-                    self.assertEqual(applicable, {name for category, name in observed if category == kind})
+                    vendor_extensions = {row["name"] for row in inventory["rows"] if row["kind"] == kind
+                                         and row["declared_support"] == "vendor_extension"}
+                    observed_kind = {name for category, name in observed if category == kind}
+                    self.assertTrue(applicable.issubset(observed_kind), applicable - observed_kind)
+                    self.assertTrue(observed_kind.issubset(applicable | vendor_extensions),
+                                    observed_kind - (applicable | vendor_extensions))
                     if kind in {"managed_object", "transparent_key"}:
                         for name in applicable:
                             self.assertGreaterEqual(observed[kind, name], 2)

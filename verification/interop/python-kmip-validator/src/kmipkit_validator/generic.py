@@ -8,9 +8,16 @@ import struct
 
 HASH_INPUT = b"abc"
 RNG_SEED_INPUT = b"A" * 32
-CREATE, GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 1, 0x0A, 0x0B, 0x14, 0x15, 0x16
+CREATE, CREATE_KEY_PAIR, REGISTER, RE_KEY, DERIVE_KEY, CERTIFY, RE_CERTIFY = (
+    1, 2, 3, 4, 5, 6, 7,
+)
+GET, GET_ATTRIBUTES, DESTROY, ARCHIVE, RECOVER = 0x0A, 0x0B, 0x14, 0x15, 0x16
 CHECK = 0x09
-OBTAIN_LEASE = 0x10
+OBTAIN_LEASE, GET_USAGE_ALLOCATION, VALIDATE, CANCEL, POLL = 0x10, 0x11, 0x17, 0x19, 0x1A
+RE_KEY_KEY_PAIR, ENCRYPT, DECRYPT, SIGN, SIGNATURE_VERIFY, MAC, MAC_VERIFY = (
+    0x1D, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24,
+)
+CREATE_SPLIT_KEY, JOIN_SPLIT_KEY, IMPORT, EXPORT = 0x28, 0x29, 0x2A, 0x2B
 GET_ATTRIBUTE_LIST, ACTIVATE, REVOKE = 0x0C, 0x12, 0x13
 ADD_ATTRIBUTE, MODIFY_ATTRIBUTE, DELETE_ATTRIBUTE, SET_ATTRIBUTE = 0x0D, 0x0E, 0x0F, 0x31
 DESCRIPTION = 0x4200FC
@@ -19,6 +26,12 @@ OWNED_KEY_OPERATIONS = {
     CREATE, CHECK, GET, GET_ATTRIBUTES, GET_ATTRIBUTE_LIST, OBTAIN_LEASE,
     ACTIVATE, REVOKE, DESTROY, ARCHIVE, RECOVER,
 } | DESCRIPTION_MUTATIONS
+EXTENDED_OPERATIONS = {
+    CREATE_KEY_PAIR, REGISTER, RE_KEY, DERIVE_KEY, CERTIFY, RE_CERTIFY,
+    GET_USAGE_ALLOCATION, VALIDATE, CANCEL, POLL, RE_KEY_KEY_PAIR,
+    ENCRYPT, DECRYPT, SIGN, SIGNATURE_VERIFY, MAC, MAC_VERIFY,
+    CREATE_SPLIT_KEY, JOIN_SPLIT_KEY, IMPORT, EXPORT,
+}
 
 
 TEXT_ATTRIBUTE_FIXTURE = b"kmipkit-attribute-fixture"
@@ -47,12 +60,32 @@ def _operation(case, version):
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
         return GET_ATTRIBUTES
-    return {"test-op-create": CREATE, "test-op-check": CHECK, "test-op-get": GET, "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
+    return {"test-op-create": CREATE, "test-op-create-key-pair": CREATE_KEY_PAIR,
+            "test-op-register": REGISTER, "test-op-re-key": RE_KEY,
+            "test-op-derive-key": DERIVE_KEY, "test-op-certify": CERTIFY,
+            "test-op-re-certify": RE_CERTIFY, "test-op-check": CHECK, "test-op-get": GET,
+            "test-op-get-attribute-list": GET_ATTRIBUTE_LIST,
             "test-op-activate": ACTIVATE, "test-op-revoke": REVOKE, "test-op-destroy": DESTROY,
-            "test-op-obtain-lease": OBTAIN_LEASE, "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+            "test-op-obtain-lease": OBTAIN_LEASE, "test-op-get-usage-allocation": GET_USAGE_ALLOCATION,
+            "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-validate": VALIDATE,
+            "test-op-cancel": CANCEL, "test-op-poll": POLL,
+            "test-op-re-key-key-pair": RE_KEY_KEY_PAIR,
+            "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
             "test-op-rng-retrieve": 0x25, "test-crypto-rng-retrieve-rng-32": 0x25,
             "test-op-rng-seed": 0x26, "test-crypto-rng-seed-rng-32": 0x26,
             "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
+            "test-op-encrypt": ENCRYPT, "test-crypto-encrypt-aes-256-cbc": ENCRYPT,
+            "test-op-decrypt": DECRYPT, "test-crypto-decrypt-aes-256-cbc": DECRYPT,
+            "test-op-sign": SIGN, "test-crypto-sign-rsa-2048-pkcs1_v1_5": SIGN,
+            "test-crypto-sign-ecdsa-256-p_256": SIGN,
+            "test-op-signature-verify": SIGNATURE_VERIFY,
+            "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5": SIGNATURE_VERIFY,
+            "test-crypto-signature-verify-ecdsa-256-p_256": SIGNATURE_VERIFY,
+            "test-op-mac": MAC, "test-crypto-mac-hmac_sha256-256": MAC,
+            "test-op-mac-verify": MAC_VERIFY, "test-crypto-mac-verify-hmac_sha256-256": MAC_VERIFY,
+            "test-op-create-split-key": CREATE_SPLIT_KEY,
+            "test-op-join-split-key": JOIN_SPLIT_KEY,
+            "test-op-import": IMPORT, "test-op-export": EXPORT,
             "test-op-add-attribute": ADD_ATTRIBUTE, "test-op-modify-attribute": MODIFY_ATTRIBUTE,
             "test-op-delete-attribute": DELETE_ATTRIBUTE, "test-op-set-attribute": SET_ATTRIBUTE,
             "test-multipart-hash-sha256": 0x27}.get(case["case_id"])
@@ -63,7 +96,7 @@ def supports(case, connection):
     mutation = case["execution"]["mutation"]
     return (
         operation is not None
-        and (mutation == "mutating" if operation in OWNED_KEY_OPERATIONS
+        and (mutation == "mutating" if operation in (OWNED_KEY_OPERATIONS | EXTENDED_OPERATIONS)
              else mutation == "read_only" or operation in (0x25, 0x26)
              or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
@@ -146,6 +179,8 @@ def run(driver, case):
         raise ValueError("no generic exchange recipe")
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case["case_id"])
+    if operation in EXTENDED_OPERATIONS:
+        return _run_extended(driver, operation)
     if case["case_id"] == "test-multipart-hash-sha256":
         return _multipart_hash(driver)
     return _execute(driver, operation)
@@ -177,11 +212,11 @@ def _multipart_hash(driver):
     return outcome
 
 
-def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None):
+def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None, custom_payload=None):
     from kmipkit.errors import KmipKitError
 
     try:
-        return _execute(driver, operation, identifier, expected, attribute_reference)
+        return _execute(driver, operation, identifier, expected, attribute_reference, custom_payload=custom_payload)
     except (OSError, ValueError, RuntimeError, KmipKitError):
         return _failure("The generic TLS exchange or response validation failed.")
 
@@ -296,7 +331,7 @@ def _description_matches(payload, expected):
     return count == 2 and _has_key_attribute(payload, DESCRIPTION, "TextString", expected)
 
 
-def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None):
+def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None, custom_payload=None):
     from kmipkit import messages, ttlv
 
     connection = driver._connection
@@ -306,7 +341,9 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
     def protocol():
         return node(0x420069, [item(0x42006A, "integer", 2), item(0x42006B, "integer", minor)])
 
-    if operation == CREATE:
+    if custom_payload is not None:
+        payload_fields = custom_payload
+    elif operation == CREATE:
         attrs = [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
                  item(0x42002C, "integer", 4)]
         if attribute_reference in range(0x420120, 0x420124):
@@ -543,3 +580,309 @@ def _matches(payload, operation, protocol):
     with protocol() as expected, ttlv.ttlv_item_view_from_item(expected) as expected_view:
         with ttlv.ttlv_structure_view_item_at(payload, 0) as actual:
             return _encode(actual) == _encode(expected_view)
+
+
+def _field_text(payload, wanted):
+    from kmipkit import ttlv
+
+    for field in _fields(payload):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) == wanted and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.TextString:
+                with ttlv.ttlv_item_view_value(field) as value:
+                    text = ttlv.ttlv_value_view_bytes(value).decode("utf-8")
+                    if text:
+                        return text
+    return None
+
+
+def _all_identifiers(payload):
+    from kmipkit import ttlv
+
+    ids = []
+    for field in _fields(payload):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) == 0x420094 and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.TextString:
+                with ttlv.ttlv_item_view_value(field) as value:
+                    text = ttlv.ttlv_value_view_bytes(value).decode("utf-8")
+                    if text:
+                        ids.append(text)
+    return ids
+
+
+def _field_bytes(payload, wanted):
+    from kmipkit import ttlv
+
+    for field in _fields(payload):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) == wanted and ttlv.ttlv_item_view_type(field) == ttlv.ItemType.ByteString:
+                with ttlv.ttlv_item_view_value(field) as value:
+                    data = ttlv.ttlv_value_view_bytes(value)
+                    if data:
+                        return data
+    return None
+
+
+def _destroy_all(driver, ids):
+    item = driver._item
+    for obj_id in ids:
+        if obj_id:
+            _checked_exchange(driver, REVOKE, custom_payload=[
+                item(0x420094, "text", obj_id),
+                driver._structure_item(0x420081, [item(0x420082, "enumeration", 6)]),
+            ])
+            _checked_exchange(driver, DESTROY, custom_payload=[item(0x420094, "text", obj_id)])
+
+
+def _run_extended(driver, operation):
+    item, node = driver._item, driver._structure_item
+    cleanup = []
+
+    def create_aes(usage_mask, extractable=False):
+        attrs = [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
+                 item(0x42002C, "integer", usage_mask)]
+        if extractable:
+            attrs.append(item(0x420122, "boolean", True))
+        res = _checked_exchange(driver, CREATE,
+                                custom_payload=[item(0x420057, "enumeration", 2), node(0x420125, attrs)])
+        created_id = res.pop("created_identifier", None)
+        if created_id:
+            cleanup.append(created_id)
+        return created_id, res
+
+    def create_rsa_pair():
+        priv_id, pub_id = None, None
+
+        def check(payload):
+            nonlocal priv_id, pub_id
+            priv_id = _field_text(payload, 0x420066)
+            pub_id = _field_text(payload, 0x42006F)
+            return priv_id is not None and pub_id is not None
+
+        res = _checked_exchange(driver, CREATE_KEY_PAIR, expected=check, custom_payload=[
+            node(0x420126, [item(0x420028, "enumeration", 4), item(0x42002A, "integer", 2048)]),
+            node(0x420127, [item(0x42002C, "integer", 1)]),
+            node(0x420128, [item(0x42002C, "integer", 2)]),
+        ])
+        cleanup.extend(i for i in (priv_id, pub_id) if i)
+        return priv_id, pub_id, res
+
+    try:
+        if operation in (POLL, CANCEL):
+            return _checked_exchange(
+                driver, operation,
+                expected=lambda payload: _field_bytes(payload, 0x420006) is not None,
+                custom_payload=[item(0x420006, "bytes", b"\x01\x02\x03\x04\x05\x06")],
+            )
+        if operation in (REGISTER, IMPORT):
+            fields = ([item(0x420094, "text", "kmipkit-generic-import")] if operation == IMPORT else []) + [
+                item(0x420057, "enumeration", 2),
+                *([item(0x420124, "boolean", False)] if operation == IMPORT else []),
+                node(0x420125, [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 128),
+                                item(0x42002C, "integer", 4)]),
+                node(0x42008F, [node(0x420040, [
+                    item(0x420042, "enumeration", 1),
+                    node(0x420045, [item(0x420043, "bytes", b"\x11" * 16)]),
+                ])]),
+            ]
+            def check_reg(payload):
+                obj_id = _text_identifier(payload)
+                if obj_id:
+                    cleanup.append(obj_id)
+                return obj_id is not None
+            return _checked_exchange(driver, operation, expected=check_reg, custom_payload=fields)
+        if operation in (CREATE_KEY_PAIR, RE_KEY_KEY_PAIR):
+            priv_id, _, res = create_rsa_pair()
+            if operation == CREATE_KEY_PAIR or res["status"] != "passed":
+                return res
+            def check_rekey_kp(payload):
+                np, nu = _field_text(payload, 0x420066), _field_text(payload, 0x42006F)
+                cleanup.extend(i for i in (np, nu) if i)
+                return np is not None and nu is not None
+            return _checked_exchange(
+                driver, RE_KEY_KEY_PAIR, expected=check_rekey_kp,
+                custom_payload=[item(0x420066, "text", priv_id), item(0x420058, "interval", 3600)],
+            )
+        if operation in (RE_KEY, EXPORT, GET_USAGE_ALLOCATION, DERIVE_KEY, CREATE_SPLIT_KEY, JOIN_SPLIT_KEY):
+            key_id, res = create_aes(512 if operation == DERIVE_KEY else 12, extractable=(operation == EXPORT))
+            if res["status"] != "passed":
+                return res
+            if operation == RE_KEY:
+                def check_rk(payload):
+                    nid = _text_identifier(payload)
+                    if nid:
+                        cleanup.append(nid)
+                    return nid is not None and nid != key_id
+                return _checked_exchange(driver, RE_KEY, expected=check_rk,
+                                         custom_payload=[item(0x420094, "text", key_id), item(0x420058, "interval", 3600)])
+            if operation == EXPORT:
+                return _checked_exchange(
+                    driver, EXPORT,
+                    expected=lambda p: _text_identifier(p) == key_id and _has_field(p, 0x42008F, "Structure"),
+                    custom_payload=[item(0x420094, "text", key_id), item(0x420042, "enumeration", 1)],
+                )
+            if operation == GET_USAGE_ALLOCATION:
+                return _checked_exchange(
+                    driver, GET_USAGE_ALLOCATION,
+                    expected=lambda p: _text_identifier(p) == key_id,
+                    custom_payload=[item(0x420094, "text", key_id), item(0x420096, "long_integer", 32)],
+                )
+            if operation == DERIVE_KEY:
+                _checked_exchange(driver, ACTIVATE, expected=lambda p, kid=key_id: _text_identifier(p) == kid,
+                                  custom_payload=[item(0x420094, "text", key_id)])
+                def check_dk(payload):
+                    did = _text_identifier(payload)
+                    if did:
+                        cleanup.append(did)
+                    return did is not None
+                return _checked_exchange(driver, DERIVE_KEY, expected=check_dk, custom_payload=[
+                    item(0x420057, "enumeration", 2), item(0x420094, "text", key_id),
+                    item(0x420031, "enumeration", 2), node(0x420032, [item(0x420038, "enumeration", 6)]),
+                    node(0x420125, [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 128),
+                                    item(0x42002C, "integer", 4)]),
+                ])
+            parts = []
+            def check_split(payload):
+                nonlocal parts
+                parts = _all_identifiers(payload)
+                cleanup.extend(parts)
+                return len(parts) == 2
+            split_res = _checked_exchange(driver, CREATE_SPLIT_KEY, expected=check_split, custom_payload=[
+                item(0x420057, "enumeration", 2), item(0x420094, "text", key_id),
+                item(0x42008B, "integer", 2), item(0x42008C, "integer", 2), item(0x42008A, "enumeration", 1),
+                node(0x420125, [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
+                                item(0x42002C, "integer", 12)]),
+            ])
+            if operation == CREATE_SPLIT_KEY or split_res["status"] != "passed":
+                return split_res
+            def check_join(payload):
+                jid = _text_identifier(payload)
+                if jid:
+                    cleanup.append(jid)
+                return jid is not None
+            return _checked_exchange(driver, JOIN_SPLIT_KEY, expected=check_join, custom_payload=[
+                item(0x420057, "enumeration", 2),
+                item(0x420094, "text", parts[0]), item(0x420094, "text", parts[1]),
+                node(0x420125, [item(0x420028, "enumeration", 3), item(0x42002A, "integer", 256),
+                                item(0x42002C, "integer", 12)]),
+            ])
+        if operation in (CERTIFY, RE_CERTIFY, VALIDATE):
+            _, pub_id, res = create_rsa_pair()
+            if res["status"] != "passed":
+                return res
+            cert_id = None
+            def check_cert(payload):
+                nonlocal cert_id
+                cert_id = _text_identifier(payload)
+                if cert_id:
+                    cleanup.append(cert_id)
+                return cert_id is not None
+            cert_res = _checked_exchange(driver, CERTIFY, expected=check_cert, custom_payload=[
+                item(0x420094, "text", pub_id), item(0x420019, "enumeration", 2),
+                item(0x420018, "bytes", b"\x30\x00"),
+            ])
+            if operation == CERTIFY or cert_res["status"] != "passed":
+                return cert_res
+            if operation == RE_CERTIFY:
+                def check_recert(payload):
+                    nid = _text_identifier(payload)
+                    if nid:
+                        cleanup.append(nid)
+                    return nid is not None
+                return _checked_exchange(driver, RE_CERTIFY, expected=check_recert,
+                                         custom_payload=[item(0x420094, "text", cert_id)])
+            return _checked_exchange(
+                driver, VALIDATE,
+                expected=lambda p: _has_field(p, 0x42009B, "Enumeration", 1),
+                custom_payload=[item(0x420094, "text", cert_id)],
+            )
+        if operation in (ENCRYPT, DECRYPT):
+            key_id, res = create_aes(12)
+            if res["status"] != "passed":
+                return res
+            act = _checked_exchange(driver, ACTIVATE, expected=lambda p, kid=key_id: _text_identifier(p) == kid,
+                                    custom_payload=[item(0x420094, "text", key_id)])
+            if act["status"] != "passed":
+                return act
+            iv, plaintext, cipher = b"\x01" * 16, b"0123456789abcdef", None
+            params = node(0x42002B, [item(0x420011, "enumeration", 1), item(0x42005F, "enumeration", 3)])
+            def check_enc(payload):
+                nonlocal cipher
+                cipher = _field_bytes(payload, 0x4200C2)
+                return _text_identifier(payload) == key_id and cipher is not None
+            enc_res = _checked_exchange(driver, ENCRYPT, expected=check_enc, custom_payload=[
+                item(0x420094, "text", key_id), params, item(0x4200C2, "bytes", plaintext),
+                item(0x42003D, "bytes", iv),
+            ])
+            if operation == ENCRYPT or enc_res["status"] != "passed":
+                return enc_res
+            return _checked_exchange(
+                driver, DECRYPT,
+                expected=lambda p: _text_identifier(p) == key_id and _field_bytes(p, 0x4200C2) == plaintext,
+                custom_payload=[item(0x420094, "text", key_id),
+                                node(0x42002B, [item(0x420011, "enumeration", 1), item(0x42005F, "enumeration", 3)]),
+                                item(0x4200C2, "bytes", cipher), item(0x42003D, "bytes", iv)],
+            )
+        if operation in (MAC, MAC_VERIFY):
+            mk_res = _checked_exchange(driver, CREATE, custom_payload=[
+                item(0x420057, "enumeration", 2),
+                node(0x420125, [item(0x420028, "enumeration", 9), item(0x42002A, "integer", 256),
+                                item(0x42002C, "integer", 384)]),
+            ])
+            mac_id = mk_res.pop("created_identifier", None)
+            if mac_id:
+                cleanup.append(mac_id)
+            if mk_res["status"] != "passed":
+                return mk_res
+            act = _checked_exchange(driver, ACTIVATE, expected=lambda p, kid=mac_id: _text_identifier(p) == kid,
+                                    custom_payload=[item(0x420094, "text", mac_id)])
+            if act["status"] != "passed":
+                return act
+            tag = None
+            def check_mac(payload):
+                nonlocal tag
+                tag = _field_bytes(payload, 0x4200C6)
+                return _text_identifier(payload) == mac_id and tag is not None
+            mac_res = _checked_exchange(driver, MAC, expected=check_mac, custom_payload=[
+                item(0x420094, "text", mac_id), node(0x42002B, [item(0x420038, "enumeration", 6)]),
+                item(0x4200C2, "bytes", HASH_INPUT),
+            ])
+            if operation == MAC or mac_res["status"] != "passed":
+                return mac_res
+            return _checked_exchange(
+                driver, MAC_VERIFY,
+                expected=lambda p: _has_field(p, 0x42009B, "Enumeration", 1),
+                custom_payload=[item(0x420094, "text", mac_id),
+                                node(0x42002B, [item(0x420038, "enumeration", 6)]),
+                                item(0x4200C2, "bytes", HASH_INPUT), item(0x4200C6, "bytes", tag)],
+            )
+        if operation in (SIGN, SIGNATURE_VERIFY):
+            priv_id, pub_id, res = create_rsa_pair()
+            if res["status"] != "passed":
+                return res
+            for kid in (priv_id, pub_id):
+                act = _checked_exchange(driver, ACTIVATE, expected=lambda p, k=kid: _text_identifier(p) == k,
+                                        custom_payload=[item(0x420094, "text", kid)])
+                if act["status"] != "passed":
+                    return act
+            sig = None
+            def check_sign(payload):
+                nonlocal sig
+                sig = _field_bytes(payload, 0x4200C3)
+                return _text_identifier(payload) == priv_id and sig is not None
+            sign_res = _checked_exchange(driver, SIGN, expected=check_sign, custom_payload=[
+                item(0x420094, "text", priv_id),
+                node(0x42002B, [item(0x420038, "enumeration", 6), item(0x42005F, "enumeration", 8)]),
+                item(0x4200C2, "bytes", HASH_INPUT),
+            ])
+            if operation == SIGN or sign_res["status"] != "passed":
+                return sign_res
+            return _checked_exchange(
+                driver, SIGNATURE_VERIFY,
+                expected=lambda p: _has_field(p, 0x42009B, "Enumeration", 1),
+                custom_payload=[item(0x420094, "text", pub_id),
+                                node(0x42002B, [item(0x420038, "enumeration", 6), item(0x42005F, "enumeration", 8)]),
+                                item(0x4200C2, "bytes", HASH_INPUT), item(0x4200C3, "bytes", sig)],
+            )
+        return _failure("Unsupported extended generic operation.")
+    finally:
+        _destroy_all(driver, cleanup)

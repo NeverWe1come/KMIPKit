@@ -935,6 +935,75 @@ class LiveContract(unittest.TestCase):
         else:
             self.assertEqual(report["summary"]["passed"], 5, report["cases"])
 
+    def test_generic_extended_operations_reach_peer_and_cleanup(self):
+        cases = [
+            "test-op-create-key-pair", "test-op-register", "test-op-re-key", "test-op-derive-key",
+            "test-op-certify", "test-op-re-certify", "test-op-get-usage-allocation", "test-op-validate",
+            "test-op-cancel", "test-op-poll", "test-op-re-key-key-pair", "test-crypto-encrypt-aes-256-cbc",
+            "test-crypto-decrypt-aes-256-cbc", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5", "test-crypto-mac-hmac_sha256-256",
+            "test-crypto-mac-verify-hmac_sha256-256", "test-op-create-split-key", "test-op-join-split-key",
+            "test-op-import", "test-op-export",
+        ]
+        sym_key = ttlv(0x42008f, 1, [ttlv(0x420040, 1, [
+            ttlv(0x420042, 5, 1), ttlv(0x420045, 1, [ttlv(0x420043, 8, bytes(16))]),
+        ])])
+        for version in ("2.0", "2.1"):
+            minor = int(version[-1])
+            for case_id in cases:
+                with self.subTest(version=version, case_id=case_id):
+                    seen_ops = []
+
+                    def answer(tree):
+                        op = find(tree, 0x42005c)
+                        payload = find(tree, 0x420079)
+                        seen_ops.append(op)
+                        req_id = find(payload, 0x420094) or "owned-key"
+                        if op == 1:
+                            fields = [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, "owned-key")]
+                        elif op == 2:
+                            fields = [ttlv(0x420066, 7, "priv-key"), ttlv(0x42006f, 7, "pub-key")]
+                        elif op in (3, 0x2a):
+                            fields = [ttlv(0x420094, 7, "reg-key")]
+                        elif op == 4:
+                            fields = [ttlv(0x420094, 7, "rekey-key")]
+                        elif op == 5:
+                            fields = [ttlv(0x420094, 7, "derived-key")]
+                        elif op == 6:
+                            fields = [ttlv(0x420094, 7, "cert-id")]
+                        elif op == 7:
+                            fields = [ttlv(0x420094, 7, "recert-id")]
+                        elif op in (0x17, 0x22, 0x24):
+                            fields = [ttlv(0x42009b, 5, 1)]
+                        elif op in (0x19, 0x1a):
+                            fields = [ttlv(0x420006, 8, b"\x01\x02\x03\x04\x05\x06")]
+                        elif op == 0x1d:
+                            fields = [ttlv(0x420066, 7, "new-priv"), ttlv(0x42006f, 7, "new-pub")]
+                        elif op == 0x1f:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c2, 8, b"cipher")]
+                        elif op == 0x20:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c2, 8, b"0123456789abcdef")]
+                        elif op == 0x21:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c3, 8, b"sig")]
+                        elif op == 0x23:
+                            fields = [ttlv(0x420094, 7, req_id), ttlv(0x4200c6, 8, b"mac")]
+                        elif op == 0x28:
+                            fields = [ttlv(0x420094, 7, "split-1"), ttlv(0x420094, 7, "split-2")]
+                        elif op == 0x29:
+                            fields = [ttlv(0x420094, 7, "joined-key")]
+                        elif op == 0x2b:
+                            fields = [ttlv(0x420057, 5, 2), ttlv(0x420094, 7, req_id), sym_key]
+                        else:
+                            fields = [ttlv(0x420094, 7, req_id)]
+                        return response(op, minor, 0, None, fields)
+
+                    with ControlledPeer(self.pki, answer) as peer:
+                        _, report = self.command(
+                            self.connection(peer.port, version=version, api="generic-ttlv", mutations=True),
+                            self.rows(case_id),
+                        )
+                    self.assertEqual("passed", report["cases"][0]["status"], report["cases"][0])
+                    self.assertTrue(seen_ops)
+
 
 if __name__ == "__main__":
     unittest.main()

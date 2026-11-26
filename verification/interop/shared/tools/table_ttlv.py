@@ -255,6 +255,14 @@ def context_vectors(version, names):
     yield from fixture_records(version, names, (("protection-storage-masks-create", request),),
                                [["attribute", "Protection Storage Masks"]])
 
+    locate_group_member = message(version, "Request", "Locate", field("ObjectGroupMember", "Enumeration", 1))
+    yield from fixture_records(version, names, (("object-group-member-locate", locate_group_member),),
+                               [["attribute", "Object Group Member"]])
+
+    critical_msg = message(version, "Request", "Locate", field("CriticalityIndicator", "Boolean", True))
+    yield from fixture_records(version, names, (("criticality-indicator-probe", critical_msg),),
+                               [["attribute", "Critical"]])
+
     query_fields = (
         ("Extension Information", "QueryExtensionList",
          structure("ExtensionInformation", field("ExtensionName", "TextString", "org.kmipkit.fixture"),

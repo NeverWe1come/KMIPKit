@@ -43,6 +43,12 @@ import java.util.function.Predicate;
 final class GenericExchange {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
     private static final int CREATE = 0x01;
+    private static final int CREATE_KEY_PAIR = 0x02;
+    private static final int REGISTER = 0x03;
+    private static final int RE_KEY = 0x04;
+    private static final int DERIVE_KEY = 0x05;
+    private static final int CERTIFY = 0x06;
+    private static final int RE_CERTIFY = 0x07;
     private static final int CHECK = 0x09;
     private static final int GET = 0x0a;
     private static final int GET_ATTRIBUTES = 0x0b;
@@ -54,11 +60,26 @@ final class GenericExchange {
     private static final int DESCRIPTION = 0x4200fc;
     private static final byte[] CHANGED_DESCRIPTION = "kmipkit-changed-description".getBytes(StandardCharsets.US_ASCII);
     private static final int OBTAIN_LEASE = 0x10;
+    private static final int GET_USAGE_ALLOCATION = 0x11;
     private static final int ACTIVATE = 0x12;
     private static final int REVOKE = 0x13;
     private static final int DESTROY = 0x14;
     private static final int ARCHIVE = 0x15;
     private static final int RECOVER = 0x16;
+    private static final int VALIDATE = 0x17;
+    private static final int CANCEL = 0x19;
+    private static final int POLL = 0x1a;
+    private static final int RE_KEY_KEY_PAIR = 0x1d;
+    private static final int ENCRYPT = 0x1f;
+    private static final int DECRYPT = 0x20;
+    private static final int SIGN = 0x21;
+    private static final int SIGNATURE_VERIFY = 0x22;
+    private static final int MAC = 0x23;
+    private static final int MAC_VERIFY = 0x24;
+    private static final int CREATE_SPLIT_KEY = 0x28;
+    private static final int JOIN_SPLIT_KEY = 0x29;
+    private static final int IMPORT = 0x2a;
+    private static final int EXPORT = 0x2b;
     private static final int LOCATE = 0x08;
     private static final int QUERY = 0x18;
     private static final int DISCOVER_VERSIONS = 0x1e;
@@ -77,7 +98,8 @@ final class GenericExchange {
     static boolean supports(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         int operation = operation(testCase, connection);
         return "server_exchange".equals(testCase.execution().mode()) && operation != 0
-                && (usesOwnedKey(operation) ? "mutating".equals(testCase.execution().mutation())
+                && ((usesOwnedKey(operation) || usesExtendedOp(operation))
+                        ? "mutating".equals(testCase.execution().mutation())
                         : ("read_only".equals(testCase.execution().mutation()) || operation == RNG_RETRIEVE || operation == RNG_SEED
                             || JavaKmipDriver.multipartHash(testCase)))
                 && "raw_tls".equals(connection.transport()) && "TTLV".equals(connection.encoding())
@@ -90,6 +112,12 @@ final class GenericExchange {
         if (keyAttributeReference(testCase.caseId()) != 0) return GET_ATTRIBUTES;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
+            case "test-op-create-key-pair" -> CREATE_KEY_PAIR;
+            case "test-op-register" -> REGISTER;
+            case "test-op-re-key" -> RE_KEY;
+            case "test-op-derive-key" -> DERIVE_KEY;
+            case "test-op-certify" -> CERTIFY;
+            case "test-op-re-certify" -> RE_CERTIFY;
             case "test-op-check" -> CHECK;
             case "test-op-get" -> GET;
             case "test-op-get-attribute-list" -> GET_ATTRIBUTE_LIST;
@@ -98,17 +126,33 @@ final class GenericExchange {
             case "test-op-delete-attribute" -> DELETE_ATTRIBUTE;
             case "test-op-set-attribute" -> SET_ATTRIBUTE;
             case "test-op-obtain-lease" -> OBTAIN_LEASE;
+            case "test-op-get-usage-allocation" -> GET_USAGE_ALLOCATION;
             case "test-op-activate" -> ACTIVATE;
             case "test-op-revoke" -> REVOKE;
             case "test-op-destroy" -> DESTROY;
             case "test-op-archive" -> ARCHIVE;
             case "test-op-recover" -> RECOVER;
+            case "test-op-validate" -> VALIDATE;
+            case "test-op-cancel" -> CANCEL;
+            case "test-op-poll" -> POLL;
+            case "test-op-re-key-key-pair" -> RE_KEY_KEY_PAIR;
             case "test-op-locate" -> LOCATE;
             case "test-op-query" -> QUERY;
             case "test-op-discover-versions" -> DISCOVER_VERSIONS;
             case "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32" -> RNG_RETRIEVE;
             case "test-op-rng-seed", "test-crypto-rng-seed-rng-32" -> RNG_SEED;
             case "test-op-hash", "test-crypto-hash-sha_256-0", "test-multipart-hash-sha256" -> HASH;
+            case "test-op-encrypt", "test-crypto-encrypt-aes-256-cbc" -> ENCRYPT;
+            case "test-op-decrypt", "test-crypto-decrypt-aes-256-cbc" -> DECRYPT;
+            case "test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5", "test-crypto-sign-ecdsa-256-p_256" -> SIGN;
+            case "test-op-signature-verify", "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5",
+                    "test-crypto-signature-verify-ecdsa-256-p_256" -> SIGNATURE_VERIFY;
+            case "test-op-mac", "test-crypto-mac-hmac_sha256-256" -> MAC;
+            case "test-op-mac-verify", "test-crypto-mac-verify-hmac_sha256-256" -> MAC_VERIFY;
+            case "test-op-create-split-key" -> CREATE_SPLIT_KEY;
+            case "test-op-join-split-key" -> JOIN_SPLIT_KEY;
+            case "test-op-import" -> IMPORT;
+            case "test-op-export" -> EXPORT;
             case "test-op-ping" -> "2.1".equals(version) ? PING : 0;
             default -> 0;
         };
@@ -121,6 +165,7 @@ final class GenericExchange {
         int operation = operation(testCase, connection);
         int attributeTag = keyAttributeReference(testCase.caseId());
         if (usesOwnedKey(operation)) return runOwnedKey(connection, operation, minor, attributeTag, start);
+        if (usesExtendedOp(operation)) return runExtended(connection, operation, minor, start);
         return execute(connection, operation, minor, null, payload -> matches(payload, operation, minor), start);
     }
 
@@ -765,6 +810,451 @@ final class GenericExchange {
             }
         }
         return identifiers <= 1 && (total == null || total >= identifiers);
+    }
+
+    private static boolean usesExtendedOp(int operation) {
+        return switch (operation) {
+            case CREATE_KEY_PAIR, REGISTER, RE_KEY, DERIVE_KEY, CERTIFY, RE_CERTIFY,
+                    GET_USAGE_ALLOCATION, VALIDATE, CANCEL, POLL, RE_KEY_KEY_PAIR,
+                    ENCRYPT, DECRYPT, SIGN, SIGNATURE_VERIFY, MAC, MAC_VERIFY,
+                    CREATE_SPLIT_KEY, JOIN_SPLIT_KEY, IMPORT, EXPORT -> true;
+            default -> false;
+        };
+    }
+
+    private static JavaKmipDriver.CaseOutcome executePayload(ConnectionConfig connection, int operation, int minor,
+            TtlvItem customPayload, Predicate<TtlvStructureView> expected, long start) {
+        try (var version = version(minor);
+                var count = item(0x42000d, TtlvValue.Integer(1));
+                var header = structureItem(0x420077, version, count);
+                var identifier = item(0x42005c, TtlvValue.Enumeration(operation));
+                var batch = structureItem(0x42000f, identifier, customPayload);
+                var req = structureItem(0x420078, header, batch);
+                var view = req.view()) {
+            byte[] wire = exchange(connection, encode(view));
+            try {
+                return check(wire, operation, minor, start, expected);
+            } finally {
+                Arrays.fill(wire, (byte) 0);
+            }
+        } catch (GeneralSecurityException | IOException | RuntimeException error) {
+            return JavaKmipDriver.CaseOutcome.failed("Generic TTLV exchange or validation failed ("
+                    + error.getClass().getSimpleName() + ").", elapsed(start));
+        }
+    }
+
+    private static byte[] fieldText(TtlvStructureView payload, int wantedTag) {
+        for (long i = 0; i < payload.itemCount(); i++) {
+            try (var f = payload.itemAt(i); var t = f.tag(); var v = f.value()) {
+                if (t.raw() == wantedTag && f.itemType() == TtlvItemType.TextString) {
+                    byte[] bytes = v.bytes();
+                    if (bytes.length != 0) return bytes;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static List<byte[]> allIdentifiers(TtlvStructureView payload) {
+        var ids = new java.util.ArrayList<byte[]>();
+        for (long i = 0; i < payload.itemCount(); i++) {
+            try (var f = payload.itemAt(i); var t = f.tag(); var v = f.value()) {
+                if (t.raw() == 0x420094 && f.itemType() == TtlvItemType.TextString) {
+                    byte[] bytes = v.bytes();
+                    if (bytes.length != 0) ids.add(bytes);
+                }
+            }
+        }
+        return ids;
+    }
+
+    private static byte[] fieldBytes(TtlvStructureView payload, int wantedTag) {
+        for (long i = 0; i < payload.itemCount(); i++) {
+            try (var f = payload.itemAt(i); var t = f.tag(); var v = f.value()) {
+                if (t.raw() == wantedTag && f.itemType() == TtlvItemType.ByteString) {
+                    byte[] bytes = v.bytes();
+                    if (bytes.length != 0) return bytes;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void destroyAll(ConnectionConfig connection, int minor, List<byte[]> ids, long start) {
+        for (byte[] id : ids) {
+            if (id == null) continue;
+            execute(connection, REVOKE, minor, id, p -> true, start);
+            execute(connection, DESTROY, minor, id, p -> true, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtended(ConnectionConfig connection, int operation,
+            int minor, long start) {
+        var cleanup = new java.util.ArrayList<byte[]>();
+        try {
+            if (operation == POLL || operation == CANCEL) {
+                try (var corr = item(0x420006, TtlvValue.ByteString(new byte[]{1, 2, 3, 4, 5, 6}, LIMITS));
+                        var payload = structureItem(0x420079, corr)) {
+                    return executePayload(connection, operation, minor, payload,
+                            p -> fieldBytes(p, 0x420006) != null, start);
+                }
+            }
+            if (operation == REGISTER || operation == IMPORT) {
+                return runExtendedRegisterImport(connection, operation, minor, cleanup, start);
+            }
+            if (operation == CREATE_KEY_PAIR || operation == RE_KEY_KEY_PAIR) {
+                return runExtendedKeyPair(connection, operation, minor, cleanup, start);
+            }
+            if (operation == CERTIFY || operation == RE_CERTIFY || operation == VALIDATE) {
+                return runExtendedCert(connection, operation, minor, cleanup, start);
+            }
+            if (operation == ENCRYPT || operation == DECRYPT) {
+                return runExtendedEncrypt(connection, operation, minor, cleanup, start);
+            }
+            if (operation == MAC || operation == MAC_VERIFY) {
+                return runExtendedMac(connection, operation, minor, cleanup, start);
+            }
+            if (operation == SIGN || operation == SIGNATURE_VERIFY) {
+                return runExtendedSign(connection, operation, minor, cleanup, start);
+            }
+            return runExtendedSym(connection, operation, minor, cleanup, start);
+        } finally {
+            destroyAll(connection, minor, cleanup, start);
+        }
+    }
+
+    private static TtlvItem symKeyBlock(byte fill) {
+        try (var fmt = item(0x420042, TtlvValue.Enumeration(1));
+                var mat = item(0x420043, TtlvValue.ByteString(new byte[]{
+                        fill, fill, fill, fill, fill, fill, fill, fill,
+                        fill, fill, fill, fill, fill, fill, fill, fill}, LIMITS));
+                var kv = structureItem(0x420045, mat);
+                var kb = structureItem(0x420040, fmt, kv)) {
+            return structureItem(0x42008f, kb);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedRegisterImport(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                var alg = item(0x420028, TtlvValue.Enumeration(3));
+                var len = item(0x42002a, TtlvValue.Integer(128));
+                var mask = item(0x42002c, TtlvValue.Integer(4));
+                var attrs = structureItem(0x420125, alg, len, mask);
+                var sk = symKeyBlock((byte) 0x11);
+                var uid = item(0x420094, TtlvValue.TextString("kmipkit-generic-import".getBytes(StandardCharsets.US_ASCII), LIMITS));
+                var rep = item(0x420124, TtlvValue.Boolean(false));
+                var payload = operation == IMPORT
+                        ? structureItem(0x420079, uid, ot, rep, attrs, sk)
+                        : structureItem(0x420079, ot, attrs, sk)) {
+            return executePayload(connection, operation, minor, payload, p -> {
+                byte[] id = textIdentifier(p);
+                if (id != null) cleanup.add(id);
+                return id != null;
+            }, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome createAesKey(ConnectionConfig connection, int minor, int usageMask,
+            boolean extractable, List<byte[]> cleanup, AtomicReference<byte[]> outId, long start) {
+        try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                var alg = item(0x420028, TtlvValue.Enumeration(3));
+                var len = item(0x42002a, TtlvValue.Integer(256));
+                var mask = item(0x42002c, TtlvValue.Integer(usageMask));
+                var ext = item(0x420122, TtlvValue.Boolean(true));
+                var attrs = extractable ? structureItem(0x420125, alg, len, mask, ext) : structureItem(0x420125, alg, len, mask);
+                var payload = structureItem(0x420079, ot, attrs)) {
+            return executePayload(connection, CREATE, minor, payload, p -> {
+                byte[] id = textIdentifier(p);
+                if (id != null) {
+                    outId.set(id);
+                    cleanup.add(id);
+                }
+                return id != null;
+            }, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome createRsaPair(ConnectionConfig connection, int minor,
+            List<byte[]> cleanup, AtomicReference<byte[]> privOut, AtomicReference<byte[]> pubOut, long start) {
+        try (var alg = item(0x420028, TtlvValue.Enumeration(4));
+                var len = item(0x42002a, TtlvValue.Integer(2048));
+                var common = structureItem(0x420126, alg, len);
+                var privMask = item(0x42002c, TtlvValue.Integer(1));
+                var privAttrs = structureItem(0x420127, privMask);
+                var pubMask = item(0x42002c, TtlvValue.Integer(2));
+                var pubAttrs = structureItem(0x420128, pubMask);
+                var payload = structureItem(0x420079, common, privAttrs, pubAttrs)) {
+            return executePayload(connection, CREATE_KEY_PAIR, minor, payload, p -> {
+                byte[] priv = fieldText(p, 0x420066);
+                byte[] pub = fieldText(p, 0x42006f);
+                if (priv != null) { privOut.set(priv); cleanup.add(priv); }
+                if (pub != null) { pubOut.set(pub); cleanup.add(pub); }
+                return priv != null && pub != null;
+            }, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedKeyPair(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var priv = new AtomicReference<byte[]>();
+        var pub = new AtomicReference<byte[]>();
+        var kp = createRsaPair(connection, minor, cleanup, priv, pub, start);
+        if (operation == CREATE_KEY_PAIR || !"passed".equals(kp.status())) return kp;
+        try (var pid = item(0x420066, TtlvValue.TextString(priv.get(), LIMITS));
+                var offset = item(0x420058, TtlvValue.Interval(3600));
+                var payload = structureItem(0x420079, pid, offset)) {
+            return executePayload(connection, RE_KEY_KEY_PAIR, minor, payload, p -> {
+                byte[] np = fieldText(p, 0x420066);
+                byte[] nu = fieldText(p, 0x42006f);
+                if (np != null) cleanup.add(np);
+                if (nu != null) cleanup.add(nu);
+                return np != null && nu != null;
+            }, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedSym(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var keyRef = new AtomicReference<byte[]>();
+        var keyRes = createAesKey(connection, minor, operation == DERIVE_KEY ? 512 : 12,
+                operation == EXPORT, cleanup, keyRef, start);
+        if (!"passed".equals(keyRes.status())) return keyRes;
+        byte[] keyId = keyRef.get();
+        if (operation == RE_KEY) {
+            try (var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                    var offset = item(0x420058, TtlvValue.Interval(3600));
+                    var payload = structureItem(0x420079, uid, offset)) {
+                return executePayload(connection, RE_KEY, minor, payload, p -> {
+                    byte[] nid = textIdentifier(p);
+                    if (nid != null) cleanup.add(nid);
+                    return nid != null && !Arrays.equals(nid, keyId);
+                }, start);
+            }
+        }
+        if (operation == EXPORT) {
+            try (var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                    var fmt = item(0x420042, TtlvValue.Enumeration(1));
+                    var payload = structureItem(0x420079, uid, fmt)) {
+                return executePayload(connection, EXPORT, minor, payload,
+                        p -> Arrays.equals(keyId, textIdentifier(p)) && hasField(p, 0x42008f, TtlvItemType.Structure, 0), start);
+            }
+        }
+        if (operation == GET_USAGE_ALLOCATION) {
+            try (var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                    var cnt = item(0x420096, TtlvValue.LongInteger(32));
+                    var payload = structureItem(0x420079, uid, cnt)) {
+                return executePayload(connection, GET_USAGE_ALLOCATION, minor, payload,
+                        p -> Arrays.equals(keyId, textIdentifier(p)), start);
+            }
+        }
+        if (operation == DERIVE_KEY) {
+            execute(connection, ACTIVATE, minor, keyId, p -> true, start);
+            try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                    var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                    var dm = item(0x420031, TtlvValue.Enumeration(2));
+                    var ha = item(0x420038, TtlvValue.Enumeration(6));
+                    var dp = structureItem(0x420032, ha);
+                    var alg = item(0x420028, TtlvValue.Enumeration(3));
+                    var len = item(0x42002a, TtlvValue.Integer(128));
+                    var mask = item(0x42002c, TtlvValue.Integer(4));
+                    var attrs = structureItem(0x420125, alg, len, mask);
+                    var payload = structureItem(0x420079, ot, uid, dm, dp, attrs)) {
+                return executePayload(connection, DERIVE_KEY, minor, payload, p -> {
+                    byte[] did = textIdentifier(p);
+                    if (did != null) cleanup.add(did);
+                    return did != null;
+                }, start);
+            }
+        }
+        var parts = new AtomicReference<List<byte[]>>(List.of());
+        JavaKmipDriver.CaseOutcome splitRes;
+        try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                var p1 = item(0x42008b, TtlvValue.Integer(2));
+                var th = item(0x42008c, TtlvValue.Integer(2));
+                var m = item(0x42008a, TtlvValue.Enumeration(1));
+                var alg = item(0x420028, TtlvValue.Enumeration(3));
+                var len = item(0x42002a, TtlvValue.Integer(256));
+                var mask = item(0x42002c, TtlvValue.Integer(12));
+                var attrs = structureItem(0x420125, alg, len, mask);
+                var payload = structureItem(0x420079, ot, uid, p1, th, m, attrs)) {
+            splitRes = executePayload(connection, CREATE_SPLIT_KEY, minor, payload, p -> {
+                var found = allIdentifiers(p);
+                parts.set(found);
+                cleanup.addAll(found);
+                return found.size() == 2;
+            }, start);
+        }
+        if (operation == CREATE_SPLIT_KEY || !"passed".equals(splitRes.status())) return splitRes;
+        try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                var u1 = item(0x420094, TtlvValue.TextString(parts.get().get(0), LIMITS));
+                var u2 = item(0x420094, TtlvValue.TextString(parts.get().get(1), LIMITS));
+                var alg = item(0x420028, TtlvValue.Enumeration(3));
+                var len = item(0x42002a, TtlvValue.Integer(256));
+                var mask = item(0x42002c, TtlvValue.Integer(12));
+                var attrs = structureItem(0x420125, alg, len, mask);
+                var payload = structureItem(0x420079, ot, u1, u2, attrs)) {
+            return executePayload(connection, JOIN_SPLIT_KEY, minor, payload, p -> {
+                byte[] jid = textIdentifier(p);
+                if (jid != null) cleanup.add(jid);
+                return jid != null;
+            }, start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedCert(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var priv = new AtomicReference<byte[]>();
+        var pub = new AtomicReference<byte[]>();
+        var kp = createRsaPair(connection, minor, cleanup, priv, pub, start);
+        if (!"passed".equals(kp.status())) return kp;
+        var certRef = new AtomicReference<byte[]>();
+        JavaKmipDriver.CaseOutcome certRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(pub.get(), LIMITS));
+                var crt = item(0x420019, TtlvValue.Enumeration(2));
+                var csr = item(0x420018, TtlvValue.ByteString(new byte[]{0x30, 0x00}, LIMITS));
+                var payload = structureItem(0x420079, uid, crt, csr)) {
+            certRes = executePayload(connection, CERTIFY, minor, payload, p -> {
+                byte[] cid = textIdentifier(p);
+                if (cid != null) { certRef.set(cid); cleanup.add(cid); }
+                return cid != null;
+            }, start);
+        }
+        if (operation == CERTIFY || !"passed".equals(certRes.status())) return certRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(certRef.get(), LIMITS));
+                var payload = structureItem(0x420079, uid)) {
+            if (operation == RE_CERTIFY) {
+                return executePayload(connection, RE_CERTIFY, minor, payload, p -> {
+                    byte[] nid = textIdentifier(p);
+                    if (nid != null) cleanup.add(nid);
+                    return nid != null;
+                }, start);
+            }
+            return executePayload(connection, VALIDATE, minor, payload,
+                    p -> hasField(p, 0x42009b, TtlvItemType.Enumeration, 1), start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedEncrypt(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var keyRef = new AtomicReference<byte[]>();
+        var keyRes = createAesKey(connection, minor, 12, false, cleanup, keyRef, start);
+        if (!"passed".equals(keyRes.status())) return keyRes;
+        byte[] keyId = keyRef.get();
+        var act = execute(connection, ACTIVATE, minor, keyId, p -> true, start);
+        if (!"passed".equals(act.status())) return act;
+        byte[] iv = new byte[16];
+        Arrays.fill(iv, (byte) 0x01);
+        byte[] plaintext = "0123456789abcdef".getBytes(StandardCharsets.US_ASCII);
+        var cipherRef = new AtomicReference<byte[]>();
+        JavaKmipDriver.CaseOutcome encRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                var bcm = item(0x420011, TtlvValue.Enumeration(1));
+                var pad = item(0x42005f, TtlvValue.Enumeration(3));
+                var params = structureItem(0x42002b, bcm, pad);
+                var data = item(0x4200c2, TtlvValue.ByteString(plaintext, LIMITS));
+                var ivItem = item(0x42003d, TtlvValue.ByteString(iv, LIMITS));
+                var payload = structureItem(0x420079, uid, params, data, ivItem)) {
+            encRes = executePayload(connection, ENCRYPT, minor, payload, p -> {
+                byte[] c = fieldBytes(p, 0x4200c2);
+                cipherRef.set(c);
+                return Arrays.equals(keyId, textIdentifier(p)) && c != null;
+            }, start);
+        }
+        if (operation == ENCRYPT || !"passed".equals(encRes.status())) return encRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(keyId, LIMITS));
+                var bcm = item(0x420011, TtlvValue.Enumeration(1));
+                var pad = item(0x42005f, TtlvValue.Enumeration(3));
+                var params = structureItem(0x42002b, bcm, pad);
+                var data = item(0x4200c2, TtlvValue.ByteString(cipherRef.get(), LIMITS));
+                var ivItem = item(0x42003d, TtlvValue.ByteString(iv, LIMITS));
+                var payload = structureItem(0x420079, uid, params, data, ivItem)) {
+            return executePayload(connection, DECRYPT, minor, payload,
+                    p -> Arrays.equals(keyId, textIdentifier(p)) && Arrays.equals(plaintext, fieldBytes(p, 0x4200c2)), start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedMac(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var macRef = new AtomicReference<byte[]>();
+        JavaKmipDriver.CaseOutcome mkRes;
+        try (var ot = item(0x420057, TtlvValue.Enumeration(2));
+                var alg = item(0x420028, TtlvValue.Enumeration(9));
+                var len = item(0x42002a, TtlvValue.Integer(256));
+                var mask = item(0x42002c, TtlvValue.Integer(384));
+                var attrs = structureItem(0x420125, alg, len, mask);
+                var payload = structureItem(0x420079, ot, attrs)) {
+            mkRes = executePayload(connection, CREATE, minor, payload, p -> {
+                byte[] id = textIdentifier(p);
+                if (id != null) { macRef.set(id); cleanup.add(id); }
+                return id != null;
+            }, start);
+        }
+        if (!"passed".equals(mkRes.status())) return mkRes;
+        byte[] macId = macRef.get();
+        var act = execute(connection, ACTIVATE, minor, macId, p -> true, start);
+        if (!"passed".equals(act.status())) return act;
+        var tagRef = new AtomicReference<byte[]>();
+        JavaKmipDriver.CaseOutcome macRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(macId, LIMITS));
+                var ha = item(0x420038, TtlvValue.Enumeration(6));
+                var params = structureItem(0x42002b, ha);
+                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
+                var payload = structureItem(0x420079, uid, params, data)) {
+            macRes = executePayload(connection, MAC, minor, payload, p -> {
+                byte[] tag = fieldBytes(p, 0x4200c6);
+                tagRef.set(tag);
+                return Arrays.equals(macId, textIdentifier(p)) && tag != null;
+            }, start);
+        }
+        if (operation == MAC || !"passed".equals(macRes.status())) return macRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(macId, LIMITS));
+                var ha = item(0x420038, TtlvValue.Enumeration(6));
+                var params = structureItem(0x42002b, ha);
+                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
+                var macData = item(0x4200c6, TtlvValue.ByteString(tagRef.get(), LIMITS));
+                var payload = structureItem(0x420079, uid, params, data, macData)) {
+            return executePayload(connection, MAC_VERIFY, minor, payload,
+                    p -> hasField(p, 0x42009b, TtlvItemType.Enumeration, 1), start);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runExtendedSign(ConnectionConfig connection, int operation,
+            int minor, List<byte[]> cleanup, long start) {
+        var priv = new AtomicReference<byte[]>();
+        var pub = new AtomicReference<byte[]>();
+        var kp = createRsaPair(connection, minor, cleanup, priv, pub, start);
+        if (!"passed".equals(kp.status())) return kp;
+        var act1 = execute(connection, ACTIVATE, minor, priv.get(), p -> true, start);
+        if (!"passed".equals(act1.status())) return act1;
+        var act2 = execute(connection, ACTIVATE, minor, pub.get(), p -> true, start);
+        if (!"passed".equals(act2.status())) return act2;
+        var sigRef = new AtomicReference<byte[]>();
+        JavaKmipDriver.CaseOutcome signRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(priv.get(), LIMITS));
+                var ha = item(0x420038, TtlvValue.Enumeration(6));
+                var pad = item(0x42005f, TtlvValue.Enumeration(8));
+                var params = structureItem(0x42002b, ha, pad);
+                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
+                var payload = structureItem(0x420079, uid, params, data)) {
+            signRes = executePayload(connection, SIGN, minor, payload, p -> {
+                byte[] sig = fieldBytes(p, 0x4200c3);
+                sigRef.set(sig);
+                return Arrays.equals(priv.get(), textIdentifier(p)) && sig != null;
+            }, start);
+        }
+        if (operation == SIGN || !"passed".equals(signRes.status())) return signRes;
+        try (var uid = item(0x420094, TtlvValue.TextString(pub.get(), LIMITS));
+                var ha = item(0x420038, TtlvValue.Enumeration(6));
+                var pad = item(0x42005f, TtlvValue.Enumeration(8));
+                var params = structureItem(0x42002b, ha, pad);
+                var data = item(0x4200c2, TtlvValue.ByteString(HASH_INPUT, LIMITS));
+                var sigData = item(0x4200c3, TtlvValue.ByteString(sigRef.get(), LIMITS));
+                var payload = structureItem(0x420079, uid, params, data, sigData)) {
+            return executePayload(connection, SIGNATURE_VERIFY, minor, payload,
+                    p -> hasField(p, 0x42009b, TtlvItemType.Enumeration, 1), start);
+        }
     }
 
     private static double elapsed(long start) {

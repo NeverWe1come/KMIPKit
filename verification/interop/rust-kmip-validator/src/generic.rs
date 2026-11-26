@@ -15,6 +15,12 @@ const TEXT_ATTRIBUTE_FIXTURE: &str = "kmipkit-attribute-fixture";
 const HASH_INPUT: &[u8] = b"abc";
 const RNG_SEED_INPUT: [u8; 32] = [b'A'; 32];
 const CREATE: u32 = 1;
+const CREATE_KEY_PAIR: u32 = 2;
+const REGISTER: u32 = 3;
+const RE_KEY: u32 = 4;
+const DERIVE_KEY: u32 = 5;
+const CERTIFY: u32 = 6;
+const RE_CERTIFY: u32 = 7;
 const CHECK: u32 = 9;
 const GET: u32 = 10;
 const GET_ATTRIBUTES: u32 = 11;
@@ -23,11 +29,26 @@ const ADD_ATTRIBUTE: u32 = 13;
 const MODIFY_ATTRIBUTE: u32 = 14;
 const DELETE_ATTRIBUTE: u32 = 15;
 const OBTAIN_LEASE: u32 = 16;
+const GET_USAGE_ALLOCATION: u32 = 0x11;
 const ACTIVATE: u32 = 18;
 const REVOKE: u32 = 19;
 const DESTROY: u32 = 20;
 const ARCHIVE: u32 = 21;
 const RECOVER: u32 = 22;
+const VALIDATE: u32 = 0x17;
+const CANCEL: u32 = 0x19;
+const POLL: u32 = 0x1a;
+const RE_KEY_KEY_PAIR: u32 = 0x1d;
+const ENCRYPT: u32 = 0x1f;
+const DECRYPT: u32 = 0x20;
+const SIGN: u32 = 0x21;
+const SIGNATURE_VERIFY: u32 = 0x22;
+const MAC: u32 = 0x23;
+const MAC_VERIFY: u32 = 0x24;
+const CREATE_SPLIT_KEY: u32 = 0x28;
+const JOIN_SPLIT_KEY: u32 = 0x29;
+const IMPORT: u32 = 0x2a;
+const EXPORT: u32 = 0x2b;
 const SET_ATTRIBUTE: u32 = 0x31;
 const DESCRIPTION: u32 = 0x0042_00fc;
 const CHANGED_DESCRIPTION: &str = "kmipkit-changed-description";
@@ -56,12 +77,39 @@ fn uses_owned_key(operation: u32) -> bool {
     ) || changes_description(operation)
 }
 
+fn is_extended_mutating_op(operation: u32) -> bool {
+    matches!(
+        operation,
+        CREATE_KEY_PAIR
+            | REGISTER
+            | RE_KEY
+            | DERIVE_KEY
+            | CERTIFY
+            | RE_CERTIFY
+            | GET_USAGE_ALLOCATION
+            | VALIDATE
+            | CANCEL
+            | POLL
+            | RE_KEY_KEY_PAIR
+            | ENCRYPT
+            | DECRYPT
+            | SIGN
+            | SIGNATURE_VERIFY
+            | MAC
+            | MAC_VERIFY
+            | CREATE_SPLIT_KEY
+            | JOIN_SPLIT_KEY
+            | IMPORT
+            | EXPORT
+    )
+}
+
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
     connection.transport == "raw_tls"
         && connection.encoding == "TTLV"
         && connection.authentication.is_none()
         && operation(case, connection).is_some_and(|operation| {
-            if uses_owned_key(operation) {
+            if uses_owned_key(operation) || is_extended_mutating_op(operation) {
                 case.execution.mutation == "mutating"
             } else {
                 case.execution.mutation == "read_only"
@@ -74,11 +122,18 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
         ("test-op-create", "2.0" | "2.1") => Some(CREATE),
+        ("test-op-create-key-pair", "2.0" | "2.1") => Some(CREATE_KEY_PAIR),
+        ("test-op-register", "2.0" | "2.1") => Some(REGISTER),
+        ("test-op-re-key", "2.0" | "2.1") => Some(RE_KEY),
+        ("test-op-derive-key", "2.0" | "2.1") => Some(DERIVE_KEY),
+        ("test-op-certify", "2.0" | "2.1") => Some(CERTIFY),
+        ("test-op-re-certify", "2.0" | "2.1") => Some(RE_CERTIFY),
         ("test-op-check", "2.0" | "2.1") => Some(CHECK),
         ("test-op-get", "2.0" | "2.1") => Some(GET),
         (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
         ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
         ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
+        ("test-op-get-usage-allocation", "2.0" | "2.1") => Some(GET_USAGE_ALLOCATION),
         ("test-op-add-attribute", "2.0" | "2.1") => Some(ADD_ATTRIBUTE),
         ("test-op-modify-attribute", "2.0" | "2.1") => Some(MODIFY_ATTRIBUTE),
         ("test-op-delete-attribute", "2.0" | "2.1") => Some(DELETE_ATTRIBUTE),
@@ -88,6 +143,10 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
         ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
         ("test-op-archive", "2.0" | "2.1") => Some(ARCHIVE),
         ("test-op-recover", "2.0" | "2.1") => Some(RECOVER),
+        ("test-op-validate", "2.0" | "2.1") => Some(VALIDATE),
+        ("test-op-cancel", "2.0" | "2.1") => Some(CANCEL),
+        ("test-op-poll", "2.0" | "2.1") => Some(POLL),
+        ("test-op-re-key-key-pair", "2.0" | "2.1") => Some(RE_KEY_KEY_PAIR),
         ("test-op-locate", "2.0" | "2.1") => Some(0x08),
         ("test-op-query", "2.0" | "2.1") => Some(0x18),
         ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
@@ -97,6 +156,26 @@ fn operation(case: &Case, connection: &Connection) -> Option<u32> {
             "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256",
             "2.0" | "2.1",
         ) => Some(0x27),
+        ("test-op-encrypt" | "test-crypto-encrypt-aes-256-cbc", "2.0" | "2.1") => Some(ENCRYPT),
+        ("test-op-decrypt" | "test-crypto-decrypt-aes-256-cbc", "2.0" | "2.1") => Some(DECRYPT),
+        (
+            "test-op-sign" | "test-crypto-sign-rsa-2048-pkcs1_v1_5" | "test-crypto-sign-ecdsa-256-p_256",
+            "2.0" | "2.1",
+        ) => Some(SIGN),
+        (
+            "test-op-signature-verify"
+            | "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5"
+            | "test-crypto-signature-verify-ecdsa-256-p_256",
+            "2.0" | "2.1",
+        ) => Some(SIGNATURE_VERIFY),
+        ("test-op-mac" | "test-crypto-mac-hmac_sha256-256", "2.0" | "2.1") => Some(MAC),
+        ("test-op-mac-verify" | "test-crypto-mac-verify-hmac_sha256-256", "2.0" | "2.1") => {
+            Some(MAC_VERIFY)
+        }
+        ("test-op-create-split-key", "2.0" | "2.1") => Some(CREATE_SPLIT_KEY),
+        ("test-op-join-split-key", "2.0" | "2.1") => Some(JOIN_SPLIT_KEY),
+        ("test-op-import", "2.0" | "2.1") => Some(IMPORT),
+        ("test-op-export", "2.0" | "2.1") => Some(EXPORT),
         ("test-op-ping", "2.1") => Some(0x3b),
         _ => None,
     }
@@ -108,6 +187,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
     let mut result = match operation(case, connection) {
         Some(operation) if uses_owned_key(operation) => {
             run_owned_key(case, connection, version, operation)
+        }
+        Some(operation) if is_extended_mutating_op(operation) => {
+            run_extended_operation(case, connection, version, operation)
         }
         Some(0x27) if case.case_id == "test-multipart-hash-sha256" => {
             outcome(case, multipart_hash(connection, version))
@@ -796,6 +878,633 @@ fn check_probe(
     } else {
         PingResponse::try_from_response_item(batch).is_ok()
     })
+}
+
+fn field_text(batch: ResponseBatchItemView<'_>, tag: u32) -> Option<String> {
+    batch
+        .with_response_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == tag)
+                .and_then(|item| {
+                    item.with_value(|value| match value {
+                        ValueView::TextString(text) if !text.is_empty() => Some(text.to_string()),
+                        _ => None,
+                    })
+                })
+        })
+        .flatten()
+}
+
+fn all_text_identifiers(batch: ResponseBatchItemView<'_>) -> Vec<String> {
+    batch
+        .with_response_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .filter(|item| item.tag().raw() == 0x0042_0094)
+                .filter_map(|item| {
+                    item.with_value(|value| match value {
+                        ValueView::TextString(text) if !text.is_empty() => Some(text.to_string()),
+                        _ => None,
+                    })
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn field_bytes(batch: ResponseBatchItemView<'_>, tag: u32) -> Option<Vec<u8>> {
+    batch
+        .with_response_payload(|payload| {
+            payload
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == tag)
+                .and_then(|item| {
+                    item.with_value(|value| match value {
+                        ValueView::ByteString(bytes) if !bytes.is_empty() => Some(bytes.to_vec()),
+                        _ => None,
+                    })
+                })
+        })
+        .flatten()
+}
+
+fn destroy_ids(connection: &Connection, version: ProtocolVersion, ids: &[String]) {
+    for id in ids {
+        let _ = exchange(connection, version, REVOKE, Some(id), |_| Ok(true));
+        let _ = exchange(connection, version, DESTROY, Some(id), |_| Ok(true));
+    }
+}
+
+fn create_aes_key(
+    connection: &Connection,
+    version: ProtocolVersion,
+    usage_mask: i32,
+    extractable: bool,
+) -> std::result::Result<(String, ExchangeResult), &'static str> {
+    let mut attrs = vec![
+        item(0x0042_0028, Value::enumeration(3))?,
+        item(0x0042_002a, Value::integer(256))?,
+        item(0x0042_002c, Value::integer(usage_mask))?,
+    ];
+    if extractable {
+        attrs.push(item(0x0042_0122, Value::boolean(true))?);
+    }
+    let fields = vec![
+        item(0x0042_0057, Value::enumeration(2))?,
+        node(0x0042_0125, attrs)?,
+    ];
+    let mut created = None;
+    let res = exchange_payload(connection, version, CREATE, fields, |batch| {
+        created = text_identifier(batch);
+        Ok(created.is_some())
+    })?;
+    Ok((created.unwrap_or_default(), Ok(res)))
+}
+
+fn create_hmac_key(
+    connection: &Connection,
+    version: ProtocolVersion,
+    usage_mask: i32,
+) -> std::result::Result<(String, ExchangeResult), &'static str> {
+    let attrs = vec![
+        item(0x0042_0028, Value::enumeration(9))?,
+        item(0x0042_002a, Value::integer(256))?,
+        item(0x0042_002c, Value::integer(usage_mask))?,
+    ];
+    let fields = vec![
+        item(0x0042_0057, Value::enumeration(2))?,
+        node(0x0042_0125, attrs)?,
+    ];
+    let mut created = None;
+    let res = exchange_payload(connection, version, CREATE, fields, |batch| {
+        created = text_identifier(batch);
+        Ok(created.is_some())
+    })?;
+    Ok((created.unwrap_or_default(), Ok(res)))
+}
+
+fn create_rsa_key_pair(
+    connection: &Connection,
+    version: ProtocolVersion,
+) -> std::result::Result<(String, String, ExchangeResult), &'static str> {
+    let fields = vec![
+        node(
+            0x0042_0126,
+            vec![
+                item(0x0042_0028, Value::enumeration(4))?,
+                item(0x0042_002a, Value::integer(2048))?,
+            ],
+        )?,
+        node(
+            0x0042_0127,
+            vec![item(0x0042_002c, Value::integer(1))?],
+        )?,
+        node(
+            0x0042_0128,
+            vec![item(0x0042_002c, Value::integer(2))?],
+        )?,
+    ];
+    let mut priv_id = None;
+    let mut pub_id = None;
+    let res = exchange_payload(connection, version, CREATE_KEY_PAIR, fields, |batch| {
+        priv_id = field_text(batch, 0x0042_0066);
+        pub_id = field_text(batch, 0x0042_006f);
+        Ok(priv_id.is_some() && pub_id.is_some())
+    })?;
+    Ok((priv_id.unwrap_or_default(), pub_id.unwrap_or_default(), Ok(res)))
+}
+
+fn run_extended_operation(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+) -> CaseResult {
+    outcome(
+        case,
+        run_extended_inner(connection, version, operation),
+    )
+}
+
+fn run_extended_inner(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+) -> ExchangeResult {
+    let mut cleanup: Vec<String> = Vec::new();
+    let res = match operation {
+        POLL | CANCEL => {
+            let fields = vec![item(
+                0x0042_0006,
+                Value::byte_string(vec![1, 2, 3, 4, 5, 6]),
+            )?];
+            exchange_payload(connection, version, operation, fields, |batch| {
+                Ok(field_bytes(batch, 0x0042_0006).is_some())
+            })
+        }
+        REGISTER | IMPORT => extended_register_import(connection, version, operation, &mut cleanup),
+        CREATE_KEY_PAIR | RE_KEY_KEY_PAIR => {
+            extended_key_pair_ops(connection, version, operation, &mut cleanup)
+        }
+        RE_KEY | EXPORT | GET_USAGE_ALLOCATION | DERIVE_KEY | CREATE_SPLIT_KEY | JOIN_SPLIT_KEY => {
+            extended_sym_ops(connection, version, operation, &mut cleanup)
+        }
+        CERTIFY | RE_CERTIFY | VALIDATE => {
+            extended_cert_ops(connection, version, operation, &mut cleanup)
+        }
+        ENCRYPT | DECRYPT => extended_encrypt_ops(connection, version, operation, &mut cleanup),
+        MAC | MAC_VERIFY => extended_mac_ops(connection, version, operation, &mut cleanup),
+        SIGN | SIGNATURE_VERIFY => extended_sign_ops(connection, version, operation, &mut cleanup),
+        _ => Err("unsupported extended generic operation"),
+    };
+    destroy_ids(connection, version, &cleanup);
+    res
+}
+
+fn extended_register_import(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let mut fields = Vec::new();
+    if operation == IMPORT {
+        fields.push(item(
+            0x0042_0094,
+            Value::text_string("kmipkit-generic-import".to_owned()),
+        )?);
+    }
+    fields.push(item(0x0042_0057, Value::enumeration(2))?);
+    if operation == IMPORT {
+        fields.push(item(0x0042_0124, Value::boolean(false))?);
+    }
+    fields.push(node(
+        0x0042_0125,
+        vec![
+            item(0x0042_0028, Value::enumeration(3))?,
+            item(0x0042_002a, Value::integer(128))?,
+            item(0x0042_002c, Value::integer(4))?,
+        ],
+    )?);
+    fields.push(node(
+        0x0042_008f,
+        vec![node(
+            0x0042_0040,
+            vec![
+                item(0x0042_0042, Value::enumeration(1))?,
+                node(
+                    0x0042_0045,
+                    vec![item(0x0042_0043, Value::byte_string(vec![0x11; 16]))?],
+                )?,
+            ],
+        )?],
+    )?);
+    exchange_payload(connection, version, operation, fields, |batch| {
+        if let Some(id) = text_identifier(batch) {
+            cleanup.push(id);
+            return Ok(true);
+        }
+        Ok(false)
+    })
+}
+
+fn extended_key_pair_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let (priv_id, pub_id, kp_res) = create_rsa_key_pair(connection, version)?;
+    if !priv_id.is_empty() {
+        cleanup.push(priv_id.clone());
+    }
+    if !pub_id.is_empty() {
+        cleanup.push(pub_id);
+    }
+    if operation == CREATE_KEY_PAIR || kp_res != Ok((0, None)) {
+        return kp_res;
+    }
+    let fields = vec![
+        item(0x0042_0066, Value::text_string(priv_id))?,
+        item(0x0042_0058, Value::interval(3600))?,
+    ];
+    exchange_payload(connection, version, RE_KEY_KEY_PAIR, fields, |batch| {
+        let new_priv = field_text(batch, 0x0042_0066);
+        let new_pub = field_text(batch, 0x0042_006f);
+        if let Some(id) = &new_priv {
+            cleanup.push(id.clone());
+        }
+        if let Some(id) = &new_pub {
+            cleanup.push(id.clone());
+        }
+        Ok(new_priv.is_some() && new_pub.is_some())
+    })
+}
+
+fn extended_sym_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let usage = if operation == DERIVE_KEY { 512 } else { 12 };
+    let (key_id, key_res) = create_aes_key(connection, version, usage, operation == EXPORT)?;
+    if !key_id.is_empty() {
+        cleanup.push(key_id.clone());
+    }
+    if key_res != Ok((0, None)) {
+        return key_res;
+    }
+    match operation {
+        RE_KEY => {
+            let fields = vec![
+                item(0x0042_0094, Value::text_string(key_id.clone()))?,
+                item(0x0042_0058, Value::interval(3600))?,
+            ];
+            exchange_payload(connection, version, RE_KEY, fields, |batch| {
+                let new_id = text_identifier(batch);
+                if let Some(id) = &new_id {
+                    cleanup.push(id.clone());
+                }
+                Ok(new_id.is_some_and(|id| id != key_id))
+            })
+        }
+        EXPORT => {
+            let fields = vec![
+                item(0x0042_0094, Value::text_string(key_id.clone()))?,
+                item(0x0042_0042, Value::enumeration(1))?,
+            ];
+            exchange_payload(connection, version, EXPORT, fields, |batch| {
+                Ok(text_identifier(batch).as_deref() == Some(key_id.as_str())
+                    && has_field(batch, 0x0042_008f, |v| matches!(v, ValueView::Structure(_))))
+            })
+        }
+        GET_USAGE_ALLOCATION => {
+            let fields = vec![
+                item(0x0042_0094, Value::text_string(key_id.clone()))?,
+                item(0x0042_0096, Value::long_integer(32))?,
+            ];
+            exchange_payload(connection, version, GET_USAGE_ALLOCATION, fields, |batch| {
+                Ok(text_identifier(batch).as_deref() == Some(key_id.as_str()))
+            })
+        }
+        DERIVE_KEY => {
+            let _ = exchange(connection, version, ACTIVATE, Some(&key_id), |_| Ok(true));
+            let fields = vec![
+                item(0x0042_0057, Value::enumeration(2))?,
+                item(0x0042_0094, Value::text_string(key_id))?,
+                item(0x0042_0031, Value::enumeration(2))?,
+                node(0x0042_0032, vec![item(0x0042_0038, Value::enumeration(6))?])?,
+                node(
+                    0x0042_0125,
+                    vec![
+                        item(0x0042_0028, Value::enumeration(3))?,
+                        item(0x0042_002a, Value::integer(128))?,
+                        item(0x0042_002c, Value::integer(4))?,
+                    ],
+                )?,
+            ];
+            exchange_payload(connection, version, DERIVE_KEY, fields, |batch| {
+                if let Some(id) = text_identifier(batch) {
+                    cleanup.push(id);
+                    return Ok(true);
+                }
+                Ok(false)
+            })
+        }
+        _ => extended_split_ops(connection, version, operation, key_id, cleanup),
+    }
+}
+
+fn extended_split_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    key_id: String,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let split_fields = vec![
+        item(0x0042_0057, Value::enumeration(2))?,
+        item(0x0042_0094, Value::text_string(key_id))?,
+        item(0x0042_008b, Value::integer(2))?,
+        item(0x0042_008c, Value::integer(2))?,
+        item(0x0042_008a, Value::enumeration(1))?,
+        node(
+            0x0042_0125,
+            vec![
+                item(0x0042_0028, Value::enumeration(3))?,
+                item(0x0042_002a, Value::integer(256))?,
+                item(0x0042_002c, Value::integer(12))?,
+            ],
+        )?,
+    ];
+    let mut parts = Vec::new();
+    let split_res = exchange_payload(
+        connection,
+        version,
+        CREATE_SPLIT_KEY,
+        split_fields,
+        |batch| {
+            parts = all_text_identifiers(batch);
+            cleanup.extend(parts.iter().cloned());
+            Ok(parts.len() == 2)
+        },
+    );
+    if operation == CREATE_SPLIT_KEY || split_res != Ok((0, None)) {
+        return split_res;
+    }
+    let join_fields = vec![
+        item(0x0042_0057, Value::enumeration(2))?,
+        item(0x0042_0094, Value::text_string(parts[0].clone()))?,
+        item(0x0042_0094, Value::text_string(parts[1].clone()))?,
+        node(
+            0x0042_0125,
+            vec![
+                item(0x0042_0028, Value::enumeration(3))?,
+                item(0x0042_002a, Value::integer(256))?,
+                item(0x0042_002c, Value::integer(12))?,
+            ],
+        )?,
+    ];
+    exchange_payload(connection, version, JOIN_SPLIT_KEY, join_fields, |batch| {
+        if let Some(id) = text_identifier(batch) {
+            cleanup.push(id);
+            return Ok(true);
+        }
+        Ok(false)
+    })
+}
+
+fn extended_cert_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let (priv_id, pub_id, kp_res) = create_rsa_key_pair(connection, version)?;
+    if !priv_id.is_empty() {
+        cleanup.push(priv_id);
+    }
+    if !pub_id.is_empty() {
+        cleanup.push(pub_id.clone());
+    }
+    if kp_res != Ok((0, None)) {
+        return kp_res;
+    }
+    let certify_fields = vec![
+        item(0x0042_0094, Value::text_string(pub_id))?,
+        item(0x0042_0019, Value::enumeration(2))?,
+        item(0x0042_0018, Value::byte_string(vec![0x30, 0x00]))?,
+    ];
+    let mut cert_id = None;
+    let cert_res = exchange_payload(connection, version, CERTIFY, certify_fields, |batch| {
+        cert_id = text_identifier(batch);
+        if let Some(id) = &cert_id {
+            cleanup.push(id.clone());
+        }
+        Ok(cert_id.is_some())
+    });
+    if operation == CERTIFY || cert_res != Ok((0, None)) {
+        return cert_res;
+    }
+    let target_cert = cert_id.unwrap_or_else(|| "fixture-cert".to_owned());
+    let fields = vec![item(0x0042_0094, Value::text_string(target_cert))?];
+    if operation == RE_CERTIFY {
+        exchange_payload(connection, version, RE_CERTIFY, fields, |batch| {
+            if let Some(id) = text_identifier(batch) {
+                cleanup.push(id);
+                return Ok(true);
+            }
+            Ok(false)
+        })
+    } else {
+        exchange_payload(connection, version, VALIDATE, fields, |batch| {
+            Ok(has_field(batch, 0x0042_009b, |v| {
+                matches!(v, ValueView::Enumeration(1))
+            }))
+        })
+    }
+}
+
+fn extended_encrypt_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let (key_id, key_res) = create_aes_key(connection, version, 12, false)?;
+    if !key_id.is_empty() {
+        cleanup.push(key_id.clone());
+    }
+    if key_res != Ok((0, None)) {
+        return key_res;
+    }
+    let act = exchange(connection, version, ACTIVATE, Some(&key_id), |_| Ok(true))?;
+    if act != (0, None) {
+        return Ok(act);
+    }
+    let iv = vec![0x01; 16];
+    let plaintext = b"0123456789abcdef".to_vec();
+    let enc_fields = vec![
+        item(0x0042_0094, Value::text_string(key_id.clone()))?,
+        node(
+            0x0042_002b,
+            vec![
+                item(0x0042_0011, Value::enumeration(1))?,
+                item(0x0042_005f, Value::enumeration(3))?,
+            ],
+        )?,
+        item(0x0042_00c2, Value::byte_string(plaintext.clone()))?,
+        item(0x0042_003d, Value::byte_string(iv.clone()))?,
+    ];
+    let mut cipher = None;
+    let enc_res = exchange_payload(connection, version, ENCRYPT, enc_fields, |batch| {
+        cipher = field_bytes(batch, 0x0042_00c2);
+        Ok(text_identifier(batch).as_deref() == Some(key_id.as_str()) && cipher.is_some())
+    });
+    if operation == ENCRYPT || enc_res != Ok((0, None)) {
+        return enc_res;
+    }
+    let dec_fields = vec![
+        item(0x0042_0094, Value::text_string(key_id.clone()))?,
+        node(
+            0x0042_002b,
+            vec![
+                item(0x0042_0011, Value::enumeration(1))?,
+                item(0x0042_005f, Value::enumeration(3))?,
+            ],
+        )?,
+        item(
+            0x0042_00c2,
+            Value::byte_string(cipher.unwrap_or_default()),
+        )?,
+        item(0x0042_003d, Value::byte_string(iv))?,
+    ];
+    exchange_payload(connection, version, DECRYPT, dec_fields, |batch| {
+        Ok(text_identifier(batch).as_deref() == Some(key_id.as_str())
+            && field_bytes(batch, 0x0042_00c2).as_deref() == Some(plaintext.as_slice()))
+    })
+}
+
+fn extended_mac_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let (key_id, key_res) = create_hmac_key(connection, version, 384)?;
+    if !key_id.is_empty() {
+        cleanup.push(key_id.clone());
+    }
+    if key_res != Ok((0, None)) {
+        return key_res;
+    }
+    let act = exchange(connection, version, ACTIVATE, Some(&key_id), |_| Ok(true))?;
+    if act != (0, None) {
+        return Ok(act);
+    }
+    let mac_fields = vec![
+        item(0x0042_0094, Value::text_string(key_id.clone()))?,
+        node(
+            0x0042_002b,
+            vec![item(0x0042_0038, Value::enumeration(6))?],
+        )?,
+        item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
+    ];
+    let mut tag = None;
+    let mac_res = exchange_payload(connection, version, MAC, mac_fields, |batch| {
+        tag = field_bytes(batch, 0x0042_00c6);
+        Ok(text_identifier(batch).as_deref() == Some(key_id.as_str()) && tag.is_some())
+    });
+    if operation == MAC || mac_res != Ok((0, None)) {
+        return mac_res;
+    }
+    let verify_fields = vec![
+        item(0x0042_0094, Value::text_string(key_id))?,
+        node(
+            0x0042_002b,
+            vec![item(0x0042_0038, Value::enumeration(6))?],
+        )?,
+        item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
+        item(0x0042_00c6, Value::byte_string(tag.unwrap_or_default()))?,
+    ];
+    exchange_payload(connection, version, MAC_VERIFY, verify_fields, |batch| {
+        Ok(has_field(batch, 0x0042_009b, |v| {
+            matches!(v, ValueView::Enumeration(1))
+        }))
+    })
+}
+
+fn extended_sign_ops(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    cleanup: &mut Vec<String>,
+) -> ExchangeResult {
+    let (priv_id, pub_id, kp_res) = create_rsa_key_pair(connection, version)?;
+    if !priv_id.is_empty() {
+        cleanup.push(priv_id.clone());
+    }
+    if !pub_id.is_empty() {
+        cleanup.push(pub_id.clone());
+    }
+    if kp_res != Ok((0, None)) {
+        return kp_res;
+    }
+    let act_priv = exchange(connection, version, ACTIVATE, Some(&priv_id), |_| Ok(true))?;
+    let act_pub = exchange(connection, version, ACTIVATE, Some(&pub_id), |_| Ok(true))?;
+    if act_priv != (0, None) {
+        return Ok(act_priv);
+    }
+    if act_pub != (0, None) {
+        return Ok(act_pub);
+    }
+    let sign_fields = vec![
+        item(0x0042_0094, Value::text_string(priv_id.clone()))?,
+        node(
+            0x0042_002b,
+            vec![
+                item(0x0042_0038, Value::enumeration(6))?,
+                item(0x0042_005f, Value::enumeration(8))?,
+            ],
+        )?,
+        item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
+    ];
+    let mut sig = None;
+    let sign_res = exchange_payload(connection, version, SIGN, sign_fields, |batch| {
+        sig = field_bytes(batch, 0x0042_00c3);
+        Ok(text_identifier(batch).as_deref() == Some(priv_id.as_str()) && sig.is_some())
+    });
+    if operation == SIGN || sign_res != Ok((0, None)) {
+        return sign_res;
+    }
+    let verify_fields = vec![
+        item(0x0042_0094, Value::text_string(pub_id))?,
+        node(
+            0x0042_002b,
+            vec![
+                item(0x0042_0038, Value::enumeration(6))?,
+                item(0x0042_005f, Value::enumeration(8))?,
+            ],
+        )?,
+        item(0x0042_00c2, Value::byte_string(HASH_INPUT.to_vec()))?,
+        item(0x0042_00c3, Value::byte_string(sig.unwrap_or_default()))?,
+    ];
+    exchange_payload(
+        connection,
+        version,
+        SIGNATURE_VERIFY,
+        verify_fields,
+        |batch| {
+            Ok(has_field(batch, 0x0042_009b, |v| {
+                matches!(v, ValueView::Enumeration(1))
+            }))
+        },
+    )
 }
 
 fn node(tag: u32, children: Vec<Item>) -> Result<Item> {
