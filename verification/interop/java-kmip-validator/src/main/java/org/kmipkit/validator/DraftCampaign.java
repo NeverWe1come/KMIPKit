@@ -9,6 +9,7 @@ import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.ttlv.KeyMaterial;
+import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.RawTag;
@@ -102,7 +103,7 @@ final class DraftCampaign {
         return System.out.checkError() ? 1 : 0;
     }
 
-    static int inspectKeyMaterial(Path manifest) throws IOException {
+    static int inspectTypedStructure(Path manifest, boolean managed) throws IOException {
         var artifact = verifyLoadedArtifact(manifest);
         System.out.println(JSON.writeValueAsString(Map.of(
                 "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
@@ -118,8 +119,12 @@ final class DraftCampaign {
                     for (int index = 2; index < parts.length; index++) {
                         fields.add(TtlvCodec.decode(hex.parseHex(parts[index])));
                     }
-                    String constructed = keyMaterialVerdict(() -> KeyMaterial.fromFields(format, fields), format, expected);
-                    String read = keyMaterialVerdict(() -> KeyMaterial.fromItem(format, item), format, expected);
+                    String constructed = managed
+                            ? managedObjectVerdict(() -> ManagedObject.fromFields(format, fields), format, expected)
+                            : keyMaterialVerdict(() -> KeyMaterial.fromFields(format, fields), format, expected);
+                    String read = managed
+                            ? managedObjectVerdict(() -> ManagedObject.fromItem(format, item), format, expected)
+                            : keyMaterialVerdict(() -> KeyMaterial.fromItem(format, item), format, expected);
                     System.out.println(JSON.writeValueAsString(Map.of("construct", constructed, "read", read)));
                 } finally {
                     fields.forEach(TtlvItem::close);
@@ -141,6 +146,19 @@ final class DraftCampaign {
             try (var item = result.intoItem(); var view = item.view()) {
                 return actualFormat == format && Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
             }
+        }
+    }
+
+    private static String managedObjectVerdict(java.util.function.Supplier<ManagedObject> api, long type, byte[] expected) {
+        ManagedObject result;
+        try {
+            result = api.get();
+        } catch (org.kmipkit.KmipException rejected) {
+            return "rejected";
+        }
+        try (result; var view = result.view()) {
+            return result.objectType() == type && Arrays.equals(expected, GenericExchange.encode(view))
+                    ? "passed" : "failed";
         }
     }
 

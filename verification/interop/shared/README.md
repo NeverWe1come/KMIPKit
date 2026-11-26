@@ -111,6 +111,12 @@ Pass `--table-typed-attributes-report` to attach these local results to the
 typed-protocol cells. Certificate Attributes and Protection Storage Masks
 use their dedicated certificate and operation contexts.
 
+The managed object fixture tests reconstruct the eight applicable table
+objects from their fields, check the full encoding and exercise missing,
+duplicate, and mistyped fields. The typed readers validate every negative
+fixture. Pass `--table-managed-objects-report` to import the
+`table-managed-objects.json` CI artifacts.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated

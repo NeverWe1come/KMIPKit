@@ -105,6 +105,9 @@ jobs:
           verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/table_typed_attributes.py \
             --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
             --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-typed-attributes.json"
+          verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/table_managed_objects.py \
+            --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-managed-objects.json"
 
       - name: Upload KMIP 2.x table evidence
         if: always()

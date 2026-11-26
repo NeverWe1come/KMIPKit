@@ -3,6 +3,8 @@
 
 #[path = "../generic_wire.rs"]
 mod generic_wire;
+#[path = "../table_managed_objects.rs"]
+mod table_managed_objects;
 #[path = "../table_typed_attributes.rs"]
 mod table_typed_attributes;
 
@@ -208,8 +210,12 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         };
     }
-    if mode.as_deref() == Some("--inspect-table-key-material") {
-        return if inspect_key_material().is_ok() {
+    if matches!(
+        mode.as_deref(),
+        Some("--inspect-table-key-material" | "--inspect-table-managed-objects")
+    ) {
+        let managed = mode.as_deref() == Some("--inspect-table-managed-objects");
+        return if inspect_typed_structure(managed).is_ok() {
             ExitCode::SUCCESS
         } else {
             ExitCode::FAILURE
@@ -268,7 +274,7 @@ fn key_material_verdict(
     }
 }
 
-fn inspect_key_material() -> Result<(), Box<dyn std::error::Error>> {
+fn inspect_typed_structure(managed: bool) -> Result<(), Box<dyn std::error::Error>> {
     let mut output = BufWriter::new(std::io::stdout().lock());
     writeln!(
         output,
@@ -288,14 +294,22 @@ fn inspect_key_material() -> Result<(), Box<dyn std::error::Error>> {
             fields.try_push(kmipkit::ttlv::codec::decode(&decode_hex(field)?)?)?;
         }
         let item = kmipkit::ttlv::codec::decode(&wire)?;
-        let constructed = KeyMaterial::structure(format, fields).ok();
-        let read = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format)).ok();
+        let (construct, read) = if managed {
+            table_managed_objects::check(format, &fields, item, &wire)
+        } else {
+            let constructed = KeyMaterial::structure(format, fields).ok();
+            let read = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format)).ok();
+            (
+                key_material_verdict(constructed, format, &wire),
+                key_material_verdict(read, format, &wire),
+            )
+        };
         writeln!(
             output,
             "{}",
             json!({
-                "construct": key_material_verdict(constructed, format, &wire),
-                "read": key_material_verdict(read, format, &wire),
+                "construct": construct,
+                "read": read,
             })
         )?;
     }

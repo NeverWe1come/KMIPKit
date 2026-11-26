@@ -182,22 +182,28 @@ def other_objects(root, version):
         "Attributes", field("CryptographicUsageMask", "Integer", "Verify"))
 
 
+def transparent_object_fixture(name, object_tag, algorithm, length, usage, components):
+    algorithm_field = field("CryptographicAlgorithm", "Enumeration", algorithm)
+    length_field = field("CryptographicLength", "Integer", length)
+    attributes = structure("Attributes", field("CryptographicUsageMask", "Integer", usage),
+                           algorithm_field, length_field)
+    material = structure("KeyMaterial", *(field(*component) for component in components))
+    key_block = structure("KeyBlock", field("KeyFormatType", "Enumeration", f"Transparent {name}"),
+                          structure("KeyValue", material), algorithm_field, length_field)
+    return structure(object_tag, key_block), attributes
+
+
 def fixture_vectors(root, versions):
     for version in versions:
         names = WireValues(root, version, [])
-        for name, object_tag, algorithm, length, usage, components in KEY_FORMATS:
-            algorithm_field = field("CryptographicAlgorithm", "Enumeration", algorithm)
-            length_field = field("CryptographicLength", "Integer", length)
-            attributes = structure("Attributes", field("CryptographicUsageMask", "Integer", usage),
-                                   algorithm_field, length_field)
-            material = structure("KeyMaterial", *(field(*component) for component in components))
-            key_block = structure("KeyBlock", field("KeyFormatType", "Enumeration", f"Transparent {name}"),
-                                  structure("KeyValue", material), algorithm_field, length_field)
+        for key_format in KEY_FORMATS:
+            name, object_tag, *_ = key_format
+            obj, attributes = transparent_object_fixture(*key_format)
             managed_name = {"SymmetricKey": "Symmetric Key", "PublicKey": "Public Key",
                             "PrivateKey": "Private Key"}[object_tag]
             fixture = f"transparent-{'-'.join(name.lower().split())}"
             yield from fixture_records(
-                version, names, object_messages(version, fixture, object_tag, structure(object_tag, key_block), attributes),
+                version, names, object_messages(version, fixture, object_tag, obj, attributes),
                 [["transparent_key", name], ["managed_object", managed_name],
                  ["base_object", "Key Block"], ["base_object", "Key Value"]],
             )

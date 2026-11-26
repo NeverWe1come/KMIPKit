@@ -42,7 +42,10 @@ public final class Main {
                 return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST), "--construct-oasis-ttlv".equals(args[0]));
             }
             if (args.length == 1 && "--inspect-table-key-material".equals(args[0])) {
-                return DraftCampaign.inspectKeyMaterial(Path.of(DEFAULT_MANIFEST));
+                return DraftCampaign.inspectTypedStructure(Path.of(DEFAULT_MANIFEST), false);
+            }
+            if (args.length == 1 && "--inspect-table-managed-objects".equals(args[0])) {
+                return DraftCampaign.inspectTypedStructure(Path.of(DEFAULT_MANIFEST), true);
             }
             if (args.length == 1 && "--inspect-table-typed-attributes".equals(args[0])) {
                 return DraftCampaign.inspectTypedAttributes(Path.of(DEFAULT_MANIFEST));

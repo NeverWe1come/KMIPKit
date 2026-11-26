@@ -147,8 +147,8 @@ def query_evidence(lines, connection):
 def main():
     if sys.argv[1:] in (["--inspect-oasis-ttlv"], ["--construct-oasis-ttlv"]):
         return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
-    if sys.argv[1:] == ["--inspect-table-key-material"]:
-        return inspect_key_material()
+    if sys.argv[1:] in (["--inspect-table-key-material"], ["--inspect-table-managed-objects"]):
+        return inspect_typed_structure(managed=sys.argv[1] == "--inspect-table-managed-objects")
     if sys.argv[1:] == ["--inspect-table-typed-attributes"]:
         return inspect_typed_attributes()
     if sys.argv[1:] == ["--inspect-table-version"]:
@@ -219,11 +219,11 @@ def main():
         return 2
 
 
-def inspect_key_material():
+def inspect_typed_structure(*, managed=False):
     from contextlib import ExitStack
 
     from kmipkit import errors, ttlv
-    from kmipkit.managed_objects import KeyMaterial
+    from kmipkit.managed_objects import KeyMaterial, ManagedObject
     from .generic import _encode
 
     if not _is_installed_package():
@@ -231,13 +231,16 @@ def inspect_key_material():
     artifact = validate_artifact()
     print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
 
-    def verify(make, format_code, expected):
+    model = ManagedObject if managed else KeyMaterial
+
+    def verify(make, type_code, expected):
         try:
             material = make()
         except errors.KmipKitError:
             return "rejected"
         with material, ttlv.ttlv_item_view_from_item(material) as view:
-            return "passed" if material.format_raw == format_code and _encode(view) == expected else "failed"
+            actual = material.object_type if managed else material.format_raw
+            return "passed" if actual == type_code and _encode(view) == expected else "failed"
 
     for line in sys.stdin:
         raw_format, material_hex, *fields_hex = line.split()
@@ -247,8 +250,8 @@ def inspect_key_material():
             fields = [stack.enter_context(ttlv.ttlv_decode(bytes.fromhex(wire))) for wire in fields_hex]
             item = stack.enter_context(ttlv.ttlv_decode(expected))
             print(json.dumps({
-                "construct": verify(lambda: KeyMaterial.from_fields(format_code, fields), format_code, expected),
-                "read": verify(lambda: KeyMaterial.from_item(format_code, item), format_code, expected),
+                "construct": verify(lambda: model.from_fields(format_code, fields), format_code, expected),
+                "read": verify(lambda: model.from_item(format_code, item), format_code, expected),
             }))
     return 0
 

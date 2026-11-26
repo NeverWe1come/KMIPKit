@@ -60,30 +60,36 @@ def validate_provenance(artifact, expected_commit=None):
         raise ValueError("Key Material evidence does not match the requested library commit")
 
 
-def validate_checks(checks):
-    if set(checks) != {"construct", "read"} or not set(checks.values()) <= {"passed", "rejected", "failed"}:
+def validate_checks(checks, *, constructor_inapplicable=False):
+    statuses = {"passed", "rejected", "failed"}
+    constructor_statuses = statuses | ({"not-applicable"} if constructor_inapplicable else set())
+    if set(checks) != {"construct", "read"} or checks["construct"] not in constructor_statuses or checks["read"] not in statuses:
         raise ValueError("invalid typed Key Material result")
 
 
 def collect(root, runners):
-    cases = list(vectors(root))
+    return collect_node_checks(vectors(root), runners, "--inspect-table-key-material")
+
+
+def collect_node_checks(cases, runners, command, *, rust_typed_constructor=False):
+    cases = list(cases)
     inputs = "".join(line + "\n" for _, line in cases)
     fixtures = [{**metadata, "checks": {}} for metadata, _ in cases]
     artifacts = {}
     for language, executable in runners.items():
         result = subprocess.run(
-            [str(executable.resolve(strict=True)), "--inspect-table-key-material"],
+            [str(executable.resolve(strict=True)), command],
             input=inputs, text=True, capture_output=True, check=False,
         )
         lines = result.stdout.splitlines()
         if result.returncode != 0 or len(lines) != len(fixtures) + 1:
-            raise ValueError(f"{language}: typed Key Material runner returned incomplete evidence")
+            raise ValueError(f"{language}: {command} returned incomplete evidence")
         artifact = json.loads(lines[0])
         validate_provenance(artifact)
         artifacts[language] = artifact
         for fixture, line in zip(fixtures, lines[1:], strict=True):
             checks = json.loads(line)
-            validate_checks(checks)
+            validate_checks(checks, constructor_inapplicable=rust_typed_constructor and language == "rust")
             fixture["checks"][language] = checks
     return {"scope": "local", "api_level": "typed-protocol", "artifacts": artifacts, "fixtures": fixtures}
 

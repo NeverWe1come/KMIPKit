@@ -329,7 +329,7 @@ static const char *fixture_verdict(int32_t status, kmipkit_ttlv_item_t *item,
     return equal ? "passed" : "failed";
 }
 
-static bool inspect_key_material_line(char *line) {
+static bool inspect_model_line(char *line, bool managed) {
     const char *format_text = strtok(line, " \n");
     const char *wire_hex = strtok(NULL, " \n");
     uint32_t format;
@@ -353,8 +353,12 @@ static bool inspect_key_material_line(char *line) {
         ok = decode_fixture_item(field, &fields[count++]) == 0;
     }
     if (ok) {
-        int32_t construction = kmipkit_key_material_from_fields(format, fields, count, &constructed);
-        int32_t decoding = kmipkit_key_material_from_item(format, input, &read);
+        int32_t construction = managed
+            ? kmipkit_managed_object_from_fields(format, fields, count, &constructed)
+            : kmipkit_key_material_from_fields(format, fields, count, &constructed);
+        int32_t decoding = managed
+            ? kmipkit_managed_object_from_item(format, input, &read)
+            : kmipkit_key_material_from_item(format, input, &read);
         printf("{\"construct\":\"%s\",\"read\":\"%s\"}\n",
                fixture_verdict(construction, constructed, expected, length / 2),
                fixture_verdict(decoding, read, expected, length / 2));
@@ -366,12 +370,12 @@ static bool inspect_key_material_line(char *line) {
     return ok;
 }
 
-static int inspect_key_material(void) {
+static int inspect_model(bool managed) {
     char line[4 * KEY_FIXTURE_LIMIT + 128];
     printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
            KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
     while (fgets(line, sizeof line, stdin)) {
-        if (strchr(line, '\n') == NULL || !inspect_key_material_line(line)) return EXIT_FAILURE;
+        if (strchr(line, '\n') == NULL || !inspect_model_line(line, managed)) return EXIT_FAILURE;
     }
     return !ferror(stdin) && !ferror(stdout) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -453,7 +457,10 @@ int main(int argc, char **argv) {
         return inspect_ttlv(true);
     }
     if (argc == 2 && strcmp(argv[1], "--inspect-table-key-material") == 0) {
-        return inspect_key_material();
+        return inspect_model(false);
+    }
+    if (argc == 2 && strcmp(argv[1], "--inspect-table-managed-objects") == 0) {
+        return inspect_model(true);
     }
     if (argc == 2 && strcmp(argv[1], "--inspect-table-typed-attributes") == 0) {
         return inspect_typed_attributes();
