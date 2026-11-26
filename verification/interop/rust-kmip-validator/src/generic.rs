@@ -387,13 +387,7 @@ fn run_owned_key(
             result = outcome(
                 case,
                 exchange(connection, version, operation, Some(&id), |batch| {
-                    Ok(same_id(batch)?
-                        && has_field(batch, 0x0042_0049, |value| {
-                            matches!(value, ValueView::Interval(_))
-                        })
-                        && has_field(batch, 0x0042_0048, |value| {
-                            matches!(value, ValueView::DateTime(_))
-                        }))
+                    Ok(same_id(batch)? && issued_lease(batch))
                 }),
             );
         }
@@ -433,6 +427,14 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn issued_lease(batch: ResponseBatchItemView<'_>) -> bool {
+    has_field(batch, 0x0042_0049, |value| {
+        matches!(value, ValueView::Interval(_))
+    }) && has_field(batch, 0x0042_0048, |value| {
+        matches!(value, ValueView::DateTime(_))
+    })
 }
 
 fn get_asymmetric_key(
@@ -606,7 +608,10 @@ fn get_attributes(
                         let ValueView::Structure(attrs) = value else {
                             return false;
                         };
-                        let mut matches = attrs.children().iter().filter(|item| item.tag().raw() == tag);
+                        let mut matches = attrs
+                            .children()
+                            .iter()
+                            .filter(|item| item.tag().raw() == tag);
                         let Some(attribute) = matches.next() else {
                             return false;
                         };
@@ -642,7 +647,10 @@ fn get_attributes(
             node(
                 0x0042_013b,
                 vec![
-                    item(0x0042_009d, Value::text_string("KMIPKit.Interop".to_owned()))?,
+                    item(
+                        0x0042_009d,
+                        Value::text_string("KMIPKit.Interop".to_owned()),
+                    )?,
                     item(0x0042_000a, Value::text_string("probe".to_owned()))?,
                 ],
             )?,
@@ -654,8 +662,8 @@ fn get_attributes(
             item(0x0042_013b, Value::enumeration(0x0042_00b6))?,
         ]
     } else {
-        let tag = crate::adapters::local::attribute_tag(name)
-            .ok_or("no direct-tag attribute recipe")?;
+        let tag =
+            crate::adapters::local::attribute_tag(name).ok_or("no direct-tag attribute recipe")?;
         vec![
             item(0x0042_0094, Value::text_string(id.to_owned()))?,
             item(0x0042_013b, Value::enumeration(tag))?,
@@ -723,7 +731,11 @@ fn description_wrapper(tag: u32, text: &str) -> Result<Item> {
     )
 }
 
-fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>, attr_tag: u32) -> bool {
+fn description_matches(
+    batch: ResponseBatchItemView<'_>,
+    expected: Option<&str>,
+    attr_tag: u32,
+) -> bool {
     let Some(expected) = expected else {
         let has_attrs = batch
             .with_response_payload(|payload| {

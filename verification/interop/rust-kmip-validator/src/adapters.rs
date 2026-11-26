@@ -63,9 +63,9 @@ fn parse_wire_hex(raw: &str) -> Option<u32> {
     u32::from_str_radix(&normalized, 16).ok()
 }
 
-fn check_ttlv_roundtrip(entry: kmipkit::ttlv::Item) -> bool {
+fn check_ttlv_roundtrip(entry: &kmipkit::ttlv::Item) -> bool {
     let mut wire = Vec::new();
-    if crate::generic_wire::encode(&entry, &mut wire).is_err() {
+    if crate::generic_wire::encode(entry, &mut wire).is_err() {
         return false;
     }
     let Ok(decoded) = kmipkit::ttlv::codec::decode(&wire) else {
@@ -100,7 +100,7 @@ fn check_sample_value_type(kind: &str) -> bool {
     let Ok(entry) = item(0x0042_0079, sample) else {
         return false;
     };
-    check_ttlv_roundtrip(entry)
+    check_ttlv_roundtrip(&entry)
 }
 
 fn verify_local_batch(case: &Case, version: &str) -> bool {
@@ -115,9 +115,9 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
         return false;
     };
     match scenario {
-        "test-batch-count-zero-rejected" => {
-            ClientBatch::empty().build_request_message(proto, &limits).is_err()
-        }
+        "test-batch-count-zero-rejected" => ClientBatch::empty()
+            .build_request_message(proto, &limits)
+            .is_err(),
         "test-batch-single-item-options-omitted" => {
             let batch = ClientBatch::new(kmipkit::ClientBatchItem::discover_versions());
             let Ok(msg) = batch.build_request_message(proto, &limits) else {
@@ -151,9 +151,8 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
                 return false;
             };
             let create_item = kmipkit::ClientBatchItem::new(created);
-            let activate_item = kmipkit::ClientBatchItem::new(ClientRequest::Activate(
-                ActivateRequest::new(None),
-            ));
+            let activate_item =
+                kmipkit::ClientBatchItem::new(ClientRequest::Activate(ActivateRequest::new(None)));
             let batch = ClientBatch::from_items([activate_item, create_item]);
             batch.build_request_message(proto, &limits).is_err()
         }
@@ -184,8 +183,16 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
             };
             let make_batch_item = || -> Option<kmipkit::ttlv::Item> {
                 let op = item(0x0042_005c, Value::enumeration(0x1e)).ok()?;
-                let pl = item(0x0042_0079, Value::structure(structure(0x0042_0079, vec![]).ok()?)).ok()?;
-                item(0x0042_000f, Value::structure(structure(0x0042_000f, vec![op, pl]).ok()?)).ok()
+                let pl = item(
+                    0x0042_0079,
+                    Value::structure(structure(0x0042_0079, vec![]).ok()?),
+                )
+                .ok()?;
+                item(
+                    0x0042_000f,
+                    Value::structure(structure(0x0042_000f, vec![op, pl]).ok()?),
+                )
+                .ok()
             };
             let (Some(b1), Some(b2)) = (make_batch_item(), make_batch_item()) else {
                 return false;
@@ -199,6 +206,20 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
     }
 }
 
+fn check_local_version_boundary(operation: &str) -> bool {
+    let code = match operation {
+        "Get Constraints" => 0x38,
+        "Ping" => 0x3b,
+        "Process" => 0x3a,
+        "Query Asynchronous Requests" => 0x39,
+        "Set Constraints" => 0x37,
+        "Set Defaults" => 0x36,
+        _ => return false,
+    };
+    kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_0, code).is_err()
+        && kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_1, code).is_ok()
+}
+
 pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
     if local::verify(&case.case_id) {
         return true;
@@ -209,19 +230,7 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
         return true;
     }
     if case.category == "version_boundaries" {
-        let op = match case.operation.as_str() {
-            "Get Constraints" => Some(0x38),
-            "Ping" => Some(0x3b),
-            "Process" => Some(0x3a),
-            "Query Asynchronous Requests" => Some(0x39),
-            "Set Constraints" => Some(0x37),
-            "Set Defaults" => Some(0x36),
-            _ => None,
-        };
-        return op.is_some_and(|code| {
-            kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_0, code).is_err()
-                && kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_1, code).is_ok()
-        });
+        return check_local_version_boundary(&case.operation);
     }
     if case.category == "batch_workflows" {
         return verify_local_batch(case, version);
@@ -238,7 +247,9 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
                     return false;
                 };
                 match case.requires["allocation"].as_str() {
-                    Some("assigned" | "extension") => rt.try_checked().is_ok_and(|t| t.raw() == raw),
+                    Some("assigned" | "extension") => {
+                        rt.try_checked().is_ok_and(|t| t.raw() == raw)
+                    }
                     _ => rt.try_checked().is_err(),
                 }
             }),
@@ -255,14 +266,18 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
             .as_str()
             .and_then(parse_wire_hex)
             .is_some_and(|raw| {
-                item(0x0042_005c, Value::enumeration(raw)).is_ok_and(check_ttlv_roundtrip)
+                item(0x0042_005c, Value::enumeration(raw))
+                    .as_ref()
+                    .is_ok_and(check_ttlv_roundtrip)
             }),
         "bitmask_value" => case.requires["wire_value"]
             .as_str()
             .and_then(parse_wire_hex)
             .is_some_and(|raw| {
                 let signed = i32::from_be_bytes(raw.to_be_bytes());
-                item(0x0042_002c, Value::integer(signed)).is_ok_and(check_ttlv_roundtrip)
+                item(0x0042_002c, Value::integer(signed))
+                    .as_ref()
+                    .is_ok_and(check_ttlv_roundtrip)
             }),
         "data_type"
         | "operation_payload_field"

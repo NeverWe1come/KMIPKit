@@ -4709,7 +4709,9 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
             let slice = unsafe { std::slice::from_raw_parts(versions, count) };
             let mut offered = Vec::with_capacity(count);
             for v in slice {
-                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(v.major, v.minor));
+                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(
+                    v.major, v.minor,
+                ));
             }
             let request = try_ffi!(
                 kmipkit_protocol::DiscoverVersionsRequest::with_versions(offered)

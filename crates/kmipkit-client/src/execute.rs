@@ -10495,10 +10495,9 @@ fn validate_async_response(
         && item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
     {
         let status = ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED);
-        let result_message = item
-            .with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned()));
-        if let Ok(result) = KmipOperationResult::new(status, item.result_reason(), result_message)
-        {
+        let result_message =
+            item.with_result_message(|text| kmipkit_protocol::ResultMessage::new(text.to_owned()));
+        if let Ok(result) = KmipOperationResult::new(status, item.result_reason(), result_message) {
             let extensions = preserve_response_extensions(*item, registry, limits)?;
             return Ok(ClientOperationOutcome {
                 operation: kind,
