@@ -41,6 +41,9 @@ public final class Main {
             if (args.length == 1 && Set.of("--inspect-oasis-ttlv", "--construct-oasis-ttlv").contains(args[0])) {
                 return DraftCampaign.inspectTtlv(Path.of(DEFAULT_MANIFEST), "--construct-oasis-ttlv".equals(args[0]));
             }
+            if (args.length == 1 && "--inspect-table-key-material".equals(args[0])) {
+                return DraftCampaign.inspectKeyMaterial(Path.of(DEFAULT_MANIFEST));
+            }
             if (args.length == 1 && "--inspect-table-version".equals(args[0])) {
                 return DraftCampaign.inspectVersion(Path.of(DEFAULT_MANIFEST));
             }

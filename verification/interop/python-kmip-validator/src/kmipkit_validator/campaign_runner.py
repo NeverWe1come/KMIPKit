@@ -147,6 +147,8 @@ def query_evidence(lines, connection):
 def main():
     if sys.argv[1:] in (["--inspect-oasis-ttlv"], ["--construct-oasis-ttlv"]):
         return inspect_ttlv(construct=sys.argv[1] == "--construct-oasis-ttlv")
+    if sys.argv[1:] == ["--inspect-table-key-material"]:
+        return inspect_key_material()
     if sys.argv[1:] == ["--inspect-table-version"]:
         return inspect_version()
     parser = argparse.ArgumentParser(description=__doc__)
@@ -213,6 +215,40 @@ def main():
     except (OSError, ValueError, KeyError, ImportError):
         print("Python campaign failed. Check the plan, connection and installed artifact.", file=sys.stderr)
         return 2
+
+
+def inspect_key_material():
+    from contextlib import ExitStack
+
+    from kmipkit import errors, ttlv
+    from kmipkit.managed_objects import KeyMaterial
+    from .generic import _encode
+
+    if not _is_installed_package():
+        raise ValueError("An installed KMIPKit wheel is required")
+    artifact = validate_artifact()
+    print(json.dumps({key: artifact[key] for key in ("library_commit", "artifact_sha256")}))
+
+    def verify(make, format_code, expected):
+        try:
+            material = make()
+        except errors.KmipKitError:
+            return "rejected"
+        with material, ttlv.ttlv_item_view_from_item(material) as view:
+            return "passed" if material.format_raw == format_code and _encode(view) == expected else "failed"
+
+    for line in sys.stdin:
+        raw_format, material_hex, *fields_hex = line.split()
+        format_code = int(raw_format)
+        expected = bytes.fromhex(material_hex)
+        with ExitStack() as stack:
+            fields = [stack.enter_context(ttlv.ttlv_decode(bytes.fromhex(wire))) for wire in fields_hex]
+            item = stack.enter_context(ttlv.ttlv_decode(expected))
+            print(json.dumps({
+                "construct": verify(lambda: KeyMaterial.from_fields(format_code, fields), format_code, expected),
+                "read": verify(lambda: KeyMaterial.from_item(format_code, item), format_code, expected),
+            }))
+    return 0
 
 
 def inspect_version():

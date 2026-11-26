@@ -8,6 +8,7 @@ use clap::{Parser, ValueEnum};
 use kmipkit::protocol::named_values_generated::values::enumeration::{
     key_format_type, object_type,
 };
+use kmipkit::protocol::{KeyFormatType, KeyMaterial};
 use kmipkit::ttlv::{Item, ItemType, ModelError, RawTag, Structure, Value as TtlvValue, ValueView};
 use kmipkit::{ClientBatchItem, ClientRequest, ProtocolVersion, VersionGate};
 use serde_json::{Value, json};
@@ -205,6 +206,13 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         };
     }
+    if mode.as_deref() == Some("--inspect-table-key-material") {
+        return if inspect_key_material().is_ok() {
+            ExitCode::SUCCESS
+        } else {
+            ExitCode::FAILURE
+        };
+    }
     match run(Args::parse()) {
         Ok(true) => ExitCode::SUCCESS,
         Ok(false) => ExitCode::FAILURE,
@@ -213,6 +221,77 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+fn decode_hex(input: &str) -> Result<Vec<u8>, &'static str> {
+    if !input.len().is_multiple_of(2) {
+        return Err("fixture hex length is not even");
+    }
+    (0..input.len())
+        .step_by(2)
+        .map(|index| {
+            u8::from_str_radix(
+                input.get(index..index + 2).ok_or("invalid fixture hex")?,
+                16,
+            )
+            .map_err(|_| "invalid fixture hex")
+        })
+        .collect()
+}
+
+fn key_material_verdict(
+    material: Option<KeyMaterial>,
+    format: u32,
+    expected: &[u8],
+) -> &'static str {
+    let Some(material) = material else {
+        return "rejected";
+    };
+    let actual_format = material.format_raw();
+    let mut encoded = Vec::new();
+    if actual_format == format
+        && generic_wire::encode(&material.into_item(), &mut encoded).is_ok()
+        && encoded == expected
+    {
+        "passed"
+    } else {
+        "failed"
+    }
+}
+
+fn inspect_key_material() -> Result<(), Box<dyn std::error::Error>> {
+    let mut output = BufWriter::new(std::io::stdout().lock());
+    writeln!(
+        output,
+        "{}",
+        json!({
+            "library_commit": env!("KMIPKIT_LIBRARY_COMMIT"),
+            "artifact_sha256": env!("KMIPKIT_ARTIFACT_SHA256"),
+        })
+    )?;
+    for line in std::io::stdin().lock().lines() {
+        let input = line?;
+        let mut words = input.split_whitespace();
+        let format = words.next().ok_or("missing key format")?.parse()?;
+        let wire = decode_hex(words.next().ok_or("missing key material")?)?;
+        let mut fields = Structure::new();
+        for field in words {
+            fields.try_push(kmipkit::ttlv::codec::decode(&decode_hex(field)?)?)?;
+        }
+        let item = kmipkit::ttlv::codec::decode(&wire)?;
+        let constructed = KeyMaterial::structure(format, fields).ok();
+        let read = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format)).ok();
+        writeln!(
+            output,
+            "{}",
+            json!({
+                "construct": key_material_verdict(constructed, format, &wire),
+                "read": key_material_verdict(read, format, &wire),
+            })
+        )?;
+    }
+    output.flush()?;
+    Ok(())
 }
 
 fn inspect_version() -> Result<(), Box<dyn std::error::Error>> {
@@ -255,13 +334,7 @@ fn inspect_ttlv(construct: bool) -> Result<(), Box<dyn std::error::Error>> {
     )?;
     for line in std::io::stdin().lock().lines() {
         let line = line?;
-        if line.len() % 2 != 0 {
-            return Err("fixture hex length is not even".into());
-        }
-        let wire = (0..line.len())
-            .step_by(2)
-            .map(|index| u8::from_str_radix(line.get(index..index + 2).unwrap_or(""), 16))
-            .collect::<Result<Vec<_>, _>>()?;
+        let wire = decode_hex(&line)?;
         let item = if construct {
             construct_item(&wire, 0)
                 .filter(|(_, remaining)| remaining.is_empty())

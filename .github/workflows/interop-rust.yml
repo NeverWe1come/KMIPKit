@@ -99,6 +99,9 @@ jobs:
           verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/table_ttlv.py \
             --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
             --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-ttlv.json"
+          verification/interop/.local/rust-ci-venv/bin/python verification/interop/shared/tools/table_key_material.py \
+            --runner rust verification/interop/rust-kmip-validator/target/debug/kmip30-campaign \
+            --output "$KMIPKIT_TABLE_EVIDENCE_DIR/table-key-material.json"
 
       - name: Upload KMIP 2.x table evidence
         if: always()

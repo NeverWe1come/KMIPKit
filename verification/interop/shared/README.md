@@ -96,6 +96,12 @@ fields. When importing `--oasis-construction-report` or `--oasis-ttlv-report`,
 each applicable operation row includes the matching OASIS case, step and
 batch item. Repeat the argument to import reports from separate languages.
 
+The same CI jobs publish `table-key-material.json` for the format-aware
+constructors and readers of the nine transparent key formats. They compare
+the complete output and reject missing, duplicate, and mistyped material
+fields. Pass `--table-key-material-report` to import these checks into the
+typed-protocol cells.
+
 ## Campaign plans and evidence reports
 
 From the repository root, export the obligations and open the generated

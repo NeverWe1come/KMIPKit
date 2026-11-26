@@ -7,6 +7,7 @@ import org.kmipkit.extensions.InvalidExtensionSchemaException;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.VersionGate;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.KeyMaterial;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.TtlvCodec;
 import org.kmipkit.ttlv.TtlvItem;
@@ -22,6 +23,8 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
@@ -94,6 +97,48 @@ final class DraftCampaign {
             }
         }
         return System.out.checkError() ? 1 : 0;
+    }
+
+    static int inspectKeyMaterial(Path manifest) throws IOException {
+        var artifact = verifyLoadedArtifact(manifest);
+        System.out.println(JSON.writeValueAsString(Map.of(
+                "library_commit", artifact.libraryCommit(), "artifact_sha256", artifact.artifactSha256())));
+        var hex = HexFormat.of();
+        try (var input = new BufferedReader(new InputStreamReader(System.in, java.nio.charset.StandardCharsets.US_ASCII))) {
+            String line;
+            while ((line = input.readLine()) != null) {
+                String[] parts = line.split(" ");
+                long format = Long.parseUnsignedLong(parts[0]);
+                byte[] expected = hex.parseHex(parts[1]);
+                var fields = new ArrayList<TtlvItem>();
+                try (var item = TtlvCodec.decode(expected)) {
+                    for (int index = 2; index < parts.length; index++) {
+                        fields.add(TtlvCodec.decode(hex.parseHex(parts[index])));
+                    }
+                    String constructed = keyMaterialVerdict(() -> KeyMaterial.fromFields(format, fields), format, expected);
+                    String read = keyMaterialVerdict(() -> KeyMaterial.fromItem(format, item), format, expected);
+                    System.out.println(JSON.writeValueAsString(Map.of("construct", constructed, "read", read)));
+                } finally {
+                    fields.forEach(TtlvItem::close);
+                }
+            }
+        }
+        return System.out.checkError() ? 1 : 0;
+    }
+
+    private static String keyMaterialVerdict(java.util.function.Supplier<KeyMaterial> api, long format, byte[] expected) {
+        KeyMaterial result;
+        try {
+            result = api.get();
+        } catch (org.kmipkit.KmipException rejected) {
+            return "rejected";
+        }
+        try (result) {
+            long actualFormat = result.formatRaw();
+            try (var item = result.intoItem(); var view = item.view()) {
+                return actualFormat == format && Arrays.equals(expected, GenericExchange.encode(view)) ? "passed" : "failed";
+            }
+        }
     }
 
     static int inspectVersion(Path manifest) throws IOException {

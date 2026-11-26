@@ -360,6 +360,8 @@ def main():
                         help="Import local generic tag construction evidence for KMIP 2.x")
     parser.add_argument("--table-ttlv-report", type=Path, action="append", default=[],
                         help="Import local table fixture results with --cosmian-minimum")
+    parser.add_argument("--table-key-material-report", type=Path, action="append", default=[],
+                        help="Import local typed Key Material evidence with --cosmian-minimum")
     parser.add_argument("evidence", nargs="*", type=Path)
     args = parser.parse_args()
     runners = {language: Path(executable).resolve() for language, executable in args.runner}
@@ -367,8 +369,8 @@ def main():
     try:
         if len(runners) != len(args.runner) or not set(runners).issubset(languages) or not set(languages).issubset(LANGUAGES):
             raise ValueError("give one runner per selected, supported language")
-        if args.table_ttlv_report and not args.cosmian_minimum:
-            raise ValueError("--table-ttlv-report requires --cosmian-minimum")
+        if (args.table_ttlv_report or args.table_key_material_report) and not args.cosmian_minimum:
+            raise ValueError("table evidence reports require --cosmian-minimum")
         if args.connection and not runners:
             raise ValueError("--connection requires a runner")
         if args.version is not None:
@@ -409,6 +411,7 @@ def main():
                 ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
             )
 
+            from verification.interop.shared.tools.table_key_material import attach_key_material_evidence
             from verification.interop.shared.tools.table_ttlv import attach_fixture_evidence
 
             for version in ALLOWED_VERSIONS:
@@ -419,6 +422,9 @@ def main():
                         attach_oasis_operation_evidence(inventory, result)
                     if args.table_ttlv_report:
                         attach_fixture_evidence(ROOT, inventory, args.table_ttlv_report, languages, args.library_commit)
+                    if args.table_key_material_report:
+                        attach_key_material_evidence(ROOT, inventory, args.table_key_material_report,
+                                                     languages, args.library_commit)
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )

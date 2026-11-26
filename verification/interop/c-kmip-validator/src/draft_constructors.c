@@ -226,15 +226,20 @@ static int32_t construct_item(const uint8_t *wire, size_t available, unsigned de
     return status;
 }
 
-static bool inspect_line(char *line, uint8_t *wire, kmipkit_codec_limits_t *limits, bool construct) {
-    size_t length = strcspn(line, "\n");
-    if (line[length] != '\n' || length % 2 != 0) return false;
+static bool decode_hex(const char *text, size_t length, uint8_t *wire) {
+    if (length % 2 != 0) return false;
     for (size_t index = 0; index < length; index += 2) {
-        int high = hex_digit(line[index]);
-        int low = hex_digit(line[index + 1]);
+        int high = hex_digit(text[index]);
+        int low = hex_digit(text[index + 1]);
         if (high < 0 || low < 0) return false;
         wire[index / 2] = (uint8_t)(high * 16 + low);
     }
+    return true;
+}
+
+static bool inspect_line(char *line, uint8_t *wire, kmipkit_codec_limits_t *limits, bool construct) {
+    size_t length = strcspn(line, "\n");
+    if (line[length] != '\n' || !decode_hex(line, length, wire)) return false;
     kmipkit_ttlv_item_t *item = NULL;
     kmipkit_ttlv_decode_error_v1_t error = {
         .struct_size = (uint32_t)sizeof(error), .abi_version = 1,
@@ -293,6 +298,82 @@ static int inspect_ttlv(bool construct) {
     return ok && !ferror(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+enum { KEY_FIXTURE_LIMIT = 4096, KEY_FIXTURE_FIELDS = 16 };
+
+static int32_t decode_fixture_item(const char *hex, kmipkit_ttlv_item_t **item) {
+    uint8_t wire[KEY_FIXTURE_LIMIT];
+    size_t length = strlen(hex);
+    if (length > sizeof(wire) * 2 || !decode_hex(hex, length, wire))
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    kmipkit_ttlv_decode_error_v1_t error = {
+        .struct_size = (uint32_t)sizeof(error), .abi_version = 1,
+    };
+    return kmipkit_ttlv_decode(wire, length / 2, &error, item);
+}
+
+static const char *key_material_verdict(int32_t status, kmipkit_ttlv_item_t *item,
+                                        const uint8_t *expected, size_t length) {
+    if (status == KMIPKIT_ERROR_INVALID_INPUT || status == KMIPKIT_ERROR_INVALID_SCHEMA)
+        return "rejected";
+    if (status != 0) return "failed";
+
+    uint8_t actual[KEY_FIXTURE_LIMIT];
+    size_t written = 0;
+    kmipkit_ttlv_item_view_t *view = NULL;
+    bool equal = kmipkit_ttlv_item_view_from_item(item, &view) == 0 &&
+                 encode_generic_item(view, actual, length, &written) &&
+                 written == length && memcmp(actual, expected, length) == 0;
+    kmipkit_ttlv_item_view_release(view);
+    return equal ? "passed" : "failed";
+}
+
+static bool inspect_key_material_line(char *line) {
+    const char *format_text = strtok(line, " \n");
+    const char *wire_hex = strtok(NULL, " \n");
+    uint32_t format;
+    char suffix;
+    if (format_text == NULL || wire_hex == NULL ||
+        sscanf(format_text, "%" SCNu32 "%c", &format, &suffix) != 1)
+        return false;
+    uint8_t expected[KEY_FIXTURE_LIMIT];
+    size_t length = strlen(wire_hex);
+    if (length > sizeof(expected) * 2 || !decode_hex(wire_hex, length, expected)) return false;
+
+    kmipkit_ttlv_item_t *fields[KEY_FIXTURE_FIELDS] = {NULL};
+    kmipkit_ttlv_item_t *input = NULL, *constructed = NULL, *read = NULL;
+    bool ok = decode_fixture_item(wire_hex, &input) == 0;
+    size_t count = 0;
+    for (const char *field = strtok(NULL, " \n"); ok && field != NULL; field = strtok(NULL, " \n")) {
+        if (count == KEY_FIXTURE_FIELDS) {
+            ok = false;
+            break;
+        }
+        ok = decode_fixture_item(field, &fields[count++]) == 0;
+    }
+    if (ok) {
+        int32_t construction = kmipkit_key_material_from_fields(format, fields, count, &constructed);
+        int32_t decoding = kmipkit_key_material_from_item(format, input, &read);
+        printf("{\"construct\":\"%s\",\"read\":\"%s\"}\n",
+               key_material_verdict(construction, constructed, expected, length / 2),
+               key_material_verdict(decoding, read, expected, length / 2));
+    }
+    kmipkit_ttlv_item_release(read);
+    kmipkit_ttlv_item_release(constructed);
+    kmipkit_ttlv_item_release(input);
+    for (size_t index = 0; index < count; ++index) kmipkit_ttlv_item_release(fields[index]);
+    return ok;
+}
+
+static int inspect_key_material(void) {
+    char line[4 * KEY_FIXTURE_LIMIT + 128];
+    printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
+           KMIPKIT_LIBRARY_COMMIT, KMIPKIT_C_ARTIFACT_SHA256);
+    while (fgets(line, sizeof line, stdin)) {
+        if (strchr(line, '\n') == NULL || !inspect_key_material_line(line)) return EXIT_FAILURE;
+    }
+    return !ferror(stdin) && !ferror(stdout) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 static int inspect_version(void) {
     char line[32];
     printf("{\"library_commit\":\"%s\",\"artifact_sha256\":\"%s\"}\n",
@@ -325,6 +406,9 @@ int main(int argc, char **argv) {
     }
     if (argc == 2 && strcmp(argv[1], "--construct-oasis-ttlv") == 0) {
         return inspect_ttlv(true);
+    }
+    if (argc == 2 && strcmp(argv[1], "--inspect-table-key-material") == 0) {
+        return inspect_key_material();
     }
     if (argc == 2 && strcmp(argv[1], "--inspect-table-version") == 0) {
         return inspect_version();
