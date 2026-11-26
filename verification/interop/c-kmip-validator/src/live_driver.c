@@ -6422,9 +6422,9 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         mac_verify ? "mac-verify-destroy" : recover ? "recover-destroy" : archive ? "archive-destroy" :
         mac ? "mac-destroy" : decrypt ? "decrypt-destroy" : "encrypt-destroy";
     kmip_execution_outcome_t outcome = {.executed = true};
-    kmipkit_client_batch_item_t *create_item = NULL, *prep_item = NULL, *target_item = NULL;
-    kmipkit_client_batch_response_t *create_resp = NULL, *prep_resp = NULL, *target_resp = NULL;
-    kmipkit_client_batch_item_response_t *create_res = NULL, *prep_res = NULL, *target_res = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL, *prep_item = NULL, *mac_item = NULL, *target_item = NULL;
+    kmipkit_client_batch_response_t *create_resp = NULL, *prep_resp = NULL, *mac_resp = NULL, *target_resp = NULL;
+    kmipkit_client_batch_item_response_t *create_res = NULL, *prep_res = NULL, *mac_res = NULL, *target_res = NULL;
     kmipkit_ttlv_structure_t *attributes = NULL, *parameters = NULL;
     kmipkit_ttlv_value_t *value = NULL, *plaintext = NULL;
     kmipkit_unique_identifier_v1_t key_id = {.struct_size = (uint32_t)sizeof(key_id), .abi_version = 1};
@@ -6441,7 +6441,8 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
         KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
     uint32_t key_length = mac || aes256_cbc ? 256U : 128U;
     uint32_t usage_mask = archive ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT :
-        mac_verify ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_VERIFY :
+        mac_verify ? (KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_GENERATE |
+                      KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_VERIFY) :
         mac ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_MAC_GENERATE :
         decrypt ? KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT :
         KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT;
@@ -6542,8 +6543,44 @@ static kmip_execution_outcome_t execute_created_key_action(kmip_live_client_t *c
     const kmipkit_byte_span_v1_t cbc_iv = {.data = cbc_iv_bytes, .length = sizeof(cbc_iv_bytes)};
     if (status == 0 && !archived_lifecycle) status = batch_crypto_secret_value(
         input, sizeof(BATCH_CRYPTO_PLAINTEXT), &plaintext);
-    if (status == 0 && mac_verify) status = kmipkit_client_batch_item_mac_verify(
-        &key_id, parameters, plaintext, &mac_data, NULL, 0, 0, &target_item);
+    if (status == 0 && mac_verify) {
+        status = kmipkit_client_batch_item_mac(
+            &key_id, parameters, plaintext, NULL, 0, 0, &mac_item);
+        if (status != 0) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not construct MAC Verify setup MAC request (status %d)", status);
+            goto cleanup;
+        }
+        status = execute_single_typed_item(
+            client, &mac_item, "mac-verify-setup-mac", true, &mac_resp, &mac_res, &meta,
+            &outcome, KMIPKIT_ENUMERATION_OPERATION_MAC, "MAC Verify setup MAC");
+        if (status != 0) goto cleanup;
+        if (meta.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            record_kmip_result(&outcome, &meta);
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "MAC Verify setup MAC was rejected (status=%u reason=%u)",
+                     meta.result_status, meta.result_reason);
+            goto cleanup;
+        }
+        uint8_t mac_id_present = 0, mac_bytes_present = 0, mac_corr_present = 0;
+        kmipkit_unique_identifier_v1_t mac_res_id = {
+            .struct_size = (uint32_t)sizeof(mac_res_id), .abi_version = 1
+        };
+        kmipkit_byte_span_v1_t mac_span = {0}, mac_corr = {0};
+        status = kmipkit_client_batch_item_response_mac(
+            mac_res, &mac_id_present, &mac_res_id, &mac_bytes_present, &mac_span,
+            &mac_corr_present, &mac_corr);
+        if (status != 0 || !mac_bytes_present || !mac_span.data || mac_span.length == 0) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "MAC Verify setup MAC returned no MAC bytes");
+            goto cleanup;
+        }
+        mac_data = mac_span;
+        status = kmipkit_client_batch_item_mac_verify(
+            &key_id, parameters, plaintext, &mac_data, NULL, 0, 0, &target_item);
+    }
     else if (status == 0 && mac) status = kmipkit_client_batch_item_mac(
         &key_id, parameters, plaintext, NULL, 0, 0, &target_item);
     else if (status == 0 && decrypt) status = kmipkit_client_batch_item_decrypt(
@@ -6615,12 +6652,15 @@ cleanup:
         release_created_identifier_copy(&key_id, &key_id_backing);
     }
     if (target_res) kmipkit_client_batch_item_response_release(target_res);
+    if (mac_res) kmipkit_client_batch_item_response_release(mac_res);
     if (prep_res) kmipkit_client_batch_item_response_release(prep_res);
     if (create_res) kmipkit_client_batch_item_response_release(create_res);
     if (target_resp) kmipkit_client_batch_response_release(target_resp);
+    if (mac_resp) kmipkit_client_batch_response_release(mac_resp);
     if (prep_resp) kmipkit_client_batch_response_release(prep_resp);
     if (create_resp) kmipkit_client_batch_response_release(create_resp);
     if (target_item) kmipkit_client_batch_item_release(target_item);
+    if (mac_item) kmipkit_client_batch_item_release(mac_item);
     if (prep_item) kmipkit_client_batch_item_release(prep_item);
     if (create_item) kmipkit_client_batch_item_release(create_item);
     if (attributes) kmipkit_ttlv_structure_release(attributes);

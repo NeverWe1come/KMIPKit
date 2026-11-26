@@ -1793,11 +1793,26 @@ class PythonKmipDriver:
                         protocol_values.ResultReason.FEATURE_NOT_SUPPORTED,
                     )
                 )
+                policy_restricted = (
+                    status_code == protocol_values.ResultStatus.OPERATION_FAILED
+                    and reason_code == protocol_values.ResultReason.PERMISSION_DENIED
+                )
                 pending_correlation = observed.pending_correlation_value
                 result = {
-                    "status": "passed" if success else "pending" if pending else "server_unsupported" if unsupported else "failed",
+                    "status": (
+                        "passed" if success
+                        else "pending" if pending
+                        else "server_unsupported" if unsupported
+                        else "policy_restricted" if policy_restricted
+                        else "failed"
+                    ),
                     "library_correctness": "passed",
-                    "server_compatibility": "supported" if success else "unsupported" if unsupported else "unknown",
+                    "server_compatibility": (
+                        "supported" if success
+                        else "unsupported" if unsupported
+                        else "policy_restricted" if policy_restricted
+                        else "unknown"
+                    ),
                     "parity": "not_compared",
                     "result_status_code": status_code,
                     "result_reason_code": None if reason_code is None else int(reason_code),
