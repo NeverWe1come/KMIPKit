@@ -21,6 +21,7 @@ import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.ManagedObject;
 import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
@@ -30,7 +31,9 @@ import org.kmipkit.ttlv.TtlvValue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
@@ -70,6 +73,9 @@ public final class JavaKmipDriver implements AutoCloseable {
     /** Executes one available typed operation and records only numeric KMIP result codes. */
     public CaseOutcome execute(CatalogLoader.CatalogCase testCase) {
         long start = System.nanoTime();
+        if (createSplitKeyCase(testCase)) {
+            return executeCreateSplitKey(testCase, start);
+        }
         if ("Create".equals(testCase.operation()) || ownedObjectCase(testCase)) {
             return executeCreateWithCleanup(testCase, start);
         }
@@ -95,7 +101,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     static boolean supportsFluent(CatalogLoader.CatalogCase testCase) {
-        return ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
+        return createSplitKeyCase(testCase) || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || Set.of("Create", "Ping").contains(testCase.operation());
     }
 
@@ -248,6 +254,77 @@ public final class JavaKmipDriver implements AutoCloseable {
     static boolean ownedObjectCase(CatalogLoader.CatalogCase testCase) {
         return attributeRead(testCase) || Set.of("test-op-get", "test-op-destroy", "test-op-archive",
                 "test-op-recover", "test-op-activate", "test-op-revoke").contains(testCase.caseId());
+    }
+
+    static boolean createSplitKeyCase(CatalogLoader.CatalogCase testCase) {
+        return Set.of("test-op-create-split-key", "test-obj-split-key").contains(testCase.caseId());
+    }
+
+    private CaseOutcome executeCreateSplitKey(CatalogLoader.CatalogCase testCase, long start) {
+        String name = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
+        boolean fluent = "fluent".equals(connection.apiLevel());
+        var created = new ArrayList<UniqueIdentifier>();
+        CaseOutcome target;
+        try (var source = createTestKeyAttributes(name, isDraft())) {
+            var request = splitKeyRequest(source, fluent);
+            target = executeRequest(testCase, withBatchId(request), result -> {
+                var identifiers = result.createSplitKeyUniqueIdentifiers().orElse(List.of());
+                for (var id : identifiers) {
+                    if (created.stream().noneMatch(previous -> sameIdentifier(previous, id))) {
+                        created.add(id);
+                    }
+                }
+                return identifiers.size() == 2 && created.size() == 2;
+            }, start);
+        } catch (RuntimeException exception) {
+            target = exchangeFailure(exception, start);
+        }
+
+        if ("passed".equals(target.status()) && "test-obj-split-key".equals(testCase.caseId())) {
+            var partNumbers = new HashSet<Integer>();
+            for (var id : created) {
+                var read = executeRequest(testCase, withBatchId(ClientBatchItem.get(id, null, null, null, null)),
+                        response -> readSplitKey(response, id, partNumbers), start);
+                if (!"passed".equals(read.status())) {
+                    target = read;
+                    break;
+                }
+            }
+        }
+        boolean cleaned = true;
+        for (var id : created) {
+            var cleanup = executeRequest(testCase, withBatchId(ClientBatchItem.destroy(id)), result ->
+                    result.destroyResponse().map(value -> sameIdentifier(value.uniqueIdentifier(), id)).orElse(false), start);
+            cleaned &= "passed".equals(cleanup.status());
+        }
+        return cleaned ? target : CaseOutcome.failed("Cleanup Destroy failed for a split key part.", elapsedMillis(start));
+    }
+
+    private ClientBatchItem splitKeyRequest(TtlvStructure source, boolean fluent) {
+        long method = KmipValues.SplitKeyMethod.XOR;
+        if (!fluent) return ClientBatchItem.createSplitKey(2, null, 2, 2, method, null, source, null);
+        try (var attributes = AttributeSet.tryNew(source); var builder = client.request().createSplitKey()) {
+            return builder.objectType(2).parts(2).threshold(2).method(method).attributes(attributes).build();
+        }
+    }
+
+    private static boolean readSplitKey(ClientBatchItemResult result, UniqueIdentifier id, Set<Integer> partNumbers) {
+        var response = result.getResponse().orElse(null);
+        if (response == null) return false;
+        try (response) {
+            if (response.objectTypeRaw().orElse(-1) != 5
+                    || response.uniqueIdentifier().filter(value -> sameIdentifier(value, id)).isEmpty()
+                    || response.object().isEmpty()) return false;
+            try (var object = response.object().orElseThrow().view()) {
+                if (object.itemCount() != 1) return false;
+                try (var item = object.itemAt(0); var wire = item.copy(); var part = ManagedObject.fromItem(5, wire)) {
+                    int index = part.keyPartIdentifier();
+                    return part.splitKeyParts() == 2 && part.splitKeyThreshold() == 2
+                            && part.splitKeyMethod() == KmipValues.SplitKeyMethod.XOR
+                            && index >= 1 && index <= 2 && partNumbers.add(index);
+                }
+            }
+        }
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {

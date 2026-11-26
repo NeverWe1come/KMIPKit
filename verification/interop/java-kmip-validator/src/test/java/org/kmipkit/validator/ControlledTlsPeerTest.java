@@ -507,6 +507,62 @@ class ControlledTlsPeerTest {
     }
 
     @ParameterizedTest
+    @CsvSource({"2.0,typed-protocol", "2.0,fluent", "2.1,typed-protocol", "2.1,fluent"})
+    void splitKeyPartsAreReadAndCleanedThroughBothApis(String version, String apiLevel) throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var testCase = catalog.cases().stream().filter(row -> row.caseId().equals("test-obj-split-key"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, JavaRouteInventory.routeFor(testCase).status());
+        assertTrue(JavaKmipDriver.supportsFluent(testCase));
+
+        int minor = Integer.parseInt(version.substring(2));
+        byte[] serverPem = fixture("server-cert.pem");
+        byte[] clientPem = fixture("client-cert.pem");
+        byte[] first = item(0x420094, 7, "split-part-a".getBytes(StandardCharsets.US_ASCII));
+        byte[] second = item(0x420094, 7, "split-part-b".getBytes(StandardCharsets.US_ASCII));
+        for (boolean wrongPart : List.of(false, true)) {
+            try (var listener = listener(certificate(serverPem), privateKey(fixture("server-key.pem")),
+                    certificate(clientPem))) {
+                var config = (ObjectNode) new ObjectMapper().readTree(connectionJson(listener.getLocalPort(),
+                        serverPem, clientPem, fixture("client-key.pem"), true, apiLevel));
+                Path connection = temporaryDirectory.resolve("split-key.json");
+                Files.writeString(connection, config.put("protocol_version", version).toString());
+                var peer = new FutureTask<>(() -> List.of(
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x28, first, second)),
+                        serveOneResponse(listener, splitPartResponse(minor, first, 1)),
+                        serveOneResponse(listener, splitPartResponse(minor, second, wrongPart ? 1 : 2)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, first)),
+                        serveOneResponse(listener, legacyKeyResponse(minor, 0x14, second))));
+                var thread = new Thread(peer, "java-validator-split-key");
+                thread.setDaemon(true);
+                thread.start();
+                try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connection))) {
+                    var outcome = driver.execute(testCase);
+                    assertEquals(wrongPart ? "failed" : "passed", outcome.status(), outcome.toString());
+                }
+                var requests = peer.get(15, TimeUnit.SECONDS);
+                assertTrue(contains(requests.get(0), item(0x42005c, 5, intBytes(0x28))));
+                assertTrue(contains(requests.get(0), item(0x42008a, 5, intBytes(1))));
+                assertTrue(contains(requests.get(0), item(0x42008b, 2, intBytes(2))));
+                assertTrue(contains(requests.get(0), item(0x42008c, 2, intBytes(2))));
+                for (int index : List.of(1, 3)) {
+                    assertTrue(contains(requests.get(index), first));
+                    assertTrue(contains(requests.get(index + 1), second));
+                }
+            }
+        }
+    }
+
+    private static byte[] splitPartResponse(int minor, byte[] identifier, int part) throws Exception {
+        byte[] keyBlock = structure(0x420040, item(0x420042, 5, intBytes(1)),
+                structure(0x420045, item(0x420043, 8, new byte[32])),
+                item(0x420028, 5, intBytes(3)), item(0x42002a, 2, intBytes(256)));
+        byte[] splitKey = structure(0x420089, item(0x42008b, 2, intBytes(2)), item(0x420044, 2, intBytes(part)),
+                item(0x42008c, 2, intBytes(2)), item(0x42008a, 5, intBytes(1)), keyBlock);
+        return legacyKeyResponse(minor, 0x0a, item(0x420057, 5, intBytes(5)), identifier, splitKey);
+    }
+
+    @ParameterizedTest
     @CsvSource({"2.0,test-op-query,24", "2.1,test-op-query,24",
             "2.0,test-op-discover-versions,30", "2.1,test-op-discover-versions,30", "2.1,test-op-ping,59",
             "2.0,test-crypto-hash-sha_256-0,39", "2.1,test-crypto-hash-sha_256-0,39",
