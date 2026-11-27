@@ -45,7 +45,7 @@ class FluentBatchBuilder:
         return self
 
     def asynchronous_indicator(self, value: int) -> FluentBatchBuilder:
-        self._batch.asynchronous_indicator(value)
+        self._batch.set_asynchronous_indicator(value)
         return self
 
     def with_options(self, options: Any) -> FluentBatchBuilder:

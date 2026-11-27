@@ -46,6 +46,38 @@ class HighLevelPhase3Test(unittest.TestCase):
         self.assertIsInstance(extensions.UniqueIdentifier.text_string("k-1"),
                               extensions.UniqueIdentifier)
 
+    def test_key_ref_delegates_operations(self) -> None:
+        from unittest.mock import MagicMock, patch
+
+        req = MagicMock()
+        for m in ("get", "activate", "deactivate", "revoke", "destroy", "recover",
+                  "archive", "obliterate", "encrypt", "decrypt", "sign",
+                  "signature_verify", "mac", "mac_verify", "encapsulate", "decapsulate"):
+            getattr(req, m).return_value = req
+        req.unique_identifier.return_value = req
+
+        ref = KeyRef(None, "k-1")
+        with patch("kmipkit.high_level.fluent.Request", return_value=req):
+            ref.get()
+            ref.activate()
+            ref.deactivate()
+            ref.destroy()
+            ref.recover()
+            ref.archive()
+            ref.obliterate()
+            ref.encrypt()
+            ref.decrypt()
+            ref.sign()
+            ref.verify()
+            ref.signature_verify()
+            ref.mac()
+            ref.mac_verify()
+            ref.encapsulate()
+            ref.decapsulate(b"ct")
+        self.assertEqual(req.unique_identifier.call_count, 10)
+        req.destroy.assert_called_once()
+        req.decapsulate.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
