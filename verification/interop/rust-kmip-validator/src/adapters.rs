@@ -18,7 +18,7 @@ use kmipkit::protocol::{
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, Ticket, TicketType,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit::ttlv::{Value, ValueView};
+use kmipkit::ttlv::{Structure, Value, ValueView};
 use kmipkit::{ClientRequest, ProtocolVersion};
 
 pub(crate) fn generic_model_check() -> bool {
@@ -63,15 +63,57 @@ fn parse_wire_hex(raw: &str) -> Option<u32> {
     u32::from_str_radix(&normalized, 16).ok()
 }
 
-fn check_ttlv_roundtrip(entry: kmipkit::ttlv::Item) -> bool {
+fn check_ttlv_roundtrip(entry: &kmipkit::ttlv::Item) -> bool {
     let mut wire = Vec::new();
-    if crate::generic_wire::encode(&entry, &mut wire).is_err() {
+    if crate::generic_wire::encode(entry, &mut wire).is_err() {
         return false;
     }
     let Ok(decoded) = kmipkit::ttlv::codec::decode(&wire) else {
         return false;
     };
-    decoded.tag().raw() == entry.tag().raw()
+    matches_ttlv_wire(&wire, &decoded)
+}
+
+fn matches_ttlv_wire(wire: &[u8], decoded: &kmipkit::ttlv::Item) -> bool {
+    let mut reconstructed = Vec::new();
+    crate::generic_wire::encode(decoded, &mut reconstructed).is_ok() && reconstructed == wire
+}
+
+fn check_data_type_boundaries(case: &Case) -> bool {
+    use std::sync::OnceLock;
+    static FIXTURES: OnceLock<serde_json::Value> = OnceLock::new();
+    let fixtures = FIXTURES.get_or_init(|| {
+        serde_json::from_str(include_str!("../../shared/vectors/ttlv-boundaries.json"))
+            .expect("valid pinned TTLV boundary fixtures")
+    });
+    let kind = case.requires["wire_value"]
+        .as_str()
+        .and_then(parse_wire_hex);
+    let Some(samples) = fixtures["vectors"].as_array().and_then(|vectors| {
+        vectors.iter().find(|vector| {
+            kind.is_some() && kind == vector["type_code"].as_str().and_then(parse_wire_hex)
+        })?["samples"]
+            .as_array()
+    }) else {
+        return false;
+    };
+    !samples.is_empty()
+        && samples.iter().all(|sample| {
+            let Some(hex) = sample["hex"].as_str() else {
+                return false;
+            };
+            let Ok(bytes) = crate::generic_wire::decode_hex(hex) else {
+                return false;
+            };
+            match (
+                sample["valid"].as_bool(),
+                kmipkit::ttlv::codec::decode(&bytes),
+            ) {
+                (Some(true), Ok(decoded)) => matches_ttlv_wire(&bytes, &decoded),
+                (Some(false), Err(_)) => true,
+                _ => false,
+            }
+        })
 }
 
 fn check_sample_value_type(kind: &str) -> bool {
@@ -100,7 +142,7 @@ fn check_sample_value_type(kind: &str) -> bool {
     let Ok(entry) = item(0x0042_0079, sample) else {
         return false;
     };
-    check_ttlv_roundtrip(entry)
+    check_ttlv_roundtrip(&entry)
 }
 
 fn verify_local_batch(case: &Case, version: &str) -> bool {
@@ -115,9 +157,9 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
         return false;
     };
     match scenario {
-        "test-batch-count-zero-rejected" => {
-            ClientBatch::empty().build_request_message(proto, &limits).is_err()
-        }
+        "test-batch-count-zero-rejected" => ClientBatch::empty()
+            .build_request_message(proto, &limits)
+            .is_err(),
         "test-batch-single-item-options-omitted" => {
             let batch = ClientBatch::new(kmipkit::ClientBatchItem::discover_versions());
             let Ok(msg) = batch.build_request_message(proto, &limits) else {
@@ -151,52 +193,71 @@ fn verify_local_batch(case: &Case, version: &str) -> bool {
                 return false;
             };
             let create_item = kmipkit::ClientBatchItem::new(created);
-            let activate_item = kmipkit::ClientBatchItem::new(ClientRequest::Activate(
-                ActivateRequest::new(None),
-            ));
+            let activate_item =
+                kmipkit::ClientBatchItem::new(ClientRequest::Activate(ActivateRequest::new(None)));
             let batch = ClientBatch::from_items([activate_item, create_item]);
             batch.build_request_message(proto, &limits).is_err()
         }
         "test-batch-count-mismatch-rejected" => {
-            let Ok(ver) = structure(
-                0x0042_0069,
-                vec![
-                    item(0x0042_006a, Value::integer(2)).ok(),
-                    item(0x0042_006b, Value::integer(1)).ok(),
-                ]
-                .into_iter()
-                .collect::<Option<Vec<_>>>()
-                .unwrap_or_default(),
-            ) else {
-                return false;
-            };
-            let Ok(ver_item) = item(0x0042_0069, Value::structure(ver)) else {
-                return false;
-            };
-            let Ok(cnt_item) = item(0x0042_000d, Value::integer(1)) else {
-                return false;
-            };
-            let Ok(hdr) = structure(0x0042_0077, vec![ver_item, cnt_item]) else {
-                return false;
-            };
-            let Ok(hdr_item) = item(0x0042_0077, Value::structure(hdr)) else {
-                return false;
-            };
-            let make_batch_item = || -> Option<kmipkit::ttlv::Item> {
-                let op = item(0x0042_005c, Value::enumeration(0x1e)).ok()?;
-                let pl = item(0x0042_0079, Value::structure(structure(0x0042_0079, vec![]).ok()?)).ok()?;
-                item(0x0042_000f, Value::structure(structure(0x0042_000f, vec![op, pl]).ok()?)).ok()
-            };
-            let (Some(b1), Some(b2)) = (make_batch_item(), make_batch_item()) else {
-                return false;
-            };
-            let Ok(msg_tree) = structure(0x0042_0078, vec![hdr_item, b1, b2]) else {
-                return false;
-            };
-            kmipkit::protocol::RequestMessage::try_from_ttlv(msg_tree).is_err()
+            batch_count_mismatch(proto).is_ok_and(|tree| {
+                matches!(
+                    kmipkit::protocol::RequestMessage::try_from_ttlv(tree),
+                    Err(error) if error.kind() == kmipkit::protocol::MessageValidationErrorKind::BatchCountMismatch
+                )
+            })
         }
         _ => false,
     }
+}
+
+fn batch_count_mismatch(version: ProtocolVersion) -> Result<Structure> {
+    let version = item(
+        0x0042_0069,
+        Value::structure(structure(
+            0x0042_0069,
+            vec![
+                item(0x0042_006a, Value::integer(version.major()))?,
+                item(0x0042_006b, Value::integer(version.minor()))?,
+            ],
+        )?),
+    )?;
+    let header = item(
+        0x0042_0077,
+        Value::structure(structure(
+            0x0042_0077,
+            vec![version, item(0x0042_000d, Value::integer(1))?],
+        )?),
+    )?;
+    let batch_item = || {
+        let payload = DiscoverVersionsRequest::new()
+            .to_ttlv_payload()
+            .map_err(|_| "invalid Discover Versions fixture")?;
+        item(
+            0x0042_000f,
+            Value::structure(structure(
+                0x0042_000f,
+                vec![
+                    item(0x0042_005c, Value::enumeration(0x1e))?,
+                    item(0x0042_0079, Value::structure(payload))?,
+                ],
+            )?),
+        )
+    };
+    structure(0x0042_0078, vec![header, batch_item()?, batch_item()?])
+}
+
+fn check_local_version_boundary(operation: &str) -> bool {
+    let code = match operation {
+        "Get Constraints" => 0x38,
+        "Ping" => 0x3b,
+        "Process" => 0x3a,
+        "Query Asynchronous Requests" => 0x39,
+        "Set Constraints" => 0x37,
+        "Set Defaults" => 0x36,
+        _ => return false,
+    };
+    kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_0, code).is_err()
+        && kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_1, code).is_ok()
 }
 
 pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
@@ -209,19 +270,7 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
         return true;
     }
     if case.category == "version_boundaries" {
-        let op = match case.operation.as_str() {
-            "Get Constraints" => Some(0x38),
-            "Ping" => Some(0x3b),
-            "Process" => Some(0x3a),
-            "Query Asynchronous Requests" => Some(0x39),
-            "Set Constraints" => Some(0x37),
-            "Set Defaults" => Some(0x36),
-            _ => None,
-        };
-        return op.is_some_and(|code| {
-            kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_0, code).is_err()
-                && kmipkit::VersionGate::validate_operation(ProtocolVersion::V2_1, code).is_ok()
-        });
+        return check_local_version_boundary(&case.operation);
     }
     if case.category == "batch_workflows" {
         return verify_local_batch(case, version);
@@ -238,7 +287,9 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
                     return false;
                 };
                 match case.requires["allocation"].as_str() {
-                    Some("assigned" | "extension") => rt.try_checked().is_ok_and(|t| t.raw() == raw),
+                    Some("assigned" | "extension") => {
+                        rt.try_checked().is_ok_and(|t| t.raw() == raw)
+                    }
                     _ => rt.try_checked().is_err(),
                 }
             }),
@@ -255,17 +306,21 @@ pub(crate) fn verify_local(case: &Case, version: &str) -> bool {
             .as_str()
             .and_then(parse_wire_hex)
             .is_some_and(|raw| {
-                item(0x0042_005c, Value::enumeration(raw)).is_ok_and(check_ttlv_roundtrip)
+                item(0x0042_005c, Value::enumeration(raw))
+                    .as_ref()
+                    .is_ok_and(check_ttlv_roundtrip)
             }),
         "bitmask_value" => case.requires["wire_value"]
             .as_str()
             .and_then(parse_wire_hex)
             .is_some_and(|raw| {
                 let signed = i32::from_be_bytes(raw.to_be_bytes());
-                item(0x0042_002c, Value::integer(signed)).is_ok_and(check_ttlv_roundtrip)
+                item(0x0042_002c, Value::integer(signed))
+                    .as_ref()
+                    .is_ok_and(check_ttlv_roundtrip)
             }),
-        "data_type"
-        | "operation_payload_field"
+        "data_type" => check_data_type_boundaries(case),
+        "operation_payload_field"
         | "structure_member"
         | "operation_payload_value_variant"
         | "message_field"
@@ -412,7 +467,11 @@ pub(crate) fn request(
         }
         "Ping" => ClientRequest::ping(),
         "Query" => {
-            let functions = if let Some(value) = case.requires["query_function"].as_str() {
+            let functions = if case.case_id == "test-query-attestation-nonce" {
+                vec![QueryFunction::ATTESTATION_TYPES]
+            } else if case.case_id == "test-query-username-password-credential" {
+                vec![QueryFunction::OPERATIONS]
+            } else if let Some(value) = case.requires["query_function"].as_str() {
                 vec![QueryFunction::from_raw(
                     value.parse().map_err(|_| "invalid Query function")?,
                 )]

@@ -2,6 +2,7 @@
 
 use super::super::{CreateBuilderState, PingBuilderState};
 use super::*;
+use crate::kmipkit_discover_versions_builder_t;
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, Attribute, AttributeSet, CreateKeyPairRequest, CreateRequest,
@@ -180,6 +181,22 @@ pub(super) fn execute_fluent_item(
     asynchronous_indicator: Option<u32>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
+    execute_fluent_batch(client, limits, options, out_response, || {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        Ok(batch)
+    })
+}
+
+fn execute_fluent_batch(
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: &RequestOptions,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    build_batch: impl FnOnce() -> FfiResult<ClientBatch>,
+) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_response);
         let client_handle = read_handle!(client, Client);
@@ -193,10 +210,7 @@ pub(super) fn execute_fluent_item(
         let Ok(mut client) = client.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
-        if let Some(indicator) = asynchronous_indicator {
-            batch = batch.with_asynchronous_indicator(indicator);
-        }
+        let batch = try_ffi!(build_batch());
         match client.execute_with_options(batch, limits, options) {
             Ok(response) => {
                 *out = try_ffi!(try_make_handle(
@@ -3936,9 +3950,92 @@ pub unsafe extern "C" fn kmipkit_client_execute_item_v1(
     })
 }
 
-/// High-level direct Discover Versions helper offering `versions` (or default 2.1 when empty).
+const MAX_DISCOVER_VERSIONS: usize = 1024;
+
+/// Creates a reusable Discover Versions builder. Without explicit offers, it uses KMIP 2.1.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_discover_versions_v1(
+pub extern "C" fn kmipkit_discover_versions_builder_create(
+    out_builder: *mut *mut kmipkit_discover_versions_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::DiscoverVersionsBuilder,
+            HandleValue::DiscoverVersionsBuilder(Mutex::new(Vec::new())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Appends a supported protocol version in preference order.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_add_version(
+    builder: *mut kmipkit_discover_versions_builder_t,
+    major: i32,
+    minor: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::DiscoverVersionsBuilder));
+        let HandleValue::DiscoverVersionsBuilder(versions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        if !version.is_catalogued() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let mut versions = try_ffi!(versions.lock().map_err(|_| ERROR_INTERNAL));
+        if versions.len() >= MAX_DISCOVER_VERSIONS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        try_ffi!(versions.try_reserve(1).map_err(|_| ERROR_RESOURCE_LIMIT));
+        versions.push(version);
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Discover Versions batch item.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_build_batch_item(
+    builder: *mut kmipkit_discover_versions_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = try_ffi!(reference_handle(builder, Kind::DiscoverVersionsBuilder));
+        let HandleValue::DiscoverVersionsBuilder(versions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let versions = try_ffi!(versions.lock().map_err(|_| ERROR_INTERNAL));
+        let request = if versions.is_empty() {
+            kmipkit_protocol::DiscoverVersionsRequest::new()
+        } else {
+            try_ffi!(
+                kmipkit_protocol::DiscoverVersionsRequest::with_versions(versions.clone())
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            )
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::DiscoverVersions(request)));
+        SUCCESS
+    })
+}
+
+/// Releases the opaque Discover Versions builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_discover_versions_builder_release(
+    builder: *mut kmipkit_discover_versions_builder_t,
+) {
+    ffi_entrypoint(|| release(builder, Kind::DiscoverVersionsBuilder));
+}
+
+/// High-level direct Discover Versions helper offering `versions` (or default 2.1 when empty).
+///
+/// # Safety
+///
+/// If the count is nonzero and `versions` is non-null, it must address
+/// that many initialized, aligned versions for the duration of the call.
+/// A non-null `out_response` must address a writable handle slot.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_discover_versions_v1(
     client: *mut kmipkit_client_t,
     versions: *const kmipkit_protocol_version_v1_t,
     version_count: u64,
@@ -3953,7 +4050,7 @@ pub extern "C" fn kmipkit_client_discover_versions_v1(
                 return record_ffi_error(ERROR_INVALID_INPUT);
             }
             let count = try_ffi!(usize::try_from(version_count).map_err(|_| ERROR_INVALID_INPUT));
-            if count > 1024 {
+            if count > MAX_DISCOVER_VERSIONS {
                 return record_ffi_error(ERROR_RESOURCE_LIMIT);
             }
             // SAFETY: caller guarantees `versions` points to `count` initialized entries.
@@ -3972,9 +4069,81 @@ pub extern "C" fn kmipkit_client_discover_versions_v1(
     })
 }
 
-/// High-level direct Query helper for one or more KMIP Query Function enumerations.
+const MAX_QUERY_FUNCTIONS: usize = 1024;
+
+/// Creates a reusable Query builder with an initially empty list of functions.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_query_v1(
+pub extern "C" fn kmipkit_query_builder_create(
+    out_builder: *mut *mut kmipkit_query_builder_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_builder);
+        *out = try_ffi!(try_make_handle(
+            Kind::QueryBuilder,
+            HandleValue::QueryBuilder(Mutex::new(Vec::new())),
+        ));
+        SUCCESS
+    })
+}
+
+/// Appends a KMIP Query Function, preserving the order and raw enumeration value.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_add_function(
+    builder: *mut kmipkit_query_builder_t,
+    function: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = try_ffi!(reference_handle(builder, Kind::QueryBuilder));
+        let HandleValue::QueryBuilder(functions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let mut functions = try_ffi!(functions.lock().map_err(|_| ERROR_INTERNAL));
+        if functions.len() >= MAX_QUERY_FUNCTIONS {
+            return record_ffi_error(ERROR_RESOURCE_LIMIT);
+        }
+        try_ffi!(functions.try_reserve(1).map_err(|_| ERROR_RESOURCE_LIMIT));
+        functions.push(kmipkit_protocol::QueryFunction::from_raw(function));
+        SUCCESS
+    })
+}
+
+/// Builds an independently owned typed Query item. At least one function is required.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_build_batch_item(
+    builder: *mut kmipkit_query_builder_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let handle = try_ffi!(reference_handle(builder, Kind::QueryBuilder));
+        let HandleValue::QueryBuilder(functions) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let functions = try_ffi!(functions.lock().map_err(|_| ERROR_INTERNAL));
+        let request = kmipkit_protocol::QueryRequest::new(functions.iter().copied());
+        if !request.validate().is_valid() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::Query(request)));
+        SUCCESS
+    })
+}
+
+/// Releases the opaque Query builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_query_builder_release(builder: *mut kmipkit_query_builder_t) {
+    ffi_entrypoint(|| release(builder, Kind::QueryBuilder));
+}
+
+/// High-level direct Query helper for one or more KMIP Query Function enumerations.
+///
+/// # Safety
+///
+/// If the count is nonzero and `query_functions` is non-null, it must address
+/// that many initialized, aligned functions for the duration of the call.
+/// A non-null `out_response` must address a writable handle slot.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_query_v1(
     client: *mut kmipkit_client_t,
     query_functions: *const u32,
     query_function_count: u64,
@@ -3982,20 +4151,85 @@ pub extern "C" fn kmipkit_client_query_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if query_functions.is_null() || query_function_count == 0 {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let count = try_ffi!(usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT));
-        if count > 1024 {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        // SAFETY: caller guarantees `query_functions` points to `count` u32 elements.
-        let fns = unsafe { std::slice::from_raw_parts(query_functions, count) };
-        let req = kmipkit_protocol::QueryRequest::new(
-            fns.iter().copied().map(kmipkit_protocol::QueryFunction::from_raw),
-        );
-        execute_simple_request(client, ClientRequest::Query(req), limits, None, out_response)
+        // SAFETY: caller supplies the initialized Query Function array.
+        let request =
+            try_ffi!(unsafe { direct_query_request(query_functions, query_function_count) });
+        execute_simple_request(
+            client,
+            ClientRequest::Query(request),
+            limits,
+            None,
+            out_response,
+        )
     })
+}
+
+/// Executes one Query with Request Header Authentication.
+///
+/// The Authentication slot is cleared when the handle is consumed, including
+/// when the subsequent exchange fails. A failure before consumption leaves it
+/// owned by the caller.
+///
+/// # Safety
+///
+/// A non-null `query_functions` with nonzero count must address that many
+/// initialized, aligned functions. Non-null handle slots must be writable and
+/// must not alias each other or the function array.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_query_with_authentication_v1(
+    client: *mut kmipkit_client_t,
+    query_functions: *const u32,
+    query_function_count: u64,
+    authentication: *mut *mut kmipkit_authentication_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // SAFETY: caller supplies the initialized Query Function array.
+        let request =
+            try_ffi!(unsafe { direct_query_request(query_functions, query_function_count) });
+        // SAFETY: caller owns the writable slot for the duration of this call.
+        let Some(slot) = (unsafe { authentication.as_mut() }) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        execute_fluent_batch(
+            client,
+            limits,
+            &RequestOptions::default(),
+            out_response,
+            || {
+                let authentication = consume_unshared_owner(*slot, Kind::Authentication)?;
+                *slot = ptr::null_mut();
+                let HandleValue::Authentication(authentication) = unwrap_payload(authentication)?
+                else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                Ok(ClientBatch::new(ClientBatchItem::query(request))
+                    .with_authentication(authentication))
+            },
+        )
+    })
+}
+
+unsafe fn direct_query_request(
+    query_functions: *const u32,
+    query_function_count: u64,
+) -> FfiResult<kmipkit_protocol::QueryRequest> {
+    if query_functions.is_null() || query_function_count == 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let count = usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT)?;
+    if count > MAX_QUERY_FUNCTIONS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    // SAFETY: caller supplies the initialized Query Function array.
+    let functions = unsafe { std::slice::from_raw_parts(query_functions, count) };
+    Ok(kmipkit_protocol::QueryRequest::new(
+        functions
+            .iter()
+            .copied()
+            .map(kmipkit_protocol::QueryFunction::from_raw),
+    ))
 }
 
 /// High-level direct RNG Retrieve helper.

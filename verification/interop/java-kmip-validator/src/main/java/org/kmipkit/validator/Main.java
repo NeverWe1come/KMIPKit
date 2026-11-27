@@ -147,7 +147,8 @@ public final class Main {
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
-                        outcome.diagnostic()));
+                        outcome.diagnostic(), "high-level".equals(connection.apiLevel())
+                                && outcome.resultStatusCode() != null ? "high-level" : null));
             }
         } finally {
             if (driver != null) driver.close();
@@ -251,8 +252,15 @@ public final class Main {
 
     private static boolean supportsRoute(CatalogLoader.CatalogCase testCase, ConnectionConfig connection) {
         String apiLevel = connection.apiLevel();
+        if (JavaKmipDriver.queryCredentialCase(testCase) && connection.usernamePassword() == null) return false;
         if ("generic-ttlv".equals(apiLevel)) {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
+        }
+        if ("high-level".equals(apiLevel)) {
+            return hasTypedRoute(testCase) && ("test-op-query".equals(testCase.caseId())
+                    || JavaKmipDriver.queryFieldCase(testCase) || JavaKmipDriver.queryNonceCase(testCase)
+                    || JavaKmipDriver.queryCredentialCase(testCase)
+                    || ("test-op-discover-versions".equals(testCase.caseId()) && connection.usernamePassword() == null));
         }
         if (TypedIncoming.supports(testCase, connection)) return true;
         return hasTypedRoute(testCase) && ("typed-protocol".equals(apiLevel)

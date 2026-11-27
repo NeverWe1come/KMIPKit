@@ -88,23 +88,23 @@ use crate::{
     kmipkit_profile_validation_context_v1_t, kmipkit_profile_validation_error_t,
     kmipkit_profile_validation_error_view_v1_t, kmipkit_profile_validation_result_t,
     kmipkit_profile_validation_selection_v1_t, kmipkit_query_async_requests_request_t,
-    kmipkit_raw_tag_t, kmipkit_register_request_t, kmipkit_registered_extension_value_t,
-    kmipkit_request_batch_item_view_t, kmipkit_request_header_view_t, kmipkit_request_message_t,
-    kmipkit_request_options_v1_t, kmipkit_response_batch_item_view_t,
-    kmipkit_response_header_view_t, kmipkit_response_message_t, kmipkit_revocation_reason_t,
-    kmipkit_revoke_builder_t, kmipkit_revoke_request_t, kmipkit_role_reversed_session_t,
-    kmipkit_secret_bytes_t, kmipkit_secret_text_t, kmipkit_server_request_dispatcher_t,
-    kmipkit_server_request_handler_v1_t, kmipkit_server_request_item_view_v1_t,
-    kmipkit_set_attribute_builder_t, kmipkit_set_attribute_request_t,
-    kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
-    kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
-    kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
-    kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t, kmipkit_ttlv_item_view_t,
-    kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t, kmipkit_ttlv_structure_view_t,
-    kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t, kmipkit_unique_identifier_v1_t,
-    kmipkit_usage_allocation_context_t, kmipkit_username_and_password_credential_t,
-    kmipkit_validated_extension_value_t, kmipkit_validation_issue_view_v1_t,
-    kmipkit_validation_report_t,
+    kmipkit_query_builder_t, kmipkit_raw_tag_t, kmipkit_register_request_t,
+    kmipkit_registered_extension_value_t, kmipkit_request_batch_item_view_t,
+    kmipkit_request_header_view_t, kmipkit_request_message_t, kmipkit_request_options_v1_t,
+    kmipkit_response_batch_item_view_t, kmipkit_response_header_view_t, kmipkit_response_message_t,
+    kmipkit_revocation_reason_t, kmipkit_revoke_builder_t, kmipkit_revoke_request_t,
+    kmipkit_role_reversed_session_t, kmipkit_secret_bytes_t, kmipkit_secret_text_t,
+    kmipkit_server_request_dispatcher_t, kmipkit_server_request_handler_v1_t,
+    kmipkit_server_request_item_view_v1_t, kmipkit_set_attribute_builder_t,
+    kmipkit_set_attribute_request_t, kmipkit_split_key_reference_t,
+    kmipkit_symmetric_key_builder_t, kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t,
+    kmipkit_timeout_limit_v1_t, kmipkit_transport_config_t, kmipkit_transport_config_v1_t,
+    kmipkit_transport_input_v1_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t,
+    kmipkit_ttlv_item_view_t, kmipkit_ttlv_path_t, kmipkit_ttlv_structure_t,
+    kmipkit_ttlv_structure_view_t, kmipkit_ttlv_value_t, kmipkit_ttlv_value_view_t,
+    kmipkit_unique_identifier_v1_t, kmipkit_usage_allocation_context_t,
+    kmipkit_username_and_password_credential_t, kmipkit_validated_extension_value_t,
+    kmipkit_validation_issue_view_v1_t, kmipkit_validation_report_t,
 };
 use kmipkit_client::LeaseContext;
 use kmipkit_client::UsageAllocationContext;
@@ -601,6 +601,8 @@ enum Kind {
     RevokeBuilder,
     CryptoOperationBuilder,
     PingBuilder,
+    QueryBuilder,
+    DiscoverVersionsBuilder,
     CreateBuilder,
     Kmip30OperationBuilder,
     CreateCredentialObject,
@@ -768,6 +770,8 @@ enum HandleValue {
     RevokeBuilder(Mutex<RevokeBuilderState>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     PingBuilder(Mutex<PingBuilderState>),
+    QueryBuilder(Mutex<Vec<kmipkit_protocol::QueryFunction>>),
+    DiscoverVersionsBuilder(Mutex<Vec<kmipkit_protocol::ProtocolVersion>>),
     CreateBuilder(Mutex<CreateBuilderState>),
     Kmip30OperationBuilder(Mutex<client_abi::fluent_kmip30::Kmip30OperationBuilder>),
     CreateCredentialObject(Item),
@@ -4731,8 +4735,14 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions(
 /// Creates a Discover Versions request batch item offering the caller-specified
 /// ordered protocol versions. If `version_count == 0`, behaves identically to
 /// `kmipkit_client_batch_item_discover_versions`.
+///
+/// # Safety
+///
+/// If the count is nonzero and `versions` is non-null, it must address
+/// that many initialized, aligned versions for the duration of the call.
+/// A non-null `out_item` must address a writable handle slot.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
+pub unsafe extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
     versions: *const crate::kmipkit_protocol_version_v1_t,
     version_count: u64,
     out_item: *mut *mut kmipkit_client_batch_item_t,
@@ -4753,7 +4763,9 @@ pub extern "C" fn kmipkit_client_batch_item_discover_versions_with_versions(
             let slice = unsafe { std::slice::from_raw_parts(versions, count) };
             let mut offered = Vec::with_capacity(count);
             for v in slice {
-                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(v.major, v.minor));
+                offered.push(kmipkit_protocol::ProtocolVersion::from_raw(
+                    v.major, v.minor,
+                ));
             }
             let request = try_ffi!(
                 kmipkit_protocol::DiscoverVersionsRequest::with_versions(offered)

@@ -5,8 +5,8 @@ use crate::models::{Case, CaseResult, Connection, Result};
 use kmipkit::RequestOptions;
 use kmipkit::protocol::{
     CancelResponse, DiscoverVersionsResponse, HashResponse, LocateResponse, PingResponse,
-    PollResponse, ProtocolVersion, ResponseBatchItemView, ResponseMessage, RngRetrieveResponse,
-    SecretBytes,
+    PollResponse, ProtocolVersion, ResponseBatchItemView, ResponseHeaderView, ResponseMessage,
+    RngRetrieveResponse, SecretBytes,
 };
 use kmipkit::ttlv::{Item, Value, ValueView, codec};
 use kmipkit_transport::RawTlsTransport;
@@ -108,7 +108,15 @@ fn is_extended_mutating_op(operation: u32) -> bool {
 pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
     connection.transport == "raw_tls"
         && connection.encoding == "TTLV"
-        && connection.authentication.is_none()
+        && if case.case_id == "test-query-username-password-credential" {
+            connection
+                .authentication
+                .as_ref()
+                .and_then(|a| a.username_password.as_ref())
+                .is_some()
+        } else {
+            connection.authentication.is_none()
+        }
         && operation(case, connection).is_some_and(|operation| {
             if uses_owned_key(operation) || is_extended_mutating_op(operation) {
                 case.execution.mutation == "mutating"
@@ -122,6 +130,10 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
     match (case.case_id.as_str(), connection.protocol_version.as_str()) {
+        (
+            "test-query-attestation-nonce" | "test-query-username-password-credential",
+            "2.0" | "2.1",
+        ) => Some(0x18),
         (_, "2.0" | "2.1")
             if case.operation == "Query" && case.requires["query_function"].is_string() =>
         {
@@ -237,6 +249,12 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         }
         Some(0x08) if case.requires["rotate_attribute_ttlv"].is_string() => {
             locate_rotate_attribute(case, connection, version)
+        }
+        Some(0x18) if case.case_id == "test-query-username-password-credential" => {
+            outcome(case, query_credential(connection, version))
+        }
+        Some(0x18) if case.case_id == "test-query-attestation-nonce" => {
+            query_attestation_nonce(case, connection, version)
         }
         Some(0x18) if case.requires["query_function"].is_string() => {
             outcome(case, query_field(connection, version, case))
@@ -387,13 +405,7 @@ fn run_owned_key(
             result = outcome(
                 case,
                 exchange(connection, version, operation, Some(&id), |batch| {
-                    Ok(same_id(batch)?
-                        && has_field(batch, 0x0042_0049, |value| {
-                            matches!(value, ValueView::Interval(_))
-                        })
-                        && has_field(batch, 0x0042_0048, |value| {
-                            matches!(value, ValueView::DateTime(_))
-                        }))
+                    Ok(same_id(batch)? && issued_lease(batch))
                 }),
             );
         }
@@ -433,6 +445,14 @@ fn run_owned_key(
     } else {
         outcome(case, Err("cleanup Destroy failed for the isolated key"))
     }
+}
+
+fn issued_lease(batch: ResponseBatchItemView<'_>) -> bool {
+    has_field(batch, 0x0042_0049, |value| {
+        matches!(value, ValueView::Interval(_))
+    }) && has_field(batch, 0x0042_0048, |value| {
+        matches!(value, ValueView::DateTime(_))
+    })
 }
 
 fn get_asymmetric_key(
@@ -606,7 +626,10 @@ fn get_attributes(
                         let ValueView::Structure(attrs) = value else {
                             return false;
                         };
-                        let mut matches = attrs.children().iter().filter(|item| item.tag().raw() == tag);
+                        let mut matches = attrs
+                            .children()
+                            .iter()
+                            .filter(|item| item.tag().raw() == tag);
                         let Some(attribute) = matches.next() else {
                             return false;
                         };
@@ -642,7 +665,10 @@ fn get_attributes(
             node(
                 0x0042_013b,
                 vec![
-                    item(0x0042_009d, Value::text_string("KMIPKit.Interop".to_owned()))?,
+                    item(
+                        0x0042_009d,
+                        Value::text_string("KMIPKit.Interop".to_owned()),
+                    )?,
                     item(0x0042_000a, Value::text_string("probe".to_owned()))?,
                 ],
             )?,
@@ -654,8 +680,8 @@ fn get_attributes(
             item(0x0042_013b, Value::enumeration(0x0042_00b6))?,
         ]
     } else {
-        let tag = crate::adapters::local::attribute_tag(name)
-            .ok_or("no direct-tag attribute recipe")?;
+        let tag =
+            crate::adapters::local::attribute_tag(name).ok_or("no direct-tag attribute recipe")?;
         vec![
             item(0x0042_0094, Value::text_string(id.to_owned()))?,
             item(0x0042_013b, Value::enumeration(tag))?,
@@ -723,7 +749,11 @@ fn description_wrapper(tag: u32, text: &str) -> Result<Item> {
     )
 }
 
-fn description_matches(batch: ResponseBatchItemView<'_>, expected: Option<&str>, attr_tag: u32) -> bool {
+fn description_matches(
+    batch: ResponseBatchItemView<'_>,
+    expected: Option<&str>,
+    attr_tag: u32,
+) -> bool {
     let Some(expected) = expected else {
         let has_attrs = batch
             .with_response_payload(|payload| {
@@ -1029,6 +1059,86 @@ fn exchange_payload(
     payload_fields: Vec<Item>,
     check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
 ) -> ExchangeResult {
+    exchange_with_header(
+        connection,
+        version,
+        operation,
+        payload_fields,
+        None,
+        |item, _| check(item),
+    )
+}
+
+fn query_credential(connection: &Connection, version: ProtocolVersion) -> ExchangeResult {
+    let names = connection
+        .authentication
+        .as_ref()
+        .and_then(|a| a.username_password.as_ref())
+        .ok_or("Credential fixture requires configured environment names")?;
+    let read = |name: &str| {
+        std::env::var(name)
+            .map(kmipkit::protocol::SecretText::new)
+            .map_err(|_| "credential environment unavailable")
+    };
+    let value = node(
+        0x0042_0025,
+        vec![
+            item(0x0042_0099, read(&names.username_env)?.into_ttlv_value())?,
+            item(0x0042_00a1, read(&names.password_env)?.into_ttlv_value())?,
+        ],
+    )?;
+    let credential = node(
+        0x0042_0023,
+        vec![item(0x0042_0024, Value::enumeration(1))?, value],
+    )?;
+    exchange_with_header(
+        connection,
+        version,
+        0x18,
+        vec![item(0x0042_0074, Value::enumeration(1))?],
+        Some(node(0x0042_000c, vec![credential])?),
+        |batch, _| check_probe(batch, 0x18, version),
+    )
+}
+
+fn query_attestation_nonce(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+) -> CaseResult {
+    let mut valid_nonce = false;
+    let result = item(0x0042_0074, Value::enumeration(7)).and_then(|function| {
+        exchange_with_header(
+            connection,
+            version,
+            0x18,
+            vec![function],
+            Some(item(0x0042_00d3, Value::boolean(true))?),
+            |_, header| {
+                valid_nonce = header
+                    .with_nonce(|nonce| crate::driver::nonce_fields_present(&nonce))
+                    .unwrap_or(false);
+                Ok(true)
+            },
+        )
+    });
+    let mut observed = outcome(case, result);
+    if !valid_nonce && observed.result_status_code == Some(0) {
+        observed.status = "failed";
+        observed.server_compatibility = "unknown";
+        "generic Query did not return a usable Nonce".clone_into(&mut observed.diagnostic);
+    }
+    observed
+}
+
+fn exchange_with_header(
+    connection: &Connection,
+    version: ProtocolVersion,
+    operation: u32,
+    payload_fields: Vec<Item>,
+    optional_header_field: Option<Item>,
+    check: impl FnOnce(ResponseBatchItemView<'_>, ResponseHeaderView<'_>) -> Result<bool>,
+) -> ExchangeResult {
     let protocol = node(
         0x0042_0069,
         vec![
@@ -1039,13 +1149,13 @@ fn exchange_payload(
             )?,
         ],
     )?;
+    let mut header = vec![protocol];
+    header.extend(optional_header_field);
+    header.push(item(0x0042_000d, Value::integer(1))?);
     let request = node(
         0x0042_0078,
         vec![
-            node(
-                0x0042_0077,
-                vec![protocol, item(0x0042_000d, Value::integer(1))?],
-            )?,
+            node(0x0042_0077, header)?,
             node(
                 0x0042_000f,
                 vec![
@@ -1058,7 +1168,7 @@ fn exchange_payload(
     let mut transport = RawTlsTransport::new(transport_config(connection)?)
         .map_err(|_| "generic TLS configuration rejected")?;
     let limits = codec::CodecLimits::defaults();
-    let mut wire = Vec::new();
+    let mut wire = zeroize::Zeroizing::new(Vec::new());
     encode(&request, &mut wire)?;
     let response = transport
         .exchange_with_options(
@@ -1074,7 +1184,7 @@ fn check_response(
     wire: &[u8],
     operation: u32,
     version: ProtocolVersion,
-    check: impl FnOnce(ResponseBatchItemView<'_>) -> Result<bool>,
+    check: impl FnOnce(ResponseBatchItemView<'_>, ResponseHeaderView<'_>) -> Result<bool>,
 ) -> ExchangeResult {
     let root = codec::decode(wire).map_err(|_| "generic response failed TTLV decoding")?;
     if root.tag().raw() != 0x0042_007b {
@@ -1102,7 +1212,9 @@ fn check_response(
         .result_status()
         .ok_or("response status missing")?
         .raw();
-    if (status == 0 || (status == 2 && matches!(operation, POLL | CANCEL))) && !check(batch)? {
+    if (status == 0 || (status == 2 && matches!(operation, POLL | CANCEL)))
+        && !check(batch, response.header())?
+    {
         return Err("generic response payload did not satisfy the case");
     }
     Ok((
@@ -1149,6 +1261,7 @@ pub(crate) fn asynchronous(
         reason,
         used_high_level: false,
         nonempty_structure_tags: Vec::new(),
+        usable_nonce: false,
         identifier: None,
         identifiers,
         correlation,

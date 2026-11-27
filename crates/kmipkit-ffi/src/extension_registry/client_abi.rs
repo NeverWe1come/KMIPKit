@@ -1138,8 +1138,14 @@ pub extern "C" fn kmipkit_client_batch_item_count(
 ///
 /// On success, the batch handle in `*inout_batch` is consumed and cleared to
 /// null. On failure, `*inout_batch` remains unchanged and owned by the caller.
+///
+/// # Safety
+///
+/// Non-null `inout_batch` and `out_message` must address distinct, properly
+/// aligned slots accessible for writing throughout the call. The caller must
+/// own the batch handle stored in `inout_batch`.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_client_batch_build_request_message(
+pub unsafe extern "C" fn kmipkit_client_batch_build_request_message(
     inout_batch: *mut *mut kmipkit_client_batch_t,
     protocol_version: kmipkit_protocol_version_v1_t,
     limits: *mut kmipkit_codec_limits_t,

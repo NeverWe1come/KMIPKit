@@ -24,6 +24,13 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 <p id="compatibility"></p>
 <p id="inventory"></p>
 <p id="oasis-ttlv"></p>
+<details id="cosmian-table" hidden>
+<summary>Cosmian support table</summary>
+<div class="scroll"><table id="cosmian-coverage">
+<thead><tr><th>KMIP</th><th>Rows</th><th>Cell status</th><th>Count</th></tr></thead>
+<tbody></tbody>
+</table></div>
+</details>
 <details id="catalog-results" hidden>
 <summary>Installed-validator execution catalog</summary>
 <div class="scroll"><table id="catalog">
@@ -62,6 +69,19 @@ byId("oasis-ttlv").textContent = fixtureChecks.flatMap(([label, checks]) =>
 ).join(" · ");
 function cells(parent, values) {
   for (const value of values) parent.insertCell().textContent = value ?? "—";
+}
+const cosmianTables = report.summary.cosmian_table || [];
+byId("cosmian-table").hidden = cosmianTables.length === 0;
+for (const table of cosmianTables) {
+  const protocol = table.protocol_version;
+  for (const [state, count] of Object.entries(table.completion.cells_by_status)) {
+    const row = document.querySelector("#cosmian-coverage tbody").insertRow();
+    const link = document.createElement("a");
+    link.href = `cosmian-${protocol}.json`;
+    link.textContent = protocol;
+    row.insertCell().append(link);
+    cells(row, [table.rows, state.replaceAll("_", " "), count]);
+  }
 }
 byId("catalog-results").hidden = report.catalog_runs.length === 0;
 for (const name of languages) {

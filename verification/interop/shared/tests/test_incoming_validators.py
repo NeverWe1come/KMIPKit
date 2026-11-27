@@ -20,7 +20,7 @@ from verification.interop.shared.tools.operation_catalog import build_catalog, d
 from verification.interop.shared.tools.table_asymmetric_key_exchanges import asymmetric_key_cases
 from verification.interop.shared.tools.table_authenticated_encryption import authenticated_encryption_cases
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
-from verification.interop.shared.tools.table_query_fields import query_cases
+from verification.interop.shared.tools.table_query_fields import credential_case, nonce_case, query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -370,9 +370,7 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_query_fields_require_the_selected_structure(self):
         for language, available in installed_validators():
-            routes = ("generic-ttlv", "typed-protocol")
-            if language == "rust":
-                routes += ("fluent", "high-level")
+            routes = ("generic-ttlv", "typed-protocol", "fluent", "high-level")
             for minor in (0, 1):
                 for route in routes:
                     for invalid in (False, True):
@@ -381,12 +379,23 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.skipTest(f"Installed {language} validator required")
                             self.query_operations(language, minor, fields=True, invalid=invalid, route=route)
 
-    def query_operations(self, language, minor, *, fields=False, invalid=False, route="generic-ttlv"):
+    def test_generic_c_query_retains_failure_without_operation(self):
+        validators = dict(installed_validators())
+        if not validators.get("c"):
+            self.skipTest("Installed C validator required")
+        for minor in (0, 1):
+            with self.subTest(minor=minor):
+                self.query_operations("c", minor, fields=True, operation_omitted=True)
+
+    def query_operations(self, language, minor, *, fields=False, invalid=False, route="generic-ttlv",
+                         operation_omitted=False):
         with tempfile.TemporaryDirectory(prefix="kmipkit-query-operations-") as dirname:
             work = Path(dirname)
             catalog = version_catalog(f"2.{minor}")
             query = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-query")
             cases = list(query_cases(f"2.{minor}", query)) if fields else [query]
+            if operation_omitted:
+                cases = [case for case in cases if case["case_id"] == "test-query-rng-parameters"]
             catalog_path = work / "catalog.json"
             catalog_path.write_text(json.dumps(with_cases(catalog, cases)))
             members = {
@@ -439,15 +448,20 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 else:
                                     returned = number(0x42005C, 5, 1)
                                 batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                                if operation_omitted:
+                                    result_fields = [number(0x42007F, 5, 1), number(0x42007E, 5, 4)]
+                                else:
+                                    result_fields = [number(0x42005C, 5, 0x18), *batch_ids,
+                                                     number(0x42007F, 5, 0), structure(0x42007C, returned)]
                                 peer.sendall(structure(
                                     0x42007B,
                                     structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
                                               number(0x42000D, 2, 1)),
-                                    structure(0x42000F, number(0x42005C, 5, 0x18), *batch_ids,
-                                              number(0x42007F, 5, 0), structure(0x42007C, returned)),
+                                    structure(0x42000F, *result_fields),
                                 ))
                         _, stderr = process.communicate(timeout=15)
-                        self.assertEqual(process.returncode != 0, invalid, stderr.decode(errors="replace"))
+                        self.assertEqual(process.returncode != 0, invalid or operation_omitted,
+                                         stderr.decode(errors="replace"))
                     finally:
                         if process.poll() is None:
                             process.terminate()
@@ -455,14 +469,158 @@ class DirectTagValidatorTests(unittest.TestCase):
             results = json.loads(report.read_text())["cases"]
             self.assertEqual({result["case_id"] for result in results}, {case["case_id"] for case in cases})
             for result in results:
-                self.assertEqual(result["status"], "failed" if invalid else "passed")
-                if not invalid:
+                self.assertEqual(result["status"], "failed" if invalid or operation_omitted else "passed")
+                if operation_omitted:
+                    self.assertEqual((result["result_status_code"], result["result_reason_code"]), (1, 4))
+                elif not invalid:
                     self.assertEqual(result["result_status_code"], 0)
                     if route == "high-level":
                         self.assertEqual(result["actual_api_level"], route)
-            if not invalid:
+            if not invalid and not operation_omitted:
                 label = "query-fields" if fields else "query-operations"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{label}")
+
+    def test_discover_versions_checks_the_explicit_offer(self):
+        for language, available in installed_validators():
+            if language == "rust":
+                continue
+            routes = ("typed-protocol", "fluent", "high-level")
+            for minor in (0, 1):
+                for route in routes:
+                    for valid in (True, False):
+                        with self.subTest(language=language, minor=minor, route=route, valid=valid):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.header_fixture_exchange(language, minor, route, valid)
+
+    def test_attestation_nonce_checks_response_header(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for route in ("generic-ttlv", "typed-protocol", "fluent", "high-level"):
+                    for variant in ("valid", "absent", "wrong-type"):
+                        with self.subTest(language=language, minor=minor, route=route, variant=variant):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.header_fixture_exchange(language, minor, route, variant == "valid", nonce=variant)
+
+    def test_query_credential_is_sent_and_rejection_is_preserved(self):
+        for language, available in installed_validators():
+            for minor in (0, 1):
+                for route in ("generic-ttlv", "typed-protocol", "fluent", "high-level"):
+                    for supported in (True, False):
+                        with self.subTest(language=language, minor=minor, route=route, supported=supported):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.header_fixture_exchange(language, minor, route, True,
+                                                         credential="accepted" if supported else "unsupported")
+
+    def header_fixture_exchange(self, language, minor, route, valid, *, nonce=None, credential=None):
+        with tempfile.TemporaryDirectory(prefix="kmipkit-typed-header-") as dirname:
+            work = Path(dirname)
+            catalog = version_catalog(f"2.{minor}")
+            source_id = "test-op-query" if (nonce or credential) else "test-op-discover-versions"
+            case = next(case for case in catalog["test_cases"] if case["case_id"] == source_id)
+            if nonce:
+                case = nonce_case(f"2.{minor}", case)
+            if credential:
+                case = credential_case(f"2.{minor}", case)
+            catalog_path = work / "catalog.json"
+            catalog_path.write_text(json.dumps(with_cases(catalog, [case])))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled",
+                                                      "version": "1"}, "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(10)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                if credential:
+                    config["authentication"] = {"username_password": {
+                        "username_env": "KMIPKIT_INTEROP_TEST_USERNAME",
+                        "password_env": "KMIPKIT_INTEROP_TEST_PASSWORD",
+                    }}
+                    env["KMIPKIT_INTEROP_TEST_USERNAME"] = "public-fixture-user"
+                    env["KMIPKIT_INTEROP_TEST_PASSWORD"] = "public-fixture-input"
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(catalog_path), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    try:
+                        raw, _ = self.accept_request(listener, process, case["operation"])
+                        raw.settimeout(5)
+                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                            request = only(read_message(peer), 0x420078, 1)
+                            header = only(request, 0x420077, 1)
+                            self.assertEqual(only(header, 0x420069, 1), parse_items(version(minor))[0][2])
+                            batch = only(request, 0x42000F, 1)
+                            operation = 0x18 if (nonce or credential) else 0x1E
+                            self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
+                            extra_header = []
+                            if nonce:
+                                self.assertEqual(only(header, 0x4200D3, 6), struct.pack(">Q", 1))
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(number(0x420074, 5, 7)))
+                                if nonce != "absent":
+                                    extra_header.append(structure(
+                                        0x4200C8,
+                                        wire_item(0x4200C9, 8, b"nonce-id"),
+                                        wire_item(0x4200CA, 8 if valid else 7, b"nonce-value"),
+                                    ))
+                                payload = number(0x4200C7, 5, 1)
+                            elif credential:
+                                authentication = only(header, 0x42000C, 1)
+                                body = only(authentication, 0x420023, 1)
+                                self.assertTrue(only(body, 0x420024, 5) == struct.pack(">I", 1))
+                                values = only(body, 0x420025, 1)
+                                self.assertTrue(only(values, 0x420099, 7) == b"public-fixture-user")
+                                self.assertTrue(only(values, 0x4200A1, 7) == b"public-fixture-input")
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(number(0x420074, 5, 1)))
+                                payload = number(0x42005C, 5, 0x18)
+                            else:
+                                self.assertEqual(only(batch, 0x420079, 1), parse_items(version(minor)))
+                                payload = version(minor if valid else 1 - minor)
+                            batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                            result = ([number(0x42007F, 5, 1), number(0x42007E, 5, 5)]
+                                      if credential == "unsupported"
+                                      else [number(0x42007F, 5, 0), structure(0x42007C, payload)])
+                            peer.sendall(structure(
+                                0x42007B,
+                                structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                          *extra_header, number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, operation), *batch_ids,
+                                          *result),
+                            ))
+                        _, stderr = process.communicate(timeout=15)
+                        self.assertEqual(process.returncode == 0, valid, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            report_text = report.read_text()
+            observed, = json.loads(report_text)["cases"]
+            if credential:
+                self.assertNotIn("public-fixture-user", report_text)
+                self.assertNotIn("public-fixture-input", report_text)
+            if credential == "unsupported":
+                self.assertEqual(observed["status"], "server_unsupported")
+                self.assertEqual((observed["result_status_code"], observed["result_reason_code"]), (1, 5))
+                if route == "high-level":
+                    self.assertEqual(observed["actual_api_level"], route)
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-credential-unsupported")
+                return
+            self.assertEqual(observed["status"], "passed" if valid else "failed")
+            if valid or nonce == "absent":
+                self.assertEqual(observed["result_status_code"], 0)
+                if route == "high-level":
+                    self.assertEqual(observed["actual_api_level"], route)
+            if valid:
+                fixture = "attestation-nonce" if nonce else "credential" if credential else "discover-versions"
+                save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{fixture}")
 
     def test_authenticated_encryption_round_trip_and_invalid_tag(self):
         for language, available in installed_validators():

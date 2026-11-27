@@ -227,7 +227,7 @@ def write_jsonl(path, records):
             output.write(canonical(record) + "\n")
 
 
-def write_report(destination, result, catalog_runs=()):
+def write_report(destination, result, catalog_runs=(), table_summaries=()):
     rows = result["rows"]
     overview = {key: value for key, value in result.items() if key != "rows"}
     if catalog_runs:
@@ -252,6 +252,15 @@ def write_report(destination, result, catalog_runs=()):
     for language, counts in overview.get("oasis_ttlv_construction", {}).get("message_checks", {}).items():
         lines.append(f"- {language} constructed OASIS TTLV messages: "
                      + ", ".join(f"{count} {status}" for status, count in counts.items()))
+    if table_summaries:
+        overview["cosmian_table"] = table_summaries
+        lines.extend(("", "## Cosmian support table", "",
+                      "| KMIP | Rows | Cell status | Count |",
+                      "| --- | ---: | --- | ---: |"))
+        for table in table_summaries:
+            version = table["protocol_version"]
+            for state, count in table["completion"]["cells_by_status"].items():
+                lines.append(f"| [{version}](cosmian-{version}.json) | {table['rows']} | {state.replace('_', ' ')} | {count} |")
     if catalog_runs:
         lines.extend(("", "## Installed-validator execution catalog", "",
                       "| Language | KMIP | Scope | Encoding | Transport | API | Passed | Failed | Unsupported | Policy restricted | Not run |",
@@ -415,6 +424,7 @@ def main():
         )
         if args.library_commit and any(run["execution"]["library_commit"] != args.library_commit for run in catalog_runs):
             raise ValueError("catalog evidence does not match the requested library commit")
+        table_summaries = []
         if args.cosmian_minimum:
             from verification.interop.shared.tools.cosmian_minimum import (
                 ALLOWED_VERSIONS, attach_oasis_operation_evidence, build_selection, with_execution_evidence,
@@ -432,7 +442,6 @@ def main():
 
             from verification.interop.shared.tools.table_vendor_extensions import attach_evidence as attach_vendor_evidence
 
-            table_summaries = []
             for version in ALLOWED_VERSIONS:
                 if version in (args.version or VERSIONS):
                     selection, inventory = build_selection(ROOT, version)
@@ -452,19 +461,27 @@ def main():
                                                        languages, args.library_commit)
                     if args.table_vendor_extensions_report:
                         attach_vendor_evidence(ROOT, inventory, args.table_vendor_extensions_report)
-                    table_summaries.append(summarize_table_evidence(inventory, selection))
+                    table_summaries.append(summarize_table_evidence(inventory, selection, languages))
                     (args.output_dir / f"cosmian-{version}.json").write_text(
                         json.dumps(inventory, indent=2) + "\n", encoding="utf-8",
                     )
             (args.output_dir / "cosmian-table-summary.json").write_text(
                 json.dumps(table_summaries, indent=2) + "\n", encoding="utf-8",
             )
-        write_report(args.output_dir, result, catalog_runs)
+        write_report(args.output_dir, result, catalog_runs, table_summaries)
     except (OSError, ValueError) as exc:
         parser.exit(2, f"Campaign failed: {exc}\n")
-    print(json.dumps({k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}, indent=2))
+    console_summary = {k: result[k] for k in ("matrix_sha256", "summary", "public_api", "server_compatibility")}
+    if table_summaries:
+        console_summary["table_completion"] = {
+            summary["protocol_version"]: summary["completion"] for summary in table_summaries
+        }
+    print(json.dumps(console_summary, indent=2))
     if failures or result["parity"].get("mismatched") or (
-        args.require_complete and not coverage_complete(result, tuple(args.version or VERSIONS))
+        args.require_complete and (
+            not coverage_complete(result, tuple(args.version or VERSIONS))
+            or any(not summary["completion"]["complete"] for summary in table_summaries)
+        )
     ):
         return 1
     return 0

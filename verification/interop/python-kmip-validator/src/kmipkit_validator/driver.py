@@ -136,8 +136,8 @@ class PythonKmipDriver:
 
     _HIGH_LEVEL_OPERATIONS = {
         "Add Attribute", "Adjust Attribute", "Delete Attribute", "Get Attributes",
-        "Get Attribute List", "Modify Attribute", "Set Attribute",
-        "Query Asynchronous Requests",
+        "Discover Versions", "Get Attribute List", "Modify Attribute", "Set Attribute",
+        "Query", "Query Asynchronous Requests",
     }
     _FLUENT_OPERATIONS = _DRAFT | {
         "Create", "Create Key Pair", "Create Split Key", "Register", "Re-certify", "Certify",
@@ -225,6 +225,13 @@ class PythonKmipDriver:
         )
         self._client = client.Client.create(configuration, transport)
 
+    def _execute_query(self, functions: list[int], limits: Any) -> Any:
+        authentication = self._authentication()
+        if authentication is None:
+            return self._client.query(functions, limits)
+        with authentication:
+            return self._client.query(functions, limits, authentication=authentication)
+
     def _authentication(self) -> Any | None:
         from kmipkit import credentials
         import os
@@ -287,6 +294,12 @@ class PythonKmipDriver:
             )
         if api_level == "typed-protocol":
             return case["operation"] in cls._OPERATIONS
+        if api_level == "high-level" and case["operation"] == "Discover Versions":
+            return case["case_id"] == "test-op-discover-versions"
+        if api_level == "high-level" and case["operation"] == "Query":
+            return (case["case_id"] in {"test-op-query", "test-query-attestation-nonce",
+                                        "test-query-username-password-credential"}
+                    or "query_function" in case.get("requires", {}))
         return (
             api_level == "high-level"
             and workflow != "async_poll"
@@ -1761,26 +1774,32 @@ class PythonKmipDriver:
     def _exchange(
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
-        query_field: int | None = None,
+        query_field: int | None = None, discover_version: Any | None = None,
+        high_level_exchange: Callable[[Any], Any] | None = None, expect_nonce: bool = False,
         key_block: tuple[Any, Any | None, int] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
 
-        batch = self._client_module.Batch.create()
+        batch = None
         authentication = None
         limits = ttlv.codec_limits_defaults()
         try:
-            if asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(asynchronous_indicator)
-            batch.add_item(item)
-            authentication = self._authentication()
-            if authentication is not None:
-                batch.set_authentication(authentication)
-                authentication = None
-            response = self._client.execute(batch, limits)
+            if high_level_exchange is not None:
+                response = high_level_exchange(limits)
+            else:
+                batch = self._client_module.Batch.create()
+                if asynchronous_indicator is not None:
+                    batch.set_asynchronous_indicator(asynchronous_indicator)
+                batch.add_item(item)
+                authentication = self._authentication()
+                if authentication is not None:
+                    batch.set_authentication(authentication)
+                    authentication = None
+                response = self._client.execute(batch, limits)
             try:
-                if verify_hash and response.item_count() != 1:
-                    raise ValueError("Hash response batch count did not match the request")
+                if (verify_hash or verify_query or query_field is not None or discover_version is not None
+                        ) and response.item_count() != 1:
+                    raise ValueError("Response batch count did not match the request")
                 observed = response.item_at(0)
                 status_code = int(observed.result_status)
                 reason_code = observed.result_reason
@@ -1858,16 +1877,36 @@ class PythonKmipDriver:
                     if success:
                         query = observed.typed_query_response()
                         if query is None:
-                            raise ValueError("Query response payload is unavailable")
-                        with query:
-                            # Exercise both decoded code lists without reporting any server data.
-                            _ = query.operations, query.object_types
-                            if query_field is not None:
-                                from .generic import _has_query_structure
+                            result.update(status="failed", server_compatibility="unknown",
+                                          diagnostic="Query response payload is unavailable")
+                        else:
+                            with query:
+                                # Exercise both decoded code lists without reporting any server data.
+                                _ = query.operations, query.object_types
+                                if query_field is not None:
+                                    from .generic import _has_query_structure
 
-                                with query.raw_view() as fields:
-                                    if not _has_query_structure(fields, query_field):
-                                        raise ValueError("Query did not return the requested nonempty structure")
+                                    with query.raw_view() as fields:
+                                        if not _has_query_structure(fields, query_field):
+                                            result.update(
+                                                status="failed", server_compatibility="unknown",
+                                                diagnostic="Query did not return the requested nonempty structure",
+                                            )
+                if expect_nonce and success:
+                    from .generic import nonce_in_header
+
+                    with observed.response_header_ttlv() as header, ttlv.ttlv_structure_view(header) as view:
+                        if not nonce_in_header(view):
+                            result.update(status="failed", server_compatibility="unknown",
+                                          diagnostic="Query did not return a usable Nonce")
+                if discover_version is not None:
+                    if observed.operation != protocol_values.Operation.DISCOVER_VERSIONS:
+                        raise ValueError("Discover Versions response operation does not match the request")
+                    if success and observed.supported_versions != (discover_version,):
+                        result.update(status="failed", server_compatibility="unknown",
+                                      diagnostic="Discover Versions did not return exactly the offered version")
+                if high_level_exchange is not None:
+                    result["actual_api_level"] = "high-level"
                 if key_block is not None and success:
                     from .generic import key_block_matches
 
@@ -1897,7 +1936,8 @@ class PythonKmipDriver:
         finally:
             if authentication is not None:
                 authentication.close()
-            batch.close()
+            if batch is not None:
+                batch.close()
             limits.close()
 
     def query_operations_and_objects(self) -> dict[str, Any]:
@@ -2284,10 +2324,51 @@ class PythonKmipDriver:
             return self._execute_key_block(key_block_shape == "wrapped")
         if test_case.get("requires", {}).get("expected_status") == "NotSent":
             return self._run_version_boundary(test_case)
-        if operation == "Query" and "query_function" in test_case.get("requires", {}):
-            parameters = test_case["requires"]
-            with self._extensions.client_batch_item_query([int(parameters["query_function"])]) as item:
-                outcome = self._exchange(item, query_field=int(parameters["query_result_tag"]))
+        if (self._api_level == "high-level" and operation == "Discover Versions"
+                and self._connection.get("authentication", {}).get("username_password")):
+            return {
+                "status": "not_run", "library_correctness": "not_checked",
+                "server_compatibility": "unknown", "parity": "not_compared",
+                "diagnostic": "The high-level Discover Versions method cannot set a KMIP batch credential",
+            }
+        if case_id == "test-op-discover-versions":
+            offered = self._extensions.ProtocolVersion(*(int(v) for v in self._connection["protocol_version"].split(".")))
+            if self._api_level == "high-level":
+                outcome = self._exchange(
+                    None, discover_version=offered,
+                    high_level_exchange=lambda limits: self._client.discover_versions(
+                        limits, protocol_versions=[offered]),
+                )
+            elif self._api_level == "fluent":
+                with self._client.request().discover_versions() as builder, builder.protocol_version(offered).build() as item:
+                    outcome = self._exchange(item, discover_version=offered)
+            else:
+                with self._extensions.client_batch_item_discover_versions([offered]) as item:
+                    outcome = self._exchange(item, discover_version=offered)
+            return {key: value for key, value in outcome.items() if not key.startswith("_")}
+        if operation == "Query":
+            parameters = test_case.get("requires", {})
+            query_field = int(parameters["query_result_tag"]) if "query_result_tag" in parameters else None
+            expect_nonce = case_id == "test-query-attestation-nonce"
+            if "query_function" in parameters:
+                functions = [int(parameters["query_function"])]
+            elif expect_nonce:
+                functions = [7]
+            elif case_id == "test-query-username-password-credential":
+                functions = [1]
+            else:
+                functions = [1, 2]
+            if self._api_level == "high-level":
+                outcome = self._exchange(
+                    None, verify_query=True, query_field=query_field, expect_nonce=expect_nonce,
+                    high_level_exchange=lambda limits: self._execute_query(functions, limits),
+                )
+            elif self._api_level == "fluent":
+                with self._client.request().query() as builder, builder.functions(functions).build() as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
+            else:
+                with self._extensions.client_batch_item_query(functions) as item:
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
             return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
             build = self._build_fluent_item if self._api_level == "fluent" else self._build_item

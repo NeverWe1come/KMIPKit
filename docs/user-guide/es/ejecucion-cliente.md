@@ -679,10 +679,16 @@ formato, configurar la confianza, los plazos y el comportamiento de conexiones.
 El modelo de credenciales y autenticación proporciona valores tipados de Credential y Authentication que
 conservan el árbol TTLV original en `kmipkit-protocol`. Authentication
 contiene una o más Credential en el orden indicado por el llamador. El cliente
-puede adjuntar ese valor a un `ClientBatch`; se codifica en el Request Header
-del mensaje enviado. Los modelos Credential no se adjuntan por separado: se
-incluyen dentro de Authentication. El objeto `Client` no conserva esas
-credenciales para peticiones posteriores.
+puede adjuntar Authentication a un lote o pasarlo a la operación Query de alto
+nivel. El cliente lo codifica en el Request Header de ese intercambio.
+
+En Rust usa `Client::query_with_authentication`. En C usa
+`kmipkit_client_query_with_authentication_v1`. En Java usa la sobrecarga de
+`KmipClient.query` que recibe `Authentication`. En Python usa el argumento
+`authentication` de `Client.query`. Estos métodos consumen Authentication
+al adjuntarlo a la solicitud. En C, la función pone a nulo el puntero de
+Authentication que recibe por referencia, incluso si el intercambio falla
+después de adjuntarlo.
 
 Una Credential tipada Hashed Password requiere la marca de tiempo y los bytes
 hash proporcionados por el llamador. Hashing Algorithm es opcional. Si se

@@ -298,8 +298,8 @@ fn parse_attributes(structure: &StructureView<'_>) -> Result<AttributeSet, GetAt
         items.push(item);
     }
 
-    let attributes =
-        AttributeSet::try_new_from_response(items).map_err(GetAttributesError::InvalidAttributeSet)?;
+    let attributes = AttributeSet::try_new_from_response(items)
+        .map_err(GetAttributesError::InvalidAttributeSet)?;
     attributes
         .validate_single_instance_cardinality()
         .map_err(GetAttributesError::InvalidAttributeSet)?;

@@ -24,5 +24,6 @@ public record RunReport(String schemaVersion, String runId, String testedAt, Str
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CaseEvidence(String caseId, String status, String libraryCorrectness,
                                String serverCompatibility, String parity, double durationMs,
-                               Long resultStatusCode, Long resultReasonCode, String diagnostic) { }
+                               Long resultStatusCode, Long resultReasonCode, String diagnostic,
+                               String actualApiLevel) { }
 }

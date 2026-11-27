@@ -634,11 +634,18 @@ timeouts, and connection behavior.
 
 ## Credentials and attestation capability
 
-the credentials and attestation model provides typed, raw-preserving Credential and Authentication
-values in `kmipkit-protocol`. Authentication values contain one or more
-Credentials in caller-supplied order. These are in-memory models in this
-increment; the request payload does not include Authentication or Credential
-data.
+The credentials and attestation model provides typed, raw-preserving Credential
+and Authentication values in `kmipkit-protocol`. Authentication contains one or
+more Credentials in caller-supplied order. A client can attach Authentication to
+a batch or pass it to the high-level Query operation. The client encodes it in
+the Request Header for that exchange only.
+
+Use `Client::query_with_authentication` in Rust,
+`kmipkit_client_query_with_authentication_v1` in C, the `KmipClient.query`
+overload that accepts `Authentication` in Java, or the `authentication` keyword
+argument to `Client.query` in Python. These methods consume Authentication
+when they attach it to the request. The C method clears the caller's handle
+slot at that point, including if the exchange subsequently fails.
 
 A typed Hashed Password Credential requires the caller's Timestamp and hashed
 bytes. Hashing Algorithm is optional. If omitted, the model reports effective

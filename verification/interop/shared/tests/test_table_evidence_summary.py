@@ -33,7 +33,6 @@ class TableEvidenceSummaryTests(unittest.TestCase):
         self.assertEqual((0, 0), (first["live_expected_cases_met_cells"],
                                  second["live_expected_cases_met_cells"]))
 
-
     def test_controlled_success_does_not_confirm_provider_support_expectation(self):
         case_id = "returned-key-value"
         success = {"case_id": case_id, "status": "passed", "library_correctness": "passed",
@@ -43,6 +42,38 @@ class TableEvidenceSummaryTests(unittest.TestCase):
                 "case_results": [{**success, "scope": "controlled"}, {**success, "scope": "live"}]}
         row = {"server_cases": [case_id], "obligations": [cell]}
         catalog = {"test_cases": [{"case_id": case_id, "requires": {"controlled_expected_status": "Success"}}]}
-        summarize({"protocol_version": "2.1", "rows": [row]}, catalog)
+        summary = summarize({"protocol_version": "2.1", "rows": [row]}, catalog)
+        self.assertTrue(summary["completion"]["evidence_complete"])
+        self.assertFalse(summary["completion"]["complete"])
         self.assertEqual({"matched": [case_id], "missing": []}, cell["expected_case_outcomes"]["controlled"])
         self.assertEqual({"matched": [], "missing": [case_id]}, cell["expected_case_outcomes"]["live"])
+
+        self.assertEqual("provider_behavior_differs", cell["completion_status"])
+
+    def test_completion_requires_evidence_for_the_selected_route(self):
+        archive = {"case_id": "archive", "status": "server_unsupported", "library_correctness": "passed",
+                   "result_status_code": 1, "result_reason_code": 5}
+        cell = {"language": "rust", "api_level": "typed-protocol", "expectation": "verify_unsupported_response",
+                "case_results": [{**archive, "scope": "controlled"}, {**archive, "scope": "live"}]}
+        missing = {"language": "c", "api_level": "fluent", "expectation": "verify_unsupported_response"}
+        inventory = {"protocol_version": "2.0", "rows": [{"server_cases": ["archive"],
+                                                         "obligations": [cell, missing]}]}
+        catalog = {"test_cases": [{"case_id": "archive", "requires": {}}]}
+        self.assertEqual({"complete": False, "evidence_complete": False, "cells_by_status": {
+            "complete": 1, "missing_controlled_evidence": 1,
+        }}, summarize(inventory, catalog)["completion"])
+        self.assertTrue(summarize(inventory, catalog, {"rust"})["completion"]["complete"])
+
+    def test_boundary_needs_a_rejection_and_vendor_fixture_needs_a_binding_route(self):
+        boundary = {"language": "c", "api_level": "generic-ttlv", "expectation": "verify_version_boundary",
+                    "local_fixture_results": [{"expected": "rejected", "checks": {"construction": "rejected"}}]}
+        vendor = {"language": "c", "api_level": "generic-ttlv", "expectation": "verify_provider_fixture"}
+        inventory = {"protocol_version": "2.1", "rows": [
+            {"obligations": [boundary]},
+            {"obligations": [vendor], "provider_fixture_results": [{"scope": "live"}]},
+        ]}
+        summary = summarize(inventory, {"test_cases": []})
+        self.assertEqual({"complete": 1, "missing_provider_fixture": 1}, summary["completion"]["cells_by_status"])
+        boundary["local_fixture_results"][0]["checks"]["construction"] = "accepted"
+        summarize(inventory, {"test_cases": []})
+        self.assertEqual("failed_local_assertion", boundary["completion_status"])

@@ -3720,15 +3720,27 @@ class Client(_ClientHandle):
         *,
         object_groups: Sequence[str] | None = None,
         options: RequestOptions | None = None,
+        authentication: credentials.Authentication | None = None,
     ) -> BatchResult:
-        """Execute a typed Query request."""
+        """Execute a typed Query request.
+
+        Optional Authentication is consumed when attached to the Request Header
+        and applies only to this exchange.
+        """
         with self.request().query() as builder:
             builder.functions(query_functions)
             if object_groups is not None:
                 builder.object_groups(object_groups)
-            if options is not None:
-                builder.with_options(options)
-            return builder.execute(limits)
+            if authentication is None:
+                if options is not None:
+                    builder.with_options(options)
+                return builder.execute(limits)
+            with builder.build() as item, Batch.create() as batch:
+                batch.add_item(item)
+                batch.set_authentication(authentication)
+                if options is not None:
+                    return self.execute_with_options(batch, limits, options)
+                return self.execute(batch, limits)
 
     def ping(
         self,

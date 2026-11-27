@@ -98,6 +98,13 @@ class CosmianMinimumTests(unittest.TestCase):
                     route["case_ids"] for route in row["obligations"]
                     if route["language"] == "rust" and route["api_level"] == "high-level"
                 ))
+            credential_id = "test-query-username-password-credential"
+            credential = reports[version]["base_object", "Credential"]
+            self.assertIn(credential_id, credential["server_cases"])
+            self.assertNotIn(credential_id, reports[version]["operation", "Query"]["server_cases"])
+            self.assertEqual({"verify_unsupported_response"}, {route["expectation"] for route in credential["obligations"]})
+            self.assertIn("request_contains_the_configured_username_and_password_credential",
+                          case_maps[version][credential_id]["execution"]["assertions"])
             for name in ("Lease Time", "Last Change Date"):
                 self.assertIn("test-op-obtain-lease", reports[version]["attribute", name]["server_cases"])
         self.assertTrue(reports["2.1"]["operation", "Notify"]["server_cases"])
@@ -185,8 +192,9 @@ class CosmianMinimumTests(unittest.TestCase):
         ]
         result = with_execution_evidence(inventory, catalog, reports)
         query = next(row for row in result["rows"] if row["kind"] == "operation" and row["name"] == "Query")
-        obligation, = [item for item in query["obligations"] if item["api_level"] == "high-level"]
-        self.assertEqual(obligation["language"], "rust")
+        by_language = {item["language"]: item for item in query["obligations"] if item["api_level"] == "high-level"}
+        self.assertEqual(set(by_language), {"c", "java", "python", "rust"})
+        obligation = by_language["rust"]
         self.assertEqual([item["run_id"] for item in obligation["case_results"]], ["high-query"])
         self.assertEqual([item["run_id"] for item in obligation["unverified_route_results"]],
                          ["typed-fallback", "missing-api"])

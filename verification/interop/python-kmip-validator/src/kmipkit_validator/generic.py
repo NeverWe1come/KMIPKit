@@ -152,7 +152,9 @@ def _operation(case, version):
             "test-op-archive": ARCHIVE, "test-op-recover": RECOVER, "test-op-validate": VALIDATE,
             "test-op-cancel": CANCEL, "test-op-poll": POLL,
             "test-op-re-key-key-pair": RE_KEY_KEY_PAIR,
-            "test-op-locate": 0x08, "test-op-query": 0x18, "test-op-discover-versions": 0x1E,
+            "test-op-locate": 0x08, "test-op-query": 0x18, "test-query-attestation-nonce": 0x18,
+            "test-query-username-password-credential": 0x18,
+            "test-op-discover-versions": 0x1E,
             "test-op-rng-retrieve": 0x25, "test-crypto-rng-retrieve-rng-32": 0x25,
             "test-op-rng-seed": 0x26, "test-crypto-rng-seed-rng-32": 0x26,
             "test-op-hash": 0x27, "test-crypto-hash-sha_256-0": 0x27,
@@ -183,7 +185,9 @@ def supports(case, connection):
              or case["case_id"] == "test-multipart-hash-sha256")
         and connection["encoding"] == "TTLV"
         and connection["transport"] == "raw_tls"
-        and not connection.get("authentication")
+        and (bool(connection.get("authentication", {}).get("username_password"))
+             if case["case_id"] == "test-query-username-password-credential"
+             else not connection.get("authentication"))
     )
 
 
@@ -267,6 +271,13 @@ def run(driver, case):
         return _run_key_block(driver, case["requires"]["key_block_shape"] == "wrapped")
     if operation in OWNED_KEY_OPERATIONS:
         return _run_owned_key(driver, operation, case)
+    if case["case_id"] == "test-query-username-password-credential":
+        return _checked_exchange(driver, 0x18, use_credential=True)
+    if case["case_id"] == "test-query-attestation-nonce":
+        return _checked_exchange(
+            driver, 0x18, expected=lambda _: True, expect_nonce=True,
+            custom_payload=[driver._item(0x420074, "enumeration", 7)],
+        )
     if operation == 0x18 and "query_function" in case.get("requires", {}):
         return _query_field(driver, case["requires"])
     if operation in {POLL, CANCEL}:
@@ -526,11 +537,13 @@ def _multipart_hash(driver):
     return outcome
 
 
-def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None, custom_payload=None):
+def _checked_exchange(driver, operation, identifier=None, expected=None, attribute_reference=None, custom_payload=None,
+                      *, expect_nonce=False, use_credential=False):
     from kmipkit.errors import KmipKitError
 
     try:
-        return _execute(driver, operation, identifier, expected, attribute_reference, custom_payload=custom_payload)
+        return _execute(driver, operation, identifier, expected, attribute_reference, custom_payload=custom_payload,
+                        expect_nonce=expect_nonce, use_credential=use_credential)
     except (OSError, ValueError, RuntimeError, KmipKitError):
         return _failure("The generic TLS exchange or response validation failed.")
 
@@ -681,7 +694,7 @@ def _description_matches(payload, expected, attr_tag=DESCRIPTION):
 
 
 def _execute(driver, operation, identifier=None, expected=None, attribute_reference=None, hash_frame=None,
-             custom_payload=None, locate_attributes=None):
+             custom_payload=None, locate_attributes=None, *, expect_nonce=False, use_credential=False):
     from kmipkit import messages, ttlv
 
     connection = driver._connection
@@ -740,8 +753,24 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
     else:
         payload_fields = []
 
+    header_fields = [protocol()]
+    if expect_nonce:
+        header_fields.append(item(0x4200D3, "boolean", True))
+    if use_credential:
+        import os
+
+        names = connection["authentication"]["username_password"]
+        username = os.environ.get(names["username_env"])
+        password = os.environ.get(names["password_env"])
+        if not username or not password:
+            raise ValueError("Configured credential environment variables are unavailable")
+        header_fields.append(node(0x42000C, [node(0x420023, [
+            item(0x420024, "enumeration", 1),
+            node(0x420025, [item(0x420099, "text", username), item(0x4200A1, "text", password)]),
+        ])]))
+    header_fields.append(item(0x42000D, "integer", 1))
     with node(0x420078, [
-        node(0x420077, [protocol(), item(0x42000D, "integer", 1)]),
+        node(0x420077, header_fields),
         node(0x42000F, [
             item(0x42005C, "enumeration", operation),
             node(0x420079, payload_fields),
@@ -788,13 +817,22 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
                             else:
                                 payload_matches = (expected(payload) if expected is not None
                                                    else _matches(payload, operation, protocol))
+                    if expect_nonce:
+                        nonce = header.nonce
+                        if nonce is None:
+                            payload_matches = False
+                        else:
+                            with nonce:
+                                payload_matches = payload_matches and _nonce_fields_present(nonce)
     details = {"result_status_code": status, "result_reason_code": reason}
     if created_identifier is not None:
         details["created_identifier"] = created_identifier
     if pending_correlation is not None:
         details["_correlation"] = pending_correlation
     if not payload_matches:
-        return {**_failure("Generic success payload did not satisfy the case."), **details}
+        diagnostic = ("Generic Query did not return a usable Nonce." if expect_nonce
+                      else "Generic success payload did not satisfy the case.")
+        return {**_failure(diagnostic), **details}
     outcome, compatibility = {
         (0, None): ("passed", "supported"),
         (1, 5): ("server_unsupported", "unsupported"),
@@ -804,6 +842,31 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
     return {"status": outcome, "server_compatibility": compatibility,
             "library_correctness": "passed", "parity": "not_compared",
             "diagnostic": "generic TTLV request and response validated", **details}
+
+
+def nonce_in_header(header):
+    from kmipkit import ttlv
+
+    for field in _fields(header):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) != 0x4200C8 or ttlv.ttlv_item_view_type(field) != ttlv.ItemType.Structure:
+                continue
+        with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as nonce:
+            return _nonce_fields_present(nonce)
+    return False
+
+
+def _nonce_fields_present(nonce):
+    from kmipkit import ttlv
+
+    tags = []
+    for field in _fields(nonce):
+        with ttlv.ttlv_item_view_tag(field) as tag, ttlv.ttlv_item_view_value(field) as value:
+            if (ttlv.ttlv_item_view_type(field) != ttlv.ItemType.ByteString
+                    or ttlv.ttlv_value_view_byte_length(value) == 0):
+                return False
+            tags.append(ttlv.tag_value(tag))
+    return tags == [0x4200C9, 0x4200CA]
 
 
 def _text_identifier(payload):

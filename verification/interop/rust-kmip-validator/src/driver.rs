@@ -118,7 +118,14 @@ pub(crate) fn authenticated_batch(
 ) -> Result<ClientBatch> {
     authenticate(connection, ClientBatch::new(ClientBatchItem::new(request)))
 }
-fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<ClientBatch> {
+fn authenticate(connection: &Connection, batch: ClientBatch) -> Result<ClientBatch> {
+    Ok(match request_authentication(connection)? {
+        Some(authentication) => batch.with_authentication(authentication),
+        None => batch,
+    })
+}
+
+fn request_authentication(connection: &Connection) -> Result<Option<Authentication>> {
     if let Some(credentials) = connection
         .authentication
         .as_ref()
@@ -149,11 +156,11 @@ fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<Clien
             ],
         )?)
         .map_err(|_| "invalid credential")?;
-        batch = batch.with_authentication(
-            Authentication::new(vec![credential]).map_err(|_| "invalid authentication")?,
-        );
+        return Authentication::new(vec![credential])
+            .map(Some)
+            .map_err(|_| "invalid authentication");
     }
-    Ok(batch)
+    Ok(None)
 }
 
 pub(crate) struct Observed {
@@ -161,6 +168,7 @@ pub(crate) struct Observed {
     pub used_high_level: bool,
     pub reason: Option<u32>,
     pub nonempty_structure_tags: Vec<u32>,
+    pub usable_nonce: bool,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
@@ -169,6 +177,29 @@ pub(crate) struct Observed {
     pub key_block_shape: Option<crate::key_block::KeyBlockShape>,
     pub validity: Option<u32>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
+}
+
+pub(crate) fn nonce_fields_present(nonce: &kmipkit::ttlv::StructureView<'_>) -> bool {
+    use kmipkit::ttlv::ValueView;
+    let fields = nonce.children();
+    fields.len() == 2
+        && fields.iter().enumerate().all(|(index, field)| {
+            field.tag().raw() == [0x0042_00c9, 0x0042_00ca][index]
+                && field.with_value(
+                    |value| matches!(value, ValueView::ByteString(bytes) if !bytes.is_empty()),
+                )
+        })
+}
+
+fn response_contains_usable_nonce(response: &ClientBatchItemResponse) -> bool {
+    response.response_header_raw().is_some_and(|header| {
+        header.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_00c8
+                && field
+                    .as_structure()
+                    .is_some_and(|nonce| nonce_fields_present(&nonce))
+        })
+    })
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -248,6 +279,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         used_high_level: false,
         reason: result.reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags,
+        usable_nonce: response_contains_usable_nonce(response),
         identifier,
         identifiers,
         correlation,
@@ -295,9 +327,10 @@ pub(crate) fn execute(
         options = options.with_protocol_version(kmipkit::ProtocolVersion::V3_0);
     }
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
-    // Direct operation methods are used where the public high-level API admits
-    // the same immutable request. Authentication requires the explicit batch.
-    if connection.api_level == "high-level" && connection.authentication.is_none() {
+    // Query accepts per-request Authentication in the high-level API.
+    if connection.api_level == "high-level"
+        && (connection.authentication.is_none() || matches!(request, ClientRequest::Query(_)))
+    {
         match request {
             ClientRequest::DiscoverVersions(request) => {
                 return client
@@ -310,9 +343,15 @@ pub(crate) fn execute(
                     .map(|response| observed_high_level(&response));
             }
             ClientRequest::Query(request) => {
-                return client
-                    .query_with_options(request, &limits, &options)
-                    .map(|response| observed_high_level(&response));
+                let response = match request_authentication(connection)
+                    .map_err(|_| credential_error())?
+                {
+                    Some(authentication) => {
+                        client.query_with_authentication(request, authentication, &limits, &options)
+                    }
+                    None => client.query_with_options(request, &limits, &options),
+                };
+                return response.map(|response| observed_high_level(&response));
             }
             ClientRequest::DelegatedLogin(request) => {
                 return client
@@ -565,6 +604,14 @@ pub(crate) fn execute(
     execute_batch(client, connection, request, &options, &limits)
 }
 
+fn credential_error() -> kmipkit::ClientError {
+    kmipkit::ClientError::validation(
+        kmipkit::ClientCauseCategory::InvalidInput,
+        kmipkit::RequestDeliveryState::NotSent,
+        std::io::Error::other("credential unavailable"),
+    )
+}
+
 fn execute_batch(
     client: &mut Client,
     connection: &Connection,
@@ -572,13 +619,7 @@ fn execute_batch(
     options: &RequestOptions,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
-    let batch = authenticated_batch(connection, request).map_err(|_| {
-        kmipkit::ClientError::validation(
-            kmipkit::ClientCauseCategory::InvalidInput,
-            kmipkit::RequestDeliveryState::NotSent,
-            std::io::Error::other("credential unavailable"),
-        )
-    })?;
+    let batch = authenticated_batch(connection, request).map_err(|_| credential_error())?;
     let response = client.execute_with_options(batch, limits, options)?;
     response.get(0).map(observed).ok_or_else(|| {
         kmipkit::ClientError::validation(
@@ -668,6 +709,7 @@ pub(crate) fn asynchronous(
         used_high_level: false,
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags: Vec::new(),
+        usable_nonce: false,
         identifier: None,
         identifiers: response
             .poll_response()

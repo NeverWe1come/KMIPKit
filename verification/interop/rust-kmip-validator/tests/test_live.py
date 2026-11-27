@@ -308,6 +308,31 @@ class LiveContract(unittest.TestCase):
         self.assertEqual(report["summary"]["passed"], 67)
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
+    def test_normative_wire_values_and_batch_boundaries_run_offline(self):
+        from verification.interop.shared.tools.operation_catalog import build_normative_catalog
+
+        accepted_kinds = {"tag", "tag_range", "enumeration_value", "bitmask_value", "data_type"}
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog, _ = build_normative_catalog(ROOT, version)
+                cases = [case for case in catalog["test_cases"]
+                         if case["execution"]["mode"] == "local_model"
+                         and (case["category"] in {"batch_workflows", "version_boundaries"}
+                              or case["requires"].get("target_kind") in accepted_kinds)]
+                self.assertEqual({case["requires"].get("target_kind") for case in cases} & accepted_kinds,
+                                 accepted_kinds)
+                process, report = self.command(self.connection(version=version), cases)
+                self.assertIsNotNone(report, process.stderr)
+                self.assertEqual({row["case_id"] for row in report["cases"]},
+                                 {case["case_id"] for case in cases})
+                failures = [row["case_id"] for row in report["cases"] if row["status"] != "passed"]
+                self.assertEqual(failures, [], process.stderr)
+                self.assertEqual(process.returncode, 0, process.stderr)
+                for row in report["cases"]:
+                    self.assertEqual(row["library_correctness"], "passed")
+                    self.assertEqual(row["server_compatibility"], "unknown")
+                    self.assertNotIn("result_status_code", row)
+
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
             with self.subTest(reason=reason), ControlledPeer(self.pki, lambda tree: response(0x18, reason=reason, message="secret-response-sentinel")) as peer:

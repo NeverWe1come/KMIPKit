@@ -252,9 +252,7 @@ impl ResponseMessage {
                     .any(|item| item.tag().raw() == 0x0042_0093);
                 let mut new_batch = Structure::new();
                 new_batch.try_push(operation_item).map_err(|_| invalid())?;
-                if !has_batch_id
-                    && let Some(batch_id) = unique_batch_item_id
-                {
+                if !has_batch_id && let Some(batch_id) = unique_batch_item_id {
                     let batch_id_tag = RawTag::new(0x0042_0093)
                         .and_then(|raw| raw.try_checked())
                         .map_err(|_| invalid())?;

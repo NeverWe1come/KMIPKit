@@ -850,7 +850,7 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                 with socket.socket() as listener:
                     listener.bind(("127.0.0.1", 0))
                     listener.listen()
-                    listener.settimeout(0.05)
+                    listener.settimeout(2)
                     connection = {
                         "server_id": "owned-key-peer", "server_configuration_fingerprint": "b" * 64,
                         "server_product": "controlled peer", "server_version": "fixture",
@@ -874,7 +874,12 @@ def versioned_owned_key(binary: Path, openssl: str, repository: Path, version: s
                                           stderr=subprocess.PIPE) as process:
                         try:
                             for operation in exchanges:
-                                raw, _ = listener.accept()
+                                try:
+                                    raw, _ = listener.accept()
+                                except TimeoutError as error:
+                                    raise AssertionError(
+                                        f"{version} {target} valid={valid}: no request for operation {operation:#x}"
+                                    ) from error
                                 with context.wrap_socket(raw, server_side=True) as stream:
                                     stream.settimeout(5)
                                     request = read_message(stream)
@@ -970,7 +975,7 @@ def main() -> int:
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 20, 1, 19, 20,
          1, 20,
-         1, 18, 19, 20, 8, 24, 44, 45, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
+         1, 18, 19, 20, 8, 24, 30, 44, 45, 1, 11, 20, 1, 11, 20, 1, 20, 1, 20, 1, 20,
          1, 18, 20, 19, 20)
         if protocol_version == "2.0"
         else (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 20, 1, 19, 20,
@@ -978,7 +983,7 @@ def main() -> int:
               1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
-        ("test-op-locate", "test-op-query", "test-op-log", "test-op-login", "test-op-logout",
+        ("test-op-locate", "test-op-query", "test-op-discover-versions", "test-op-log", "test-op-login", "test-op-logout",
          "test-op-interop")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
@@ -2142,12 +2147,6 @@ def main() -> int:
                 raise AssertionError(
                     "KMIP 2.1-only Query Asynchronous Requests must be rejected before transport under KMIP 2.0: "
                     f"{query_async_boundary!r}"
-                )
-            discovery = next(case for case in result["cases"]
-                             if case["case_id"] == "test-op-discover-versions")
-            if discovery["status"] != "not_run" or "cannot construct a KMIP 2.0 offer" not in discovery.get("diagnostic", ""):
-                raise AssertionError(
-                    "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
                 )
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
             if login["status"] != "passed":

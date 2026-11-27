@@ -30,6 +30,20 @@ static kmip_execution_outcome_t test_execute_case(
     return outcome;
 }
 
+static void test_authenticated_query_function_count_limits(void) {
+    const uint32_t functions[1025] = {KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS};
+    kmipkit_authentication_t *authentication = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+
+    assert(kmipkit_client_query_with_authentication_v1(
+        NULL, functions, 0, &authentication, NULL, &response) == KMIPKIT_ERROR_INVALID_INPUT);
+    assert(kmipkit_client_query_with_authentication_v1(
+        NULL, functions, 1025, &authentication, NULL, &response) == KMIPKIT_ERROR_RESOURCE_LIMIT);
+    assert(kmipkit_client_query_with_authentication_v1(
+        NULL, functions, 1, NULL, NULL, &response) == KMIPKIT_ERROR_INVALID_INPUT);
+    assert(authentication == NULL && response == NULL);
+}
+
 static void test_get_attribute_list_request_identifier_forms(void) {
     static const uint8_t identifier_bytes[] = "fixture-key-1";
     const kmipkit_unique_identifier_v1_t identifier = {
@@ -189,6 +203,7 @@ int main(void) {
     kmipkit_client_batch_item_release(public_item);
 
     // 0aa. The installed typed request API supports both optional identifier branches.
+    test_authenticated_query_function_count_limits();
     test_get_attribute_list_request_identifier_forms();
 
     // 0b. Generic TTLV construction and navigation use the installed library.

@@ -92,16 +92,11 @@ public final class JavaKmipDriver implements AutoCloseable {
         if (keyBlockCase(testCase)) {
             return executeKeyBlock(testCase, start);
         }
-        if (queryFieldCase(testCase)) {
-            int function = testCase.requires().path("query_function").asInt(-1);
-            int tag = testCase.requires().path("query_result_tag").asInt(-1);
-            if (function < 0 || tag < 0) return CaseOutcome.failed("Invalid Query field fixture.", elapsedMillis(start));
-            return executeRequest(testCase, withBatchId(ClientBatchItem.query(new int[]{function}, null)), result ->
-                    result.typedQueryResponse().filter(query -> {
-                        try (query; var payload = query.rawView()) {
-                            return GenericExchange.hasQueryStructure(payload, tag);
-                        }
-                    }).isPresent(), start);
+        if ("Query".equals(testCase.operation())) {
+            return executeQuery(testCase, start);
+        }
+        if ("test-op-discover-versions".equals(testCase.caseId())) {
+            return executeDiscoverVersions(testCase, start);
         }
         if (registerOpaqueCase(testCase)) {
             return executeRegisterOpaque(testCase, start);
@@ -130,12 +125,96 @@ public final class JavaKmipDriver implements AutoCloseable {
         return executeRequest(testCase, request, result -> verifyTypedResponse(testCase.operation(), result), start);
     }
 
+    private CaseOutcome executeQuery(CatalogLoader.CatalogCase testCase, long start) {
+        boolean field = queryFieldCase(testCase);
+        boolean nonce = queryNonceCase(testCase);
+        int function = nonce ? 7 : field ? testCase.requires().path("query_function").asInt(-1) : 1;
+        int tag = field ? testCase.requires().path("query_result_tag").asInt(-1) : 0;
+        if (function < 0 || tag < 0) {
+            return CaseOutcome.failed("Invalid Query field fixture.", elapsedMillis(start));
+        }
+        if (nonce) {
+            return executeQueryRequest(testCase, function, result -> {
+                try (var header = result.responseHeaderTtlv(); var view = header.view()) {
+                    return GenericExchange.nonceInHeader(view);
+                }
+            }, start);
+        }
+        Predicate<ClientBatchItemResult> verify = result -> field
+                ? result.typedQueryResponse().filter(query -> {
+                    try (query; var payload = query.rawView()) {
+                        return GenericExchange.hasQueryStructure(payload, tag);
+                    }
+                }).isPresent()
+                : verifyTypedResponse("Query", result);
+        return executeQueryRequest(testCase, function, verify, start);
+    }
+
+    private CaseOutcome executeQueryRequest(CatalogLoader.CatalogCase testCase, int function,
+            Predicate<ClientBatchItemResult> verify, long start) {
+        if ("high-level".equals(connection.apiLevel())) {
+            return executeHighLevel(testCase, KmipValues.Operation.QUERY,
+                    () -> {
+                        var names = connection.usernamePassword();
+                        if (names == null) return client.query(new int[]{function}, CODEC_LIMITS, null);
+                        try (var authentication = usernamePasswordAuthentication(names)) {
+                            return client.query(new int[]{function}, authentication, CODEC_LIMITS, null);
+                        }
+                    }, verify, start);
+        }
+        if ("fluent".equals(connection.apiLevel())) {
+            try (var builder = client.request().query()) {
+                return executeRequest(testCase, withBatchId(builder.function(function).build()), verify, start);
+            }
+        }
+        return executeRequest(testCase, withBatchId(ClientBatchItem.query(new int[]{function}, null)), verify, start);
+    }
+
+    private CaseOutcome executeDiscoverVersions(CatalogLoader.CatalogCase testCase, long start) {
+        var offered = List.of(toProtocolVersion(connection.protocolVersion()));
+        Predicate<ClientBatchItemResult> verify = result -> result.supportedVersions().orElse(List.of()).equals(offered);
+        if ("high-level".equals(connection.apiLevel())) {
+            return executeHighLevel(testCase, KmipValues.Operation.DISCOVER_VERSIONS,
+                    () -> client.discoverVersions(offered, CODEC_LIMITS, null), verify, start);
+        }
+        if ("fluent".equals(connection.apiLevel())) {
+            try (var builder = client.request().discoverVersions()) {
+                return executeRequest(testCase, withBatchId(builder.protocolVersions(offered).build()), verify, start);
+            }
+        }
+        return executeRequest(testCase, withBatchId(ClientBatchItem.discoverVersions(offered)), verify, start);
+    }
+
+    @FunctionalInterface
+    private interface HighLevelExchange {
+        ClientBatchResponse execute() throws ClientOperationException;
+    }
+
+    private static CaseOutcome executeHighLevel(CatalogLoader.CatalogCase testCase, long operation,
+            HighLevelExchange exchange, Predicate<ClientBatchItemResult> verify, long start) {
+        try (var response = exchange.execute()) {
+            return verifyResponse(testCase, operation, response, verify, start);
+        } catch (ClientOperationException exception) {
+            return exchangeFailure(exception, start);
+        } catch (Exception exception) {
+            return CaseOutcome.failed("KMIP exchange failed; remote diagnostic text was suppressed.", elapsedMillis(start));
+        }
+    }
+
+    static boolean queryCredentialCase(CatalogLoader.CatalogCase testCase) {
+        return "test-query-username-password-credential".equals(testCase.caseId());
+    }
+
+    static boolean queryNonceCase(CatalogLoader.CatalogCase testCase) {
+        return "test-query-attestation-nonce".equals(testCase.caseId());
+    }
+
     static boolean queryFieldCase(CatalogLoader.CatalogCase testCase) {
         return "Query".equals(testCase.operation()) && testCase.requires().has("query_function");
     }
 
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
-        if (queryFieldCase(testCase)) return true;
+        if (queryFieldCase(testCase) || queryNonceCase(testCase) || queryCredentialCase(testCase)) return true;
         return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
                 .contains(testCase.caseId());
     }
@@ -173,7 +252,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("server_to_client".equals(wf) || "async_poll".equals(wf) || "batch_id_placeholder".equals(wf)) {
             return false;
         }
-        return !typedOnlyKeyProbe(testCase) && !queryFieldCase(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
+        return !typedOnlyKeyProbe(testCase) && (registerOpaqueCase(testCase) || createSplitKeyCase(testCase)
                 || ownedObjectCase(testCase) || readOnlyProbe(testCase) || multipartHash(testCase)
                 || EXTENDED_FLUENT_OPERATIONS.contains(testCase.operation())
                 || Set.of("Create", "Ping", "Query", "Discover Versions", "Check", "Obtain Lease",
@@ -374,36 +453,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                 batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
             }
             try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
-                if (response.itemCount() != 1) {
-                    return CaseOutcome.failed("Response batch item count did not match the request.", elapsedMillis(start));
-                }
-                try (ClientBatchItemResult result = response.itemAt(0)) {
-                    if (result.operation() != requestOperation) {
-                        return CaseOutcome.failed("Response operation did not match the request.", elapsedMillis(start));
-                    }
-                    long statusCode = result.resultStatus();
-                    long reasonCode = result.resultReason().orElse(-1);
-                    if (statusCode == 0) {
-                        if (!verify.test(result)) {
-                            return CaseOutcome.failed("The typed response shape did not match the request.",
-                                    elapsedMillis(start), statusCode, optionalCode(reasonCode));
-                        }
-                        return CaseOutcome.passed(elapsedMillis(start), statusCode, optionalCode(reasonCode));
-                    }
-                    if (reasonCode == KmipValues.ResultReason.OPERATION_NOT_SUPPORTED
-                            || reasonCode == KmipValues.ResultReason.FEATURE_NOT_SUPPORTED) {
-                        return CaseOutcome.unsupported(elapsedMillis(start), statusCode, reasonCode);
-                    }
-                    if (reasonCode == KmipValues.ResultReason.PERMISSION_DENIED
-                            || reasonCode == KmipValues.ResultReason.AUTHENTICATION_NOT_SUCCESSFUL) {
-                        return CaseOutcome.policyRestricted(elapsedMillis(start), statusCode, reasonCode);
-                    }
-                    if (expectedReason(testCase, reasonCode)) {
-                        return CaseOutcome.passed(elapsedMillis(start), statusCode, reasonCode);
-                    }
-                    return CaseOutcome.failed("The KMIP server returned a non-success result.",
-                            elapsedMillis(start), statusCode, optionalCode(reasonCode));
-                }
+                return verifyResponse(testCase, requestOperation, response, verify, start);
             }
         } catch (ClientOperationException exception) {
             if ("NotSent".equals(testCase != null ? testCase.requires().path("expected_status").asText() : "")
@@ -416,6 +466,40 @@ public final class JavaKmipDriver implements AutoCloseable {
         } catch (Exception exception) {
             return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
                     + "); remote diagnostic text was suppressed.", elapsedMillis(start));
+        }
+    }
+
+    private static CaseOutcome verifyResponse(CatalogLoader.CatalogCase testCase, long requestOperation,
+            ClientBatchResponse response, Predicate<ClientBatchItemResult> verify, long start) {
+        if (response.itemCount() != 1) {
+            return CaseOutcome.failed("Response batch item count did not match the request.", elapsedMillis(start));
+        }
+        try (ClientBatchItemResult result = response.itemAt(0)) {
+            if (result.operation() != requestOperation) {
+                return CaseOutcome.failed("Response operation did not match the request.", elapsedMillis(start));
+            }
+            long statusCode = result.resultStatus();
+            long reasonCode = result.resultReason().orElse(-1);
+            if (statusCode == 0) {
+                if (!verify.test(result)) {
+                    return CaseOutcome.failed("The typed response shape did not match the request.",
+                            elapsedMillis(start), statusCode, optionalCode(reasonCode));
+                }
+                return CaseOutcome.passed(elapsedMillis(start), statusCode, optionalCode(reasonCode));
+            }
+            if (reasonCode == KmipValues.ResultReason.OPERATION_NOT_SUPPORTED
+                    || reasonCode == KmipValues.ResultReason.FEATURE_NOT_SUPPORTED) {
+                return CaseOutcome.unsupported(elapsedMillis(start), statusCode, reasonCode);
+            }
+            if (reasonCode == KmipValues.ResultReason.PERMISSION_DENIED
+                    || reasonCode == KmipValues.ResultReason.AUTHENTICATION_NOT_SUCCESSFUL) {
+                return CaseOutcome.policyRestricted(elapsedMillis(start), statusCode, reasonCode);
+            }
+            if (expectedReason(testCase, reasonCode)) {
+                return CaseOutcome.passed(elapsedMillis(start), statusCode, reasonCode);
+            }
+            return CaseOutcome.failed("The KMIP server returned a non-success result.",
+                    elapsedMillis(start), statusCode, optionalCode(reasonCode));
         }
     }
 

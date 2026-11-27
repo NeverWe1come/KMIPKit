@@ -11599,6 +11599,65 @@ int kmipkit_client_abi_c_consumer_ping_builder_builds_typed_item(void) {
     return status == INT32_C(0);
 }
 
+int kmipkit_client_abi_c_consumer_checks_fluent_query_builder(void) {
+    kmipkit_query_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = 0;
+    int valid = 0;
+    if (kmipkit_query_builder_create(&builder) != 0 ||
+        kmipkit_query_builder_build_batch_item(builder, &item) != KMIPKIT_ERROR_INVALID_INPUT ||
+        item != NULL) {
+        goto cleanup;
+    }
+    for (size_t index = 0; index < 1024; ++index) {
+        uint32_t function = (index % 2 == 0) ?
+            KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS :
+            KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OBJECTS;
+        if (kmipkit_query_builder_add_function(builder, function) != 0) goto cleanup;
+    }
+    if (kmipkit_query_builder_add_function(builder, KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS)
+        != KMIPKIT_ERROR_RESOURCE_LIMIT || kmipkit_query_builder_build_batch_item(builder, &item) != 0) {
+        goto cleanup;
+    }
+    kmipkit_query_builder_release(builder);
+    builder = NULL;
+    valid = kmipkit_client_batch_item_operation(item, &operation) == 0 &&
+        operation == KMIPKIT_ENUMERATION_OPERATION_QUERY;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_query_builder_release(builder);
+    return valid;
+}
+
+int kmipkit_client_abi_c_consumer_checks_fluent_discover_versions_builder(void) {
+    kmipkit_discover_versions_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = 0;
+    int valid = 0;
+    if (kmipkit_discover_versions_builder_create(&builder) != 0 ||
+        kmipkit_discover_versions_builder_add_version(builder, 2, 2) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_discover_versions_builder_build_batch_item(builder, &item) != 0) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_discover_versions_builder_add_version(builder, 2, 0) != 0 ||
+        kmipkit_discover_versions_builder_add_version(builder, 2, 1) != 0 ||
+        kmipkit_discover_versions_builder_build_batch_item(builder, &item) != 0) {
+        goto cleanup;
+    }
+    kmipkit_discover_versions_builder_release(builder);
+    builder = NULL;
+    valid = kmipkit_client_batch_item_operation(item, &operation) == 0 &&
+        operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS;
+
+cleanup:
+    kmipkit_client_batch_item_release(item);
+    kmipkit_discover_versions_builder_release(builder);
+    return valid;
+}
+
 int kmipkit_client_abi_c_consumer_checks_fluent_create_builder(void) {
     kmipkit_create_builder_t *builder = 0;
     kmipkit_ttlv_structure_t *attributes = 0;

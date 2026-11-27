@@ -7,6 +7,8 @@ import java.util.List;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.fluent.FluentBatchBuilder;
 import org.kmipkit.fluent.FluentRequest;
+import org.kmipkit.credentials.Authentication;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.fluent.KeyRef;
 import org.kmipkit.fluent.KmipNamespaces;
 import org.kmipkit.fluent.StreamsClient;
@@ -365,6 +367,23 @@ public final class KmipClient implements AutoCloseable {
             return builder.execute(limits);
         }
     }
+    /**
+     * Executes one Query with Authentication in the Request Header.
+     * The batch consumes Authentication when attached. It applies only to this exchange.
+     */
+    public ClientBatchResponse query(
+            int[] queryFunctions, Authentication authentication, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        try (var builder = request().query(); var batch = ClientBatch.create()) {
+            if (queryFunctions != null && queryFunctions.length > 0) builder.functions(queryFunctions);
+            try (var item = builder.build()) {
+                batch.add(item);
+            }
+            batch.setAuthentication(authentication);
+            return options == null ? client.execute(batch, limits) : client.executeWithOptions(batch, limits, options);
+        }
+    }
+
     /** Executes a typed Ping request. */
     public ClientBatchResponse ping(CodecLimits limits, RequestOptions options)
             throws org.kmipkit.ClientOperationException {

@@ -137,6 +137,10 @@ def _make_report(
 
 
 def _supports_exchange(case, connection):
+    if case["case_id"] == "test-query-username-password-credential" and not connection.get(
+        "authentication", {}
+    ).get("username_password"):
+        return False
     if incoming.is_incoming(case):
         return incoming.supports(case, connection)
     if connection["api_level"] == "generic-ttlv":
