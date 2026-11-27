@@ -106,7 +106,7 @@ fn derive_key(
         .derivation_method(DerivationMethod::from_raw(1))
         .derivation_parameters(derivation)
         .attributes(output_attributes())
-        .execute(limits)
+        .execute_outcome_with_limits(limits)
 }
 
 #[allow(dead_code)]

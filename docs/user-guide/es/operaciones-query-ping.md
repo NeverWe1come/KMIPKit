@@ -103,7 +103,7 @@ fn comprobar_ping(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    client.request().ping().execute(limits)
+    client.request().ping().execute_outcome_with_limits(limits)
 }
 
 fn main() {}

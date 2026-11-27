@@ -148,7 +148,7 @@ fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
         .set_attribute()
         .unique_identifier("object-id-17")
         .attribute(Attribute::<typed::Comment>::new("managed by service".to_owned())?)
-        .execute(&CodecLimits::defaults())?;
+        .execute_outcome_with_limits(&CodecLimits::defaults())?;
 
     response
         .outcome()
@@ -179,7 +179,7 @@ fn add_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
         .add_attribute()
         .unique_identifier("object-id-17")
         .attribute(Attribute::<typed::Comment>::new("reviewed by service".to_owned())?)
-        .execute(&CodecLimits::defaults())?;
+        .execute_outcome_with_limits(&CodecLimits::defaults())?;
 
     response
         .outcome()
@@ -230,7 +230,7 @@ fn delete_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
         .delete_attribute()
         .unique_identifier("object-id-17")
         .current_attribute(Attribute::<typed::Comment>::new("legacy value".to_owned())?)
-        .execute(&CodecLimits::defaults())?;
+        .execute_outcome_with_limits(&CodecLimits::defaults())?;
 
     response
         .outcome()

@@ -31,7 +31,7 @@ fn create_object(
         .create()
         .object_type(object_type)
         .attributes(attributes)
-        .execute(limits)?;
+        .execute_outcome_with_limits(limits)?;
     let outcome = item.outcome();
     assert_eq!(outcome.operation(), ClientOperation::Create);
     let response_view = outcome.response();
