@@ -1386,6 +1386,18 @@ class PythonKmipDriver:
     def _register_fixture(self, case: dict[str, Any], name: str) -> tuple[int, Any, Any]:
         from kmipkit import ttlv
 
+        requires = case.get("requires", {})
+        if "register_object_ttlv" in requires:
+            with (ttlv.ttlv_decode(bytes.fromhex(requires["register_attributes_ttlv"])) as attr_item,
+                  ttlv.ttlv_item_view_from_item(attr_item) as attr_view,
+                  ttlv.ttlv_item_view_value(attr_view) as attr_value,
+                  ttlv.ttlv_value_view_structure(attr_value) as attrs):
+                from .generic import _fields
+
+                attributes = self._structure([field.copy() for field in _fields(attrs)])
+            with attributes, ttlv.ttlv_decode(bytes.fromhex(requires["register_object_ttlv"])) as object_item:
+                return int(requires["register_object_type"]), ttlv.ttlv_structure_copy(attributes), object_item.copy()
+
         default_type = "Symmetric Key" if case.get("case_id") == "test-op-register" else "Opaque Object"
         object_type = case.get("requires", {}).get("object_type", default_type)
         fixture_root = Path(__file__).resolve().parents[5] / "verification/interop/rust-kmip-validator/tests/fixtures"
@@ -1843,6 +1855,7 @@ class PythonKmipDriver:
                         *(payload.unique_identifier for payload in (
                             getattr(observed, "activate_response", None),
                             getattr(observed, "revoke_response", None),
+                            getattr(observed, "register_response", None),
                             getattr(observed, "create_group_response", None),
                             getattr(observed, "create_user_response", None),
                             getattr(observed, "create_credential_response", None),

@@ -129,102 +129,78 @@ pub(crate) fn supports(case: &Case, connection: &Connection) -> bool {
 }
 
 fn operation(case: &Case, connection: &Connection) -> Option<u32> {
-    match (case.case_id.as_str(), connection.protocol_version.as_str()) {
-        (
-            "test-query-attestation-nonce" | "test-query-username-password-credential",
-            "2.0" | "2.1",
-        ) => Some(0x18),
-        (_, "2.0" | "2.1")
-            if case.operation == "Query" && case.requires["query_function"].is_string() =>
-        {
-            Some(0x18)
+    if !matches!(connection.protocol_version.as_str(), "2.0" | "2.1") {
+        return None;
+    }
+    match case.case_id.as_str() {
+        "test-query-attestation-nonce" | "test-query-username-password-credential" => Some(0x18),
+        _ if case.operation == "Query" && case.requires["query_function"].is_string() => Some(0x18),
+        "test-op-create" => Some(CREATE),
+        "test-op-create-key-pair" => Some(CREATE_KEY_PAIR),
+        "test-op-register" => Some(REGISTER),
+        _ if case.operation == "Register" && case.requires["register_object_ttlv"].is_string() => {
+            Some(REGISTER)
         }
-        ("test-op-create", "2.0" | "2.1") => Some(CREATE),
-        ("test-op-create-key-pair", "2.0" | "2.1") => Some(CREATE_KEY_PAIR),
-        ("test-op-register", "2.0" | "2.1") => Some(REGISTER),
-        ("test-op-re-key", "2.0" | "2.1") => Some(RE_KEY),
-        ("test-op-derive-key", "2.0" | "2.1") => Some(DERIVE_KEY),
-        ("test-op-certify", "2.0" | "2.1") => Some(CERTIFY),
-        ("test-op-re-certify", "2.0" | "2.1") => Some(RE_CERTIFY),
-        ("test-op-check", "2.0" | "2.1") => Some(CHECK),
-        (_, "2.0" | "2.1")
-            if case.operation == "Get"
-                && crate::key_block::asymmetric_format(&case.requires).is_some() =>
+        "test-op-re-key" => Some(RE_KEY),
+        "test-op-derive-key" => Some(DERIVE_KEY),
+        "test-op-certify" => Some(CERTIFY),
+        "test-op-re-certify" => Some(RE_CERTIFY),
+        "test-op-check" => Some(CHECK),
+        _ if case.operation == "Get"
+            && crate::key_block::asymmetric_format(&case.requires).is_some() =>
         {
             Some(GET)
         }
-        (
-            "test-op-get"
-            | "test-op-get-wrapped-symmetric-key"
-            | "test-op-get-transparent-symmetric-key",
-            "2.0" | "2.1",
-        ) => Some(GET),
-        (id, "2.0" | "2.1") if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
-        (id, "2.0" | "2.1") if is_extra_attribute_case(case, id) => Some(GET_ATTRIBUTES),
-        ("test-op-get-attribute-list", "2.0" | "2.1") => Some(GET_ATTRIBUTE_LIST),
-        ("test-op-obtain-lease", "2.0" | "2.1") => Some(OBTAIN_LEASE),
-        ("test-op-get-usage-allocation", "2.0" | "2.1") => Some(GET_USAGE_ALLOCATION),
-        ("test-op-add-attribute", "2.0" | "2.1") => Some(ADD_ATTRIBUTE),
-        ("test-op-modify-attribute", "2.0" | "2.1") => Some(MODIFY_ATTRIBUTE),
-        ("test-op-delete-attribute", "2.0" | "2.1") => Some(DELETE_ATTRIBUTE),
-        ("test-op-set-attribute", "2.0" | "2.1") => Some(SET_ATTRIBUTE),
-        ("test-op-activate", "2.0" | "2.1") => Some(ACTIVATE),
-        ("test-op-revoke", "2.0" | "2.1") => Some(REVOKE),
-        ("test-op-destroy", "2.0" | "2.1") => Some(DESTROY),
-        ("test-op-archive", "2.0" | "2.1") => Some(ARCHIVE),
-        ("test-op-recover", "2.0" | "2.1") => Some(RECOVER),
-        ("test-op-validate", "2.0" | "2.1") => Some(VALIDATE),
-        ("test-op-cancel", "2.0" | "2.1") => Some(CANCEL),
-        ("test-op-poll", "2.0" | "2.1") => Some(POLL),
-        ("test-op-re-key-key-pair", "2.0" | "2.1") => Some(RE_KEY_KEY_PAIR),
-        ("test-op-locate", "2.0" | "2.1") => Some(0x08),
-        (_, "2.0" | "2.1")
-            if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() =>
-        {
+        "test-op-get"
+        | "test-op-get-wrapped-symmetric-key"
+        | "test-op-get-transparent-symmetric-key" => Some(GET),
+        id if key_attribute_reference(id).is_some() => Some(GET_ATTRIBUTES),
+        id if is_extra_attribute_case(case, id) => Some(GET_ATTRIBUTES),
+        "test-op-get-attribute-list" => Some(GET_ATTRIBUTE_LIST),
+        "test-op-obtain-lease" => Some(OBTAIN_LEASE),
+        "test-op-get-usage-allocation" => Some(GET_USAGE_ALLOCATION),
+        "test-op-add-attribute" => Some(ADD_ATTRIBUTE),
+        "test-op-modify-attribute" => Some(MODIFY_ATTRIBUTE),
+        "test-op-delete-attribute" => Some(DELETE_ATTRIBUTE),
+        "test-op-set-attribute" => Some(SET_ATTRIBUTE),
+        "test-op-activate" => Some(ACTIVATE),
+        "test-op-revoke" => Some(REVOKE),
+        "test-op-destroy" => Some(DESTROY),
+        "test-op-archive" => Some(ARCHIVE),
+        "test-op-recover" => Some(RECOVER),
+        "test-op-validate" => Some(VALIDATE),
+        "test-op-cancel" => Some(CANCEL),
+        "test-op-poll" => Some(POLL),
+        "test-op-re-key-key-pair" => Some(RE_KEY_KEY_PAIR),
+        "test-op-locate" => Some(0x08),
+        _ if case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string() => {
             Some(0x08)
         }
-        ("test-op-query", "2.0" | "2.1") => Some(0x18),
-        ("test-op-discover-versions", "2.0" | "2.1") => Some(0x1e),
-        ("test-op-rng-retrieve" | "test-crypto-rng-retrieve-rng-32", "2.0" | "2.1") => Some(0x25),
-        ("test-op-rng-seed" | "test-crypto-rng-seed-rng-32", "2.0" | "2.1") => Some(0x26),
-        (
-            "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256",
-            "2.0" | "2.1",
-        ) => Some(0x27),
-        (
-            "test-op-encrypt"
-            | "test-crypto-encrypt-aes-256-cbc"
-            | "test-crypto-encrypt-aes-256-gcm",
-            "2.0" | "2.1",
-        ) => Some(ENCRYPT),
-        (
-            "test-op-decrypt"
-            | "test-crypto-decrypt-aes-256-cbc"
-            | "test-crypto-decrypt-aes-256-gcm"
-            | "test-crypto-decrypt-aes-256-gcm-invalid-tag",
-            "2.0" | "2.1",
-        ) => Some(DECRYPT),
-        (
-            "test-op-sign"
-            | "test-crypto-sign-rsa-2048-pkcs1_v1_5"
-            | "test-crypto-sign-ecdsa-256-p_256",
-            "2.0" | "2.1",
-        ) => Some(SIGN),
-        (
-            "test-op-signature-verify"
-            | "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5"
-            | "test-crypto-signature-verify-ecdsa-256-p_256",
-            "2.0" | "2.1",
-        ) => Some(SIGNATURE_VERIFY),
-        ("test-op-mac" | "test-crypto-mac-hmac_sha256-256", "2.0" | "2.1") => Some(MAC),
-        ("test-op-mac-verify" | "test-crypto-mac-verify-hmac_sha256-256", "2.0" | "2.1") => {
-            Some(MAC_VERIFY)
-        }
-        ("test-op-create-split-key", "2.0" | "2.1") => Some(CREATE_SPLIT_KEY),
-        ("test-op-join-split-key", "2.0" | "2.1") => Some(JOIN_SPLIT_KEY),
-        ("test-op-import", "2.0" | "2.1") => Some(IMPORT),
-        ("test-op-export", "2.0" | "2.1") => Some(EXPORT),
-        ("test-op-ping", "2.1") => Some(0x3b),
+        "test-op-query" => Some(0x18),
+        "test-op-discover-versions" => Some(0x1e),
+        "test-op-rng-retrieve" | "test-crypto-rng-retrieve-rng-32" => Some(0x25),
+        "test-op-rng-seed" | "test-crypto-rng-seed-rng-32" => Some(0x26),
+        "test-op-hash" | "test-crypto-hash-sha_256-0" | "test-multipart-hash-sha256" => Some(0x27),
+        "test-op-encrypt"
+        | "test-crypto-encrypt-aes-256-cbc"
+        | "test-crypto-encrypt-aes-256-gcm" => Some(ENCRYPT),
+        "test-op-decrypt"
+        | "test-crypto-decrypt-aes-256-cbc"
+        | "test-crypto-decrypt-aes-256-gcm"
+        | "test-crypto-decrypt-aes-256-gcm-invalid-tag" => Some(DECRYPT),
+        "test-op-sign"
+        | "test-crypto-sign-rsa-2048-pkcs1_v1_5"
+        | "test-crypto-sign-ecdsa-256-p_256" => Some(SIGN),
+        "test-op-signature-verify"
+        | "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5"
+        | "test-crypto-signature-verify-ecdsa-256-p_256" => Some(SIGNATURE_VERIFY),
+        "test-op-mac" | "test-crypto-mac-hmac_sha256-256" => Some(MAC),
+        "test-op-mac-verify" | "test-crypto-mac-verify-hmac_sha256-256" => Some(MAC_VERIFY),
+        "test-op-create-split-key" => Some(CREATE_SPLIT_KEY),
+        "test-op-join-split-key" => Some(JOIN_SPLIT_KEY),
+        "test-op-import" => Some(IMPORT),
+        "test-op-export" => Some(EXPORT),
+        "test-op-ping" if connection.protocol_version == "2.1" => Some(0x3b),
         _ => None,
     }
 }
@@ -243,6 +219,9 @@ pub(crate) fn run(case: &Case, connection: &Connection) -> CaseResult {
         }
         Some(operation) if uses_owned_key(operation) => {
             run_owned_key(case, connection, version, operation)
+        }
+        Some(REGISTER) if case.requires["register_object_ttlv"].is_string() => {
+            outcome(case, register_transparent(case, connection, version))
         }
         Some(operation) if is_extended_mutating_op(operation) => {
             run_extended_operation(case, connection, version, operation)
@@ -1513,6 +1492,37 @@ fn run_extended_inner(
         SIGN | SIGNATURE_VERIFY => extended_sign_ops(connection, version, operation, cleanup),
         _ => Err("unsupported extended generic operation"),
     }
+}
+
+fn register_transparent(
+    case: &Case,
+    connection: &Connection,
+    version: ProtocolVersion,
+) -> ExchangeResult {
+    let (kind, object, attrs) = crate::fixtures::transparent_registration(case)?;
+    let mut identifier = None;
+    let response = exchange_payload(
+        connection,
+        version,
+        REGISTER,
+        vec![
+            item(0x0042_0057, Value::enumeration(kind.raw()))?,
+            attrs,
+            object,
+        ],
+        |batch| {
+            identifier = text_identifier(batch);
+            Ok(identifier.is_some())
+        },
+    )?;
+    if let Some(id) = identifier {
+        let _ = exchange(connection, version, REVOKE, Some(&id), |_| Ok(true));
+        let cleanup = exchange(connection, version, DESTROY, Some(&id), |_| Ok(true));
+        if !matches!(cleanup, Ok((0, _) | (1, Some(1)))) {
+            return Err("could not destroy the transparent Register fixture");
+        }
+    }
+    Ok(response)
 }
 
 fn extended_register_import(

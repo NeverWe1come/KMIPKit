@@ -123,6 +123,8 @@ EXTRA_ATTRIBUTE_TAGS = {
 def _operation(case, version):
     if version not in {"2.0", "2.1"}:
         return None
+    if case["operation"] == "Register" and "register_object_ttlv" in case.get("requires", {}):
+        return REGISTER
     if case["case_id"] == "test-op-ping":
         return 0x3B if version == "2.1" else None
     if case["case_id"] in KEY_ATTRIBUTES:
@@ -282,6 +284,8 @@ def run(driver, case):
         return _query_field(driver, case["requires"])
     if operation in {POLL, CANCEL}:
         return driver._run_async_case(case, driver._fixture_name(case), exchange=partial(_async_target, driver))
+    if operation == REGISTER and "register_object_ttlv" in case["requires"]:
+        return _register_transparent(driver, case["requires"])
     if operation in EXTENDED_OPERATIONS:
         return _run_extended(driver, operation, case["requires"])
     if case["case_id"] == "test-multipart-hash-sha256":
@@ -1071,6 +1075,29 @@ def _destroy_all(driver, ids):
                 driver._structure_item(0x420081, [item(0x420082, "enumeration", 6)]),
             ])
             _checked_exchange(driver, DESTROY, custom_payload=[item(0x420094, "text", obj_id)])
+
+
+def _register_transparent(driver, requires):
+    from kmipkit import ttlv
+
+    identifier = None
+
+    def check(payload):
+        nonlocal identifier
+        identifier = _text_identifier(payload)
+        return identifier is not None
+
+    with (driver._item(0x420057, "enumeration", int(requires["register_object_type"])) as kind,
+          ttlv.ttlv_decode(bytes.fromhex(requires["register_attributes_ttlv"])) as attrs,
+          ttlv.ttlv_decode(bytes.fromhex(requires["register_object_ttlv"])) as obj):
+        result = _checked_exchange(driver, REGISTER, expected=check, custom_payload=[kind, attrs, obj])
+    if identifier is not None:
+        cleanup = _checked_exchange(
+            driver, DESTROY, identifier, expected=lambda payload: _text_identifier(payload) == identifier,
+        )
+        if cleanup["status"] != "passed" and cleanup.get("result_reason_code") != 1:
+            result.update(status="failed", diagnostic="Could not destroy the transparent Register fixture")
+    return result
 
 
 def _run_extended(driver, operation, requires):

@@ -1,12 +1,12 @@
 //! Public deterministic test inputs and explicitly disposable test-key material.
 use crate::driver::{item, structure};
-use crate::models::Result;
+use crate::models::{Case, Result};
 use kmipkit::protocol::{
     AttributeSet, Certificate, CertificateRequest, KeyBlock, KeyBlockValue, KeyFormatType,
     KeyMaterial, KeyValue, ObjectType, OpaqueObject, OpaqueObjectContext, PgpKey, RegisterRequest,
     SecretData, SymmetricKey,
 };
-use kmipkit::ttlv::{Item, Value};
+use kmipkit::ttlv::{Item, Value, ValueView, codec};
 
 pub(crate) const CERTIFICATE: &[u8] = include_bytes!("../tests/fixtures/certificate.der");
 pub(crate) const CSR: &[u8] = include_bytes!("../tests/fixtures/certificate-request.der");
@@ -97,6 +97,46 @@ pub(crate) fn register(name: &str, version: &str) -> Result<kmipkit::ClientReque
             request
         },
     ))
+}
+
+pub(crate) fn transparent_registration(case: &Case) -> Result<(ObjectType, Item, Item)> {
+    let decode = |field: &str| {
+        let input = case.requires[field]
+            .as_str()
+            .ok_or("Register fixture missing TTLV")?;
+        let wire = crate::generic_wire::decode_hex(input)?;
+        codec::decode(&wire).map_err(|_| "invalid transparent Register fixture TTLV")
+    };
+    let (kind, object_tag) = match case.requires["register_object_type"].as_str() {
+        Some("3") => (3, 0x0042_006d),
+        Some("4") => (4, 0x0042_0064),
+        _ => return Err("invalid transparent Register fixture object type"),
+    };
+    let object = decode("register_object_ttlv")?;
+    let attributes = decode("register_attributes_ttlv")?;
+    if object.tag().raw() != object_tag || attributes.tag().raw() != 0x0042_0125 {
+        return Err("unexpected tag in transparent Register fixture");
+    }
+    Ok((ObjectType::from_raw(kind), object, attributes))
+}
+
+pub(crate) fn register_transparent(case: &Case) -> Result<kmipkit::ClientRequest> {
+    let (kind, object, attrs) = transparent_registration(case)?;
+    let fields = attrs.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            return Err("Register fixture Attributes must be a structure");
+        };
+        structure
+            .children()
+            .iter()
+            .map(|item| item.try_clone().map_err(|_| "attribute copy failed"))
+            .collect::<Result<Vec<_>>>()
+    })?;
+    let attrs =
+        AttributeSet::try_new(fields).map_err(|_| "invalid transparent Register attributes")?;
+    Ok(kmipkit::ClientRequest::Register(RegisterRequest::new(
+        kind, attrs, object,
+    )))
 }
 
 pub(crate) fn certificate_structure() -> Result<kmipkit::ttlv::Structure> {

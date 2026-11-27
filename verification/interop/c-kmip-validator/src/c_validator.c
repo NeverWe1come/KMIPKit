@@ -291,6 +291,12 @@ bool kmip_load_catalog_with_digest(const char *json_path, kmip_test_case_t *out_
             load_optional_requires(&document, requires, "certificate_object_path",
                                    test_case->certificate_object_path,
                                    sizeof(test_case->certificate_object_path)) &&
+            load_optional_requires(&document, requires, "register_object_ttlv",
+                                   test_case->register_object_ttlv, sizeof(test_case->register_object_ttlv)) &&
+            load_optional_requires(&document, requires, "register_attributes_ttlv",
+                                   test_case->register_attributes_ttlv, sizeof(test_case->register_attributes_ttlv)) &&
+            load_optional_requires(&document, requires, "register_object_type",
+                                   test_case->register_object_type, sizeof(test_case->register_object_type)) &&
             load_optional_requires(&document, requires, "register_object_path",
                                    test_case->register_object_path,
                                    sizeof(test_case->register_object_path)) &&

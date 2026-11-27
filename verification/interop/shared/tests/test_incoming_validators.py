@@ -22,6 +22,7 @@ from verification.interop.shared.tools.table_authenticated_encryption import aut
 from verification.interop.shared.tools.table_key_block_exchanges import key_block_cases
 from verification.interop.shared.tools.table_query_fields import credential_case, nonce_case, query_cases
 from verification.interop.shared.tools.table_rotate_boundaries import rotate_cases
+from verification.interop.shared.tools.table_transparent_registration import transparent_registration_cases
 
 ROOT = Path(__file__).resolve().parents[4]
 INTEROP = ROOT / "verification/interop"
@@ -724,6 +725,107 @@ class DirectTagValidatorTests(unittest.TestCase):
                 if route == "high-level":
                     self.assertEqual(result["actual_api_level"], route)
             save_evidence(report, selection, f"{language}-2.{minor}-{route}-authenticated-encryption")
+
+    def test_transparent_registration_sends_each_key_structure(self):
+        for language, available in installed_validators():
+            routes = ["generic-ttlv", "typed-protocol", "fluent"]
+            if language == "rust":
+                routes.append("high-level")
+            for minor in (0, 1):
+                for route in routes:
+                    for supported in (True, False):
+                        with self.subTest(language=language, minor=minor, route=route, supported=supported):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.transparent_registration(language, minor, route, supported)
+
+    def transparent_registration(self, language, minor, route, supported):
+        with tempfile.TemporaryDirectory(prefix="kmipkit-transparent-register-") as dirname:
+            work = Path(dirname)
+            protocol = f"2.{minor}"
+            catalog = version_catalog(protocol)
+            base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-register")
+            cases = list(transparent_registration_cases(ROOT, protocol, base))
+            selection = work / "catalog.json"
+            selection.write_text(json.dumps(with_cases(catalog, cases)))
+            profile = work / "profile.json"
+            profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled",
+                                                      "version": "1"}, "operations": {}}))
+            report = work / "results.json"
+            command, env = self.command(language, profile, report)
+            tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            tls.minimum_version = ssl.TLSVersion.TLSv1_3
+            tls.verify_mode = ssl.CERT_REQUIRED
+            tls.load_verify_locations(cafile=PKI / "client-cert.pem")
+            tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
+            with socket.create_server(("127.0.0.1", 0)) as listener:
+                listener.settimeout(10)
+                connection = work / "connection.json"
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                connection.write_text(json.dumps(config))
+                command += ["--catalog", str(selection), "--connection", str(connection)]
+                with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+                    def receive(stage, check):
+                        raw, _ = self.accept_request(listener, process, stage)
+                        raw.settimeout(5)
+                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                            request = only(read_message(peer), 0x420078, 1)
+                            header = only(request, 0x420077, 1)
+                            self.assertEqual(only(header, 0x420069, 1), parse_items(version(minor))[0][2])
+                            batch = only(request, 0x42000F, 1)
+                            operation = int.from_bytes(only(batch, 0x42005C, 5), "big")
+                            result = check(operation, only(batch, 0x420079, 1))
+                            ids = [wire_item(tag, kind, value) for tag, kind, value in batch if tag == 0x420093]
+                            peer.sendall(structure(
+                                0x42007B,
+                                structure(0x42007A, version(minor), wire_item(0x420092, 9, bytes(8)),
+                                          number(0x42000D, 2, 1)),
+                                structure(0x42000F, number(0x42005C, 5, operation), *ids, *result),
+                            ))
+                            return operation
+
+                    def expect_register(operation, request):
+                        self.assertEqual(operation, 3)
+                        self.assertEqual(request, expected)
+                        if not supported:
+                            return number(0x42007F, 5, 1), number(0x42007E, 5, 5)
+                        return number(0x42007F, 5, 0), structure(0x42007C, wire_item(0x420094, 7, identifier))
+
+                    def expect_cleanup(operation, request):
+                        self.assertIn(operation, (0x13, 0x14))
+                        self.assertEqual(only(request, 0x420094, 7), identifier)
+                        return number(0x42007F, 5, 0), structure(0x42007C, wire_item(0x420094, 7, identifier))
+
+                    try:
+                        for case in cases:
+                            fields = case["requires"]
+                            expected = parse_items(number(0x420057, 5, int(fields["register_object_type"])))
+                            expected += parse_items(bytes.fromhex(fields["register_attributes_ttlv"]))
+                            expected += parse_items(bytes.fromhex(fields["register_object_ttlv"]))
+                            identifier = case["case_id"].encode("ascii")
+                            receive(case["case_id"], expect_register)
+                            if supported:
+                                stage = receive("Destroy the registered fixture", expect_cleanup)
+                                if stage == 0x13:
+                                    self.assertEqual(receive("Destroy the revoked fixture", expect_cleanup), 0x14)
+                        _, stderr = process.communicate(timeout=20)
+                        self.assertEqual(process.returncode, 0, stderr.decode(errors="replace"))
+                    finally:
+                        if process.poll() is None:
+                            process.terminate()
+                            process.communicate(timeout=5)
+            observations = json.loads(report.read_text())["cases"]
+            self.assertEqual({result["case_id"] for result in observations}, {case["case_id"] for case in cases})
+            for result in observations:
+                self.assertEqual(result["status"], "passed" if supported else "server_unsupported")
+                self.assertEqual(result["result_status_code"], 0 if supported else 1)
+                if not supported:
+                    self.assertEqual(result["result_reason_code"], 5)
+                if route == "high-level":
+                    self.assertEqual(result["actual_api_level"], route)
+            suffix = "" if supported else "-unsupported"
+            save_evidence(report, selection, f"{language}-{protocol}-{route}-transparent-register{suffix}")
 
     def test_key_block_get_checks_wrapping_and_transparent_material(self):
         for language, available in installed_validators():

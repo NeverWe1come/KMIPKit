@@ -89,6 +89,9 @@ public final class JavaKmipDriver implements AutoCloseable {
         if (asymmetricFormat(testCase) != 0) {
             return executeAsymmetricKey(testCase, asymmetricFormat(testCase), start);
         }
+        if (transparentRegisterCase(testCase)) {
+            return executeTransparentRegister(testCase, start);
+        }
         if (keyBlockCase(testCase)) {
             return executeKeyBlock(testCase, start);
         }
@@ -500,6 +503,58 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
             return CaseOutcome.failed("The KMIP server returned a non-success result.",
                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
+        }
+    }
+
+    static boolean transparentRegisterCase(CatalogLoader.CatalogCase testCase) {
+        return "Register".equals(testCase.operation()) && testCase.requires().has("register_object_ttlv");
+    }
+
+    private static TtlvStructure copyRegisterAttributes(TtlvItem attributeItem) {
+        TtlvStructure attributes = TtlvStructure.create();
+        try (var item = attributeItem.view(); var value = item.value(); var fields = value.structure()) {
+            for (long index = 0; index < fields.itemCount(); index++) {
+                try (var field = fields.itemAt(index); var copy = field.copy()) {
+                    attributes = TtlvStructure.withItem(attributes, copy, CODEC_LIMITS);
+                }
+            }
+            return attributes;
+        } catch (RuntimeException exception) {
+            attributes.close();
+            throw exception;
+        }
+    }
+
+    private CaseOutcome executeTransparentRegister(CatalogLoader.CatalogCase testCase, long start) {
+        var requires = testCase.requires();
+        int objectType = requires.path("register_object_type").asInt();
+        var identifier = new java.util.concurrent.atomic.AtomicReference<UniqueIdentifier>();
+        try (var object = TtlvCodec.decodeWithLimits(java.util.HexFormat.of().parseHex(
+                    requires.path("register_object_ttlv").asText()), CODEC_LIMITS);
+                var attributesItem = TtlvCodec.decodeWithLimits(java.util.HexFormat.of().parseHex(
+                    requires.path("register_attributes_ttlv").asText()), CODEC_LIMITS);
+                var attributes = copyRegisterAttributes(attributesItem)) {
+            ClientBatchItem request;
+            if ("fluent".equals(connection.apiLevel())) {
+                try (var set = AttributeSet.tryNew(attributes); var builder = client.request().register()) {
+                    request = builder.objectItem(objectType, object).attributes(set).build();
+                }
+            } else {
+                try (var payload = RegisterRequest.create(objectType, attributes, object)) {
+                    request = ClientBatchItem.register(payload);
+                }
+            }
+            var result = executeRequest(testCase, withBatchId(request), response -> response.registerResponse()
+                    .map(payload -> {
+                        identifier.set(payload.uniqueIdentifier());
+                        return identifier.get() != null;
+                    }).orElse(false), start);
+            if (identifier.get() != null && !"passed".equals(destroyTarget(testCase, identifier.get(), start).status())) {
+                return CaseOutcome.failed("Could not destroy the transparent Register fixture.", elapsedMillis(start));
+            }
+            return result;
+        } catch (RuntimeException exception) {
+            return exchangeFailure(exception, start);
         }
     }
 

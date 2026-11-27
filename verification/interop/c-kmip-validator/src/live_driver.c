@@ -9102,6 +9102,145 @@ static kmip_execution_outcome_t execute_typed_single_item(
     return outcome;
 }
 
+static int register_hex_digit(char digit) {
+    if (digit >= '0' && digit <= '9') return digit - '0';
+    if (digit >= 'a' && digit <= 'f') return digit - 'a' + 10;
+    return -1;
+}
+
+static int32_t decode_register_fixture(const char *hex, kmip_live_client_t *client,
+                                       kmipkit_ttlv_item_t **item) {
+    uint8_t wire[768];
+    const size_t length = strlen(hex);
+    if (length == 0 || length % 2 != 0 || length / 2 > sizeof(wire)) return KMIPKIT_ERROR_INVALID_INPUT;
+    for (size_t i = 0; i < length / 2; ++i) {
+        const int high = register_hex_digit(hex[2 * i]);
+        const int low = register_hex_digit(hex[2 * i + 1]);
+        if (high < 0 || low < 0) return KMIPKIT_ERROR_INVALID_INPUT;
+        wire[i] = (uint8_t)(high * 16 + low);
+    }
+    kmipkit_ttlv_decode_error_v1_t error = {.struct_size = sizeof(error), .abi_version = 1};
+    return kmipkit_ttlv_decode_with_limits(wire, (uint64_t)(length / 2), client->limits, &error, item);
+}
+
+static uint32_t transparent_register_type(const kmip_test_case_t *test_case) {
+    if (strcmp(test_case->register_object_type, "3") == 0) return 3;
+    if (strcmp(test_case->register_object_type, "4") == 0) return 4;
+    return 0;
+}
+
+static int32_t register_attributes_from_item(kmip_live_client_t *client, kmipkit_ttlv_item_t *item,
+                                             kmipkit_ttlv_structure_t **attributes) {
+    kmipkit_ttlv_item_view_t *source = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    kmipkit_ttlv_structure_view_t *fields = NULL;
+    uint64_t count = 0;
+    int32_t status = kmipkit_ttlv_item_view_from_item(item, &source);
+    if (status == 0 && !item_view_has_tag(source, 0x420125, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value))
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_value_view_structure(value, &fields);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(fields, &count);
+    if (status == 0) status = kmipkit_ttlv_structure_create(attributes);
+    for (uint64_t i = 0; status == 0 && i < count; ++i) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_item_t *copy = NULL;
+        status = kmipkit_ttlv_structure_view_item_at(fields, i, &field);
+        if (status == 0) status = kmipkit_ttlv_item_view_copy(field, &copy);
+        if (status == 0) {
+            kmipkit_ttlv_structure_t *previous = *attributes;
+            *attributes = NULL;
+            status = kmipkit_ttlv_structure_with_item(previous, copy, client->limits, attributes);
+            copy = NULL;
+        }
+        kmipkit_ttlv_item_release(copy);
+        kmipkit_ttlv_item_view_release(field);
+    }
+    kmipkit_ttlv_structure_view_release(fields);
+    kmipkit_ttlv_value_view_release(value);
+    kmipkit_ttlv_item_view_release(source);
+    return status;
+}
+
+static kmip_execution_outcome_t execute_typed_transparent_register(
+    kmip_live_client_t *client, const kmip_test_case_t *test_case, bool fluent) {
+    const uint32_t operation = KMIPKIT_ENUMERATION_OPERATION_REGISTER;
+    kmip_execution_outcome_t outcome = {.executed = true, .library_failed = true};
+    kmipkit_ttlv_item_t *object = NULL, *attribute_item = NULL;
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_client_batch_item_t *request = NULL;
+    kmipkit_client_batch_item_response_t *response = NULL, *destroyed = NULL;
+    kmipkit_fluent_result_t result = {0};
+    const uint32_t object_type = transparent_register_type(test_case);
+    int32_t status = object_type == 0 ? KMIPKIT_ERROR_INVALID_INPUT :
+        decode_register_fixture(test_case->register_object_ttlv, client, &object);
+    if (status == 0) status = decode_register_fixture(test_case->register_attributes_ttlv, client, &attribute_item);
+    if (status == 0) status = register_attributes_from_item(client, attribute_item, &attributes);
+    if (status == 0 && fluent && !client->username_env[0]) {
+        kmipkit_fluent_register_params_t params = KMIPKIT_FLUENT_REGISTER_PARAMS_INIT;
+        params.object_type = object_type;
+        params.attributes = attributes;
+        params.object = object;
+        params.limits = client->limits;
+        status = kmipkit_fluent_register_outcome(client->client, &params, &result);
+        if (status == 0) {
+            kmipkit_client_batch_item_metadata_v2_t metadata = {
+                .struct_size = sizeof(metadata), .abi_version = 2
+            };
+            status = kmipkit_client_batch_item_response_metadata_v2(result.item, &metadata);
+            if (status == 0 && metadata.operation == operation) {
+                record_kmip_result(&outcome, &metadata);
+                outcome.library_failed = false;
+            }
+        }
+    } else if (status == 0) {
+        if (fluent) {
+            kmipkit_fluent_register_params_t params = KMIPKIT_FLUENT_REGISTER_PARAMS_INIT;
+            params.object_type = object_type;
+            params.attributes = attributes;
+            params.object = object;
+            status = kmipkit_fluent_item_register(&params, &request);
+        } else {
+            kmipkit_register_request_t *payload = NULL;
+            status = kmipkit_register_request_create(object_type, attributes, object, &payload);
+            attributes = NULL;
+            object = NULL;
+            if (status == 0) status = kmipkit_client_batch_item_register(payload, &request);
+        }
+        if (status == 0) outcome = execute_typed_single_item(client, &request, operation, &response);
+    }
+
+    if (outcome.success) {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t id = {.struct_size = sizeof(id), .abi_version = 1};
+        kmipkit_client_batch_item_response_t *registered = response ? response : result.item;
+        status = kmipkit_client_batch_item_response_register(registered, &present, &id);
+        if (status == 0 && present) status = kmipkit_client_batch_item_destroy(&id, &request);
+        if (status == 0 && present) {
+            const kmip_execution_outcome_t cleanup = execute_typed_single_item(
+                client, &request, KMIPKIT_ENUMERATION_OPERATION_DESTROY, &destroyed);
+            if (!cleanup.success || !destroy_response_matches_key(destroyed, &id, &status))
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (status != 0 || !present) {
+            outcome.success = false;
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "Could not verify and destroy the transparent Register fixture.");
+        }
+    } else if (outcome.library_failed && !outcome.result_reason[0]) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Could not construct or execute the transparent Register recipe (status=%d).", status);
+    }
+    kmipkit_client_batch_item_response_release(destroyed);
+    kmipkit_client_batch_item_response_release(response);
+    kmipkit_fluent_result_release(&result);
+    kmipkit_client_batch_item_release(request);
+    kmipkit_ttlv_structure_release(attributes);
+    kmipkit_ttlv_item_release(attribute_item);
+    kmipkit_ttlv_item_release(object);
+    return outcome;
+}
+
 static bool key_block_case(const char *case_id) {
     return strcmp(case_id, "test-op-get-transparent-symmetric-key") == 0 ||
         strcmp(case_id, "test-op-get-wrapped-symmetric-key") == 0;
@@ -10853,6 +10992,40 @@ static kmip_execution_outcome_t generic_ext_id_op(kmip_live_client_t *client, ui
     return execute_generic_custom(client, op, p, NULL, NULL);
 }
 
+static bool append_register_fixture(kmip_live_client_t *client, kmipkit_ttlv_structure_t **payload,
+                                    const char *hex) {
+    kmipkit_ttlv_item_t *item = NULL;
+    if (decode_register_fixture(hex, client, &item) != 0) return false;
+    kmipkit_ttlv_structure_t *previous = *payload;
+    *payload = NULL;
+    return kmipkit_ttlv_structure_with_item(previous, item, client->limits, payload) == 0;
+}
+
+static kmip_execution_outcome_t execute_generic_transparent_register(
+    kmip_live_client_t *client, const kmip_test_case_t *test_case) {
+    const uint32_t object_type = transparent_register_type(test_case);
+    kmipkit_ttlv_structure_t *payload = make_ttlv_struct();
+    if (!payload || !object_type || !append_ttlv_enum(client, &payload, 0x420057, object_type) ||
+        !append_register_fixture(client, &payload, test_case->register_attributes_ttlv) ||
+        !append_register_fixture(client, &payload, test_case->register_object_ttlv)) {
+        kmipkit_ttlv_structure_release(payload);
+        kmip_execution_outcome_t failure = {.executed = true, .library_failed = true};
+        snprintf(failure.result_reason, sizeof(failure.result_reason), "Invalid transparent Register fixture.");
+        return failure;
+    }
+    generic_ext_ctx_t owned = {0};
+    kmip_execution_outcome_t outcome = execute_generic_custom(
+        client, KMIPKIT_ENUMERATION_OPERATION_REGISTER, payload, check_ext_single_id, &owned);
+    if (outcome.success &&
+        !generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_DESTROY, owned.ids[0]).success) {
+        outcome.success = false;
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "Could not destroy the generic transparent Register fixture.");
+    }
+    return outcome;
+}
+
 static void generic_ext_cleanup(kmip_live_client_t *client, const generic_ext_ctx_t *ctx) {
     for (size_t i = 0; i < ctx->count; i++) {
         generic_ext_id_op(client, KMIPKIT_ENUMERATION_OPERATION_REVOKE, ctx->ids[i]);
@@ -12082,6 +12255,20 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             : KMIPKIT_ENUMERATION_OPERATION_QUERY;
         return execute_single_versioned_diagnostic(client, operation, false, NULL,
             query && (nonce_query || test_case->query_function[0]) ? test_case : NULL);
+    }
+    if (test_case->register_object_ttlv[0] && strcmp(test_case->operation, "Register") == 0 &&
+        client->protocol_major == 2) {
+#ifdef KMIPKIT_C_GENERIC_TLS
+        if (strcmp(client->api_level, "generic-ttlv") == 0 && client->configuration &&
+            client->wire_encoding == KMIPKIT_WIRE_ENCODING_TTLV &&
+            has_tls_material(client->configuration) &&
+            strcmp(client->configuration->transport, "raw_tls") == 0 &&
+            !client->username_env[0])
+            return execute_generic_transparent_register(client, test_case);
+#endif
+        if (strcmp(client->api_level, "typed-protocol") == 0 || strcmp(client->api_level, "fluent") == 0)
+            return execute_typed_transparent_register(client, test_case, strcmp(client->api_level, "fluent") == 0);
+        return outcome_not_run("the transparent Register recipe requires raw TLS or the typed client");
     }
     bool get_key_block = key_block_case(test_case->case_id);
     uint32_t key_material_format = asymmetric_key_format(test_case->case_id);

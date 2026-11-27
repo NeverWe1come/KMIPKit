@@ -512,6 +512,9 @@ pub(crate) fn request(
             )),
             _ => create(name, version)?,
         },
+        "Register" if case.requires["register_object_ttlv"].is_string() => {
+            crate::fixtures::register_transparent(case)?
+        }
         "Register" => crate::fixtures::register(
             case.requires["object_type"]
                 .as_str()

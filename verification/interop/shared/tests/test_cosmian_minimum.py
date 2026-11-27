@@ -19,6 +19,21 @@ from verification.interop.shared.tools.run_all import (
 
 
 class CosmianMinimumTests(unittest.TestCase):
+    def test_transparent_dsa_and_dh_registration_is_required_on_the_correct_rows(self):
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                catalog, inventory = build_selection(ROOT, version)
+                cases = {case["case_id"]: case for case in catalog["test_cases"]}
+                rows = {(row["kind"], row["name"]): row for row in inventory["rows"]}
+                for family in ("DSA", "DH"):
+                    for visibility, object_type in (("Private", "4"), ("Public", "3")):
+                        case_id = f"test-register-transparent-{family.lower()}-{visibility.lower()}-key"
+                        row = rows["transparent_key", f"{family} {visibility} Key"]
+                        self.assertEqual(row["server_cases"], [case_id])
+                        self.assertEqual(cases[case_id]["requires"]["register_object_type"], object_type)
+                        self.assertEqual(cases[case_id]["execution"]["mutation"], "mutating")
+                        self.assertNotIn(case_id, rows["operation", "Register"]["server_cases"])
+
     def test_every_published_scope_row_is_retained_with_versioned_cases(self):
         snapshot = json.loads((ROOT / "verification/interop/shared/catalog/cosmian-kmip2x-support.json").read_text())
         self.assertEqual(len(snapshot["rows"]), 159)

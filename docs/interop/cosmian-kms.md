@@ -229,6 +229,21 @@ returns Private Exponent before Public Exponent, following the order in
 both standards. With the corrected typed Key Material reader, Rust
 validates that order through the typed, Fluent and direct client routes.
 
+The DSA and DH probes send the transparent material in Register. The DSA
+payloads use the public test material from OASIS BL-M-12 and BL-M-13.
+The DH payloads use the ffdhe2048 group with disposable test values.
+Controlled peers check the exact Register payload and exercise successful
+registration with cleanup and Operation Not Supported. The probes cover
+generic TTLV, typed protocol and Fluent for all four bindings, plus the
+direct Rust client, in both KMIP versions.
+
+Cosmian 5.29.0 registered both DSA key structures in all 26 exchanges per
+structure and the fixtures were destroyed. Register with either DH
+structure returned Operation Failed with Cryptographic Failure in all 26
+exchanges per structure. The report records the actual reason code and
+keeps the DH rejection distinct from Operation Not Supported.
+[RFC 7919 Appendix A.1](https://www.rfc-editor.org/rfc/rfc7919#appendix-A.1)
+
 ## 6. Cosmian attribute extensions
 
 The pinned image acknowledges the following `SetAttribute` requests at its

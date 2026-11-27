@@ -116,6 +116,7 @@ final class GenericExchange {
         if (JavaKmipDriver.rotateLocateCase(testCase)) return LOCATE;
         if ("Query".equals(testCase.operation()) && testCase.requires().has("query_function")) return QUERY;
         if (JavaKmipDriver.asymmetricFormat(testCase) != 0) return GET;
+        if (JavaKmipDriver.transparentRegisterCase(testCase)) return REGISTER;
         return switch (testCase.caseId()) {
             case "test-op-create" -> CREATE;
             case "test-op-create-key-pair" -> CREATE_KEY_PAIR;
@@ -1491,6 +1492,9 @@ final class GenericExchange {
             if (operation == POLL || operation == CANCEL) {
                 return runAsynchronous(connection, operation, minor, start);
             }
+            if (JavaKmipDriver.transparentRegisterCase(testCase)) {
+                return runTransparentRegister(testCase, connection, minor, start);
+            }
             if (operation == REGISTER || operation == IMPORT) {
                 return runExtendedRegisterImport(connection, operation, minor, cleanup, start);
             }
@@ -1527,6 +1531,29 @@ final class GenericExchange {
                 var kv = structureItem(0x420045, mat);
                 var kb = structureItem(0x420040, fmt, kv)) {
             return structureItem(0x42008f, kb);
+        }
+    }
+
+    private static JavaKmipDriver.CaseOutcome runTransparentRegister(CatalogLoader.CatalogCase testCase,
+            ConnectionConfig connection, int minor, long start) {
+        var requires = testCase.requires();
+        var identifier = new AtomicReference<byte[]>();
+        try (var type = item(0x420057, TtlvValue.Enumeration(requires.path("register_object_type").asInt()));
+                var attributes = TtlvCodec.decodeWithLimits(java.util.HexFormat.of().parseHex(
+                        requires.path("register_attributes_ttlv").asText()), LIMITS);
+                var object = TtlvCodec.decodeWithLimits(java.util.HexFormat.of().parseHex(
+                        requires.path("register_object_ttlv").asText()), LIMITS);
+                var payload = structureItem(0x420079, type, attributes, object)) {
+            var result = executePayload(connection, REGISTER, minor, payload, fields -> {
+                identifier.set(textIdentifier(fields));
+                return identifier.get() != null;
+            }, start);
+            byte[] id = identifier.get();
+            if (id != null && !"passed".equals(execute(connection, DESTROY, minor, id,
+                    fields -> Arrays.equals(id, textIdentifier(fields)), start).status())) {
+                return JavaKmipDriver.CaseOutcome.failed("Could not destroy the transparent Register fixture.", elapsed(start));
+            }
+            return result;
         }
     }
 
