@@ -181,14 +181,16 @@ class DirectTagValidatorTests(unittest.TestCase):
                             self.skipTest(f"Installed {language} validator required")
                         self.exchange(language, minor, invalid)
 
-    def test_each_installed_validator_receives_notify_and_put_through_typed_listener(self):
+    def test_each_installed_validator_receives_notify_and_put_through_api_routes(self):
         for language, available in installed_validators():
+            routes = ("generic-ttlv", "typed-protocol")
             for minor in (0, 1):
-                for invalid in (False, True):
-                    with self.subTest(language=language, minor=minor, invalid=invalid):
-                        if not available:
-                            self.skipTest(f"Installed {language} validator required")
-                        self.exchange(language, minor, invalid, api="typed-protocol")
+                for api in routes:
+                    for invalid in (False, True):
+                        with self.subTest(language=language, minor=minor, api=api, invalid=invalid):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.exchange(language, minor, invalid, api=api)
 
     def test_isolated_key_attributes_use_their_own_tag_and_expected_value(self):
         for language, available in installed_validators():
@@ -229,7 +231,7 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def exchange_rotate_attributes(self, language, minor, api):
         protocol_version = f"2.{minor}"
-        catalog = version_catalog(protocol_version)
+        catalog = normative_catalog(protocol_version)
         base = next(case for case in catalog["test_cases"] if case["case_id"] == "test-op-locate")
         cases = [case for _, case in rotate_cases(ROOT, protocol_version, base)]
         self.assertEqual(7, len(cases))
