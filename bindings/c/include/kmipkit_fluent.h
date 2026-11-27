@@ -125,6 +125,7 @@ int32_t kmipkit_client_obtain_lease_by_id_v1(kmipkit_client_t * client, const km
 
 #if defined(KMIPKIT_H) || !defined(KMIPKIT_INTERNAL_H)
 #include "kmipkit_fluent_ops.h"
+#include "kmipkit_presets.h"
 #endif
 
 #endif /* KMIPKIT_FLUENT_H */

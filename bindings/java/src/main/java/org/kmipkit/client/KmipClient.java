@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.fluent.FluentRequest;
+import org.kmipkit.fluent.KeyRef;
+import org.kmipkit.fluent.KmipNamespaces;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.TransportConfiguration;
@@ -223,6 +225,16 @@ public final class KmipClient implements AutoCloseable {
     }
 
     public FluentRequest request() { return new FluentRequest(this); }
+    public KmipNamespaces.KeysClient keys() { return new KmipNamespaces.KeysClient(this); }
+    public KmipNamespaces.CryptoClient crypto() { return new KmipNamespaces.CryptoClient(this); }
+    public KmipNamespaces.CertificatesClient certificates() { return new KmipNamespaces.CertificatesClient(this); }
+    public KmipNamespaces.SecretsClient secrets() { return new KmipNamespaces.SecretsClient(this); }
+    public KmipNamespaces.AttributesClient attributes() { return new KmipNamespaces.AttributesClient(this); }
+    public KmipNamespaces.SessionsClient sessions() { return new KmipNamespaces.SessionsClient(this); }
+    public KmipNamespaces.AdminClient admin() { return new KmipNamespaces.AdminClient(this); }
+    public KmipNamespaces.AsyncOpsClient asyncOps() { return new KmipNamespaces.AsyncOpsClient(this); }
+    public KeyRef key(String id) { return new KeyRef(this, UniqueIdentifier.textString(id)); }
+    public KeyRef key(UniqueIdentifier id) { return new KeyRef(this, id); }
     /** Executes a typed Create Symmetric Key request with the client's inherited timeout policy. */
     public ClientBatchResponse createSymmetricKey(SymmetricKeyRequest request, CodecLimits limits)
             throws org.kmipkit.ClientOperationException {

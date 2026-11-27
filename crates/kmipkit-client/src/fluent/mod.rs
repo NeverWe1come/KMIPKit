@@ -65,6 +65,7 @@ mod admin;
 mod async_ops;
 mod attributes;
 mod crypto;
+mod domain;
 mod execution;
 mod keys;
 mod kmip30;
@@ -87,6 +88,14 @@ pub use async_ops::{CancelBuilder, PollBuilder, ProcessBuilder, QueryAsyncReques
 pub use attributes::{
     AddAttributeBuilder, AdjustAttributeBuilder, DeleteAttributeBuilder, GetAttributeListBuilder,
     GetAttributesBuilder, ModifyAttributeBuilder, SetAttributeBuilder,
+};
+pub use domain::{
+    AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptoClient, KeyRef,
+    KeysClient, SecretsClient, SessionsClient,
+};
+pub use kmipkit_protocol::{
+    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
+    PresetError, SignatureSpec, decode_pem, decode_pem_der,
 };
 pub use crypto::{
     DecryptBuilder, EncryptBuilder, HashBuilder, MacBuilder, MacVerifyBuilder, SignBuilder,

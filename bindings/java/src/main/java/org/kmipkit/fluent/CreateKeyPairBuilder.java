@@ -75,6 +75,14 @@ public final class CreateKeyPairBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Configures asymmetric or KMIP 3.0 PQC algorithm and length from a curated {@link KeySpec}. */
+    public CreateKeyPairBuilder withKeySpec(KeySpec spec) {
+        if (spec == null || !spec.isAsymmetric()) {
+            throw new InvalidInputException("an asymmetric KeySpec is required");
+        }
+        return algorithm(spec.algorithm()).length(spec.length());
+    }
+
     /** Selects named KMIP key usage flags. */
     public CreateKeyPairBuilder privateUsageMask(KeyUsage... flags) {
         return privateUsageMask(KeyUsage.mask(flags));

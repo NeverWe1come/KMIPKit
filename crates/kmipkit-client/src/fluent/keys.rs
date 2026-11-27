@@ -7,13 +7,13 @@ use kmipkit_protocol::{
     CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, DerivationMethod,
     DerivationParameters, DeriveKeyRequest, ExportRequest, ExportResponse, ImportRequest,
-    ImportResponse, JoinSplitKeyRequest, JoinSplitKeyResponse, KeyCompressionType, KeyFormatType,
-    KeyWrapType, ManagedObject, ObjectType, OpaqueObjectContext, ProtocolVersion,
-    RegisterRequest, SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
-    ValidateKmipRequest,
+    ImportResponse, JoinSplitKeyRequest, JoinSplitKeyResponse, KdfSpec, KeyCompressionType,
+    KeyFormatType, KeySpec, KeyWrapType, ManagedObject, ObjectType, OpaqueObjectContext,
+    ProtocolVersion, RegisterRequest, SecretBytes, SplitKeyMethod, SplitKeyReference,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
-use kmipkit_ttlv::{Item, Structure};
+use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
 use crate::{
     Client, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome, ClientCauseCategory,
@@ -273,6 +273,26 @@ impl<'a> DeriveKeyBuilder<'a> {
     #[must_use]
     pub fn derivation_parameters(mut self, parameters: DerivationParameters) -> Self {
         self.derivation_parameters = Some(parameters);
+        self
+    }
+
+    /// Applies algorithm, length, and key derivation parameters from a curated `KdfSpec`.
+    #[must_use]
+    pub fn with_kdf_spec(
+        mut self,
+        spec: KdfSpec,
+        salt: Option<SecretBytes>,
+        derivation_data: Option<SecretBytes>,
+        iteration_count: Option<i32>,
+    ) -> Self {
+        self.derivation_method = Some(spec.derivation_method());
+        let salt_bytes = salt.map(|s| s.with_bytes(<[u8]>::to_vec));
+        let data_bytes = derivation_data.map(|d| d.with_bytes(<[u8]>::to_vec));
+        if let Ok(params) =
+            spec.to_derivation_parameters(salt_bytes, data_bytes, iteration_count)
+        {
+            self.derivation_parameters = Some(params);
+        }
         self
     }
 
@@ -852,6 +872,17 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     #[must_use]
     pub const fn usage_mask_bits(self, bits: i32) -> Self {
         self.usage_mask(CryptographicUsageMask::from_raw(bits))
+    }
+
+    /// Selects symmetric algorithm and bit length from a curated [`KeySpec`]; usage policy remains explicit.
+    #[must_use]
+    pub fn with_key_spec(mut self, spec: KeySpec) -> Self {
+        if !spec.is_symmetric() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return self;
+        }
+        self.algorithm(spec.algorithm()).length(spec.length())
     }
 
     /// Selects AES with a 128-bit key; usage policy remains explicit.
@@ -1563,6 +1594,44 @@ impl<'a> CreateKeyPairBuilder<'a> {
     pub const fn length(mut self, length: i32) -> Self {
         self.length = Some(length);
         self
+    }
+
+    /// Selects asymmetric or KMIP 3.0 post-quantum algorithm, length, and curve from a [`KeySpec`].
+    #[must_use]
+    pub fn with_key_spec(mut self, spec: KeySpec) -> Self {
+        if !spec.is_asymmetric() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return self;
+        }
+        let mut next = self.algorithm(spec.algorithm()).length(spec.length());
+        if let Some(curve) = spec.recommended_curve_raw() {
+            next = next.recommended_curve(curve);
+        }
+        next
+    }
+
+    /// Adds a `CryptographicDomainParameters` attribute setting `RecommendedCurve`.
+    #[must_use]
+    pub fn recommended_curve(mut self, curve_raw: u32) -> Self {
+        const RECOMMENDED_CURVE_TAG: u32 = 0x0042_0075;
+        let built = RawTag::new(RECOMMENDED_CURVE_TAG)
+            .and_then(|raw| raw.try_checked())
+            .ok()
+            .and_then(|tag: Tag| Item::new(tag, Value::enumeration(curve_raw)).ok())
+            .and_then(|item| {
+                let mut s = Structure::new();
+                s.try_push(item).ok()?;
+                Attribute::<typed::CryptographicDomainParameters>::new(s).ok()
+            });
+        match built {
+            Some(attr) => self.common_attribute(attr),
+            None => {
+                self.attribute_error
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+                self
+            }
+        }
     }
 
     /// Selects an explicit private key Cryptographic Usage Mask.

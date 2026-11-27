@@ -60,6 +60,14 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
         return algorithm(org.kmipkit.protocol.KmipValues.CryptographicAlgorithm.AES).length(256);
     }
 
+    /** Configures algorithm and bit length from a curated symmetric {@link KeySpec}. */
+    public SymmetricKeyBuilder withKeySpec(KeySpec spec) {
+        if (spec == null || !spec.isSymmetric()) {
+            throw new InvalidInputException("a symmetric KeySpec is required");
+        }
+        return algorithm(spec.algorithm()).length(spec.length());
+    }
+
     public SymmetricKeyBuilder length(int bits) {
         handle.withValue(builder -> { NativeExtensionRegistry.symmetricKeyBuilderSetLength(builder, bits); return null; });
         return this;

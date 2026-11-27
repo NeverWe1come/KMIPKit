@@ -118,6 +118,20 @@ int main(void) {
     assert(kmipkit_fluent_ping(NULL, &ping_p, &res) == KMIPKIT_ERROR_INVALID_INPUT);
     kmipkit_fluent_result_release(&res);
 
+    /* Phase 3 C11 preset helpers (classical & KMIP 3.0 PQC) */
+    kmipkit_symmetric_key_request_v1_t aes_r =
+        kmipkit_fluent_symmetric_key_from_spec(KMIPKIT_KEY_SPEC_AES_256, 0x0C, "aes-c11");
+    assert(aes_r.cryptographic_algorithm == 0x03u);
+    assert(aes_r.cryptographic_length == 256);
+    assert(aes_r.name_present == 1u);
+
+    kmipkit_create_key_pair_request_v1_t pqc_r =
+        kmipkit_fluent_key_pair_from_spec(KMIPKIT_KEY_SPEC_ML_KEM_768, 0x01, 0x02);
+    assert(pqc_r.cryptographic_algorithm == 0x3Au);
+    assert(pqc_r.cryptographic_length == 768);
+    assert(KMIPKIT_CIPHER_SPEC_AES_GCM.tag_length == 128);
+    assert(kmipkit_client_create_key_pair_v1(NULL, &pqc_r, NULL, NULL) == KMIPKIT_ERROR_INVALID_INPUT);
+
     printf("C11 fluent parity64 test passed\n");
     return 0;
 }

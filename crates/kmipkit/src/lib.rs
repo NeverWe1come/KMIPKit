@@ -184,7 +184,15 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
 
 pub use kmipkit_client::extension_registry::{ClientConfiguration, ClientExtensionRegistry};
 pub use kmipkit_client::fluent;
-pub use kmipkit_client::fluent::{CryptographicUsageMask, FluentBuildError, RequestBuilder};
+pub use kmipkit_client::fluent::{
+    AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptographicUsageMask,
+    CryptoClient, FluentBuildError, KeyRef, KeysClient, RequestBuilder, SecretsClient,
+    SessionsClient,
+};
+pub use kmipkit_protocol::{
+    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
+    PresetError, SignatureSpec, decode_pem, decode_pem_der,
+};
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientBuilder, ClientCauseCategory, ClientError, ClientErrorCategory,

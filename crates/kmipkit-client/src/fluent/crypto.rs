@@ -2,10 +2,11 @@
 
 
 use kmipkit_protocol::{
-    CryptographicParameters, DecryptRequest, DecryptResponse, EncryptRequest, EncryptResponse,
-    HashRequest, HashResponse, MacRequest, MacResponse, MacVerifyRequest, MacVerifyResponse,
-    OperationData, ProtocolVersion, SecretBytes, SignRequest, SignResponse, SignatureVerifyRequest,
-    SignatureVerifyResponse, UniqueIdentifier, ValidateKmipRequest,
+    CipherSpec, CryptographicParameters, DecryptRequest, DecryptResponse, EncryptRequest,
+    EncryptResponse, HashAlgorithm, HashRequest, HashResponse, MacRequest, MacResponse, MacSpec,
+    MacVerifyRequest, MacVerifyResponse, OperationData, ProtocolVersion, SecretBytes, SignRequest,
+    SignResponse, SignatureSpec, SignatureVerifyRequest, SignatureVerifyResponse,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::Structure;
@@ -321,6 +322,15 @@ impl<'a> EncryptBuilder<'a> {
         self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
+    /// Configures encryption parameters from a curated [`CipherSpec`] preset.
+    #[must_use]
+    pub fn with_cipher_spec(self, spec: CipherSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
+    }
+
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
@@ -513,6 +523,15 @@ impl<'a> DecryptBuilder<'a> {
     #[must_use]
     pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
         self.cryptographic_parameters_structure(value.into_ttlv())
+    }
+
+    /// Configures decryption parameters from a curated [`CipherSpec`] preset.
+    #[must_use]
+    pub fn with_cipher_spec(self, spec: CipherSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -711,6 +730,15 @@ impl<'a> SignBuilder<'a> {
         self
     }
 
+    /// Configures signature parameters from a curated [`SignatureSpec`] preset.
+    #[must_use]
+    pub fn with_signature_spec(self, spec: SignatureSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
+    }
+
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
@@ -888,6 +916,15 @@ impl<'a> SignatureVerifyBuilder<'a> {
         self.state = self
             .state
             .parameters(value, SignatureVerifyRequest::with_cryptographic_parameters);
+        self
+    }
+
+    /// Configures verification parameters from a curated [`SignatureSpec`] preset.
+    #[must_use]
+    pub fn with_signature_spec(self, spec: SignatureSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
         self
     }
 
@@ -1086,6 +1123,15 @@ impl<'a> MacBuilder<'a> {
         self
     }
 
+    /// Configures MAC parameters from a curated [`MacSpec`] preset.
+    #[must_use]
+    pub fn with_mac_spec(self, spec: MacSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
+    }
+
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
@@ -1254,6 +1300,15 @@ impl<'a> MacVerifyBuilder<'a> {
         self.state = self
             .state
             .parameters(value, MacVerifyRequest::with_cryptographic_parameters);
+        self
+    }
+
+    /// Configures MAC verification parameters from a curated [`MacSpec`] preset.
+    #[must_use]
+    pub fn with_mac_spec(self, spec: MacSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
         self
     }
 
@@ -1435,6 +1490,15 @@ impl<'a> HashBuilder<'a> {
     #[must_use]
     pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
         self.cryptographic_parameters_structure(value.into_ttlv())
+    }
+
+    /// Configures hash parameters from a curated [`HashAlgorithm`] preset.
+    #[must_use]
+    pub fn with_hash_algorithm(self, hash: HashAlgorithm) -> Self {
+        if let Ok(params) = hash.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.

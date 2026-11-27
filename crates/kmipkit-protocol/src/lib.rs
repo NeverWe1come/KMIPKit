@@ -44,6 +44,7 @@ pub mod enums;
 mod error;
 mod export;
 pub mod extension;
+pub mod high_level;
 mod get;
 mod get_attribute_list;
 mod get_attributes;
@@ -300,6 +301,10 @@ pub use validation::{
 pub use version_codec::{CodecContext, VersionedCodec};
 pub use version_gate::{VersionGate, VersionGateError};
 pub use version_span::VersionSpan;
+pub use high_level::{
+    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
+    PresetError, SignatureSpec, decode_pem, decode_pem_der,
+};
 
 #[cfg(test)]
 #[path = "../tests/unit/version_foundation_tests.rs"]
@@ -684,3 +689,6 @@ mod kem_tests;
 #[cfg(test)]
 #[path = "../tests/unit/kmip30_client_models_tests.rs"]
 mod kmip30_client_models_tests;
+#[cfg(test)]
+#[path = "../tests/unit/high_level_tests.rs"]
+mod high_level_tests;

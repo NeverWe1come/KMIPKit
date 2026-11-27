@@ -4,7 +4,7 @@ use kmipkit_protocol::{
     AttributeSet, CreateCredentialObject, CreateCredentialRequest, CreateCredentialResponse,
     CreateGroupRequest, CreateGroupResponse, CreateUserRequest, CreateUserResponse,
     CryptographicParameters, DeactivateRequest, DeactivateResponse, DecapsulateRequest,
-    DecapsulateResponse, EncapsulateRequest, EncapsulateResponse, ObliterateRequest,
+    DecapsulateResponse, EncapsulateRequest, EncapsulateResponse, KemSpec, ObliterateRequest,
     ObliterateResponse, ProtocolVersion, UniqueIdentifier,
 };
 use kmipkit_transport::RequestOptions;
@@ -337,6 +337,14 @@ impl<'a> DecapsulateBuilder<'a> {
         self.parameters = Some(value);
         self
     }
+    /// Configures decapsulation parameters from a curated [`KemSpec`] preset.
+    #[must_use]
+    pub fn with_kem_spec(self, spec: KemSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
+        self
+    }
     /// Sets the optional prevalidated ordered Attribute Set.
     #[must_use]
     pub fn attributes(mut self, value: AttributeSet) -> Self {
@@ -385,6 +393,14 @@ impl<'a> EncapsulateBuilder<'a> {
     #[must_use]
     pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
         self.parameters = Some(value);
+        self
+    }
+    /// Configures encapsulation parameters from a curated [`KemSpec`] preset.
+    #[must_use]
+    pub fn with_kem_spec(self, spec: KemSpec) -> Self {
+        if let Ok(params) = spec.to_cryptographic_parameters() {
+            return self.cryptographic_parameters(params);
+        }
         self
     }
     /// Sets the optional prevalidated ordered Attribute Set.

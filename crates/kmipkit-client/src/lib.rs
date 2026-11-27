@@ -545,5 +545,9 @@ mod fluent_phase1_tests;
 mod fluent_parity64_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_phase3_tests.rs"]
+mod fluent_phase3_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/test_support_tests.rs"]
 mod test_support_tests;
