@@ -375,14 +375,20 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_get_usage_allocation_unsupported_response(self):
         for language, available in installed_validators():
+            routes = ("generic-ttlv",)
+            if language in {"rust", "python"}:
+                routes += ("typed-protocol", "fluent")
+            if language == "rust":
+                routes += ("high-level",)
             for minor in (0, 1):
-                with self.subTest(language=language, minor=minor):
-                    if not available:
-                        self.skipTest(f"Installed {language} validator required")
-                    self.owned_key_exchange(
-                        language, minor, "test-op-get-usage-allocation", 17,
-                        unsupported=True, route="generic-ttlv", normative=True,
-                    )
+                for route in routes:
+                    with self.subTest(language=language, minor=minor, route=route):
+                        if not available:
+                            self.skipTest(f"Installed {language} validator required")
+                        self.owned_key_exchange(
+                            language, minor, "test-op-get-usage-allocation", 17,
+                            unsupported=True, route=route, normative=True,
+                        )
 
     def test_query_operations_and_message_envelopes_across_api_levels(self):
         for language, available in installed_validators():
@@ -1344,7 +1350,10 @@ class DirectTagValidatorTests(unittest.TestCase):
                 tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
                     try:
-                        operations = (1, target, 19, 20) if target == 17 else (1, target, 20)
+                        operations = ((1, target, 20)
+                                      if target == 17 and language == "python" and route != "generic-ttlv"
+                                      else (1, target, 19, 20) if target == 17
+                                      else (1, target, 20))
                         for operation in operations:
                             raw, _ = self.accept_request(listener, process, f"operation {operation}")
                             raw.settimeout(5)
