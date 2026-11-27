@@ -67,6 +67,7 @@ mod attributes;
 mod crypto;
 mod domain;
 mod execution;
+mod flows;
 mod keys;
 mod kmip30;
 mod lifecycle;
@@ -92,6 +93,10 @@ pub use attributes::{
 pub use domain::{
     AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptoClient, KeyRef,
     KeysClient, SecretsClient, SessionsClient,
+};
+pub use flows::{
+    DecryptStream, EncryptStream, FluentBatchBuilder, HashStream, LocatePaginator, MacStream,
+    PendingOperation, SignStream, StreamsClient, WorkflowsClient,
 };
 pub use kmipkit_protocol::{
     AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,

@@ -186,8 +186,9 @@ pub use kmipkit_client::extension_registry::{ClientConfiguration, ClientExtensio
 pub use kmipkit_client::fluent;
 pub use kmipkit_client::fluent::{
     AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptographicUsageMask,
-    CryptoClient, FluentBuildError, KeyRef, KeysClient, RequestBuilder, SecretsClient,
-    SessionsClient,
+    CryptoClient, DecryptStream, EncryptStream, FluentBatchBuilder, FluentBuildError, HashStream,
+    KeyRef, KeysClient, LocatePaginator, MacStream, PendingOperation, RequestBuilder,
+    SecretsClient, SessionsClient, SignStream, StreamsClient, WorkflowsClient,
 };
 pub use kmipkit_protocol::{
     AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
@@ -220,3 +221,294 @@ pub use kmipkit_protocol::{
     VersionGateError, VersionSpan, VersionedCodec,
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
+
+/// Closure-based builder implementing [`ServerRequestHandler`] for Server-to-Client listeners.
+#[derive(Default)]
+pub struct ServerHandlerBuilder {
+    on_discover_versions: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerDiscoverVersionsRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerDiscoverVersionsResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_notify: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerNotifyRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerNotifyResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_put: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerPutRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerPutResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_query: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerQueryRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerQueryResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_set_endpoint_role: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::SetEndpointRoleRequest,
+                ) -> Result<
+                    kmipkit_protocol::SetEndpointRoleResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+}
+
+impl ServerHandlerBuilder {
+    /// Creates an empty builder where unconfigured operations return `Operation Not Supported`.
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Registers a handler for incoming `DiscoverVersions` requests (§6.2.1).
+    #[must_use]
+    pub fn on_discover_versions(
+        mut self,
+        handler: impl FnMut(
+            &kmipkit_protocol::ServerDiscoverVersionsRequest,
+        ) -> Result<
+            kmipkit_protocol::ServerDiscoverVersionsResponse,
+            kmipkit_protocol::KmipOperationResult,
+        > + Send
+        + 'static,
+    ) -> Self {
+        self.on_discover_versions = Some(Box::new(handler));
+        self
+    }
+
+    /// Registers a handler for incoming `Notify` requests (§6.2.2).
+    #[must_use]
+    pub fn on_notify(
+        mut self,
+        handler: impl FnMut(
+            &kmipkit_protocol::ServerNotifyRequest,
+        ) -> Result<
+            kmipkit_protocol::ServerNotifyResponse,
+            kmipkit_protocol::KmipOperationResult,
+        > + Send
+        + 'static,
+    ) -> Self {
+        self.on_notify = Some(Box::new(handler));
+        self
+    }
+
+    /// Registers a handler for incoming `Put` requests (§6.2.3).
+    #[must_use]
+    pub fn on_put(
+        mut self,
+        handler: impl FnMut(
+            &kmipkit_protocol::ServerPutRequest,
+        ) -> Result<
+            kmipkit_protocol::ServerPutResponse,
+            kmipkit_protocol::KmipOperationResult,
+        > + Send
+        + 'static,
+    ) -> Self {
+        self.on_put = Some(Box::new(handler));
+        self
+    }
+
+    /// Registers a handler for incoming `Query` requests (§6.2.4).
+    #[must_use]
+    pub fn on_query(
+        mut self,
+        handler: impl FnMut(
+            &kmipkit_protocol::ServerQueryRequest,
+        ) -> Result<
+            kmipkit_protocol::ServerQueryResponse,
+            kmipkit_protocol::KmipOperationResult,
+        > + Send
+        + 'static,
+    ) -> Self {
+        self.on_query = Some(Box::new(handler));
+        self
+    }
+
+    /// Registers a handler for incoming `SetEndpointRole` requests (§6.2.5).
+    #[must_use]
+    pub fn on_set_endpoint_role(
+        mut self,
+        handler: impl FnMut(
+            &kmipkit_protocol::SetEndpointRoleRequest,
+        ) -> Result<
+            kmipkit_protocol::SetEndpointRoleResponse,
+            kmipkit_protocol::KmipOperationResult,
+        > + Send
+        + 'static,
+    ) -> Self {
+        self.on_set_endpoint_role = Some(Box::new(handler));
+        self
+    }
+
+    /// Finalizes the [`ClosureServerHandler`] ready for [`ServerRequestDispatcher`].
+    #[must_use]
+    pub fn build(self) -> ClosureServerHandler {
+        ClosureServerHandler {
+            on_discover_versions: self.on_discover_versions,
+            on_notify: self.on_notify,
+            on_put: self.on_put,
+            on_query: self.on_query,
+            on_set_endpoint_role: self.on_set_endpoint_role,
+        }
+    }
+}
+
+/// Built [`ServerRequestHandler`] backed by user-provided closures.
+pub struct ClosureServerHandler {
+    on_discover_versions: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerDiscoverVersionsRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerDiscoverVersionsResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_notify: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerNotifyRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerNotifyResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_put: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerPutRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerPutResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_query: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::ServerQueryRequest,
+                ) -> Result<
+                    kmipkit_protocol::ServerQueryResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+    on_set_endpoint_role: Option<
+        Box<
+            dyn FnMut(
+                    &kmipkit_protocol::SetEndpointRoleRequest,
+                ) -> Result<
+                    kmipkit_protocol::SetEndpointRoleResponse,
+                    kmipkit_protocol::KmipOperationResult,
+                > + Send,
+        >,
+    >,
+}
+
+fn unsupported_s2c_result() -> kmipkit_protocol::KmipOperationResult {
+    kmipkit_protocol::KmipOperationResult::new(
+        kmipkit_protocol::ResultStatus::from_raw(1),
+        Some(kmipkit_protocol::ResultReason::from_raw(5)),
+        Some(kmipkit_protocol::ResultMessage::new(
+            "handler not configured".to_owned(),
+        )),
+    )
+    .unwrap_or_else(|_| kmipkit_protocol::KmipOperationResult::success())
+}
+
+impl ServerRequestHandler for ClosureServerHandler {
+    fn handle_discover_versions(
+        &mut self,
+        request: &kmipkit_protocol::ServerDiscoverVersionsRequest,
+    ) -> Result<
+        kmipkit_protocol::ServerDiscoverVersionsResponse,
+        kmipkit_protocol::KmipOperationResult,
+    > {
+        self.on_discover_versions
+            .as_mut()
+            .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
+    }
+
+    fn handle_notify(
+        &mut self,
+        request: &kmipkit_protocol::ServerNotifyRequest,
+    ) -> Result<kmipkit_protocol::ServerNotifyResponse, kmipkit_protocol::KmipOperationResult> {
+        self.on_notify
+            .as_mut()
+            .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
+    }
+
+    fn handle_put(
+        &mut self,
+        request: &kmipkit_protocol::ServerPutRequest,
+    ) -> Result<kmipkit_protocol::ServerPutResponse, kmipkit_protocol::KmipOperationResult> {
+        self.on_put
+            .as_mut()
+            .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
+    }
+
+    fn handle_query(
+        &mut self,
+        request: &kmipkit_protocol::ServerQueryRequest,
+    ) -> Result<kmipkit_protocol::ServerQueryResponse, kmipkit_protocol::KmipOperationResult> {
+        self.on_query
+            .as_mut()
+            .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
+    }
+
+    fn handle_set_endpoint_role(
+        &mut self,
+        request: &kmipkit_protocol::SetEndpointRoleRequest,
+    ) -> Result<kmipkit_protocol::SetEndpointRoleResponse, kmipkit_protocol::KmipOperationResult> {
+        self.on_set_endpoint_role
+            .as_mut()
+            .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
+    }
+}
+
+#[cfg(test)]
+mod server_handler_builder_tests {
+    use super::*;
+
+    #[test]
+    fn server_handler_builder_dispatches_configured_and_unconfigured_ops() {
+        let mut handler = ServerHandlerBuilder::new()
+            .on_notify(|_req| Ok(kmipkit_protocol::ServerNotifyResponse::new()))
+            .build();
+        let notify_req =
+            kmipkit_protocol::ServerNotifyRequest::new("id-123".to_owned(), None, Vec::new());
+        assert!(handler.handle_notify(&notify_req).is_ok());
+
+        let query_req = kmipkit_protocol::ServerQueryRequest::new(vec![]);
+        let err = handler
+            .handle_query(&query_req)
+            .expect_err("unconfigured handler returns OperationNotSupported");
+        assert_eq!(err.status(), kmipkit_protocol::ResultStatus::from_raw(1));
+    }
+}

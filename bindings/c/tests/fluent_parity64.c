@@ -132,6 +132,20 @@ int main(void) {
     assert(KMIPKIT_CIPHER_SPEC_AES_GCM.tag_length == 128);
     assert(kmipkit_client_create_key_pair_v1(NULL, &pqc_r, NULL, NULL) == KMIPKIT_ERROR_INVALID_INPUT);
 
+    /* Phase 4 C11 batch & pending helpers */
+    kmipkit_fluent_batch_t fbatch;
+    assert(kmipkit_fluent_batch_create(&fbatch) == 0);
+    assert(kmipkit_fluent_batch_ordered(&fbatch, 1u) == 0);
+    kmipkit_client_batch_item_t *bitem = NULL;
+    assert(kmipkit_fluent_item_ping(&ping_p, &bitem) == 0);
+    assert(kmipkit_fluent_batch_add(&fbatch, &bitem) == 0);
+    assert(bitem == NULL);
+    assert(kmipkit_fluent_batch_execute(&fbatch, NULL, NULL, NULL, NULL) == KMIPKIT_ERROR_INVALID_INPUT);
+    kmipkit_fluent_batch_release(&fbatch);
+
+    kmipkit_pending_op_t pending = { corr_bytes, sizeof(corr_bytes) };
+    assert(kmipkit_pending_op_poll(&pending, NULL, NULL, NULL) == KMIPKIT_ERROR_INVALID_INPUT);
+
     printf("C11 fluent parity64 test passed\n");
     return 0;
 }

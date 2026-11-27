@@ -29,6 +29,9 @@ public final class KmipNamespaces {
         public RekeyBuilder rekey() { return req.rekey(); }
         public RekeyKeyPairBuilder rekeyKeyPair() { return req.rekeyKeyPair(); }
         public LocateBuilder locate(AttributeSet attributes) { return req.locate(attributes); }
+        public LocatePaginator locateIter(AttributeSet attributes, int pageSize) {
+            return new LocatePaginator(req.client(), attributes, pageSize);
+        }
         public OperationBuilder get(UniqueIdentifier id) { return req.get(id); }
         public OperationBuilder activate(UniqueIdentifier id) { return req.activate(id); }
         public RevokeBuilder revoke(UniqueIdentifier id, RevocationReason reason) { return req.revoke(id, reason); }
@@ -63,6 +66,9 @@ public final class KmipNamespaces {
         public ValidateBuilder validate() { return req.validate(); }
         public OperationBuilder get(UniqueIdentifier id) { return req.get(id); }
         public LocateBuilder locate(AttributeSet attributes) { return req.locate(attributes); }
+        public LocatePaginator locateIter(AttributeSet attributes, int pageSize) {
+            return new LocatePaginator(req.client(), attributes, pageSize);
+        }
         public RevokeBuilder revoke(UniqueIdentifier id, RevocationReason reason) { return req.revoke(id, reason); }
         public OperationBuilder destroy(UniqueIdentifier id) { return req.destroy(id); }
     }

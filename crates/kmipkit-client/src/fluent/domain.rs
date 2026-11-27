@@ -112,6 +112,12 @@ impl<'a> KeysClient<'a> {
         LocateBuilder::new(self.client, attributes)
     }
 
+    /// Starts a paginated `Locate` iterator fetching pages of `page_size` objects.
+    #[must_use]
+    pub fn locate_iter(self, attributes: AttributeSet, page_size: i32) -> super::flows::LocatePaginator<'a> {
+        super::flows::LocatePaginator::new(self.client, attributes, page_size)
+    }
+
     /// Begins retrieving a managed object by ID.
     #[must_use]
     pub fn get(self, unique_identifier: &str) -> GetBuilder<'a> {

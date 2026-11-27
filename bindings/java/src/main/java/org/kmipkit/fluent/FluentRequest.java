@@ -1,5 +1,6 @@
 package org.kmipkit.fluent;
 
+import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.RevocationReason;
@@ -14,6 +15,7 @@ public final class FluentRequest {
         if (client == null) throw new org.kmipkit.InvalidInputException("client is required");
         this.client = client;
     }
+    KmipClient client() { return client; }
     public PingBuilder ping() { return new PingBuilder(client); }
     public CreateBuilder create() { return new CreateBuilder(client); }
     public CreateSplitKeyBuilder createSplitKey() { return new CreateSplitKeyBuilder(client); }

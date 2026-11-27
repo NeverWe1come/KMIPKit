@@ -5,9 +5,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.kmipkit.InvalidInputException;
+import org.kmipkit.fluent.FluentBatchBuilder;
 import org.kmipkit.fluent.FluentRequest;
 import org.kmipkit.fluent.KeyRef;
 import org.kmipkit.fluent.KmipNamespaces;
+import org.kmipkit.fluent.StreamsClient;
+import org.kmipkit.fluent.WorkflowsClient;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ProtocolVersion;
 import org.kmipkit.extensions.TransportConfiguration;
@@ -235,6 +238,9 @@ public final class KmipClient implements AutoCloseable {
     public KmipNamespaces.AsyncOpsClient asyncOps() { return new KmipNamespaces.AsyncOpsClient(this); }
     public KeyRef key(String id) { return new KeyRef(this, UniqueIdentifier.textString(id)); }
     public KeyRef key(UniqueIdentifier id) { return new KeyRef(this, id); }
+    public FluentBatchBuilder batch() { return new FluentBatchBuilder(this); }
+    public WorkflowsClient workflows() { return new WorkflowsClient(this); }
+    public StreamsClient streams() { return new StreamsClient(this); }
     /** Executes a typed Create Symmetric Key request with the client's inherited timeout policy. */
     public ClientBatchResponse createSymmetricKey(SymmetricKeyRequest request, CodecLimits limits)
             throws org.kmipkit.ClientOperationException {

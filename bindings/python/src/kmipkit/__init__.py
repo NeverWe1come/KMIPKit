@@ -15,6 +15,7 @@ from . import (
     cryptographic_parameters,
     errors,
     extensions,
+    flows,
     fluent,
     high_level,
     messages,
@@ -44,8 +45,18 @@ from .high_level import (
     SignatureSpec,
     install_client_namespaces as _install_client_namespaces,
 )
+from .flows import (
+    FluentBatchBuilder,
+    LocatePaginator,
+    PendingOperation,
+    ServerHandlerBuilder,
+    StreamsClient,
+    WorkflowsClient,
+    install_phase4_flows as _install_phase4_flows,
+)
 
 _install_client_namespaces(client.Client)
+_install_phase4_flows(client.Client)
 
 __all__ = [
     "client",
