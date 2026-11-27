@@ -1,5 +1,5 @@
 //! Unit tests verifying Fase 4 advanced flows: batch builder, workflows,
-//! multipart streams, PendingOperation, LocatePaginator, and ServerHandlerBuilder.
+//! multipart streams, `PendingOperation`, `LocatePaginator`, and `ServerHandlerBuilder`.
 
 use kmipkit_protocol::{
     AttributesBuilder, CipherSpec, HashAlgorithm, KeySpec, ProtocolVersion, SecretBytes,
@@ -53,6 +53,8 @@ fn streams_workflows_pending_and_paginator_construct_cleanly() {
 
     let pending = PendingOperation::new(SecretBytes::new(vec![1, 2, 3, 4]));
     let mut corr_len = 0usize;
-    pending.correlation_value().with_bytes(|b| corr_len = b.len());
+    pending
+        .correlation_value()
+        .with_bytes(|b| corr_len = b.len());
     assert_eq!(corr_len, 4);
 }

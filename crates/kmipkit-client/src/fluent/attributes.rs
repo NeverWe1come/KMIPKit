@@ -1,6 +1,5 @@
 //! Task-oriented, fluent builders over the existing typed KMIP requests.
 
-
 use kmipkit_protocol::{
     AddAttributeRequest, AddAttributeResponse, AdjustAttributeRequest, AdjustAttributeResponse,
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CurrentAttribute,
@@ -18,7 +17,10 @@ use crate::{
 };
 
 use super::execution::{
-    AttributeAdjustmentValue, FluentBuildError, copy_adjustment_value, copy_new_attribute, execute_fluent_outcome, execute_fluent_request, fluent_client_validation_error, make_vendor_attribute, unwrap_typed_outcome, validate_fluent_request, validate_object_attribute_tag,
+    AttributeAdjustmentValue, FluentBuildError, copy_adjustment_value, copy_new_attribute,
+    execute_fluent_outcome, execute_fluent_request, fluent_client_validation_error,
+    make_vendor_attribute, unwrap_typed_outcome, validate_fluent_request,
+    validate_object_attribute_tag,
 };
 
 #[derive(Default)]
@@ -113,7 +115,11 @@ impl<'a> AttributeMutationBuilderState<'a> {
     }
 
     fn set_protocol_version(&mut self, version: ProtocolVersion) {
-        self.options = Some(self.options.unwrap_or_default().with_protocol_version(version));
+        self.options = Some(
+            self.options
+                .unwrap_or_default()
+                .with_protocol_version(version),
+        );
     }
 
     const fn set_asynchronous_indicator(&mut self, value: u32) {
@@ -277,7 +283,10 @@ impl<'a> DeleteAttributeBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -909,7 +918,10 @@ impl<'a> GetAttributesBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1066,7 +1078,10 @@ impl<'a> GetAttributeListBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }

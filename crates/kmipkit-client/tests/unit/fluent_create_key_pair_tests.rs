@@ -256,7 +256,9 @@ fn malformed_typed_vendor_attributes_are_rejected_in_every_key_group() {
             builder.build_request().unwrap_err(),
             FluentBuildError::InvalidAttributeValue
         );
-        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+        let error = builder
+            .execute_outcome_with_limits(&CodecLimits::defaults())
+            .unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
@@ -542,7 +544,9 @@ fn key_pair_builder_missing_required_values_are_not_sent() {
         } else {
             builder.algorithm(CryptographicAlgorithm::from_raw(RSA))
         };
-        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+        let error = builder
+            .execute_outcome_with_limits(&CodecLimits::defaults())
+            .unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
         assert!(captured.borrow().is_none());
@@ -748,7 +752,9 @@ fn key_pair_prebuilt_duplicates_in_each_group_are_rejected_before_transport() {
             builder.build_request().unwrap_err(),
             FluentBuildError::InvalidRequest
         );
-        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+        let error = builder
+            .execute_outcome_with_limits(&CodecLimits::defaults())
+            .unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
         assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
@@ -779,7 +785,9 @@ fn key_pair_prebuilt_conflicting_algorithms_use_the_existing_request_validator()
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));

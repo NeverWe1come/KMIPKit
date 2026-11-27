@@ -17,7 +17,8 @@ use crate::{
 };
 
 use super::execution::{
-    FluentBuildError, effective_protocol_version, execute_fluent_outcome, execute_fluent_request, normalize_uid_for_version, unwrap_typed_outcome,
+    FluentBuildError, effective_protocol_version, execute_fluent_outcome, execute_fluent_request,
+    normalize_uid_for_version, unwrap_typed_outcome,
 };
 
 struct Kmip30BuilderExecution<'a> {
@@ -53,7 +54,10 @@ impl<'a> Kmip30BuilderExecution<'a> {
         )
     }
 
-    fn execute_outcome(self, request: ClientRequest) -> Result<ClientBatchItemResponse, ClientError> {
+    fn execute_outcome(
+        self,
+        request: ClientRequest,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
         execute_fluent_outcome(
             self.client,
             request,
@@ -205,7 +209,11 @@ impl<'a> Kmip30BuilderParts<'a> for CreateCredentialBuilder<'a> {
         &mut self.execution
     }
 }
-impl_kmip30_builder_methods!(CreateCredentialBuilder, CreateCredentialResponse, CreateCredential);
+impl_kmip30_builder_methods!(
+    CreateCredentialBuilder,
+    CreateCredentialResponse,
+    CreateCredential
+);
 
 /// A KMIP 3.0 Create Group fluent builder.
 pub struct CreateGroupBuilder<'a> {
@@ -290,10 +298,8 @@ impl<'a> DeactivateBuilder<'a> {
 }
 impl<'a> Kmip30BuilderParts<'a> for DeactivateBuilder<'a> {
     fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
-        let uid = normalize_uid_for_version(
-            self.unique_identifier,
-            self.execution.protocol_version(),
-        );
+        let uid =
+            normalize_uid_for_version(self.unique_identifier, self.execution.protocol_version());
         let mut request = DeactivateRequest::new(uid);
         if let Some(reason) = self.reason {
             request = request.with_deactivation_reason(reason);
@@ -354,10 +360,8 @@ impl<'a> DecapsulateBuilder<'a> {
 }
 impl<'a> Kmip30BuilderParts<'a> for DecapsulateBuilder<'a> {
     fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
-        let uid = normalize_uid_for_version(
-            self.unique_identifier,
-            self.execution.protocol_version(),
-        );
+        let uid =
+            normalize_uid_for_version(self.unique_identifier, self.execution.protocol_version());
         let mut request = DecapsulateRequest::new(uid, self.ciphertext);
         if let Some(value) = self.parameters {
             request = request.with_typed_cryptographic_parameters(value);
@@ -412,10 +416,8 @@ impl<'a> EncapsulateBuilder<'a> {
 }
 impl<'a> Kmip30BuilderParts<'a> for EncapsulateBuilder<'a> {
     fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
-        let uid = normalize_uid_for_version(
-            self.unique_identifier,
-            self.execution.protocol_version(),
-        );
+        let uid =
+            normalize_uid_for_version(self.unique_identifier, self.execution.protocol_version());
         let mut request = EncapsulateRequest::new(uid);
         if let Some(value) = self.parameters {
             request = request.with_typed_cryptographic_parameters(value);
@@ -446,10 +448,8 @@ impl<'a> ObliterateBuilder<'a> {
 }
 impl<'a> Kmip30BuilderParts<'a> for ObliterateBuilder<'a> {
     fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
-        let uid = normalize_uid_for_version(
-            self.unique_identifier,
-            self.execution.protocol_version(),
-        );
+        let uid =
+            normalize_uid_for_version(self.unique_identifier, self.execution.protocol_version());
         (
             self.execution,
             ClientRequest::obliterate(ObliterateRequest::new(uid)),

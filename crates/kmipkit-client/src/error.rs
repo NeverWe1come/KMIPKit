@@ -277,7 +277,10 @@ impl ClientError {
     /// Represents an asynchronous `Pending` outcome returned where a completed
     /// result was expected.
     #[must_use]
-    pub const fn pending(result: KmipOperationResult, correlation_value: RedactedCorrelation) -> Self {
+    pub const fn pending(
+        result: KmipOperationResult,
+        correlation_value: RedactedCorrelation,
+    ) -> Self {
         Self::Pending {
             result,
             correlation_value,

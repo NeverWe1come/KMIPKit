@@ -1,12 +1,11 @@
 //! Task-oriented, fluent builders over the existing typed KMIP requests.
 
-
 use kmipkit_protocol::{
     CipherSpec, CryptographicParameters, DecryptRequest, DecryptResponse, EncryptRequest,
     EncryptResponse, HashAlgorithm, HashRequest, HashResponse, MacRequest, MacResponse, MacSpec,
     MacVerifyRequest, MacVerifyResponse, OperationData, ProtocolVersion, SecretBytes, SignRequest,
-    SignResponse, SignatureSpec, SignatureVerifyRequest, SignatureVerifyResponse,
-    UniqueIdentifier, ValidateKmipRequest,
+    SignResponse, SignatureSpec, SignatureVerifyRequest, SignatureVerifyResponse, UniqueIdentifier,
+    ValidateKmipRequest,
 };
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::Structure;
@@ -17,16 +16,19 @@ use crate::{
 };
 
 use super::execution::{
-    FluentBuildError, FluentBuilderExecution, fluent_client_validation_error, normalize_uid_for_version, validate_fluent_request,
+    FluentBuildError, FluentBuilderExecution, fluent_client_validation_error,
+    normalize_uid_for_version, validate_fluent_request,
 };
 
 // Holds a typed cryptographic request while consuming field transformations.
 // Byte conversion and validation live here so each public facade follows the
 // same ownership and execution rules without duplicating that logic.
+struct DeferredUidCallback<R>(UniqueIdentifier, fn(R, UniqueIdentifier) -> R);
+
 struct CryptoRequestState<'a, R> {
     execution: FluentBuilderExecution<'a>,
     request: R,
-    deferred_uid: Option<(UniqueIdentifier, fn(R, UniqueIdentifier) -> R)>,
+    deferred_uid: Option<DeferredUidCallback<R>>,
 }
 
 impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
@@ -43,7 +45,7 @@ impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
         value: UniqueIdentifier,
         setter: fn(R, UniqueIdentifier) -> R,
     ) -> Self {
-        self.deferred_uid = Some((value, setter));
+        self.deferred_uid = Some(DeferredUidCallback(value, setter));
         self
     }
 
@@ -66,7 +68,7 @@ impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
 
     fn into_parts(mut self) -> Result<(R, FluentBuilderExecution<'a>), FluentBuildError> {
         let version = self.execution.protocol_version();
-        if let Some((uid, setter)) = self.deferred_uid {
+        if let Some(DeferredUidCallback(uid, setter)) = self.deferred_uid {
             self.request = setter(self.request, normalize_uid_for_version(uid, version));
         }
         validate_fluent_request(&self.request)?;
@@ -385,16 +387,19 @@ impl<'a> EncryptBuilder<'a> {
     ) -> Result<(EncryptRequest, FluentBuilderExecution<'a>), FluentBuildError> {
         let Self { execution, core } = self;
         let version = execution.protocol_version();
-        let request = core.into_request(&CipherRequestAdapter {
-            new: EncryptRequest::new,
-            with_cryptographic_parameters: EncryptRequest::with_cryptographic_parameters,
-            with_iv_counter_nonce: EncryptRequest::with_iv_counter_nonce,
-            with_correlation_value: EncryptRequest::with_correlation_value,
-            with_init_indicator: EncryptRequest::with_init_indicator,
-            with_final_indicator: EncryptRequest::with_final_indicator,
-            with_authenticated_encryption_additional_data:
-                EncryptRequest::with_authenticated_encryption_additional_data,
-        }, version);
+        let request = core.into_request(
+            &CipherRequestAdapter {
+                new: EncryptRequest::new,
+                with_cryptographic_parameters: EncryptRequest::with_cryptographic_parameters,
+                with_iv_counter_nonce: EncryptRequest::with_iv_counter_nonce,
+                with_correlation_value: EncryptRequest::with_correlation_value,
+                with_init_indicator: EncryptRequest::with_init_indicator,
+                with_final_indicator: EncryptRequest::with_final_indicator,
+                with_authenticated_encryption_additional_data:
+                    EncryptRequest::with_authenticated_encryption_additional_data,
+            },
+            version,
+        );
         validate_fluent_request(&request)?;
         Ok((request, execution))
     }
@@ -579,16 +584,19 @@ impl<'a> DecryptBuilder<'a> {
             authenticated_encryption_tag,
         } = self;
         let version = execution.protocol_version();
-        let mut request = core.into_request(&CipherRequestAdapter {
-            new: DecryptRequest::new,
-            with_cryptographic_parameters: DecryptRequest::with_cryptographic_parameters,
-            with_iv_counter_nonce: DecryptRequest::with_iv_counter_nonce,
-            with_correlation_value: DecryptRequest::with_correlation_value,
-            with_init_indicator: DecryptRequest::with_init_indicator,
-            with_final_indicator: DecryptRequest::with_final_indicator,
-            with_authenticated_encryption_additional_data:
-                DecryptRequest::with_authenticated_encryption_additional_data,
-        }, version);
+        let mut request = core.into_request(
+            &CipherRequestAdapter {
+                new: DecryptRequest::new,
+                with_cryptographic_parameters: DecryptRequest::with_cryptographic_parameters,
+                with_iv_counter_nonce: DecryptRequest::with_iv_counter_nonce,
+                with_correlation_value: DecryptRequest::with_correlation_value,
+                with_init_indicator: DecryptRequest::with_init_indicator,
+                with_final_indicator: DecryptRequest::with_final_indicator,
+                with_authenticated_encryption_additional_data:
+                    DecryptRequest::with_authenticated_encryption_additional_data,
+            },
+            version,
+        );
         if let Some(value) = authenticated_encryption_tag {
             request = request.with_authenticated_encryption_tag(value);
         }

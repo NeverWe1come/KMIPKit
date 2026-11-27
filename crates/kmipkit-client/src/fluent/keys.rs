@@ -1,16 +1,13 @@
 //! Task-oriented, fluent builders over the existing typed KMIP requests.
 
-
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, AttributeSet,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    CryptographicAlgorithm, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, ExportRequest, ExportResponse, ImportRequest,
-    ImportResponse, JoinSplitKeyRequest, JoinSplitKeyResponse, KdfSpec, KeyCompressionType,
-    KeyFormatType, KeySpec, KeyWrapType, ManagedObject, ObjectType, OpaqueObjectContext,
-    ProtocolVersion, RegisterRequest, SecretBytes, SplitKeyMethod, SplitKeyReference,
-    UniqueIdentifier, ValidateKmipRequest,
+    Attribute, AttributeDefinition, AttributeSet, CreateKeyPairRequest, CreateRequest,
+    CreateSplitKeyRequest, CryptographicAlgorithm, DerivationMethod, DerivationParameters,
+    DeriveKeyRequest, ExportRequest, ExportResponse, ImportRequest, ImportResponse,
+    JoinSplitKeyRequest, JoinSplitKeyResponse, KdfSpec, KeyCompressionType, KeyFormatType, KeySpec,
+    KeyWrapType, ManagedObject, ObjectType, OpaqueObjectContext, ProtocolVersion, RegisterRequest,
+    SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
@@ -21,7 +18,12 @@ use crate::{
 };
 
 use super::execution::{
-    CryptographicUsageMask, FluentAttributePosition, FluentBuildError, FluentBuilderExecution, SYMMETRIC_KEY_OBJECT_TYPE, alternative_name_item, append_object_attribute, effective_protocol_version, execute_fluent_outcome, fluent_client_validation_error, insert_positioned_attributes, link_item_for_version, make_vendor_attribute, name_attribute_item_for_version, normalize_uid_for_version, set_positioned_attribute, unwrap_typed_outcome, validate_fluent_request, validate_object_attribute_tag,
+    CryptographicUsageMask, FluentAttributePosition, FluentBuildError, FluentBuilderExecution,
+    SYMMETRIC_KEY_OBJECT_TYPE, alternative_name_item, append_object_attribute,
+    effective_protocol_version, execute_fluent_outcome, fluent_client_validation_error,
+    insert_positioned_attributes, link_item_for_version, make_vendor_attribute,
+    name_attribute_item_for_version, normalize_uid_for_version, set_positioned_attribute,
+    unwrap_typed_outcome, validate_fluent_request, validate_object_attribute_tag,
 };
 
 /// A fluent generic Create builder for OASIS KMIP v2.1 §6.1.8, Tables 186–188.
@@ -268,9 +270,7 @@ impl<'a> DeriveKeyBuilder<'a> {
         self.derivation_method = Some(spec.derivation_method());
         let salt_bytes = salt.map(|s| s.with_bytes(<[u8]>::to_vec));
         let data_bytes = derivation_data.map(|d| d.with_bytes(<[u8]>::to_vec));
-        if let Ok(params) =
-            spec.to_derivation_parameters(salt_bytes, data_bytes, iteration_count)
-        {
+        if let Ok(params) = spec.to_derivation_parameters(salt_bytes, data_bytes, iteration_count) {
             self.derivation_parameters = Some(params);
         }
         self
@@ -598,7 +598,10 @@ impl<'a> RegisterBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -734,7 +737,9 @@ impl<'a> RegisterBuilder<'a> {
     ///
     /// Returns [`ClientError`] when local validation or exchange fails.
     pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         execute_fluent_outcome(
             self.client,
             ClientRequest::Register(request),
@@ -753,7 +758,9 @@ impl<'a> RegisterBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         self.client.execute_one_typed_request_with_async_indicator(
             ClientRequest::Register(request),
             self.asynchronous_indicator,
@@ -952,7 +959,10 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1329,7 +1339,10 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1406,7 +1419,8 @@ impl<'a> CreateSplitKeyBuilder<'a> {
             CreateSplitKeyRequest::new(object_type, parts, threshold, method, attributes);
         if let Some(identifier) = self.unique_identifier.clone() {
             let version = effective_protocol_version(Some(self.client), self.options.as_ref());
-            request = request.with_unique_identifier(normalize_uid_for_version(identifier, version));
+            request =
+                request.with_unique_identifier(normalize_uid_for_version(identifier, version));
         }
         if let Some(prime_field_size) = &self.prime_field_size {
             request = request.with_prime_field_size(prime_field_size.clone());
@@ -1459,7 +1473,9 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     ///
     /// Returns [`ClientError`] for local validation or client exchange failure.
     pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         execute_fluent_outcome(
             self.client,
             ClientRequest::CreateSplitKey(request),
@@ -1477,7 +1493,9 @@ impl<'a> CreateSplitKeyBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         self.client.execute_one_typed_request_with_async_indicator(
             ClientRequest::CreateSplitKey(request),
             self.asynchronous_indicator,
@@ -1584,13 +1602,12 @@ impl<'a> CreateKeyPairBuilder<'a> {
                 s.try_push(item).ok()?;
                 Attribute::<typed::CryptographicDomainParameters>::new(s).ok()
             });
-        match built {
-            Some(attr) => self.common_attribute(attr),
-            None => {
-                self.attribute_error
-                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
-                self
-            }
+        if let Some(attr) = built {
+            self.common_attribute(attr)
+        } else {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            self
         }
     }
 
@@ -1728,7 +1745,10 @@ impl<'a> CreateKeyPairBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1872,7 +1892,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
     ///
     /// Returns [`ClientError`] for local validation or client exchange failure.
     pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         let Some(client) = self.client else {
             return Err(fluent_client_validation_error(
                 FluentBuildError::MissingClientForExecution,
@@ -1895,7 +1917,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        let request = self.build_request().map_err(fluent_client_validation_error)?;
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
         let Some(client) = self.client else {
             return Err(fluent_client_validation_error(
                 FluentBuildError::MissingClientForExecution,

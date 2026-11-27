@@ -366,7 +366,10 @@ impl<'a> FluentBuilderExecution<'a> {
     }
 
     pub(super) fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -505,10 +508,7 @@ pub(super) fn link_item_for_version(
             )?)
             .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
         fields
-            .try_push(item(
-                KmipTag::LinkedObjectIdentifier.as_u32(),
-                uid_value,
-            )?)
+            .try_push(item(KmipTag::LinkedObjectIdentifier.as_u32(), uid_value)?)
             .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
         item(KmipTag::Link.as_u32(), Value::structure(fields))
     }
@@ -752,7 +752,9 @@ impl From<AttributeSetError> for FluentBuildError {
     }
 }
 
-pub(super) fn copy_new_attribute(attribute: &NewAttribute) -> Result<NewAttribute, FluentBuildError> {
+pub(super) fn copy_new_attribute(
+    attribute: &NewAttribute,
+) -> Result<NewAttribute, FluentBuildError> {
     attribute
         .item()
         .try_clone()

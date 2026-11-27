@@ -12,9 +12,7 @@ use crate::{
     ClientRequest,
 };
 
-use super::execution::{
-    FluentBuildError, FluentBuilderExecution, fluent_client_validation_error,
-};
+use super::execution::{FluentBuildError, FluentBuilderExecution, fluent_client_validation_error};
 
 /// A fluent builder for KMIP Login requests (§6.1.30, Table 253).
 pub struct LoginBuilder<'a> {
@@ -108,7 +106,8 @@ impl<'a> LoginBuilder<'a> {
     ///
     /// Returns exchange or decoding failures.
     pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execution.run_outcome(ClientRequest::Login(self.request))
+        self.execution
+            .run_outcome(ClientRequest::Login(self.request))
     }
 
     /// Executes one Login exchange with explicit [`CodecLimits`].
@@ -120,7 +119,8 @@ impl<'a> LoginBuilder<'a> {
         self,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execution.run(ClientRequest::Login(self.request), limits)
+        self.execution
+            .run(ClientRequest::Login(self.request), limits)
     }
 }
 
@@ -201,8 +201,10 @@ impl<'a> LogoutBuilder<'a> {
         self,
         limits: &CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
-        self.execution
-            .run(ClientRequest::Logout(LogoutRequest::new(self.ticket)), limits)
+        self.execution.run(
+            ClientRequest::Logout(LogoutRequest::new(self.ticket)),
+            limits,
+        )
     }
 }
 

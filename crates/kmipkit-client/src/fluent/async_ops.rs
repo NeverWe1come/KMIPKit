@@ -301,7 +301,9 @@ impl<'a> QueryAsyncRequestsBuilder<'a> {
     /// Adds one Asynchronous Correlation Value to the optional filter.
     #[must_use]
     pub fn correlation_value(mut self, value: SecretBytes) -> Self {
-        self.correlation_values.get_or_insert_with(Vec::new).push(value);
+        self.correlation_values
+            .get_or_insert_with(Vec::new)
+            .push(value);
         self
     }
 

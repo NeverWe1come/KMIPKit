@@ -1,6 +1,5 @@
 //! Task-oriented, fluent builders over the existing typed KMIP requests.
 
-
 use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, ArchiveRequest, ArchiveResponse, AttributeSet,
     CertifyRequest, CertifyResponse, DestroyRequest, DestroyResponse, GetRequest, GetResponse,
@@ -54,7 +53,10 @@ impl GetBuilder<'_> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         if let Some(uid) = self.request.unique_identifier().cloned() {
             self.request = self
@@ -234,7 +236,10 @@ impl DestroyBuilder<'_> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         if let Some(uid) = self.request.unique_identifier().cloned() {
             self.request = DestroyRequest::new(Some(normalize_uid_for_version(uid, version)));
@@ -356,7 +361,10 @@ impl<'a> ActivateBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         if let Some(uid) = self.request.unique_identifier().cloned() {
             self.request = ActivateRequest::new(Some(normalize_uid_for_version(uid, version)));
@@ -509,7 +517,10 @@ impl<'a> ArchiveBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         if let Some(uid) = self.request.unique_identifier().cloned() {
             self.request = ArchiveRequest::new(Some(normalize_uid_for_version(uid, version)));
@@ -662,7 +673,10 @@ impl<'a> RecoverBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         if let Some(uid) = self.request.unique_identifier().cloned() {
             self.request = RecoverRequest::new(Some(normalize_uid_for_version(uid, version)));
@@ -1295,7 +1309,10 @@ impl<'a, R: ReplacementRequest> ReplacementBuilderState<'a, R> {
     }
 
     fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1372,7 +1389,8 @@ impl<'a> RekeyBuilder<'a> {
     /// Sets the optional source key identifier (`impl Into<UniqueIdentifier>`).
     #[must_use]
     pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
-        let version = effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
+        let version =
+            effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
         self.state.request = std::mem::take(&mut self.state.request)
             .with_unique_identifier(normalize_uid_for_version(value.into(), version));
         self
@@ -1584,7 +1602,10 @@ impl<'a> RekeyKeyPairBuilder<'a> {
     /// Sets the KMIP protocol version override for this request/exchange.
     #[must_use]
     pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        let options = self.options.unwrap_or_default().with_protocol_version(version);
+        let options = self
+            .options
+            .unwrap_or_default()
+            .with_protocol_version(version);
         self.options = Some(options);
         self
     }
@@ -1713,7 +1734,8 @@ impl<'a> RecertifyBuilder<'a> {
     /// Selects the existing certificate to renew (`impl Into<UniqueIdentifier>`).
     #[must_use]
     pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
-        let version = effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
+        let version =
+            effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
         self.state.request = std::mem::take(&mut self.state.request)
             .with_unique_identifier(normalize_uid_for_version(value.into(), version));
         self
@@ -1721,10 +1743,16 @@ impl<'a> RecertifyBuilder<'a> {
 
     /// Selects a certificate request object (`impl Into<UniqueIdentifier>`).
     #[must_use]
-    pub fn certificate_request_unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
-        let version = effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
-        self.state.request = std::mem::take(&mut self.state.request)
-            .with_certificate_request_unique_identifier(normalize_uid_for_version(value.into(), version));
+    pub fn certificate_request_unique_identifier(
+        mut self,
+        value: impl Into<UniqueIdentifier>,
+    ) -> Self {
+        let version =
+            effective_protocol_version(Some(self.state.client), self.state.options.as_ref());
+        self.state.request =
+            std::mem::take(&mut self.state.request).with_certificate_request_unique_identifier(
+                normalize_uid_for_version(value.into(), version),
+            );
         self
     }
 

@@ -86,6 +86,7 @@ impl<'a> FluentBatchBuilder<'a> {
 
     /// Appends a prebuilt [`ClientBatchItem`] in wire order.
     #[must_use]
+    #[allow(clippy::should_implement_trait)]
     pub fn add(mut self, item: ClientBatchItem) -> Self {
         self.batch.push(item);
         self
@@ -273,16 +274,14 @@ impl<'a> WorkflowsClient<'a> {
             },
             CreateKeyPairResponse::result,
         )?;
-        let priv_id = uid_to_string(
-            created
-                .private_key_unique_identifier()
-                .ok_or_else(|| fluent_client_validation_error(FluentBuildError::InvalidRequest))?,
-        )?;
-        let pub_id = uid_to_string(
-            created
-                .public_key_unique_identifier()
-                .ok_or_else(|| fluent_client_validation_error(FluentBuildError::InvalidRequest))?,
-        )?;
+        let priv_id =
+            uid_to_string(created.private_key_unique_identifier().ok_or_else(|| {
+                fluent_client_validation_error(FluentBuildError::InvalidRequest)
+            })?)?;
+        let pub_id =
+            uid_to_string(created.public_key_unique_identifier().ok_or_else(|| {
+                fluent_client_validation_error(FluentBuildError::InvalidRequest)
+            })?)?;
         for target_id in [&priv_id, &pub_id] {
             let act_req = ActivateBuilder::new(self.client)
                 .unique_identifier(target_id.as_str())
@@ -455,6 +454,7 @@ impl HashStream<'_> {
     ///
     /// # Errors
     /// Returns [`ClientError`] if the server rejects the chunk.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn update(&mut self, chunk: SecretBytes) -> Result<(), ClientError> {
         let raw = chunk.with_bytes(<[u8]>::to_vec);
         let mut b = HashBuilder::new(self.client)
@@ -525,6 +525,7 @@ impl EncryptStream<'_> {
     ///
     /// # Errors
     /// Returns [`ClientError`] on failure.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn update(&mut self, chunk: SecretBytes) -> Result<Option<SecretBytes>, ClientError> {
         let raw = chunk.with_bytes(<[u8]>::to_vec);
         let mut b = EncryptBuilder::new(self.client)
@@ -594,6 +595,7 @@ impl DecryptStream<'_> {
     ///
     /// # Errors
     /// Returns [`ClientError`] on failure.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn update(&mut self, chunk: SecretBytes) -> Result<Option<SecretBytes>, ClientError> {
         let raw = chunk.with_bytes(<[u8]>::to_vec);
         let mut b = DecryptBuilder::new(self.client)
@@ -663,6 +665,7 @@ impl SignStream<'_> {
     ///
     /// # Errors
     /// Returns [`ClientError`] on failure.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn update(&mut self, chunk: SecretBytes) -> Result<(), ClientError> {
         let raw = chunk.with_bytes(<[u8]>::to_vec);
         let mut b = SignBuilder::new(self.client)
@@ -735,6 +738,7 @@ impl MacStream<'_> {
     ///
     /// # Errors
     /// Returns [`ClientError`] on failure.
+    #[allow(clippy::needless_pass_by_value)]
     pub fn update(&mut self, chunk: SecretBytes) -> Result<(), ClientError> {
         let raw = chunk.with_bytes(<[u8]>::to_vec);
         let mut b = MacBuilder::new(self.client)
@@ -833,10 +837,14 @@ impl PendingOperation {
     /// Returns [`ClientError`] on failure.
     pub fn process(&self, client: &mut Client) -> Result<KmipOperationResult, ClientError> {
         let req = ProcessBuilder::new(client, clone_secret(&self.correlation_value)).build();
-        exec_kmi_result(client, ClientRequest::Process(req), |outcome| match outcome {
-            ClientBatchOutcome::Process(res) => Some(res),
-            _ => None,
-        })
+        exec_kmi_result(
+            client,
+            ClientRequest::Process(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Process(res) => Some(res),
+                _ => None,
+            },
+        )
     }
 
     /// Sends a single synchronous `Cancel` request for this operation.
@@ -845,10 +853,14 @@ impl PendingOperation {
     /// Returns [`ClientError`] on failure.
     pub fn cancel(&self, client: &mut Client) -> Result<KmipOperationResult, ClientError> {
         let req = CancelBuilder::new(client, clone_secret(&self.correlation_value)).build();
-        exec_kmi_result(client, ClientRequest::Cancel(req), |outcome| match outcome {
-            ClientBatchOutcome::Cancel(res) => Some(res),
-            _ => None,
-        })
+        exec_kmi_result(
+            client,
+            ClientRequest::Cancel(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Cancel(res) => Some(res),
+                _ => None,
+            },
+        )
     }
 }
 

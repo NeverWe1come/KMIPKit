@@ -13,10 +13,6 @@
 extern "C" {
 #endif
 
-#ifndef KMIPKIT_ERROR_SERVER_RESULT
-#define KMIPKIT_ERROR_SERVER_RESULT ((int32_t)10)
-#endif
-
 static inline uint64_t kmipkit_fluent_cstr_len_(const char *s) {
     return s == NULL ? 0u : (uint64_t)strlen(s);
 }

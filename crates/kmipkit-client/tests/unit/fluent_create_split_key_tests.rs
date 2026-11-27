@@ -154,7 +154,9 @@ fn split_key_builder_requires_all_four_explicit_semantic_fields() {
         };
         assert_eq!(builder.validate(), Err(expected));
         assert_eq!(builder.build_request().unwrap_err(), expected);
-        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+        let error = builder
+            .execute_outcome_with_limits(&CodecLimits::defaults())
+            .unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
@@ -238,7 +240,9 @@ fn prime_field_method_requires_explicit_size_before_transport() {
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
 }
@@ -255,7 +259,9 @@ fn split_key_builder_rejects_duplicate_singleton_attributes_before_transport() {
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
 }

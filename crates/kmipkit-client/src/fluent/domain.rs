@@ -16,12 +16,12 @@ use super::{
     GetAttributesBuilder, GetBuilder, GetConstraintsBuilder, GetUsageAllocationBuilder,
     HashBuilder, ImportBuilder, InteropBuilder, JoinSplitKeyBuilder, LocateBuilder, LogBuilder,
     LoginBuilder, LogoutBuilder, MacBuilder, MacVerifyBuilder, ModifyAttributeBuilder,
-    ObliterateBuilder, ObtainLeaseBuilder, PingBuilder, Pkcs11Builder, PollBuilder,
-    ProcessBuilder, QueryAsyncRequestsBuilder, QueryBuilder, ReProvisionBuilder, RecertifyBuilder,
-    RecoverBuilder, RegisterBuilder, RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder,
-    RevokeBuilder, RngRetrieveBuilder, RngSeedBuilder, SetAttributeBuilder,
-    SetConstraintsBuilder, SetDefaultsBuilder, SetEndpointRoleBuilder, SignBuilder,
-    SignatureVerifyBuilder, ValidateBuilder,
+    ObliterateBuilder, ObtainLeaseBuilder, PingBuilder, Pkcs11Builder, PollBuilder, ProcessBuilder,
+    QueryAsyncRequestsBuilder, QueryBuilder, ReProvisionBuilder, RecertifyBuilder, RecoverBuilder,
+    RegisterBuilder, RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder,
+    RngRetrieveBuilder, RngSeedBuilder, SetAttributeBuilder, SetConstraintsBuilder,
+    SetDefaultsBuilder, SetEndpointRoleBuilder, SignBuilder, SignatureVerifyBuilder,
+    ValidateBuilder,
 };
 
 /// Domain namespace for key generation, import/export, derivation, split keys, and lookup.
@@ -114,7 +114,11 @@ impl<'a> KeysClient<'a> {
 
     /// Starts a paginated `Locate` iterator fetching pages of `page_size` objects.
     #[must_use]
-    pub fn locate_iter(self, attributes: AttributeSet, page_size: i32) -> super::flows::LocatePaginator<'a> {
+    pub fn locate_iter(
+        self,
+        attributes: AttributeSet,
+        page_size: i32,
+    ) -> super::flows::LocatePaginator<'a> {
         super::flows::LocatePaginator::new(self.client, attributes, page_size)
     }
 
@@ -215,7 +219,12 @@ impl<'a> CryptoClient<'a> {
 
     /// Begins a KMIP 3.0 KEM decapsulation using a private KEM key ID and ciphertext bytes.
     #[must_use]
-    pub fn decapsulate(self, private_key_id: &str, ciphertext: SecretBytes) -> DecapsulateBuilder<'a> {
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn decapsulate(
+        self,
+        private_key_id: &str,
+        ciphertext: SecretBytes,
+    ) -> DecapsulateBuilder<'a> {
         let bytes = ciphertext.with_bytes(<[u8]>::to_vec);
         DecapsulateBuilder::new(self.client, private_key_id.into(), bytes)
     }
@@ -351,6 +360,7 @@ impl<'a> AttributesClient<'a> {
 
     /// Begins adding a new attribute to an object (`AddAttribute`).
     #[must_use]
+    #[allow(clippy::should_implement_trait)]
     pub fn add(self, unique_identifier: &str) -> AddAttributeBuilder<'a> {
         AddAttributeBuilder::new(Some(self.client)).unique_identifier(unique_identifier)
     }
@@ -675,8 +685,7 @@ impl<'a> KeyRef<'a> {
     /// Verifies a signature using this key (`SignatureVerify`).
     #[must_use]
     pub fn verify(self) -> SignatureVerifyBuilder<'a> {
-        SignatureVerifyBuilder::new(self.client)
-            .unique_identifier(self.unique_identifier.as_str())
+        SignatureVerifyBuilder::new(self.client).unique_identifier(self.unique_identifier.as_str())
     }
 
     /// Alias for [`Self::verify`].
@@ -705,6 +714,7 @@ impl<'a> KeyRef<'a> {
 
     /// Decapsulates ciphertext using this KMIP 3.0 KEM private key (`Decapsulate`).
     #[must_use]
+    #[allow(clippy::needless_pass_by_value)]
     pub fn decapsulate(self, ciphertext: SecretBytes) -> DecapsulateBuilder<'a> {
         let bytes = ciphertext.with_bytes(<[u8]>::to_vec);
         DecapsulateBuilder::new(self.client, self.unique_identifier.as_str().into(), bytes)
@@ -719,8 +729,7 @@ impl<'a> KeyRef<'a> {
     /// Lists attribute names (`GetAttributeList`).
     #[must_use]
     pub fn attribute_list(self) -> GetAttributeListBuilder<'a> {
-        GetAttributeListBuilder::new(self.client)
-            .unique_identifier(self.unique_identifier.as_str())
+        GetAttributeListBuilder::new(self.client).unique_identifier(self.unique_identifier.as_str())
     }
 
     /// Adds a new attribute (`AddAttribute`).

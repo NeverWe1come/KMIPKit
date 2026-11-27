@@ -90,7 +90,10 @@ fn get_constraints_fluently(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<ClientBatchItemResponse, ClientError> {
-    let response = client.request().get_constraints().execute_outcome_with_limits(limits)?;
+    let response = client
+        .request()
+        .get_constraints()
+        .execute_outcome_with_limits(limits)?;
     let _typed_response = response.outcome().response().get_constraints();
     Ok(response)
 }

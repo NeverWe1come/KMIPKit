@@ -90,24 +90,20 @@ pub use attributes::{
     AddAttributeBuilder, AdjustAttributeBuilder, DeleteAttributeBuilder, GetAttributeListBuilder,
     GetAttributesBuilder, ModifyAttributeBuilder, SetAttributeBuilder,
 };
-pub use domain::{
-    AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptoClient, KeyRef,
-    KeysClient, SecretsClient, SessionsClient,
-};
-pub use flows::{
-    DecryptStream, EncryptStream, FluentBatchBuilder, HashStream, LocatePaginator, MacStream,
-    PendingOperation, SignStream, StreamsClient, WorkflowsClient,
-};
-pub use kmipkit_protocol::{
-    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
-    PresetError, SignatureSpec, decode_pem, decode_pem_der,
-};
 pub use crypto::{
     DecryptBuilder, EncryptBuilder, HashBuilder, MacBuilder, MacVerifyBuilder, SignBuilder,
     SignatureVerifyBuilder,
 };
+pub use domain::{
+    AdminClient, AsyncOpsClient, AttributesClient, CertificatesClient, CryptoClient, KeyRef,
+    KeysClient, SecretsClient, SessionsClient,
+};
 pub use execution::{
     AttributeAdjustmentValue, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+};
+pub use flows::{
+    DecryptStream, EncryptStream, FluentBatchBuilder, HashStream, LocatePaginator, MacStream,
+    PendingOperation, SignStream, StreamsClient, WorkflowsClient,
 };
 pub use keys::{
     CreateBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder,
@@ -117,14 +113,16 @@ pub use kmip30::{
     CreateCredentialBuilder, CreateGroupBuilder, CreateUserBuilder, DeactivateBuilder,
     DecapsulateBuilder, EncapsulateBuilder, ObliterateBuilder,
 };
+pub use kmipkit_protocol::{
+    AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec, PemBlock,
+    PresetError, SignatureSpec, decode_pem, decode_pem_der,
+};
 pub use lifecycle::{
     ActivateBuilder, ArchiveBuilder, CertifyBuilder, DestroyBuilder, GetBuilder, LocateBuilder,
     RecertifyBuilder, RecoverBuilder, RekeyBuilder, RekeyKeyPairBuilder, RevokeBuilder,
     ValidateBuilder,
 };
-pub use sessions::{
-    DelegatedLoginBuilder, LoginBuilder, LogoutBuilder, SetEndpointRoleBuilder,
-};
+pub use sessions::{DelegatedLoginBuilder, LoginBuilder, LogoutBuilder, SetEndpointRoleBuilder};
 
 /// A scoped fluent namespace borrowed from a mutable client.
 pub struct RequestBuilder<'a> {
@@ -197,7 +195,10 @@ impl<'a> RequestBuilder<'a> {
 
     /// Begins a KMIP 3.0 Deactivate builder for a caller-supplied identifier.
     #[must_use]
-    pub fn deactivate(self, unique_identifier: impl Into<UniqueIdentifier>) -> DeactivateBuilder<'a> {
+    pub fn deactivate(
+        self,
+        unique_identifier: impl Into<UniqueIdentifier>,
+    ) -> DeactivateBuilder<'a> {
         DeactivateBuilder::new(self.client, unique_identifier.into())
     }
 
@@ -223,7 +224,10 @@ impl<'a> RequestBuilder<'a> {
 
     /// Begins a KMIP 3.0 Obliterate builder for a caller-supplied identifier.
     #[must_use]
-    pub fn obliterate(self, unique_identifier: impl Into<UniqueIdentifier>) -> ObliterateBuilder<'a> {
+    pub fn obliterate(
+        self,
+        unique_identifier: impl Into<UniqueIdentifier>,
+    ) -> ObliterateBuilder<'a> {
         ObliterateBuilder::new(self.client, unique_identifier.into())
     }
     pub(crate) const fn new(client: &'a mut Client) -> Self {

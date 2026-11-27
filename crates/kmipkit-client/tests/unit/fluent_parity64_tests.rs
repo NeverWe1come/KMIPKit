@@ -236,7 +236,10 @@ fn fluent_stage2_session_and_admin_builders_validate_and_build() {
 #[test]
 fn fluent_stage2_executes_typed_async_and_role_exchanges() {
     let cancel_payload = test_structure([
-        item(KmipTag::AsynchronousCorrelationValue, Value::byte_string(vec![0xaa, 0xbb])),
+        item(
+            KmipTag::AsynchronousCorrelationValue,
+            Value::byte_string(vec![0xaa, 0xbb]),
+        ),
         item(KmipTag::CancellationResult, Value::enumeration(1)),
     ]);
     let cancel_ok = asynchronous_response_bytes(0x0000_0019, 0, None, None, Some(cancel_payload));

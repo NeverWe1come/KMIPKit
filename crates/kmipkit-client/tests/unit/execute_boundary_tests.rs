@@ -1029,8 +1029,7 @@ impl BoundaryAudit {
         let fluent_root_scope = self.is_fluent_source();
         let fluent_kmip30_ciphertext =
             is_exact_fluent_kmip30_ciphertext(fluent_root_scope, impl_type, signature);
-        let fluent_uid_setter_arg =
-            is_exact_fluent_uid_conversion(fluent_root_scope, signature);
+        let fluent_uid_setter_arg = is_exact_fluent_uid_conversion(fluent_root_scope, signature);
         let client_builder_arg =
             is_exact_client_builder_input(execute_root_scope, impl_type, signature);
         let registry_value_validation = is_exact_registry_value_validation(
@@ -2484,16 +2483,20 @@ fn is_exact_fluent_uid_conversion(
     if !fluent_root_scope || !signature.generics.params.is_empty() {
         return None;
     }
-    signature.inputs.iter().enumerate().find_map(|(index, arg)| {
-        let syn::FnArg::Typed(typed) = arg else {
-            return None;
-        };
-        if is_impl_into_path(&typed.ty, "UniqueIdentifier") {
-            Some(index)
-        } else {
-            None
-        }
-    })
+    signature
+        .inputs
+        .iter()
+        .enumerate()
+        .find_map(|(index, arg)| {
+            let syn::FnArg::Typed(typed) = arg else {
+                return None;
+            };
+            if is_impl_into_path(&typed.ty, "UniqueIdentifier") {
+                Some(index)
+            } else {
+                None
+            }
+        })
 }
 
 fn is_exact_client_builder_input(
@@ -2821,9 +2824,10 @@ fn is_exact_fluent_operation_ttlv_value(
             "common_attributes" | "private_key_attributes" | "public_key_attributes",
         ) => "AttributeSet",
         (Some("ImportBuilder"), "object")
-        | (Some("LogBuilder" | "InteropBuilder" | "Pkcs11Builder" | "ValidateBuilder"), "extension") => {
-            "Item"
-        }
+        | (
+            Some("LogBuilder" | "InteropBuilder" | "Pkcs11Builder" | "ValidateBuilder"),
+            "extension",
+        ) => "Item",
         (Some("GetBuilder" | "ExportBuilder"), "key_wrapping_specification")
         | (
             Some("RekeyBuilder" | "RecertifyBuilder" | "CertifyBuilder"),
@@ -2835,10 +2839,7 @@ fn is_exact_fluent_operation_ttlv_value(
         | (Some("SetConstraintsBuilder"), "constraints")
         | (Some("LoginBuilder" | "DelegatedLoginBuilder"), "usage_limits")
         | (Some("DelegatedLoginBuilder"), "rights")
-        | (
-            Some("Pkcs11Builder"),
-            "function" | "interface" | "input_parameters",
-        )
+        | (Some("Pkcs11Builder"), "function" | "interface" | "input_parameters")
         | (
             Some("RekeyKeyPairBuilder"),
             "common_protection_storage_masks"
@@ -5532,7 +5533,11 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
 fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_invocations() {
     let safe = include_str!("../fixtures/execute_boundary/kmip30_builder_methods_macro.rs");
     for (builder, resp, variant) in [
-        ("CreateCredentialBuilder", "CreateCredentialResponse", "CreateCredential"),
+        (
+            "CreateCredentialBuilder",
+            "CreateCredentialResponse",
+            "CreateCredential",
+        ),
         ("CreateGroupBuilder", "CreateGroupResponse", "CreateGroup"),
         ("CreateUserBuilder", "CreateUserResponse", "CreateUser"),
         ("DeactivateBuilder", "DeactivateResponse", "Deactivate"),
@@ -5558,11 +5563,18 @@ fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_inv
         safe.replace("pub fn build(self)", "pub fn raw(self)"),
         format!("{safe} impl_kmip30_builder_methods!(UnreviewedBuilder, R, V);"),
         format!("{safe} impl_kmip30_builder_methods!(CreateGroupBuilder, OtherBuilder);"),
-        format!("{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder, CreateGroupResponse, CreateGroup}}"),
-        format!("{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);"),
-        format!("mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup); }}"),
+        format!(
+            "{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder, CreateGroupResponse, CreateGroup}}"
+        ),
+        format!(
+            "{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);"
+        ),
+        format!(
+            "mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup); }}"
+        ),
         "macro_rules! other { () => {} } other!();".to_owned(),
-        "impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);".to_owned(),
+        "impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);"
+            .to_owned(),
         "pub fn raw(self, body: Vec<u8>) -> ClientRequest { loop {} }".to_owned(),
     ] {
         let parsed = syn::parse_file(&source).unwrap();

@@ -1,6 +1,5 @@
 //! Task-oriented, fluent builders over the existing typed KMIP requests.
 
-
 use kmipkit_protocol::{
     CheckRequest, CheckResponse, DiscoverVersionsRequest, DiscoverVersionsResponse,
     GetConstraintsRequest, GetConstraintsResponse, GetUsageAllocationRequest,
@@ -14,10 +13,15 @@ use kmipkit_protocol::{
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::{Item, Structure};
 
-use crate::{Client, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome, ClientError, ClientRequest};
+use crate::{
+    Client, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome, ClientError,
+    ClientRequest,
+};
 
 use super::execution::{
-    FluentBuildError, FluentBuilderExecution, effective_protocol_version, execute_fluent_outcome, execute_fluent_request, fluent_client_validation_error, normalize_uid_for_version, unwrap_typed_outcome, validate_fluent_request,
+    FluentBuildError, FluentBuilderExecution, effective_protocol_version, execute_fluent_outcome,
+    execute_fluent_request, fluent_client_validation_error, normalize_uid_for_version,
+    unwrap_typed_outcome, validate_fluent_request,
 };
 
 /// A fluent builder for the empty Ping payload in OASIS KMIP v2.1 §6.1.36,
@@ -734,8 +738,7 @@ impl<'a> CheckBuilder<'a> {
             asynchronous_indicator,
         } = self;
         let ver = effective_protocol_version(Some(client), options.as_ref());
-        let unique_identifier =
-            unique_identifier.map(|id| normalize_uid_for_version(id, ver));
+        let unique_identifier = unique_identifier.map(|id| normalize_uid_for_version(id, ver));
         let request = check_request(
             unique_identifier,
             usage_limits_count,
@@ -1221,8 +1224,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
             asynchronous_indicator,
         } = self;
         let ver = effective_protocol_version(Some(client), options.as_ref());
-        let unique_identifier =
-            unique_identifier.map(|id| normalize_uid_for_version(id, ver));
+        let unique_identifier = unique_identifier.map(|id| normalize_uid_for_version(id, ver));
         let request = validated_obtain_lease_request(unique_identifier)
             .map_err(fluent_client_validation_error)?;
         execute_fluent_outcome(

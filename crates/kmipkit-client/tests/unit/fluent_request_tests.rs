@@ -2398,7 +2398,9 @@ fn generic_create_builder_requires_object_type_before_transport() {
         builder.build_request().err(),
         Some(FluentBuildError::MissingCreateObjectType)
     );
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -2480,7 +2482,9 @@ fn generic_create_builder_rejects_invalid_cardinality_with_redacted_not_sent_err
         builder.build_request().err(),
         Some(FluentBuildError::InvalidRequest)
     );
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -2613,7 +2617,9 @@ fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
     let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
     let builder = client.request().create_group(AttributeSet::new());
     assert_eq!(builder.validate(), Ok(()));
-    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
+    let error = builder
+        .execute_outcome_with_limits(&CodecLimits::defaults())
+        .unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)

@@ -1,4 +1,4 @@
-//! Unit tests for Fase 1 ergonomics: ClientBuilder, embedded CodecLimits,
+//! Unit tests for Fase 1 ergonomics: `ClientBuilder`, embedded `CodecLimits`,
 //! typed fluent `.execute()` / `.execute_outcome()`, and multi-version adaptation (2.0/2.1/3.0).
 
 use kmipkit_protocol::{
@@ -61,37 +61,35 @@ fn request_options_allow_per_call_codec_limit_overrides() {
 
 #[test]
 fn client_builder_validates_inputs_locally_without_network() {
-    let err = match Client::builder().build() {
-        Ok(_) => panic!("building Client without endpoint must fail locally"),
-        Err(err) => err,
+    let Err(err) = Client::builder().build() else {
+        panic!("building Client without endpoint must fail locally");
     };
-    assert_eq!(err.cause_category(), Some(ClientCauseCategory::InvalidInput));
+    assert_eq!(
+        err.cause_category(),
+        Some(ClientCauseCategory::InvalidInput)
+    );
     assert_eq!(err.delivery_state(), Some(RequestDeliveryState::NotSent));
 
-    let err = match Client::connect_mtls(
+    let Err(err) = Client::connect_mtls(
         "127.0.0.1",
         5696,
         "/nonexistent/kmipkit/ca.pem",
         "/nonexistent/kmipkit/cert.pem",
         "/nonexistent/kmipkit/key.pem",
-    ) {
-        Ok(_) => panic!("nonexistent PEM paths must fail immediately"),
-        Err(err) => err,
+    ) else {
+        panic!("nonexistent PEM paths must fail immediately");
     };
-    assert_eq!(err.cause_category(), Some(ClientCauseCategory::InvalidInput));
+    assert_eq!(
+        err.cause_category(),
+        Some(ClientCauseCategory::InvalidInput)
+    );
     assert_eq!(err.delivery_state(), Some(RequestDeliveryState::NotSent));
 }
 
 #[test]
 fn fluent_execute_returns_typed_response_and_errors_on_failure_or_pending() {
     // 1. Success returns direct typed PingResponse
-    let ping_ok = asynchronous_response_bytes(
-        0x0000_003b,
-        0,
-        None,
-        None,
-        Some(test_structure([])),
-    );
+    let ping_ok = asynchronous_response_bytes(0x0000_003b, 0, None, None, Some(test_structure([])));
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: ping_ok,
         request_write_chunks: Vec::new(),
@@ -128,7 +126,10 @@ fn fluent_execute_returns_typed_response_and_errors_on_failure_or_pending() {
         .ping()
         .execute_outcome()
         .expect("execute_outcome() preserves server failure without Err");
-    assert_eq!(outcome.outcome().result().status(), ResultStatus::from_raw(1));
+    assert_eq!(
+        outcome.outcome().result().status(),
+        ResultStatus::from_raw(1)
+    );
 
     // 3. Pending (ResultStatus = 2) becomes Err(ClientError::Pending) on execute() with redacted correlation
     let pending_bytes = asynchronous_response_bytes(
@@ -168,10 +169,14 @@ fn fluent_execute_returns_typed_response_and_errors_on_failure_or_pending() {
         .with_asynchronous_indicator(1)
         .execute_outcome()
         .expect("execute_outcome() returns Pending outcome without erroring");
-    assert!(matches!(outcome.outcome(), crate::ClientBatchOutcome::Pending(_)));
+    assert!(matches!(
+        outcome.outcome(),
+        crate::ClientBatchOutcome::Pending(_)
+    ));
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn fluent_adapts_names_links_and_identifiers_across_kmip_versions() {
     let limits = CodecLimits::defaults();
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
@@ -261,7 +266,7 @@ fn fluent_adapts_names_links_and_identifiers_across_kmip_versions() {
     );
 
     // Register::link adapts Link across 2.1 (Link) vs 3.0 (v3_tag) using LinkNormalizer
-    let reg_21 = client
+    let register_21 = client
         .request()
         .register()
         .object(ManagedObject::OpaqueObject(
@@ -271,15 +276,19 @@ fn fluent_adapts_names_links_and_identifiers_across_kmip_versions() {
         .link(LinkType::Certificate, "cert-21")
         .build_request()
         .expect("valid v2.1 Register request");
-    let reg_21_payload = reg_21.into_ttlv_payload().expect("v2.1 Register payload");
-    let reg_21_attrs =
-        find_child_by_tag(reg_21_payload.view().children(), KmipTag::Attributes.as_u32())
-            .and_then(Item::as_structure)
-            .expect("Attributes in v2.1 Register")
-            .children();
-    assert!(find_child_by_tag(reg_21_attrs, KmipTag::Link.as_u32()).is_some());
+    let register_21_payload = register_21
+        .into_ttlv_payload()
+        .expect("v2.1 Register payload");
+    let register_21_attrs = find_child_by_tag(
+        register_21_payload.view().children(),
+        KmipTag::Attributes.as_u32(),
+    )
+    .and_then(Item::as_structure)
+    .expect("Attributes in v2.1 Register")
+    .children();
+    assert!(find_child_by_tag(register_21_attrs, KmipTag::Link.as_u32()).is_some());
 
-    let reg_30 = client
+    let register_30 = client
         .request()
         .register()
         .with_protocol_version(ProtocolVersion::V3_0)
@@ -290,13 +299,17 @@ fn fluent_adapts_names_links_and_identifiers_across_kmip_versions() {
         .link(LinkType::Certificate, "cert-99")
         .build_request()
         .expect("valid v3.0 Register request");
-    let reg_30_payload = reg_30.into_ttlv_payload().expect("v3.0 Register payload");
-    let reg_30_attrs =
-        find_child_by_tag(reg_30_payload.view().children(), KmipTag::Attributes.as_u32())
-            .and_then(Item::as_structure)
-            .expect("Attributes in v3.0 Register")
-            .children();
-    assert!(find_child_by_tag(reg_30_attrs, LinkType::Certificate.v3_tag()).is_some());
+    let register_30_payload = register_30
+        .into_ttlv_payload()
+        .expect("v3.0 Register payload");
+    let register_30_attrs = find_child_by_tag(
+        register_30_payload.view().children(),
+        KmipTag::Attributes.as_u32(),
+    )
+    .and_then(Item::as_structure)
+    .expect("Attributes in v3.0 Register")
+    .children();
+    assert!(find_child_by_tag(register_30_attrs, LinkType::Certificate.v3_tag()).is_some());
 
     // Client::send and set_protocol_version
     let ping_v30_ok = asynchronous_response_bytes_with_version(
@@ -314,9 +327,16 @@ fn fluent_adapts_names_links_and_identifiers_across_kmip_versions() {
     client_send.set_protocol_version(ProtocolVersion::V3_0);
     let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::ping()));
     let encoded_req = decode_request_message_for_test(batch, &limits).expect("encode batch");
-    assert_eq!(encoded_req.header().protocol_version(), ProtocolVersion::V2_1);
+    assert_eq!(
+        encoded_req.header().protocol_version(),
+        ProtocolVersion::V2_1
+    );
 
-    let pong = client_send.request().ping().execute().expect("v3.0 ping succeeds");
+    let pong = client_send
+        .request()
+        .ping()
+        .execute()
+        .expect("v3.0 ping succeeds");
     assert_eq!(pong.result().status(), ResultStatus::from_raw(0));
 }
 

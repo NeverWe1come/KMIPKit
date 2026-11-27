@@ -11,9 +11,9 @@ use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value};
 
 use crate::named_values_generated::values::{
     enumeration::{
-        certificate_type, cryptographic_algorithm, derivation_method, digital_signature_algorithm,
-        hashing_algorithm, key_format_type, padding_method, recommended_curve, secret_data_type,
-        block_cipher_mode,
+        block_cipher_mode, certificate_type, cryptographic_algorithm, derivation_method,
+        digital_signature_algorithm, hashing_algorithm, key_format_type, padding_method,
+        recommended_curve, secret_data_type,
     },
     versions::v3_0::enumeration::{
         cryptographic_algorithm as v3_cryptographic_algorithm, kem_algorithm as v3_kem_algorithm,
@@ -21,8 +21,8 @@ use crate::named_values_generated::values::{
 };
 use crate::typed_attributes::typed;
 use crate::{
-    Attribute, AttributeDefinition, AttributeSet, AttributeValueError, Authentication,
-    Certificate, Credential, CredentialType, CredentialValidationError, CryptographicAlgorithm,
+    Attribute, AttributeDefinition, AttributeSet, AttributeValueError, Authentication, Certificate,
+    Credential, CredentialType, CredentialValidationError, CryptographicAlgorithm,
     CryptographicParameters, CryptographicParametersBuilder, DerivationMethod,
     DerivationParameters, HashingAlgorithm, KeyBlock, KeyBlockValue, KeyFormatType, KeyMaterial,
     KeyValue, LinkNormalizer, LinkType, ManagedObject, ManagedObjectError, OpaqueObject,
@@ -309,48 +309,81 @@ impl KeySpec {
             Self::MlDsa44 => asym(v3_cryptographic_algorithm::ML_DSA_44, 1312 * 8, None, V3_0),
             Self::MlDsa65 => asym(v3_cryptographic_algorithm::ML_DSA_65, 1952 * 8, None, V3_0),
             Self::MlDsa87 => asym(v3_cryptographic_algorithm::ML_DSA_87, 2592 * 8, None, V3_0),
-            Self::SlhDsaSha2_128s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_128S, 128, None, V3_0)
-            }
-            Self::SlhDsaSha2_128f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_128F, 128, None, V3_0)
-            }
-            Self::SlhDsaSha2_192s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_192S, 192, None, V3_0)
-            }
-            Self::SlhDsaSha2_192f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_192F, 192, None, V3_0)
-            }
-            Self::SlhDsaSha2_256s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_256S, 256, None, V3_0)
-            }
-            Self::SlhDsaSha2_256f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHA2_256F, 256, None, V3_0)
-            }
-            Self::SlhDsaShake128s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_128S, 128, None, V3_0)
-            }
-            Self::SlhDsaShake128f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_128F, 128, None, V3_0)
-            }
-            Self::SlhDsaShake192s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_192S, 192, None, V3_0)
-            }
-            Self::SlhDsaShake192f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_192F, 192, None, V3_0)
-            }
-            Self::SlhDsaShake256s => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_256S, 256, None, V3_0)
-            }
-            Self::SlhDsaShake256f => {
-                asym(v3_cryptographic_algorithm::SLH_DSA_SHAKE_256F, 256, None, V3_0)
-            }
-            Self::X25519MlKem768 => asym(
-                v3_cryptographic_algorithm::X25519MLKEM768,
-                768,
+            Self::SlhDsaSha2_128s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_128S,
+                128,
                 None,
                 V3_0,
             ),
+            Self::SlhDsaSha2_128f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_128F,
+                128,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaSha2_192s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_192S,
+                192,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaSha2_192f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_192F,
+                192,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaSha2_256s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_256S,
+                256,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaSha2_256f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHA2_256F,
+                256,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake128s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_128S,
+                128,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake128f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_128F,
+                128,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake192s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_192S,
+                192,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake192f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_192F,
+                192,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake256s => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_256S,
+                256,
+                None,
+                V3_0,
+            ),
+            Self::SlhDsaShake256f => asym(
+                v3_cryptographic_algorithm::SLH_DSA_SHAKE_256F,
+                256,
+                None,
+                V3_0,
+            ),
+            Self::X25519MlKem768 => {
+                asym(v3_cryptographic_algorithm::X25519MLKEM768, 768, None, V3_0)
+            }
             Self::Secp256r1MlKem768 => asym(
                 v3_cryptographic_algorithm::SECP256R1MLKEM768,
                 768,
@@ -937,7 +970,9 @@ pub fn decode_pem(pem: &str) -> Result<PemBlock, PresetError> {
 pub fn decode_pem_der(pem: &str, expected_labels: &[&str]) -> Result<Vec<u8>, PresetError> {
     let block = decode_pem(pem)?;
     if !expected_labels.is_empty()
-        && !expected_labels.iter().any(|allowed| *allowed == block.label)
+        && !expected_labels
+            .iter()
+            .any(|allowed| *allowed == block.label)
     {
         return Err(PresetError::InvalidPem("unexpected PEM header label"));
     }
@@ -959,7 +994,9 @@ fn extract_pem_bounds<'a>(
         }
     }
     let Some(label) = start_label else {
-        return Err(PresetError::InvalidPem("missing -----BEGIN <LABEL>----- line"));
+        return Err(PresetError::InvalidPem(
+            "missing -----BEGIN <LABEL>----- line",
+        ));
     };
     let expected_end = format!("-----END {label}-----");
     let mut body = Vec::new();
@@ -978,7 +1015,9 @@ fn extract_pem_bounds<'a>(
         }
     }
     if !found_end {
-        return Err(PresetError::InvalidPem("missing matching -----END <LABEL>----- line"));
+        return Err(PresetError::InvalidPem(
+            "missing matching -----END <LABEL>----- line",
+        ));
     }
     Ok((label.to_owned(), body))
 }
@@ -1060,7 +1099,8 @@ fn build_key_block(
     let mut block = KeyBlock::try_new(KeyFormatType::from_raw(format_raw))?
         .with_key_value(KeyBlockValue::Plaintext(key_value));
     if let Some(spec) = spec {
-        block = block.with_cryptographic_properties(Some(spec.algorithm().raw()), Some(spec.length()));
+        block =
+            block.with_cryptographic_properties(Some(spec.algorithm().raw()), Some(spec.length()));
     }
     Ok(block)
 }
@@ -1073,7 +1113,9 @@ impl ManagedObject {
     /// [`PresetError::InvalidKeyLength`] if `bytes.len()` does not match `spec.length() / 8`.
     pub fn symmetric_key_bytes(spec: KeySpec, bytes: Vec<u8>) -> Result<Self, PresetError> {
         if !spec.is_symmetric() {
-            return Err(PresetError::IncompatibleKeySpec("expected symmetric KeySpec"));
+            return Err(PresetError::IncompatibleKeySpec(
+                "expected symmetric KeySpec",
+            ));
         }
         let expected = usize::try_from(spec.length() / 8).unwrap_or(0);
         if bytes.len() != expected {
@@ -1092,7 +1134,9 @@ impl ManagedObject {
     /// Returns [`PresetError`] if `spec` is symmetric or `der` is empty.
     pub fn private_key_pkcs8_der(spec: KeySpec, der: Vec<u8>) -> Result<Self, PresetError> {
         if !spec.is_asymmetric() {
-            return Err(PresetError::IncompatibleKeySpec("expected asymmetric KeySpec"));
+            return Err(PresetError::IncompatibleKeySpec(
+                "expected asymmetric KeySpec",
+            ));
         }
         if der.is_empty() {
             return Err(PresetError::EmptyInput);
@@ -1116,7 +1160,9 @@ impl ManagedObject {
     /// Returns [`PresetError`] if `spec` is symmetric or `der` is empty.
     pub fn public_key_spki_der(spec: KeySpec, der: Vec<u8>) -> Result<Self, PresetError> {
         if !spec.is_asymmetric() {
-            return Err(PresetError::IncompatibleKeySpec("expected asymmetric KeySpec"));
+            return Err(PresetError::IncompatibleKeySpec(
+                "expected asymmetric KeySpec",
+            ));
         }
         if der.is_empty() {
             return Err(PresetError::EmptyInput);
@@ -1205,10 +1251,15 @@ fn ttlv_item(raw_tag: u32, value: Value) -> Result<Item, PresetError> {
     Item::new(tag, value).map_err(|_| PresetError::InvalidTtlv)
 }
 
-fn build_credential(credential_type: CredentialType, value_fields: Vec<Item>) -> Result<Credential, PresetError> {
+fn build_credential(
+    credential_type: CredentialType,
+    value_fields: Vec<Item>,
+) -> Result<Credential, PresetError> {
     let mut val_struct = Structure::new();
     for field in value_fields {
-        val_struct.try_push(field).map_err(|_| PresetError::InvalidTtlv)?;
+        val_struct
+            .try_push(field)
+            .map_err(|_| PresetError::InvalidTtlv)?;
     }
     let mut cred_struct = Structure::new();
     cred_struct
@@ -1218,7 +1269,10 @@ fn build_credential(credential_type: CredentialType, value_fields: Vec<Item>) ->
         )?)
         .map_err(|_| PresetError::InvalidTtlv)?;
     cred_struct
-        .try_push(ttlv_item(CREDENTIAL_VALUE_TAG, Value::structure(val_struct))?)
+        .try_push(ttlv_item(
+            CREDENTIAL_VALUE_TAG,
+            Value::structure(val_struct),
+        )?)
         .map_err(|_| PresetError::InvalidTtlv)?;
     Ok(Credential::try_from_ttlv(cred_struct)?)
 }
@@ -1291,7 +1345,10 @@ impl Authentication {
             .try_push(ttlv_item(TICKET_TYPE_TAG, Value::enumeration(ticket_type))?)
             .map_err(|_| PresetError::InvalidTtlv)?;
         ticket_fields
-            .try_push(ttlv_item(TICKET_VALUE_TAG, Value::byte_string(ticket_value))?)
+            .try_push(ttlv_item(
+                TICKET_VALUE_TAG,
+                Value::byte_string(ticket_value),
+            )?)
             .map_err(|_| PresetError::InvalidTtlv)?;
         let cred = build_credential(
             CredentialType::Ticket,
@@ -1317,8 +1374,14 @@ impl Authentication {
             CredentialType::HashedPassword,
             vec![
                 ttlv_item(USERNAME_TAG, Value::text_string(username.to_owned()))?,
-                ttlv_item(TIME_STAMP_TAG, Value::date_time_extended(timestamp_unix_seconds))?,
-                ttlv_item(HASHING_ALGORITHM_TAG, Value::enumeration(hashing_algorithm.raw()))?,
+                ttlv_item(
+                    TIME_STAMP_TAG,
+                    Value::date_time_extended(timestamp_unix_seconds),
+                )?,
+                ttlv_item(
+                    HASHING_ALGORITHM_TAG,
+                    Value::enumeration(hashing_algorithm.raw()),
+                )?,
                 ttlv_item(HASHED_PASSWORD_TAG, Value::byte_string(hashed_password))?,
             ],
         )?;
@@ -1621,8 +1684,7 @@ impl AttributesBuilder {
         }
         let mut set = AttributeSet::new();
         for item in items {
-            set.try_push(item)
-                .map_err(|_| PresetError::InvalidTtlv)?;
+            set.try_push(item).map_err(|_| PresetError::InvalidTtlv)?;
         }
         Ok(set)
     }

@@ -5484,10 +5484,9 @@ impl ClientBuilder {
         let transport_config = if let Some(tc) = self.transport_config.take() {
             tc
         } else {
-            let endpoint = self
-                .endpoint
-                .take()
-                .ok_or_else(|| transport_configuration_error(TransportConfigError::InvalidEndpoint))?;
+            let endpoint = self.endpoint.take().ok_or_else(|| {
+                transport_configuration_error(TransportConfigError::InvalidEndpoint)
+            })?;
             let mut builder = TransportConfig::builder(endpoint);
             if let Some(target) = self.target_uri.take() {
                 builder = builder.target_uri(target);
@@ -5527,12 +5526,16 @@ impl ClientBuilder {
             } else {
                 let cert_input = match (self.client_cert_input.take(), self.client_cert.take()) {
                     (Some(input), _) => Some(input),
-                    (None, Some(src)) => Some(src.into_input().map_err(transport_configuration_error)?),
+                    (None, Some(src)) => {
+                        Some(src.into_input().map_err(transport_configuration_error)?)
+                    }
                     (None, None) => None,
                 };
                 let key_input = match (self.client_key_input.take(), self.client_key.take()) {
                     (Some(input), _) => Some(input),
-                    (None, Some(src)) => Some(src.into_input().map_err(transport_configuration_error)?),
+                    (None, Some(src)) => {
+                        Some(src.into_input().map_err(transport_configuration_error)?)
+                    }
                     (None, None) => None,
                 };
                 match (cert_input, key_input) {
@@ -6176,7 +6179,6 @@ impl Client {
     }
 
     /// Starts an ergonomic [`ClientBuilder`] for configuring and constructing a [`Client`].
-    #[must_use]
     pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
     }
@@ -6327,15 +6329,16 @@ impl Client {
         } else {
             preferred
         };
-        let discover_req =
-            kmipkit_protocol::DiscoverVersionsRequest::with_versions(candidates.to_vec())
-                .map_err(|error| {
-                    ClientError::validation(
-                        ClientCauseCategory::InvalidInput,
-                        RequestDeliveryState::NotSent,
-                        error,
-                    )
-                })?;
+        let discover_req = kmipkit_protocol::DiscoverVersionsRequest::with_versions(
+            candidates.to_vec(),
+        )
+        .map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
         let item = self.send_one_with_async_indicator(
             ClientRequest::DiscoverVersions(discover_req),
             None,

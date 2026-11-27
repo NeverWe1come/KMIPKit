@@ -1,4 +1,4 @@
-//! Unit tests verifying Fase 3 domain namespaces, KeyRef, presets, and high-level models.
+//! Unit tests verifying Fase 3 domain namespaces, `KeyRef`, presets, and high-level models.
 
 use kmipkit_protocol::{
     AttributesBuilder, CipherSpec, HashAlgorithm, KdfSpec, KemSpec, KeySpec, MacSpec,
@@ -11,6 +11,7 @@ use crate::execute_test_support::{asynchronous_response_bytes, test_structure};
 use crate::fluent::{CryptographicUsageMask, FluentBuildError};
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn domain_namespaces_and_key_ref_build_expected_requests() {
     let ok = asynchronous_response_bytes(0x0000_003b, 0, None, None, Some(test_structure([])));
     let (mut client, _, _) = client_for(ExchangeScript::Success {
@@ -28,15 +29,14 @@ fn domain_namespaces_and_key_ref_build_expected_requests() {
         .expect("aes256 spec builds");
     assert_eq!(sym_item.operation(), 0x0000_0001);
 
-    let err = match client
+    let Err(err) = client
         .keys()
         .create_symmetric()
         .with_key_spec(KeySpec::Rsa2048)
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .build_request()
-    {
-        Ok(_) => panic!("asymmetric spec must be rejected on symmetric builder"),
-        Err(err) => err,
+    else {
+        panic!("asymmetric spec must be rejected on symmetric builder");
     };
     assert_eq!(err, FluentBuildError::InvalidAttributeValue);
 
@@ -135,10 +135,42 @@ fn domain_namespaces_and_key_ref_build_expected_requests() {
         .to_batch_item();
     assert_eq!(decap.operation(), 0x0000_0042);
 
-    assert_eq!(client.certificates().get("cert-1").to_batch_item().operation(), 0x0000_000A);
-    assert_eq!(client.secrets().obtain_lease("sec-1").to_batch_item().unwrap().operation(), 0x0000_0010);
-    assert_eq!(client.attributes().get_list("k-1").to_batch_item().unwrap().operation(), 0x0000_000C);
-    assert_eq!(client.sessions().login().to_batch_item().operation(), 0x0000_002D);
-    assert_eq!(client.admin().ping().to_batch_item().operation(), 0x0000_003B);
-    assert_eq!(client.async_ops().query().to_batch_item().operation(), 0x0000_0039);
+    assert_eq!(
+        client
+            .certificates()
+            .get("cert-1")
+            .to_batch_item()
+            .operation(),
+        0x0000_000A
+    );
+    assert_eq!(
+        client
+            .secrets()
+            .obtain_lease("sec-1")
+            .to_batch_item()
+            .unwrap()
+            .operation(),
+        0x0000_0010
+    );
+    assert_eq!(
+        client
+            .attributes()
+            .get_list("k-1")
+            .to_batch_item()
+            .unwrap()
+            .operation(),
+        0x0000_000C
+    );
+    assert_eq!(
+        client.sessions().login().to_batch_item().operation(),
+        0x0000_002D
+    );
+    assert_eq!(
+        client.admin().ping().to_batch_item().operation(),
+        0x0000_003B
+    );
+    assert_eq!(
+        client.async_ops().query().to_batch_item().operation(),
+        0x0000_0039
+    );
 }
