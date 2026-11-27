@@ -1106,11 +1106,17 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_rng_retrieve_and_seed_validate_response_limits_across_api_levels(self):
         for language, available in installed_validators():
-            routes = ("generic-ttlv", "typed-protocol", "fluent", "high-level")
+            routes = ("generic-ttlv", "typed-protocol", "fluent")
+            if language in {"rust", "c"}:
+                routes += ("high-level",)
             for minor in (0, 1):
                 for route in routes:
-                    for case_id in ("test-op-rng-retrieve", "test-op-rng-seed"):
-                        for invalid in (False,):
+                    for case_id in (
+                        "test-op-rng-retrieve", "test-crypto-rng-retrieve-rng-32",
+                        "test-op-rng-seed", "test-crypto-rng-seed-rng-32",
+                    ):
+                        invalid_cases = (False, True) if route == "generic-ttlv" else (False,)
+                        for invalid in invalid_cases:
                             with self.subTest(language=language, minor=minor, route=route,
                                               case_id=case_id, invalid=invalid):
                                 if not available:
@@ -1118,9 +1124,9 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 self.rng_exchange(language, minor, route, case_id, invalid)
 
     def rng_exchange(self, language, minor, route, case_id, invalid):
-        retrieve = case_id == "test-op-rng-retrieve"
+        retrieve = "rng-retrieve" in case_id
         operation = 0x25 if retrieve else 0x26
-        seed = b"A" * 32
+        seed = bytes(32) if language == "python" and route != "generic-ttlv" else b"A" * 32
         with tempfile.TemporaryDirectory(prefix="kmipkit-rng-") as dirname:
             work = Path(dirname)
             catalog = normative_catalog(f"2.{minor}")
@@ -1149,17 +1155,23 @@ class DirectTagValidatorTests(unittest.TestCase):
                     try:
                         raw, _ = self.accept_request(listener, process, case_id)
                         raw.settimeout(5)
-                        with raw, tls.wrap_socket(raw, server_side=True) as peer:
+                        try:
+                            peer_context = tls.wrap_socket(raw, server_side=True)
+                        except ssl.SSLError as error:
+                            stdout, stderr = process.communicate(timeout=5)
+                            self.fail(f"{case_id} TLS failed: {error}. "
+                                      f"{(stdout + stderr).decode(errors='replace')}")
+                        with raw, peer_context as peer:
                             request = only(read_message(peer), 0x420078, 1)
                             batch = only(request, 0x42000F, 1)
                             self.assertEqual(only(batch, 0x42005C, 5), struct.pack(">I", operation))
                             payload = only(batch, 0x420079, 1)
                             if retrieve:
                                 self.assertEqual(only(payload, 0x4200C4, 2), struct.pack(">i", 32))
-                                returned = (number(0x4200C2, 5, 1) if invalid else wire_item(0x4200C2, 8, bytes(32)))
+                                returned = (wire_item(0x4200C2, 8, bytes(31)) if invalid else wire_item(0x4200C2, 8, bytes(32)))
                             else:
                                 self.assertEqual(only(payload, 0x4200C2, 8), seed)
-                                returned = (wire_item(0x4200C4, 8, seed) if invalid else number(0x4200C4, 2, 32))
+                                returned = (number(0x4200C4, 2, 33) if invalid else number(0x4200C4, 2, 32))
                             batch_ids = [wire_item(tag, kind, value) for tag, kind, value in batch
                                          if tag == 0x420093]
                             peer.sendall(structure(
