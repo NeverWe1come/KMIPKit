@@ -541,5 +541,9 @@ mod set_endpoint_role_execution_tests;
 mod fluent_phase1_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_parity64_tests.rs"]
+mod fluent_parity64_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/test_support_tests.rs"]
 mod test_support_tests;

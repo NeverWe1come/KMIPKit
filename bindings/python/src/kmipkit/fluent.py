@@ -610,6 +610,82 @@ class Request:
     ) -> ModifyAttributeBuilder:
         return ModifyAttributeBuilder(self._client, unique_identifier)
 
+    def adjust_attribute(
+        self, unique_identifier: extensions.UniqueIdentifier | str | None = None
+    ) -> AdjustAttributeBuilder:
+        return AdjustAttributeBuilder(self._client, unique_identifier)
+
+    def get_constraints(self) -> GetConstraintsBuilder:
+        return GetConstraintsBuilder(self._client)
+
+    def cancel(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> CancelBuilder:
+        return CancelBuilder(self._client, correlation_value)
+
+    def poll(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> PollBuilder:
+        return PollBuilder(self._client, correlation_value)
+
+    def process(
+        self, correlation_value: bytes | bytearray | memoryview | None = None
+    ) -> ProcessBuilder:
+        return ProcessBuilder(self._client, correlation_value)
+
+    def query_async_requests(self) -> QueryAsyncRequestsBuilder:
+        return QueryAsyncRequestsBuilder(self._client)
+
+    def login(self) -> LoginBuilder:
+        return LoginBuilder(self._client)
+
+    def logout(self, ticket: ttlv.Structure | None = None) -> LogoutBuilder:
+        return LogoutBuilder(self._client, ticket)
+
+    def delegated_login(
+        self, rights: ttlv.Structure | None = None
+    ) -> DelegatedLoginBuilder:
+        return DelegatedLoginBuilder(self._client, rights)
+
+    def set_endpoint_role(
+        self, endpoint_role: int | None = None, vendor_identification: str | None = None
+    ) -> SetEndpointRoleBuilder:
+        builder = SetEndpointRoleBuilder(self._client, endpoint_role)
+        if vendor_identification is not None:
+            builder.vendor_identification(vendor_identification)
+        return builder
+
+    def pkcs11(self, function: ttlv.Structure | None = None) -> Pkcs11Builder:
+        return Pkcs11Builder(self._client, function)
+
+    def interop(
+        self,
+        interop_function: int | None = None,
+        interop_identifier: str | bytes | bytearray | memoryview | None = None,
+    ) -> InteropBuilder:
+        return InteropBuilder(self._client, interop_function, interop_identifier)
+
+    def reprovision(self) -> ReProvisionBuilder:
+        return ReProvisionBuilder(self._client)
+
+    def set_defaults(
+        self, defaults_information: ttlv.Structure | None = None
+    ) -> SetDefaultsBuilder:
+        builder = SetDefaultsBuilder(self._client)
+        if defaults_information is not None:
+            builder.defaults_information(defaults_information)
+        return builder
+
+    def set_constraints(
+        self, constraints: ttlv.Structure | None = None
+    ) -> SetConstraintsBuilder:
+        return SetConstraintsBuilder(self._client, constraints)
+
+    def log(
+        self, log_message: str | bytes | bytearray | memoryview | None = None
+    ) -> LogBuilder:
+        return LogBuilder(self._client, log_message)
+
 
 class LocateBuilder:
     """Typed KMIP 2.1 Locate request with an explicit validated Attributes filter."""
@@ -4406,10 +4482,537 @@ class ModifyAttributeBuilder(_TypedOperationBuilder):
         )
 
 
+class AdjustAttributeBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Adjust Attribute request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        unique_identifier: extensions.UniqueIdentifier | str | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._unique_identifier = (
+            None if unique_identifier is None else _normalize_identifier(unique_identifier)
+        )
+        self._attribute_reference: extensions.AttributeReference | None = None
+        self._adjustment_type: int | None = None
+        self._adjustment_value: ttlv.Value | None = None
+
+    def unique_identifier(self, value: extensions.UniqueIdentifier | str | None) -> Self:
+        self._ensure_open()
+        self._unique_identifier = _normalize_identifier(value)
+        return self
+
+    def attribute_reference(self, value: extensions.AttributeReference) -> Self:
+        self._ensure_open()
+        self._attribute_reference = value
+        return self
+
+    def adjustment_type(self, value: int) -> Self:
+        self._ensure_open()
+        self._adjustment_type = _unsigned(value, 32)
+        return self
+
+    def adjustment_value(self, value: ttlv.Value | None) -> Self:
+        self._ensure_open()
+        self._adjustment_value = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._attribute_reference is None or self._adjustment_type is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_adjust_attribute(
+                self._unique_identifier,
+                self._attribute_reference,
+                self._adjustment_type,
+                self._adjustment_value,
+            )
+        )
+
+
+class GetConstraintsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Get Constraints request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(extensions.client_batch_item_get_constraints())
+
+
+class CancelBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Cancel request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.CancelRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_cancel_from_request(req))
+
+
+class PollBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Poll request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.PollRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_poll_from_request(req))
+
+
+class ProcessBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Process request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        correlation_value: bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._correlation_value: bytes | None = (
+            None if correlation_value is None else bytes(correlation_value)
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._correlation_value = bytes(value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._correlation_value is None:
+            errors.raise_for_status(4)
+        with extensions.ProcessRequest.create(self._correlation_value) as req:
+            return self._validated(extensions.client_batch_item_process_from_request(req))
+
+
+class QueryAsyncRequestsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Query Asynchronous Requests request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._correlation_values: list[bytes] | None = None
+        self._operations: list[int] | None = None
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        if self._correlation_values is None:
+            self._correlation_values = []
+        self._correlation_values.append(bytes(value))
+        return self
+
+    def correlation_values(self, values: Sequence[bytes | bytearray | memoryview]) -> Self:
+        self._ensure_open()
+        self._correlation_values = [bytes(v) for v in values]
+        return self
+
+    def operation(self, operation: int) -> Self:
+        self._ensure_open()
+        if self._operations is None:
+            self._operations = []
+        self._operations.append(_unsigned(operation, 32))
+        return self
+
+    def operations(self, operations: Sequence[int]) -> Self:
+        self._ensure_open()
+        self._operations = [_unsigned(op, 32) for op in operations]
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        req = extensions.QueryAsyncRequestsRequest.create()
+        try:
+            if self._correlation_values is not None:
+                next_req = req.with_correlation_values(self._correlation_values)
+                req.close()
+                req = next_req
+            if self._operations is not None:
+                next_req = req.with_operations(self._operations)
+                req.close()
+                req = next_req
+            return self._validated(
+                extensions.client_batch_item_query_async_requests_from_request(req)
+            )
+        finally:
+            req.close()
+
+
+class LoginBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Login request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._lease_time_interval: int | None = None
+        self._lease_time_date_time: int | None = None
+        self._request_count: int | None = None
+        self._usage_limits: ttlv.Structure | None = None
+
+    def lease_time_interval(self, seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_interval = None if seconds is None else _unsigned(seconds, 32)
+        self._lease_time_date_time = None
+        return self
+
+    def lease_time_date_time(self, unix_seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_date_time = unix_seconds
+        self._lease_time_interval = None
+        return self
+
+    def request_count(self, count: int | None) -> Self:
+        self._ensure_open()
+        self._request_count = count
+        return self
+
+    def usage_limits(self, value: ttlv.Structure | None) -> Self:
+        self._usage_limits = self._replace_structure(self._usage_limits, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_login(
+                lease_time_interval=self._lease_time_interval,
+                lease_time_date_time=self._lease_time_date_time,
+                request_count=self._request_count,
+                usage_limits=self._usage_limits,
+            )
+        )
+
+
+class LogoutBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Logout request."""
+
+    def __init__(
+        self, client: Client | None = None, ticket: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._ticket: ttlv.Structure | None = None
+        if ticket is not None:
+            self.ticket(ticket)
+
+    def ticket(self, value: ttlv.Structure) -> Self:
+        self._ticket = self._replace_structure(self._ticket, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._ticket is None:
+            errors.raise_for_status(4)
+        return self._validated(extensions.client_batch_item_logout(self._ticket))
+
+
+class DelegatedLoginBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Delegated Login request."""
+
+    def __init__(
+        self, client: Client | None = None, rights: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._rights: ttlv.Structure | None = None
+        if rights is not None:
+            self.rights(rights)
+        self._lease_time_interval: int | None = None
+        self._lease_time_date_time: int | None = None
+        self._request_count: int | None = None
+        self._usage_limits: ttlv.Structure | None = None
+
+    def rights(self, value: ttlv.Structure) -> Self:
+        self._rights = self._replace_structure(self._rights, value)
+        return self
+
+    def lease_time_interval(self, seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_interval = None if seconds is None else _unsigned(seconds, 32)
+        self._lease_time_date_time = None
+        return self
+
+    def lease_time_date_time(self, unix_seconds: int | None) -> Self:
+        self._ensure_open()
+        self._lease_time_date_time = unix_seconds
+        self._lease_time_interval = None
+        return self
+
+    def request_count(self, count: int | None) -> Self:
+        self._ensure_open()
+        self._request_count = count
+        return self
+
+    def usage_limits(self, value: ttlv.Structure | None) -> Self:
+        self._usage_limits = self._replace_structure(self._usage_limits, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._rights is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_delegated_login(
+                self._rights,
+                lease_time_interval=self._lease_time_interval,
+                lease_time_date_time=self._lease_time_date_time,
+                request_count=self._request_count,
+                usage_limits=self._usage_limits,
+            )
+        )
+
+
+class SetEndpointRoleBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Endpoint Role request."""
+
+    def __init__(
+        self, client: Client | None = None, endpoint_role: int | None = None
+    ) -> None:
+        super().__init__(client)
+        self._endpoint_role: int | None = (
+            None if endpoint_role is None else _unsigned(endpoint_role, 32)
+        )
+        self._vendor_identification: str | bytes | bytearray | memoryview | None = None
+
+    def endpoint_role(self, value: int) -> Self:
+        self._ensure_open()
+        self._endpoint_role = _unsigned(value, 32)
+        return self
+
+    def vendor_identification(
+        self, value: str | bytes | bytearray | memoryview | None
+    ) -> Self:
+        self._ensure_open()
+        self._vendor_identification = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._endpoint_role is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_set_endpoint_role(
+                self._endpoint_role, self._vendor_identification
+            )
+        )
+
+
+class Pkcs11Builder(_TypedOperationBuilder):
+    """Fluent typed KMIP PKCS#11 request."""
+
+    def __init__(
+        self, client: Client | None = None, function: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._function: ttlv.Structure | None = None
+        if function is not None:
+            self.function(function)
+        self._interface: ttlv.Structure | None = None
+        self._correlation_value: bytes | None = None
+        self._input_parameters: ttlv.Structure | None = None
+        self._extensions: list[ttlv.TtlvItem] = []
+
+    def function(self, value: ttlv.Structure) -> Self:
+        self._function = self._replace_structure(self._function, value)
+        return self
+
+    def interface(self, value: ttlv.Structure | None) -> Self:
+        self._interface = self._replace_structure(self._interface, value)
+        return self
+
+    def correlation_value(self, value: bytes | bytearray | memoryview | None) -> Self:
+        self._ensure_open()
+        self._correlation_value = None if value is None else bytes(value)
+        return self
+
+    def input_parameters(self, value: ttlv.Structure | None) -> Self:
+        self._input_parameters = self._replace_structure(self._input_parameters, value)
+        return self
+
+    def extension(self, item: ttlv.TtlvItem) -> Self:
+        self._ensure_open()
+        self._extensions.append(item)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._function is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_pkcs11(
+                self._function,
+                self._interface,
+                self._correlation_value,
+                self._input_parameters,
+                payload_extensions=self._extensions,
+            )
+        )
+
+
+class InteropBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Interop request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        interop_function: int | None = None,
+        interop_identifier: str | bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._interop_function: int | None = (
+            None if interop_function is None else _unsigned(interop_function, 32)
+        )
+        self._interop_identifier = interop_identifier
+
+    def interop_function(self, value: int) -> Self:
+        self._ensure_open()
+        self._interop_function = _unsigned(value, 32)
+        return self
+
+    def interop_identifier(self, value: str | bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._interop_identifier = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._interop_function is None or self._interop_identifier is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_interop(
+                self._interop_function, self._interop_identifier
+            )
+        )
+
+
+class ReProvisionBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Re-Provision request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._certificate_request: ttlv.Structure | None = None
+        self._certificate: ttlv.Structure | None = None
+
+    def certificate_request(self, value: ttlv.Structure | None) -> Self:
+        self._certificate_request = self._replace_structure(self._certificate_request, value)
+        return self
+
+    def certificate(self, value: ttlv.Structure | None) -> Self:
+        self._certificate = self._replace_structure(self._certificate, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_reprovision(
+                self._certificate_request, self._certificate
+            )
+        )
+
+
+class SetDefaultsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Defaults request."""
+
+    def __init__(self, client: Client | None = None) -> None:
+        super().__init__(client)
+        self._defaults_information: ttlv.Structure | None = None
+
+    def defaults_information(self, value: ttlv.Structure | None) -> Self:
+        self._defaults_information = self._replace_structure(
+            self._defaults_information, value
+        )
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        return self._validated(
+            extensions.client_batch_item_set_defaults(self._defaults_information)
+        )
+
+
+class SetConstraintsBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Set Constraints request."""
+
+    def __init__(
+        self, client: Client | None = None, constraints: ttlv.Structure | None = None
+    ) -> None:
+        super().__init__(client)
+        self._constraints: ttlv.Structure | None = None
+        if constraints is not None:
+            self.constraints(constraints)
+
+    def constraints(self, value: ttlv.Structure) -> Self:
+        self._constraints = self._replace_structure(self._constraints, value)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._constraints is None:
+            errors.raise_for_status(4)
+        return self._validated(
+            extensions.client_batch_item_set_constraints(self._constraints)
+        )
+
+
+class LogBuilder(_TypedOperationBuilder):
+    """Fluent typed KMIP Log request."""
+
+    def __init__(
+        self,
+        client: Client | None = None,
+        log_message: str | bytes | bytearray | memoryview | None = None,
+    ) -> None:
+        super().__init__(client)
+        self._log_message = log_message
+
+    def log_message(self, value: str | bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        self._log_message = value
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        if self._log_message is None:
+            errors.raise_for_status(4)
+        return self._validated(extensions.client_batch_item_log(self._log_message))
+
+
 __all__ = [
     "ActivateBuilder",
     "AddAttributeBuilder",
+    "AdjustAttributeBuilder",
     "ArchiveBuilder",
+    "CancelBuilder",
     "CertifyBuilder",
     "CheckBuilder",
     "CreateBuilder",
@@ -4421,8 +5024,9 @@ __all__ = [
     "CreateUserBuilder",
     "DeactivateBuilder",
     "DecapsulateBuilder",
-    "DeleteAttributeBuilder",
     "DecryptBuilder",
+    "DelegatedLoginBuilder",
+    "DeleteAttributeBuilder",
     "DeriveKeyBuilder",
     "DiscoverVersionsBuilder",
     "EncapsulateBuilder",
@@ -4431,11 +5035,16 @@ __all__ = [
     "GetAttributeListBuilder",
     "GetAttributesBuilder",
     "GetBuilder",
+    "GetConstraintsBuilder",
     "GetUsageAllocationBuilder",
     "HashBuilder",
     "ImportBuilder",
+    "InteropBuilder",
     "JoinSplitKeyBuilder",
     "LocateBuilder",
+    "LogBuilder",
+    "LoginBuilder",
+    "LogoutBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
     "ModifyAttributeBuilder",
@@ -4443,7 +5052,12 @@ __all__ = [
     "ObtainLeaseBuilder",
     "Operation",
     "PingBuilder",
+    "Pkcs11Builder",
+    "PollBuilder",
+    "ProcessBuilder",
+    "QueryAsyncRequestsBuilder",
     "QueryBuilder",
+    "ReProvisionBuilder",
     "RecertifyBuilder",
     "RecoverBuilder",
     "RegisterBuilder",
@@ -4454,6 +5068,9 @@ __all__ = [
     "RngRetrieveBuilder",
     "RngSeedBuilder",
     "SetAttributeBuilder",
+    "SetConstraintsBuilder",
+    "SetDefaultsBuilder",
+    "SetEndpointRoleBuilder",
     "SignBuilder",
     "SignatureVerifyBuilder",
     "SymmetricKeyBuilder",

@@ -61,23 +61,29 @@ macro_rules! fluent_option_field_setters {
     };
 }
 
-mod execution;
 mod admin;
+mod async_ops;
 mod attributes;
 mod crypto;
+mod execution;
 mod keys;
 mod kmip30;
 mod lifecycle;
+mod sessions;
 
 use crate::Client;
 use kmipkit_protocol::{
-    AttributeSet, CreateCredentialObject, RevocationReason, UniqueIdentifier,
+    AttributeSet, CreateCredentialObject, EndpointRole, RevocationReason, SecretBytes, Ticket,
+    UniqueIdentifier,
 };
 
 pub use admin::{
     CheckBuilder, DiscoverVersionsBuilder, GetConstraintsBuilder, GetUsageAllocationBuilder,
-    ObtainLeaseBuilder, PingBuilder, QueryBuilder, RngRetrieveBuilder, RngSeedBuilder,
+    InteropBuilder, LogBuilder, ObtainLeaseBuilder, PingBuilder, Pkcs11Builder, QueryBuilder,
+    ReProvisionBuilder, RngRetrieveBuilder, RngSeedBuilder, SetConstraintsBuilder,
+    SetDefaultsBuilder,
 };
+pub use async_ops::{CancelBuilder, PollBuilder, ProcessBuilder, QueryAsyncRequestsBuilder};
 pub use attributes::{
     AddAttributeBuilder, AdjustAttributeBuilder, DeleteAttributeBuilder, GetAttributeListBuilder,
     GetAttributesBuilder, ModifyAttributeBuilder, SetAttributeBuilder,
@@ -91,15 +97,19 @@ pub use execution::{
 };
 pub use keys::{
     CreateBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder,
-    DeriveKeyBuilder, RegisterBuilder,
+    DeriveKeyBuilder, ExportBuilder, ImportBuilder, JoinSplitKeyBuilder, RegisterBuilder,
 };
 pub use kmip30::{
     CreateCredentialBuilder, CreateGroupBuilder, CreateUserBuilder, DeactivateBuilder,
     DecapsulateBuilder, EncapsulateBuilder, ObliterateBuilder,
 };
 pub use lifecycle::{
-    ActivateBuilder, ArchiveBuilder, DestroyBuilder, GetBuilder, LocateBuilder, RecertifyBuilder,
-    RecoverBuilder, RekeyBuilder, RekeyKeyPairBuilder, RevokeBuilder,
+    ActivateBuilder, ArchiveBuilder, CertifyBuilder, DestroyBuilder, GetBuilder, LocateBuilder,
+    RecertifyBuilder, RecoverBuilder, RekeyBuilder, RekeyKeyPairBuilder, RevokeBuilder,
+    ValidateBuilder,
+};
+pub use sessions::{
+    DelegatedLoginBuilder, LoginBuilder, LogoutBuilder, SetEndpointRoleBuilder,
 };
 
 /// A scoped fluent namespace borrowed from a mutable client.
@@ -420,6 +430,120 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn ping(self) -> PingBuilder<'a> {
         PingBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Certify request (§6.1.6).
+    #[must_use]
+    pub fn certify(self) -> CertifyBuilder<'a> {
+        CertifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Validate request (§6.1.57).
+    #[must_use]
+    pub fn validate(self) -> ValidateBuilder<'a> {
+        ValidateBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Cancel request for Pending correlation bytes (§6.1.5).
+    #[must_use]
+    pub fn cancel(self, correlation_value: SecretBytes) -> CancelBuilder<'a> {
+        CancelBuilder::new(self.client, correlation_value)
+    }
+
+    /// Begins constructing a typed Poll request for Pending correlation bytes (§6.1.38).
+    #[must_use]
+    pub fn poll(self, correlation_value: SecretBytes) -> PollBuilder<'a> {
+        PollBuilder::new(self.client, correlation_value)
+    }
+
+    /// Begins constructing a typed Process request for Pending correlation bytes (§6.1.39).
+    #[must_use]
+    pub fn process(self, correlation_value: SecretBytes) -> ProcessBuilder<'a> {
+        ProcessBuilder::new(self.client, correlation_value)
+    }
+
+    /// Begins constructing a typed Query Asynchronous Requests request (§6.1.41).
+    #[must_use]
+    pub fn query_async_requests(self) -> QueryAsyncRequestsBuilder<'a> {
+        QueryAsyncRequestsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Join Split Key request (§6.1.27).
+    #[must_use]
+    pub fn join_split_key(self) -> JoinSplitKeyBuilder<'a> {
+        JoinSplitKeyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Import request (§6.1.25).
+    #[must_use]
+    pub fn import_object(self) -> ImportBuilder<'a> {
+        ImportBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Export request (§6.1.18).
+    #[must_use]
+    pub fn export(self) -> ExportBuilder<'a> {
+        ExportBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Log request (§6.1.29).
+    #[must_use]
+    pub fn log(self, log_message: &str) -> LogBuilder<'a> {
+        LogBuilder::new(self.client, log_message)
+    }
+
+    /// Begins constructing a typed Login request (§6.1.30).
+    #[must_use]
+    pub fn login(self) -> LoginBuilder<'a> {
+        LoginBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Logout request (§6.1.31).
+    #[must_use]
+    pub fn logout(self, ticket: Ticket) -> LogoutBuilder<'a> {
+        LogoutBuilder::new(self.client, ticket)
+    }
+
+    /// Begins constructing a typed Delegated Login request (§6.1.12).
+    #[must_use]
+    pub fn delegated_login(self) -> DelegatedLoginBuilder<'a> {
+        DelegatedLoginBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Set Endpoint Role request (§6.1.54).
+    #[must_use]
+    pub fn set_endpoint_role(self, role: EndpointRole) -> SetEndpointRoleBuilder<'a> {
+        SetEndpointRoleBuilder::new(self.client, role)
+    }
+
+    /// Begins constructing a typed PKCS#11 forwarding request (§6.1.37).
+    #[must_use]
+    pub fn pkcs11(self) -> Pkcs11Builder<'a> {
+        Pkcs11Builder::new(self.client)
+    }
+
+    /// Begins constructing a typed Interop request (§6.1.26).
+    #[must_use]
+    pub fn interop(self, interop_function: u32, interop_identifier: &str) -> InteropBuilder<'a> {
+        InteropBuilder::new(self.client, interop_function, interop_identifier)
+    }
+
+    /// Begins constructing a typed Re-Provision request (§6.1.48).
+    #[must_use]
+    pub fn reprovision(self) -> ReProvisionBuilder<'a> {
+        ReProvisionBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Set Defaults request (§6.1.53).
+    #[must_use]
+    pub fn set_defaults(self) -> SetDefaultsBuilder<'a> {
+        SetDefaultsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Set Constraints request (§6.1.52).
+    #[must_use]
+    pub fn set_constraints(self) -> SetConstraintsBuilder<'a> {
+        SetConstraintsBuilder::new(self.client)
     }
 }
 

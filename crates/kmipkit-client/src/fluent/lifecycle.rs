@@ -3,15 +3,15 @@
 
 use kmipkit_protocol::{
     ActivateRequest, ActivateResponse, ArchiveRequest, ArchiveResponse, AttributeSet,
-    DestroyRequest, DestroyResponse, GetRequest, GetResponse, KeyCompressionType, KeyFormatType,
-    KeyWrapType, LocateRequest, LocateResponse, ObjectClassMask, ObjectGroupMember, ProtocolVersion,
-    RecertifyRequest, RecertifyResponse, RecoverRequest, RecoverResponse, RekeyKeyPairRequest,
-    RekeyKeyPairResponse, RekeyRequest, RekeyResponse, RevocationReason, RevokeRequest,
-    RevokeResponse, SecretBytes, StorageStatusMask,
-    UniqueIdentifier, ValidateKmipRequest, ValidationReport,
+    CertifyRequest, CertifyResponse, DestroyRequest, DestroyResponse, GetRequest, GetResponse,
+    KeyCompressionType, KeyFormatType, KeyWrapType, LocateRequest, LocateResponse, ObjectClassMask,
+    ObjectGroupMember, ProtocolVersion, RecertifyRequest, RecertifyResponse, RecoverRequest,
+    RecoverResponse, RekeyKeyPairRequest, RekeyKeyPairResponse, RekeyRequest, RekeyResponse,
+    RevocationReason, RevokeRequest, RevokeResponse, SecretBytes, StorageStatusMask,
+    UniqueIdentifier, ValidateKmipRequest, ValidateRequest, ValidateResponse, ValidationReport,
 };
 use kmipkit_transport::RequestOptions;
-use kmipkit_ttlv::Structure;
+use kmipkit_ttlv::{Item, Structure};
 
 use crate::{
     Client, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome, ClientError,
@@ -19,7 +19,9 @@ use crate::{
 };
 
 use super::execution::{
-    FluentBuildError, effective_protocol_version, execute_fluent_outcome, execute_fluent_request, fluent_client_validation_error, normalize_uid_for_version, unwrap_typed_outcome, validate_fluent_request,
+    FluentBuildError, FluentBuilderExecution, effective_protocol_version, execute_fluent_outcome,
+    execute_fluent_request, fluent_client_validation_error, normalize_uid_for_version,
+    unwrap_typed_outcome, validate_fluent_request,
 };
 
 /// A fluent builder for an existing typed Get request.
@@ -1864,5 +1866,393 @@ impl<'a> RecertifyBuilder<'a> {
         limits: &kmipkit_ttlv::codec::CodecLimits,
     ) -> Result<ClientBatchItemResponse, ClientError> {
         self.state.run(limits)
+    }
+}
+
+/// A fluent builder for KMIP Certify requests (§6.1.6, Table 179).
+pub struct CertifyBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    certificate_request_type: Option<u32>,
+    certificate_request_value: Option<SecretBytes>,
+    attributes: Option<Structure>,
+    protection_storage_masks: Option<Structure>,
+}
+
+impl<'a> CertifyBuilder<'a> {
+    pub(super) fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            unique_identifier: None,
+            certificate_request_type: None,
+            certificate_request_value: None,
+            attributes: None,
+            protection_storage_masks: None,
+        }
+    }
+
+    /// Sets the Unique Identifier of the public key or certificate request to certify.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
+        let version = self.execution.protocol_version();
+        self.unique_identifier = Some(normalize_uid_for_version(value.into(), version));
+        self
+    }
+
+    /// Sets the raw Certificate Request Type enumeration code.
+    #[must_use]
+    pub const fn certificate_request_type(mut self, value: u32) -> Self {
+        self.certificate_request_type = Some(value);
+        self
+    }
+
+    /// Sets the Certificate Request Value bytes (PKCS#10/CMC/CMP/etc.).
+    #[must_use]
+    pub fn certificate_request_value(mut self, value: SecretBytes) -> Self {
+        self.certificate_request_value = Some(value);
+        self
+    }
+
+    /// Sets the optional ordered Attributes Structure.
+    #[must_use]
+    pub fn attributes(mut self, attributes: Structure) -> Self {
+        self.attributes = Some(attributes);
+        self
+    }
+
+    /// Sets the optional Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the KMIP protocol version override for this request/exchange.
+    #[must_use]
+    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.execution = self.execution.with_protocol_version(version);
+        if let Some(uid) = self.unique_identifier.take() {
+            self.unique_identifier = Some(normalize_uid_for_version(uid, version));
+        }
+        self
+    }
+
+    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the typed Certify request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed request validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let mut request = CertifyRequest::new();
+        if let Some(uid) = &self.unique_identifier {
+            request = request.with_unique_identifier(uid.clone());
+        }
+        if let Some(value) = self.certificate_request_type {
+            request = request.with_certificate_request_type(value);
+        }
+        if let Some(secret) = &self.certificate_request_value {
+            let copy = secret.with_bytes(|bytes| SecretBytes::new(bytes.to_vec()));
+            request = request.with_certificate_request_value(copy);
+        }
+        validate_fluent_request(&request)
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(CertifyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let mut request = CertifyRequest::new();
+        if let Some(uid) = self.unique_identifier {
+            request = request.with_unique_identifier(uid);
+        }
+        if let Some(value) = self.certificate_request_type {
+            request = request.with_certificate_request_type(value);
+        }
+        if let Some(secret) = self.certificate_request_value {
+            request = request.with_certificate_request_value(secret);
+        }
+        if let Some(attributes) = self.attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = self.protection_storage_masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, self.execution))
+    }
+
+    /// Builds the typed [`CertifyRequest`] without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn build(self) -> Result<CertifyRequest, FluentBuildError> {
+        self.into_request_and_execution().map(|(req, _)| req)
+    }
+
+    /// Converts Certify to a typed [`ClientBatchItem`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|req| ClientBatchItem::new(ClientRequest::Certify(req)))
+    }
+
+    /// Executes one Certify exchange and returns [`CertifyResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation, protocol, transport, `ServerResult`, or `Pending` error.
+    pub fn execute(self) -> Result<CertifyResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_typed(
+            ClientRequest::Certify(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Certify(resp) => Some(resp),
+                _ => None,
+            },
+            CertifyResponse::result,
+        )
+    }
+
+    /// Executes one Certify exchange and returns the raw [`ClientBatchItemResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_outcome(ClientRequest::Certify(req))
+    }
+
+    /// Executes one Certify exchange with explicit [`CodecLimits`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome_with_limits(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Certify(req), limits)
+    }
+}
+
+/// A fluent builder for KMIP Validate requests (§6.1.57, Table 340).
+pub struct ValidateBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    certificates: Vec<Structure>,
+    identifiers: Vec<UniqueIdentifier>,
+    extensions: Vec<Item>,
+    validity_date: Option<i64>,
+}
+
+impl<'a> ValidateBuilder<'a> {
+    pub(super) fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            certificates: Vec::new(),
+            identifiers: Vec::new(),
+            extensions: Vec::new(),
+            validity_date: None,
+        }
+    }
+
+    /// Appends a Certificate Structure to validate.
+    #[must_use]
+    pub fn certificate(mut self, certificate: Structure) -> Self {
+        self.certificates.push(certificate);
+        self
+    }
+
+    /// Appends a Managed Certificate Unique Identifier to validate.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
+        let version = self.execution.protocol_version();
+        self.identifiers
+            .push(normalize_uid_for_version(value.into(), version));
+        self
+    }
+
+    /// Sets the optional Validity Date evaluation timestamp (Unix seconds).
+    #[must_use]
+    pub const fn validity_date(mut self, unix_seconds: i64) -> Self {
+        self.validity_date = Some(unix_seconds);
+        self
+    }
+
+    /// Appends a generic TTLV extension Item to the Validate request payload.
+    #[must_use]
+    pub fn extension(mut self, extension: Item) -> Self {
+        self.extensions.push(extension);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the KMIP protocol version override for this request/exchange.
+    #[must_use]
+    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.execution = self.execution.with_protocol_version(version);
+        self.identifiers = self
+            .identifiers
+            .into_iter()
+            .map(|uid| normalize_uid_for_version(uid, version))
+            .collect();
+        self
+    }
+
+    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the typed Validate request without consuming `self`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed chain validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let mut request = ValidateRequest::new();
+        for cert in &self.certificates {
+            let copy = cert
+                .view()
+                .try_clone()
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            request = request.with_certificate(copy);
+        }
+        for uid in &self.identifiers {
+            request = request.with_unique_identifier(uid.clone());
+        }
+        if let Some(date) = self.validity_date {
+            request = request.with_validity_date(date);
+        }
+        validate_fluent_request(&request)
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(ValidateRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let mut request = ValidateRequest::new();
+        for cert in self.certificates {
+            request = request.with_certificate(cert);
+        }
+        for uid in self.identifiers {
+            request = request.with_unique_identifier(uid);
+        }
+        for ext in self.extensions {
+            request = request.with_extension(ext);
+        }
+        if let Some(date) = self.validity_date {
+            request = request.with_validity_date(date);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, self.execution))
+    }
+
+    /// Builds the typed [`ValidateRequest`] without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn build(self) -> Result<ValidateRequest, FluentBuildError> {
+        self.into_request_and_execution().map(|(req, _)| req)
+    }
+
+    /// Converts Validate to a typed [`ClientBatchItem`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|req| ClientBatchItem::new(ClientRequest::Validate(req)))
+    }
+
+    /// Executes one Validate exchange and returns [`ValidateResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation, protocol, transport, `ServerResult`, or `Pending` error.
+    pub fn execute(self) -> Result<ValidateResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_typed(
+            ClientRequest::Validate(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Validate(resp) => Some(resp),
+                _ => None,
+            },
+            ValidateResponse::result,
+        )
+    }
+
+    /// Executes one Validate exchange and returns the raw [`ClientBatchItemResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_outcome(ClientRequest::Validate(req))
+    }
+
+    /// Executes one Validate exchange with explicit [`CodecLimits`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome_with_limits(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Validate(req), limits)
     }
 }

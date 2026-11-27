@@ -150,6 +150,22 @@ pub enum FluentBuildError {
     MissingRegisterObject,
     /// Register's object or context is invalid.
     InvalidRegisterObject,
+    /// Import is missing its required Unique Identifier.
+    MissingImportUniqueIdentifier,
+    /// Import is missing its Object Type.
+    MissingImportObjectType,
+    /// Import is missing its payload object.
+    MissingImportObject,
+    /// Join Split Key is missing its Object Type.
+    MissingJoinSplitKeyObjectType,
+    /// Join Split Key requires at least one Split Key Reference.
+    MissingJoinSplitKeyReferences,
+    /// Delegated Login requires a Rights structure.
+    MissingDelegatedLoginRights,
+    /// PKCS#11 requires a Function structure.
+    MissingPkcs11Function,
+    /// Set Constraints requires a Constraints structure.
+    MissingSetConstraints,
     /// Set Attribute is missing its required New Attribute.
     MissingSetAttributeAttribute,
     /// Add Attribute is missing its required New Attribute.
@@ -221,6 +237,16 @@ impl fmt::Display for FluentBuildError {
             Self::MissingRngSeedData => "RNG Seed requires secret Data",
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
+            Self::MissingImportUniqueIdentifier => "Import requires Unique Identifier",
+            Self::MissingImportObjectType => "Import requires Object Type",
+            Self::MissingImportObject => "Import requires an object",
+            Self::MissingJoinSplitKeyObjectType => "Join Split Key requires Object Type",
+            Self::MissingJoinSplitKeyReferences => {
+                "Join Split Key requires at least one Split Key reference"
+            }
+            Self::MissingDelegatedLoginRights => "Delegated Login requires Rights",
+            Self::MissingPkcs11Function => "PKCS#11 requires Function",
+            Self::MissingSetConstraints => "Set Constraints requires Constraints",
             Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
             Self::MissingAddAttributeAttribute => "Add Attribute requires one New Attribute",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",

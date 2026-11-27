@@ -2750,7 +2750,7 @@ fn is_exact_fluent_builder_explicit_value(
             Some("CreateSplitKeyBuilder"),
             "prime_field_size" | "protection_storage_masks"
         ) | (
-            Some("CreateBuilder" | "RegisterBuilder"),
+            Some("CreateBuilder" | "RegisterBuilder" | "JoinSplitKeyBuilder"),
             "protection_storage_masks"
         ) | (Some("DeactivateBuilder"), "deactivation_reason")
     );
@@ -2797,7 +2797,12 @@ fn is_exact_fluent_builder_explicit_value(
         "protection_storage_masks" => {
             matches!(
                 impl_type,
-                Some("CreateBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder")
+                Some(
+                    "CreateBuilder"
+                        | "CreateSplitKeyBuilder"
+                        | "RegisterBuilder"
+                        | "JoinSplitKeyBuilder"
+                )
             ) && is_plain_type_path(&argument.ty, "Structure")
         }
         _ => false,
@@ -2815,8 +2820,25 @@ fn is_exact_fluent_operation_ttlv_value(
             Some("RekeyKeyPairBuilder"),
             "common_attributes" | "private_key_attributes" | "public_key_attributes",
         ) => "AttributeSet",
-        (Some("GetBuilder"), "key_wrapping_specification")
-        | (Some("RekeyBuilder" | "RecertifyBuilder"), "attributes" | "protection_storage_masks")
+        (Some("ImportBuilder"), "object")
+        | (Some("LogBuilder" | "InteropBuilder" | "Pkcs11Builder" | "ValidateBuilder"), "extension") => {
+            "Item"
+        }
+        (Some("GetBuilder" | "ExportBuilder"), "key_wrapping_specification")
+        | (
+            Some("RekeyBuilder" | "RecertifyBuilder" | "CertifyBuilder"),
+            "attributes" | "protection_storage_masks",
+        )
+        | (Some("ValidateBuilder" | "ReProvisionBuilder"), "certificate")
+        | (Some("ReProvisionBuilder"), "certificate_request")
+        | (Some("SetDefaultsBuilder"), "defaults_information")
+        | (Some("SetConstraintsBuilder"), "constraints")
+        | (Some("LoginBuilder" | "DelegatedLoginBuilder"), "usage_limits")
+        | (Some("DelegatedLoginBuilder"), "rights")
+        | (
+            Some("Pkcs11Builder"),
+            "function" | "interface" | "input_parameters",
+        )
         | (
             Some("RekeyKeyPairBuilder"),
             "common_protection_storage_masks"

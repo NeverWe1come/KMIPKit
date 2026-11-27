@@ -6,9 +6,10 @@ use kmipkit_protocol::{
     Attribute, AttributeDefinition, AttributeSet,
     CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, ManagedObject, ObjectType, OpaqueObjectContext,
-    ProtocolVersion,
-    RegisterRequest, SecretBytes, SplitKeyMethod, UniqueIdentifier,
+    DerivationParameters, DeriveKeyRequest, ExportRequest, ExportResponse, ImportRequest,
+    ImportResponse, JoinSplitKeyRequest, JoinSplitKeyResponse, KeyCompressionType, KeyFormatType,
+    KeyWrapType, ManagedObject, ObjectType, OpaqueObjectContext, ProtocolVersion,
+    RegisterRequest, SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
     ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
@@ -1923,4 +1924,639 @@ fn append_key_pair_attributes(
         )?; // COVERAGE-EXCLUDE: cloned AttributeSet Item was already validated.
     }
     Ok(())
+}
+
+/// A fluent builder for KMIP Export requests (§6.1.18, Table 217).
+pub struct ExportBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    key_format_type: Option<KeyFormatType>,
+    key_wrap_type: Option<KeyWrapType>,
+    key_compression_type: Option<KeyCompressionType>,
+    key_wrapping_specification: Option<Structure>,
+}
+
+impl<'a> ExportBuilder<'a> {
+    pub(super) fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            unique_identifier: None,
+            key_format_type: None,
+            key_wrap_type: None,
+            key_compression_type: None,
+            key_wrapping_specification: None,
+        }
+    }
+
+    /// Selects the object identifier to export (omitted uses the KMIP ID Placeholder).
+    #[must_use]
+    pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
+        let version = self.execution.protocol_version();
+        self.unique_identifier = Some(normalize_uid_for_version(value.into(), version));
+        self
+    }
+
+    /// Sets the requested Key Format Type.
+    #[must_use]
+    pub const fn key_format_type(mut self, value: KeyFormatType) -> Self {
+        self.key_format_type = Some(value);
+        self
+    }
+
+    /// Sets the raw KMIP Key Format Type code.
+    #[must_use]
+    pub const fn key_format_type_code(self, value: u32) -> Self {
+        self.key_format_type(KeyFormatType::from_raw(value))
+    }
+
+    /// Sets the requested Key Wrap Type.
+    #[must_use]
+    pub const fn key_wrap_type(mut self, value: KeyWrapType) -> Self {
+        self.key_wrap_type = Some(value);
+        self
+    }
+
+    /// Sets the requested Key Compression Type.
+    #[must_use]
+    pub const fn key_compression_type(mut self, value: KeyCompressionType) -> Self {
+        self.key_compression_type = Some(value);
+        self
+    }
+
+    /// Sets the optional Key Wrapping Specification Structure.
+    #[must_use]
+    pub fn key_wrapping_specification(mut self, value: Structure) -> Self {
+        self.key_wrapping_specification = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the KMIP protocol version override for this request/exchange.
+    #[must_use]
+    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.execution = self.execution.with_protocol_version(version);
+        if let Some(uid) = self.unique_identifier.take() {
+            self.unique_identifier = Some(normalize_uid_for_version(uid, version));
+        }
+        self
+    }
+
+    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates the typed Export request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if typed request validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let mut request = ExportRequest::new();
+        if let Some(uid) = &self.unique_identifier {
+            request = request.with_unique_identifier(uid.clone());
+        }
+        if let Some(value) = self.key_format_type {
+            request = request.with_key_format_type(value);
+        }
+        if let Some(value) = self.key_wrap_type {
+            request = request.with_key_wrap_type(value);
+        }
+        if let Some(value) = self.key_compression_type {
+            request = request.with_key_compression_type(value);
+        }
+        validate_fluent_request(&request)
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(ExportRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let mut request = ExportRequest::new();
+        if let Some(uid) = self.unique_identifier {
+            request = request.with_unique_identifier(uid);
+        }
+        if let Some(value) = self.key_format_type {
+            request = request.with_key_format_type(value);
+        }
+        if let Some(value) = self.key_wrap_type {
+            request = request.with_key_wrap_type(value);
+        }
+        if let Some(value) = self.key_compression_type {
+            request = request.with_key_compression_type(value);
+        }
+        if let Some(spec) = self.key_wrapping_specification {
+            request = request.with_key_wrapping_specification(spec);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, self.execution))
+    }
+
+    /// Builds the typed [`ExportRequest`] without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn build(self) -> Result<ExportRequest, FluentBuildError> {
+        self.into_request_and_execution().map(|(req, _)| req)
+    }
+
+    /// Converts Export to a typed [`ClientBatchItem`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if typed request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|req| ClientBatchItem::new(ClientRequest::Export(req)))
+    }
+
+    /// Executes one Export exchange and returns the unwrapped [`ExportResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation, protocol, transport, `ServerResult`, or `Pending` error.
+    pub fn execute(self) -> Result<ExportResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_typed(
+            ClientRequest::Export(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Export(resp) => Some(resp),
+                _ => None,
+            },
+            ExportResponse::result,
+        )
+    }
+
+    /// Executes one Export exchange and returns the raw [`ClientBatchItemResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_outcome(ClientRequest::Export(req))
+    }
+
+    /// Executes one Export exchange with explicit [`CodecLimits`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome_with_limits(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Export(req), limits)
+    }
+}
+
+/// A fluent builder for KMIP Import requests (§6.1.25, Table 238).
+pub struct ImportBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    object_type: Option<ObjectType>,
+    replace_existing: Option<bool>,
+    key_wrap_type: Option<KeyWrapType>,
+    attributes: AttributeSet,
+    object: Option<Item>,
+    managed_object: Option<ManagedObject>,
+}
+
+impl<'a> ImportBuilder<'a> {
+    pub(super) fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            unique_identifier: None,
+            object_type: None,
+            replace_existing: None,
+            key_wrap_type: None,
+            attributes: AttributeSet::new(),
+            object: None,
+            managed_object: None,
+        }
+    }
+
+    /// Sets the required Unique Identifier for the imported object.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: impl Into<UniqueIdentifier>) -> Self {
+        let version = self.execution.protocol_version();
+        self.unique_identifier = Some(normalize_uid_for_version(value.into(), version));
+        self
+    }
+
+    /// Sets the explicit KMIP Object Type.
+    #[must_use]
+    pub const fn object_type(mut self, value: ObjectType) -> Self {
+        self.object_type = Some(value);
+        self
+    }
+
+    /// Sets whether an existing object with the same identifier is replaced.
+    #[must_use]
+    pub const fn replace_existing(mut self, value: bool) -> Self {
+        self.replace_existing = Some(value);
+        self
+    }
+
+    /// Sets the optional Key Wrap Type for wrapped objects.
+    #[must_use]
+    pub const fn key_wrap_type(mut self, value: KeyWrapType) -> Self {
+        self.key_wrap_type = Some(value);
+        self
+    }
+
+    /// Sets the ordered Attributes to store with the imported object.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the raw Any Object TTLV item to import.
+    #[must_use]
+    pub fn object(mut self, object: Item) -> Self {
+        self.object = Some(object);
+        self.managed_object = None;
+        self
+    }
+
+    /// Sets a typed [`ManagedObject`] to import (automatically setting Object Type if unset).
+    #[must_use]
+    pub fn managed_object(mut self, object: ManagedObject) -> Self {
+        if self.object_type.is_none() {
+            self.object_type = Some(object.object_type());
+        }
+        self.managed_object = Some(object);
+        self.object = None;
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the KMIP protocol version override for this request/exchange.
+    #[must_use]
+    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.execution = self.execution.with_protocol_version(version);
+        if let Some(uid) = self.unique_identifier.take() {
+            self.unique_identifier = Some(normalize_uid_for_version(uid, version));
+        }
+        self
+    }
+
+    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates required builder inputs without consuming `self`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if identifier, object type, or object is missing.
+    pub const fn validate(&self) -> Result<(), FluentBuildError> {
+        if self.unique_identifier.is_none() {
+            return Err(FluentBuildError::MissingImportUniqueIdentifier);
+        }
+        if self.object.is_none() && self.managed_object.is_none() {
+            return Err(FluentBuildError::MissingImportObject);
+        }
+        if self.object.is_some() && self.object_type.is_none() {
+            return Err(FluentBuildError::MissingImportObjectType);
+        }
+        Ok(())
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(ImportRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let uid = self
+            .unique_identifier
+            .ok_or(FluentBuildError::MissingImportUniqueIdentifier)?;
+        let mut request = if let Some(managed) = self.managed_object {
+            ImportRequest::from_managed_object(uid, managed, self.attributes)
+        } else {
+            let object = self.object.ok_or(FluentBuildError::MissingImportObject)?;
+            let object_type = self
+                .object_type
+                .ok_or(FluentBuildError::MissingImportObjectType)?;
+            ImportRequest::new(uid, object_type, self.attributes, object)
+        };
+        if let Some(replace_existing) = self.replace_existing {
+            request = request.with_replace_existing(replace_existing);
+        }
+        if let Some(key_wrap_type) = self.key_wrap_type {
+            request = request.with_key_wrap_type(key_wrap_type);
+        }
+        Ok((request, self.execution))
+    }
+
+    /// Builds the typed [`ImportRequest`] without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if required fields are missing.
+    pub fn build(self) -> Result<ImportRequest, FluentBuildError> {
+        self.into_request_and_execution().map(|(req, _)| req)
+    }
+
+    /// Converts Import to a typed [`ClientBatchItem`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if required fields are missing.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|req| ClientBatchItem::new(ClientRequest::Import(req)))
+    }
+
+    /// Executes one Import exchange and returns the unwrapped [`ImportResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation, protocol, transport, `ServerResult`, or `Pending` error.
+    pub fn execute(self) -> Result<ImportResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_typed(
+            ClientRequest::Import(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::Import(resp) => Some(resp),
+                _ => None,
+            },
+            ImportResponse::result,
+        )
+    }
+
+    /// Executes one Import exchange and returns the raw [`ClientBatchItemResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_outcome(ClientRequest::Import(req))
+    }
+
+    /// Executes one Import exchange with explicit [`CodecLimits`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome_with_limits(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Import(req), limits)
+    }
+}
+
+/// A fluent builder for KMIP Join Split Key requests (§6.1.27, Table 244).
+pub struct JoinSplitKeyBuilder<'a> {
+    execution: FluentBuilderExecution<'a>,
+    object_type: Option<ObjectType>,
+    references: Vec<SplitKeyReference>,
+    secret_data_type: Option<u32>,
+    attributes: Option<AttributeSet>,
+    protection_storage_masks: Option<Structure>,
+}
+
+impl<'a> JoinSplitKeyBuilder<'a> {
+    pub(super) fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: FluentBuilderExecution::new(client),
+            object_type: None,
+            references: Vec::new(),
+            secret_data_type: None,
+            attributes: None,
+            protection_storage_masks: None,
+        }
+    }
+
+    /// Sets the target KMIP Object Type of the joined key.
+    #[must_use]
+    pub const fn object_type(mut self, value: ObjectType) -> Self {
+        self.object_type = Some(value);
+        self
+    }
+
+    /// Appends one [`SplitKeyReference`] preserving threshold metadata.
+    #[must_use]
+    pub fn reference(mut self, reference: SplitKeyReference) -> Self {
+        self.references.push(reference);
+        self
+    }
+
+    /// Appends multiple [`SplitKeyReference`] values in order.
+    #[must_use]
+    pub fn references(mut self, references: Vec<SplitKeyReference>) -> Self {
+        self.references.extend(references);
+        self
+    }
+
+    /// Appends a split-key Unique Identifier reference with threshold metadata.
+    #[must_use]
+    pub fn split_key_identifier(
+        mut self,
+        unique_identifier: impl Into<UniqueIdentifier>,
+        threshold: Option<u32>,
+    ) -> Self {
+        let version = self.execution.protocol_version();
+        let uid = normalize_uid_for_version(unique_identifier.into(), version);
+        let reference = match threshold {
+            Some(t) => SplitKeyReference::new(uid).with_split_key_threshold(t),
+            None => SplitKeyReference::new(uid),
+        };
+        self.references.push(reference);
+        self
+    }
+
+    /// Sets the optional Secret Data Type enumeration code.
+    #[must_use]
+    pub const fn secret_data_type(mut self, value: u32) -> Self {
+        self.secret_data_type = Some(value);
+        self
+    }
+
+    /// Sets optional output object Attributes.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = Some(attributes);
+        self
+    }
+
+    /// Sets optional Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the KMIP protocol version override for this request/exchange.
+    #[must_use]
+    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.execution = self.execution.with_protocol_version(version);
+        self
+    }
+
+    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
+    #[must_use]
+    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
+        self.with_protocol_version(version)
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    /// Validates required builder inputs without consuming `self`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if object type or references are missing.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        if self.object_type.is_none() {
+            return Err(FluentBuildError::MissingJoinSplitKeyObjectType);
+        }
+        if self.references.is_empty() {
+            return Err(FluentBuildError::MissingJoinSplitKeyReferences);
+        }
+        Ok(())
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(JoinSplitKeyRequest, FluentBuilderExecution<'a>), FluentBuildError> {
+        let object_type = self
+            .object_type
+            .ok_or(FluentBuildError::MissingJoinSplitKeyObjectType)?;
+        if self.references.is_empty() {
+            return Err(FluentBuildError::MissingJoinSplitKeyReferences);
+        }
+        let mut request = JoinSplitKeyRequest::new(object_type, self.references);
+        if let Some(secret_data_type) = self.secret_data_type {
+            request = request.with_secret_data_type(secret_data_type);
+        }
+        if let Some(attributes) = self.attributes {
+            request = request.with_attributes(attributes);
+        }
+        if let Some(masks) = self.protection_storage_masks {
+            request = request.with_protection_storage_masks(masks);
+        }
+        Ok((request, self.execution))
+    }
+
+    /// Builds the typed [`JoinSplitKeyRequest`] without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if required fields are missing.
+    pub fn build(self) -> Result<JoinSplitKeyRequest, FluentBuildError> {
+        self.into_request_and_execution().map(|(req, _)| req)
+    }
+
+    /// Converts Join Split Key to a typed [`ClientBatchItem`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] if required fields are missing.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|req| ClientBatchItem::new(ClientRequest::JoinSplitKey(req)))
+    }
+
+    /// Executes one Join Split Key exchange and returns [`JoinSplitKeyResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation, protocol, transport, `ServerResult`, or `Pending` error.
+    pub fn execute(self) -> Result<JoinSplitKeyResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_typed(
+            ClientRequest::JoinSplitKey(req),
+            |outcome| match outcome {
+                ClientBatchOutcome::JoinSplitKeyCompleted(resp) => Some(resp),
+                _ => None,
+            },
+            JoinSplitKeyResponse::result,
+        )
+    }
+
+    /// Executes one Join Split Key exchange and returns [`ClientBatchItemResponse`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome(self) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run_outcome(ClientRequest::JoinSplitKey(req))
+    }
+
+    /// Executes one Join Split Key exchange with explicit [`CodecLimits`].
+    ///
+    /// # Errors
+    ///
+    /// Returns validation, exchange, or decoding failures.
+    pub fn execute_outcome_with_limits(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (req, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::JoinSplitKey(req), limits)
+    }
 }
