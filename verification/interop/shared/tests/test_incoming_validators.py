@@ -1082,14 +1082,19 @@ class DirectTagValidatorTests(unittest.TestCase):
 
     def test_obtain_lease_validates_result_and_cleans_up(self):
         for language, available in installed_validators():
+            routes = ("generic-ttlv",)
             for minor in (0, 1):
-                for verdict in ("passed", "failed", "server_unsupported"):
-                    with self.subTest(language=language, minor=minor, verdict=verdict):
-                        if not available:
-                            self.skipTest(f"Installed {language} validator required")
-                        self.owned_key_exchange(language, minor, "test-op-obtain-lease", 16,
-                                                invalid=verdict == "failed",
-                                                unsupported=verdict == "server_unsupported")
+                for route in routes:
+                    verdicts = ("passed", "failed", "server_unsupported") if route == "generic-ttlv" else ("passed",)
+                    for verdict in verdicts:
+                        with self.subTest(language=language, minor=minor, route=route, verdict=verdict):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.owned_key_exchange(
+                                language, minor, "test-op-obtain-lease", 16,
+                                invalid=verdict == "failed", unsupported=verdict == "server_unsupported",
+                                route=route, normative=True,
+                            )
 
     def test_single_and_multipart_hash_across_api_levels(self):
         for language, available in installed_validators():
@@ -1292,12 +1297,21 @@ class DirectTagValidatorTests(unittest.TestCase):
                           f"{(stdout + stderr).decode(errors='replace')}")
             raise AssertionError(f"{stage} did not reach the peer") from error
 
-    def owned_key_exchange(self, language, minor, case_id, target, *, attribute=None, invalid=False, unsupported=False):
+    def owned_key_exchange(self, language, minor, case_id, target, *, attribute=None, invalid=False,
+                           unsupported=False, route="generic-ttlv", normative=False):
         tag, kind, value = attribute or (None, None, None)
         identifier = wire_item(0x420094, 7, b"owned-attribute-fixture")
         with tempfile.TemporaryDirectory(prefix="kmipkit-read-attributes-") as dirname:
             work = Path(dirname)
-            catalog_path = INTEROP / "shared/catalog/kmipkit-1.0-test-catalog.json"
+            if normative:
+                catalog = normative_catalog(f"2.{minor}")
+                cases = [case for case in catalog["test_cases"] if case["case_id"] == case_id]
+                self.assertEqual(len(cases), 1)
+                catalog = with_cases(catalog, cases)
+                catalog_path = work / "catalog.json"
+                catalog_path.write_text(json.dumps(catalog))
+            else:
+                catalog_path = INTEROP / "shared/catalog/kmipkit-1.0-test-catalog.json"
             profile = work / "profile.json"
             profile.write_text(json.dumps({"server": {"id": "controlled-fixture", "product": "controlled", "version": "1"}, "operations": {}}))
             report = work / "results.json"
@@ -1305,7 +1319,9 @@ class DirectTagValidatorTests(unittest.TestCase):
             with socket.create_server(("127.0.0.1", 0)) as listener:
                 listener.settimeout(5)
                 connection = work / "connection.json"
-                connection.write_text(json.dumps(connection_config(minor, listener.getsockname()[1], incoming=False)))
+                config = connection_config(minor, listener.getsockname()[1], incoming=False)
+                config["api_level"] = route
+                connection.write_text(json.dumps(config))
                 command += ["--catalog", str(catalog_path), "--connection", str(connection), "--case", case_id]
                 tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
                 tls.minimum_version = ssl.TLSVersion.TLSv1_3
@@ -1314,7 +1330,8 @@ class DirectTagValidatorTests(unittest.TestCase):
                 tls.load_cert_chain(PKI / "server-cert.pem", PKI / "server-key.pem")
                 with subprocess.Popen(command, cwd=work, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
                     try:
-                        for operation in (1, target, 20):
+                        operations = (1, target, 20)
+                        for operation in operations:
                             raw, _ = self.accept_request(listener, process, f"operation {operation}")
                             raw.settimeout(5)
                             with raw, tls.wrap_socket(raw, server_side=True) as channel:
@@ -1325,13 +1342,14 @@ class DirectTagValidatorTests(unittest.TestCase):
                                 if operation == 1:
                                     attributes = only(payload, 0x420125, 1)
                                     self.assertEqual(only(attributes, 0x420028, 5), struct.pack(">I", 3))
-                                    self.assertEqual(only(attributes, 0x42002A, 2), struct.pack(">I", 256))
-                                    self.assertEqual(only(attributes, 0x42002C, 2), struct.pack(">I", 4))
-                                    if kind == 6:
-                                        self.assertEqual(only(attributes, 0x420120, 6), struct.pack(">Q", 1))
-                                        self.assertEqual(only(attributes, 0x420122, 6), struct.pack(">Q", 0))
-                                    if kind == 7:
-                                        self.assertEqual(only(attributes, tag, kind), value)
+                                    if not normative:
+                                        self.assertEqual(only(attributes, 0x42002A, 2), struct.pack(">I", 256))
+                                        self.assertEqual(only(attributes, 0x42002C, 2), struct.pack(">I", 4))
+                                        if kind == 6:
+                                            self.assertEqual(only(attributes, 0x420120, 6), struct.pack(">Q", 1))
+                                            self.assertEqual(only(attributes, 0x420122, 6), struct.pack(">Q", 0))
+                                        if kind == 7:
+                                            self.assertEqual(only(attributes, tag, kind), value)
                                     fields = [number(0x420057, 5, 2), identifier]
                                 else:
                                     self.assertEqual(only(payload, 0x420094, 7), b"owned-attribute-fixture")
@@ -1374,7 +1392,13 @@ class DirectTagValidatorTests(unittest.TestCase):
                 self.assertEqual(evidence["result_reason_code"], 5)
             else:
                 self.assertEqual(evidence["status"], "failed" if invalid else "passed")
-            if not invalid:
+            if normative:
+                if route == "high-level":
+                    if evidence["status"] == "passed":
+                        self.assertEqual(evidence["actual_api_level"], route)
+                save_evidence(report, catalog_path,
+                              f"{language}-2.{minor}-{route}-{case_id}-{evidence['status']}")
+            if not invalid and not normative:
                 result = "unsupported" if unsupported else "success"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{case_id}-{result}")
 
