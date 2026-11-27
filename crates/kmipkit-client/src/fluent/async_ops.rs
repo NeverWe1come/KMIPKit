@@ -1,10 +1,9 @@
 //! Fluent builders for KMIP 2.1 asynchronous operation control requests.
 
 use kmipkit_protocol::{
-    CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, ProtocolVersion,
-    QueryAsyncRequestsRequest, SecretBytes,
+    CancelRequest, KmipOperationResult, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
+    SecretBytes,
 };
-use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
 
 use crate::{
@@ -36,32 +35,12 @@ impl<'a> CancelBuilder<'a> {
         }
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     /// Validates the typed Cancel request locally (always valid).
     ///
@@ -143,32 +122,12 @@ impl<'a> PollBuilder<'a> {
         }
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     /// Validates the typed Poll request locally (always valid).
     ///
@@ -250,32 +209,12 @@ impl<'a> ProcessBuilder<'a> {
         }
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     /// Validates the typed Process request locally (always valid).
     ///
@@ -387,32 +326,12 @@ impl<'a> QueryAsyncRequestsBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     /// Validates the typed Query Asynchronous Requests payload locally (always valid).
     ///

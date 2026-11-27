@@ -225,15 +225,14 @@ def _check_result_or_raise(item: BatchItemResult) -> BatchItemResult:
     return item
 
 
-def _execute_single_item(
+def _execute_single_batch(
     client: Client,
     build: Callable[[], extensions.ClientBatchItem],
     limits: ttlv.CodecLimits | None,
     configured_options: RequestOptions | None,
     asynchronous_indicator: int | None,
     options: RequestOptions | None = None,
-) -> Any:
-    """Execute one typed item, returning ``BatchResult`` when ``limits`` is passed or ``BatchItemResult`` otherwise."""
+) -> BatchResult:
     resolved_limits = _resolve_limits(client, limits)
     if options is not None and not isinstance(options, RequestOptions):
         errors.raise_for_status(4)
@@ -243,11 +242,25 @@ def _execute_single_item(
         if asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(asynchronous_indicator)
         selected_options = options if options is not None else configured_options
-        batch_result = (
+        return (
             client.execute_with_options(batch, resolved_limits, selected_options)
             if selected_options is not None
             else client.execute(batch, resolved_limits)
         )
+
+
+def _execute_single_item(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits | None,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> Any:
+    """Execute one typed item, returning ``BatchResult`` when ``limits`` is passed or ``BatchItemResult`` otherwise."""
+    batch_result = _execute_single_batch(
+        client, build, limits, configured_options, asynchronous_indicator, options
+    )
     if limits is not None:
         return batch_result
     with batch_result:
@@ -263,20 +276,9 @@ def _execute_single_outcome(
     options: RequestOptions | None = None,
 ) -> BatchItemResult:
     """Execute one typed item and return its single ``BatchItemResult`` without raising on server rejection/Pending."""
-    resolved_limits = _resolve_limits(client, limits)
-    if options is not None and not isinstance(options, RequestOptions):
-        errors.raise_for_status(4)
-    with Batch.create() as batch:
-        with build() as item:
-            batch.add_item(item)
-        if asynchronous_indicator is not None:
-            batch.set_asynchronous_indicator(asynchronous_indicator)
-        selected_options = options if options is not None else configured_options
-        batch_result = (
-            client.execute_with_options(batch, resolved_limits, selected_options)
-            if selected_options is not None
-            else client.execute(batch, resolved_limits)
-        )
+    batch_result = _execute_single_batch(
+        client, build, limits, configured_options, asynchronous_indicator, options
+    )
     with batch_result:
         return batch_result._take_single_item()
 

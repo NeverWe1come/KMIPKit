@@ -373,32 +373,12 @@ impl<'a> EncryptBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     fn into_request_and_execution(
         self,
@@ -583,32 +563,12 @@ impl<'a> DecryptBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     fn into_request_and_execution(
         self,
@@ -1543,32 +1503,12 @@ impl<'a> HashBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
-        self
-    }
-
-    /// Sets the KMIP protocol version override for this request/exchange.
-    #[must_use]
-    pub fn with_protocol_version(mut self, version: ProtocolVersion) -> Self {
-        self.execution = self.execution.with_protocol_version(version);
-        self
-    }
-
-    /// Sets the KMIP protocol version override (alias for [`Self::with_protocol_version`]).
-    #[must_use]
-    pub fn with_kmip_version(self, version: ProtocolVersion) -> Self {
-        self.with_protocol_version(version)
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
-        self
-    }
+    fluent_option_field_setters!(
+        "Sets exchange-local options without changing client policy.";
+        execution.options;
+        execution.asynchronous_indicator;
+        const
+    );
 
     fn into_request_and_execution(
         self,

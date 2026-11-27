@@ -21,7 +21,7 @@ def installed_file(member, destination):
     checked = tarfile.data_filter(member, destination)
     # Cargo builds these packages as path dependencies and uses source mtimes
     # to decide whether to recompile. Crate archives carry normalized mtimes.
-    return None if checked is None else checked.replace(mtime=None)
+    return checked.replace(mtime=None)
 
 
 def install():

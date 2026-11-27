@@ -222,59 +222,35 @@ pub use kmipkit_protocol::{
 };
 pub use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 
+type HandlerCallback<Req, Resp> =
+    Option<Box<dyn FnMut(&Req) -> Result<Resp, kmipkit_protocol::KmipOperationResult> + Send>>;
+
+#[derive(Default)]
+struct ServerHandlers {
+    on_discover_versions: HandlerCallback<
+        kmipkit_protocol::ServerDiscoverVersionsRequest,
+        kmipkit_protocol::ServerDiscoverVersionsResponse,
+    >,
+    on_notify: HandlerCallback<
+        kmipkit_protocol::ServerNotifyRequest,
+        kmipkit_protocol::ServerNotifyResponse,
+    >,
+    on_put:
+        HandlerCallback<kmipkit_protocol::ServerPutRequest, kmipkit_protocol::ServerPutResponse>,
+    on_query: HandlerCallback<
+        kmipkit_protocol::ServerQueryRequest,
+        kmipkit_protocol::ServerQueryResponse,
+    >,
+    on_set_endpoint_role: HandlerCallback<
+        kmipkit_protocol::SetEndpointRoleRequest,
+        kmipkit_protocol::SetEndpointRoleResponse,
+    >,
+}
+
 /// Closure-based builder implementing [`ServerRequestHandler`] for Server-to-Client listeners.
 #[derive(Default)]
 pub struct ServerHandlerBuilder {
-    on_discover_versions: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerDiscoverVersionsRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerDiscoverVersionsResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_notify: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerNotifyRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerNotifyResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_put: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerPutRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerPutResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_query: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerQueryRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerQueryResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_set_endpoint_role: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::SetEndpointRoleRequest,
-                ) -> Result<
-                    kmipkit_protocol::SetEndpointRoleResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
+    handlers: ServerHandlers,
 }
 
 impl ServerHandlerBuilder {
@@ -296,7 +272,7 @@ impl ServerHandlerBuilder {
         > + Send
         + 'static,
     ) -> Self {
-        self.on_discover_versions = Some(Box::new(handler));
+        self.handlers.on_discover_versions = Some(Box::new(handler));
         self
     }
 
@@ -312,7 +288,7 @@ impl ServerHandlerBuilder {
         > + Send
         + 'static,
     ) -> Self {
-        self.on_notify = Some(Box::new(handler));
+        self.handlers.on_notify = Some(Box::new(handler));
         self
     }
 
@@ -328,7 +304,7 @@ impl ServerHandlerBuilder {
         > + Send
         + 'static,
     ) -> Self {
-        self.on_put = Some(Box::new(handler));
+        self.handlers.on_put = Some(Box::new(handler));
         self
     }
 
@@ -344,7 +320,7 @@ impl ServerHandlerBuilder {
         > + Send
         + 'static,
     ) -> Self {
-        self.on_query = Some(Box::new(handler));
+        self.handlers.on_query = Some(Box::new(handler));
         self
     }
 
@@ -360,7 +336,7 @@ impl ServerHandlerBuilder {
         > + Send
         + 'static,
     ) -> Self {
-        self.on_set_endpoint_role = Some(Box::new(handler));
+        self.handlers.on_set_endpoint_role = Some(Box::new(handler));
         self
     }
 
@@ -368,67 +344,14 @@ impl ServerHandlerBuilder {
     #[must_use]
     pub fn build(self) -> ClosureServerHandler {
         ClosureServerHandler {
-            on_discover_versions: self.on_discover_versions,
-            on_notify: self.on_notify,
-            on_put: self.on_put,
-            on_query: self.on_query,
-            on_set_endpoint_role: self.on_set_endpoint_role,
+            handlers: self.handlers,
         }
     }
 }
 
 /// Built [`ServerRequestHandler`] backed by user-provided closures.
 pub struct ClosureServerHandler {
-    on_discover_versions: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerDiscoverVersionsRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerDiscoverVersionsResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_notify: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerNotifyRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerNotifyResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_put: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerPutRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerPutResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_query: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::ServerQueryRequest,
-                ) -> Result<
-                    kmipkit_protocol::ServerQueryResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
-    on_set_endpoint_role: Option<
-        Box<
-            dyn FnMut(
-                    &kmipkit_protocol::SetEndpointRoleRequest,
-                ) -> Result<
-                    kmipkit_protocol::SetEndpointRoleResponse,
-                    kmipkit_protocol::KmipOperationResult,
-                > + Send,
-        >,
-    >,
+    handlers: ServerHandlers,
 }
 
 fn unsupported_s2c_result() -> kmipkit_protocol::KmipOperationResult {
@@ -450,7 +373,8 @@ impl ServerRequestHandler for ClosureServerHandler {
         kmipkit_protocol::ServerDiscoverVersionsResponse,
         kmipkit_protocol::KmipOperationResult,
     > {
-        self.on_discover_versions
+        self.handlers
+            .on_discover_versions
             .as_mut()
             .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
     }
@@ -459,7 +383,8 @@ impl ServerRequestHandler for ClosureServerHandler {
         &mut self,
         request: &kmipkit_protocol::ServerNotifyRequest,
     ) -> Result<kmipkit_protocol::ServerNotifyResponse, kmipkit_protocol::KmipOperationResult> {
-        self.on_notify
+        self.handlers
+            .on_notify
             .as_mut()
             .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
     }
@@ -468,7 +393,8 @@ impl ServerRequestHandler for ClosureServerHandler {
         &mut self,
         request: &kmipkit_protocol::ServerPutRequest,
     ) -> Result<kmipkit_protocol::ServerPutResponse, kmipkit_protocol::KmipOperationResult> {
-        self.on_put
+        self.handlers
+            .on_put
             .as_mut()
             .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
     }
@@ -477,7 +403,8 @@ impl ServerRequestHandler for ClosureServerHandler {
         &mut self,
         request: &kmipkit_protocol::ServerQueryRequest,
     ) -> Result<kmipkit_protocol::ServerQueryResponse, kmipkit_protocol::KmipOperationResult> {
-        self.on_query
+        self.handlers
+            .on_query
             .as_mut()
             .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
     }
@@ -486,7 +413,8 @@ impl ServerRequestHandler for ClosureServerHandler {
         &mut self,
         request: &kmipkit_protocol::SetEndpointRoleRequest,
     ) -> Result<kmipkit_protocol::SetEndpointRoleResponse, kmipkit_protocol::KmipOperationResult> {
-        self.on_set_endpoint_role
+        self.handlers
+            .on_set_endpoint_role
             .as_mut()
             .map_or_else(|| Err(unsupported_s2c_result()), |cb| cb(request))
     }
