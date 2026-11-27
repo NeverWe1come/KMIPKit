@@ -1035,7 +1035,7 @@ fn decode_base64_lines(lines: &[&str]) -> Result<Vec<u8>, PresetError> {
         return Err(PresetError::InvalidBase64);
     }
     let mut out = Vec::with_capacity((clean.len() / 4) * 3);
-    for (chunk_idx, chunk) in clean.chunks_exact(4).enumerate() {
+    for (chunk_idx, chunk) in clean.as_chunks::<4>().0.iter().enumerate() {
         let is_last = chunk_idx + 1 == clean.len() / 4;
         decode_base64_quad(chunk, is_last, &mut out)?;
     }
