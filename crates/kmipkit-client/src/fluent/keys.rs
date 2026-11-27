@@ -173,8 +173,8 @@ impl<'a> CreateBuilder<'a> {
             .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::Create(request)))
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`CreateResponse`].
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`CreateResponse`](kmipkit_protocol::CreateResponse).
     ///
     /// # Errors
     /// Returns the validation, protocol, transport, `ServerResult`, or `Pending` error.
@@ -192,7 +192,7 @@ impl<'a> CreateBuilder<'a> {
         )
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -204,7 +204,7 @@ impl<'a> CreateBuilder<'a> {
         execution.run_outcome(ClientRequest::Create(request))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error
@@ -411,8 +411,8 @@ impl<'a> DeriveKeyBuilder<'a> {
             .map(|(request, _execution)| ClientBatchItem::new(ClientRequest::DeriveKey(request)))
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`DeriveKeyResponse`].
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`DeriveKeyResponse`](kmipkit_protocol::DeriveKeyResponse).
     ///
     /// # Errors
     /// Returns the validation, protocol, transport, `ServerResult`, or `Pending` error.
@@ -430,7 +430,7 @@ impl<'a> DeriveKeyBuilder<'a> {
         )
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -442,7 +442,7 @@ impl<'a> DeriveKeyBuilder<'a> {
         execution.run_outcome(ClientRequest::DeriveKey(request))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error
@@ -749,8 +749,8 @@ impl<'a> RegisterBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Register(request)))
     }
 
-    /// Executes one typed Register exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`RegisterResponse`].
+    /// Executes one typed Register exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`RegisterResponse`](kmipkit_protocol::RegisterResponse).
     ///
     /// # Errors
     ///
@@ -767,7 +767,7 @@ impl<'a> RegisterBuilder<'a> {
         )
     }
 
-    /// Executes one typed Register exchange using configured [`CodecLimits`]
+    /// Executes one typed Register exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -783,7 +783,7 @@ impl<'a> RegisterBuilder<'a> {
         )
     }
 
-    /// Executes one typed Register exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Register exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1053,8 +1053,8 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Create(request)))
     }
 
-    /// Executes one typed Create exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`CreateResponse`].
+    /// Executes one typed Create exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`CreateResponse`](kmipkit_protocol::CreateResponse).
     ///
     /// # Errors
     ///
@@ -1071,7 +1071,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create exchange using configured [`CodecLimits`]
+    /// Executes one typed Create exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1095,7 +1095,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Create exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1474,8 +1474,8 @@ impl<'a> CreateSplitKeyBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::CreateSplitKey(request)))
     }
 
-    /// Executes one typed Create Split Key exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`CreateSplitKeyResponse`].
+    /// Executes one typed Create Split Key exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`CreateSplitKeyResponse`](kmipkit_protocol::CreateSplitKeyResponse).
     ///
     /// # Errors
     ///
@@ -1492,7 +1492,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create Split Key exchange using configured [`CodecLimits`]
+    /// Executes one typed Create Split Key exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1508,7 +1508,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create Split Key exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Create Split Key exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1887,8 +1887,8 @@ impl<'a> CreateKeyPairBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::CreateKeyPair(request)))
     }
 
-    /// Executes one typed Create Key Pair exchange using configured [`CodecLimits`]
-    /// and returns the unwrapped [`CreateKeyPairResponse`].
+    /// Executes one typed Create Key Pair exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
+    /// and returns the unwrapped [`CreateKeyPairResponse`](kmipkit_protocol::CreateKeyPairResponse).
     ///
     /// # Errors
     ///
@@ -1905,7 +1905,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create Key Pair exchange using configured [`CodecLimits`]
+    /// Executes one typed Create Key Pair exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1926,7 +1926,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
         )
     }
 
-    /// Executes one typed Create Key Pair exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Create Key Pair exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -2184,7 +2184,7 @@ impl<'a> ExportBuilder<'a> {
         execution.run_outcome(ClientRequest::Export(req))
     }
 
-    /// Executes one Export exchange with explicit [`CodecLimits`].
+    /// Executes one Export exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2403,7 +2403,7 @@ impl<'a> ImportBuilder<'a> {
         execution.run_outcome(ClientRequest::Import(req))
     }
 
-    /// Executes one Import exchange with explicit [`CodecLimits`].
+    /// Executes one Import exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2614,7 +2614,7 @@ impl<'a> JoinSplitKeyBuilder<'a> {
         execution.run_outcome(ClientRequest::JoinSplitKey(req))
     }
 
-    /// Executes one Join Split Key exchange with explicit [`CodecLimits`].
+    /// Executes one Join Split Key exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///

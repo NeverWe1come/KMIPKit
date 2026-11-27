@@ -98,7 +98,7 @@ impl PingBuilder<'_> {
         ClientBatchItem::new(ClientRequest::Ping(self.build()))
     }
 
-    /// Executes at most one exchange using the client's configured [`CodecLimits`]
+    /// Executes at most one exchange using the client's configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`PingResponse`].
     ///
     /// # Errors
@@ -114,7 +114,7 @@ impl PingBuilder<'_> {
         )
     }
 
-    /// Executes at most one exchange using the client's configured [`CodecLimits`]
+    /// Executes at most one exchange using the client's configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -124,7 +124,7 @@ impl PingBuilder<'_> {
             .run_outcome(ClientRequest::Ping(PingRequest::new()))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error.
@@ -211,7 +211,7 @@ impl<'a> GetConstraintsBuilder<'a> {
         ClientBatchItem::new(ClientRequest::GetConstraints(self.build()))
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`GetConstraintsResponse`].
     ///
     /// # Errors
@@ -227,7 +227,7 @@ impl<'a> GetConstraintsBuilder<'a> {
         )
     }
 
-    /// Executes at most one exchange using configured [`CodecLimits`]
+    /// Executes at most one exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -236,7 +236,7 @@ impl<'a> GetConstraintsBuilder<'a> {
         self.execution.run_outcome(ClientRequest::get_constraints())
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized protocol or transport error with its
@@ -404,7 +404,7 @@ impl<'a> GetUsageAllocationBuilder<'a> {
             .run_outcome(ClientRequest::get_usage_allocation(request))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error.
@@ -546,7 +546,7 @@ impl<'a> RngRetrieveBuilder<'a> {
             .run_outcome(ClientRequest::rng_retrieve(request))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error.
@@ -680,7 +680,7 @@ impl<'a> RngSeedBuilder<'a> {
         execution.run_outcome(ClientRequest::rng_seed(request))
     }
 
-    /// Executes at most one exchange with explicit [`CodecLimits`] overrides.
+    /// Executes at most one exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns the existing sanitized validation, protocol, or transport error.
@@ -817,7 +817,7 @@ impl<'a> CheckBuilder<'a> {
         )
     }
 
-    /// Executes one Check exchange using the client's configured [`CodecLimits`]
+    /// Executes one Check exchange using the client's configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -851,7 +851,7 @@ impl<'a> CheckBuilder<'a> {
         )
     }
 
-    /// Executes one Check exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one Check exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1005,7 +1005,7 @@ impl<'a> QueryBuilder<'a> {
         )
     }
 
-    /// Executes one typed Query exchange using configured [`CodecLimits`]
+    /// Executes one typed Query exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1029,7 +1029,7 @@ impl<'a> QueryBuilder<'a> {
         )
     }
 
-    /// Executes one typed Query exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Query exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1159,7 +1159,7 @@ impl<'a> DiscoverVersionsBuilder<'a> {
         )
     }
 
-    /// Executes one typed Discover Versions exchange using configured [`CodecLimits`]
+    /// Executes one typed Discover Versions exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1183,7 +1183,7 @@ impl<'a> DiscoverVersionsBuilder<'a> {
         )
     }
 
-    /// Executes one typed Discover Versions exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Discover Versions exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1307,7 +1307,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
         )
     }
 
-    /// Executes one typed Obtain Lease exchange using configured [`CodecLimits`]
+    /// Executes one typed Obtain Lease exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1333,7 +1333,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
         )
     }
 
-    /// Executes one typed Obtain Lease exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Obtain Lease exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1512,7 +1512,7 @@ impl<'a> LogBuilder<'a> {
         execution.run_outcome(ClientRequest::Log(req))
     }
 
-    /// Executes one Log exchange with explicit [`CodecLimits`].
+    /// Executes one Log exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -1659,7 +1659,7 @@ impl<'a> InteropBuilder<'a> {
         execution.run_outcome(ClientRequest::Interop(req))
     }
 
-    /// Executes one Interop exchange with explicit [`CodecLimits`].
+    /// Executes one Interop exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -1843,7 +1843,7 @@ impl<'a> Pkcs11Builder<'a> {
         execution.run_outcome(ClientRequest::Pkcs11(req))
     }
 
-    /// Executes one PKCS#11 exchange with explicit [`CodecLimits`].
+    /// Executes one PKCS#11 exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2004,7 +2004,7 @@ impl<'a> ReProvisionBuilder<'a> {
         execution.run_outcome(ClientRequest::ReProvision(req))
     }
 
-    /// Executes one Re-Provision exchange with explicit [`CodecLimits`].
+    /// Executes one Re-Provision exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2115,7 +2115,7 @@ impl<'a> SetDefaultsBuilder<'a> {
             .run_outcome(ClientRequest::SetDefaults(self.request))
     }
 
-    /// Executes one Set Defaults exchange with explicit [`CodecLimits`].
+    /// Executes one Set Defaults exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2248,7 +2248,7 @@ impl<'a> SetConstraintsBuilder<'a> {
         execution.run_outcome(ClientRequest::SetConstraints(req))
     }
 
-    /// Executes one Set Constraints exchange with explicit [`CodecLimits`].
+    /// Executes one Set Constraints exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///

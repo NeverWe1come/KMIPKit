@@ -437,7 +437,7 @@ impl<'a> EncryptBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Encrypt(request)))
     }
 
-    /// Executes one typed Encrypt exchange using configured [`CodecLimits`]
+    /// Executes one typed Encrypt exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`EncryptResponse`].
     ///
     /// # Errors
@@ -456,7 +456,7 @@ impl<'a> EncryptBuilder<'a> {
         )
     }
 
-    /// Executes one typed Encrypt exchange using configured [`CodecLimits`]
+    /// Executes one typed Encrypt exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -468,7 +468,7 @@ impl<'a> EncryptBuilder<'a> {
         execution.run_outcome(ClientRequest::Encrypt(request))
     }
 
-    /// Executes one typed Encrypt exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Encrypt exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -654,7 +654,7 @@ impl<'a> DecryptBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Decrypt(request)))
     }
 
-    /// Executes one typed Decrypt exchange using configured [`CodecLimits`]
+    /// Executes one typed Decrypt exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`DecryptResponse`].
     ///
     /// # Errors
@@ -673,7 +673,7 @@ impl<'a> DecryptBuilder<'a> {
         )
     }
 
-    /// Executes one typed Decrypt exchange using configured [`CodecLimits`]
+    /// Executes one typed Decrypt exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -685,7 +685,7 @@ impl<'a> DecryptBuilder<'a> {
         execution.run_outcome(ClientRequest::Decrypt(request))
     }
 
-    /// Executes one typed Decrypt exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Decrypt exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -843,7 +843,7 @@ impl<'a> SignBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Sign(request)))
     }
 
-    /// Executes one typed Sign exchange using configured [`CodecLimits`]
+    /// Executes one typed Sign exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`SignResponse`].
     ///
     /// # Errors
@@ -862,7 +862,7 @@ impl<'a> SignBuilder<'a> {
         )
     }
 
-    /// Executes one typed Sign exchange using configured [`CodecLimits`]
+    /// Executes one typed Sign exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -874,7 +874,7 @@ impl<'a> SignBuilder<'a> {
         execution.run_outcome(ClientRequest::Sign(request))
     }
 
-    /// Executes one typed Sign exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Sign exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -1047,7 +1047,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::SignatureVerify(request)))
     }
 
-    /// Executes one typed Signature Verify exchange using configured [`CodecLimits`]
+    /// Executes one typed Signature Verify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`SignatureVerifyResponse`].
     ///
     /// # Errors
@@ -1066,7 +1066,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
         )
     }
 
-    /// Executes one typed Signature Verify exchange using configured [`CodecLimits`]
+    /// Executes one typed Signature Verify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1078,7 +1078,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
         execution.run_outcome(ClientRequest::SignatureVerify(request))
     }
 
-    /// Executes one typed Signature Verify exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Signature Verify exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -1227,7 +1227,7 @@ impl<'a> MacBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Mac(request)))
     }
 
-    /// Executes one typed MAC exchange using configured [`CodecLimits`]
+    /// Executes one typed MAC exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`MacResponse`].
     ///
     /// # Errors
@@ -1246,7 +1246,7 @@ impl<'a> MacBuilder<'a> {
         )
     }
 
-    /// Executes one typed MAC exchange using configured [`CodecLimits`]
+    /// Executes one typed MAC exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1258,7 +1258,7 @@ impl<'a> MacBuilder<'a> {
         execution.run_outcome(ClientRequest::Mac(request))
     }
 
-    /// Executes one typed MAC exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed MAC exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -1420,7 +1420,7 @@ impl<'a> MacVerifyBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::MacVerify(request)))
     }
 
-    /// Executes one typed MAC Verify exchange using configured [`CodecLimits`]
+    /// Executes one typed MAC Verify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`MacVerifyResponse`].
     ///
     /// # Errors
@@ -1439,7 +1439,7 @@ impl<'a> MacVerifyBuilder<'a> {
         )
     }
 
-    /// Executes one typed MAC Verify exchange using configured [`CodecLimits`]
+    /// Executes one typed MAC Verify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1451,7 +1451,7 @@ impl<'a> MacVerifyBuilder<'a> {
         execution.run_outcome(ClientRequest::MacVerify(request))
     }
 
-    /// Executes one typed MAC Verify exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed MAC Verify exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.
@@ -1620,7 +1620,7 @@ impl<'a> HashBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Hash(request)))
     }
 
-    /// Executes one typed Hash exchange using configured [`CodecLimits`]
+    /// Executes one typed Hash exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`HashResponse`].
     ///
     /// # Errors
@@ -1639,7 +1639,7 @@ impl<'a> HashBuilder<'a> {
         )
     }
 
-    /// Executes one typed Hash exchange using configured [`CodecLimits`]
+    /// Executes one typed Hash exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1651,7 +1651,7 @@ impl<'a> HashBuilder<'a> {
         execution.run_outcome(ClientRequest::Hash(request))
     }
 
-    /// Executes one typed Hash exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Hash exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a validation, transport, or protocol error without retrying the exchange.

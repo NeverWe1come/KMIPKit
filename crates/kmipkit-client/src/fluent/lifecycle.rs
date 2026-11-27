@@ -151,7 +151,7 @@ impl GetBuilder<'_> {
         ClientBatchItem::new(ClientRequest::Get(self.request))
     }
 
-    /// Executes one typed Get exchange using configured [`CodecLimits`]
+    /// Executes one typed Get exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`GetResponse`].
     ///
     /// # Errors
@@ -169,7 +169,7 @@ impl GetBuilder<'_> {
         )
     }
 
-    /// Executes one typed Get exchange using configured [`CodecLimits`]
+    /// Executes one typed Get exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -184,7 +184,7 @@ impl GetBuilder<'_> {
         )
     }
 
-    /// Executes one typed Get exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Get exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -267,7 +267,7 @@ impl DestroyBuilder<'_> {
         ClientBatchItem::new(ClientRequest::Destroy(self.request))
     }
 
-    /// Executes one typed Destroy exchange using configured [`CodecLimits`]
+    /// Executes one typed Destroy exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`DestroyResponse`].
     ///
     /// # Errors
@@ -285,7 +285,7 @@ impl DestroyBuilder<'_> {
         )
     }
 
-    /// Executes one typed Destroy exchange using configured [`CodecLimits`]
+    /// Executes one typed Destroy exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -300,7 +300,7 @@ impl DestroyBuilder<'_> {
         )
     }
 
-    /// Executes one typed Destroy exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Destroy exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -406,7 +406,7 @@ impl<'a> ActivateBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Activate(request)))
     }
 
-    /// Executes one typed Activate exchange using configured [`CodecLimits`]
+    /// Executes one typed Activate exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`ActivateResponse`].
     ///
     /// # Errors
@@ -424,7 +424,7 @@ impl<'a> ActivateBuilder<'a> {
         )
     }
 
-    /// Executes one typed Activate exchange using configured [`CodecLimits`]
+    /// Executes one typed Activate exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -446,7 +446,7 @@ impl<'a> ActivateBuilder<'a> {
         )
     }
 
-    /// Executes one typed Activate exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Activate exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -559,7 +559,7 @@ impl<'a> ArchiveBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Archive(request)))
     }
 
-    /// Executes one typed Archive exchange using configured [`CodecLimits`]
+    /// Executes one typed Archive exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`ArchiveResponse`].
     ///
     /// # Errors
@@ -577,7 +577,7 @@ impl<'a> ArchiveBuilder<'a> {
         )
     }
 
-    /// Executes one typed Archive exchange using configured [`CodecLimits`]
+    /// Executes one typed Archive exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -599,7 +599,7 @@ impl<'a> ArchiveBuilder<'a> {
         )
     }
 
-    /// Executes one typed Archive exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Archive exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -712,7 +712,7 @@ impl<'a> RecoverBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Recover(request)))
     }
 
-    /// Executes one typed Recover exchange using configured [`CodecLimits`]
+    /// Executes one typed Recover exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`RecoverResponse`].
     ///
     /// # Errors
@@ -730,7 +730,7 @@ impl<'a> RecoverBuilder<'a> {
         )
     }
 
-    /// Executes one typed Recover exchange using configured [`CodecLimits`]
+    /// Executes one typed Recover exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -752,7 +752,7 @@ impl<'a> RecoverBuilder<'a> {
         )
     }
 
-    /// Executes one typed Recover exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Recover exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -867,7 +867,7 @@ impl<'a> RevokeBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Revoke(request)))
     }
 
-    /// Executes exactly one typed Revoke exchange using configured [`CodecLimits`]
+    /// Executes exactly one typed Revoke exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`RevokeResponse`].
     ///
     /// # Errors
@@ -886,7 +886,7 @@ impl<'a> RevokeBuilder<'a> {
     }
 
     /// Executes exactly one typed Revoke exchange with the supplied options using
-    /// configured [`CodecLimits`] and returns the unwrapped [`RevokeResponse`].
+    /// configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) and returns the unwrapped [`RevokeResponse`].
     ///
     /// # Errors
     ///
@@ -907,7 +907,7 @@ impl<'a> RevokeBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Revoke exchange using configured [`CodecLimits`]
+    /// Executes exactly one typed Revoke exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -929,7 +929,7 @@ impl<'a> RevokeBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Revoke exchange with explicit [`CodecLimits`] overrides.
+    /// Executes exactly one typed Revoke exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -955,7 +955,7 @@ impl<'a> RevokeBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Revoke exchange with explicit [`CodecLimits`] and [`RequestOptions`].
+    /// Executes exactly one typed Revoke exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) and [`RequestOptions`].
     ///
     /// # Errors
     ///
@@ -1089,7 +1089,7 @@ impl<'a> LocateBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Locate(request)))
     }
 
-    /// Executes exactly one typed Locate exchange using configured [`CodecLimits`]
+    /// Executes exactly one typed Locate exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`LocateResponse`].
     ///
     /// # Errors
@@ -1108,7 +1108,7 @@ impl<'a> LocateBuilder<'a> {
     }
 
     /// Executes exactly one typed Locate exchange with the supplied options using
-    /// configured [`CodecLimits`] and returns the unwrapped [`LocateResponse`].
+    /// configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) and returns the unwrapped [`LocateResponse`].
     ///
     /// # Errors
     ///
@@ -1129,7 +1129,7 @@ impl<'a> LocateBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Locate exchange using configured [`CodecLimits`]
+    /// Executes exactly one typed Locate exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1151,7 +1151,7 @@ impl<'a> LocateBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Locate exchange with explicit [`CodecLimits`] overrides.
+    /// Executes exactly one typed Locate exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1177,7 +1177,7 @@ impl<'a> LocateBuilder<'a> {
         )
     }
 
-    /// Executes exactly one typed Locate exchange with explicit [`CodecLimits`] and [`RequestOptions`].
+    /// Executes exactly one typed Locate exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) and [`RequestOptions`].
     ///
     /// # Errors
     ///
@@ -1455,7 +1455,7 @@ impl<'a> RekeyBuilder<'a> {
         self.state.into_batch_item()
     }
 
-    /// Executes one Re-key exchange using configured [`CodecLimits`]
+    /// Executes one Re-key exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`RekeyResponse`].
     ///
     /// # Errors
@@ -1473,7 +1473,7 @@ impl<'a> RekeyBuilder<'a> {
         )
     }
 
-    /// Executes one Re-key exchange using configured [`CodecLimits`]
+    /// Executes one Re-key exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1483,7 +1483,7 @@ impl<'a> RekeyBuilder<'a> {
         self.state.run_outcome()
     }
 
-    /// Executes one Re-key exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one Re-key exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1631,7 +1631,7 @@ impl<'a> RekeyKeyPairBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::RekeyKeyPair(request)))
     }
 
-    /// Executes one Re-key Key Pair exchange using configured [`CodecLimits`]
+    /// Executes one Re-key Key Pair exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`RekeyKeyPairResponse`].
     ///
     /// # Errors
@@ -1649,7 +1649,7 @@ impl<'a> RekeyKeyPairBuilder<'a> {
         )
     }
 
-    /// Executes one Re-key Key Pair exchange using configured [`CodecLimits`]
+    /// Executes one Re-key Key Pair exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1671,7 +1671,7 @@ impl<'a> RekeyKeyPairBuilder<'a> {
         )
     }
 
-    /// Executes one Re-key Key Pair exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one Re-key Key Pair exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1827,7 +1827,7 @@ impl<'a> RecertifyBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::Recertify(request)))
     }
 
-    /// Executes one Re-certify exchange using configured [`CodecLimits`]
+    /// Executes one Re-certify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`RecertifyResponse`].
     ///
     /// # Errors
@@ -1845,7 +1845,7 @@ impl<'a> RecertifyBuilder<'a> {
         )
     }
 
-    /// Executes one Re-certify exchange using configured [`CodecLimits`]
+    /// Executes one Re-certify exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1855,7 +1855,7 @@ impl<'a> RecertifyBuilder<'a> {
         self.state.run_outcome()
     }
 
-    /// Executes one Re-certify exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one Re-certify exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -2050,7 +2050,7 @@ impl<'a> CertifyBuilder<'a> {
         execution.run_outcome(ClientRequest::Certify(req))
     }
 
-    /// Executes one Certify exchange with explicit [`CodecLimits`].
+    /// Executes one Certify exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///
@@ -2241,7 +2241,7 @@ impl<'a> ValidateBuilder<'a> {
         execution.run_outcome(ClientRequest::Validate(req))
     }
 
-    /// Executes one Validate exchange with explicit [`CodecLimits`].
+    /// Executes one Validate exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits).
     ///
     /// # Errors
     ///

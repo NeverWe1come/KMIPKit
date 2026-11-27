@@ -363,7 +363,7 @@ impl<'a> DeleteAttributeBuilder<'a> {
         )))
     }
 
-    /// Executes one typed Delete Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Delete Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`DeleteAttributeResponse`].
     ///
     /// # Errors
@@ -381,7 +381,7 @@ impl<'a> DeleteAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Delete Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Delete Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -405,7 +405,7 @@ impl<'a> DeleteAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Delete Attribute exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Delete Attribute exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -482,7 +482,7 @@ impl AddAttributeBuilder<'_> {
         )))
     }
 
-    /// Executes one typed Add Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Add Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`AddAttributeResponse`].
     ///
     /// # Errors
@@ -500,7 +500,7 @@ impl AddAttributeBuilder<'_> {
         )
     }
 
-    /// Executes one typed Add Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Add Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -518,7 +518,7 @@ impl AddAttributeBuilder<'_> {
         )
     }
 
-    /// Executes one typed Add Attribute exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Add Attribute exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -810,7 +810,7 @@ impl SetAttributeBuilder<'_> {
         )))
     }
 
-    /// Executes one typed Set Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Set Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`SetAttributeResponse`].
     ///
     /// # Errors
@@ -827,7 +827,7 @@ impl SetAttributeBuilder<'_> {
         )
     }
 
-    /// Executes one typed Set Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Set Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -843,7 +843,7 @@ impl SetAttributeBuilder<'_> {
         )
     }
 
-    /// Executes one typed Set Attribute exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Set Attribute exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     /// Returns a payload-free local validation error with `NotSent`, or the
@@ -971,7 +971,7 @@ impl<'a> GetAttributesBuilder<'a> {
         )))
     }
 
-    /// Executes one typed Get Attributes exchange using configured [`CodecLimits`]
+    /// Executes one typed Get Attributes exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`GetAttributesResponse`].
     ///
     /// # Errors
@@ -989,7 +989,7 @@ impl<'a> GetAttributesBuilder<'a> {
         )
     }
 
-    /// Executes one typed Get Attributes exchange using configured [`CodecLimits`]
+    /// Executes one typed Get Attributes exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1007,7 +1007,7 @@ impl<'a> GetAttributesBuilder<'a> {
         )
     }
 
-    /// Executes one typed Get Attributes exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Get Attributes exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1124,7 +1124,7 @@ impl<'a> GetAttributeListBuilder<'a> {
         )))
     }
 
-    /// Executes one typed Get Attribute List exchange using configured [`CodecLimits`]
+    /// Executes one typed Get Attribute List exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`GetAttributeListResponse`].
     ///
     /// # Errors
@@ -1142,7 +1142,7 @@ impl<'a> GetAttributeListBuilder<'a> {
         )
     }
 
-    /// Executes one typed Get Attribute List exchange using configured [`CodecLimits`]
+    /// Executes one typed Get Attribute List exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1160,7 +1160,7 @@ impl<'a> GetAttributeListBuilder<'a> {
         )
     }
 
-    /// Executes one typed Get Attribute List exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Get Attribute List exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1297,7 +1297,7 @@ impl<'a> ModifyAttributeBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::ModifyAttribute(request)))
     }
 
-    /// Executes one typed Modify Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Modify Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`ModifyAttributeResponse`].
     ///
     /// # Errors
@@ -1315,7 +1315,7 @@ impl<'a> ModifyAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Modify Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Modify Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1344,7 +1344,7 @@ impl<'a> ModifyAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Modify Attribute exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Modify Attribute exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
@@ -1504,7 +1504,7 @@ impl<'a> AdjustAttributeBuilder<'a> {
             .map(|request| ClientBatchItem::new(ClientRequest::AdjustAttribute(request)))
     }
 
-    /// Executes one typed Adjust Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Adjust Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the unwrapped [`AdjustAttributeResponse`].
     ///
     /// # Errors
@@ -1522,7 +1522,7 @@ impl<'a> AdjustAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Adjust Attribute exchange using configured [`CodecLimits`]
+    /// Executes one typed Adjust Attribute exchange using configured [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits)
     /// and returns the raw [`ClientBatchItemResponse`] envelope.
     ///
     /// # Errors
@@ -1559,7 +1559,7 @@ impl<'a> AdjustAttributeBuilder<'a> {
         )
     }
 
-    /// Executes one typed Adjust Attribute exchange with explicit [`CodecLimits`] overrides.
+    /// Executes one typed Adjust Attribute exchange with explicit [`CodecLimits`](kmipkit_ttlv::codec::CodecLimits) overrides.
     ///
     /// # Errors
     ///
