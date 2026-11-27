@@ -198,9 +198,11 @@ Query functions through the same routes and also returns an incorrect
 type to verify rejection. Cosmian returned empty successful payloads
 for four of the six functions. Query RNGs returned Operation Failed
 with Invalid Field. Query Attestation Types with the Attestation Capable
-Indicator returned Success without a Nonce on all four generic TTLV
-consumers in KMIP 2.0 and 2.1. The controlled TLS peer tests a valid Nonce,
-an omitted Nonce, and an invalid Nonce Value type.
+Indicator returned Success without a Nonce in all 32 live exchanges.
+These covered both protocol versions and the generic TTLV, typed,
+Fluent and high-level routes in all four languages. The controlled TLS
+peer tests a valid Nonce, an omitted Nonce and an invalid Nonce Value type
+through the same routes.
 
 In both protocol versions, a Get with Key Format Type
 `TransparentSymmetricKey` returned 32 bytes inside a structured Key Value.

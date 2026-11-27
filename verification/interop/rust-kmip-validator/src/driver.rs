@@ -161,6 +161,7 @@ pub(crate) struct Observed {
     pub used_high_level: bool,
     pub reason: Option<u32>,
     pub nonempty_structure_tags: Vec<u32>,
+    pub usable_nonce: bool,
     pub identifier: Option<kmipkit::protocol::UniqueIdentifier>,
     pub identifiers: Vec<kmipkit::protocol::UniqueIdentifier>,
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
@@ -169,6 +170,29 @@ pub(crate) struct Observed {
     pub key_block_shape: Option<crate::key_block::KeyBlockShape>,
     pub validity: Option<u32>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
+}
+
+pub(crate) fn nonce_fields_present(nonce: &kmipkit::ttlv::StructureView<'_>) -> bool {
+    use kmipkit::ttlv::ValueView;
+    let fields = nonce.children();
+    fields.len() == 2
+        && fields.iter().enumerate().all(|(index, field)| {
+            field.tag().raw() == [0x0042_00c9, 0x0042_00ca][index]
+                && field.with_value(
+                    |value| matches!(value, ValueView::ByteString(bytes) if !bytes.is_empty()),
+                )
+        })
+}
+
+fn response_contains_usable_nonce(response: &ClientBatchItemResponse) -> bool {
+    response.response_header_raw().is_some_and(|header| {
+        header.children().iter().any(|field| {
+            field.tag().raw() == 0x0042_00c8
+                && field
+                    .as_structure()
+                    .is_some_and(|nonce| nonce_fields_present(&nonce))
+        })
+    })
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -248,6 +272,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         used_high_level: false,
         reason: result.reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags,
+        usable_nonce: response_contains_usable_nonce(response),
         identifier,
         identifiers,
         correlation,
@@ -668,6 +693,7 @@ pub(crate) fn asynchronous(
         used_high_level: false,
         reason: response.result().reason().map(kmipkit::ResultReason::raw),
         nonempty_structure_tags: Vec::new(),
+        usable_nonce: false,
         identifier: None,
         identifiers: response
             .poll_response()

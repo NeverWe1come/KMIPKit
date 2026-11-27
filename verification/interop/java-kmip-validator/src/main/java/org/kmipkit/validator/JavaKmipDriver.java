@@ -127,10 +127,18 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private CaseOutcome executeQuery(CatalogLoader.CatalogCase testCase, long start) {
         boolean field = queryFieldCase(testCase);
-        int function = field ? testCase.requires().path("query_function").asInt(-1) : 1;
+        boolean nonce = queryNonceCase(testCase);
+        int function = nonce ? 7 : field ? testCase.requires().path("query_function").asInt(-1) : 1;
         int tag = field ? testCase.requires().path("query_result_tag").asInt(-1) : 0;
         if (function < 0 || tag < 0) {
             return CaseOutcome.failed("Invalid Query field fixture.", elapsedMillis(start));
+        }
+        if (nonce) {
+            return executeQueryRequest(testCase, function, result -> {
+                try (var header = result.responseHeaderTtlv(); var view = header.view()) {
+                    return GenericExchange.nonceInHeader(view);
+                }
+            }, start);
         }
         Predicate<ClientBatchItemResult> verify = result -> field
                 ? result.typedQueryResponse().filter(query -> {
@@ -139,6 +147,11 @@ public final class JavaKmipDriver implements AutoCloseable {
                     }
                 }).isPresent()
                 : verifyTypedResponse("Query", result);
+        return executeQueryRequest(testCase, function, verify, start);
+    }
+
+    private CaseOutcome executeQueryRequest(CatalogLoader.CatalogCase testCase, int function,
+            Predicate<ClientBatchItemResult> verify, long start) {
         if ("high-level".equals(connection.apiLevel())) {
             return executeHighLevel(testCase, KmipValues.Operation.QUERY,
                     () -> client.query(new int[]{function}, CODEC_LIMITS, null), verify, start);
@@ -182,12 +195,16 @@ public final class JavaKmipDriver implements AutoCloseable {
         }
     }
 
+    static boolean queryNonceCase(CatalogLoader.CatalogCase testCase) {
+        return "test-query-attestation-nonce".equals(testCase.caseId());
+    }
+
     static boolean queryFieldCase(CatalogLoader.CatalogCase testCase) {
         return "Query".equals(testCase.operation()) && testCase.requires().has("query_function");
     }
 
     static boolean readOnlyProbe(CatalogLoader.CatalogCase testCase) {
-        if (queryFieldCase(testCase)) return true;
+        if (queryFieldCase(testCase) || queryNonceCase(testCase)) return true;
         return rotateLocateCase(testCase) || Set.of("test-op-locate", "test-op-hash", "test-crypto-hash-sha_256-0")
                 .contains(testCase.caseId());
     }

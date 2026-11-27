@@ -272,7 +272,7 @@ class PythonKmipDriver:
 
     @classmethod
     def supports(cls, case: dict[str, Any], api_level: str) -> bool:
-        if case["execution"]["mode"] != "server_exchange" or case["case_id"] == "test-query-attestation-nonce":
+        if case["execution"]["mode"] != "server_exchange":
             return False
         workflow = case.get("requires", {}).get("workflow_type")
         if workflow == "multipart_streaming":
@@ -290,7 +290,8 @@ class PythonKmipDriver:
         if api_level == "high-level" and case["operation"] == "Discover Versions":
             return case["case_id"] == "test-op-discover-versions"
         if api_level == "high-level" and case["operation"] == "Query":
-            return case["case_id"] == "test-op-query" or "query_function" in case.get("requires", {})
+            return (case["case_id"] in {"test-op-query", "test-query-attestation-nonce"}
+                    or "query_function" in case.get("requires", {}))
         return (
             api_level == "high-level"
             and workflow != "async_poll"
@@ -1766,7 +1767,7 @@ class PythonKmipDriver:
         self, item: Any, *, asynchronous_indicator: int | None = None, verify_query: bool = False,
         verify_hash: bool = False, verify_locate: bool = False,
         query_field: int | None = None, discover_version: Any | None = None,
-        high_level_exchange: Callable[[Any], Any] | None = None,
+        high_level_exchange: Callable[[Any], Any] | None = None, expect_nonce: bool = False,
         key_block: tuple[Any, Any | None, int] | None = None,
     ) -> dict[str, Any]:
         from kmipkit import protocol_values, ttlv
@@ -1883,6 +1884,13 @@ class PythonKmipDriver:
                                                 status="failed", server_compatibility="unknown",
                                                 diagnostic="Query did not return the requested nonempty structure",
                                             )
+                if expect_nonce and success:
+                    from .generic import nonce_in_header
+
+                    with observed.response_header_ttlv() as header, ttlv.ttlv_structure_view(header) as view:
+                        if not nonce_in_header(view):
+                            result.update(status="failed", server_compatibility="unknown",
+                                          diagnostic="Query did not return a usable Nonce")
                 if discover_version is not None:
                     if observed.operation != protocol_values.Operation.DISCOVER_VERSIONS:
                         raise ValueError("Discover Versions response operation does not match the request")
@@ -2333,18 +2341,19 @@ class PythonKmipDriver:
         if operation == "Query":
             parameters = test_case.get("requires", {})
             query_field = int(parameters["query_result_tag"]) if "query_result_tag" in parameters else None
-            functions = [int(parameters["query_function"])] if "query_function" in parameters else [1, 2]
+            expect_nonce = case_id == "test-query-attestation-nonce"
+            functions = [int(parameters["query_function"])] if "query_function" in parameters else [7] if expect_nonce else [1, 2]
             if self._api_level == "high-level":
                 outcome = self._exchange(
-                    None, verify_query=True, query_field=query_field,
+                    None, verify_query=True, query_field=query_field, expect_nonce=expect_nonce,
                     high_level_exchange=lambda limits: self._client.query(functions, limits),
                 )
             elif self._api_level == "fluent":
                 with self._client.request().query() as builder, builder.functions(functions).build() as item:
-                    outcome = self._exchange(item, verify_query=True, query_field=query_field)
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
             else:
                 with self._extensions.client_batch_item_query(functions) as item:
-                    outcome = self._exchange(item, verify_query=True, query_field=query_field)
+                    outcome = self._exchange(item, verify_query=True, query_field=query_field, expect_nonce=expect_nonce)
             return {key: value for key, value in outcome.items() if not key.startswith("_")}
         if operation == "Locate" and "rotate_attribute_ttlv" in test_case.get("requires", {}):
             build = self._build_fluent_item if self._api_level == "fluent" else self._build_item

@@ -1063,16 +1063,15 @@ fn query_attestation_nonce(
     let mut valid_nonce = false;
     let result = item(0x0042_0074, Value::enumeration(7)).and_then(|function| {
         exchange_with_header(
-            connection, version, 0x18, vec![function],
+            connection,
+            version,
+            0x18,
+            vec![function],
             Some(item(0x0042_00d3, Value::boolean(true))?),
             |_, header| {
-                valid_nonce = header.with_nonce(|nonce| {
-                    let fields = nonce.children();
-                    fields.len() == 2 && fields.iter().enumerate().all(|(index, field)| {
-                        field.tag().raw() == [0x0042_00c9, 0x0042_00ca][index]
-                            && field.with_value(|value| matches!(value, ValueView::ByteString(bytes) if !bytes.is_empty()))
-                    })
-                }).unwrap_or(false);
+                valid_nonce = header
+                    .with_nonce(|nonce| crate::driver::nonce_fields_present(&nonce))
+                    .unwrap_or(false);
                 Ok(true)
             },
         )
@@ -1216,6 +1215,7 @@ pub(crate) fn asynchronous(
         reason,
         used_high_level: false,
         nonempty_structure_tags: Vec::new(),
+        usable_nonce: false,
         identifier: None,
         identifiers,
         correlation,

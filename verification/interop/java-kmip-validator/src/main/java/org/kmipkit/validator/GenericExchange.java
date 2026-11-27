@@ -1115,6 +1115,19 @@ final class GenericExchange {
         }
     }
 
+    static boolean nonceInHeader(TtlvStructureView header) {
+        for (long index = 0; index < header.itemCount(); index++) {
+            try (var field = header.itemAt(index); var tag = field.tag()) {
+                if (tag.raw() == 0x4200C8 && field.itemType() == TtlvItemType.Structure) {
+                    try (var value = field.value(); var nonce = value.structure()) {
+                        return nonceFieldsPresent(nonce);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean nonceFieldsPresent(TtlvStructureView nonce) {
         if (nonce.itemCount() != 2) return false;
         for (int index = 0; index < 2; index++) {

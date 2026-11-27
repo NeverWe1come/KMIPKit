@@ -827,6 +827,18 @@ def _execute(driver, operation, identifier=None, expected=None, attribute_refere
             "diagnostic": "generic TTLV request and response validated", **details}
 
 
+def nonce_in_header(header):
+    from kmipkit import ttlv
+
+    for field in _fields(header):
+        with ttlv.ttlv_item_view_tag(field) as tag:
+            if ttlv.tag_value(tag) != 0x4200C8 or ttlv.ttlv_item_view_type(field) != ttlv.ItemType.Structure:
+                continue
+        with ttlv.ttlv_item_view_value(field) as value, ttlv.ttlv_value_view_structure(value) as nonce:
+            return _nonce_fields_present(nonce)
+    return False
+
+
 def _nonce_fields_present(nonce):
     from kmipkit import ttlv
 

@@ -52,13 +52,6 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             )
         });
     }
-    if case.case_id == "test-query-attestation-nonce" && connection.api_level != "generic-ttlv" {
-        return Some(CaseResult::non_run(
-            case,
-            "not_run",
-            "the selected public request route cannot supply the attestation header".to_owned(),
-        ));
-    }
     if connection.api_level == "generic-ttlv"
         && case.execution.mode != "local_model"
         && !crate::generic::supports(case, connection)
@@ -80,6 +73,34 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
         ));
     }
     None
+}
+
+fn result_from_observation(
+    case: &Case,
+    connection: &Connection,
+    observed: &crate::driver::Observed,
+) -> CaseResult {
+    let mut result = observed_result(case, observed.status, observed.reason);
+    if case.case_id == "test-query-attestation-nonce"
+        && observed.status == 0
+        && !observed.usable_nonce
+    {
+        result.status = "failed";
+        result.server_compatibility = "unknown";
+        "Query did not return a usable Nonce".clone_into(&mut result.diagnostic);
+    }
+    if connection.api_level == "generic-ttlv" {
+        "generic TTLV asynchronous target request and response validated"
+            .clone_into(&mut result.diagnostic);
+    }
+    if connection.api_level == "high-level" {
+        result.actual_api_level = Some(if observed.used_high_level {
+            "high-level"
+        } else {
+            "typed-protocol"
+        });
+    }
+    result
 }
 
 pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client) -> CaseResult {
@@ -106,21 +127,7 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
     let rotate_boundary =
         case.operation == "Locate" && case.requires["rotate_attribute_ttlv"].is_string();
     let mut output = match result {
-        Ok(observed) => {
-            let mut result = observed_result(case, observed.status, observed.reason);
-            if connection.api_level == "generic-ttlv" {
-                "generic TTLV asynchronous target request and response validated"
-                    .clone_into(&mut result.diagnostic);
-            }
-            if connection.api_level == "high-level" {
-                result.actual_api_level = Some(if observed.used_high_level {
-                    "high-level"
-                } else {
-                    "typed-protocol"
-                });
-            }
-            result
-        }
+        Ok(observed) => result_from_observation(case, connection, &observed),
         Err(crate::recipes::Failure::LocalRejection(reason)) => {
             let mut result = CaseResult::non_run(case, "not_run", reason.to_owned());
             result.library_correctness = "passed";

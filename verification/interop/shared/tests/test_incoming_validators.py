@@ -496,12 +496,12 @@ class DirectTagValidatorTests(unittest.TestCase):
     def test_attestation_nonce_checks_response_header(self):
         for language, available in installed_validators():
             for minor in (0, 1):
-                for variant in ("valid", "absent", "wrong-type"):
-                    with self.subTest(language=language, minor=minor, variant=variant):
-                        if not available:
-                            self.skipTest(f"Installed {language} validator required")
-                        self.header_fixture_exchange(language, minor, "generic-ttlv", variant == "valid",
-                                                     nonce=variant)
+                for route in ("generic-ttlv", "typed-protocol", "fluent", "high-level"):
+                    for variant in ("valid", "absent", "wrong-type"):
+                        with self.subTest(language=language, minor=minor, route=route, variant=variant):
+                            if not available:
+                                self.skipTest(f"Installed {language} validator required")
+                            self.header_fixture_exchange(language, minor, route, variant == "valid", nonce=variant)
 
     def header_fixture_exchange(self, language, minor, route, valid, *, nonce=None):
         with tempfile.TemporaryDirectory(prefix="kmipkit-typed-header-") as dirname:
@@ -571,10 +571,11 @@ class DirectTagValidatorTests(unittest.TestCase):
                             process.communicate(timeout=5)
             observed, = json.loads(report.read_text())["cases"]
             self.assertEqual(observed["status"], "passed" if valid else "failed")
-            if valid:
+            if valid or nonce == "absent":
                 self.assertEqual(observed["result_status_code"], 0)
                 if route == "high-level":
                     self.assertEqual(observed["actual_api_level"], route)
+            if valid:
                 fixture = "attestation-nonce" if nonce else "discover-versions"
                 save_evidence(report, catalog_path, f"{language}-2.{minor}-{route}-{fixture}")
 

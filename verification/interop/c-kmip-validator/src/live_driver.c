@@ -9541,6 +9541,40 @@ cleanup:
     return outcome;
 }
 
+static bool nonce_in_header(kmipkit_ttlv_structure_t *header) {
+    kmipkit_ttlv_structure_view_t *view = NULL, *nonce = NULL;
+    kmipkit_ttlv_value_view_t *nonce_value = NULL;
+    uint64_t count = 0;
+    bool valid = kmipkit_ttlv_structure_view(header, &view) == 0 &&
+        structure_view_find_value(view, 0x4200C8, KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &nonce_value) &&
+        kmipkit_ttlv_value_view_structure(nonce_value, &nonce) == 0 &&
+        kmipkit_ttlv_structure_view_item_count(nonce, &count) == 0 && count == 2;
+    for (uint64_t index = 0; valid && index < count; ++index) {
+        kmipkit_ttlv_item_view_t *field = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint64_t size = 0;
+        valid = kmipkit_ttlv_structure_view_item_at(nonce, index, &field) == 0 &&
+            item_view_has_tag(field, UINT32_C(0x4200C9) + (uint32_t)index,
+                              KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value) &&
+            kmipkit_ttlv_value_view_byte_length(value, &size) == 0 && size != 0;
+        if (value) kmipkit_ttlv_value_view_release(value);
+        if (field) kmipkit_ttlv_item_view_release(field);
+    }
+    if (nonce) kmipkit_ttlv_structure_view_release(nonce);
+    if (nonce_value) kmipkit_ttlv_value_view_release(nonce_value);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    return valid;
+}
+
+static bool typed_nonce_valid(kmipkit_client_batch_item_response_t *item, int32_t *status) {
+    kmipkit_ttlv_structure_t *header = NULL;
+    uint8_t present = 0;
+    *status = kmipkit_client_batch_item_response_header_ttlv(item, &present, &header);
+    const bool valid = *status == 0 && present && nonce_in_header(header);
+    if (header) kmipkit_ttlv_structure_release(header);
+    return valid;
+}
+
 static kmip_execution_outcome_t execute_single_versioned_diagnostic(
     kmip_live_client_t *client, uint32_t operation, bool fluent, const char *rotate_attribute,
     const kmip_test_case_t *query_field) {
@@ -9554,8 +9588,11 @@ static kmip_execution_outcome_t execute_single_versioned_diagnostic(
         .struct_size = (uint32_t)sizeof(metadata), .abi_version = 2
     };
     int32_t status;
-    uint32_t query_function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS, query_tag = 0;
-    if (query_field && !parse_query_field_fixture(query_field, &query_function, &query_tag)) {
+    const bool expect_nonce = query_field && strcmp(query_field->case_id, "test-query-attestation-nonce") == 0;
+    uint32_t query_function = expect_nonce ? KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_ATTESTATION_TYPES
+        : KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
+    uint32_t query_tag = 0;
+    if (query_field && !expect_nonce && !parse_query_field_fixture(query_field, &query_function, &query_tag)) {
         snprintf(outcome.result_reason, sizeof(outcome.result_reason), "Invalid Query field fixture.");
         return outcome;
     }
@@ -9633,8 +9670,11 @@ read_response:
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE) {
                 present = bounded_locate_response(item, &status);
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_QUERY) {
-                present = query_field ? query_response_has_structure(item, query_tag, &status)
-                    : query_response_has_operations(item, &status);
+                if (expect_nonce)
+                    present = typed_nonce_valid(item, &status);
+                else
+                    present = query_field ? query_response_has_structure(item, query_tag, &status)
+                        : query_response_has_operations(item, &status);
             } else if (operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS) {
                 kmipkit_protocol_version_v1_t returned = {0};
                 uint64_t count = 0;
@@ -10570,25 +10610,7 @@ typedef struct {
 
 static bool generic_nonce_valid(kmipkit_response_header_view_t *header) {
     kmipkit_ttlv_structure_t *owned = NULL;
-    kmipkit_ttlv_structure_view_t *view = NULL, *nonce = NULL;
-    uint64_t count = 0;
-    bool valid = kmipkit_response_header_view_ttlv(header, &owned) == 0 &&
-        kmipkit_ttlv_structure_view(owned, &view) == 0 &&
-        generic_structure_field(view, 0x4200C8, &nonce) &&
-        kmipkit_ttlv_structure_view_item_count(nonce, &count) == 0 && count == 2;
-    for (uint64_t index = 0; valid && index < count; ++index) {
-        kmipkit_ttlv_item_view_t *field = NULL;
-        kmipkit_ttlv_value_view_t *value = NULL;
-        uint64_t size = 0;
-        valid = kmipkit_ttlv_structure_view_item_at(nonce, index, &field) == 0 &&
-            item_view_has_tag(field, UINT32_C(0x4200C9) + (uint32_t)index,
-                              KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value) &&
-            kmipkit_ttlv_value_view_byte_length(value, &size) == 0 && size != 0;
-        if (value) kmipkit_ttlv_value_view_release(value);
-        if (field) kmipkit_ttlv_item_view_release(field);
-    }
-    if (nonce) kmipkit_ttlv_structure_view_release(nonce);
-    if (view) kmipkit_ttlv_structure_view_release(view);
+    const bool valid = kmipkit_response_header_view_ttlv(header, &owned) == 0 && nonce_in_header(owned);
     if (owned) kmipkit_ttlv_structure_release(owned);
     return valid;
 }
@@ -12010,13 +12032,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 #endif
         return outcome_not_run("server-initiated exchange requires a supported API, --listen and a peer trigger");
     }
-    if (strcmp(test_case->case_id, "test-query-attestation-nonce") == 0 &&
-        strcmp(client->api_level, "generic-ttlv") != 0)
-        return outcome_not_run("the selected public request route cannot supply the attestation header");
+    const bool nonce_query = strcmp(test_case->case_id, "test-query-attestation-nonce") == 0;
     if (strcmp(client->api_level, "high-level") == 0) {
         const bool discover = strcmp(test_case->case_id, "test-op-discover-versions") == 0;
         const bool query = strcmp(test_case->operation, "Query") == 0 &&
-            (test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
+            (nonce_query || test_case->query_function[0] || strcmp(test_case->case_id, "test-op-query") == 0);
         if (!discover && !query)
             return outcome_not_run("the C validator has no high-level recipe for this case");
         if (client->username_env[0] != 0)
@@ -12024,7 +12044,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         const uint32_t operation = discover ? KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS
             : KMIPKIT_ENUMERATION_OPERATION_QUERY;
         return execute_single_versioned_diagnostic(client, operation, false, NULL,
-            query && test_case->query_function[0] ? test_case : NULL);
+            query && (nonce_query || test_case->query_function[0]) ? test_case : NULL);
     }
     bool get_key_block = key_block_case(test_case->case_id);
     uint32_t key_material_format = asymmetric_key_format(test_case->case_id);
@@ -12082,7 +12102,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_HASH, fluent_route, NULL, NULL);
         if (draft_locate || rotate)
             return execute_single_versioned_diagnostic(client, KMIPKIT_ENUMERATION_OPERATION_LOCATE, fluent_route, rotate, NULL);
-        if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
+        if (strcmp(test_case->operation, "Query") == 0 && (nonce_query || test_case->query_function[0]))
             return execute_single_versioned_diagnostic(
                 client, KMIPKIT_ENUMERATION_OPERATION_QUERY, fluent_route, NULL, test_case);
         if (client->protocol_major == 3 && strcmp(test_case->case_id, "test-op-query") == 0)
@@ -12173,7 +12193,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 return execute_generic_probe(client, rng);
             if (strcmp(test_case->case_id, "test-op-query") == 0)
                 return execute_generic_probe(client, KMIPKIT_ENUMERATION_OPERATION_QUERY);
-            if (strcmp(test_case->case_id, "test-query-attestation-nonce") == 0)
+            if (nonce_query)
                 return execute_generic_nonce_query(client);
             if (strcmp(test_case->operation, "Query") == 0 && test_case->query_function[0])
                 return execute_generic_query_field(client, test_case);

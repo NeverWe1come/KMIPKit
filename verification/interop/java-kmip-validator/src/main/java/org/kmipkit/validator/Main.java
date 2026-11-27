@@ -255,10 +255,9 @@ public final class Main {
         if ("generic-ttlv".equals(apiLevel)) {
             return GenericIncoming.supports(testCase, connection) || GenericExchange.supports(testCase, connection);
         }
-        if ("test-query-attestation-nonce".equals(testCase.caseId())) return false;
         if ("high-level".equals(apiLevel)) {
             return (Set.of("test-op-query", "test-op-discover-versions").contains(testCase.caseId())
-                    || JavaKmipDriver.queryFieldCase(testCase))
+                    || JavaKmipDriver.queryFieldCase(testCase) || JavaKmipDriver.queryNonceCase(testCase))
                     && hasTypedRoute(testCase)
                     && connection.usernamePassword() == null;
         }
