@@ -6988,6 +6988,26 @@ impl Client {
         take_single_response(response)
     }
 
+    /// Executes one Query with Authentication in the Request Header.
+    ///
+    /// Authentication applies only to this exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    pub fn query_with_authentication(
+        &mut self,
+        request: QueryRequest,
+        authentication: Authentication,
+        limits: &CodecLimits,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let batch =
+            ClientBatch::new(ClientBatchItem::query(request)).with_authentication(authentication);
+        take_single_response(self.execute_with_options(batch, limits, request_options)?)
+    }
+
     /// Executes one Set Endpoint Role request (§6.1.54) with one exchange.
     ///
     /// # Errors

@@ -180,6 +180,22 @@ pub(super) fn execute_fluent_item(
     asynchronous_indicator: Option<u32>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
+    execute_fluent_batch(client, limits, options, out_response, || {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        Ok(batch)
+    })
+}
+
+fn execute_fluent_batch(
+    client: *mut kmipkit_client_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: &RequestOptions,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    build_batch: impl FnOnce() -> FfiResult<ClientBatch>,
+) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_response);
         let client_handle = read_handle!(client, Client);
@@ -193,10 +209,7 @@ pub(super) fn execute_fluent_item(
         let Ok(mut client) = client.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
-        if let Some(indicator) = asynchronous_indicator {
-            batch = batch.with_asynchronous_indicator(indicator);
-        }
+        let batch = try_ffi!(build_batch());
         match client.execute_with_options(batch, limits, options) {
             Ok(response) => {
                 *out = try_ffi!(try_make_handle(
@@ -4054,29 +4067,85 @@ pub unsafe extern "C" fn kmipkit_client_query_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if query_functions.is_null() || query_function_count == 0 {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let count =
-            try_ffi!(usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT));
-        if count > MAX_QUERY_FUNCTIONS {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        }
-        // SAFETY: caller guarantees `query_functions` points to `count` u32 elements.
-        let fns = unsafe { std::slice::from_raw_parts(query_functions, count) };
-        let req = kmipkit_protocol::QueryRequest::new(
-            fns.iter()
-                .copied()
-                .map(kmipkit_protocol::QueryFunction::from_raw),
-        );
+        // SAFETY: caller supplies the initialized Query Function array.
+        let request =
+            try_ffi!(unsafe { direct_query_request(query_functions, query_function_count) });
         execute_simple_request(
             client,
-            ClientRequest::Query(req),
+            ClientRequest::Query(request),
             limits,
             None,
             out_response,
         )
     })
+}
+
+/// Executes one Query with Request Header Authentication.
+///
+/// The Authentication slot is cleared when the handle is consumed, including
+/// when the subsequent exchange fails. A failure before consumption leaves it
+/// owned by the caller.
+///
+/// # Safety
+///
+/// A non-null `query_functions` with nonzero count must address that many
+/// initialized, aligned functions. Non-null handle slots must be writable and
+/// must not alias each other or the function array.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_query_with_authentication_v1(
+    client: *mut kmipkit_client_t,
+    query_functions: *const u32,
+    query_function_count: u64,
+    authentication: *mut *mut kmipkit_authentication_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // SAFETY: caller supplies the initialized Query Function array.
+        let request =
+            try_ffi!(unsafe { direct_query_request(query_functions, query_function_count) });
+        // SAFETY: caller owns the writable slot for the duration of this call.
+        let Some(slot) = (unsafe { authentication.as_mut() }) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        execute_fluent_batch(
+            client,
+            limits,
+            &RequestOptions::default(),
+            out_response,
+            || {
+                let authentication = consume_unshared_owner(*slot, Kind::Authentication)?;
+                *slot = ptr::null_mut();
+                let HandleValue::Authentication(authentication) = unwrap_payload(authentication)?
+                else {
+                    return Err(ERROR_INVALID_INPUT);
+                };
+                Ok(ClientBatch::new(ClientBatchItem::query(request))
+                    .with_authentication(authentication))
+            },
+        )
+    })
+}
+
+unsafe fn direct_query_request(
+    query_functions: *const u32,
+    query_function_count: u64,
+) -> FfiResult<kmipkit_protocol::QueryRequest> {
+    if query_functions.is_null() || query_function_count == 0 {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let count = usize::try_from(query_function_count).map_err(|_| ERROR_INVALID_INPUT)?;
+    if count > MAX_QUERY_FUNCTIONS {
+        return Err(ERROR_RESOURCE_LIMIT);
+    }
+    // SAFETY: caller supplies the initialized Query Function array.
+    let functions = unsafe { std::slice::from_raw_parts(query_functions, count) };
+    Ok(kmipkit_protocol::QueryRequest::new(
+        functions
+            .iter()
+            .copied()
+            .map(kmipkit_protocol::QueryFunction::from_raw),
+    ))
 }
 
 /// High-level direct RNG Retrieve helper.

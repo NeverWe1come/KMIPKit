@@ -126,6 +126,9 @@ void kmipkit_discover_versions_builder_release(kmipkit_discover_versions_builder
 int32_t kmipkit_client_execute_item_v1(kmipkit_client_t * client, kmipkit_client_batch_item_t ** inout_item, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_client_discover_versions_v1(kmipkit_client_t * client, const kmipkit_protocol_version_v1_t * versions, uint64_t version_count, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_client_query_v1(kmipkit_client_t * client, const uint32_t * query_functions, uint64_t query_function_count, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one Query with Request Header Authentication. Clears the Authentication
+ * handle slot when consumed, even if the exchange then fails. */
+int32_t kmipkit_client_query_with_authentication_v1(kmipkit_client_t * client, const uint32_t * query_functions, uint64_t query_function_count, kmipkit_authentication_t ** inout_authentication, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_client_rng_retrieve_v1(kmipkit_client_t * client, int32_t data_length, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_client_rng_seed_v1(kmipkit_client_t * client, const uint8_t * data, uint64_t data_length, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 int32_t kmipkit_client_obtain_lease_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
