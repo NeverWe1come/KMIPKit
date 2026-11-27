@@ -3,6 +3,7 @@
 use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
+use std::path::Path;
 use std::sync::Arc;
 
 use crate::ClientErrorResponseTtlv;
@@ -53,8 +54,9 @@ use kmipkit_protocol::{ValidateRequest, ValidateResponse};
 #[cfg(test)]
 use kmipkit_transport::Transport;
 use kmipkit_transport::{
-    HttpsTransport, RawTlsTransport, RequestDeliveryState, RequestOptions, TransportCauseCategory,
-    TransportConfig, TransportConfigError, WireEncoding,
+    CertificateInput, ClientIdentity, Endpoint, HttpsTransport, PrivateKeyInput, RawTlsTransport,
+    RequestDeliveryState, RequestOptions, RevocationListInput, TimeoutPolicy, TlsVersionPolicy,
+    TransportCauseCategory, TransportConfig, TransportConfigError, TrustSource, WireEncoding,
 };
 use kmipkit_ttlv::codec::{CodecLimits, DecodeError, decode_with_limits};
 use kmipkit_ttlv::{Item, ModelError, RawTag, Structure, StructureView, Tag, Value, ValueView};
@@ -2084,9 +2086,30 @@ pub struct PendingOutcome {
     result: KmipOperationResult,
     response: PendingResponse,
     asynchronous_correlation_value: Zeroizing<Vec<u8>>,
+    #[cfg(test)]
+    pending_owner_observer: Option<ZeroizationObserver>,
+}
+
+#[cfg(test)]
+impl Drop for PendingOutcome {
+    fn drop(&mut self) {
+        let Some(observer) = &self.pending_owner_observer else {
+            return;
+        };
+        let asynchronous_correlation_value = &mut self.asynchronous_correlation_value;
+        asynchronous_correlation_value.as_mut_slice().zeroize();
+        observer.observe_before_deallocation(asynchronous_correlation_value.as_slice());
+    }
 }
 
 impl PendingOutcome {
+    pub(crate) fn into_client_error(mut self) -> ClientError {
+        let correlation_value = std::mem::take(&mut *self.asynchronous_correlation_value);
+        ClientError::pending(
+            self.result.clone(),
+            crate::RedactedCorrelation::new(correlation_value),
+        )
+    }
     /// Returns the operation that reported Pending.
     #[must_use]
     pub const fn operation(&self) -> ClientOperation {
@@ -4735,8 +4758,6 @@ pub struct ClientBatchItemResponse {
     response: Arc<ResponseMessage>,
     wire_response: Arc<kmipkit_transport::TransportResponse>,
     response_index: usize,
-    #[cfg(test)]
-    pending_owner_observer: Option<ZeroizationObserver>,
 }
 
 /// A payload-free failure while rendering a retained response for inspection.
@@ -4797,22 +4818,6 @@ struct PendingClientBatchItemResponse {
     outcome: ClientBatchOutcome,
     extensions: Vec<ClientMessageExtension>,
     response_index: usize,
-    #[cfg(test)]
-    pending_owner_observer: Option<ZeroizationObserver>,
-}
-
-#[cfg(test)]
-impl Drop for ClientBatchItemResponse {
-    fn drop(&mut self) {
-        let Some(observer) = &self.pending_owner_observer else {
-            return;
-        };
-        if let ClientBatchOutcome::Pending(pending) = &mut self.outcome {
-            let asynchronous_correlation_value = &mut pending.asynchronous_correlation_value;
-            asynchronous_correlation_value.as_mut_slice().zeroize();
-            observer.observe_before_deallocation(asynchronous_correlation_value.as_slice());
-        }
-    }
 }
 
 impl ClientBatchItemResponse {
@@ -4923,6 +4928,18 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub const fn outcome(&self) -> &ClientBatchOutcome {
         &self.outcome
+    }
+
+    /// Consumes this response item and returns the owned typed outcome.
+    #[must_use]
+    pub fn into_outcome(self) -> ClientBatchOutcome {
+        self.outcome
+    }
+
+    /// Consumes this response item and returns its owned typed outcome and preserved message extensions.
+    #[must_use]
+    pub fn into_parts(self) -> (ClientBatchOutcome, Vec<ClientMessageExtension>) {
+        (self.outcome, self.extensions)
     }
 
     /// Returns the accepted Message Extensions preserved from this response.
@@ -5133,6 +5150,423 @@ fn take_single_response(
             RequestDeliveryState::ResponseStarted,
         )
     })
+}
+
+enum BuilderCertSource {
+    PemFile(std::path::PathBuf),
+    PemBytes(Vec<u8>),
+    DerFile(std::path::PathBuf),
+    DerBytes(Vec<Vec<u8>>),
+}
+
+impl BuilderCertSource {
+    fn into_input(self) -> Result<CertificateInput, TransportConfigError> {
+        match self {
+            Self::PemFile(path) => CertificateInput::from_pem_file(path),
+            Self::PemBytes(bytes) => Ok(CertificateInput::from_pem(bytes)),
+            Self::DerFile(path) => CertificateInput::from_der_file(path),
+            Self::DerBytes(certs) => Ok(CertificateInput::from_der(certs)),
+        }
+    }
+}
+
+enum BuilderKeySource {
+    PemFile(std::path::PathBuf),
+    PemBytes(Zeroizing<Vec<u8>>),
+    DerFile(std::path::PathBuf),
+    DerBytes(Zeroizing<Vec<u8>>),
+}
+
+impl BuilderKeySource {
+    fn into_input(self) -> Result<PrivateKeyInput, TransportConfigError> {
+        match self {
+            Self::PemFile(path) => PrivateKeyInput::from_pem_file(path),
+            Self::PemBytes(bytes) => Ok(PrivateKeyInput::from_pem(bytes.to_vec())),
+            Self::DerFile(path) => PrivateKeyInput::from_der_file(path),
+            Self::DerBytes(bytes) => Ok(PrivateKeyInput::from_der(bytes.to_vec())),
+        }
+    }
+}
+
+/// Fluent builder for constructing a configured synchronous KMIP [`Client`].
+///
+/// Supports either a pre-built [`TransportConfig`] / [`ClientConfiguration`] or
+/// direct endpoint, mTLS certificate/key/CA paths, protocol version, wire
+/// encoding, and [`CodecLimits`] without boilerplate. No sockets or network
+/// discovery occur inside [`Self::build`].
+#[must_use]
+pub struct ClientBuilder {
+    endpoint: Option<Endpoint>,
+    target_uri: Option<String>,
+    transport_config: Option<TransportConfig>,
+    ca_certs: Vec<CertificateInput>,
+    deferred_ca_certs: Vec<BuilderCertSource>,
+    platform_trust: bool,
+    trust_source: Option<TrustSource>,
+    client_cert: Option<BuilderCertSource>,
+    client_cert_input: Option<CertificateInput>,
+    client_key: Option<BuilderKeySource>,
+    client_key_input: Option<PrivateKeyInput>,
+    client_identity: Option<ClientIdentity>,
+    tls_server_name: Option<String>,
+    tls_version_policy: Option<TlsVersionPolicy>,
+    timeouts: Option<TimeoutPolicy>,
+    revocation_lists: Vec<RevocationListInput>,
+    max_request_bytes: Option<usize>,
+    configuration: Option<ClientConfiguration>,
+    extension_registry: Option<ClientExtensionRegistry>,
+    protocol_version: Option<ProtocolVersion>,
+    wire_encoding: Option<WireEncoding>,
+    codec_limits: Option<CodecLimits>,
+}
+
+impl Default for ClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ClientBuilder {
+    /// Creates an empty [`ClientBuilder`].
+    pub fn new() -> Self {
+        Self {
+            endpoint: None,
+            target_uri: None,
+            transport_config: None,
+            ca_certs: Vec::new(),
+            deferred_ca_certs: Vec::new(),
+            platform_trust: false,
+            trust_source: None,
+            client_cert: None,
+            client_cert_input: None,
+            client_key: None,
+            client_key_input: None,
+            client_identity: None,
+            tls_server_name: None,
+            tls_version_policy: None,
+            timeouts: None,
+            revocation_lists: Vec::new(),
+            max_request_bytes: None,
+            configuration: None,
+            extension_registry: None,
+            protocol_version: None,
+            wire_encoding: None,
+            codec_limits: None,
+        }
+    }
+
+    /// Configures a raw-TLS KMIP endpoint (`host:port`).
+    pub fn raw_tls(mut self, host: impl Into<String>, port: u16) -> Self {
+        self.endpoint = Some(Endpoint::raw_tls(host, port));
+        self
+    }
+
+    /// Configures an HTTPS KMIP endpoint (`https://host:port/path`).
+    pub fn https(mut self, uri: impl Into<String>) -> Self {
+        self.endpoint = Some(Endpoint::https(uri));
+        self
+    }
+
+    /// Sets an explicit validated [`Endpoint`].
+    pub fn endpoint(mut self, endpoint: Endpoint) -> Self {
+        self.endpoint = Some(endpoint);
+        self
+    }
+
+    /// Overrides the HTTPS origin-form target path (defaults to `/kmip`).
+    pub fn target_uri(mut self, target: impl Into<String>) -> Self {
+        self.target_uri = Some(target.into());
+        self
+    }
+
+    /// Supplies a pre-built [`TransportConfig`] directly.
+    pub fn transport_config(mut self, config: TransportConfig) -> Self {
+        self.transport_config = Some(config);
+        self
+    }
+
+    /// Adds a PEM-encoded CA certificate bundle from a filesystem path.
+    pub fn ca_pem_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.deferred_ca_certs
+            .push(BuilderCertSource::PemFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Adds PEM-encoded CA certificate bytes.
+    pub fn ca_pem(mut self, bytes: impl Into<Vec<u8>>) -> Self {
+        self.deferred_ca_certs
+            .push(BuilderCertSource::PemBytes(bytes.into()));
+        self
+    }
+
+    /// Adds a DER-encoded CA certificate from a filesystem path.
+    pub fn ca_der_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.deferred_ca_certs
+            .push(BuilderCertSource::DerFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Adds DER-encoded CA certificates.
+    pub fn ca_der(mut self, certificates: Vec<Vec<u8>>) -> Self {
+        self.deferred_ca_certs
+            .push(BuilderCertSource::DerBytes(certificates));
+        self
+    }
+
+    /// Explicitly trusts the native platform root store (and `SSL_CERT_FILE` if set).
+    pub fn platform_trust(mut self) -> Self {
+        self.platform_trust = true;
+        self
+    }
+
+    /// Sets an explicit [`TrustSource`].
+    pub fn trust_source(mut self, trust: TrustSource) -> Self {
+        self.trust_source = Some(trust);
+        self
+    }
+
+    /// Sets the mTLS client certificate chain PEM file path.
+    pub fn client_cert_pem_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.client_cert = Some(BuilderCertSource::PemFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Sets the mTLS client certificate chain PEM bytes.
+    pub fn client_cert_pem(mut self, bytes: impl Into<Vec<u8>>) -> Self {
+        self.client_cert = Some(BuilderCertSource::PemBytes(bytes.into()));
+        self
+    }
+
+    /// Sets the mTLS client certificate DER file path.
+    pub fn client_cert_der_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.client_cert = Some(BuilderCertSource::DerFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Sets the mTLS client certificate chain as DER-encoded bytes.
+    pub fn client_cert_der(mut self, certificates: Vec<Vec<u8>>) -> Self {
+        self.client_cert = Some(BuilderCertSource::DerBytes(certificates));
+        self
+    }
+
+    /// Sets the mTLS client private key PEM file path.
+    pub fn client_key_pem_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.client_key = Some(BuilderKeySource::PemFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Sets the mTLS client private key PEM bytes.
+    pub fn client_key_pem(mut self, bytes: impl Into<Vec<u8>>) -> Self {
+        self.client_key = Some(BuilderKeySource::PemBytes(Zeroizing::new(bytes.into())));
+        self
+    }
+
+    /// Sets the mTLS client private key DER file path.
+    pub fn client_key_der_file(mut self, path: impl AsRef<Path>) -> Self {
+        self.client_key = Some(BuilderKeySource::DerFile(path.as_ref().to_path_buf()));
+        self
+    }
+
+    /// Sets the mTLS client private key as unencrypted DER bytes.
+    pub fn client_key_der(mut self, bytes: impl Into<Vec<u8>>) -> Self {
+        self.client_key = Some(BuilderKeySource::DerBytes(Zeroizing::new(bytes.into())));
+        self
+    }
+
+    /// Sets both the mTLS client certificate chain and private key PEM file paths.
+    pub fn client_identity_pem_files(
+        mut self,
+        cert_pem_file: impl AsRef<Path>,
+        key_pem_file: impl AsRef<Path>,
+    ) -> Self {
+        self.client_cert = Some(BuilderCertSource::PemFile(
+            cert_pem_file.as_ref().to_path_buf(),
+        ));
+        self.client_key = Some(BuilderKeySource::PemFile(
+            key_pem_file.as_ref().to_path_buf(),
+        ));
+        self
+    }
+
+    /// Sets an explicit [`ClientIdentity`].
+    pub fn client_identity(mut self, identity: ClientIdentity) -> Self {
+        self.client_identity = Some(identity);
+        self
+    }
+
+    /// Overrides the TLS verification name for an IP endpoint.
+    pub fn tls_server_name(mut self, server_name: impl Into<String>) -> Self {
+        self.tls_server_name = Some(server_name.into());
+        self
+    }
+
+    /// Selects the TLS protocol version policy (defaults to TLS 1.3 only).
+    pub fn tls_version_policy(mut self, policy: TlsVersionPolicy) -> Self {
+        self.tls_version_policy = Some(policy);
+        self
+    }
+
+    /// Sets client timeout defaults.
+    pub fn timeouts(mut self, timeouts: TimeoutPolicy) -> Self {
+        self.timeouts = Some(timeouts);
+        self
+    }
+
+    /// Sets optional certificate revocation lists.
+    pub fn revocation_lists(mut self, lists: Vec<RevocationListInput>) -> Self {
+        self.revocation_lists = lists;
+        self
+    }
+
+    /// Sets the maximum request size in bytes.
+    pub fn max_request_bytes(mut self, max_request_bytes: usize) -> Self {
+        self.max_request_bytes = Some(max_request_bytes);
+        self
+    }
+
+    /// Sets a complete [`ClientConfiguration`] snapshot as the base configuration.
+    pub fn configuration(mut self, configuration: ClientConfiguration) -> Self {
+        self.configuration = Some(configuration);
+        self
+    }
+
+    /// Sets an immutable vendor [`ClientExtensionRegistry`].
+    pub fn extension_registry(mut self, registry: ClientExtensionRegistry) -> Self {
+        self.extension_registry = Some(registry);
+        self
+    }
+
+    /// Sets the default KMIP protocol version (defaults to KMIP 2.1).
+    pub fn protocol_version(mut self, version: ProtocolVersion) -> Self {
+        self.protocol_version = Some(version);
+        self
+    }
+
+    /// Sets the default KMIP protocol version (alias for [`Self::protocol_version`]).
+    pub fn kmip_version(self, version: ProtocolVersion) -> Self {
+        self.protocol_version(version)
+    }
+
+    /// Sets the default wire encoding (defaults to [`WireEncoding::Ttlv`]).
+    pub fn wire_encoding(mut self, encoding: WireEncoding) -> Self {
+        self.wire_encoding = Some(encoding);
+        self
+    }
+
+    /// Sets the default [`CodecLimits`] for fluent and high-level operations.
+    pub fn codec_limits(mut self, limits: CodecLimits) -> Self {
+        self.codec_limits = Some(limits);
+        self
+    }
+
+    /// Validates all inputs and constructs a configured [`Client`].
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation error with `NotSent` delivery evidence
+    /// if required transport credentials, trust sources, or endpoints are missing or invalid.
+    pub fn build(mut self) -> Result<Client, ClientError> {
+        let mut config = match (self.configuration.take(), self.extension_registry.take()) {
+            (Some(cfg), _) => cfg,
+            (None, Some(registry)) => ClientConfiguration::new(registry),
+            (None, None) => ClientConfiguration::with_default_registry(),
+        };
+        if let Some(version) = self.protocol_version {
+            config = config.with_protocol_version(version);
+        }
+        if let Some(encoding) = self.wire_encoding {
+            config = config.with_wire_encoding(encoding);
+        }
+        if let Some(limits) = self.codec_limits {
+            config = config.with_codec_limits(limits);
+        }
+
+        let transport_config = if let Some(tc) = self.transport_config.take() {
+            tc
+        } else {
+            let endpoint = self
+                .endpoint
+                .take()
+                .ok_or_else(|| transport_configuration_error(TransportConfigError::InvalidEndpoint))?;
+            let mut builder = TransportConfig::builder(endpoint);
+            if let Some(target) = self.target_uri.take() {
+                builder = builder.target_uri(target);
+            }
+            if let Some(timeouts) = self.timeouts {
+                builder = builder.timeouts(timeouts);
+            }
+            if let Some(max_bytes) = self.max_request_bytes {
+                builder = builder.max_request_bytes(max_bytes);
+            }
+            if let Some(server_name) = self.tls_server_name.take() {
+                builder = builder.tls_server_name(server_name);
+            }
+            if let Some(policy) = self.tls_version_policy {
+                builder = builder.tls_version_policy(policy);
+            }
+            if !self.revocation_lists.is_empty() {
+                builder = builder.revocation_lists(self.revocation_lists);
+            }
+
+            if let Some(trust) = self.trust_source.take() {
+                builder = builder.trust_source(trust);
+            } else if self.platform_trust {
+                builder = builder.trust_source(TrustSource::platform());
+            } else {
+                let mut certs = self.ca_certs;
+                for source in self.deferred_ca_certs {
+                    certs.push(source.into_input().map_err(transport_configuration_error)?);
+                }
+                if !certs.is_empty() {
+                    builder = builder.trust_source(TrustSource::certificate_authorities(certs));
+                }
+            }
+
+            if let Some(identity) = self.client_identity.take() {
+                builder = builder.client_identity(identity);
+            } else {
+                let cert_input = match (self.client_cert_input.take(), self.client_cert.take()) {
+                    (Some(input), _) => Some(input),
+                    (None, Some(src)) => Some(src.into_input().map_err(transport_configuration_error)?),
+                    (None, None) => None,
+                };
+                let key_input = match (self.client_key_input.take(), self.client_key.take()) {
+                    (Some(input), _) => Some(input),
+                    (None, Some(src)) => Some(src.into_input().map_err(transport_configuration_error)?),
+                    (None, None) => None,
+                };
+                match (cert_input, key_input) {
+                    (Some(cert), Some(key)) => {
+                        builder = builder.client_identity(ClientIdentity::new(cert, key));
+                    }
+                    (None, None) => {}
+                    _ => {
+                        return Err(transport_configuration_error(
+                            TransportConfigError::MissingIdentity,
+                        ));
+                    }
+                }
+            }
+
+            builder.build().map_err(transport_configuration_error)?
+        };
+
+        Client::new(config, transport_config)
+    }
+}
+
+impl fmt::Debug for ClientBuilder {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ClientBuilder")
+            .field("has_endpoint", &self.endpoint.is_some())
+            .field("has_transport_config", &self.transport_config.is_some())
+            .field("platform_trust", &self.platform_trust)
+            .field("protocol_version", &self.protocol_version)
+            .field("wire_encoding", &self.wire_encoding)
+            .field("codec_limits", &self.codec_limits)
+            .finish_non_exhaustive()
+    }
 }
 
 /// Synchronous typed KMIP client execution foundation.
@@ -5738,6 +6172,234 @@ impl Client {
             pending_owner_observer: None,
             #[cfg(test)]
             limits_identity_observer: None,
+        })
+    }
+
+    /// Starts an ergonomic [`ClientBuilder`] for configuring and constructing a [`Client`].
+    #[must_use]
+    pub fn builder() -> ClientBuilder {
+        ClientBuilder::new()
+    }
+
+    /// Connects a raw-TLS mutual-TLS client from PEM file paths using KMIP 2.1 defaults.
+    ///
+    /// No socket or implicit discovery is performed during construction; the
+    /// transport validates the certificate chain and private key immediately.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation error with `NotSent` delivery evidence
+    /// if the endpoint or credential files cannot be validated.
+    pub fn connect_mtls(
+        host: impl Into<String>,
+        port: u16,
+        ca_pem_file: impl AsRef<Path>,
+        client_cert_pem_file: impl AsRef<Path>,
+        client_key_pem_file: impl AsRef<Path>,
+    ) -> Result<Self, ClientError> {
+        Self::builder()
+            .raw_tls(host, port)
+            .ca_pem_file(ca_pem_file)
+            .client_cert_pem_file(client_cert_pem_file)
+            .client_key_pem_file(client_key_pem_file)
+            .build()
+    }
+
+    /// Connects a raw-TLS mutual-TLS client from PEM file paths for a specific KMIP version.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation error with `NotSent` delivery evidence
+    /// if the endpoint or credential files cannot be validated.
+    pub fn connect_mtls_with_version(
+        host: impl Into<String>,
+        port: u16,
+        ca_pem_file: impl AsRef<Path>,
+        client_cert_pem_file: impl AsRef<Path>,
+        client_key_pem_file: impl AsRef<Path>,
+        protocol_version: ProtocolVersion,
+    ) -> Result<Self, ClientError> {
+        Self::builder()
+            .raw_tls(host, port)
+            .ca_pem_file(ca_pem_file)
+            .client_cert_pem_file(client_cert_pem_file)
+            .client_key_pem_file(client_key_pem_file)
+            .protocol_version(protocol_version)
+            .build()
+    }
+
+    /// Connects an HTTPS mutual-TLS client from PEM file paths using KMIP 2.1 defaults.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation error with `NotSent` delivery evidence
+    /// if the URI or credential files cannot be validated.
+    pub fn connect_https(
+        uri: impl Into<String>,
+        ca_pem_file: impl AsRef<Path>,
+        client_cert_pem_file: impl AsRef<Path>,
+        client_key_pem_file: impl AsRef<Path>,
+    ) -> Result<Self, ClientError> {
+        Self::builder()
+            .https(uri)
+            .ca_pem_file(ca_pem_file)
+            .client_cert_pem_file(client_cert_pem_file)
+            .client_key_pem_file(client_key_pem_file)
+            .build()
+    }
+
+    /// Returns this client's immutable configuration snapshot.
+    #[must_use]
+    pub const fn configuration(&self) -> &ClientConfiguration {
+        &self.configuration
+    }
+
+    /// Returns the default KMIP protocol version configured on this client.
+    #[must_use]
+    pub const fn protocol_version(&self) -> ProtocolVersion {
+        self.configuration.protocol_version()
+    }
+
+    /// Updates the client's default KMIP protocol version for subsequent requests.
+    pub fn set_protocol_version(&mut self, version: ProtocolVersion) {
+        self.configuration = self.configuration.clone().with_protocol_version(version);
+    }
+
+    /// Returns the default [`CodecLimits`] configured on this client.
+    #[must_use]
+    pub const fn codec_limits(&self) -> &CodecLimits {
+        self.configuration.codec_limits()
+    }
+
+    /// Executes one explicitly supplied typed request batch using the
+    /// configured [`ClientConfiguration::codec_limits`].
+    ///
+    /// Performs a single synchronous network exchange without hidden retries,
+    /// implicit version discovery, or automatic polling.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send(&mut self, batch: ClientBatch) -> Result<ClientBatchResponse, ClientError> {
+        self.send_with_options(batch, &RequestOptions::default())
+    }
+
+    /// Executes one typed request batch using the configured [`CodecLimits`]
+    /// combined with any per-exchange [`RequestOptions`] overrides.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized validation, protocol, or transport error with the
+    /// strongest available request-delivery evidence.
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn send_with_options(
+        &mut self,
+        batch: ClientBatch,
+        request_options: &RequestOptions,
+    ) -> Result<ClientBatchResponse, ClientError> {
+        let effective_limits = self.resolve_effective_limits(request_options)?;
+        self.execute_with_options(batch, &effective_limits, request_options)
+    }
+
+    /// Explicitly queries the server via `Discover Versions` and switches this
+    /// client's default protocol version to the highest mutually supported
+    /// version matching `preferred` (or `[V3_0, V2_1, V2_0]` when empty).
+    ///
+    /// This performs one explicit synchronous `Discover Versions` exchange;
+    /// constructors never perform hidden version negotiation.
+    ///
+    /// # Errors
+    ///
+    /// Returns transport, protocol, validation, `ServerResult`, `Pending`, or
+    /// `InvalidInput` (when no requested version is mutually supported).
+    pub fn discover_and_use_version(
+        &mut self,
+        preferred: &[ProtocolVersion],
+    ) -> Result<ProtocolVersion, ClientError> {
+        let candidates = if preferred.is_empty() {
+            &[
+                ProtocolVersion::V3_0,
+                ProtocolVersion::V2_1,
+                ProtocolVersion::V2_0,
+            ][..]
+        } else {
+            preferred
+        };
+        let discover_req =
+            kmipkit_protocol::DiscoverVersionsRequest::with_versions(candidates.to_vec())
+                .map_err(|error| {
+                    ClientError::validation(
+                        ClientCauseCategory::InvalidInput,
+                        RequestDeliveryState::NotSent,
+                        error,
+                    )
+                })?;
+        let item = self.send_one_with_async_indicator(
+            ClientRequest::DiscoverVersions(discover_req),
+            None,
+            &RequestOptions::default(),
+        )?;
+        let supported = match item.into_outcome() {
+            ClientBatchOutcome::Completed(response) => {
+                if response.result().status().raw() != 0 {
+                    return Err(ClientError::server_result(response.result().clone()));
+                }
+                response
+                    .supported_versions()
+                    .map_or_else(Vec::new, <[ProtocolVersion]>::to_vec)
+            }
+            ClientBatchOutcome::Pending(pending) => return Err(pending.into_client_error()),
+            _ => {
+                return Err(protocol_failure_at(
+                    protocol_error(ProtocolErrorKind::MalformedMessage),
+                    RequestDeliveryState::ResponseStarted,
+                ));
+            }
+        };
+        let selected = candidates
+            .iter()
+            .copied()
+            .find(|candidate| supported.contains(candidate))
+            .ok_or_else(|| {
+                protocol_failure_at(
+                    protocol_error(ProtocolErrorKind::UnsupportedValue),
+                    RequestDeliveryState::ResponseStarted,
+                )
+            })?;
+        self.set_protocol_version(selected);
+        Ok(selected)
+    }
+
+    fn resolve_effective_limits(
+        &self,
+        request_options: &RequestOptions,
+    ) -> Result<CodecLimits, ClientError> {
+        let base = *self.configuration.codec_limits();
+        if request_options.max_message_bytes().is_none()
+            && request_options.max_structure_depth().is_none()
+            && request_options.max_elements().is_none()
+        {
+            return Ok(base);
+        }
+        CodecLimits::new(
+            request_options
+                .max_message_bytes()
+                .unwrap_or_else(|| base.max_message_bytes()),
+            request_options
+                .max_structure_depth()
+                .unwrap_or_else(|| base.max_structure_depth()),
+            request_options
+                .max_elements()
+                .unwrap_or_else(|| base.max_elements()),
+        )
+        .map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
         })
     }
 
@@ -7543,6 +8205,21 @@ impl Client {
             batch = batch.with_asynchronous_indicator(indicator);
         }
         self.execute_one_typed_batch(batch, limits, options)
+    }
+
+    pub(crate) fn send_one_with_async_indicator(
+        &mut self,
+        request: ClientRequest,
+        asynchronous_indicator: Option<u32>,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let limits = self.resolve_effective_limits(options)?;
+        self.execute_one_typed_request_with_async_indicator(
+            request,
+            asynchronous_indicator,
+            &limits,
+            options,
+        )
     }
 
     fn execute_one_typed_batch(
@@ -9456,8 +10133,6 @@ fn validate_response(
                     response: Arc::clone(&response),
                     wire_response: Arc::clone(&wire_response),
                     response_index: item.response_index,
-                    #[cfg(test)]
-                    pending_owner_observer: item.pending_owner_observer,
                 })
                 .collect();
             Ok(ClientBatchResponse { items })
@@ -9535,12 +10210,14 @@ fn validate_response_inner(
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
         let request_identity = &request_identities[request_index];
-        let outcome = response_outcome(request_identity, item)?;
+        #[allow(unused_mut)]
+        let mut outcome = response_outcome(request_identity, item)?;
         #[cfg(test)]
         if let (Some(observer), ClientBatchOutcome::Pending(pending)) =
-            (pending_owner_observer, &outcome)
+            (pending_owner_observer, &mut outcome)
         {
             observer.expect_initialized_len(pending.asynchronous_correlation_value.len());
+            pending.pending_owner_observer = Some(observer.clone());
         }
         ordered.push(PendingClientBatchItemResponse {
             unique_batch_item_id: request_identities[request_index]
@@ -9549,8 +10226,6 @@ fn validate_response_inner(
             outcome,
             extensions,
             response_index,
-            #[cfg(test)]
-            pending_owner_observer: pending_owner_observer.cloned(),
         });
     }
     Ok(ordered)
@@ -10440,6 +11115,8 @@ fn pending_outcome(
         result,
         response,
         asynchronous_correlation_value,
+        #[cfg(test)]
+        pending_owner_observer: None,
     })
 }
 

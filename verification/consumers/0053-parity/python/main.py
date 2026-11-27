@@ -168,7 +168,7 @@ def main() -> None:
                 finally:
                     result.close()
 
-            lifecycle_results: list[client.BatchResult] = []
+            lifecycle_results: list[client.BatchResult | client.BatchItemResult] = []
             try:
                 created = (
                     kmip_client.request()
@@ -179,20 +179,18 @@ def main() -> None:
                         | protocol_values.CryptographicUsageMask.DECRYPT
                     )
                     .name("fluent-key")
-                    .execute(limits)
+                    .execute()
                 )
                 lifecycle_results.append(created)
-                create_item = created.items[0]
-                assert create_item.operation == protocol_values.Operation.CREATE
-                assert create_item.outcome is client.BatchOutcome.COMPLETED
-                assert create_item.result_status == 0
-                assert create_item.create_object_type == 2
-                identifier = create_item.unique_identifier
+                assert created.operation == protocol_values.Operation.CREATE
+                assert created.outcome is client.BatchOutcome.COMPLETED
+                assert created.result_status == 0
+                assert created.create_object_type == 2
+                identifier = created.unique_identifier
                 assert identifier == extensions.UniqueIdentifier.text_string("fluent-key")
 
-                retrieved = kmip_client.request().get(identifier).execute(limits)
-                lifecycle_results.append(retrieved)
-                get_item = retrieved.items[0]
+                get_item = kmip_client.request().get(identifier).execute()
+                lifecycle_results.append(get_item)
                 assert get_item.operation == protocol_values.Operation.GET
                 assert get_item.outcome is client.BatchOutcome.COMPLETED
                 assert get_item.result_status == 0
@@ -205,7 +203,7 @@ def main() -> None:
                 nonce = b"nonce-12byte"
                 additional_data = b"fluent context"
                 with _aes_gcm_parameters() as parameters:
-                    encrypted = (
+                    encrypt_item = (
                         kmip_client.request()
                         .encrypt()
                         .unique_identifier(identifier)
@@ -213,10 +211,9 @@ def main() -> None:
                         .data(plaintext)
                         .iv_counter_nonce(nonce)
                         .authenticated_encryption_additional_data(additional_data)
-                        .execute(limits)
+                        .execute()
                     )
-                lifecycle_results.append(encrypted)
-                encrypt_item = encrypted.items[0]
+                lifecycle_results.append(encrypt_item)
                 assert encrypt_item.operation == protocol_values.Operation.ENCRYPT
                 assert encrypt_item.outcome is client.BatchOutcome.COMPLETED
                 assert encrypt_item.result_status == 0
@@ -231,7 +228,7 @@ def main() -> None:
                 assert authentication_tag == b"fixture-auth-tag"
 
                 with _aes_gcm_parameters() as parameters:
-                    decrypted = (
+                    decrypt_item = (
                         kmip_client.request()
                         .decrypt()
                         .unique_identifier(identifier)
@@ -240,10 +237,9 @@ def main() -> None:
                         .iv_counter_nonce(response_nonce)
                         .authenticated_encryption_additional_data(additional_data)
                         .authenticated_encryption_tag(authentication_tag)
-                        .execute(limits)
+                        .execute()
                     )
-                lifecycle_results.append(decrypted)
-                decrypt_item = decrypted.items[0]
+                lifecycle_results.append(decrypt_item)
                 assert decrypt_item.operation == protocol_values.Operation.DECRYPT
                 assert decrypt_item.outcome is client.BatchOutcome.COMPLETED
                 assert decrypt_item.result_status == 0
@@ -252,9 +248,8 @@ def main() -> None:
                 assert decrypt_response.unique_identifier == identifier
                 assert decrypt_response.data == plaintext
 
-                destroyed = kmip_client.request().destroy(identifier).execute(limits)
-                lifecycle_results.append(destroyed)
-                destroy_item = destroyed.items[0]
+                destroy_item = kmip_client.request().destroy(identifier).execute()
+                lifecycle_results.append(destroy_item)
                 assert destroy_item.operation == protocol_values.Operation.DESTROY
                 assert destroy_item.outcome is client.BatchOutcome.COMPLETED
                 assert destroy_item.result_status == 0
@@ -263,7 +258,7 @@ def main() -> None:
                 assert destroy_response.unique_identifier == identifier
                 print("python: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS")
 
-                paired = (
+                pair_item = (
                     kmip_client.request()
                     .create_key_pair()
                     .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
@@ -272,10 +267,9 @@ def main() -> None:
                     .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
                     .private_name("fluent-private-key")
                     .public_name("fluent-public-key")
-                    .execute(limits)
+                    .execute()
                 )
-                lifecycle_results.append(paired)
-                pair_item = paired.items[0]
+                lifecycle_results.append(pair_item)
                 assert pair_item.operation == protocol_values.Operation.CREATE_KEY_PAIR
                 assert pair_item.outcome is client.BatchOutcome.COMPLETED
                 assert pair_item.result_status == 0
@@ -294,16 +288,15 @@ def main() -> None:
                     ).digital_signature_algorithm(
                         protocol_values.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256
                     ).build() as parameters:
-                        signed = (
+                        sign_item = (
                             kmip_client.request()
                             .sign()
                             .unique_identifier(private_identifier)
                             .cryptographic_parameters(parameters)
                             .data(b"fluent sign input")
-                            .execute(limits)
+                            .execute()
                         )
-                lifecycle_results.append(signed)
-                sign_item = signed.items[0]
+                lifecycle_results.append(sign_item)
                 assert sign_item.operation == protocol_values.Operation.SIGN
                 assert sign_item.outcome is client.BatchOutcome.COMPLETED
                 assert sign_item.result_status == 0
@@ -320,11 +313,8 @@ def main() -> None:
                     sign_response.response_ttlv.close()
 
                 for key_identifier in (private_identifier, public_identifier):
-                    destroyed_key = (
-                        kmip_client.request().destroy(key_identifier).execute(limits)
-                    )
-                    lifecycle_results.append(destroyed_key)
-                    destroyed_item = destroyed_key.items[0]
+                    destroyed_item = kmip_client.request().destroy(key_identifier).execute()
+                    lifecycle_results.append(destroyed_item)
                     assert destroyed_item.operation == protocol_values.Operation.DESTROY
                     assert destroyed_item.outcome is client.BatchOutcome.COMPLETED
                     assert destroyed_item.result_status == 0
@@ -339,7 +329,7 @@ def main() -> None:
                     vendor_value_item = _item(0x0054_0001, vendor_value, limits)
                     try:
                         with kmip_client.request().create_symmetric_key() as builder:
-                            expert_created = (
+                            expert_create_item = (
                                 builder.aes_256()
                                 .usage_mask(
                                     protocol_values.CryptographicUsageMask.ENCRYPT
@@ -349,13 +339,12 @@ def main() -> None:
                                 .add_vendor_attribute(
                                     "KMIPKit.Example", "purpose", vendor_value_item
                                 )
-                                .execute(limits)
+                                .execute()
                             )
-                        lifecycle_results.append(expert_created)
+                        lifecycle_results.append(expert_create_item)
                     finally:
                         vendor_value_item.close()
 
-                expert_create_item = expert_created.items[0]
                 assert expert_create_item.operation == protocol_values.Operation.CREATE
                 assert expert_create_item.outcome is client.BatchOutcome.COMPLETED
                 assert expert_create_item.result_status == 0
@@ -365,9 +354,8 @@ def main() -> None:
                     "fluent-expert-key"
                 )
 
-                expert_retrieved = kmip_client.request().get(expert_identifier).execute(limits)
-                lifecycle_results.append(expert_retrieved)
-                expert_get_item = expert_retrieved.items[0]
+                expert_get_item = kmip_client.request().get(expert_identifier).execute()
+                lifecycle_results.append(expert_get_item)
                 assert expert_get_item.operation == protocol_values.Operation.GET
                 assert expert_get_item.outcome is client.BatchOutcome.COMPLETED
                 assert expert_get_item.result_status == 0
@@ -379,9 +367,8 @@ def main() -> None:
                 finally:
                     expert_get_response.close()
 
-                expert_destroyed = kmip_client.request().destroy(expert_identifier).execute(limits)
-                lifecycle_results.append(expert_destroyed)
-                expert_destroy_item = expert_destroyed.items[0]
+                expert_destroy_item = kmip_client.request().destroy(expert_identifier).execute()
+                lifecycle_results.append(expert_destroy_item)
                 assert expert_destroy_item.operation == protocol_values.Operation.DESTROY
                 assert expert_destroy_item.outcome is client.BatchOutcome.COMPLETED
                 assert expert_destroy_item.result_status == 0

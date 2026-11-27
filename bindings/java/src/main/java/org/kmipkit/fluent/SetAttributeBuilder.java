@@ -2,8 +2,8 @@ package org.kmipkit.fluent;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.FluentBatchItemAdapter;
 import org.kmipkit.extensions.RequestOptions;
@@ -139,16 +139,26 @@ public final class SetAttributeBuilder implements AutoCloseable {
 
     public ClientBatchItem toBatchItem() { return build(); }
 
-    public ClientBatchResponse execute(CodecLimits limits)
+    /** Executes Set Attribute with client limits and throws on server error or Pending. */
+    public ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Set Attribute with client limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Set Attribute with explicit limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        if (client == null) throw new InvalidInputException("client is required to execute this builder");
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
+    }
+
+    public ClientBatchResponse execute(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
     }
 
     @Override public void close() { handle.close(); }

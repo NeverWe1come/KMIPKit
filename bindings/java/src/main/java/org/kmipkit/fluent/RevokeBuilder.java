@@ -2,8 +2,8 @@ package org.kmipkit.fluent;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.RevocationReason;
@@ -84,17 +84,27 @@ public final class RevokeBuilder {
     /** Alias for {@link #build()}. */
     public ClientBatchItem toBatchItem() { return build(); }
 
+    /** Executes Revoke with client limits and throws on server error or Pending. */
+    public ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Revoke with client limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Revoke with explicit limits, returning raw outcomes. */
+    public ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        if (limits == null) throw new InvalidInputException("codec limits are required");
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
+    }
+
     /** Executes one typed exchange; this method never retries or polls. */
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
-        if (limits == null) throw new InvalidInputException("codec limits are required");
-        if (client == null) throw new InvalidInputException("client is required to execute");
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
     }
 
     /** Executes one exchange with explicit options supplied at the call site. */

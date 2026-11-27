@@ -154,7 +154,7 @@ fn split_key_builder_requires_all_four_explicit_semantic_fields() {
         };
         assert_eq!(builder.validate(), Err(expected));
         assert_eq!(builder.build_request().unwrap_err(), expected);
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
@@ -238,7 +238,7 @@ fn prime_field_method_requires_explicit_size_before_transport() {
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
 }
@@ -255,7 +255,7 @@ fn split_key_builder_rejects_duplicate_singleton_attributes_before_transport() {
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
 }
@@ -410,7 +410,7 @@ fn split_key_builder_executes_one_typed_exchange_and_preserves_all_response_ids(
         request_write_chunks: vec![4, 5],
     });
     let response = valid_builder(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed client executes one Create Split Key request");
     let ClientBatchOutcome::CreateSplitKeyCompleted(typed) = response.outcome() else {
         panic!("Success is preserved as a typed Create Split Key result");
@@ -451,7 +451,7 @@ fn split_key_builder_preserves_failure_and_pending_correlation_without_follow_up
         request_write_chunks: Vec::new(),
     });
     let response = valid_builder(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("server Failure remains a typed operation result");
     let ClientBatchOutcome::CreateSplitKeyCompleted(failed) = response.outcome() else {
         panic!("Failure is represented by the existing typed result");
@@ -474,7 +474,7 @@ fn split_key_builder_preserves_failure_and_pending_correlation_without_follow_up
     });
     let response = valid_builder(&mut client)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains visible without an implicit Poll");
     let ClientBatchOutcome::Pending(pending) = response.outcome() else {
         panic!("Pending is represented by the existing Pending outcome");
@@ -514,7 +514,7 @@ fn split_key_builder_preserves_options_and_transport_delivery_state() {
         .with_total(TimeoutLimit::Bounded(Duration::from_secs(5)));
     let response = valid_builder(&mut client)
         .with_options(options)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("explicit exchange options are forwarded to the client");
     assert_eq!(response.outcome().result().status().raw(), 0);
     assert_eq!(&*observed_options.borrow(), &[options]);
@@ -523,7 +523,7 @@ fn split_key_builder_preserves_options_and_transport_delivery_state() {
     let (mut client, transport, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
     let error = valid_builder(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap_err();
     assert_eq!(
         error.delivery_state(),

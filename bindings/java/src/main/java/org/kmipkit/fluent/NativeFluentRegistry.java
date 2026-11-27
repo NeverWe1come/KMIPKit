@@ -72,6 +72,8 @@ final class NativeFluentRegistry {
 
     static native void createKeyPairBuilderSetPublicName(long builder, String name);
 
+    static native void createKeyPairBuilderSetProtocolVersion(long builder, int major, int minor);
+
     static native void createKeyPairBuilderAddCommonAttributeItem(long builder, long item);
 
     static native void createKeyPairBuilderAddPrivateAttributeItem(long builder, long item);

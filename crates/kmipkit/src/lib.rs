@@ -182,15 +182,19 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
     ))
 }
 
+pub use kmipkit_client::extension_registry::{ClientConfiguration, ClientExtensionRegistry};
+pub use kmipkit_client::fluent;
+pub use kmipkit_client::fluent::{CryptographicUsageMask, FluentBuildError, RequestBuilder};
 pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
-    ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
-    ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome, RequestOptions,
-    ResponseEncodingError, RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler,
-    ServerRequestItemPayload, ServerRequestItemView, UsageAllocationContext,
-    UsageAllocationContextError,
+    ClientBatchResponse, ClientBuilder, ClientCauseCategory, ClientError, ClientErrorCategory,
+    ClientListener, ClientListenerConnection, ClientMessageExtension, ClientOperation,
+    ClientOperationOutcome, ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome,
+    RedactedCorrelation, RequestOptions, ResponseEncodingError, RoleReversedSession,
+    ServerRequestDispatcher, ServerRequestHandler, ServerRequestItemPayload,
+    ServerRequestItemView, UsageAllocationContext, UsageAllocationContextError, WireEncoding,
 };
+pub use kmipkit_ttlv::codec::CodecLimits;
 pub use kmipkit_protocol::{
     CancelRequest, CodecContext, DelegatedLoginError, DelegatedLoginRequest,
     DelegatedLoginResponse, EndpointRole, GetConstraintsError, GetConstraintsRequest,

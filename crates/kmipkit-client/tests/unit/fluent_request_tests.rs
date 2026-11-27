@@ -78,7 +78,7 @@ fn detached_delete_attribute_builder_builds_without_a_client_and_refuses_executi
     );
 
     let error = DeleteAttributeBuilder::detached()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a detached builder cannot send without an explicit client");
     assert_eq!(
         error.delivery_state(),
@@ -113,7 +113,7 @@ fn delete_attribute_builder_executes_once_and_converts_to_the_typed_batch_item()
         .attribute_reference(AttributeReference::tag(typed::Description::TAG))
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(3)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Delete Attribute executes through one existing typed exchange");
 
     assert_eq!(
@@ -338,7 +338,7 @@ fn detached_set_attribute_builder_builds_without_a_client_and_refuses_execution(
             Attribute::<typed::Description>::new("managed by C, Java, and Python".to_owned())
                 .expect("Description uses a catalogued Text String value"),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a detached builder cannot send without an explicit client");
     assert_eq!(
         error.delivery_state(),
@@ -374,7 +374,7 @@ fn set_attribute_builder_rejects_missing_and_wrong_type_attributes_before_exchan
         .set_attribute()
         .unique_identifier("key-42")
         .attribute_item(item(typed::Description::TAG, Value::integer(17)))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
 
     assert_eq!(
@@ -417,7 +417,7 @@ fn set_attribute_builder_executes_one_typed_exchange_and_converts_to_batch() {
         )
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(3)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Set Attribute executes through one existing typed exchange");
 
     assert_eq!(
@@ -684,7 +684,7 @@ fn detached_add_attribute_builder_builds_without_a_client_and_refuses_execution(
             Attribute::<typed::Description>::new("managed by fluent".to_owned())
                 .expect("Description uses a catalogued Text String value"),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a detached builder cannot execute without an explicit client");
     assert_eq!(
         error.delivery_state(),
@@ -724,7 +724,7 @@ fn add_attribute_builder_executes_once_and_returns_the_typed_result() {
         )
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(3)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Add Attribute uses one existing typed exchange");
 
     assert_eq!(
@@ -745,7 +745,7 @@ fn add_attribute_builder_rejects_wrong_type_and_duplicate_new_attributes_before_
         .request()
         .add_attribute()
         .attribute_item(item(typed::Description::TAG, Value::integer(17)))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
     assert_eq!(
         error.delivery_state(),
@@ -1187,7 +1187,7 @@ fn rejected_expert_attribute_position_is_not_sent() {
                 Value::text_string("two".to_owned()),
             ),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("duplicate positions fail before exchange");
 
     assert_eq!(
@@ -1254,7 +1254,7 @@ fn detached_create_builder_can_build_reusable_typed_requests_without_a_client() 
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT);
     let error = detached
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a detached builder cannot execute without a client");
     assert_eq!(
         error.delivery_state(),
@@ -1275,7 +1275,7 @@ fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
         .name("payments-key")
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed Create route completes the exchange");
 
     assert_eq!(response.outcome().operation(), ClientOperation::Create);
@@ -1314,7 +1314,7 @@ fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
     let result = client
         .request()
         .ping()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted Ping response is valid");
 
     assert_eq!(
@@ -1362,7 +1362,7 @@ fn discover_versions_builder_preserves_offers_and_executes_once() {
     let result = client
         .request()
         .discover_versions()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted empty Discover Versions result is valid");
 
     assert_eq!(
@@ -1398,7 +1398,7 @@ fn discover_versions_builder_rejects_invalid_offers_before_transport() {
         .request()
         .discover_versions()
         .protocol_versions(Vec::new())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("invalid offers fail before transport");
     assert_eq!(
         error.delivery_state(),
@@ -1420,7 +1420,7 @@ fn execute_exposes_pending_correlation_without_polling() {
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains an explicit typed outcome");
 
     assert_eq!(response.outcome().operation(), ClientOperation::Create);
@@ -1442,7 +1442,7 @@ fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
     let error = client
         .request()
         .create_symmetric_key()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("required fluent fields are validated before transport");
 
     assert_eq!(
@@ -1496,7 +1496,7 @@ fn query_builder_preserves_functions_and_groups_and_executes_once() {
         .request()
         .query()
         .functions(vec![QueryFunction::OPERATIONS])
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted Query response is valid");
 
     assert_eq!(
@@ -1521,7 +1521,7 @@ fn query_builder_rejects_empty_functions_before_transport() {
     let error = client
         .request()
         .query()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("an empty Query is rejected before transport");
     assert_eq!(
         error.delivery_state(),
@@ -1569,7 +1569,7 @@ fn check_builder_builds_typed_policy_request_and_executes_once() {
         .request()
         .check()
         .unique_identifier(identifier)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted Check result is valid");
 
     assert_eq!(
@@ -1842,7 +1842,7 @@ fn get_constraints_builder_builds_typed_request_and_executes_once() {
     let result = client
         .request()
         .get_constraints()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted Get Constraints response is valid");
 
     assert_eq!(
@@ -1908,7 +1908,7 @@ fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
         .get_usage_allocation()
         .usage_limits_count(3)
         .unique_identifier(UniqueIdentifier::TextString("limited-key".to_owned()))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted usage allocation response is valid");
 
     assert_eq!(
@@ -1957,7 +1957,7 @@ fn obtain_lease_builder_preserves_identifier_and_executes_once() {
         .request()
         .obtain_lease()
         .unique_identifier(identifier)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the scripted Obtain Lease result is valid");
 
     assert_eq!(
@@ -1987,7 +1987,7 @@ fn obtain_lease_execute_requires_an_identifier_before_sending() {
     let error = client
         .request()
         .obtain_lease()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("single-request execution has no preceding ID Placeholder");
 
     assert_eq!(
@@ -2009,7 +2009,7 @@ fn create_get_and_destroy_execute_with_exchange_options() {
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .with_options(RequestOptions::default())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Create accepts exchange-local options");
     assert_eq!(create.outcome().operation(), ClientOperation::Create);
 
@@ -2019,7 +2019,7 @@ fn create_get_and_destroy_execute_with_exchange_options() {
         .get(UniqueIdentifier::from("key-42"))
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(0)
-        .execute(&CodecLimits::defaults());
+        .execute_outcome_with_limits(&CodecLimits::defaults());
     assert_eq!(
         get.expect_err("Get reaches the scripted transport")
             .delivery_state(),
@@ -2032,7 +2032,7 @@ fn create_get_and_destroy_execute_with_exchange_options() {
         .destroy(UniqueIdentifier::from("key-42"))
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults());
+        .execute_outcome_with_limits(&CodecLimits::defaults());
     assert_eq!(
         destroy
             .expect_err("Destroy reaches the scripted transport")
@@ -2214,7 +2214,7 @@ fn invalid_attribute_mutation_is_rejected_without_sending() {
             typed::CryptographicLength::TAG,
             Value::text_string("wrong-ttlv-type".to_owned()),
         ))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
 
     assert_eq!(
@@ -2241,7 +2241,7 @@ fn adjust_attribute_requires_explicit_reference_and_type_before_sending() {
         .request()
         .adjust_attribute()
         .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("an explicit adjustment type is required before transport");
     assert_eq!(
         error.delivery_state(),
@@ -2264,7 +2264,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
             Attribute::<typed::Comment>::new("added".to_owned())
                 .expect("Comment is a catalogued Text String"),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Add Attribute uses its existing typed client route");
     assert_eq!(
         response.outcome().operation(),
@@ -2290,7 +2290,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         ));
     assert_eq!(builder.validate(), Ok(()));
     let response = builder
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Modify Attribute uses its existing typed client route");
     assert_eq!(
         response.outcome().operation(),
@@ -2310,7 +2310,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
             Attribute::<typed::Comment>::new("set".to_owned())
                 .expect("Comment is a catalogued Text String"),
         )
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Set Attribute uses its existing typed client route");
     assert_eq!(
         response.outcome().operation(),
@@ -2327,7 +2327,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         .delete_attribute()
         .unique_identifier("key-42")
         .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Delete Attribute uses its existing typed client route");
     assert_eq!(
         response.outcome().operation(),
@@ -2346,7 +2346,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
         .adjustment_type(AdjustmentType::INCREMENT)
         .adjustment_value(AttributeAdjustmentValue::integer(1))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Adjust Attribute uses its existing typed client route");
     assert_eq!(
         response.outcome().operation(),
@@ -2398,7 +2398,7 @@ fn generic_create_builder_requires_object_type_before_transport() {
         builder.build_request().err(),
         Some(FluentBuildError::MissingCreateObjectType)
     );
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -2480,7 +2480,7 @@ fn generic_create_builder_rejects_invalid_cardinality_with_redacted_not_sent_err
         builder.build_request().err(),
         Some(FluentBuildError::InvalidRequest)
     );
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -2513,7 +2513,7 @@ fn generic_create_builder_executes_one_typed_exchange_with_explicit_options() {
         .object_type(ObjectType::from_raw(2))
         .with_options(options)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     assert_eq!(response.outcome().operation(), ClientOperation::Create);
     assert_eq!(response.outcome().result().status().raw(), 0);
@@ -2545,7 +2545,7 @@ fn generic_create_builder_preserves_pending_without_follow_up() {
         .create()
         .object_type(ObjectType::from_raw(2))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let ClientBatchOutcome::Pending(pending) = response.outcome() else {
         panic!("expected Pending")
@@ -2613,7 +2613,7 @@ fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
     let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
     let builder = client.request().create_group(AttributeSet::new());
     assert_eq!(builder.validate(), Ok(()));
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -2680,7 +2680,7 @@ fn kmip30_fluent_execute_encodes_all_explicit_v3_routes_once_with_not_sent_failu
             assert_eq!(builder.validate(), Ok(()));
             let error = builder
                 .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-                .execute(&CodecLimits::defaults()).unwrap_err();
+                .execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
             assert_eq!(error.delivery_state(), Some(kmipkit_transport::RequestDeliveryState::NotSent));
             assert_eq!(transport.borrow().exchange_count(), 1);
             let captured = captured.borrow();
@@ -2716,7 +2716,7 @@ fn kmip30_fluent_all_routes_reject_explicit_incompatible_versions_before_transpo
                 let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
                 let error = client.request().$method($($argument),*)
                     .with_options(RequestOptions::default().with_protocol_version(version))
-                    .execute(&CodecLimits::defaults()).unwrap_err();
+                    .execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
                 assert_eq!(error.delivery_state(), Some(kmipkit_transport::RequestDeliveryState::NotSent));
                 assert_eq!(transport.borrow().exchange_count(), 0);
                 assert!(captured.borrow().is_none());
@@ -2960,7 +2960,7 @@ fn kmip30_fluent_success_preserves_typed_encapsulate_fields_options_and_async_he
         .encapsulate(UniqueIdentifier::Integer(42))
         .with_options(options)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let Kmip30OperationResponse::Encapsulate(typed) = response.kmip30_response().unwrap() else {
         panic!("typed Encapsulate response")
@@ -3022,7 +3022,7 @@ fn kmip30_fluent_pending_preserves_exact_correlation_without_poll_or_retry() {
         .create_group(AttributeSet::new())
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let ClientBatchOutcome::Pending(pending) = response.outcome() else {
         panic!("typed Pending")
@@ -3060,7 +3060,7 @@ fn kmip30_fluent_failure_preserves_typed_reason_and_absent_fields_without_retry(
         .request()
         .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let Kmip30OperationResponse::Decapsulate(typed) = response.kmip30_response().unwrap() else {
         panic!("typed Decapsulate Failure")
@@ -3107,7 +3107,7 @@ fn kmip30_fluent_transport_failure_preserves_delivery_state_and_redacts_error_so
                 b"REQUEST_BODY_PRIVATE_SENTINEL".to_vec(),
             )
             .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-            .execute(&CodecLimits::defaults())
+            .execute_outcome_with_limits(&CodecLimits::defaults())
             .unwrap_err();
         assert_eq!(error.delivery_state(), Some(expected));
         assert!(error.response_ttlv().is_none());
@@ -3149,7 +3149,7 @@ fn kmip30_fluent_decapsulate_success_returns_only_server_managed_secret_identifi
         .request()
         .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let Kmip30OperationResponse::Decapsulate(typed) = response.kmip30_response().unwrap() else {
         panic!("typed Decapsulate Success")
@@ -3199,7 +3199,7 @@ fn kmip30_fluent_decapsulate_rejects_response_shared_secret_data_with_redacted_e
         .request()
         .decapsulate(UniqueIdentifier::Integer(42), vec![1, 2, 3])
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap_err();
     assert_eq!(
         error.delivery_state(),
@@ -3279,7 +3279,7 @@ fn get_builder_supports_batch_items_and_exchange_options() {
         .unique_identifier(identifier)
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap_err();
     assert_eq!(
         error.delivery_state(),

@@ -27,7 +27,7 @@ fn seed_server_rng(
         .request()
         .rng_seed()
         .data(SecretBytes::new(seed))
-        .execute(limits)
+        .execute_outcome_with_limits(limits)
 }
 
 #[allow(dead_code)]

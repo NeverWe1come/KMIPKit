@@ -177,7 +177,7 @@ fn fluent_ping_builder_executes_one_exchange_and_preserves_typed_success() {
     let result = client
         .request()
         .ping()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing client returns a typed Ping response");
     let ClientBatchOutcome::Ping(ping) = result.outcome() else {
         panic!("the fluent result preserves the typed Ping response");
@@ -205,7 +205,7 @@ fn fluent_ping_builder_preserves_pending_without_follow_up() {
         .request()
         .ping()
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains a typed result of the single exchange");
     let ClientBatchOutcome::Pending(pending) = result.outcome() else {
         panic!("the fluent result preserves Pending explicitly");
@@ -231,7 +231,7 @@ fn fluent_ping_builder_rejects_kmip_2_0_before_exchange() {
         .request()
         .ping()
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V2_0))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Ping is assigned starting in KMIP 2.1 §6.1.36");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));

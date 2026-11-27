@@ -116,7 +116,7 @@ fn detached_key_pair_builder_builds_without_a_client_and_never_sends() {
 
     assert!(builder.validate().is_ok());
     let error = builder
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("a detached request builder has no client to execute through");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
@@ -212,7 +212,7 @@ fn conflicting_table_191_key_algorithms_are_rejected_before_transport() {
         .private_attribute(Attribute::<typed::CryptographicAlgorithm>::new(RSA).unwrap())
         .public_attribute(Attribute::<typed::CryptographicAlgorithm>::new(DSA).unwrap())
         .private_name(PRIVATE_SENTINEL)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Table 191 rejects distinct effective algorithms for the pair");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -256,7 +256,7 @@ fn malformed_typed_vendor_attributes_are_rejected_in_every_key_group() {
             builder.build_request().unwrap_err(),
             FluentBuildError::InvalidAttributeValue
         );
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
@@ -379,7 +379,7 @@ fn key_pair_builder_executes_one_typed_exchange_without_inferring_response_attri
         request_write_chunks: vec![4, 5],
     });
     let response = grouped_key_pair(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let ClientBatchOutcome::CreateKeyPairCompleted(typed) = response.outcome() else {
         panic!("Success returns the existing typed CreateKeyPair response");
@@ -428,7 +428,7 @@ fn key_pair_builder_preserves_failure_without_success_fields_or_retry() {
         request_write_chunks: Vec::new(),
     });
     let response = grouped_key_pair(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let ClientBatchOutcome::CreateKeyPairCompleted(typed) = response.outcome() else {
         panic!("server Failure remains a completed typed operation result");
@@ -464,7 +464,7 @@ fn key_pair_builder_preserves_pending_and_exact_binary_correlation_without_polli
     });
     let response = grouped_key_pair(&mut client)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     let outcome = response.outcome();
     let ClientBatchOutcome::Pending(pending) = outcome else {
@@ -518,7 +518,7 @@ fn key_pair_builder_preserves_exchange_options_and_explicit_prohibited_async_ind
     let response = grouped_key_pair(&mut client)
         .with_options(options)
         .with_asynchronous_indicator(3)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap();
     assert_eq!(response.outcome().result().status().raw(), 0);
     assert_eq!(&*observed_options.borrow(), &[options]);
@@ -542,7 +542,7 @@ fn key_pair_builder_missing_required_values_are_not_sent() {
         } else {
             builder.algorithm(CryptographicAlgorithm::from_raw(RSA))
         };
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
         assert!(captured.borrow().is_none());
@@ -555,7 +555,7 @@ fn key_pair_builder_transport_failure_preserves_delivery_state_without_retry() {
     let (mut client, transport, _) =
         client_for(ExchangeScript::FailAfterPartialWrite { written_bytes: 3 });
     let error = grouped_key_pair(&mut client)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .unwrap_err();
     assert_eq!(
         error.delivery_state(),
@@ -569,7 +569,7 @@ fn key_pair_builder_invalid_async_indicator_is_not_sent() {
     let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
     let error = grouped_key_pair(&mut client)
         .with_asynchronous_indicator(0)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("the typed client rejects unassigned Asynchronous Indicator values");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
@@ -748,7 +748,7 @@ fn key_pair_prebuilt_duplicates_in_each_group_are_rejected_before_transport() {
             builder.build_request().unwrap_err(),
             FluentBuildError::InvalidRequest
         );
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
         assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
         assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
@@ -779,7 +779,7 @@ fn key_pair_prebuilt_conflicting_algorithms_use_the_existing_request_validator()
         builder.build_request().unwrap_err(),
         FluentBuildError::InvalidRequest
     );
-    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    let error = builder.execute_outcome_with_limits(&CodecLimits::defaults()).unwrap_err();
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));

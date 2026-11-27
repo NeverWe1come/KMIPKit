@@ -369,7 +369,7 @@ fn fluent_builder_executes_one_typed_exchange_and_preserves_success() {
     let result = client
         .request()
         .get_constraints()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Table 230 success is returned as a typed response");
 
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -423,7 +423,7 @@ fn fluent_builder_preserves_pending_correlation_without_follow_up() {
         .request()
         .get_constraints()
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains an explicit typed outcome");
 
     let ClientBatchOutcome::Pending(pending) = result.outcome() else {

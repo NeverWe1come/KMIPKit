@@ -3451,6 +3451,92 @@ class Client(_ClientHandle):
 
     _release_name = "kmipkit_client_release"
 
+    @property
+    def protocol_version(self) -> ProtocolVersion:
+        """Return the configured KMIP protocol version for this client."""
+        version = getattr(self, "_protocol_version", None)
+        return version if isinstance(version, ProtocolVersion) else ProtocolVersion(2, 1)
+
+    @property
+    def codec_limits(self) -> ttlv.CodecLimits:
+        """Return the configured TTLV/JSON/XML codec limits for this client."""
+        limits = getattr(self, "_codec_limits", None)
+        if not isinstance(limits, ttlv.CodecLimits):
+            limits = ttlv.codec_limits_defaults()
+            self._codec_limits = limits
+        return limits
+
+    @classmethod
+    def builder(cls) -> ClientBuilder:
+        """Create an ergonomic builder for TLS / HTTPS KMIP clients."""
+        return ClientBuilder()
+
+    @classmethod
+    def connect_mtls(
+        cls,
+        host: str,
+        port: int,
+        ca_pem_path: str | Path,
+        client_cert_pem_path: str | Path,
+        client_key_pem_path: str | Path,
+        *,
+        protocol_version: ProtocolVersion | None = None,
+        wire_encoding: extensions.WireEncoding | None = None,
+        codec_limits: ttlv.CodecLimits | None = None,
+        tls_server_name: str | None = None,
+    ) -> Client:
+        """Construct a mutual-TLS KMIP client from PEM file paths in one call."""
+        builder = (
+            cls.builder()
+            .raw_tls(host, port)
+            .ca_pem_file(ca_pem_path)
+            .client_identity_pem_files(client_cert_pem_path, client_key_pem_path)
+        )
+        if tls_server_name is not None:
+            builder.tls_server_name(tls_server_name)
+        if protocol_version is not None:
+            builder.protocol_version(protocol_version)
+        if wire_encoding is not None:
+            builder.wire_encoding(wire_encoding)
+        if codec_limits is not None:
+            builder.codec_limits(codec_limits)
+        return builder.build()
+
+    @classmethod
+    def connect_https(
+        cls,
+        uri: str,
+        *,
+        ca_pem_path: str | Path | None = None,
+        platform_trust: bool = False,
+        client_cert_pem_path: str | Path | None = None,
+        client_key_pem_path: str | Path | None = None,
+        protocol_version: ProtocolVersion | None = None,
+        wire_encoding: extensions.WireEncoding | None = None,
+        codec_limits: ttlv.CodecLimits | None = None,
+        tls_server_name: str | None = None,
+        target_uri: str | None = None,
+    ) -> Client:
+        """Construct an HTTPS KMIP client from endpoint and PEM paths."""
+        builder = cls.builder().https(uri, target_uri=target_uri)
+        if tls_server_name is not None:
+            builder.tls_server_name(tls_server_name)
+        if platform_trust:
+            builder.platform_trust()
+        if ca_pem_path is not None:
+            builder.ca_pem_file(ca_pem_path)
+        if client_cert_pem_path is not None or client_key_pem_path is not None:
+            if client_cert_pem_path is None or client_key_pem_path is None:
+                errors.raise_for_status(4)
+            builder.client_identity_pem_files(client_cert_pem_path, client_key_pem_path)
+        if protocol_version is not None:
+            builder.protocol_version(protocol_version)
+        if wire_encoding is not None:
+            builder.wire_encoding(wire_encoding)
+        if codec_limits is not None:
+            builder.codec_limits(codec_limits)
+        return builder.build()
+
     def request(self) -> Any:
         """Return the task-oriented fluent namespace for this client."""
         from .fluent import Request
@@ -3802,7 +3888,10 @@ class Client(_ClientHandle):
             _wipe_client_transport_secrets(owners, transport)
         if client_output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return _wrap_owned_handle(cls, client_output[0])
+        created = _wrap_owned_handle(cls, client_output[0])
+        created._protocol_version = configuration.protocol_version
+        created._codec_limits = configuration.codec_limits
+        return created
 
     @classmethod
     def create_mtls(
@@ -3919,7 +4008,10 @@ class Client(_ClientHandle):
             _raise_abi_status(status)
             if client_output[0] == ffi.NULL:
                 errors.raise_for_status(7)
-            return _wrap_owned_handle(cls, client_output[0])
+            created = _wrap_owned_handle(cls, client_output[0])
+            created._protocol_version = configuration.protocol_version
+            created._codec_limits = configuration.codec_limits
+            return created
         finally:
             for buf in wipe_buffers:
                 _wipe_staging_buffer(buf)
@@ -4059,10 +4151,12 @@ class Client(_ClientHandle):
     def execute(
         self,
         batch: Batch,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         wire_encoding: extensions.WireEncoding | None = None,
     ) -> BatchResult:
-        """Execute one typed batch, optionally overriding the configured encoding."""
+        """Execute one typed batch, defaulting to configured codec limits."""
+        if limits is None:
+            limits = self.codec_limits
         if not isinstance(batch, Batch) or not isinstance(limits, ttlv.CodecLimits):
             errors.raise_for_status(4)
         if wire_encoding is not None and not isinstance(
@@ -4423,10 +4517,12 @@ class Client(_ClientHandle):
     def execute_with_options(
         self,
         batch: Batch,
-        limits: ttlv.CodecLimits,
-        options: RequestOptions,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
     ) -> BatchResult:
         """Execute one batch with exchange-local timeout overrides."""
+        if limits is None:
+            limits = self.codec_limits
         if (
             not isinstance(batch, Batch)
             or not isinstance(limits, ttlv.CodecLimits)
@@ -7795,6 +7891,196 @@ def _nonempty_text(value: str) -> str:
     return value
 
 
+class ClientBuilder:
+    """Ergonomic builder combining transport and client configuration."""
+
+    def __init__(self) -> None:
+        self._endpoint: Endpoint | None = None
+        self._endpoint_kind: EndpointKind | None = None
+        self._address: str | None = None
+        self._port: int = 0
+        self._tls_server_name: str | None = None
+        self._target_uri: str | None = None
+        self._client_certificates: list[TransportInput] = []
+        self._client_private_key: TransportInput | None = None
+        self._trust: TrustSource | None = None
+        self._connect_timeout: TimeoutLimit = TimeoutLimit()
+        self._write_timeout: TimeoutLimit = TimeoutLimit()
+        self._read_timeout: TimeoutLimit = TimeoutLimit()
+        self._total_timeout: TimeoutLimit = TimeoutLimit()
+        self._max_request_bytes: int = 16 * 1024 * 1024
+        self._tls12_compat: bool = False
+        self._configuration: extensions.ClientConfiguration | None = None
+        self._protocol_version: ProtocolVersion | None = None
+        self._wire_encoding: extensions.WireEncoding | None = None
+        self._codec_limits: ttlv.CodecLimits | None = None
+
+    def raw_tls(self, host: str, port: int) -> ClientBuilder:
+        self._endpoint_kind = EndpointKind.RAW_TLS
+        self._address = host
+        self._port = port
+        self._endpoint = Endpoint.raw_tls(host, port, tls_server_name=self._tls_server_name)
+        return self
+
+    def https(self, uri: str, *, target_uri: str | None = None) -> ClientBuilder:
+        self._endpoint_kind = EndpointKind.HTTPS
+        self._address = uri
+        self._port = 0
+        if target_uri is not None:
+            self._target_uri = target_uri
+        self._endpoint = Endpoint.https(
+            uri, tls_server_name=self._tls_server_name, target_uri=self._target_uri
+        )
+        return self
+
+    def tls_server_name(self, name: str) -> ClientBuilder:
+        self._tls_server_name = name
+        if self._endpoint_kind is EndpointKind.RAW_TLS and self._address is not None:
+            self._endpoint = Endpoint.raw_tls(self._address, self._port, tls_server_name=name)
+        elif self._endpoint_kind is EndpointKind.HTTPS and self._address is not None:
+            self._endpoint = Endpoint.https(
+                self._address, tls_server_name=name, target_uri=self._target_uri
+            )
+        return self
+
+    def tls12_compat(self, enabled: bool = True) -> ClientBuilder:
+        self._tls12_compat = bool(enabled)
+        return self
+
+    def platform_trust(self) -> ClientBuilder:
+        self._trust = TrustSource.platform()
+        return self
+
+    def ca_pem_file(self, path: str | Path) -> ClientBuilder:
+        self._trust = TrustSource.certificate_authorities(
+            (TransportInput.file(path, CredentialEncoding.PEM),)
+        )
+        return self
+
+    def ca_der_file(self, path: str | Path) -> ClientBuilder:
+        self._trust = TrustSource.certificate_authorities(
+            (TransportInput.file(path, CredentialEncoding.DER),)
+        )
+        return self
+
+    def ca_pem(self, certificates: Sequence[bytes | bytearray | memoryview]) -> ClientBuilder:
+        inputs = tuple(TransportInput.memory(cert, CredentialEncoding.PEM) for cert in certificates)
+        self._trust = TrustSource.certificate_authorities(inputs)
+        return self
+
+    def client_identity_pem_files(
+        self, cert_pem_path: str | Path, key_pem_path: str | Path
+    ) -> ClientBuilder:
+        self._client_certificates = [TransportInput.file(cert_pem_path, CredentialEncoding.PEM)]
+        self._client_private_key = TransportInput.file(key_pem_path, CredentialEncoding.PEM)
+        return self
+
+    def client_identity_pem(
+        self,
+        certificates: Sequence[bytes | bytearray | memoryview],
+        key_pem: bytes | bytearray | memoryview,
+    ) -> ClientBuilder:
+        self._client_certificates = [
+            TransportInput.memory(cert, CredentialEncoding.PEM) for cert in certificates
+        ]
+        self._client_private_key = TransportInput.memory(key_pem, CredentialEncoding.PEM)
+        return self
+
+    def protocol_version(self, version: ProtocolVersion) -> ClientBuilder:
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        self._protocol_version = version
+        return self
+
+    def wire_encoding(self, encoding: extensions.WireEncoding) -> ClientBuilder:
+        if not isinstance(encoding, extensions.WireEncoding):
+            errors.raise_for_status(4)
+        self._wire_encoding = encoding
+        return self
+
+    def codec_limits(self, limits: ttlv.CodecLimits) -> ClientBuilder:
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        self._codec_limits = limits
+        return self
+
+    def configuration(self, configuration: extensions.ClientConfiguration) -> ClientBuilder:
+        if not isinstance(configuration, extensions.ClientConfiguration):
+            errors.raise_for_status(4)
+        self._configuration = configuration
+        return self
+
+    def connect_timeout(self, timeout: TimeoutLimit) -> ClientBuilder:
+        self._connect_timeout = timeout
+        return self
+
+    def write_timeout(self, timeout: TimeoutLimit) -> ClientBuilder:
+        self._write_timeout = timeout
+        return self
+
+    def read_timeout(self, timeout: TimeoutLimit) -> ClientBuilder:
+        self._read_timeout = timeout
+        return self
+
+    def total_timeout(self, timeout: TimeoutLimit) -> ClientBuilder:
+        self._total_timeout = timeout
+        return self
+
+    def max_request_bytes(self, value: int) -> ClientBuilder:
+        self._max_request_bytes = int(value)
+        return self
+
+    def build(self) -> Client:
+        if (
+            self._endpoint is None
+            or not self._client_certificates
+            or self._client_private_key is None
+            or self._trust is None
+        ):
+            errors.raise_for_status(4)
+        owns_cfg = self._configuration is None
+        cfg = (
+            extensions.ClientConfiguration.defaults()
+            if self._configuration is None
+            else self._configuration
+        )
+        try:
+            if self._wire_encoding is not None:
+                next_cfg = cfg.with_wire_encoding(self._wire_encoding)
+                if owns_cfg:
+                    cfg.close()
+                cfg = next_cfg
+                owns_cfg = True
+            if self._protocol_version is not None:
+                next_cfg = cfg.with_protocol_version(self._protocol_version)
+                if owns_cfg:
+                    cfg.close()
+                cfg = next_cfg
+                owns_cfg = True
+            if self._codec_limits is not None:
+                next_cfg = cfg.with_codec_limits(self._codec_limits)
+                if owns_cfg:
+                    cfg.close()
+                cfg = next_cfg
+                owns_cfg = True
+            transport = TransportConfig(
+                endpoint=self._endpoint,
+                client_certificates=tuple(self._client_certificates),
+                client_private_key=self._client_private_key,
+                trust=self._trust,
+                connect_timeout=self._connect_timeout,
+                write_timeout=self._write_timeout,
+                read_timeout=self._read_timeout,
+                total_timeout=self._total_timeout,
+                max_request_bytes=self._max_request_bytes,
+                tls12_compat=self._tls12_compat,
+            )
+            return Client.create(cfg, transport)
+        finally:
+            if owns_cfg:
+                cfg.close()
+
+
 __all__ = [
     "ActivateResponse",
     "AddAttributeResponse",
@@ -7827,6 +8113,7 @@ __all__ = [
     "DeleteAttributeResponse",
     "ExportResponse",
     "Client",
+    "ClientBuilder",
     "CredentialEncoding",
     "Endpoint",
     "EndpointKind",

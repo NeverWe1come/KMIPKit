@@ -127,7 +127,7 @@ fn get_attributes_builder_preserves_identifier_reference_order_and_duplicates() 
         .get_attributes()
         .attribute_reference(AttributeReference::tag(0x0042_002F))
         .attribute_reference(AttributeReference::tag(0x0042_002F))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("invalid repeated references fail before transport");
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
@@ -198,7 +198,7 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
         .request()
         .get_attributes()
         .unique_identifier("object-42")
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Get Attributes receives a valid typed response");
     assert_eq!(transport.borrow().exchange_count(), 1);
     let response_view = response.outcome().response();
@@ -217,7 +217,7 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
         .request()
         .get_attributes()
         .unique_identifier("object-42")
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Get Attributes preserves an omitted Attributes field");
     assert_eq!(transport.borrow().exchange_count(), 1);
     assert!(
@@ -240,7 +240,7 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
         .unique_identifier("object-42")
         .with_options(RequestOptions::default())
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Get Attribute List receives a valid typed response");
     assert_eq!(transport.borrow().exchange_count(), 1);
     let response_view = response.outcome().response();
@@ -274,7 +274,7 @@ fn get_attributes_builder_preserves_pending_status_and_correlation() {
         .get_attributes()
         .unique_identifier("object-42")
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains a result and is not treated as a client error");
 
     assert_eq!(transport.borrow().exchange_count(), 1);
@@ -296,7 +296,7 @@ fn get_attribute_list_builder_keeps_failure_status_without_fabricated_payload() 
         .request()
         .get_attribute_list()
         .unique_identifier("object-42")
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("an Operation Failed response remains a typed result");
 
     assert_eq!(transport.borrow().exchange_count(), 1);

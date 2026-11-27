@@ -279,7 +279,7 @@ fn fluent_rng_retrieve_missing_length_fails_before_transport() {
     let error = client
         .request()
         .rng_retrieve()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Data Length is required before sending");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -308,7 +308,7 @@ fn fluent_rng_retrieve_executes_once_and_keeps_secret_output_redacted() {
         .rng_retrieve()
         .data_length(output_length())
         .with_options(RequestOptions::default())
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing typed route returns the RNG Retrieve response");
 
     assert_eq!(item.outcome().operation(), ClientOperation::RngRetrieve);
@@ -347,7 +347,7 @@ fn fluent_rng_retrieve_preserves_pending_without_polling() {
         .rng_retrieve()
         .data_length(32)
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("an enabled asynchronous request may return Pending");
 
     let ClientBatchOutcome::Pending(pending) = item.outcome() else {

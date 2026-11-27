@@ -134,35 +134,30 @@ public final class Consumer {
 
             int port = Integer.parseInt(System.getenv("KMIPKIT_CONSUMER_TEST_PORT"));
             Path fixtures = Path.of(System.getenv("KMIPKIT_CONSUMER_TEST_FIXTURES"));
-            try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
-                            List.of(), ExtensionRegistryLimits.defaults());
-                    ClientConfiguration configuration = ClientConfiguration.create(registry);
-                    TransportConfiguration transport = TransportConfiguration.builder()
+            try (KmipClient kmipClient = KmipClient.builder()
                             .rawTls("127.0.0.1", port)
-                            .clientIdentityFiles(List.of(fixtures.resolve("client-cert.pem")),
-                                    fixtures.resolve("client-key.pem"),
-                                    TransportConfiguration.Encoding.PEM)
-                            .trustCertificateFiles(List.of(fixtures.resolve("server-cert.pem")),
-                                    TransportConfiguration.Encoding.PEM)
+                            .clientIdentityPemFiles(
+                                    fixtures.resolve("client-cert.pem"),
+                                    fixtures.resolve("client-key.pem"))
+                            .caPemFile(fixtures.resolve("server-cert.pem"))
                             .tlsServerName("localhost")
-                            .build();
-                    KmipClient kmipClient = KmipClient.create(configuration, transport)) {
+                            .build()) {
                 UniqueIdentifier identifier;
-                try (SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                try (ClientBatchItemResult itemResult = kmipClient.request().createSymmetricKey()
                                 .aes256()
-                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
-                                        | KmipValues.CryptographicUsageMask.DECRYPT))
-                                .name("fluent-key");
-                        ClientBatchResponse created = builder.execute(limits);
-                        ClientBatchItemResult itemResult = created.itemAt(0)) {
+                                .usageMask(KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT)
+                                .name("fluent-key")
+                                .execute()) {
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
                         throw new IllegalStateException("Create did not complete successfully");
                     }
                     identifier = itemResult.createResponse().orElseThrow().uniqueIdentifier();
                 }
-                try (ClientBatchResponse retrieved = kmipClient.request().get(identifier)
-                                .asynchronousIndicator(1).withOptions(RequestOptions.defaults()).execute(limits);
-                        ClientBatchItemResult itemResult = retrieved.itemAt(0);
+                try (ClientBatchItemResult itemResult = kmipClient.request().get(identifier)
+                                .asynchronousIndicator(1)
+                                .withOptions(RequestOptions.defaults())
+                                .execute();
                         var response = itemResult.getResponse().orElseThrow()) {
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
                             || !response.uniqueIdentifier().orElseThrow().text().equals(identifier.text())
@@ -179,14 +174,13 @@ public final class Consumer {
                 byte[] authenticationTag = null;
                 try {
                     try (CryptographicParameters aesParameters = aesGcmParameters();
-                            EncryptBuilder builder = kmipClient.request().encrypt();
-                            ClientBatchResponse encrypted = builder.uniqueIdentifier(identifier)
+                            ClientBatchItemResult itemResult = kmipClient.request().encrypt()
+                                    .uniqueIdentifier(identifier)
                                     .cryptographicParameters(aesParameters)
                                     .data(plaintext)
                                     .ivCounterNonce(nonce)
                                     .authenticatedEncryptionAdditionalData(additionalData)
-                                    .execute(limits);
-                            ClientBatchItemResult itemResult = encrypted.itemAt(0);
+                                    .execute();
                             ClientBatchItemResult.EncryptResponse response =
                                     itemResult.encryptResponse().orElseThrow()) {
                         if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
@@ -203,15 +197,14 @@ public final class Consumer {
                         }
                     }
                     try (CryptographicParameters decryptParameters = aesGcmParameters();
-                            DecryptBuilder builder = kmipClient.request().decrypt();
-                            ClientBatchResponse decrypted = builder.uniqueIdentifier(identifier)
+                            ClientBatchItemResult itemResult = kmipClient.request().decrypt()
+                                    .uniqueIdentifier(identifier)
                                     .cryptographicParameters(decryptParameters)
                                     .data(ciphertext)
                                     .ivCounterNonce(responseNonce)
                                     .authenticatedEncryptionAdditionalData(additionalData)
                                     .authenticatedEncryptionTag(authenticationTag)
-                                    .execute(limits);
-                            ClientBatchItemResult itemResult = decrypted.itemAt(0);
+                                    .execute();
                             ClientBatchItemResult.DecryptResponse response =
                                     itemResult.decryptResponse().orElseThrow()) {
                         byte[] recovered = response.data().orElseThrow();
@@ -243,9 +236,8 @@ public final class Consumer {
                         throw new IllegalStateException("Destroy did not return the created identifier");
                     }
                 }
-                try (ClientBatchResponse pending = kmipClient.request().destroy(identifier)
-                                .asynchronousIndicator(1).execute(limits);
-                        ClientBatchItemResult itemResult = pending.itemAt(0)) {
+                try (ClientBatchItemResult itemResult = kmipClient.request().destroy(identifier)
+                                .asynchronousIndicator(1).executeOutcome()) {
                     byte[] correlation = itemResult.pendingCorrelationValue().orElseThrow();
                     try {
                         if (!itemResult.outcomeKind().isPending() || itemResult.resultStatus() != 2
@@ -256,9 +248,8 @@ public final class Consumer {
                         Arrays.fill(correlation, (byte) 0);
                     }
                 }
-                try (ClientBatchResponse failed = kmipClient.request().destroy(identifier)
-                                .asynchronousIndicator(1).execute(limits);
-                        ClientBatchItemResult itemResult = failed.itemAt(0)) {
+                try (ClientBatchItemResult itemResult = kmipClient.request().destroy(identifier)
+                                .asynchronousIndicator(1).executeOutcome()) {
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 1
                             || itemResult.destroyResponse().isPresent()
                             || !itemResult.resultMessage().orElseThrow().equals("fixture rejected destroy")) {
@@ -269,15 +260,14 @@ public final class Consumer {
 
                 UniqueIdentifier privateIdentifier;
                 UniqueIdentifier publicIdentifier;
-                try (CreateKeyPairBuilder builder = kmipClient.request().createKeyPair()
+                try (ClientBatchItemResult itemResult = kmipClient.request().createKeyPair()
                                 .algorithm(KmipValues.CryptographicAlgorithm.ECDSA)
                                 .length(256)
-                                .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
-                                .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)
+                                .privateUsageMask(KmipValues.CryptographicUsageMask.SIGN)
+                                .publicUsageMask(KmipValues.CryptographicUsageMask.VERIFY)
                                 .privateName("fluent-private-key")
-                                .publicName("fluent-public-key");
-                        ClientBatchResponse paired = builder.execute(limits);
-                        ClientBatchItemResult itemResult = paired.itemAt(0)) {
+                                .publicName("fluent-public-key")
+                                .execute()) {
                     var response = itemResult.createKeyPairResponse().orElseThrow();
                     if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
                         throw new IllegalStateException("Create Key Pair did not complete successfully");

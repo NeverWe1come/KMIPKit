@@ -219,7 +219,7 @@ fn register_builder_executes_a_credential_with_explicit_kmip30_version() {
         .object(password)
         .attributes(AttributeSet::new())
         .with_options(RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0))
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect("the explicitly selected KMIP 3.0 route accepts credential tags");
 
     assert_eq!(result.outcome().operation(), ClientOperation::Register);
@@ -261,7 +261,7 @@ fn register_builder_executes_one_typed_exchange_and_retains_failure_result() {
         request_write_chunks: Vec::new(),
     });
     let result = valid_builder(&mut client)
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect("the scripted response completes one exchange");
 
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -287,7 +287,7 @@ fn register_builder_exposes_the_server_assigned_identifier_on_success() {
         request_write_chunks: Vec::new(),
     });
     let result = valid_builder(&mut client)
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect("the scripted Success completes one Register exchange");
 
     let ClientBatchOutcome::Register(register) = result.outcome() else {
@@ -314,7 +314,7 @@ fn register_builder_preserves_pending_correlation_without_polling() {
     });
     let result = valid_builder(&mut client)
         .with_asynchronous_indicator(1)
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect("the current client returns Pending without polling");
 
     let ClientBatchOutcome::Pending(pending) = result.outcome() else {
@@ -412,7 +412,7 @@ fn register_builder_rejects_known_non_attribute_tags_before_transport() {
         Err(FluentBuildError::InvalidAttributeValue)
     );
     let error = builder
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect_err("Operation is an assigned KMIP tag but not an Object Attribute");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -506,7 +506,7 @@ fn register_builder_passes_exchange_options_to_the_existing_client() {
     let options = RequestOptions::default().with_wire_encoding(WireEncoding::Ttlv);
     valid_builder(&mut client)
         .with_options(options)
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect("explicit options are forwarded to the existing exchange");
 
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -523,7 +523,7 @@ fn invalid_register_object_is_rejected_before_transport() {
             ObjectType::from_raw(1),
             item(0x0042_006d, Value::structure(test_structure([]))),
         )
-        .execute(&kmipkit_ttlv::codec::CodecLimits::defaults())
+        .execute_outcome_with_limits(&kmipkit_ttlv::codec::CodecLimits::defaults())
         .expect_err("object type and object tag must match before transport");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));

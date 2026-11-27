@@ -4302,7 +4302,8 @@ pub extern "C" fn kmipkit_client_configuration_with_wire_encoding(
             configuration.shared_extension_registry(),
         )
         .with_wire_encoding(encoding)
-        .with_protocol_version(configuration.protocol_version());
+        .with_protocol_version(configuration.protocol_version())
+        .with_codec_limits(*configuration.codec_limits());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
@@ -4328,10 +4329,57 @@ pub extern "C" fn kmipkit_client_configuration_with_protocol_version(
             configuration.shared_extension_registry(),
         )
         .with_wire_encoding(configuration.wire_encoding())
-        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor));
+        .with_protocol_version(kmipkit_protocol::ProtocolVersion::from_raw(major, minor))
+        .with_codec_limits(*configuration.codec_limits());
         *out = try_ffi!(try_make_handle(
             Kind::Configuration,
             HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_with_codec_limits_v1(
+    configuration: *mut kmipkit_client_configuration_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_configuration: *mut *mut kmipkit_client_configuration_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_configuration);
+        let limits = try_ffi!(codec_limits_from_handle(limits));
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let configured = client_extension::ClientConfiguration::from_shared_registry(
+            configuration.shared_extension_registry(),
+        )
+        .with_wire_encoding(configuration.wire_encoding())
+        .with_protocol_version(configuration.protocol_version())
+        .with_codec_limits(*limits);
+        *out = try_ffi!(try_make_handle(
+            Kind::Configuration,
+            HandleValue::Configuration(configured)
+        ));
+        SUCCESS
+    })
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_configuration_codec_limits_v1(
+    configuration: *mut kmipkit_client_configuration_t,
+    out_limits: *mut *mut kmipkit_codec_limits_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_limits);
+        let configuration = read_handle!(configuration, Configuration);
+        let HandleValue::Configuration(configuration) = &configuration.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(try_make_handle(
+            Kind::CodecLimits,
+            HandleValue::CodecLimits(Arc::new(*configuration.codec_limits())),
         ));
         SUCCESS
     })

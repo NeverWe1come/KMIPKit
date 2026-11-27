@@ -729,6 +729,9 @@ pub struct RequestOptions {
     total: Option<TimeoutLimit>,
     wire_encoding: Option<WireEncoding>,
     protocol_version: Option<kmipkit_protocol::ProtocolVersion>,
+    max_message_bytes: Option<usize>,
+    max_structure_depth: Option<usize>,
+    max_elements: Option<usize>,
 }
 
 impl RequestOptions {
@@ -790,6 +793,45 @@ impl RequestOptions {
     pub const fn with_total(mut self, value: TimeoutLimit) -> Self {
         self.total = Some(value);
         self
+    }
+
+    /// Overrides the TTLV/wire maximum message size in bytes for one exchange.
+    #[must_use]
+    pub const fn with_max_message_bytes(mut self, value: usize) -> Self {
+        self.max_message_bytes = Some(value);
+        self
+    }
+
+    /// Returns this call's maximum message size override in bytes, if set.
+    #[must_use]
+    pub const fn max_message_bytes(&self) -> Option<usize> {
+        self.max_message_bytes
+    }
+
+    /// Overrides the maximum TTLV/wire structure nesting depth for one exchange.
+    #[must_use]
+    pub const fn with_max_structure_depth(mut self, value: usize) -> Self {
+        self.max_structure_depth = Some(value);
+        self
+    }
+
+    /// Returns this call's maximum structure nesting depth override, if set.
+    #[must_use]
+    pub const fn max_structure_depth(&self) -> Option<usize> {
+        self.max_structure_depth
+    }
+
+    /// Overrides the maximum TTLV/wire element count for one exchange.
+    #[must_use]
+    pub const fn with_max_elements(mut self, value: usize) -> Self {
+        self.max_elements = Some(value);
+        self
+    }
+
+    /// Returns this call's maximum element count override, if set.
+    #[must_use]
+    pub const fn max_elements(&self) -> Option<usize> {
+        self.max_elements
     }
 }
 

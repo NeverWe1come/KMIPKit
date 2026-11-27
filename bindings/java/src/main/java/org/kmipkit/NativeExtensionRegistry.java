@@ -251,6 +251,8 @@ public final class NativeExtensionRegistry {
     public static native long clientConfigurationWithWireEncoding(long configuration, int encoding);
     public static native long clientConfigurationWithProtocolVersion(
             long configuration, int major, int minor);
+    public static native long clientConfigurationWithCodecLimits(
+            long configuration, long[] codecLimits);
     public static native int clientConfigurationWireEncoding(long configuration);
     public static native long clientConfigurationExtensionRegistry(long configuration);
     public static native long clientExtensionRegistryCreate(long[] definitions, long[] limits);
@@ -272,6 +274,7 @@ public final class NativeExtensionRegistry {
     public static native void symmetricKeyBuilderSetLength(long builder, int length);
     public static native void symmetricKeyBuilderSetUsageMask(long builder, int usageMask);
     public static native void symmetricKeyBuilderSetName(long builder, String name);
+    public static native void symmetricKeyBuilderSetProtocolVersion(long builder, int major, int minor);
     public static native long symmetricKeyBuilderBuildBatchItem(long builder);
     public static native long kmip30OperationBuilderCreate(int operation, long attributes,
             int identifierKind, @Nullable byte[] identifierText, long identifierNumber,

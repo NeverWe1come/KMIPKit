@@ -157,7 +157,8 @@ pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
                 configuration.shared_extension_registry(),
             )
             .with_wire_encoding(configuration.wire_encoding())
-            .with_protocol_version(configuration.protocol_version());
+            .with_protocol_version(configuration.protocol_version())
+            .with_codec_limits(*configuration.codec_limits());
         match kmipkit_client::Client::new(client_configuration, transport) {
             Ok(client) => {
                 *out = try_ffi!(try_make_handle(
@@ -361,6 +362,23 @@ fn update_key_pair_attribute(
     }
 }
 
+fn effective_client_protocol_version(
+    client: *mut kmipkit_client_t,
+    options: &RequestOptions,
+) -> FfiResult<kmipkit_protocol::ProtocolVersion> {
+    if let Some(version) = options.protocol_version() {
+        return Ok(version);
+    }
+    let client_handle = reference_handle(client, Kind::Client)?;
+    let HandleValue::Client(client) = &client_handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let Ok(client) = client.lock() else {
+        return Err(ERROR_INTERNAL);
+    };
+    Ok(client.protocol_version())
+}
+
 fn key_pair_request(
     builder: *mut kmipkit_create_key_pair_builder_t,
 ) -> FfiResult<(CreateKeyPairRequest, Option<u32>)> {
@@ -377,6 +395,23 @@ fn key_pair_request(
     Ok((request, state.asynchronous_indicator))
 }
 
+fn key_pair_request_for_version(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    version: kmipkit_protocol::ProtocolVersion,
+) -> FfiResult<(CreateKeyPairRequest, Option<u32>)> {
+    let handle = reference_handle(builder, Kind::CreateKeyPairBuilder)?;
+    let HandleValue::CreateKeyPairBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let slot = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let state = slot.as_ref().ok_or(ERROR_INVALID_INPUT)?;
+    let request = state
+        .builder
+        .build_request_for_version(version)
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok((request, state.asynchronous_indicator))
+}
+
 fn execute_key_pair_builder(
     builder: *mut kmipkit_create_key_pair_builder_t,
     client: *mut kmipkit_client_t,
@@ -384,16 +419,20 @@ fn execute_key_pair_builder(
     options: Option<&kmipkit_request_options_v1_t>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    let (request, asynchronous_indicator) = match key_pair_request(builder) {
-        Ok(parts) => parts,
-        Err(status) => return record_ffi_error(status),
-    };
     let options = match options {
         Some(options) => match super::request_options_from_v1(options) {
             Ok(options) => options,
             Err(status) => return record_ffi_error(status),
         },
         None => RequestOptions::default(),
+    };
+    let version = match effective_client_protocol_version(client, &options) {
+        Ok(version) => version,
+        Err(status) => return record_ffi_error(status),
+    };
+    let (request, asynchronous_indicator) = match key_pair_request_for_version(builder, version) {
+        Ok(parts) => parts,
+        Err(status) => return record_ffi_error(status),
     };
     execute_fluent_item(
         client,
@@ -1805,6 +1844,22 @@ pub extern "C" fn kmipkit_create_key_pair_builder_set_asynchronous_indicator(
     })
 }
 
+/// Sets the KMIP protocol version override for this builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_create_key_pair_builder_set_protocol_version(
+    builder: *mut kmipkit_create_key_pair_builder_t,
+    major: i32,
+    minor: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        try_ffi!(update_key_pair_builder(builder, |builder| {
+            builder.with_protocol_version(version)
+        }));
+        SUCCESS
+    })
+}
+
 /// Validates the explicit Create Key Pair inputs without sending a request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_create_key_pair_builder_validate(
@@ -2642,6 +2697,22 @@ pub extern "C" fn kmipkit_symmetric_key_builder_set_name(
     })
 }
 
+/// Sets the KMIP protocol version override for this builder.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_symmetric_key_builder_set_protocol_version(
+    builder: *mut kmipkit_symmetric_key_builder_t,
+    major: i32,
+    minor: i32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let version = kmipkit_protocol::ProtocolVersion::from_raw(major, minor);
+        try_ffi!(update_symmetric_builder(builder, |builder| {
+            builder.with_protocol_version(version)
+        }));
+        SUCCESS
+    })
+}
+
 /// Adds a validated catalogued attribute from an explicit TTLV Value.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_symmetric_key_builder_add_catalogued_attribute(
@@ -2852,7 +2923,11 @@ pub extern "C" fn kmipkit_symmetric_key_builder_execute_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let request = match build_symmetric_key_client_request(builder) {
+        let version = match effective_client_protocol_version(client, &RequestOptions::default()) {
+            Ok(version) => version,
+            Err(status) => return record_ffi_error(status),
+        };
+        let request = match build_symmetric_key_client_request_for_version(builder, version) {
             Ok(request) => request,
             Err(status) => return record_ffi_error(status),
         };
@@ -2882,7 +2957,15 @@ pub unsafe extern "C" fn kmipkit_symmetric_key_builder_execute_with_options_v1(
             Ok(options) => options,
             Err(status) => return record_ffi_error(status),
         };
-        let request = match build_symmetric_key_client_request(builder) {
+        let parsed_options = match super::request_options_from_v1(options) {
+            Ok(parsed) => parsed,
+            Err(status) => return record_ffi_error(status),
+        };
+        let version = match effective_client_protocol_version(client, &parsed_options) {
+            Ok(version) => version,
+            Err(status) => return record_ffi_error(status),
+        };
+        let request = match build_symmetric_key_client_request_for_version(builder, version) {
             Ok(request) => request,
             Err(status) => return record_ffi_error(status),
         };
@@ -2890,8 +2973,9 @@ pub unsafe extern "C" fn kmipkit_symmetric_key_builder_execute_with_options_v1(
     })
 }
 
-fn build_symmetric_key_client_request(
+fn build_symmetric_key_client_request_for_version(
     builder: *mut kmipkit_symmetric_key_builder_t,
+    version: kmipkit_protocol::ProtocolVersion,
 ) -> FfiResult<ClientRequest> {
     let handle = reference_handle(builder, Kind::SymmetricKeyBuilder)?;
     let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
@@ -2900,7 +2984,7 @@ fn build_symmetric_key_client_request(
     let builder = builder.lock().map_err(|_| ERROR_INTERNAL)?;
     let builder = builder.as_ref().ok_or(ERROR_INVALID_INPUT)?;
     builder
-        .build_request()
+        .build_request_for_version(version)
         .map(ClientRequest::Create)
         .map_err(|_| ERROR_INVALID_INPUT)
 }

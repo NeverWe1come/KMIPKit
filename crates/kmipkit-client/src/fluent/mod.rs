@@ -1,0 +1,432 @@
+//! Task-oriented, fluent builders over the existing typed KMIP requests.
+
+macro_rules! fluent_option_field_setters {
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: kmipkit_transport::RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the KMIP protocol version override for this request/exchange.
+        #[must_use]
+        pub fn with_protocol_version(mut self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+            let options = self.$($options_path).+.unwrap_or_default().with_protocol_version(version);
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the KMIP protocol version override for this request/exchange (alias for [`Self::with_protocol_version`]).
+        #[must_use]
+        pub fn with_kmip_version(self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+            self.with_protocol_version(version)
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; non_const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: kmipkit_transport::RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the KMIP protocol version override for this request/exchange.
+        #[must_use]
+        pub fn with_protocol_version(mut self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+            let options = self.$($options_path).+.unwrap_or_default().with_protocol_version(version);
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the KMIP protocol version override for this request/exchange (alias for [`Self::with_protocol_version`]).
+        #[must_use]
+        pub fn with_kmip_version(self, version: kmipkit_protocol::ProtocolVersion) -> Self {
+            self.with_protocol_version(version)
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+}
+
+mod execution;
+mod admin;
+mod attributes;
+mod crypto;
+mod keys;
+mod kmip30;
+mod lifecycle;
+
+use crate::Client;
+use kmipkit_protocol::{
+    AttributeSet, CreateCredentialObject, RevocationReason, UniqueIdentifier,
+};
+
+pub use admin::{
+    CheckBuilder, DiscoverVersionsBuilder, GetConstraintsBuilder, GetUsageAllocationBuilder,
+    ObtainLeaseBuilder, PingBuilder, QueryBuilder, RngRetrieveBuilder, RngSeedBuilder,
+};
+pub use attributes::{
+    AddAttributeBuilder, AdjustAttributeBuilder, DeleteAttributeBuilder, GetAttributeListBuilder,
+    GetAttributesBuilder, ModifyAttributeBuilder, SetAttributeBuilder,
+};
+pub use crypto::{
+    DecryptBuilder, EncryptBuilder, HashBuilder, MacBuilder, MacVerifyBuilder, SignBuilder,
+    SignatureVerifyBuilder,
+};
+pub use execution::{
+    AttributeAdjustmentValue, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+};
+pub use keys::{
+    CreateBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder,
+    DeriveKeyBuilder, RegisterBuilder,
+};
+pub use kmip30::{
+    CreateCredentialBuilder, CreateGroupBuilder, CreateUserBuilder, DeactivateBuilder,
+    DecapsulateBuilder, EncapsulateBuilder, ObliterateBuilder,
+};
+pub use lifecycle::{
+    ActivateBuilder, ArchiveBuilder, DestroyBuilder, GetBuilder, LocateBuilder, RecertifyBuilder,
+    RecoverBuilder, RekeyBuilder, RekeyKeyPairBuilder, RevokeBuilder,
+};
+
+/// A scoped fluent namespace borrowed from a mutable client.
+pub struct RequestBuilder<'a> {
+    client: &'a mut Client,
+}
+
+impl<'a> RequestBuilder<'a> {
+    /// Begins constructing a typed Discover Versions request with the KMIP 2.1 default offer.
+    #[must_use]
+    pub fn discover_versions(self) -> DiscoverVersionsBuilder<'a> {
+        DiscoverVersionsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Query request.
+    #[must_use]
+    pub fn query(self) -> QueryBuilder<'a> {
+        QueryBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Check request.
+    #[must_use]
+    pub fn check(self) -> CheckBuilder<'a> {
+        CheckBuilder::new(self.client)
+    }
+
+    /// Begins constructing an Obtain Lease request.
+    #[must_use]
+    pub fn obtain_lease(self) -> ObtainLeaseBuilder<'a> {
+        ObtainLeaseBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Modify Attribute request.
+    #[must_use]
+    pub fn modify_attribute(self) -> ModifyAttributeBuilder<'a> {
+        ModifyAttributeBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Adjust Attribute request.
+    #[must_use]
+    pub fn adjust_attribute(self) -> AdjustAttributeBuilder<'a> {
+        AdjustAttributeBuilder::new(self.client)
+    }
+
+    /// Begins a KMIP 3.0 Create Credential builder using a typed credential
+    /// alternative. Its Credential Type is derived from the selected object.
+    /// The caller must explicitly select protocol version 3.0 on the client or
+    /// in exchange options before execution.
+    #[must_use]
+    pub fn create_credential(
+        self,
+        attributes: AttributeSet,
+        object: CreateCredentialObject,
+    ) -> CreateCredentialBuilder<'a> {
+        CreateCredentialBuilder::new(self.client, attributes, object)
+    }
+
+    /// Begins a KMIP 3.0 Create Group builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_group(self, attributes: AttributeSet) -> CreateGroupBuilder<'a> {
+        CreateGroupBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Create User builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_user(self, attributes: AttributeSet) -> CreateUserBuilder<'a> {
+        CreateUserBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Deactivate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn deactivate(self, unique_identifier: impl Into<UniqueIdentifier>) -> DeactivateBuilder<'a> {
+        DeactivateBuilder::new(self.client, unique_identifier.into())
+    }
+
+    /// Begins a KMIP 3.0 Decapsulate builder for a caller-supplied identifier
+    /// and encapsulated ciphertext.
+    #[must_use]
+    pub fn decapsulate(
+        self,
+        unique_identifier: impl Into<UniqueIdentifier>,
+        ciphertext: Vec<u8>,
+    ) -> DecapsulateBuilder<'a> {
+        DecapsulateBuilder::new(self.client, unique_identifier.into(), ciphertext)
+    }
+
+    /// Begins a KMIP 3.0 Encapsulate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn encapsulate(
+        self,
+        unique_identifier: impl Into<UniqueIdentifier>,
+    ) -> EncapsulateBuilder<'a> {
+        EncapsulateBuilder::new(self.client, unique_identifier.into())
+    }
+
+    /// Begins a KMIP 3.0 Obliterate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn obliterate(self, unique_identifier: impl Into<UniqueIdentifier>) -> ObliterateBuilder<'a> {
+        ObliterateBuilder::new(self.client, unique_identifier.into())
+    }
+    pub(crate) const fn new(client: &'a mut Client) -> Self {
+        Self { client }
+    }
+
+    /// Begins constructing a Create Symmetric Key request.
+    #[must_use]
+    pub fn create_symmetric_key(self) -> CreateSymmetricKeyBuilder<'a> {
+        CreateSymmetricKeyBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing a typed Create Key Pair request.
+    #[must_use]
+    pub fn create_key_pair(self) -> CreateKeyPairBuilder<'a> {
+        CreateKeyPairBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing a typed Create Split Key request.
+    #[must_use]
+    pub fn create_split_key(self) -> CreateSplitKeyBuilder<'a> {
+        CreateSplitKeyBuilder::new(self.client)
+    }
+
+    /// Begins a generic Create request with Object Type unset.
+    #[must_use]
+    pub fn create(self) -> CreateBuilder<'a> {
+        CreateBuilder::new(self.client)
+    }
+
+    /// Begins a typed Derive Key request with its source, method, parameters,
+    /// and output attributes unset.
+    #[must_use]
+    pub fn derive_key(self) -> DeriveKeyBuilder<'a> {
+        DeriveKeyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Register request.
+    #[must_use]
+    pub fn register(self) -> RegisterBuilder<'a> {
+        RegisterBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Get request for an explicit identifier.
+    #[must_use]
+    pub fn get(self, unique_identifier: impl Into<UniqueIdentifier>) -> GetBuilder<'a> {
+        self.get_request().unique_identifier(unique_identifier)
+    }
+
+    /// Begins a Get request with all selectors unset, including the identifier.
+    #[must_use]
+    pub fn get_request(self) -> GetBuilder<'a> {
+        GetBuilder::new(self.client)
+    }
+
+    /// Begins a typed Set Attribute request with its optional identifier
+    /// omitted.
+    #[must_use]
+    pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
+        SetAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing an Add Attribute request with no Unique Identifier.
+    #[must_use]
+    pub fn add_attribute(self) -> AddAttributeBuilder<'a> {
+        AddAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins a typed Delete Attribute request with all optional fields omitted.
+    #[must_use]
+    pub fn delete_attribute(self) -> DeleteAttributeBuilder<'a> {
+        DeleteAttributeBuilder::new(Some(self.client))
+    }
+
+    /// Begins a typed Get Attributes request with no Attribute References.
+    ///
+    /// With no references, the server returns all attributes. A text Unique
+    /// Identifier can be added with [`GetAttributesBuilder::unique_identifier`].
+    #[must_use]
+    pub fn get_attributes(self) -> GetAttributesBuilder<'a> {
+        GetAttributesBuilder::new(self.client)
+    }
+
+    /// Begins a typed Get Attribute List request with its Unique Identifier
+    /// omitted.
+    ///
+    /// The server resolves the KMIP ID Placeholder when this builder is used
+    /// in a batch that contains a preceding operation.
+    #[must_use]
+    pub fn get_attribute_list(self) -> GetAttributeListBuilder<'a> {
+        GetAttributeListBuilder::new(self.client)
+    }
+
+    /// Begins a typed empty Get Constraints request.
+    #[must_use]
+    pub fn get_constraints(self) -> GetConstraintsBuilder<'a> {
+        GetConstraintsBuilder::new(self.client)
+    }
+
+    /// Begins a typed Get Usage Allocation request with Usage Limits Count unset.
+    ///
+    /// The Unique Identifier is optional when the surrounding batch context
+    /// establishes the KMIP ID Placeholder.
+    #[must_use]
+    pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
+        GetUsageAllocationBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Retrieve request with Data Length unset.
+    #[must_use]
+    pub fn rng_retrieve(self) -> RngRetrieveBuilder<'a> {
+        RngRetrieveBuilder::new(self.client)
+    }
+
+    /// Begins a typed RNG Seed request with secret Data unset.
+    #[must_use]
+    pub fn rng_seed(self) -> RngSeedBuilder<'a> {
+        RngSeedBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Destroy request for an explicit identifier.
+    #[must_use]
+    pub fn destroy(self, unique_identifier: impl Into<UniqueIdentifier>) -> DestroyBuilder<'a> {
+        DestroyBuilder::new(self.client, Some(unique_identifier.into()))
+    }
+
+    /// Begins an Activate request with its optional identifier omitted.
+    #[must_use]
+    pub fn activate(self) -> ActivateBuilder<'a> {
+        ActivateBuilder::new(self.client)
+    }
+
+    /// Begins an Archive request with its optional identifier omitted.
+    #[must_use]
+    pub fn archive(self) -> ArchiveBuilder<'a> {
+        ArchiveBuilder::new(self.client)
+    }
+
+    /// Begins a Recover request with its optional identifier omitted.
+    #[must_use]
+    pub fn recover(self) -> RecoverBuilder<'a> {
+        RecoverBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Revoke request with an explicit reason.
+    #[must_use]
+    pub fn revoke(self, reason: RevocationReason) -> RevokeBuilder<'a> {
+        RevokeBuilder::new(self.client, reason)
+    }
+
+    /// Begins a Locate request with the caller's required Attributes criteria.
+    #[must_use]
+    pub fn locate(self, attributes: AttributeSet) -> LocateBuilder<'a> {
+        LocateBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a Re-key request with its optional identifier omitted.
+    #[must_use]
+    pub fn rekey(self) -> RekeyBuilder<'a> {
+        RekeyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Re-key Key Pair request for a private key.
+    #[must_use]
+    pub fn rekey_key_pair(self) -> RekeyKeyPairBuilder<'a> {
+        RekeyKeyPairBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Re-certify request.
+    #[must_use]
+    pub fn recertify(self) -> RecertifyBuilder<'a> {
+        RecertifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing an Encrypt request with caller-supplied data.
+    #[must_use]
+    pub fn encrypt(self) -> EncryptBuilder<'a> {
+        EncryptBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Decrypt request with caller-supplied data.
+    #[must_use]
+    pub fn decrypt(self) -> DecryptBuilder<'a> {
+        DecryptBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Sign request.
+    #[must_use]
+    pub fn sign(self) -> SignBuilder<'a> {
+        SignBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Signature Verify request.
+    #[must_use]
+    pub fn signature_verify(self) -> SignatureVerifyBuilder<'a> {
+        SignatureVerifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a MAC request.
+    #[must_use]
+    pub fn mac(self) -> MacBuilder<'a> {
+        MacBuilder::new(self.client)
+    }
+
+    /// Begins constructing a MAC Verify request.
+    #[must_use]
+    pub fn mac_verify(self) -> MacVerifyBuilder<'a> {
+        MacVerifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Hash request with explicit Cryptographic Parameters.
+    #[must_use]
+    pub fn hash(self) -> HashBuilder<'a> {
+        HashBuilder::new(self.client)
+    }
+
+    /// Begins an empty typed Ping request (OASIS KMIP v2.1 §6.1.36).
+    #[must_use]
+    pub fn ping(self) -> PingBuilder<'a> {
+        PingBuilder::new(self.client)
+    }
+}
+
+impl Client {
+    /// Returns the scoped fluent request namespace for common typed operations.
+    #[must_use]
+    pub fn request(&mut self) -> RequestBuilder<'_> {
+        RequestBuilder::new(self)
+    }
+}

@@ -423,7 +423,7 @@ fn fluent_builder_missing_count_is_not_sent_without_transport_exchange() {
     let error = client
         .request()
         .get_usage_allocation()
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect_err("Usage Limits Count is required before sending");
 
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
@@ -442,7 +442,7 @@ fn fluent_builder_executes_one_typed_exchange_and_preserves_success() {
         .get_usage_allocation()
         .usage_limits_count(29)
         .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("the existing client returns a typed Get Usage Allocation result");
 
     assert_eq!(fake.borrow().exchange_count(), 1);
@@ -470,7 +470,7 @@ fn fluent_builder_preserves_pending_correlation_without_follow_up() {
         .usage_limits_count(1)
         .unique_identifier(UniqueIdentifier::TextString(OBJECT_ID.to_owned()))
         .with_asynchronous_indicator(1)
-        .execute(&CodecLimits::defaults())
+        .execute_outcome_with_limits(&CodecLimits::defaults())
         .expect("Pending remains an explicit typed outcome");
 
     let ClientBatchOutcome::Pending(pending) = result.outcome() else {

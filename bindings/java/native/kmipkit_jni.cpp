@@ -3127,6 +3127,16 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuil
     });
 }
 
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderSetProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_builder, jint major, jint minor) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_symmetric_key_builder_set_protocol_version(
+                from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
+                static_cast<int32_t>(major), static_cast<int32_t>(minor)); });
+        return 0;
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderBuildBatchItem(
         JNIEnv* env, jclass, jlong raw_builder) {
     return guarded<jlong>(env, 0, [&] {
@@ -3716,6 +3726,16 @@ JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPai
 JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderSetPublicName(
         JNIEnv* env, jclass, jlong raw_builder, jstring name) {
     set_key_pair_name(env, raw_builder, name, kmipkit_create_key_pair_builder_set_public_name);
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderSetProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_builder, jint major, jint minor) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_create_key_pair_builder_set_protocol_version(
+                from_java_handle<kmipkit_create_key_pair_builder_t>(raw_builder),
+                static_cast<int32_t>(major), static_cast<int32_t>(minor)); });
+        return 0;
+    });
 }
 
 JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_createKeyPairBuilderAddCommonAttributeItem(
@@ -7528,6 +7548,19 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigura
             return kmipkit_client_configuration_with_protocol_version(
                     from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
                     static_cast<int32_t>(major), static_cast<int32_t>(minor), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientConfigurationWithCodecLimits(
+        JNIEnv* env, jclass, jlong raw_configuration, jlongArray raw_limits) {
+    return guarded<jlong>(env, 0, [&] {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_client_configuration_t>(env, [&](auto output) {
+            return kmipkit_client_configuration_with_codec_limits_v1(
+                    from_java_handle<kmipkit_client_configuration_t>(raw_configuration),
+                    limits.get(), output);
         });
     });
 }

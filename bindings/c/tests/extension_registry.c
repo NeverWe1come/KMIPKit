@@ -3677,6 +3677,75 @@ static bool test_s2c_extension_query_public_abi(void)
     return true;
 }
 
+static bool test_phase1_configuration_codec_limits_and_builder_protocol_version(void)
+{
+    kmipkit_extension_registry_limits_v1_t reg_limits = {0};
+    kmipkit_client_extension_registry_t *registry = NULL;
+    kmipkit_client_configuration_t *cfg = NULL;
+    kmipkit_client_configuration_t *cfg_limits = NULL;
+    kmipkit_client_configuration_t *cfg_v3 = NULL;
+    kmipkit_codec_limits_t *custom = NULL;
+    kmipkit_codec_limits_t *read_back = NULL;
+    kmipkit_codec_limits_t *read_v3 = NULL;
+    kmipkit_symmetric_key_builder_t *sym = NULL;
+    kmipkit_create_key_pair_builder_t *pair = NULL;
+    kmipkit_client_batch_item_t *sym_item = NULL;
+    kmipkit_client_batch_item_t *pair_item = NULL;
+    uint64_t max_bytes = 0U;
+    static const uint8_t sym_name[] = "c-phase1-sym";
+    static const uint8_t priv_name[] = "c-phase1-priv";
+    static const uint8_t pub_name[] = "c-phase1-pub";
+
+    reg_limits.struct_size = (uint32_t)sizeof(reg_limits);
+    reg_limits.abi_version = UINT32_C(1);
+    REQUIRE(kmipkit_extension_registry_limits_v1_default_values(&reg_limits) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_client_extension_registry_create_v1(NULL, 0U, &reg_limits, &registry) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_client_configuration_create(registry, &cfg) == KMIPKIT_SUCCESS);
+    registry = NULL; /* consumed by client_configuration_create */
+
+    REQUIRE(kmipkit_codec_limits_create(1048576ULL, 16ULL, 2048ULL, &custom) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_client_configuration_with_codec_limits_v1(cfg, custom, &cfg_limits) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_client_configuration_codec_limits_v1(cfg_limits, &read_back) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_codec_limits_max_message_bytes(read_back, &max_bytes) == KMIPKIT_SUCCESS);
+    REQUIRE(max_bytes == 1048576ULL);
+
+    REQUIRE(kmipkit_client_configuration_with_protocol_version(cfg_limits, 3, 0, &cfg_v3) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_client_configuration_codec_limits_v1(cfg_v3, &read_v3) == KMIPKIT_SUCCESS);
+    max_bytes = 0U;
+    REQUIRE(kmipkit_codec_limits_max_message_bytes(read_v3, &max_bytes) == KMIPKIT_SUCCESS);
+    REQUIRE(max_bytes == 1048576ULL);
+
+    REQUIRE(kmipkit_symmetric_key_builder_create(&sym) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_set_protocol_version(sym, 3, 0) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_set_algorithm(sym, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_set_length(sym, 256) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_set_usage_mask(sym, 0x0C) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_set_name(sym, sym_name, (uint64_t)(sizeof(sym_name) - 1U)) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_symmetric_key_builder_build_batch_item(sym, &sym_item) == KMIPKIT_SUCCESS);
+
+    REQUIRE(kmipkit_create_key_pair_builder_create(&pair) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_protocol_version(pair, 3, 0) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_algorithm(pair, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_length(pair, 256) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_private_usage_mask(pair, 0x01) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_public_usage_mask(pair, 0x02) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_private_name(pair, priv_name, (uint64_t)(sizeof(priv_name) - 1U)) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_set_public_name(pair, pub_name, (uint64_t)(sizeof(pub_name) - 1U)) == KMIPKIT_SUCCESS);
+    REQUIRE(kmipkit_create_key_pair_builder_build_batch_item(pair, &pair_item) == KMIPKIT_SUCCESS);
+
+    kmipkit_client_batch_item_release(pair_item);
+    kmipkit_create_key_pair_builder_release(pair);
+    kmipkit_client_batch_item_release(sym_item);
+    kmipkit_symmetric_key_builder_release(sym);
+    kmipkit_codec_limits_release(read_v3);
+    kmipkit_client_configuration_release(cfg_v3);
+    kmipkit_codec_limits_release(read_back);
+    kmipkit_client_configuration_release(cfg_limits);
+    kmipkit_codec_limits_release(custom);
+    kmipkit_client_configuration_release(cfg);
+    return true;
+}
+
 #undef REQUIRE_STATUS_CLEANUP
 #undef REQUIRE_CLEANUP
 
@@ -3712,7 +3781,8 @@ int main(int argc, char **argv)
         {"extension information and definition accessors", test_extension_information_and_definition_accessors},
         {"definition validation and TTLV identity readback", test_definition_validation_and_ttlv_identity_readback},
         {"KMIP 3.0 and lifecycle parity", test_kmip_v3_and_lifecycle_parity},
-        {"S2C extension Query public ABI across versions", test_s2c_extension_query_public_abi}
+        {"S2C extension Query public ABI across versions", test_s2c_extension_query_public_abi},
+        {"Phase 1 configuration CodecLimits and KMIP 3.0 builders", test_phase1_configuration_codec_limits_and_builder_protocol_version}
     };
     size_t index;
     size_t failures = 0U;

@@ -89,9 +89,26 @@ impl fmt::Debug for UniqueIdentifier {
     }
 }
 
+impl UniqueIdentifier {
+    /// Returns the text identifier slice when this value is `TextString` or KMIP 3.0 `Identifier`.
+    #[must_use]
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Self::TextString(value) | Self::Identifier(value) => Some(value.as_str()),
+            Self::Enumeration(_) | Self::Integer(_) => None,
+        }
+    }
+}
+
 impl From<String> for UniqueIdentifier {
     fn from(value: String) -> Self {
         Self::TextString(value)
+    }
+}
+
+impl From<&String> for UniqueIdentifier {
+    fn from(value: &String) -> Self {
+        Self::TextString(value.clone())
     }
 }
 

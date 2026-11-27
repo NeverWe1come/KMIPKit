@@ -6,10 +6,36 @@ use std::sync::Arc;
 
 use kmipkit_protocol::{
     KmipOperationResult, ProfileValidationError, ProtocolCauseCategory, ProtocolError,
-    ResponseMessage, ResultStatus,
+    ResponseMessage, ResultReason, ResultStatus,
 };
 use kmipkit_transport::{RequestDeliveryState, TransportCauseCategory, TransportError};
 use kmipkit_ttlv::StructureView;
+use zeroize::Zeroizing;
+
+/// A redacted copy of a server-issued Asynchronous Correlation Value.
+///
+/// The wrapped bytes live in zeroizing memory and are never formatted in
+/// diagnostics or `Debug` output.
+#[derive(Clone, Eq, PartialEq)]
+pub struct RedactedCorrelation(Arc<Zeroizing<Vec<u8>>>);
+
+impl RedactedCorrelation {
+    pub(crate) fn new(bytes: Vec<u8>) -> Self {
+        Self(Arc::new(Zeroizing::new(bytes)))
+    }
+
+    /// Borrows the exact correlation bytes needed to Poll or Cancel.
+    #[must_use]
+    pub fn as_slice(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
+
+impl fmt::Debug for RedactedCorrelation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("RedactedCorrelation([REDACTED])")
+    }
+}
 
 /// An owned generic TTLV response retained for Unique Identifier shape errors in signature and verification responses.
 ///
@@ -139,6 +165,14 @@ pub enum ClientError {
     Transport(TransportError),
     /// A complete server result, with no local delivery-failure state.
     ServerResult(KmipOperationResult),
+    /// The server accepted the request asynchronously (`ResultStatus::Pending`)
+    /// and returned an Asynchronous Correlation Value for explicit `Poll`/`Cancel`.
+    Pending {
+        /// The complete server result (`status = Pending`).
+        result: KmipOperationResult,
+        /// The redacted Asynchronous Correlation Value returned by the server.
+        correlation_value: RedactedCorrelation,
+    },
 }
 
 impl ClientError {
@@ -202,7 +236,8 @@ impl ClientError {
             | Self::Protocol { .. }
             | Self::ProtocolResponse { .. }
             | Self::Transport(_)
-            | Self::ServerResult(_) => None,
+            | Self::ServerResult(_)
+            | Self::Pending { .. } => None,
         }
     }
 
@@ -222,7 +257,8 @@ impl ClientError {
             | Self::Protocol { .. }
             | Self::Transport(_)
             | Self::ProfileValidation { .. }
-            | Self::ServerResult(_) => None,
+            | Self::ServerResult(_)
+            | Self::Pending { .. } => None,
         }
     }
 
@@ -238,6 +274,44 @@ impl ClientError {
         Self::ServerResult(result)
     }
 
+    /// Represents an asynchronous `Pending` outcome returned where a completed
+    /// result was expected.
+    #[must_use]
+    pub const fn pending(result: KmipOperationResult, correlation_value: RedactedCorrelation) -> Self {
+        Self::Pending {
+            result,
+            correlation_value,
+        }
+    }
+
+    /// Returns `true` when the server returned `ResultStatus::Pending`.
+    #[must_use]
+    pub const fn is_pending(&self) -> bool {
+        matches!(self, Self::Pending { .. })
+    }
+
+    /// Returns `true` when the server returned a non-pending server error result.
+    #[must_use]
+    pub const fn is_server_rejected(&self) -> bool {
+        matches!(self, Self::ServerResult(_))
+    }
+
+    /// Borrows the Asynchronous Correlation Value when the server returned `Pending`.
+    #[must_use]
+    pub fn asynchronous_correlation_value(&self) -> Option<&[u8]> {
+        match self {
+            Self::Pending {
+                correlation_value, ..
+            } => Some(correlation_value.as_slice()),
+            Self::Validation { .. }
+            | Self::ProfileValidation { .. }
+            | Self::Protocol { .. }
+            | Self::ProtocolResponse { .. }
+            | Self::Transport(_)
+            | Self::ServerResult(_) => None,
+        }
+    }
+
     /// Returns the safe outcome category.
     #[must_use]
     pub const fn category(&self) -> ClientErrorCategory {
@@ -247,7 +321,7 @@ impl ClientError {
             }
             Self::Protocol { .. } | Self::ProtocolResponse { .. } => ClientErrorCategory::Protocol,
             Self::Transport(_) => ClientErrorCategory::Transport,
-            Self::ServerResult(_) => ClientErrorCategory::ServerResult,
+            Self::ServerResult(_) | Self::Pending { .. } => ClientErrorCategory::ServerResult,
         }
     }
 
@@ -261,7 +335,7 @@ impl ClientError {
                 Some(ClientCauseCategory::Protocol(error.cause_category()))
             }
             Self::Transport(error) => Some(ClientCauseCategory::Transport(error.cause_category())),
-            Self::ServerResult(_) => None,
+            Self::ServerResult(_) | Self::Pending { .. } => None,
         }
     }
 
@@ -274,15 +348,15 @@ impl ClientError {
             | Self::ProtocolResponse { delivery_state, .. }
             | Self::ProfileValidation { delivery_state, .. } => Some(*delivery_state),
             Self::Transport(error) => Some(error.delivery_state()),
-            Self::ServerResult(_) => None,
+            Self::ServerResult(_) | Self::Pending { .. } => None,
         }
     }
 
-    /// Returns the server result for a server-result outcome.
+    /// Returns the server result for a server-result or pending outcome.
     #[must_use]
     pub const fn server_operation_result(&self) -> Option<&KmipOperationResult> {
         match self {
-            Self::ServerResult(result) => Some(result),
+            Self::ServerResult(result) | Self::Pending { result, .. } => Some(result),
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::ProtocolResponse { .. }
@@ -291,11 +365,24 @@ impl ClientError {
         }
     }
 
-    /// Returns the server's raw status for a server-result outcome.
+    /// Returns the server's raw status for a server-result or pending outcome.
     #[must_use]
     pub const fn server_status(&self) -> Option<ResultStatus> {
         match self {
-            Self::ServerResult(result) => Some(result.status()),
+            Self::ServerResult(result) | Self::Pending { result, .. } => Some(result.status()),
+            Self::Validation { .. }
+            | Self::Protocol { .. }
+            | Self::ProtocolResponse { .. }
+            | Self::ProfileValidation { .. }
+            | Self::Transport(_) => None,
+        }
+    }
+
+    /// Returns the server's optional result reason for a server-result or pending outcome.
+    #[must_use]
+    pub const fn server_reason(&self) -> Option<ResultReason> {
+        match self {
+            Self::ServerResult(result) | Self::Pending { result, .. } => result.reason(),
             Self::Validation { .. }
             | Self::Protocol { .. }
             | Self::ProtocolResponse { .. }
@@ -332,7 +419,9 @@ impl fmt::Display for ClientError {
                 "client protocol failure ({error}, {delivery_state:?})"
             ),
             Self::Transport(error) => write!(formatter, "client {error}"),
-            Self::ServerResult(result) => write!(formatter, "server returned {result}"),
+            Self::ServerResult(result) | Self::Pending { result, .. } => {
+                write!(formatter, "server returned {result}")
+            }
         }
     }
 }
@@ -344,7 +433,7 @@ impl Error for ClientError {
             Self::ProfileValidation { error, .. } => Some(error),
             Self::Protocol { error, .. } | Self::ProtocolResponse { error, .. } => Some(error),
             Self::Transport(error) => Some(error),
-            Self::ServerResult(_) => None,
+            Self::ServerResult(_) | Self::Pending { .. } => None,
         }
     }
 }

@@ -170,6 +170,7 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_create_credential_from_fields",
         "kmipkit_client_batch_item_encapsulate_from_fields",
         "kmipkit_client_batch_item_decapsulate_from_fields",
+        "kmipkit_client_configuration_with_codec_limits_v1",
     }
 )
 
@@ -328,6 +329,7 @@ class ClientConfiguration(NativeHandle):
         _token: object,
         wire_encoding: WireEncoding = WireEncoding.TTLV,
         protocol_version: ProtocolVersion | None = None,
+        codec_limits: ttlv.CodecLimits | None = None,
     ) -> None:
         super().__init__(handle, _token=_token, owner=definitions)
         self._definitions = definitions
@@ -338,6 +340,16 @@ class ClientConfiguration(NativeHandle):
 
             protocol_version = ProtocolVersion(2, 1)
         self._protocol_version = protocol_version
+        self._codec_limits = codec_limits
+
+    @classmethod
+    def defaults(cls) -> ClientConfiguration:
+        """Create a default configuration without custom vendor extensions."""
+        registry = create_client_extension_registry((), default_extension_registry_limits())
+        try:
+            return create_client_configuration(registry)
+        finally:
+            registry.close()
 
     @property
     def wire_encoding(self) -> WireEncoding:
@@ -348,6 +360,13 @@ class ClientConfiguration(NativeHandle):
     def protocol_version(self) -> ProtocolVersion:
         """Return this immutable configuration's default KMIP protocol version."""
         return self._protocol_version
+
+    @property
+    def codec_limits(self) -> ttlv.CodecLimits:
+        """Return this configuration's embedded TTLV/JSON/XML codec limits."""
+        if self._codec_limits is None:
+            self._codec_limits = ttlv.codec_limits_defaults()
+        return self._codec_limits
 
     def with_protocol_version(self, version: ProtocolVersion) -> ClientConfiguration:
         """Return a native configuration copy using a different KMIP version."""
@@ -367,6 +386,7 @@ class ClientConfiguration(NativeHandle):
             self.limits,
             wire_encoding=self._wire_encoding,
             protocol_version=version,
+            codec_limits=self._codec_limits,
         )
 
     def with_wire_encoding(self, encoding: WireEncoding) -> ClientConfiguration:
@@ -385,6 +405,29 @@ class ClientConfiguration(NativeHandle):
             self.limits,
             wire_encoding=encoding,
             protocol_version=self._protocol_version,
+            codec_limits=self._codec_limits,
+        )
+
+    def with_codec_limits(self, limits: ttlv.CodecLimits) -> ClientConfiguration:
+        """Return a native configuration copy using different TTLV/JSON/XML codec limits."""
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        handle = _make_handle(
+            "kmipkit_client_configuration_t",
+            "kmipkit_client_configuration_with_codec_limits_v1",
+            (
+                _client_ffi.cast("kmipkit_client_configuration_t *", self._pointer()),
+                _client_ffi.cast("kmipkit_codec_limits_t *", limits._pointer()),
+            ),
+        )
+        return _wrap_owned_handle(
+            ClientConfiguration,
+            handle,
+            self._definitions,
+            self.limits,
+            wire_encoding=self._wire_encoding,
+            protocol_version=self._protocol_version,
+            codec_limits=limits,
         )
 
 
@@ -584,6 +627,11 @@ class UniqueIdentifier:
     def batch_reference(cls, offset: int) -> UniqueIdentifier:
         """Return a KMIP 2.0/2.1 negative integer batch-item reference (e.g. -1 for prior item)."""
         return cls(UniqueIdentifierKind.INTEGER, number=offset)
+
+    def __repr__(self) -> str:
+        if self.kind in (UniqueIdentifierKind.TEXT_STRING, UniqueIdentifierKind.IDENTIFIER):
+            return f"UniqueIdentifier(kind={self.kind.name}, value=redacted)"
+        return f"UniqueIdentifier(kind={self.kind.name}, number={self.number})"
 
 
 VENDOR_TAG_ATTRIBUTE_INDEX = 0x0042_0009

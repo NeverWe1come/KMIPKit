@@ -942,6 +942,14 @@ impl BoundaryAudit {
             && self.current_inline_modules.is_empty()
     }
 
+    fn is_fluent_source(&self) -> bool {
+        self.current_inline_modules.is_empty()
+            && self
+                .current_source_path
+                .as_deref()
+                .is_some_and(|path| path == Path::new("fluent.rs") || path.starts_with("fluent"))
+    }
+
     fn reject(&mut self, reason: impl Into<String>) {
         self.rejection_reasons.push(reason.into());
     }
@@ -1018,9 +1026,13 @@ impl BoundaryAudit {
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
         let raw_response_accessor =
             is_exact_raw_response_accessor(execute_root_scope, impl_type, signature);
-        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
+        let fluent_root_scope = self.is_fluent_source();
         let fluent_kmip30_ciphertext =
             is_exact_fluent_kmip30_ciphertext(fluent_root_scope, impl_type, signature);
+        let fluent_uid_setter_arg =
+            is_exact_fluent_uid_conversion(fluent_root_scope, signature);
+        let client_builder_arg =
+            is_exact_client_builder_input(execute_root_scope, impl_type, signature);
         let registry_value_validation = is_exact_registry_value_validation(
             self.is_source_root(Path::new("extension_registry.rs")),
             impl_type,
@@ -1079,9 +1091,17 @@ impl BoundaryAudit {
                     || fluent_explicit_attribute_item
                         && is_exact_fluent_explicit_attribute_argument(signature, index)
                     || fluent_explicit_value && index == 1
-                    || fluent_kmip30_ciphertext && index == 2
+                    || fluent_kmip30_ciphertext && matches!(index, 1 | 2)
+                    || fluent_uid_setter_arg.is_some_and(|uid_idx| uid_idx == index)
+                    || client_builder_arg && index >= 1
                 {
                     continue;
+                }
+                if client_builder_arg && index == 0 {
+                    // Associated constructor (`ClientBuilder::*` or `Client::connect_*`) has no `&self` receiver.
+                    if matches!(argument.ty.as_ref(), Type::ImplTrait(_)) {
+                        continue;
+                    }
                 }
                 finder.visit_type(&argument.ty);
             }
@@ -1145,7 +1165,7 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
         // Declarative/procedural item macros have opaque expansion behavior.
         // Approved fluent macros require an exact checked-in body; 3.0 builder
         // invocations are additionally confined to their seven root-level types.
-        let kmip30_root = self.is_source_root(Path::new("fluent.rs"))
+        let kmip30_root = self.is_fluent_source()
             && self.current_impl_type.is_none()
             && self.current_function.is_none();
         if is_approved_fluent_option_setter_definition(item) {
@@ -1628,6 +1648,41 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
     }
 }
 
+struct Kmip30MacroArgs {
+    builder: syn::Ident,
+    _comma1: syn::Token![,],
+    _resp: syn::Ident,
+    _comma2: syn::Token![,],
+    _variant: syn::Ident,
+}
+
+impl syn::parse::Parse for Kmip30MacroArgs {
+    fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
+        Ok(Self {
+            builder: input.parse()?,
+            _comma1: input.parse()?,
+            _resp: input.parse()?,
+            _comma2: input.parse()?,
+            _variant: input.parse()?,
+        })
+    }
+}
+
+impl Kmip30MacroArgs {
+    fn is_valid(&self) -> bool {
+        matches!(
+            self.builder.to_string().as_str(),
+            "CreateCredentialBuilder"
+                | "CreateGroupBuilder"
+                | "CreateUserBuilder"
+                | "DeactivateBuilder"
+                | "DecapsulateBuilder"
+                | "EncapsulateBuilder"
+                | "ObliterateBuilder"
+        )
+    }
+}
+
 fn is_approved_kmip30_builder_macro(item: &syn::ItemMacro) -> bool {
     if !item.attrs.is_empty() {
         return false;
@@ -1636,18 +1691,8 @@ fn is_approved_kmip30_builder_macro(item: &syn::ItemMacro) -> bool {
         && item.mac.path.is_ident("impl_kmip30_builder_methods")
         && matches!(item.mac.delimiter, syn::MacroDelimiter::Paren(_))
     {
-        return syn::parse2::<syn::Ident>(item.mac.tokens.clone()).is_ok_and(|builder| {
-            matches!(
-                builder.to_string().as_str(),
-                "CreateCredentialBuilder"
-                    | "CreateGroupBuilder"
-                    | "CreateUserBuilder"
-                    | "DeactivateBuilder"
-                    | "DecapsulateBuilder"
-                    | "EncapsulateBuilder"
-                    | "ObliterateBuilder"
-            )
-        });
+        return syn::parse2::<Kmip30MacroArgs>(item.mac.tokens.clone())
+            .is_ok_and(|args| args.is_valid());
     }
     if item
         .ident
@@ -2407,6 +2452,68 @@ fn has_public_type_or_const_generics(signature: &syn::Signature) -> bool {
     })
 }
 
+fn is_impl_into_path(ty: &Type, target_ident: &str) -> bool {
+    let Type::ImplTrait(impl_trait) = ty else {
+        return false;
+    };
+    impl_trait.bounds.len() == 1
+        && matches!(
+            impl_trait.bounds.first(),
+            Some(syn::TypeParamBound::Trait(bound))
+                if matches!(bound.modifier, syn::TraitBoundModifier::None)
+                    && bound.path.segments.last().is_some_and(|seg| {
+                        seg.ident == "Into"
+                            && matches!(
+                                &seg.arguments,
+                                syn::PathArguments::AngleBracketed(args)
+                                    if args.args.len() == 1
+                                        && matches!(
+                                            args.args.first(),
+                                            Some(syn::GenericArgument::Type(inner))
+                                                if is_plain_type_path(inner, target_ident)
+                                        )
+                            )
+                    })
+        )
+}
+
+fn is_exact_fluent_uid_conversion(
+    fluent_root_scope: bool,
+    signature: &syn::Signature,
+) -> Option<usize> {
+    if !fluent_root_scope || !signature.generics.params.is_empty() {
+        return None;
+    }
+    signature.inputs.iter().enumerate().find_map(|(index, arg)| {
+        let syn::FnArg::Typed(typed) = arg else {
+            return None;
+        };
+        if is_impl_into_path(&typed.ty, "UniqueIdentifier") {
+            Some(index)
+        } else {
+            None
+        }
+    })
+}
+
+fn is_exact_client_builder_input(
+    execute_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !execute_root_scope || !signature.generics.params.is_empty() {
+        return false;
+    }
+    if impl_type == Some("ClientBuilder") {
+        return true;
+    }
+    impl_type == Some("Client")
+        && matches!(
+            signature.ident.to_string().as_str(),
+            "connect_mtls" | "connect_mtls_with_version" | "connect_https"
+        )
+}
+
 fn is_exact_fluent_kmip30_ciphertext(
     fluent_root_scope: bool,
     impl_type: Option<&str>,
@@ -2426,7 +2533,9 @@ fn is_exact_fluent_kmip30_ciphertext(
         || !matches!(signature.inputs.first(), Some(syn::FnArg::Receiver(receiver))
             if receiver.reference.is_none() && receiver.colon_token.is_none() && receiver.attrs.is_empty())
         || !matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
-            if argument.attrs.is_empty() && is_plain_type_path(&argument.ty, "UniqueIdentifier"))
+            if argument.attrs.is_empty()
+                && (is_plain_type_path(&argument.ty, "UniqueIdentifier")
+                    || is_impl_into_path(&argument.ty, "UniqueIdentifier")))
     {
         return false;
     }
@@ -5400,16 +5509,16 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
 #[test]
 fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_invocations() {
     let safe = include_str!("../fixtures/execute_boundary/kmip30_builder_methods_macro.rs");
-    for builder in [
-        "CreateCredentialBuilder",
-        "CreateGroupBuilder",
-        "CreateUserBuilder",
-        "DeactivateBuilder",
-        "DecapsulateBuilder",
-        "EncapsulateBuilder",
-        "ObliterateBuilder",
+    for (builder, resp, variant) in [
+        ("CreateCredentialBuilder", "CreateCredentialResponse", "CreateCredential"),
+        ("CreateGroupBuilder", "CreateGroupResponse", "CreateGroup"),
+        ("CreateUserBuilder", "CreateUserResponse", "CreateUser"),
+        ("DeactivateBuilder", "DeactivateResponse", "Deactivate"),
+        ("DecapsulateBuilder", "DecapsulateResponse", "Decapsulate"),
+        ("EncapsulateBuilder", "EncapsulateResponse", "Encapsulate"),
+        ("ObliterateBuilder", "ObliterateResponse", "Obliterate"),
     ] {
-        let source = format!("{safe} impl_kmip30_builder_methods!({builder});");
+        let source = format!("{safe} impl_kmip30_builder_methods!({builder}, {resp}, {variant});");
         let parsed = syn::parse_file(&source).unwrap();
         let mut audit = BoundaryAudit::default();
         audit.visit_source_file(&parsed, Path::new("fluent.rs"));
@@ -5421,17 +5530,17 @@ fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_inv
     }
     for source in [
         safe.replace(
-            "execution.execute(request, limits)",
+            "execution.execute_outcome(request)",
             "execution.client.exchange(request)",
         ),
         safe.replace("pub fn build(self)", "pub fn raw(self)"),
-        format!("{safe} impl_kmip30_builder_methods!(UnreviewedBuilder);"),
+        format!("{safe} impl_kmip30_builder_methods!(UnreviewedBuilder, R, V);"),
         format!("{safe} impl_kmip30_builder_methods!(CreateGroupBuilder, OtherBuilder);"),
-        format!("{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder}}"),
-        format!("{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder);"),
-        format!("mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder); }}"),
+        format!("{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder, CreateGroupResponse, CreateGroup}}"),
+        format!("{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);"),
+        format!("mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup); }}"),
         "macro_rules! other { () => {} } other!();".to_owned(),
-        "impl_kmip30_builder_methods!(CreateGroupBuilder);".to_owned(),
+        "impl_kmip30_builder_methods!(CreateGroupBuilder, CreateGroupResponse, CreateGroup);".to_owned(),
         "pub fn raw(self, body: Vec<u8>) -> ClientRequest { loop {} }".to_owned(),
     ] {
         let parsed = syn::parse_file(&source).unwrap();

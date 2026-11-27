@@ -107,29 +107,37 @@ public final class CreateBuilder implements AutoCloseable {
     /** Alias for {@link #build()}. */
     public ClientBatchItem toBatchItem() { return build(); }
 
+    /** Executes Create with configured limits and throws on server error or Pending. */
+    public ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes Create with configured limits, returning rejection or Pending outcomes without throwing. */
+    public ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Returns the owned Create result with explicit limits, including rejection or Pending outcomes. */
+    public ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        if (limits == null) throw new InvalidInputException("codec limits are invalid");
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
+    }
+
     /** Executes Create with the default codec limits and returns its owned result. */
     public ClientBatchItemResult executeOne() throws org.kmipkit.ClientOperationException {
-        return executeOne(CodecLimits.defaults());
+        return executeOutcome();
     }
 
     /** Returns the owned Create result, including rejection or Pending outcomes. */
     public ClientBatchItemResult executeOne(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
-        try (ClientBatchResponse response = execute(limits)) {
-            return response.itemAt(0);
-        }
+        return executeOutcome(limits);
     }
 
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
-        if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        if (client == null) throw new InvalidInputException("client is required to execute this builder");
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
     }
 
     @Override public void close() { handle.close(); }

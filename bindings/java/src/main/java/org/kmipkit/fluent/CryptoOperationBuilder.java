@@ -4,6 +4,7 @@ import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.FluentBatchItemAdapter;
 import org.kmipkit.extensions.RequestOptions;
@@ -131,18 +132,24 @@ abstract class CryptoOperationBuilder<B extends CryptoOperationBuilder<B>> imple
     /** Executes exactly one typed exchange and never polls or retries it. */
     public final ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
+    }
+
+    /** Executes one typed exchange with the client's configured limits and throws on server error or Pending. */
+    public final ClientBatchItemResult execute() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeResult(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one typed exchange with the client's configured limits, preserving server failure and Pending outcomes. */
+    public final ClientBatchItemResult executeOutcome() throws org.kmipkit.ClientOperationException {
+        return BatchExecution.executeOutcome(client, build(), null, options, asynchronousIndicator);
+    }
+
+    /** Executes one typed exchange with explicit limits, preserving server failure and Pending outcomes. */
+    public final ClientBatchItemResult executeOutcome(CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        if (client == null) {
-            throw new InvalidInputException("client is required to execute this builder");
-        }
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) {
-                batch.asynchronousIndicator(asynchronousIndicator);
-            }
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.executeOutcome(client, build(), limits, options, asynchronousIndicator);
     }
 
     @Override

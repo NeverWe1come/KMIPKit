@@ -617,9 +617,16 @@ fn enumeration_value(items: &[Item], tag: u32) -> Option<u32> {
 }
 
 pub(crate) fn validate_catalogued_item_type(item: &Item) -> Result<(), AttributeSetError> {
-    if crate::attribute_types_generated::expected_types(item.tag().raw())
-        .is_some_and(|expected| !expected.contains(&item.item_type()))
-    {
+    if crate::attribute_types_generated::expected_types(item.tag().raw()).is_some_and(|expected| {
+        !expected.contains(&item.item_type())
+            && !(crate::LinkType::from_v3_tag(item.tag().raw()).is_some()
+                && matches!(
+                    item.item_type(),
+                    kmipkit_ttlv::ItemType::Identifier
+                        | kmipkit_ttlv::ItemType::Reference
+                        | kmipkit_ttlv::ItemType::NameReference
+                ))
+    }) {
         Err(AttributeSetError::AttributeTtlvTypeMismatch)
     } else {
         Ok(())

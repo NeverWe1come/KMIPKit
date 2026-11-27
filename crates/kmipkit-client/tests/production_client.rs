@@ -203,7 +203,7 @@ fn fluent_client_completes_create_get_destroy_over_mutual_tls() {
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
         .name(FLUENT_LIFECYCLE_IDENTIFIER)
-        .execute(&limits)
+        .execute_outcome_with_limits(&limits)
         .expect("the typed Create request completes over TLS");
     assert_eq!(create.outcome().operation(), ClientOperation::Create);
     let identifier = match create.outcome() {
@@ -221,7 +221,7 @@ fn fluent_client_completes_create_get_destroy_over_mutual_tls() {
     let get = client
         .request()
         .get(identifier.clone())
-        .execute(&limits)
+        .execute_outcome_with_limits(&limits)
         .expect("the typed Get request completes over TLS");
     assert_eq!(get.outcome().operation(), ClientOperation::Get);
     match get.outcome() {
@@ -236,7 +236,7 @@ fn fluent_client_completes_create_get_destroy_over_mutual_tls() {
     let destroy = client
         .request()
         .destroy(identifier.clone())
-        .execute(&limits)
+        .execute_outcome_with_limits(&limits)
         .expect("the typed Destroy request completes over TLS");
     assert_eq!(destroy.outcome().operation(), ClientOperation::Destroy);
     match destroy.outcome() {

@@ -239,10 +239,12 @@ impl RegisteredExtensionValue {
 ///
 /// The production transport constructor can consume this configuration
 /// without rebuilding or sharing registry state between clients.
+#[derive(Clone)]
 pub struct ClientConfiguration {
     extension_registry: Arc<ClientExtensionRegistry>,
     wire_encoding: crate::WireEncoding,
     protocol_version: kmipkit_protocol::ProtocolVersion,
+    codec_limits: CodecLimits,
 }
 
 /// A registry-validated extension and its caller-selected request criticality.
@@ -312,7 +314,23 @@ impl ClientConfiguration {
             extension_registry: Arc::new(extension_registry),
             wire_encoding: crate::WireEncoding::Ttlv,
             protocol_version: kmipkit_protocol::ProtocolVersion::V2_1,
+            codec_limits: CodecLimits::defaults(),
         }
+    }
+
+    /// Creates a default configuration with an empty extension registry, TTLV
+    /// wire encoding, KMIP 2.1 protocol version, and default [`CodecLimits`].
+    #[must_use]
+    pub fn with_default_registry() -> Self {
+        let registry = ClientExtensionRegistry {
+            definitions: Vec::new(),
+            identity_index: IdentityIndex::default(),
+            metadata_order: Vec::new(),
+            discriminator_index: DiscriminatorIndex::default(),
+            limits: extension::defaults(),
+            identity: Arc::new(()),
+        };
+        Self::new(registry)
     }
 
     /// Creates a configuration that shares one immutable registry snapshot.
@@ -323,7 +341,24 @@ impl ClientConfiguration {
             extension_registry,
             wire_encoding: crate::WireEncoding::Ttlv,
             protocol_version: kmipkit_protocol::ProtocolVersion::V2_1,
+            codec_limits: CodecLimits::defaults(),
         }
+    }
+
+    /// Sets the default [`CodecLimits`] used by high-level/fluent execution methods.
+    ///
+    /// Defaults to [`CodecLimits::defaults()`]. Per-call overrides may also be
+    /// passed through [`crate::RequestOptions`].
+    #[must_use]
+    pub const fn with_codec_limits(mut self, limits: CodecLimits) -> Self {
+        self.codec_limits = limits;
+        self
+    }
+
+    /// Returns the configured default [`CodecLimits`].
+    #[must_use]
+    pub const fn codec_limits(&self) -> &CodecLimits {
+        &self.codec_limits
     }
 
     /// Sets the immutable default KMIP protocol version for this client.
@@ -380,6 +415,12 @@ impl ClientConfiguration {
     }
 }
 
+impl Default for ClientConfiguration {
+    fn default() -> Self {
+        Self::with_default_registry()
+    }
+}
+
 impl fmt::Debug for ClientConfiguration {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
@@ -387,6 +428,7 @@ impl fmt::Debug for ClientConfiguration {
             .field("extension_registry", &self.extension_registry)
             .field("wire_encoding", &self.wire_encoding)
             .field("protocol_version", &self.protocol_version)
+            .field("codec_limits", &self.codec_limits)
             .finish()
     }
 }

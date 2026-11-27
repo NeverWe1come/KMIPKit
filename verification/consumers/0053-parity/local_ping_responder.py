@@ -284,7 +284,7 @@ def _requested_name(
     names = [
         value
         for tag, kind, value in _flatten(_children(payloads[0]))
-        if tag == 0x420098 and kind == 7
+        if tag in (0x420055, 0x420098) and kind == 7
     ]
     return names[0] if len(names) == 1 else None
 
@@ -359,7 +359,7 @@ def _validate_operation(
         if values.get(0x42002C) != (2, struct.pack(">i", 12)):
             raise RuntimeError("Create Cryptographic Usage Mask was not explicit")
         if any(
-            tag == 0x420098 and kind == 7 and value == _EXPERT_KEY_NAME
+            tag in (0x420055, 0x420098) and kind == 7 and value == _EXPERT_KEY_NAME
             for tag, kind, value in flattened_payload
         ):
             vendor_attributes = [

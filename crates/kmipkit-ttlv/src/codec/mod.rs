@@ -30,7 +30,7 @@ pub use decoder::{
 /// Structure depth may be lowered to zero but cannot exceed the model maximum
 /// of 64. Construct a value with [`CodecLimits::new`] or use
 /// [`CodecLimits::defaults`]; this type has no setters or builders.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct CodecLimits {
     message_bytes: usize,
     structure_depth: usize,

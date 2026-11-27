@@ -9,6 +9,7 @@ from . import attribute_operations, errors, extensions, ttlv
 from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import NativeHandle, _wrap_owned_handle
+from ._protocol_version import ProtocolVersion
 from .client import (
     _NATIVE_CALL_LOCK,
     Batch,
@@ -204,17 +205,36 @@ def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimit
     return _batch_result(output[0], limits)
 
 
+def _resolve_limits(
+    client: Client | None, limits: ttlv.CodecLimits | None
+) -> ttlv.CodecLimits:
+    if not isinstance(client, Client):
+        errors.raise_for_status(4)
+    if limits is not None:
+        if not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        return limits
+    return client.codec_limits
+
+
+def _check_result_or_raise(item: BatchItemResult) -> BatchItemResult:
+    if item.result_status != 0:
+        err = errors.ServerResultError.from_item_result(item)
+        item.close()
+        raise err
+    return item
+
+
 def _execute_single_item(
     client: Client,
     build: Callable[[], extensions.ClientBatchItem],
-    limits: ttlv.CodecLimits,
+    limits: ttlv.CodecLimits | None,
     configured_options: RequestOptions | None,
     asynchronous_indicator: int | None,
     options: RequestOptions | None = None,
-) -> BatchResult:
-    """Execute one typed item, preferring call-specific options over configured ones."""
-    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
-        errors.raise_for_status(4)
+) -> Any:
+    """Execute one typed item, returning ``BatchResult`` when ``limits`` is passed or ``BatchItemResult`` otherwise."""
+    resolved_limits = _resolve_limits(client, limits)
     if options is not None and not isinstance(options, RequestOptions):
         errors.raise_for_status(4)
     with Batch.create() as batch:
@@ -223,9 +243,42 @@ def _execute_single_item(
         if asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(asynchronous_indicator)
         selected_options = options if options is not None else configured_options
-        if selected_options is not None:
-            return client.execute_with_options(batch, limits, selected_options)
-        return client.execute(batch, limits)
+        batch_result = (
+            client.execute_with_options(batch, resolved_limits, selected_options)
+            if selected_options is not None
+            else client.execute(batch, resolved_limits)
+        )
+    if limits is not None:
+        return batch_result
+    with batch_result:
+        return _check_result_or_raise(batch_result._take_single_item())
+
+
+def _execute_single_outcome(
+    client: Client,
+    build: Callable[[], extensions.ClientBatchItem],
+    limits: ttlv.CodecLimits | None,
+    configured_options: RequestOptions | None,
+    asynchronous_indicator: int | None,
+    options: RequestOptions | None = None,
+) -> BatchItemResult:
+    """Execute one typed item and return its single ``BatchItemResult`` without raising on server rejection/Pending."""
+    resolved_limits = _resolve_limits(client, limits)
+    if options is not None and not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+    with Batch.create() as batch:
+        with build() as item:
+            batch.add_item(item)
+        if asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(asynchronous_indicator)
+        selected_options = options if options is not None else configured_options
+        batch_result = (
+            client.execute_with_options(batch, resolved_limits, selected_options)
+            if selected_options is not None
+            else client.execute(batch, resolved_limits)
+        )
+    with batch_result:
+        return batch_result._take_single_item()
 
 
 def _build_fluent_batch_item(
@@ -245,31 +298,67 @@ def _build_fluent_batch_item(
 
 def _execute_fluent_builder(
     builder: Any,
-    limits: ttlv.CodecLimits,
+    limits: ttlv.CodecLimits | None,
     client: Client | None,
-) -> BatchResult:
+) -> Any:
     builder._ensure_open()
     target = client or builder._client
-    if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
+    if not isinstance(target, Client):
         errors.raise_for_status(4)
+    resolved_limits = _resolve_limits(target, limits)
     batch = Batch.create()
     try:
         batch.add_item(builder.build())
         if builder._asynchronous_indicator is not None:
             batch.set_asynchronous_indicator(builder._asynchronous_indicator)
-        if builder._options is None:
-            return target.execute(batch, limits)
-        return target.execute_with_options(batch, limits, builder._options)
+        batch_result = (
+            target.execute(batch, resolved_limits)
+            if builder._options is None
+            else target.execute_with_options(batch, resolved_limits, builder._options)
+        )
     finally:
         batch.close()
+    if limits is not None:
+        return batch_result
+    with batch_result:
+        return _check_result_or_raise(batch_result._take_single_item())
+
+
+def _execute_fluent_builder_outcome(
+    builder: Any,
+    limits: ttlv.CodecLimits | None,
+    client: Client | None,
+) -> BatchItemResult:
+    builder._ensure_open()
+    target = client or builder._client
+    if not isinstance(target, Client):
+        errors.raise_for_status(4)
+    resolved_limits = _resolve_limits(target, limits)
+    batch = Batch.create()
+    try:
+        batch.add_item(builder.build())
+        if builder._asynchronous_indicator is not None:
+            batch.set_asynchronous_indicator(builder._asynchronous_indicator)
+        batch_result = (
+            target.execute(batch, resolved_limits)
+            if builder._options is None
+            else target.execute_with_options(batch, resolved_limits, builder._options)
+        )
+    finally:
+        batch.close()
+    with batch_result:
+        return batch_result._take_single_item()
 
 
 def _normalize_identifier(
     value: extensions.UniqueIdentifier | str | None,
+    protocol_version: ProtocolVersion | None = None,
 ) -> extensions.UniqueIdentifier | None:
     if value is None:
         return None
     if isinstance(value, str):
+        if protocol_version is not None and protocol_version.major >= 3:
+            return extensions.UniqueIdentifier.identifier(value)
         return extensions.UniqueIdentifier.text_string(value)
     if isinstance(value, extensions.UniqueIdentifier):
         return value
@@ -419,14 +508,14 @@ class Request:
             return RevokeBuilder(self._client, first.raw_code, first.message)
         return RevokeBuilder(self._client, first, second)
 
-    def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+    def get(self, unique_identifier: extensions.UniqueIdentifier | str) -> Operation:
         return Operation(self._client, "get", unique_identifier)
 
     def get_request(self) -> GetBuilder:
         """Start a Get request with all selectors initially unset."""
         return GetBuilder(self._client)
 
-    def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+    def destroy(self, unique_identifier: extensions.UniqueIdentifier | str) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
 
     def encrypt(self) -> EncryptBuilder:
@@ -601,10 +690,24 @@ class LocateBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        return _execute_single_outcome(
             self._client,
             self.build,
             limits,
@@ -728,10 +831,24 @@ class RevokeBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        return _execute_single_outcome(
             self._client,
             self.build,
             limits,
@@ -788,13 +905,30 @@ class PingBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         *,
         client: Client | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         target = client or self._client
         return _execute_single_item(
+            target,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        *,
+        client: Client | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        target = client or self._client
+        return _execute_single_outcome(
             target,
             self.build,
             limits,
@@ -899,16 +1033,20 @@ class CreateBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
 
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
+
     def execute_one(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
     ) -> BatchItemResult:
         """Execute Create and return the owned result, including rejection or Pending."""
-        with self.execute(limits, client) as batch:
-            return batch._take_single_item()
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1000,11 +1138,16 @@ class _Kmip30OperationBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
         self._ensure_open()
-        if not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
         return _execute_single_item(
+            self._client, self.build, limits, self._options,
+            self._asynchronous_indicator,
+        )
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        self._ensure_open()
+        return _execute_single_outcome(
             self._client, self.build, limits, self._options,
             self._asynchronous_indicator,
         )
@@ -1513,9 +1656,14 @@ class SetAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1669,9 +1817,14 @@ class AddAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1846,9 +1999,14 @@ class DeleteAttributeBuilder:
     to_batch_item = build
 
     def execute(
-        self, limits: ttlv.CodecLimits, client: Client | None = None,
-    ) -> BatchResult:
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None,
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -1922,21 +2080,37 @@ class _AttributeReadBuilder:
     def to_batch_item(self) -> extensions.ClientBatchItem:
         return self.build()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        if not isinstance(self._client, Client) or not isinstance(
-            limits, ttlv.CodecLimits
-        ):
-            errors.raise_for_status(4)
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        resolved_limits = _resolve_limits(self._client, limits)
         with Batch.create() as batch:
             with self.build() as item:
                 batch.add_item(item)
             if self._asynchronous_indicator is not None:
                 batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(
-                    batch, limits, self._options
-                )
-            return self._client.execute(batch, limits)
+            batch_result = (
+                self._client.execute_with_options(batch, resolved_limits, self._options)
+                if self._options is not None
+                else self._client.execute(batch, resolved_limits)
+            )
+        if limits is not None:
+            return batch_result
+        with batch_result:
+            return _check_result_or_raise(batch_result._take_single_item())
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        resolved_limits = _resolve_limits(self._client, limits)
+        with Batch.create() as batch:
+            with self.build() as item:
+                batch.add_item(item)
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            batch_result = (
+                self._client.execute_with_options(batch, resolved_limits, self._options)
+                if self._options is not None
+                else self._client.execute(batch, resolved_limits)
+            )
+        with batch_result:
+            return batch_result._take_single_item()
 
 
 class GetAttributesBuilder(_AttributeReadBuilder):
@@ -1978,9 +2152,13 @@ class GetAttributeListBuilder(_AttributeReadBuilder):
 
 class Operation:
     def __init__(self, client: Client, operation: str,
-                 unique_identifier: extensions.UniqueIdentifier) -> None:
-        _identifier(unique_identifier)
-        self._client, self._operation, self._identifier = client, operation, unique_identifier
+                 unique_identifier: extensions.UniqueIdentifier | str) -> None:
+        normalized = _normalize_identifier(
+            unique_identifier,
+            client.protocol_version if isinstance(client, Client) else None,
+        )
+        _identifier(normalized)
+        self._client, self._operation, self._identifier = client, operation, normalized
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
 
@@ -2028,14 +2206,23 @@ class Operation:
         """Validate locally without sending a request."""
         self.build().close()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        with Batch.create() as batch:
-            batch.add_item(self.build())
-            if self._asynchronous_indicator is not None:
-                batch.set_asynchronous_indicator(self._asynchronous_indicator)
-            if self._options is not None:
-                return self._client.execute_with_options(batch, limits, self._options)
-            return self._client.execute(batch, limits)
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        return _execute_single_item(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+        )
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        return _execute_single_outcome(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+        )
 
 
 class SymmetricKeyBuilder:
@@ -2054,6 +2241,21 @@ class SymmetricKeyBuilder:
         self._name: str | None = None
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
+        if isinstance(client, Client):
+            self.with_protocol_version(client.protocol_version)
+
+    def with_protocol_version(self, version: ProtocolVersion) -> SymmetricKeyBuilder:
+        """Select KMIP version used to emit name attributes (`Name` vs `AlternativeName`)."""
+        self._ensure_open()
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_symmetric_key_builder_set_protocol_version(
+                    self._handle, version.major, version.minor
+                )
+            )
+        return self
 
     def _set(self, native_function: Any, value: int) -> SymmetricKeyBuilder:
         self._ensure_open()
@@ -2175,15 +2377,19 @@ class SymmetricKeyBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None, client: Client | None = None) -> Any:
         return _execute_fluent_builder(self, limits, client)
 
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
+
     def execute_one(
-        self, limits: ttlv.CodecLimits, client: Client | None = None
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
     ) -> BatchItemResult:
         """Execute Create and return the owned result, including rejection or Pending."""
-        with self.execute(limits, client) as batch:
-            return batch._take_single_item()
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2221,6 +2427,21 @@ class CreateKeyPairBuilder:
         self._client = client
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
+        if isinstance(client, Client):
+            self.with_protocol_version(client.protocol_version)
+
+    def with_protocol_version(self, version: ProtocolVersion) -> CreateKeyPairBuilder:
+        """Select KMIP version used to emit name attributes (`Name` vs `AlternativeName`)."""
+        self._ensure_open()
+        if not isinstance(version, ProtocolVersion):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_create_key_pair_builder_set_protocol_version(
+                    self._handle, version.major, version.minor
+                )
+            )
+        return self
 
     def _set(self, native_function: Any, value: int) -> CreateKeyPairBuilder:
         self._ensure_open()
@@ -2406,8 +2627,13 @@ class CreateKeyPairBuilder:
 
     to_batch_item = build
 
-    def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
+    def execute(self, limits: ttlv.CodecLimits | None = None, client: Client | None = None) -> Any:
         return _execute_fluent_builder(self, limits, client)
+
+    def execute_outcome(
+        self, limits: ttlv.CodecLimits | None = None, client: Client | None = None
+    ) -> BatchItemResult:
+        return _execute_fluent_builder_outcome(self, limits, client)
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2601,16 +2827,13 @@ class _CryptoOperationBuilder:
         item = self.build()
         item.close()
 
-    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
-        self._ensure_open()
-        if not isinstance(self._client, Client) or not isinstance(limits, ttlv.CodecLimits):
-            errors.raise_for_status(4)
+    def _execute_raw(self, resolved_limits: ttlv.CodecLimits) -> BatchResult:
         output = ffi.new("kmipkit_client_batch_response_t **")
         client_pointer = _client_abi_pointer(
             "kmipkit_client_t *", self._client._pointer()
         )
         limits_pointer = _client_abi_pointer(
-            "kmipkit_codec_limits_t *", limits._pointer()
+            "kmipkit_codec_limits_t *", resolved_limits._pointer()
         )
         with _NATIVE_CALL_LOCK:
             if self._options is None:
@@ -2629,7 +2852,22 @@ class _CryptoOperationBuilder:
             _raise_client_status(status)
         if output[0] == ffi.NULL:
             errors.raise_for_status(7)
-        return _batch_result(output[0], limits)
+        return _batch_result(output[0], resolved_limits)
+
+    def execute(self, limits: ttlv.CodecLimits | None = None) -> Any:
+        self._ensure_open()
+        resolved_limits = _resolve_limits(self._client, limits)
+        batch_result = self._execute_raw(resolved_limits)
+        if limits is not None:
+            return batch_result
+        with batch_result:
+            return _check_result_or_raise(batch_result._take_single_item())
+
+    def execute_outcome(self, limits: ttlv.CodecLimits | None = None) -> BatchItemResult:
+        self._ensure_open()
+        resolved_limits = _resolve_limits(self._client, limits)
+        with self._execute_raw(resolved_limits) as batch_result:
+            return batch_result._take_single_item()
 
     def close(self) -> None:
         if self._handle != ffi.NULL:
@@ -2823,9 +3061,9 @@ class _TypedOperationBuilder:
 
     def execute(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None = None,
         options: RequestOptions | None = None,
-    ) -> BatchResult:
+    ) -> Any:
         self._ensure_open()
         if self._client is None:
             errors.raise_for_status(4)
@@ -2838,11 +3076,28 @@ class _TypedOperationBuilder:
             options,
         )
 
+    def execute_outcome(
+        self,
+        limits: ttlv.CodecLimits | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchItemResult:
+        self._ensure_open()
+        if self._client is None:
+            errors.raise_for_status(4)
+        return _execute_single_outcome(
+            self._client,
+            self.build,
+            limits,
+            self._options,
+            self._asynchronous_indicator,
+            options,
+        )
+
     def execute_with_options(
         self,
-        limits: ttlv.CodecLimits,
+        limits: ttlv.CodecLimits | None,
         options: RequestOptions,
-    ) -> BatchResult:
+    ) -> Any:
         return self.execute(limits, options)
 
     def close(self) -> None:
